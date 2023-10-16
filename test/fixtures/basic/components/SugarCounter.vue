@@ -1,10 +1,9 @@
 <script setup lang="ts">
-// eslint-disable-next-line vue/no-setup-props-destructure
-const { multiplier } = defineProps<{
+const props = defineProps<{
   multiplier: number
 }>()
 const count = $ref(12)
-const doubled = $computed(() => count * multiplier)
+const doubled = $computed(() => count * props.multiplier)
 </script>
 
 <template>

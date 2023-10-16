@@ -1,20 +1,20 @@
-import type { Browser, BrowserContextOptions } from 'playwright'
+import type { Browser, BrowserContextOptions } from 'playwright-core'
 import { useTestContext } from './context'
 import { url } from './server'
 
 export async function createBrowser () {
   const ctx = useTestContext()
 
-  let playwright: typeof import('playwright')
+  let playwright: typeof import('playwright-core')
   try {
     // Workaround for https://github.com/nuxt/nuxt/issues/13441
     // TODO: Remove when upstream issue resolved
-    playwright = await import(String('playwright'))
+    playwright = await import(String('playwright-core'))
   } catch {
     /* istanbul ignore next */
     throw new Error(`
-      The dependency 'playwright' not found.
-      Please run 'yarn add --dev playwright' or 'npm install --save-dev playwright'
+      The dependency 'playwright-core' not found.
+      Please run 'yarn add --dev playwright-core' or 'npm install --save-dev playwright-core'
     `)
   }
 

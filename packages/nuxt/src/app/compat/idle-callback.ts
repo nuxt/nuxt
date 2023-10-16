@@ -1,6 +1,6 @@
 // Polyfills for Safari support
 // https://caniuse.com/requestidlecallback
-export const requestIdleCallback: Window['requestIdleCallback'] = process.server
+export const requestIdleCallback: Window['requestIdleCallback'] = import.meta.server
   ? (() => {}) as any
   : (globalThis.requestIdleCallback || ((cb) => {
       const start = Date.now()
@@ -11,6 +11,6 @@ export const requestIdleCallback: Window['requestIdleCallback'] = process.server
       return setTimeout(() => { cb(idleDeadline) }, 1)
     }))
 
-export const cancelIdleCallback: Window['cancelIdleCallback'] = process.server
+export const cancelIdleCallback: Window['cancelIdleCallback'] = import.meta.server
   ? (() => {}) as any
   : (globalThis.cancelIdleCallback || ((id) => { clearTimeout(id) }))

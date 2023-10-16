@@ -1,0 +1,20 @@
+// https://code.visualstudio.com/docs/devcontainers/containers
+// https://containers.dev/implementors/json_reference/
+{
+  "name": "nuxt-devcontainer",
+  "dockerFile": "Dockerfile",
+  "features": {},
+  "customizations": {
+    "vscode": {
+      "settings": {},
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "dbaeumer.vscode-eslint",
+        "github.vscode-github-actions",
+        "vue.volar"
+      ]
+    }
+  },
+  "postStartCommand": "pnpm install && pnpm build:stub",
+  "mounts": ["type=volume,target=${containerWorkspaceFolder}/node_modules"]
+}

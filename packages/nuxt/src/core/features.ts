@@ -1,30 +1,46 @@
 import { addDependency } from 'nypm'
-import { isPackageExists } from 'local-pkg'
+import { resolvePackageJSON } from 'pkg-types'
 import { logger } from '@nuxt/kit'
-import prompts from 'prompts'
+import { isCI, provider } from 'std-env'
 
-export async function ensurePackageInstalled (rootDir: string, name: string, searchPaths?: string[]) {
-  if (isPackageExists(name, { paths: searchPaths })) {
+const isStackblitz = provider === 'stackblitz'
+
+export interface EnsurePackageInstalledOptions {
+  rootDir: string
+  searchPaths?: string[]
+  prompt?: boolean
+}
+
+export async function ensurePackageInstalled (
+  name: string,
+  options: EnsurePackageInstalledOptions
+) {
+  if (await resolvePackageJSON(name, { url: options.searchPaths }).catch(() => null)) {
     return true
   }
 
   logger.info(`Package ${name} is missing`)
-
-  const { confirm } = await prompts({
-    type: 'confirm',
-    name: 'confirm',
-    message: `Do you want to install ${name} package?`,
-    initial: true
-  })
-
-  if (!confirm) {
+  if (isCI) {
     return false
+  }
+
+  // In StackBlitz we install packages automatically by default
+  if (options.prompt === true || (options.prompt !== false && !isStackblitz)) {
+    const confirm = await logger.prompt(`Do you want to install ${name} package?`, {
+      type: 'confirm',
+      name: 'confirm',
+      initial: true
+    })
+
+    if (!confirm) {
+      return false
+    }
   }
 
   logger.info(`Installing ${name}...`)
   try {
     await addDependency(name, {
-      cwd: rootDir,
+      cwd: options.rootDir,
       dev: true
     })
     logger.success(`Installed ${name}`)

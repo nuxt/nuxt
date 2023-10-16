@@ -7,5 +7,5 @@ description: The onBeforeRouteUpdate composable allows registering a route guard
 
 The `onBeforeRouteUpdate` composable adds a navigation guard that triggers whenever the component for the current location is about to be updated.
 
-::ReadMore{link="https://router.vuejs.org/api/index.html#onbeforerouteupdate"}
+::ReadMore{link="https://router.vuejs.org/api/#Functions-onBeforeRouteUpdate"}
 ::

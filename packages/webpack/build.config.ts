@@ -14,12 +14,10 @@ export default defineBuildConfig({
     'vue-loader',
     'css-loader',
     'file-loader',
-    'style-resources-loader',
     'url-loader',
     'vue'
   ],
   externals: [
-    '@nuxt/schema',
-    'h3'
+    '@nuxt/schema'
   ]
 })

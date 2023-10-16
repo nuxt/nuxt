@@ -2,11 +2,11 @@ import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
+import { consola } from 'consola'
 
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   *
    * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
@@ -16,7 +16,7 @@ export default defineUntypedSchema({
       }
       const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
-        webpack: '@nuxt/webpack-builder',
+        webpack: '@nuxt/webpack-builder'
       }
       return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
     }
@@ -24,8 +24,7 @@ export default defineUntypedSchema({
 
   /**
    * Whether to generate sourcemaps.
-   *
-   * @type {boolean | { server?: boolean, client?: boolean }}
+   * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
     $resolve: async (val, get) => {
@@ -36,7 +35,7 @@ export default defineUntypedSchema({
         server: true,
         client: await get('dev')
       })
-    },
+    }
   },
 
   /**
@@ -44,13 +43,12 @@ export default defineUntypedSchema({
    *
    * Defaults to 'silent' when running in CI or when a TTY is not available.
    * This option is then used as 'silent' in Vite and 'none' in Webpack
-   *
    * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
     $resolve: (val) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
-        console.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
+        consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val ?? (isTest ? 'silent' : 'info')
     }
@@ -66,7 +64,6 @@ export default defineUntypedSchema({
      * dependency's file name.
      *
      * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
-     *
      * @example
      * ```js
      transpile: [({ isLegacy }) => isLegacy && 'ky']
@@ -81,8 +78,7 @@ export default defineUntypedSchema({
      * You can provide your own templates which will be rendered based
      * on Nuxt configuration. This feature is specially useful for using with modules.
      *
-     * Templates are rendered using [`lodash.template`](https://lodash.com/docs/4.17.15#template).
-     *
+     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      * @example
      * ```js
      * templates: [
@@ -96,6 +92,7 @@ export default defineUntypedSchema({
      *   }
      * ]
      * ```
+     * @type {typeof import('../src/types/nuxt').NuxtTemplate<any>[]}
      */
     templates: [],
 
@@ -103,7 +100,6 @@ export default defineUntypedSchema({
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-     *
      * @example
      * ```js
      * analyze: {
@@ -111,7 +107,6 @@ export default defineUntypedSchema({
      * }
      * ```
      * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
-     *
      */
     analyze: {
       $resolve: async (val, get) => {
@@ -119,13 +114,14 @@ export default defineUntypedSchema({
           return val ?? false
         }
         const rootDir = await get('rootDir')
+        const analyzeDir = await get('analyzeDir')
         return {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(rootDir, '.nuxt/stats', '{name}.html')
+          filename: join(analyzeDir, '{name}.html')
         }
       }
-    },
+    }
   },
 
   /**
@@ -140,16 +136,16 @@ export default defineUntypedSchema({
      * and client. You will need to take steps to handle this additional key.
      *
      * The key will be unique based on the location of the function being invoked within the file.
-     *
-     * @type {Array<{ name: string, argumentLength: number }>}
+     * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: (val) => [
+      $resolve: val => [
+        { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 },
+        { name: 'useLazyFetch', argumentLength: 3 }
       ].concat(val).filter(Boolean)
     },
 
@@ -159,7 +155,6 @@ export default defineUntypedSchema({
     treeShake: {
       /**
        * Tree shake composables from the server or client builds.
-       *
        * @example
        * ```js
        * treeShake: { client: { myPackage: ['useServerOnlyComposable'] } }
@@ -168,21 +163,39 @@ export default defineUntypedSchema({
       composables: {
         server: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
-              '#app': ['definePayloadReviver']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  '#app': ['definePayloadReviver', 'definePageMeta']
+                }
           )
         },
         client: {
           $resolve: async (val, get) => defu(val || {},
-            await get('dev') ? {} : {
-              vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-              '#app': ['definePayloadReducer']
-            }
+            await get('dev')
+              ? {}
+              : {
+                  vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+                  '#app': ['definePayloadReducer', 'definePageMeta']
+                }
           )
         }
       }
     },
+
+    /**
+     * Options passed directly to the transformer from `unctx` that preserves async context
+     * after `await`.
+     * @type {typeof import('unctx/transform').TransformerOptions}
+     */
+    asyncTransforms: {
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      objectDefinitions: {
+        defineNuxtComponent: ['asyncData', 'setup'],
+        defineNuxtPlugin: ['setup'],
+        definePageMeta: ['middleware', 'validate']
+      }
+    }
   }
 })

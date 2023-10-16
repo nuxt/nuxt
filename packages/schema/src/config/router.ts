@@ -8,10 +8,8 @@ export default defineUntypedSchema({
      * Note: Only JSON serializable options should be passed by nuxt config.
      *
      * For more control, you can use `app/router.options.ts` file.
-     *
      * @see [documentation](https://router.vuejs.org/api/interfaces/routeroptions.html).
-     * @type {import('../src/types/router').RouterConfigSerializable}
-     *
+     * @type {typeof import('../src/types/router').RouterConfigSerializable}
      */
     options: {}
   }

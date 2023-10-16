@@ -1,6 +1,8 @@
 import { promises as fsp } from 'node:fs'
 import { resolve } from 'pathe'
 import { globby } from 'globby'
+import { execaSync } from 'execa'
+import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
 export interface Dep {
   name: string,
@@ -93,4 +95,20 @@ export async function loadWorkspace (dir: string) {
     rename,
     setVersion
   }
+}
+
+export async function determineBumpType () {
+  const config = await loadChangelogConfig(process.cwd())
+  const commits = await getLatestCommits()
+
+  const bumpType = determineSemverChange(commits, config)
+
+  return bumpType === 'major' ? 'minor' : bumpType
+}
+
+export async function getLatestCommits () {
+  const config = await loadChangelogConfig(process.cwd())
+  const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
+
+  return parseCommits(await getGitDiff(latestTag), config)
 }

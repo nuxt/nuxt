@@ -2,6 +2,7 @@
   <div>
     <ClientOnlyScript />
     <FunctionalComponent />
+    <ServerOnlyComponent />
   </div>
 </template>
 

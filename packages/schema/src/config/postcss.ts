@@ -15,16 +15,18 @@ export default defineUntypedSchema({
        * https://github.com/postcss/postcss-import
        */
       'postcss-import': {
-        $resolve: async (val, get) => val !== false ? defu(val || {}, {
-          resolve: createResolver({
-            alias: { ...(await get('alias')) },
-            modules: [
-              await get('srcDir'),
-              await get('rootDir'),
-              ...(await get('modulesDir'))
-            ]
+        $resolve: async (val, get) => val !== false
+          ? defu(val || {}, {
+            resolve: createResolver({
+              alias: { ...(await get('alias')) },
+              modules: [
+                await get('srcDir'),
+                await get('rootDir'),
+                ...(await get('modulesDir'))
+              ]
+            })
           })
-        }) : val,
+          : val
       },
 
       /**

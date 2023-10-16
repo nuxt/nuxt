@@ -11,5 +11,6 @@ export default defineBuildConfig({
     'webpack',
     'vite',
     'h3'
-  ]
+  ],
+  failOnWarn: false
 })

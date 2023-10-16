@@ -29,7 +29,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return pathname.endsWith('.vue')
     },
-    transform (code, id) {
+    transform (code) {
       const components = options.getComponents()
 
       if (!regexpMap.has(components)) {
@@ -106,7 +106,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }
@@ -192,7 +192,7 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
  * ImportDeclarations and VariableDeclarations are ignored
  * return the name of the component if is not called
  */
-function isComponentNotCalledInSetup (codeAst: Node, name: string): string|void {
+function isComponentNotCalledInSetup (codeAst: Node, name: string): string | void {
   if (name) {
     let found = false
     walk(codeAst, {
@@ -220,7 +220,6 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string|void 
 
 /**
  * retrieve the component identifier being used on ssrRender callExpression
- *
  * @param {CallExpression} ssrRenderNode - ssrRender callExpression
  */
 function getComponentName (ssrRenderNode: AcornNode<CallExpression>): string {

@@ -14,12 +14,12 @@ interface ImportProtectionOptions {
 }
 
 export const vueAppPatterns = (nuxt: Nuxt) => [
-  [/^(nuxt3|nuxt)$/, '`nuxt3`/`nuxt` cannot be imported directly. Instead, import runtime Nuxt composables from `#app` or `#imports`.'],
+  [/^(nuxt|nuxt3|nuxt-nightly)$/, '`nuxt`/`nuxt3`/`nuxt-nightly` cannot be imported directly. Instead, import runtime Nuxt composables from `#app` or `#imports`.'],
   [/^((|~|~~|@|@@)\/)?nuxt\.config(\.|$)/, 'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.'],
   [/(^|node_modules\/)@vue\/composition-api/],
   ...nuxt.options.modules.filter(m => typeof m === 'string').map((m: any) =>
     [new RegExp(`^${escapeRE(m as string)}$`), 'Importing directly from module entry points is not allowed.']),
-  ...[/(^|node_modules\/)@nuxt\/kit/, /^nitropack/]
+  ...[/(^|node_modules\/)@nuxt\/kit/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, /^nitropack/]
     .map(i => [i, 'This module cannot be imported in the Vue part of your app.']),
   [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'), 'Importing from server is not allowed in the Vue part of your app.']
 ] as ImportProtectionOptions['patterns']

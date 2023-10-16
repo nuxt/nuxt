@@ -3,7 +3,7 @@ import type { ComponentsOptions } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { isAbsolute, relative } from 'pathe'
 import { hash } from 'ohash'
-import { isVueTemplate } from './helpers'
+import { isVue } from '../core/utils'
 interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform'],
@@ -19,13 +19,13 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
     name: 'nuxt:client-fallback-auto-id',
     enforce: 'pre',
     transformInclude (id) {
-      if (exclude.some(pattern => id.match(pattern))) {
+      if (exclude.some(pattern => pattern.test(id))) {
         return false
       }
-      if (include.some(pattern => id.match(pattern))) {
+      if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVueTemplate(id)
+      return isVue(id)
     },
     transform (code, id) {
       if (!CLIENT_FALLBACK_RE.test(code)) { return }
@@ -44,7 +44,7 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
         return {
           code: s.toString(),
           map: options.sourcemap
-            ? s.generateMap({ source: id, includeContent: true })
+            ? s.generateMap({ hires: true })
             : undefined
         }
       }

@@ -1,16 +1,17 @@
-import type { TSConfig } from 'pkg-types'
 import type { Server as HttpServer } from 'node:http'
 import type { Server as HttpsServer } from 'node:https'
+import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 import type { Nitro, NitroConfig } from 'nitropack'
-import type { Component, ComponentsOptions } from './components'
-import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Schema, SchemaDefinition } from 'untyped'
+import type { RouteLocationRaw } from 'vue-router'
+import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
+import type { Component, ComponentsOptions } from './components'
+import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
 
 export type HookResult = Promise<void> | void
 
@@ -25,7 +26,7 @@ export type NuxtPage = {
   file?: string
   meta?: Record<string, any>
   alias?: string[] | string
-  redirect?: string
+  redirect?: RouteLocationRaw
   children?: NuxtPage[]
 }
 
@@ -45,6 +46,16 @@ export interface ImportPresetWithDeprecation extends InlinePreset {
 
 export interface GenerateAppOptions {
   filter?: (template: ResolvedNuxtTemplate<any>) => boolean
+}
+
+export interface NuxtAnalyzeMeta {
+  name: string
+  slug: string
+  startTime: number
+  endTime: number
+  analyzeDir: string
+  buildDir: string
+  outDir: string
 }
 
 /**
@@ -112,7 +123,7 @@ export interface NuxtHooks {
    * @param app The configured `NuxtApp` object
    * @returns Promise
    */
-  'app:templatesGenerated': (app: NuxtApp) => HookResult
+  'app:templatesGenerated': (app: NuxtApp, templates: ResolvedNuxtTemplate[], options?: GenerateAppOptions) => HookResult
 
   /**
    * Called before Nuxt bundle builder.
@@ -130,6 +141,13 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'build:manifest': (manifest: Manifest) => HookResult
+
+  /**
+   * Called when `nuxt analyze` is finished
+   * @param meta the analyze meta object, mutations will be saved to `meta.json`
+   * @returns Promise
+   */
+  'build:analyze:done': (meta: NuxtAnalyzeMeta) => HookResult
 
   /**
    * Called before generating the app.
@@ -291,6 +309,13 @@ export interface NuxtHooks {
    */
   'vite:extendConfig': (viteInlineConfig: ViteConfig, env: { isClient: boolean, isServer: boolean }) => HookResult
   /**
+   * Allows to read the resolved Vite config.
+   * @param viteInlineConfig The vite inline config object
+   * @param env Server or client
+   * @returns Promise
+   */
+  'vite:configResolved': (viteInlineConfig: Readonly<ViteConfig>, env: { isClient: boolean, isServer: boolean }) => HookResult
+  /**
    * Called when the Vite server is created.
    * @param viteServer Vite development server
    * @param env Server or client
@@ -310,6 +335,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
+   /**
+    * Allows to read the resolved webpack config
+    * @param webpackConfigs Configs objects to be pushed to the compiler
+    * @returns Promise
+    */
+  'webpack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
   /**
    * Called right before compilation.
    * @param options The options to be added

@@ -1,5 +1,5 @@
 import type { NuxtHooks } from './hooks'
-import type { Nuxt } from "./nuxt"
+import type { Nuxt } from './nuxt'
 import type { NuxtCompatibility } from './compatibility'
 
 export interface ModuleMeta {
@@ -20,7 +20,7 @@ export interface ModuleMeta {
    */
   compatibility?: NuxtCompatibility
 
-  [key: string]: any
+  [key: string]: unknown
 }
 
 /** The options received.  */

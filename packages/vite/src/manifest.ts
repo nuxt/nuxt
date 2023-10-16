@@ -1,5 +1,5 @@
 import fse from 'fs-extra'
-import { resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
@@ -46,6 +46,15 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   }
 
   await fse.mkdirp(serverDist)
+
+  if (ctx.config.build?.cssCodeSplit === false) {
+    const entryCSS = Object.values(clientManifest as Record<string, { file?: string }>).find(val => (val).file?.endsWith('.css'))?.file
+    if (entryCSS) {
+      const key = relative(ctx.config.root!, ctx.entry)
+      clientManifest[key].css ||= []
+      clientManifest[key].css!.push(entryCSS)
+    }
+  }
 
   const manifest = normalizeViteManifest(clientManifest)
   await ctx.nuxt.callHook('build:manifest', manifest)

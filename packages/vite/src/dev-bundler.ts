@@ -13,21 +13,21 @@ import { createIsExternal } from './utils/external'
 import { writeManifest } from './manifest'
 import type { ViteBuildContext } from './vite'
 
-export interface TransformChunk {
+interface TransformChunk {
   id: string,
   code: string,
   deps: string[],
   parents: string[]
 }
 
-export interface SSRTransformResult {
+interface SSRTransformResult {
   code: string,
   map: object,
   deps: string[]
   dynamicDeps: string[]
 }
 
-export interface TransformOptions {
+interface TransformOptions {
   viteServer: vite.ViteDevServer
   isExternal(id: string): ReturnType<typeof isExternal>
 }
@@ -78,7 +78,7 @@ ${genDynamicImport(path, { wrapper: false })}
 
   // Transform
   const res: SSRTransformResult = await opts.viteServer.transformRequest(id, { ssr: true }).catch((err) => {
-    console.warn(`[SSR] Error transforming ${id}:`, err)
+    logger.warn(`[SSR] Error transforming ${id}:`, err)
     // console.error(err)
   }) as SSRTransformResult || { code: '', map: {}, deps: [], dynamicDeps: [] }
 
@@ -109,7 +109,7 @@ async function transformRequestRecursive (opts: TransformOptions, id: string, pa
   return Object.values(chunks)
 }
 
-export async function bundleRequest (opts: TransformOptions, entryURL: string) {
+async function bundleRequest (opts: TransformOptions, entryURL: string) {
   const chunks = (await transformRequestRecursive(opts, entryURL))!
 
   const listIds = (ids: string[]) => ids.map(id => `// - ${id} (${hashId(id)})`).join('\n')
@@ -229,7 +229,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   const viteServer = ctx.ssrServer!
   const options: TransformOptions = {
     viteServer,
-    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir)
+    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
   }
 
   // Build and watch

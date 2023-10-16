@@ -5,7 +5,7 @@ import type { Nuxt } from '@nuxt/schema'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
-export const orderPresets = {
+const orderPresets = {
   cssnanoLast (names: string[]) {
     const nanoIndex = names.indexOf('cssnano')
     if (nanoIndex !== names.length - 1) {
@@ -71,11 +71,7 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       loadPlugins(postcssOptions)
     }
 
-    // @ts-expect-error
-    delete nuxt.options.webpack.postcss.order
-
     return {
-      // @ts-expect-error
       sourceMap: nuxt.options.webpack.cssSourceMap,
       ...nuxt.options.webpack.postcss,
       postcssOptions

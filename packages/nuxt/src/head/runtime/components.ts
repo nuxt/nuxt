@@ -149,12 +149,20 @@ export const Title = defineComponent({
   name: 'Title',
   inheritAttrs: false,
   setup: setupForUseMeta((_, { slots }) => {
-    const title = slots.default?.()?.[0]?.children || null
-    if (process.dev && title && typeof title !== 'string') {
-      console.error('<Title> can only take a string in its default slot.')
+    if (import.meta.dev) {
+      const defaultSlot = slots.default?.()
+
+      if (defaultSlot && (defaultSlot.length > 1 || typeof defaultSlot[0].children !== 'string')) {
+        console.error('<Title> can take only one string in its default slot.')
+      }
+
+      return {
+        title: defaultSlot?.[0]?.children || null
+      }
     }
+
     return {
-      title
+      title: slots.default?.()?.[0]?.children || null
     }
   })
 })
@@ -209,7 +217,7 @@ export const Style = defineComponent({
     const style = { ...props }
     const textContent = slots.default?.()?.[0]?.children
     if (textContent) {
-      if (process.dev && typeof textContent !== 'string') {
+      if (import.meta.dev && typeof textContent !== 'string') {
         console.error('<Style> can only take a string in its default slot.')
       }
       style.children = textContent
