@@ -1,7 +1,7 @@
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
-import defu from 'defu'
+import { defu } from 'defu'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt
