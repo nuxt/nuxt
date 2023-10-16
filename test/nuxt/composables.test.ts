@@ -349,5 +349,6 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     expect(await isPrerendered('/prerendered/test')).toBeTruthy()
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
+    expect(await isPrerendered('/pre/thing')).toBeTruthy()
   })
 })
