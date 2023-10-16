@@ -186,6 +186,7 @@ describe('resolveApp', () => {
       'layouts/some/layout.vue',
       'layouts/SomeOther.vue',
       'layouts/SomeOther/Thing/Index.vue',
+      'layouts/thing/thing/thing.vue',
       'layouts/some.vue',
       'layouts/SomeOther/layout.ts'
     ])
@@ -214,6 +215,10 @@ describe('resolveApp', () => {
         "some-other-thing": {
           "file": "<rootDir>/layouts/SomeOther/Thing/Index.vue",
           "name": "some-other-thing",
+        },
+        "thing": {
+          "file": "<rootDir>/layouts/thing/thing/thing.vue",
+          "name": "thing",
         },
       }
     `)
