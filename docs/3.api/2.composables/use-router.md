@@ -9,7 +9,6 @@ const router = useRouter()
 </script>
 ```
 
-
 If you only need the router instance within your template, use `$router`:
 
 ```vue [pages/index.vue]
@@ -53,7 +52,6 @@ router.resolve({ name: 'home' })
 - [`go()`](https://router.vuejs.org/api/interfaces/Router.html#go): Move forward or backward through the history without the hierarchical restrictions enforced in `router.back()` and `router.forward()`.
 - [`push()`](https://router.vuejs.org/api/interfaces/Router.html#push): Programmatically navigate to a new URL by pushing an entry in the history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
 - [`replace()`](https://router.vuejs.org/api/interfaces/Router.html#replace): Programmatically navigate to a new URL by replacing the current entry in the routes history stack. **It is recommended to use [`navigateTo`](/docs/api/utils/navigate-to) instead.**
-
 
 ```ts [Example]
 const router = useRouter()
