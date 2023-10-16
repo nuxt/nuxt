@@ -1,13 +1,21 @@
-# `useAppConfig`
+---
+title: 'useAppConfig'
+description: 'Access the reactive app config defined in the project.'
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/config.ts
+    size: xs
+---
 
-Access the reactive [app config](/docs/guide/directory-structure/app-config) defined in the project.
+:read-more{to="/docs/guide/directory-structure/app-config"}
 
-**Usage:**
+## Usage
 
-```js
+```ts
 const appConfig = useAppConfig()
 
 console.log(appConfig)
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/app-config"}
+:read-more{to="/docs/guide/directory-structure/app-config"}

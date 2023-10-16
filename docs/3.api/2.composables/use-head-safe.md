@@ -1,8 +1,12 @@
 ---
+title: useHeadSafe
 description: The recommended way to provide head data with user input.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useHeadSafe.ts
+    size: xs
 ---
-
-# `useHeadSafe`
 
 The `useHeadSafe` composable is a wrapper around the [`useHead`](/docs/api/composables/use-head) composable that restricts the input to only allow safe values.
 
@@ -24,7 +28,9 @@ useHeadSafe({
 // <meta content="0;javascript:alert(1)">
 ```
 
-Read more on [unhead documentation](https://unhead.unjs.io/usage/composables/use-head-safe).
+::read-more{to="https://unhead.unjs.io/usage/composables/use-head-safe" target="_blank"}
+Read more on `unhead` documentation.
+::
 
 ## Type
 

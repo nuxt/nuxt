@@ -1,6 +1,11 @@
 ---
 title: "navigateTo"
 description: navigateTo is a helper function that programmatically navigates users.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
 # `navigateTo`

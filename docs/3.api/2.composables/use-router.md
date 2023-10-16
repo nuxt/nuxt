@@ -1,6 +1,11 @@
 ---
 title: "useRouter"
 description: "The useRouter composable returns the router instance."
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
 ```vue [pages/index.vue]

@@ -1,5 +1,10 @@
 ---
 description: You can use this function to create an error object with additional metadata.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/error.ts
+    size: xs
 ---
 
 # `createError`

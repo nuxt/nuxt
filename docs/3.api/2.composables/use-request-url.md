@@ -1,4 +1,12 @@
-# useRequestURL
+---
+title: 'useRequestURL'
+description: 'Access the incoming request URL with the useRequestURL composable.'
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/url.ts
+    size: xs
+---
 
 `useRequestURL` is a helper function that returns an [URL object](https://developer.mozilla.org/en-US/docs/Web/API/URL/URL) working on both server-side and client-side.
 
@@ -22,4 +30,6 @@ const url = useRequestURL()
 
 ::
 
-You can find the list of the [URL instance properties](https://developer.mozilla.org/en-US/docs/Web/API/URL#instance_properties) on the MDN documentation.
+::callout{icon="i-simple-icons-mdnwebdocs" color="gray" to="https://developer.mozilla.org/en-US/docs/Web/API/URL#instance_properties" target="_blank"}
+Read about the URL instance properties on the MDN documentation.
+::

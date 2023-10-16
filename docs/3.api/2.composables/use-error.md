@@ -1,6 +1,11 @@
 ---
 title: "useError"
 description: useError composable returns the global Nuxt error that is being handled.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/error.ts
+    size: xs
 ---
 
 The composable returns the global Nuxt error that is being handled and it is available on both client and server.

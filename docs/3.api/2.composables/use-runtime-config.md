@@ -1,6 +1,12 @@
-# `useRuntimeConfig`
-
-The [`useRuntimeConfig`](/docs/api/composables/use-runtime-config) composable is used to expose config variables within your app.
+---
+title: 'useRuntimeConfig'
+description: 'Access runtime config variables with the useRuntimeConfig composable.'
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+    size: xs
+---
 
 ## Usage
 
@@ -12,9 +18,11 @@ const config = useRuntimeConfig()
 
 ```ts [server/api/foo.ts]
 export default defineEventHandler((event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
 })
 ```
+
+:read-more{to="/docs/guide/going-further/runtime-config"}
 
 ## Define Runtime Config
 
@@ -36,20 +44,19 @@ export default defineNuxtConfig({
 })
 ```
 
-::alert
+::callout
 Variables that need to be accessible on the server are added directly inside `runtimeConfig`. Variables that need to be accessible on both the client and the server are defined in `runtimeConfig.public`.
 ::
 
-::ReadMore{link="/docs/guide/going-further/runtime-config"}
-::
+:read-more{to="/docs/guide/going-further/runtime-config"}
 
 ## Access Runtime Config
 
 To access runtime config, we can use `useRuntimeConfig()` composable:
 
 ```ts [server/api/test.ts]
-export default async () => {
-  const config = useRuntimeConfig()
+export default defineEventHandler((event) => {
+  const config = useRuntimeConfig(event)
 
   // Access public variables
   const result = await $fetch(`/test`, {
@@ -69,8 +76,7 @@ In this example, since `apiBase` is defined within the `public` namespace, it is
 
 It is possible to update runtime config values using a matching environment variable name prefixed with `NUXT_`.
 
-::ReadMore{link="/docs/guide/going-further/runtime-config"}
-::
+:read-more{to="/docs/guide/going-further/runtime-config"}
 
 ### Using the `.env` File
 
@@ -81,23 +87,21 @@ NUXT_PUBLIC_API_BASE = "https://api.localhost:5555"
 NUXT_API_SECRET = "123"
 ```
 
-::alert{type=info}
+::callout
 Any environment variables set within `.env` file are accessed using `process.env` in the Nuxt app during **development** and **build/generate**.
 ::
 
-::alert{type=warning}
+::callout{color="amber" icon="i-ph-warning-duotone"}
 In **production runtime**, you should use platform environment variables and `.env` is not used.
 ::
 
-::alert{type=warning}
-When using git, make sure to add `.env` to the `.gitignore` file to avoid leaking secrets to the git history.
-::
+:read-more{to="/docs/guide/directory-structure/env"}
 
 ## `app` namespace
 
 Nuxt uses `app` namespace in runtime-config with keys including `baseURL` and `cdnURL`. You can customize their values at runtime by setting environment variables.
 
-::alert{type=info}
+::callout
 This is a reserved namespace. You should not introduce additional keys inside `app`.
 ::
 
@@ -135,5 +139,5 @@ export default defineEventHandler((event) => {
 })
 ```
 
-::ReadMore{link="/docs/guide/going-further/runtime-config"}
-::
+:read-more{to="/docs/guide/going-further/runtime-config"}
+

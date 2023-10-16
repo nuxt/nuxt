@@ -1,3 +1,11 @@
+---
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+    size: xs
+---
+
 # `clearNuxtData`
 
 Delete cached data, error status and pending promises of [`useAsyncData`](/docs/api/composables/use-async-data) and `useFetch`.

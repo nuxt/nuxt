@@ -1,20 +1,20 @@
 ---
+title: 'useCookie'
 description: useCookie is an SSR-friendly composable to read and write cookies.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/cookie.ts
+    size: xs
 ---
-
-# `useCookie`
 
 Within your pages, components and plugins you can use `useCookie`, an SSR-friendly composable to read and write cookies.
 
-```js
+```ts
 const cookie = useCookie(name, options)
 ```
 
-::alert{icon=👉}
-`useCookie` only works during `setup` or `Lifecycle Hooks`.
-::
-
-::alert{icon=😌}
+::callout
 `useCookie` ref will automatically serialize and deserialize cookie value to JSON.
 ::
 
@@ -22,9 +22,10 @@ const cookie = useCookie(name, options)
 
 The example below creates a cookie called `counter`. If the cookie doesn't exist, it is initially set to a random value. Whenever we update the `counter` variable, the cookie will be updated accordingly.
 
-```vue
+```vue [app.vue]
 <script setup lang="ts">
 const counter = useCookie('counter')
+
 counter.value = counter.value || Math.round(Math.random() * 1000)
 </script>
 
@@ -38,7 +39,7 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 </template>
 ```
 
-:button-link[Open on StackBlitz]{href="https://stackblitz.com/github/nuxt/examples/tree/main/advanced/use-cookie?terminal=dev&file=app.vue" blank}
+:link-example{to="/docs/examples/advanced/use-cookie"}
 
 ## Options
 
@@ -48,20 +49,22 @@ Most of the options will be directly passed to the [cookie](https://github.com/j
 
 ### `maxAge` / `expires`
 
-**`maxAge`** Specifies the `number` (in seconds) to be the value for the [`Max-Age` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.2).
+Use these options to set the expiration of the cookie.
+
+`maxAge`: Specifies the `number` (in seconds) to be the value for the [`Max-Age` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.2).
 The given number will be converted to an integer by rounding down. By default, no maximum age is set.
 
-**`expires`**: Specifies the `Date` object to be the value for the [`Expires` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.1).
+`expires`: Specifies the `Date` object to be the value for the [`Expires` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.1).
 By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and
 will delete it on a condition like exiting a web browser application.
 
-::alert{icon=💡}
-**Note:** The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and
+::callout
+The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and
 `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this,
 so if both are set, they should point to the same date and time!
 ::
 
-::alert
+::callout
 If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser.
 ::
 
@@ -70,8 +73,8 @@ If neither of `expires` and `maxAge` is set, the cookie will be session-only and
 Specifies the `boolean` value for the [`HttpOnly` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.6). When truthy,
 the `HttpOnly` attribute is set; otherwise it is not. By default, the `HttpOnly` attribute is not set.
 
-::alert{icon=💡}
-**Note:** Be careful when setting this to `true`, as compliant clients will not allow client-side
+::callout
+Be careful when setting this to `true`, as compliant clients will not allow client-side
 JavaScript to see the cookie in `document.cookie`.
 ::
 
@@ -80,20 +83,18 @@ JavaScript to see the cookie in `document.cookie`.
 Specifies the `boolean` value for the [`Secure` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.5). When truthy,
 the `Secure` attribute is set; otherwise it is not. By default, the `Secure` attribute is not set.
 
-::alert{icon=💡}
-**Note:** Be careful when setting this to `true`, as compliant clients will not send the cookie back to
+::callout
+Be careful when setting this to `true`, as compliant clients will not send the cookie back to
 the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors.
 ::
 
 ### `domain`
 
-Specifies the value for the [`Domain` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.3). By default, no
-domain is set, and most clients will consider applying the cookie only to the current domain.
+Specifies the value for the [`Domain` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.3). By default, no domain is set, and most clients will consider applying the cookie only to the current domain.
 
 ### `path`
 
-Specifies the value for the [`Path` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.4). By default, the path
-is considered the ["default path"](https://tools.ietf.org/html/rfc6265#section-5.1.4).
+Specifies the value for the [`Path` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.4). By default, the path is considered the ["default path"](https://tools.ietf.org/html/rfc6265#section-5.1.4).
 
 ### `sameSite`
 
@@ -123,8 +124,8 @@ a previously encoded cookie value into a JavaScript string or other object.
 
 The default decoder is `decodeURIComponent` + [destr](https://github.com/unjs/destr).
 
-::alert{icon=💡}
-**Note:** If an error is thrown from this function, the original, non-decoded cookie value will
+::callout
+If an error is thrown from this function, the original, non-decoded cookie value will
 be returned as the cookie's value.
 ::
 
@@ -136,9 +137,9 @@ Specifies a function that returns the cookie's default value. The function can a
 
 Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reactivity-core.html#watch) cookie ref data.
 
-- `true` - Will watch cookie ref data changes and its nested properties. (default)
+- `true` - Will watch cookie ref data changes and its nested properties (default).
 - `shallow` - Will watch cookie ref data changes for only top level properties
-- `false` Will not watch cookie ref data changes.
+- `false` - Will not watch cookie ref data changes.
 
 **Example 1:**
 
@@ -197,13 +198,11 @@ function save() {
 </template>
 ```
 
-## Handling Cookies in API Routes
+## Cookies in API Routes
 
 You can use `getCookie` and `setCookie` from [`h3`](https://github.com/unjs/h3) package to set cookies in server API routes.
 
-**Example:**
-
-```js
+```ts [server/api/counter.ts]
 export default defineEventHandler(event => {
   // Read counter cookie
   let counter = getCookie(event, 'counter') || 0

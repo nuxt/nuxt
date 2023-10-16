@@ -1,22 +1,26 @@
 ---
+title: 'useLazyFetch'
 description: This wrapper around useFetch triggers navigation immediately.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/fetch.ts
+    size: xs
 ---
-
-# `useLazyFetch`
-
-`useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ## Description
 
-By default, [useFetch](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved.
+By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
-> [`useLazyFetch`](/docs/api/composables/use-lazy-fetch) has the same signature as `useFetch`.
+::callout
+`useLazyFetch` has the same signature as [`useFetch`](/docs/api/composables/use-fetch).
+::
 
-:ReadMore{link="/docs/api/composables/use-fetch"}
+:read-more{to="/docs/api/composables/use-fetch"}
 
 ## Example
 
-```vue
+```vue [pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
@@ -40,8 +44,8 @@ watch(posts, (newPosts) => {
 </template>
 ```
 
-::alert{type=warning}
+::callout
 `useLazyFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyFetch`.
 ::
 
-:ReadMore{link="/docs/getting-started/data-fetching#uselazyfetch"}
+:read-more{to="/docs/getting-started/data-fetching"}

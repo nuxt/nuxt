@@ -1,9 +1,12 @@
 ---
 title: "useRequestHeaders"
 description: "Use useRequestHeaders to access the incoming request headers."
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
+    size: xs
 ---
-
-# `useRequestHeaders`
 
 You can use built-in [`useRequestHeaders`](/docs/api/composables/use-request-headers) composable to access the incoming request headers within your pages, components, and plugins.
 
@@ -15,13 +18,13 @@ const headers = useRequestHeaders()
 const headers = useRequestHeaders(['cookie'])
 ```
 
-::alert{icon=👉}
-In the browser, [`useRequestHeaders`](/docs/api/composables/use-request-headers) will return an empty object.
+::callout
+In the browser, `useRequestHeaders` will return an empty object.
 ::
 
 ## Example
 
-We can use [`useRequestHeaders`](/docs/api/composables/use-request-headers) to access and proxy the initial request's `authorization` header to any future internal requests during SSR.
+We can use `useRequestHeaders` to access and proxy the initial request's `authorization` header to any future internal requests during SSR.
 
 The example below adds the `authorization` request header to an isomorphic `$fetch` call.
 
@@ -32,7 +35,3 @@ const { data } = await useFetch('/api/confidential', {
 })
 </script>
 ```
-
-::alert{icon=👉}
-[Another example](/docs/getting-started/data-fetching#example-pass-client-headers-to-the-api) shows how we can pass cookies from the initial request to another API route.
-::

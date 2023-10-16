@@ -1,17 +1,22 @@
 ---
+title: 'useSeoMeta'
 description: The useSeoMeta composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useSeoMeta.ts
+    size: xs
 ---
-
-# `useSeoMeta`
-
-The `useSeoMeta` composable lets you define your site's SEO meta tags as a flat object with full TypeScript support.
 
 This helps you avoid common mistakes, such as using `name` instead of `property`, as well as typos - with over 100+ meta tags fully typed.
 
+::callout
 This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
-:ReadMore{link="/docs/getting-started/seo-meta"}
+::
 
-## Example
+:read-more{to="/docs/getting-started/seo-meta"}
+
+## Usage
 
 ```vue [app.vue]
 <script setup lang="ts">
@@ -42,3 +47,5 @@ useSeoMeta({
 ## Parameters
 
 There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts).
+
+:read-more{to="/docs/getting-started/seo-meta"}

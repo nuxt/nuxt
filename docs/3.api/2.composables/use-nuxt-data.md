@@ -1,47 +1,54 @@
-# `useNuxtData`
+---
+title: 'useNuxtData'
+description: 'Access the current cached value of data fetching composables.'
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+    size: xs
+---
 
+::callout
 `useNuxtData` gives you access to the current cached value of [`useAsyncData`](/docs/api/composables/use-async-data) , `useLazyAsyncData`, [`useFetch`](/docs/api/composables/use-fetch) and [`useLazyFetch`](/docs/api/composables/use-lazy-fetch) with explicitly provided key.
+::
 
-## Type
-
-```ts
-useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> }
-```
-
-## Examples
-
-### Show stale data while fetching in the background
+## Usage
 
 The example below shows how you can use cached data as a placeholder while the most recent data is being fetched from the server.
 
-```ts [archive.vue]
+```vue [pages/posts.vue]
+<script setup>
 // We can access same data later using 'posts' key
 const { data } = await useFetch('/api/posts', { key: 'posts' })
+</script>
 ```
 
-```ts [single.vue]
-// Access to the cached value of useFetch in archive.vue
+```ts [pages/posts/[id\\].vue]
+// Access to the cached value of useFetch in posts.vue (parent route)
+const { id } = useRoute().params
 const { data: posts } = useNuxtData('posts')
-
-const { data } = await useFetch(`/api/posts/${postId}`, {
-  key: `post-${postId}`,
-  default: () => {
+const { data } = useLazyFetch(`/api/posts/${id}`, {
+  key: `post-${id}`,
+  default() {
     // Find the individual post from the cache and set it as the default value.
-    return posts.value.find(post => post.id === postId)
+    return posts.value.find(post => post.id === id)
   }
 })
 ```
 
-### Optimistic Updates
+## Optimistic Updates
 
 We can leverage the cache to update the UI after a mutation, while the data is being invalidated in the background.
 
-```ts [todos.vue]
+```vue [pages/todos.vue]
+<script setup>
 // We can access same data later using 'todos' key
-const { data } = await useFetch('/api/todos', { key: 'todos' })
+const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
+</script>
 ```
 
-```ts [add-todo.vue]
+```vue [components/NewTodo.vue]
+<script setup>
 const newTodo = ref('')
 const previousTodos = ref([])
 
@@ -49,7 +56,6 @@ const previousTodos = ref([])
 const { data: todos } = useNuxtData('todos')
 
 const { data } = await useFetch('/api/addTodo', {
-  key: 'addTodo',
   method: 'post',
   body: {
     todo: newTodo.value
@@ -66,4 +72,11 @@ const { data } = await useFetch('/api/addTodo', {
     await refreshNuxtData('todos') // Invalidate todos in the background if the request succeeded.
   }
 })
+</script>
+```
+
+## Type
+
+```ts
+useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> }
 ```

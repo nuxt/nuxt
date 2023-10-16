@@ -1,22 +1,27 @@
 ---
+title: useLazyAsyncData
 description: This wrapper around useAsyncData triggers navigation immediately.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
+    size: xs
 ---
-
-# `useLazyAsyncData`
-
-`useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
 ## Description
 
-By default, [useAsyncData](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved.
+By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved. `useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
-> `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/api/composables/use-async-data) .
 
-:ReadMore{link="/docs/api/composables/use-async-data"}
+::callout
+`useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/api/composables/use-async-data).
+::
+
+:read-more{to="/docs/api/composables/use-async-data"}
 
 ## Example
 
-```vue
+```vue [pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
@@ -36,8 +41,8 @@ watch(count, (newCount) => {
 </template>
 ```
 
-::alert{type=warning}
+::callout{color="amber" icon="i-ph-warning-duotone"}
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
 ::
 
-:ReadMore{link="/docs/getting-started/data-fetching#uselazyasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching#uselazyasyncdata"}
