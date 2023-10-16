@@ -143,6 +143,20 @@ describe('useAsyncData', () => {
     expect(useNuxtData('key').data.value).toBeUndefined()
   })
 
+  it('should be usable _after_ a useNuxtData call', async () => {
+    useNuxtApp().payload.data.call = null
+    const { data: cachedData } = useNuxtData('call')
+    expect(cachedData.value).toMatchInlineSnapshot('null')
+    const { data } = await useAsyncData('call', () => Promise.resolve({ resolved: true }), { server: false })
+    expect(cachedData.value).toMatchInlineSnapshot(`
+      {
+        "resolved": true,
+      }
+    `)
+    expect(data.value).toEqual(cachedData.value)
+    clearNuxtData('call')
+  })
+
   it('should be refreshable', async () => {
     await useAsyncData('key', () => Promise.resolve('test'))
     clearNuxtData('key')
@@ -150,6 +164,15 @@ describe('useAsyncData', () => {
     expect(data.data.value).toBeUndefined()
     await refreshNuxtData('key')
     expect(data.data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('allows custom access to a cache', async () => {
+    const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": false,
+      }
+    `)
   })
 })
 
