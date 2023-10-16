@@ -26,7 +26,6 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
@@ -35,7 +34,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: fetch tags
@@ -52,7 +51,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
   lint:
     runs-on: ${{ matrix.os }}
@@ -60,14 +59,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -78,7 +76,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: lint
         run: yarn test:lint
@@ -96,14 +94,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -114,7 +111,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: audit
         run: yarn run audit
@@ -127,14 +124,13 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -145,7 +141,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: test unit
         run: yarn test:unit --coverage
@@ -164,7 +160,6 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [18]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -174,7 +169,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -185,7 +180,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: build
         run: yarn test:fixtures -i
@@ -193,7 +188,7 @@ jobs:
       - name: Save fixtures
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
     needs: setup
 
@@ -203,14 +198,13 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -221,12 +215,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
 
       - name: lint app
@@ -240,14 +234,13 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -258,12 +251,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
 
       - name: test dev
@@ -277,14 +270,13 @@ jobs:
       matrix:
         # os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -295,12 +287,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
 
       - name: test e2e
@@ -315,7 +307,6 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        node: [18]
 
     steps:
       - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
@@ -334,11 +325,11 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
           registry-url: "https://registry.npmjs.org"
 
