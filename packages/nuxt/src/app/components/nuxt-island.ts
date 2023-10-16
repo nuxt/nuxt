@@ -37,7 +37,7 @@ async function loadComponents (source = '/', paths: Record<string, string>) {
     if (!(components!.has(component))) {
       promises.push((async () => {
         const chunkSource = join(source, paths[component])
-        const c = await import(chunkSource).then(m => m.default || m)
+        const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
     }
