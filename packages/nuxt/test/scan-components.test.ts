@@ -2,7 +2,8 @@ import { resolve } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentName, scanComponents } from '../src/components/scan'
+import { scanComponents } from '../src/components/scan'
+import { resolveComponentName } from '../src/core/utils'
 
 const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
