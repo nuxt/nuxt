@@ -257,6 +257,8 @@ describe('runtimeConfig', () => {
   it('provides hints on overriding these values', () => {
     const val = defineNuxtConfig({
       runtimeConfig: {
+        APP: '',
+        APP_NAMES: [''],
         public: {
           // @ts-expect-error this should be a number
           testConfig: 'test',
@@ -270,6 +272,8 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
     expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
+    expectTypeOf(val.runtimeConfig!.APP).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_APP'>>()
+    expectTypeOf(val.runtimeConfig!.APP_NAMES).toEqualTypeOf<undefined | RuntimeValue<Array<string>, 'You can override this value at runtime with NUXT_APP_NAMES'>>()
   })
 })
 
