@@ -42,4 +42,4 @@ jobs:
       - name: Update bundle size
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@8caa572fd27b0019a65e4c695447089c8d3138b9
+      - uses: autofix-ci/action@d3e591514b99d0fca6779455ff8338516663f7cc

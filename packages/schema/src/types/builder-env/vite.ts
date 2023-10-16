@@ -38,7 +38,6 @@ export interface ImportGlobOptions<
   as?: AsType
   /**
    * Import as static or dynamic
-   *
    * @default false
    */
   eager?: Eager
@@ -52,7 +51,6 @@ export interface ImportGlobOptions<
   query?: string | Record<string, string | number | boolean>
   /**
    * Search files also inside `node_modules/` and hidden directories (e.g. `.git/`). This might have impact on performance.
-   *
    * @default false
    */
   exhaustive?: boolean

@@ -6,7 +6,6 @@ import destr from 'destr'
 
 /**
  * Internal utility
- *
  * @private
  */
 export const _wrapIf = (component: Component, props: any, slots: any) => {
@@ -20,7 +19,6 @@ export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
 /**
  * create buffer retrieved from @vue/server-renderer
- *
  * @see https://github.com/vuejs/core/blob/9617dd4b2abc07a5dc40de6e5b759e851b4d0da1/packages/server-renderer/src/render.ts#L57
  * @private
  */
@@ -102,12 +100,11 @@ export function vforToArray (source: any): any[] {
 /**
  * Retrieve the HTML content from an element
  * Handles `<!--[-->` Fragment elements
- *
  * @param element the element to retrieve the HTML
  * @param withoutSlots purge all slots from the HTML string retrieved
  * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false) {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)

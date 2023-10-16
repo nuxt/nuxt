@@ -26,7 +26,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt', 'nuxt-edge']
+  const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
     .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
@@ -75,7 +75,7 @@ export async function buildNuxt (nuxt: Nuxt): Promise<any> {
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
+    const { build } = await tryImportModule('nuxt-nightly', rootDir) || await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
     return build(nuxt)
   }
 

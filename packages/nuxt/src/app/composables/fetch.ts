@@ -13,7 +13,7 @@ type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, Lowercase<M>>
 
 type ComputedOptions<T extends Record<string, any>> = {
-  [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
@@ -108,6 +108,7 @@ export function useFetch<
     watch,
     immediate,
     dataStore,
+    deep,
     ...fetchOptions
   } = opts
 
@@ -124,6 +125,7 @@ export function useFetch<
     pick,
     immediate,
     dataStore,
+    deep,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
