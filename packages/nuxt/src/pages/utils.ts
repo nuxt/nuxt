@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
-import { encodePath } from 'ufo'
+import { encodePath, joinURL, withLeadingSlash } from 'ufo'
 import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -85,7 +85,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const path = route.path + getRoutePath(tokens).replace(/\/index$/, '/')
+      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {

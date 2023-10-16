@@ -21,11 +21,11 @@ vi.mock('#app/compat/idle-callback', () => ({
 
 const timestamp = Date.now()
 registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'test',
+  id: 'override',
   timestamp
 })))
-registerEndpoint('/_nuxt/builds/meta/test.json', defineEventHandler(() => ({
-  id: 'test',
+registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
+  id: 'override',
   timestamp,
   matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
   prerendered: ['/specific-prerendered']
@@ -47,6 +47,7 @@ describe('composables', () => {
       'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
+      'prerenderRoutes',
       'useRequestEvent',
       'useRequestFetch',
       'isPrerendered',
@@ -125,6 +126,14 @@ describe('useAsyncData', () => {
     expect(pending.value).toBe(false)
   })
 
+  // https://github.com/nuxt/nuxt/issues/23411
+  it('should initialize with error set to null when immediate: false', async () => {
+    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
+    expect(error.value).toBe(null)
+    await execute()
+    expect(error.value).toBe(null)
+  })
+
   it('should be accessible with useNuxtData', async () => {
     await useAsyncData('key', () => Promise.resolve('test'))
     const data = useNuxtData('key')
@@ -192,6 +201,7 @@ describe('ssr composables', () => {
     expect(useRequestEvent()).toBeUndefined()
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
+    expect(prerenderRoutes('/')).toBeUndefined()
   })
 })
 
@@ -204,12 +214,50 @@ describe('useState', () => {
     useState('key', () => 'value')
     expect(Object.entries(useNuxtApp().payload.state)).toContainEqual(['$skey', 'value'])
   })
+})
 
-  it.todo('clearNuxtState', () => {
-    const state = useState(() => 'test')
+describe('clearNuxtState', () => {
+  it('clears state in payload for single key', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
     expect(state.value).toBe('test')
+    clearNuxtState(key)
+    expect(state.value).toBeUndefined()
+  })
+
+  it('clears state in payload for array of keys', () => {
+    const key1 = 'clearNuxtState-test'
+    const key2 = 'clearNuxtState-test2'
+    const state1 = useState(key1, () => 'test')
+    const state2 = useState(key2, () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
+    clearNuxtState([key1, 'other'])
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBe('test')
+    clearNuxtState([key1, key2])
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBeUndefined()
+  })
+
+  it('clears state in payload for function', () => {
+    const key = 'clearNuxtState-test'
+    const state = useState(key, () => 'test')
+    expect(state.value).toBe('test')
+    clearNuxtState(() => false)
+    expect(state.value).toBe('test')
+    clearNuxtState(k => k === key)
+    expect(state.value).toBeUndefined()
+  })
+
+  it('clears all state when no key is provided', () => {
+    const state1 = useState('clearNuxtState-test', () => 'test')
+    const state2 = useState('clearNuxtState-test2', () => 'test')
+    expect(state1.value).toBe('test')
+    expect(state2.value).toBe('test')
     clearNuxtState()
-    expect.soft(state.value).toBeUndefined()
+    expect(state1.value).toBeUndefined()
+    expect(state2.value).toBeUndefined()
   })
 })
 
@@ -223,13 +271,13 @@ describe('url', () => {
   })
 })
 
-describe.skipIf(process.env.TEST_MANIFEST !== 'manifest-on')('app manifests', () => {
+describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
-        "id": "test",
+        "id": "override",
         "matcher": {
           "dynamic": {},
           "static": {

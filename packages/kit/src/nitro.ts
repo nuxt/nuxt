@@ -1,4 +1,5 @@
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
+import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'
 
@@ -66,7 +67,6 @@ export function addPrerenderRoutes (routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
- *
  * @example
  *
  * ```ts
@@ -81,4 +81,33 @@ export function useNitro (): Nitro {
     throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
   }
   return (nuxt as any)._nitro
+}
+
+/**
+ * Add server imports to be auto-imported by Nitro
+ */
+export function addServerImports (imports: Import[]) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.imports = config.imports || {}
+    if (Array.isArray(config.imports.imports)) {
+      config.imports.imports.push(...imports)
+    } else {
+      config.imports.imports = [config.imports.imports, ...imports]
+    }
+  })
+}
+
+/**
+ * Add directories to be scanned by Nitro
+ */
+export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.scanDirs = config.scanDirs || []
+
+    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
+      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
+    }
+  })
 }
