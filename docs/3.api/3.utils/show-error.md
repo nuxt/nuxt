@@ -28,4 +28,4 @@ The error is set in the state using [`useError()`](/docs/api/composables/use-err
 `showError` calls the `app:error` hook.
 ::
 
-:ReadMore{to="/docs/getting-started/error-handling"}
+:read-more{to="/docs/getting-started/error-handling"}
