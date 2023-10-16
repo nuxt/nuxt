@@ -1,7 +1,7 @@
-import { cloneDeep } from 'lodash-es'
 import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
+import defu from 'defu'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt
@@ -68,5 +68,5 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 
 export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
   // Clone deep avoid leaking config between Client and Server
-  return cloneDeep(ctx.config)
+  return defu({}, ctx.config)
 }
