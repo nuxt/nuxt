@@ -1,4 +1,4 @@
-import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vue'
+import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
@@ -30,12 +30,12 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
     if (to === from) { return }
     return guard(to, from, next)
   })
-  onUnmounted(unsubscribe)
+  onScopeDispose(unsubscribe)
 }
 
 export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach(guard)
-  onUnmounted(unsubscribe)
+  onScopeDispose(unsubscribe)
 }
 
 export interface RouteMiddleware {
@@ -182,6 +182,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Client-side redirection using vue-router
   if (isExternal) {
+    // Run any cleanup steps for the current scope, like ending BroadcastChannel
+    nuxtApp._scope.stop()
     if (options?.replace) {
       location.replace(toPath)
     } else {

@@ -141,9 +141,9 @@ describe('resolveApp', () => {
     // TODO: fix this
     expect(fixtureMiddleware).toMatchInlineSnapshot(`
       [
-        "<rootDir>/layer1/middleware/global.global.ts",
-        "<rootDir>/layer1/middleware/named-from-layer.ts",
-        "<rootDir>/layer1/middleware/named-override.ts",
+        "<rootDir>/layer2/middleware/global.global.ts",
+        "<rootDir>/layer2/middleware/named-from-layer.ts",
+        "<rootDir>/middleware/named-override.ts",
         "<rootDir>/middleware/named.ts",
       ]
     `)
