@@ -140,4 +140,3 @@ export default defineEventHandler((event) => {
 ```
 
 :read-more{to="/docs/guide/going-further/runtime-config"}
-

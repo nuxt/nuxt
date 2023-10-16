@@ -12,7 +12,6 @@ links:
 `navigateTo` is available on both server side and client side.
 ::
 
-
 ## Usage
 
 ### Within a Vue Component
@@ -80,7 +79,6 @@ await navigateTo('https://nuxt.com', {
 })
 </script>
 ```
-
 
 ## Type
 

@@ -12,7 +12,6 @@ links:
 
 By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved. `useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
-
 ::callout
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/api/composables/use-async-data).
 ::

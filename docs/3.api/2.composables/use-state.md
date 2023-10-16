@@ -26,7 +26,6 @@ Because the data inside `useState` will be serialized to JSON, it is important t
 `useState` is a reserved function name transformed by the compiler, so you should not name your own function `useState`.
 ::
 
-
 ## Type
 
 ```ts
