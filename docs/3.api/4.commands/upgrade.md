@@ -1,11 +1,14 @@
 ---
 title: "nuxi upgrade"
 description: The upgrade command upgrades Nuxt 3 to the latest version.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/upgrade.ts
+    size: xs
 ---
 
-# `nuxi upgrade`
-
-```{bash}
+```bash [Terminal]
 npx nuxi upgrade [--force|-f]
 ```
 

@@ -1,11 +1,14 @@
 ---
 title: "nuxi typecheck"
 description: The typecheck command runs vue-tsc to check types throughout your app.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/typecheck.ts
+    size: xs
 ---
 
-# `nuxi typecheck`
-
-```{bash}
+```bash [Terminal]
 npx nuxi typecheck [--log-level] [rootDir]
 ```
 
@@ -15,8 +18,10 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The directory of the target application.
 
-This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as a command-line argument.
+::callout
+This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/guide/directory-structure/env) file or as a command-line argument.
+::
 
-::alert
-You can also enable type-checking at build or development time by installing `typescript` and `vue-tsc` as devDependencies and enabling [the `typescript.typeCheck` option in your `nuxt.config` file](/docs/api/nuxt-config#typescript).
+::read-more{to="/docs/guide/concepts/typescript#type-checking"}
+Read more on how to enable type-checking at build or development time.
 ::

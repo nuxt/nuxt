@@ -1,11 +1,14 @@
 ---
 title: "nuxi generate"
 description: Pre-renders every route of the application and stores the result in plain HTML files.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/generate.ts
+    size: xs
 ---
 
-# `nuxi generate`
-
-```{bash}
+```bash [Terminal]
 npx nuxi generate [rootDir] [--dotenv]
 ```
 
@@ -16,6 +19,6 @@ Option        | Default          | Description
 `rootDir` | `.` | The root directory of the application to generate
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 
-::alert{type=info}
-Read more about [pre-rendering and static hosting](/docs/getting-started/deployment#static-hosting).
+::read-more{to="/docs/getting-started/deployment#static-hosting"}
+Read more about pre-rendering and static hosting.
 ::

@@ -1,11 +1,14 @@
 ---
 title: "nuxi build"
 description: "Build your Nuxt application."
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/build.ts
+    size: xs
 ---
 
-# `nuxi build`
-
-```{bash}
+```bash [Terminal]
 npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]
 ```
 
@@ -17,4 +20,6 @@ Option        | Default          | Description
 `--prerender` | `false` | Pre-render every route of your application. (**note:** This is an experimental flag. The behavior might be changed.)
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 
+::callout
 This command sets `process.env.NODE_ENV` to `production`.
+::

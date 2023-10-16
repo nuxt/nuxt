@@ -1,11 +1,14 @@
 ---
 title: "nuxi init"
 description: The init command initializes a fresh Nuxt project.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/init.ts
+    size: xs
 ---
 
-# `nuxi init`
-
-```{bash}
+```bash [Terminal]
 npx nuxi init|create [--verbose|-v] [--template,-t] [dir]
 ```
 

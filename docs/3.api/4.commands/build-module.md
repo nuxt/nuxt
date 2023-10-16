@@ -1,6 +1,14 @@
-# `nuxi build-module`
+---
+title: 'nuxi build-module'
+description: 'Nuxt command to build your Nuxt module before publishing.'
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/build-module.ts
+    size: xs
+---
 
-```{bash}
+```bash [Terminal]
 npx nuxi build-module [--stub] [rootDir]
 ```
 
@@ -11,6 +19,6 @@ Option        | Default          | Description
 `rootDir` | `.` | The root directory of the module to bundle.
 `--stub` | `false` | Stub out your module for development using [jiti](https://github.com/unjs/jiti#jiti). (**note:** This is mainly for development purposes.)
 
-::alert
-This command is only available when you are using `@nuxt/module-builder` to build your module. Please see [this readme](https://github.com/nuxt/module-builder#-nuxt-module-builder) for more information.
+::read-more{to="https://github.com/nuxt/module-builder" icon="i-simple-icons-github" color="gray" target="_blank"}
+Read more about `@nuxt/module-builder`.
 ::

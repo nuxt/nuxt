@@ -1,11 +1,14 @@
 ---
 title: "nuxi preview"
 description: The preview command starts a server to preview your application after the build command.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/preview.ts
+    size: xs
 ---
 
-# `nuxi preview`
-
-```{bash}
+```bash [Terminal]
 npx nuxi preview [rootDir] [--dotenv]
 ```
 
@@ -18,6 +21,6 @@ Option        | Default          | Description
 
 This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a `.env` file or as command-line argument.
 
-::alert{type=info}
-For convenience, in preview mode, your `.env` file will be loaded into `process.env`. (However, in production you will need to ensure your environment variables are set yourself.)
+::callout
+For convenience, in preview mode, your [`.env`](/docs/guide/directory-structure/env) file will be loaded into `process.env`. (However, in production you will need to ensure your environment variables are set yourself.)
 ::

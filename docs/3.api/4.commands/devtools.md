@@ -1,11 +1,14 @@
 ---
 title: "nuxi devtools"
 description: The devtools command allows you to enable or disable Nuxt DevTools on a per-project basis.
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/devtools.ts
+    size: xs
 ---
 
-# `nuxi devtools`
-
-```{bash}
+```bash [Terminal]
 npx nuxi devtools enable|disable [rootDir]
 ```
 
@@ -15,5 +18,6 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The root directory of the app you want to enable devtools for.
 
-::ReadMore{link="https://github.com/nuxt/devtools"}
+::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="_blank"}
+Read more about the **Nuxt Devtools**.
 ::

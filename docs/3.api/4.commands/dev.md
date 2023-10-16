@@ -1,11 +1,14 @@
 ---
-title: "nuxi dev"
+title: 'nuxi dev'
 description: The dev command starts a development server with hot module replacement at http://localhost:3000
+links:
+  - label: Source Code
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/cli/blob/main/src/commands/dev.ts
+    size: xs
 ---
 
-# `nuxi dev`
-
-```{bash}
+```bash [Terminal]
 npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
 ```
 
@@ -30,6 +33,6 @@ Additionally to the above options, `nuxi` can pass options through to `listhen`,
 
 This command sets `process.env.NODE_ENV` to `development`.
 
-::alert{type="info"}
+::callout
 If you are using a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
