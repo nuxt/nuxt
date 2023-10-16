@@ -1,4 +1,4 @@
-import { assertType, describe, expectTypeOf, it } from 'vitest'
+import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
@@ -269,11 +269,11 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.public!.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.baseURL).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_URL'>>()
-    expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
+    expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>([][0])
     expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
-    assertType<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_APP'>>(val.runtimeConfig!.APP)
-    assertType<undefined | RuntimeValue<Array<string>, 'You can override this value at runtime with NUXT_APP_NAMES'>>(val.runtimeConfig!.APP_NAMES)
+    expectTypeOf(val.runtimeConfig!.public!.APP).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_APP'>>([][0])
+    expectTypeOf(val.runtimeConfig!.public!.APP_NAMES).toEqualTypeOf<undefined | RuntimeValue<Array<string>, 'You can override this value at runtime with NUXT_APP_NAMES'>>([][0])
   })
 })
 
