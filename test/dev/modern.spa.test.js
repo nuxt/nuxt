@@ -2,7 +2,7 @@ import consola from 'consola'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let nuxt, port, options
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 const modernUA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.77 Safari/537.36'
 const modernInfo = mode => `Modern bundles are detected. Modern mode (\`${mode}\`) is enabled now.`
 
@@ -13,7 +13,7 @@ describe('modern client mode (SPA)', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('should detect client modern mode', async () => {

@@ -2,7 +2,7 @@ import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
 let nuxt
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 const tests = [
   ['relative publicPath can be used in dev ssr', {
@@ -25,7 +25,7 @@ describe('basic ssr with relative path', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
 
     const { html } = await nuxt.server.renderRoute('/')
 

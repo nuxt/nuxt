@@ -14,14 +14,14 @@ describe('server listen', () => {
     await nuxt.ready()
 
     const port = await getPort()
-    const listen = () => nuxt.server.listen(port, 'localhost')
+    const listen = () => nuxt.server.listen(port, '127.0.0.1')
 
     // Listen for first time
     await listen()
     expect(nuxt.server.listeners[0].port).toBe(port)
 
     // Listen for second time
-    await expect(listen()).rejects.toThrow(`Address \`localhost:${port}\` is already in use.`)
+    await expect(listen()).rejects.toThrow(`Address \`127.0.0.1:${port}\` is already in use.`)
 
     await nuxt.close()
   })
@@ -31,7 +31,7 @@ describe('server listen', () => {
     await nuxt.ready()
 
     const port = await getPort()
-    const listen = () => nuxt.server.listen(port, 'localhost')
+    const listen = () => nuxt.server.listen(port, '127.0.0.1')
 
     // Listen for first time
     await listen()
@@ -41,7 +41,7 @@ describe('server listen', () => {
     await listen()
     expect(nuxt.server.listeners[1].port).not.toBe(nuxt.server.listeners[0].port)
     expect(consola.warn).toHaveBeenCalledTimes(1)
-    expect(consola.warn).toHaveBeenCalledWith(`Address \`localhost:${port}\` is already in use.`)
+    expect(consola.warn).toHaveBeenCalledWith(`Address \`127.0.0.1:${port}\` is already in use.`)
 
     await nuxt.close()
   })
@@ -59,7 +59,7 @@ describe('server listen', () => {
     const nuxt = new Nuxt({ ...config, dev: true })
     await nuxt.ready()
 
-    const listen = () => nuxt.server.listen(0, 'localhost') // Use port 0 to let allow host to randomly assign a free PORT
+    const listen = () => nuxt.server.listen(0, '127.0.0.1') // Use port 0 to let allow host to randomly assign a free PORT
     const toString = (x = '') => `${x}`
 
     // Nuxt server should not be listening on the DEFAULT_PORT

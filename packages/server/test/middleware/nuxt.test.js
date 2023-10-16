@@ -20,7 +20,7 @@ const createContext = () => ({
 })
 
 const createServerContext = () => ({
-  req: { headers: {}, url: 'http://localhost/test/server' },
+  req: { headers: {}, url: 'http://127.0.0.1/test/server' },
   res: { headers: {}, setHeader: jest.fn(), end: jest.fn() },
   next: jest.fn()
 })
@@ -339,7 +339,7 @@ describe('server: nuxtMiddleware', () => {
 
     for (const path of paths) {
       await nuxtMiddleware(
-        { ...req, url: 'http://localhost/test/server/' + path },
+        { ...req, url: 'http://127.0.0.1/test/server/' + path },
         res,
         next
       )

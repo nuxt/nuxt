@@ -31,7 +31,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 16
+          node-version: 18
           cache: "yarn"
 
       - name: install
@@ -45,7 +45,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v16-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
   test-unit:
     runs-on: ${{ matrix.os }}
@@ -62,7 +62,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 16
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -73,7 +73,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v16-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: test unit
         run: yarn test:unit --testPathIgnorePatterns=packages/cli
@@ -95,7 +95,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 16
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -106,7 +106,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v16-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: build
         run: yarn test:fixtures
@@ -114,7 +114,7 @@ jobs:
       - name: Save fixtures
         uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
         with:
-          name: fixtures-${{ matrix.os }}-node-v16
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
     needs: setup
 
@@ -133,7 +133,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
         with:
-          node-version: 16
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
@@ -144,12 +144,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v16-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         with:
-          name: fixtures-${{ matrix.os }}-node-v16
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
 
       - name: test dev

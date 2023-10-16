@@ -39,7 +39,7 @@ describe('nuxt', () => {
     await nuxt.ready()
 
     const port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
 
     const { html } = await nuxt.server.renderRoute('/')
     expect(html).toContain('<h2 class="Landscape__Title">')

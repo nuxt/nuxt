@@ -1,7 +1,7 @@
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let nuxt, port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 describe('modern client mode (SSR)', () => {
   beforeAll(async () => {
@@ -10,7 +10,7 @@ describe('modern client mode (SSR)', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('should contain nomodule legacy resources', async () => {
