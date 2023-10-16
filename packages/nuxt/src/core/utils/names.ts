@@ -6,7 +6,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
   const relativePath = relativeTo
     ? normalize(path).replace(withTrailingSlash(normalize(relativeTo)), '')
     : basename(path)
-  return kebabCase(relativePath.replace(/[\\/]+/g, '-').replace(/\/index\.\w+$/, '').replace(extname(relativePath), '')).replace(/["']/g, '')
+  return kebabCase(relativePath.replace(/\/index\.\w+$/, '').replace(/[\\/]+/g, '-').replace(extname(relativePath), '')).replace(/["']/g, '')
 }
 
 export function hasSuffix (path: string, suffix: string) {
