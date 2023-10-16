@@ -10,7 +10,7 @@ const range = n => [...Array(n).keys()]
 const FOOBAR_REGEX = /<Foobar>([\s\S]*)<\/Foobar>/
 const match = (regex, text) => (regex.exec(text) || [])[1]
 
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 // const isWindows = /^win/.test(process.platform)
 
@@ -69,7 +69,7 @@ describe('ssr', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('unique responses with data()', async () => {

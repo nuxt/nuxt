@@ -4,7 +4,7 @@ import { loadFixture, getPort, Nuxt, wChunk } from '../utils'
 // Runs tests in specified router mode (either "hash" or "history").
 function spaTests ({ isHashMode }) {
   let nuxt, port
-  const url = route => `http://localhost:${port}${isHashMode ? '/#' : ''}${route}`
+  const url = route => `http://127.0.0.1:${port}${isHashMode ? '/#' : ''}${route}`
 
   const renderRoute = async (_url) => {
     const window = await nuxt.server.renderAndGetWindow(url(_url))
@@ -21,7 +21,7 @@ function spaTests ({ isHashMode }) {
       await nuxt.ready()
 
       port = await getPort()
-      await nuxt.server.listen(port, 'localhost')
+      await nuxt.server.listen(port, '127.0.0.1')
     })
 
     test('/ (basic spa)', async () => {
