@@ -14,7 +14,7 @@ export default defineNuxtConfig({
   ],
   runtimeConfig: {
     baseURL: '',
-    baseAPIToken: '',
+    baseApiToken: '',
     privateConfig: 'secret_key',
     APP: '',
     APP_NAMES: [''],
