@@ -143,7 +143,9 @@ export function useAsyncData<
   const nuxt = useNuxtApp()
 
   const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
-  const hasCachedData = () => getCachedData() !== undefined
+  const hasCachedData = () => ![null, undefined].includes(
+    nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  )
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
@@ -253,7 +255,7 @@ export function useAsyncData<
       }
     }
 
-    if (fetchOnServer && nuxt.isHydrating && hasCachedData()) {
+    if (asyncData.error.value || (fetchOnServer && nuxt.isHydrating && hasCachedData())) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
