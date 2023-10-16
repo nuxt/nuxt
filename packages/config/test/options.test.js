@@ -34,7 +34,6 @@ describe('config: options', () => {
         }
       }
     })
-    config.buildModules = config.buildModules.filter(p => p.name !== 'patchMD4')
     expect(config).toMatchSnapshot()
 
     process.cwd.mockRestore()
@@ -298,7 +297,7 @@ describe('config: options', () => {
       const config = getNuxtConfig({ devModules: ['foo'], buildModules: ['bar'] })
       expect(consola.warn).toHaveBeenCalledWith('`devModules` has been renamed to `buildModules` and will be removed in Nuxt 3.')
       expect(config.devModules).toBe(undefined)
-      expect(config.buildModules.filter(p => p.name !== 'patchMD4')).toEqual(['bar', 'foo'])
+      expect(config.buildModules).toEqual(['bar', 'foo'])
     })
 
     test('should deprecate build.extractCSS.allChunks', () => {
