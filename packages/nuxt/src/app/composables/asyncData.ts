@@ -137,12 +137,12 @@ export function useAsyncData<
 
   // Used to get default values
   const getDefault = () => null
-  const getDataStore = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  const getDefaultCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
 
   // Apply defaults
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
-  options.getCachedData = options.getCachedData ?? getDataStore
+  options.getCachedData = options.getCachedData ?? getDefaultCachedData
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
