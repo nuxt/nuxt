@@ -26,6 +26,7 @@ type UseFetchOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
+  getCachedData?: (key: string) => any
   deep?: boolean
   default?: () => DataT
   transform?: (input: DataT) => DataT
@@ -73,6 +74,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   * `transform`: a function that can be used to alter `handler` function result after resolving
   * `pick`: only pick specified keys in this array from the `handler` function result
   * `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
+  * `getCachedData`: a function that receives a cache key and can return cached data if it exists (by default it returns `nuxtApp.payload.data[key]` when hydrating and `nuxtApp.static.data[key]` after the app is hydrated). You can use this to build your own custom cache for `useFetch`.
   * `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
 
 ::alert{type=warning}
