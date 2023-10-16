@@ -44,7 +44,7 @@ export interface AsyncDataOptions<
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
-  shallow?: boolean
+  deep?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -149,10 +149,10 @@ export function useAsyncData<
   if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt.payload._errors[key] ??= null
 
+    const _ref = options.deep !== true ? shallowRef : ref
+
     nuxt._asyncData[key] = {
-      data: options.shallow
-        ? shallowRef(getCachedData() ?? options.default!())
-        : ref(getCachedData() ?? options.default!()),
+      data: _ref(getCachedData() ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
