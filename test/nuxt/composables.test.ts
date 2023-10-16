@@ -165,6 +165,15 @@ describe('useAsyncData', () => {
     await refreshNuxtData('key')
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
+
+  it('allows custom access to a cache', async () => {
+    const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": false,
+      }
+    `)
+  })
 })
 
 describe('errors', () => {
