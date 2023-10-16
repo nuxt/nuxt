@@ -598,7 +598,7 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
     if (!match) { continue }
     const [, uid, slot] = match
     if (!uid || !slot) { continue }
-    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
+    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
       return full + teleports[key]
     })
   }
@@ -615,7 +615,7 @@ function replaceClientTeleport (ssrContext: NuxtSSRContext, html: string) {
     if (!match) { continue }
     const [, uid, clientId] = match
     if (!uid || !clientId) { continue }
-    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-client="${clientId}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-client="${clientId}"[^>]*>`), (full) => {
+    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-client="${clientId}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-client="${clientId}"[^>]*>`), (full) => {
       return full + teleports[key]
     })
   }
