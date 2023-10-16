@@ -1,4 +1,4 @@
-import { basename, dirname, extname, normalize, relative } from 'pathe'
+import { basename, dirname, extname, normalize } from 'pathe'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
 
