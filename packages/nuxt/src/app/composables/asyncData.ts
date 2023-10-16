@@ -40,7 +40,7 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
-  getCachedData?: (key: string) => any
+  getCachedData?: (key: string) => DefaultT
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
