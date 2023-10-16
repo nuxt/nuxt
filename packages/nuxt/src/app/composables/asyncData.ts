@@ -40,7 +40,7 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
-  dataStore?: (key: string) => any
+  getCachedData?: (key: string) => any
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
@@ -142,12 +142,12 @@ export function useAsyncData<
   // Apply defaults
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
-  options.dataStore = options.dataStore ?? getDataStore
+  options.getCachedData = options.getCachedData ?? getDataStore
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
-  const hasCachedData = () => ![null, undefined].includes(options.dataStore?.(key))
+  const hasCachedData = () => ![null, undefined].includes(options.getCachedData?.(key))
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
@@ -156,7 +156,7 @@ export function useAsyncData<
     const _ref = options.deep !== true ? shallowRef : ref
 
     nuxt._asyncData[key] = {
-      data: _ref(options.dataStore?.(key) ?? options.default!()),
+      data: _ref(options.getCachedData?.(key) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
@@ -176,7 +176,7 @@ export function useAsyncData<
     }
     // Avoid fetching same key that is already fetched
     if ((opts._initial || (nuxt.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return options.dataStore?.(key)
+      return options.getCachedData?.(key)
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
