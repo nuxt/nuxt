@@ -1,5 +1,6 @@
 ---
 title: 'Nuxt API Reference'
+titleTemplate: '%s'
 description: 'Explore all Nuxt Internals: Components, Composables, Utils, Commands and more.'
 navigation: false
 surround: false
