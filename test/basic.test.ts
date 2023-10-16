@@ -1926,8 +1926,9 @@ describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
 
 describe.skipIf(isWindows)('useAsyncData', () => {
   it('works after useNuxtData call', async () => {
-    const html = await $fetch('/useAsyncData/nuxt-data')
-    expect(html).toContain('resolved:true')
+    const page = await createPage('/useAsyncData/nuxt-data')
+    expect(page.locator('body').getByText('resolved:true').textContent()).toContain('resolved:true')
+    await page.close()
   })
 
   it('single request resolves', async () => {
