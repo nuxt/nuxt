@@ -1897,6 +1897,11 @@ describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
 })
 
 describe.skipIf(isWindows)('useAsyncData', () => {
+  it('works after useNuxtData call', async () => {
+    const html = await $fetch('/useAsyncData/nuxt-data')
+    expect(html).toContain('resolved:true')
+  })
+
   it('single request resolves', async () => {
     await expectNoClientErrors('/useAsyncData/single')
   })
