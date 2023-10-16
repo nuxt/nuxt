@@ -36,8 +36,8 @@ type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' 
       : State extends 'lower' | 'upper'
         ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
           ? SliceLast<ExtractUpperChunk<B>> extends ''
-            ? `_${A}_${UpperSnakeCase<B, 'start'>}`
-            : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+            ? `${A}${UpperSnakeCase<B, 'start'>}`
+            : `${A}${SliceLast<ExtractUpperChunk<B>>}${UpperSnakeCase<Rest, 'start'>}`
           : B extends Uppercase<B>
             ? `_${A}${B}`
             : `_${A}${UpperSnakeCase<B, 'lower'>}`
