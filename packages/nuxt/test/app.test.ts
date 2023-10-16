@@ -187,6 +187,7 @@ describe('resolveApp', () => {
       'layouts/SomeOther.vue',
       'layouts/SomeOther/Thing/Index.vue',
       'layouts/thing/thing/thing.vue',
+      'layouts/desktop-base/base.vue',
       'layouts/some.vue',
       'layouts/SomeOther/layout.ts'
     ])
@@ -195,6 +196,10 @@ describe('resolveApp', () => {
         "default": {
           "file": "<rootDir>/layouts/default.vue",
           "name": "default",
+        },
+        "desktop-base": {
+          "file": "<rootDir>/layouts/desktop-base/base.vue",
+          "name": "desktop-base",
         },
         "some": {
           "file": "<rootDir>/layouts/some.vue",
