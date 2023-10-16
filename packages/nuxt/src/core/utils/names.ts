@@ -8,7 +8,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
     : basename(path)
   const prefixParts = splitByCase(dirname(relativePath))
   const fileName = basename(relativePath, extname(relativePath))
-  return kebabCase(resolveComponentName(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts)).replace(/["']/g, '')
+  return kebabCase(resolveComponentName(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts)).replace(/["']/g, '')
 }
 
 export function hasSuffix (path: string, suffix: string) {
