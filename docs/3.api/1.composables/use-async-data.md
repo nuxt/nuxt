@@ -30,7 +30,7 @@ type AsyncDataOptions<DataT> = {
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
-  watch?: WatchSource[],
+  watch?: WatchSource[]
   getCachedData?: (key: string) => any
 }
 
