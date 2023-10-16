@@ -744,9 +744,6 @@ importers:
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
       magic-string:
         specifier: ^0.30.4
         version: 0.30.4
@@ -832,9 +829,6 @@ importers:
       '@types/hash-sum':
         specifier: 1.0.0
         version: 1.0.0
-      '@types/lodash-es':
-        specifier: 4.17.9
-        version: 4.17.9
       '@types/pify':
         specifier: 5.0.2
         version: 5.0.2
@@ -7994,6 +7988,7 @@ packages:
 
   /lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: true
 
   /lodash._reinterpolate@3.0.0:
     resolution: {integrity: sha512-xYHt68QRoYGjeeM/XOE1uJtvXQAgvszfBhjV4yvsQH0u2i9I6cI6c6/eG4Hh3UAOVn0y/xAXwmTzEay49Q//HA==}
