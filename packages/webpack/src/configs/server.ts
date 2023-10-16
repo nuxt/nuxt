@@ -47,6 +47,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#app',
     'nuxt',
     'nuxt3',
+    'nuxt-nightly',
     '!',
     '-!',
     '~',

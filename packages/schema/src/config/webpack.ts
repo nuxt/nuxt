@@ -7,7 +7,6 @@ export default defineUntypedSchema({
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-     *
      * @example
      * ```js
      * analyze: {
@@ -35,7 +34,6 @@ export default defineUntypedSchema({
      * Enable the profiler in webpackbar.
      *
      * It is normally enabled by CLI argument `--profile`.
-     *
      * @see [webpackbar](https://github.com/unjs/webpackbar#profile).
      */
     profile: process.argv.includes('--profile'),
@@ -46,7 +44,6 @@ export default defineUntypedSchema({
      * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
      * JavaScript separately.
-     *
      * @example
      * ```js
      * export default {
@@ -107,7 +104,6 @@ export default defineUntypedSchema({
      * Customize bundle filenames.
      *
      * To understand a bit more about the use of manifests, take a look at [this webpack documentation](https://webpack.js.org/guides/code-splitting/).
-     *
      * @note Be careful when using non-hashed based filenames in production
      * as most browsers will cache the asset and not detect the changes on first load.
      *
@@ -165,14 +161,12 @@ export default defineUntypedSchema({
 
       /**
        * See https://github.com/esbuild-kit/esbuild-loader
-       *
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
       esbuild: {},
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       *
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -183,7 +177,6 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       *
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -194,7 +187,6 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
-       *
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -205,14 +197,12 @@ export default defineUntypedSchema({
 
       /**
        * See: https://pugjs.org/api/reference.html#options
-       *
        * @type {typeof import('pug')['Options']}
        */
       pugPlain: {},
 
       /**
        * See [vue-loader](https://github.com/vuejs/vue-loader) for available options.
-       *
        * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
@@ -253,7 +243,6 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/sass-loader#options
-       *
        * @type {typeof import('sass-loader')['Options']}
        * @default
        * ```ts
@@ -272,7 +261,6 @@ export default defineUntypedSchema({
 
       /**
        * See: https://github.com/webpack-contrib/sass-loader#options
-       *
        * @type {typeof import('sass-loader')['Options']}
        */
       scss: {},
@@ -287,7 +275,6 @@ export default defineUntypedSchema({
 
     /**
      * Add webpack plugins.
-     *
      * @example
      * ```js
      * import webpack from 'webpack'
@@ -311,7 +298,6 @@ export default defineUntypedSchema({
      * OptimizeCSSAssets plugin options.
      *
      * Defaults to true when `extractCSS` is enabled.
-     *
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
@@ -321,7 +307,6 @@ export default defineUntypedSchema({
 
     /**
      * Configure [webpack optimization](https://webpack.js.org/configuration/optimization/).
-     *
      * @type {false | typeof import('webpack').Configuration['optimization']}
      */
     optimization: {
@@ -340,7 +325,6 @@ export default defineUntypedSchema({
     /**
      * Customize PostCSS Loader.
      * Same options as https://github.com/webpack-contrib/postcss-loader#options
-     *
      * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
@@ -356,7 +340,6 @@ export default defineUntypedSchema({
 
     /**
      * See [webpack-dev-middleware](https://github.com/webpack/webpack-dev-middleware) for available options.
-     *
      * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
@@ -365,7 +348,6 @@ export default defineUntypedSchema({
 
     /**
      * See [webpack-hot-middleware](https://github.com/webpack-contrib/webpack-hot-middleware) for available options.
-     *
      * @type {typeof import('webpack-hot-middleware').MiddlewareOptions & { client?: typeof import('webpack-hot-middleware').ClientOptions }}
      */
     hotMiddleware: {},
@@ -377,14 +359,12 @@ export default defineUntypedSchema({
 
     /**
      * Filters to hide build warnings.
-     *
      * @type {Array<(warn: typeof import('webpack').WebpackError) => boolean>}
      */
     warningIgnoreFilters: [],
 
     /**
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
-     *
      * @type {false | typeof import('webpack').Configuration['experiments']}
      */
     experiments: {}
