@@ -27,7 +27,15 @@ registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
 registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
   id: 'override',
   timestamp,
-  matcher: { static: { '/': null, '/pre': null }, wildcard: { '/pre': { prerender: true } }, dynamic: {} },
+  matcher: {
+    static: {
+      '/': null,
+      '/pre': null,
+      '/pre/test': { redirect: true }
+    },
+    wildcard: { '/pre': { prerender: true } },
+    dynamic: {}
+  },
   prerendered: ['/specific-prerendered']
 })))
 
@@ -306,6 +314,9 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
           "static": {
             "/": null,
             "/pre": null,
+            "/pre/test": {
+              "redirect": true,
+            },
           },
           "wildcard": {
             "/pre": {
@@ -320,12 +331,24 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     `)
   })
   it('getRouteRules', async () => {
-    const rules = await getRouteRules('/')
-    expect(rules).toMatchInlineSnapshot('{}')
+    expect(await getRouteRules('/')).toMatchInlineSnapshot('{}')
+    expect(await getRouteRules('/pre')).toMatchInlineSnapshot(`
+      {
+        "prerender": true,
+      }
+    `)
+    expect(await getRouteRules('/pre/test')).toMatchInlineSnapshot(`
+      {
+        "prerender": true,
+        "redirect": true,
+      }
+    `)
   })
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
     expect(await isPrerendered('/prerendered/test')).toBeTruthy()
     expect(await isPrerendered('/test')).toBeFalsy()
+    expect(await isPrerendered('/pre/test')).toBeFalsy()
+    expect(await isPrerendered('/pre/thing')).toBeTruthy()
   })
 })
