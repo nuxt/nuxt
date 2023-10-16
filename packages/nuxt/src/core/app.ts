@@ -5,7 +5,7 @@ import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, 
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
-import { getNameFromPath, getNameFromPathLocal, hasSuffix, uniqueBy } from './utils'
+import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -112,7 +112,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPathLocal(file, resolve(config.srcDir, layoutDir))
+      const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
