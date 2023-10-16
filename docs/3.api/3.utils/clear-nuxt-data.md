@@ -1,4 +1,6 @@
 ---
+title: 'clearNuxtData'
+description: Delete cached data, error status and pending promises of useAsyncData and useFetch.
 links:
   - label: Source Code
     icon: i-simple-icons-github
@@ -6,11 +8,9 @@ links:
     size: xs
 ---
 
-# `clearNuxtData`
-
-Delete cached data, error status and pending promises of [`useAsyncData`](/docs/api/composables/use-async-data) and `useFetch`.
-
+::callout
 This method is useful if you want to invalidate the data fetching for another page.
+::
 
 ## Type
 
