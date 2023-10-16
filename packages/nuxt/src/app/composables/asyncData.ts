@@ -132,16 +132,15 @@ export function useAsyncData<
     throw new TypeError('[nuxt] [asyncData] handler must be a function.')
   }
 
-  // Setup nuxt instance payload
-  const nuxt = useNuxtApp()
-
   // Apply defaults
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
-  options.shallow = options.shallow ?? (nuxt._asyncDataShallow as boolean | undefined) ?? false
+
+  // Setup nuxt instance payload
+  const nuxt = useNuxtApp()
 
   const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
   const hasCachedData = () => getCachedData() !== undefined

@@ -329,10 +329,6 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
   }
 
-  if (nuxt.options.experimental.asyncDataShallow) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/async-data-shallow'))
-  }
-
   // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
     nuxt.hooks.hook('modules:done', () => {

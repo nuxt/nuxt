@@ -260,11 +260,6 @@ export default defineUntypedSchema({
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
      * should set `routeRules` directly within your `nuxt.config`.
      */
-    inlineRouteRules: false,
-
-    /**
-     * When enabled, `useAsyncData` and `useFetch` data will be shallowRef by default.
-     */
-    asyncDataShallow: false
+    inlineRouteRules: false
   }
 })
