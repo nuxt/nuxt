@@ -238,7 +238,7 @@ describe('nuxtApp', () => {
   })
 })
 
-describe.only('runtimeConfig', () => {
+describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
     expectTypeOf(runtimeConfig.public.testConfig).toEqualTypeOf<number>()
