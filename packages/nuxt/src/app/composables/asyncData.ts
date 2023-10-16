@@ -147,7 +147,7 @@ export function useAsyncData<
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
-  const hasCachedData = () => ![null, undefined].includes(options.getCachedData?.(key) as any)
+  const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
@@ -156,7 +156,7 @@ export function useAsyncData<
     const _ref = options.deep !== true ? shallowRef : ref
 
     nuxt._asyncData[key] = {
-      data: _ref(options.getCachedData?.(key) ?? options.default!()),
+      data: _ref(options.getCachedData!(key) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
