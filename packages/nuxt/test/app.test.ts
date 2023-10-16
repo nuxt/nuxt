@@ -179,6 +179,40 @@ describe('resolveApp', () => {
       }
     `)
   })
+
+  it('resolves nested layouts correctly', async () => {
+    const app = await getResolvedApp([
+      'layouts/default.vue',
+      'layouts/some/layout.vue',
+      'layouts/SomeOther.vue',
+      'layouts/some.vue',
+      'layouts/SomeOther/layout.ts'
+    ])
+    expect(app.layouts).toMatchInlineSnapshot(`
+      {
+        "default": {
+          "file": "<rootDir>/layouts/default.vue",
+          "name": "default",
+        },
+        "some": {
+          "file": "<rootDir>/layouts/some.vue",
+          "name": "some",
+        },
+        "some-layout": {
+          "file": "<rootDir>/layouts/some/layout.vue",
+          "name": "some-layout",
+        },
+        "some-other": {
+          "file": "<rootDir>/layouts/SomeOther.vue",
+          "name": "some-other",
+        },
+        "some-other-layout": {
+          "file": "<rootDir>/layouts/SomeOther/layout.ts",
+          "name": "some-other-layout",
+        },
+      }
+    `)
+  })
 })
 
 async function getResolvedApp (files: Array<string | { name: string, contents: string }>) {
