@@ -2398,6 +2398,66 @@
     estree-walker "^2.0.2"
     picomatch "^2.3.1"
 
+"@rollup/rollup-android-arm-eabi@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.1.4.tgz#e9bc2540174972b559ded126e6f9bf12f36c1bb1"
+  integrity sha512-WlzkuFvpKl6CLFdc3V6ESPt7gq5Vrimd2Yv9IzKXdOpgbH4cdDSS1JLiACX8toygihtH5OlxyQzhXOph7Ovlpw==
+
+"@rollup/rollup-android-arm64@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-android-arm64/-/rollup-android-arm64-4.1.4.tgz#50c4e7668cb00a63d9a6810d0a607496ad4f0d09"
+  integrity sha512-D1e+ABe56T9Pq2fD+R3ybe1ylCDzu3tY4Qm2Mj24R9wXNCq35+JbFbOpc2yrroO2/tGhTobmEl2Bm5xfE/n8RA==
+
+"@rollup/rollup-darwin-arm64@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-darwin-arm64/-/rollup-darwin-arm64-4.1.4.tgz#96b8ad0c21582fe8223c66ed4b39b30ff592da1c"
+  integrity sha512-7vTYrgEiOrjxnjsgdPB+4i7EMxbVp7XXtS+50GJYj695xYTTEMn3HZVEvgtwjOUkAP/Q4HDejm4fIAjLeAfhtg==
+
+"@rollup/rollup-darwin-x64@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-darwin-x64/-/rollup-darwin-x64-4.1.4.tgz#5f0f6bd8f0a29e4b2b32ab831e953a6ca2d8f45b"
+  integrity sha512-eGJVZScKSLZkYjhTAESCtbyTBq9SXeW9+TX36ki5gVhDqJtnQ5k0f9F44jNK5RhAMgIj0Ht9+n6HAgH0gUUyWQ==
+
+"@rollup/rollup-linux-arm-gnueabihf@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-linux-arm-gnueabihf/-/rollup-linux-arm-gnueabihf-4.1.4.tgz#52d706c87a05f91ff6f14f444685b662d3a6f96a"
+  integrity sha512-HnigYSEg2hOdX1meROecbk++z1nVJDpEofw9V2oWKqOWzTJlJf1UXVbDE6Hg30CapJxZu5ga4fdAQc/gODDkKg==
+
+"@rollup/rollup-linux-arm64-gnu@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-linux-arm64-gnu/-/rollup-linux-arm64-gnu-4.1.4.tgz#5afa269b26467a7929c23816e3e2cf417b973d3b"
+  integrity sha512-TzJ+N2EoTLWkaClV2CUhBlj6ljXofaYzF/R9HXqQ3JCMnCHQZmQnbnZllw7yTDp0OG5whP4gIPozR4QiX+00MQ==
+
+"@rollup/rollup-linux-arm64-musl@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-linux-arm64-musl/-/rollup-linux-arm64-musl-4.1.4.tgz#08d30969483a804769deb6e674fe963c21815ad9"
+  integrity sha512-aVPmNMdp6Dlo2tWkAduAD/5TL/NT5uor290YvjvFvCv0Q3L7tVdlD8MOGDL+oRSw5XKXKAsDzHhUOPUNPRHVTQ==
+
+"@rollup/rollup-linux-x64-gnu@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-linux-x64-gnu/-/rollup-linux-x64-gnu-4.1.4.tgz#e5000b4e6e2a81364083d64a608b915f4e92a9c1"
+  integrity sha512-77Fb79ayiDad0grvVsz4/OB55wJRyw9Ao+GdOBA9XywtHpuq5iRbVyHToGxWquYWlEf6WHFQQnFEttsAzboyKg==
+
+"@rollup/rollup-linux-x64-musl@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-linux-x64-musl/-/rollup-linux-x64-musl-4.1.4.tgz#6f356e16b275287f61c61ce8b9e1718fc5b24d4c"
+  integrity sha512-/t6C6niEQTqmQTVTD9TDwUzxG91Mlk69/v0qodIPUnjjB3wR4UA3klg+orR2SU3Ux2Cgf2pWPL9utK80/1ek8g==
+
+"@rollup/rollup-win32-arm64-msvc@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-arm64-msvc/-/rollup-win32-arm64-msvc-4.1.4.tgz#acb619a959c7b03fad63017b328fa60641b75239"
+  integrity sha512-ZY5BHHrOPkMbCuGWFNpJH0t18D2LU6GMYKGaqaWTQ3CQOL57Fem4zE941/Ek5pIsVt70HyDXssVEFQXlITI5Gg==
+
+"@rollup/rollup-win32-ia32-msvc@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-ia32-msvc/-/rollup-win32-ia32-msvc-4.1.4.tgz#6aab05c9a60f952cf5a263ebca244aa225fbde63"
+  integrity sha512-XG2mcRfFrJvYyYaQmvCIvgfkaGinfXrpkBuIbJrTl9SaIQ8HumheWTIwkNz2mktCKwZfXHQNpO7RgXLIGQ7HXA==
+
+"@rollup/rollup-win32-x64-msvc@4.1.4":
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.1.4.tgz#482022c71466e653aa6e1afc7a8323298743609b"
+  integrity sha512-ANFqWYPwkhIqPmXw8vm0GpBEHiPpqcm99jiiAp71DbCSqLDhrtr019C5vhD0Bw4My+LmMvciZq6IsWHqQpl2ZQ==
+
 "@sigstore/protobuf-specs@^0.1.0":
   version "0.1.0"
   resolved "https://registry.npmjs.org/@sigstore/protobuf-specs/-/protobuf-specs-0.1.0.tgz#957cb64ea2f5ce527cc9cf02a096baeb0d2b99b4"
@@ -12937,11 +12997,23 @@ rollup-plugin-license@3.2.0:
     spdx-expression-validate "~2.0.0"
     spdx-satisfies "~5.0.1"
 
-rollup@3.29.4:
-  version "3.29.4"
-  resolved "https://registry.npmjs.org/rollup/-/rollup-3.29.4.tgz#4d70c0f9834146df8705bfb69a9a19c9e1109981"
-  integrity sha512-oWzmBZwvYrU0iJHtDmhsm662rC15FRXmcjCk1xD771dFDx5jJ02ufAQQTn0etB2emNk4J9EZg/yWKpsn9BWGRw==
+rollup@4.1.4:
+  version "4.1.4"
+  resolved "https://registry.npmjs.org/rollup/-/rollup-4.1.4.tgz#cf0ab00d9183a3d11fcc5d630270463b13831221"
+  integrity sha512-U8Yk1lQRKqCkDBip/pMYT+IKaN7b7UesK3fLSTuHBoBJacCE+oBqo/dfG/gkUdQNNB2OBmRP98cn2C2bkYZkyw==
   optionalDependencies:
+    "@rollup/rollup-android-arm-eabi" "4.1.4"
+    "@rollup/rollup-android-arm64" "4.1.4"
+    "@rollup/rollup-darwin-arm64" "4.1.4"
+    "@rollup/rollup-darwin-x64" "4.1.4"
+    "@rollup/rollup-linux-arm-gnueabihf" "4.1.4"
+    "@rollup/rollup-linux-arm64-gnu" "4.1.4"
+    "@rollup/rollup-linux-arm64-musl" "4.1.4"
+    "@rollup/rollup-linux-x64-gnu" "4.1.4"
+    "@rollup/rollup-linux-x64-musl" "4.1.4"
+    "@rollup/rollup-win32-arm64-msvc" "4.1.4"
+    "@rollup/rollup-win32-ia32-msvc" "4.1.4"
+    "@rollup/rollup-win32-x64-msvc" "4.1.4"
     fsevents "~2.3.2"
 
 rrweb-cssom@^0.6.0:
