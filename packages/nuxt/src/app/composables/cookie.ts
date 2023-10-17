@@ -1,11 +1,5 @@
 import type { Ref } from "vue";
-import {
-  customRef,
-  getCurrentScope,
-  nextTick,
-  onScopeDispose,
-  watch,
-} from "vue";
+import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from "vue";
 import type { CookieParseOptions, CookieSerializeOptions } from "cookie-es";
 import { parse, serialize } from "cookie-es";
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from "h3";
@@ -15,16 +9,13 @@ import { isEqual } from "ohash";
 import { useNuxtApp } from "../nuxt";
 import { useRequestEvent } from "./ssr";
 
-type _CookieOptions = Omit<
-  CookieSerializeOptions & CookieParseOptions,
-  "decode" | "encode"
->;
+type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
-  decode?(value: string): T;
-  encode?(value: T): string;
-  default?: () => T | Ref<T>;
-  watch?: boolean | "shallow";
+  decode?(value: string): T
+  encode?(value: T): string
+  default?: () => T | Ref<T>
+  watch?: boolean | 'shallow'
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -32,15 +23,13 @@ export interface CookieRef<T> extends Ref<T> {}
 const CookieDefaults = {
   path: "/",
   watch: true,
-  decode: (val) => destr(decodeURIComponent(val)),
-  encode: (val) =>
-    encodeURIComponent(typeof val === "string" ? val : JSON.stringify(val)),
-} satisfies CookieOptions<any>;
+  decode: val => destr(decodeURIComponent(val)),
+  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+} satisfies CookieOptions<any>
 
-export function useCookie<T = string | null | undefined>(
-  name: string,
-  _opts?: CookieOptions<T>
-): CookieRef<T> {
+let timeoutIDToClear:  NodeJS.Timeout
+
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts };
   const cookies = readRawCookies(opts) || {};
 
@@ -50,16 +39,14 @@ export function useCookie<T = string | null | undefined>(
   } else if (opts.expires) {
     delay = opts.expires.getTime() - new Date().getTime(); // getTime() already return time in ms
   }
-  const cookie = useCustomCookieRef<T | undefined>(
+  //use customRef if on client side overwize use basic ref
+  const cookie = import.meta.client ? useCustomCookieRef<T | undefined>(
     (cookies[name] as any) ?? opts.default?.(),
     delay
-  );
+  ) : ref<T|undefined>((cookies[name] as any) ?? opts.default?.())
 
   if (import.meta.client) {
-    const channel =
-      typeof BroadcastChannel === "undefined"
-        ? null
-        : new BroadcastChannel(`nuxt:cookies:${name}`);
+    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions);
       channel?.postMessage(opts.encode(cookie.value as T));
@@ -72,6 +59,7 @@ export function useCookie<T = string | null | undefined>(
         watchPaused = true;
         callback();
         channel?.close();
+        clearTimeout(timeoutIDToClear)
       });
     }
 
@@ -86,16 +74,11 @@ export function useCookie<T = string | null | undefined>(
     }
 
     if (opts.watch) {
-      watch(
-        cookie,
-        () => {
-          if (watchPaused) {
-            return;
-          }
-          callback();
-        },
-        { deep: opts.watch !== "shallow" }
-      );
+      watch(cookie, () => {
+        if (watchPaused) { return }
+        callback()
+      },
+      { deep: opts.watch !== 'shallow' })
     } else {
       callback();
     }
@@ -103,30 +86,21 @@ export function useCookie<T = string | null | undefined>(
     const nuxtApp = useNuxtApp();
     const writeFinalCookieValue = () => {
       if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(
-          useRequestEvent(nuxtApp),
-          name,
-          cookie.value,
-          opts as CookieOptions<any>
-        );
+        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
       }
-    };
-    const unhook = nuxtApp.hooks.hookOnce(
-      "app:rendered",
-      writeFinalCookieValue
-    );
-    nuxtApp.hooks.hookOnce("app:error", () => {
-      unhook(); // don't write cookie subsequently when app:rendered is called
-      return writeFinalCookieValue();
-    });
+    }
+    const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
+    nuxtApp.hooks.hookOnce('app:error:cleared', () => {
+      unhook() // don't write cookie subsequently when app:rendered is called
+      clearTimeout(timeoutIDToClear)
+      return writeFinalCookieValue()
+    })
   }
 
   return cookie as CookieRef<T>;
 }
 
-function readRawCookies(
-  opts: CookieOptions = {}
-): Record<string, string> | undefined {
+function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
   if (import.meta.server) {
     return parse(getRequestHeader(useRequestEvent(), "cookie") || "", opts);
   } else if (import.meta.client) {
@@ -134,33 +108,20 @@ function readRawCookies(
   }
 }
 
-function serializeCookie(
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function serializeCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (value === null || value === undefined) {
     return serialize(name, value, { ...opts, maxAge: -1 });
   }
   return serialize(name, value, opts);
 }
 
-function writeClientCookie(
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function writeClientCookie (name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (import.meta.client) {
     document.cookie = serializeCookie(name, value, opts);
   }
 }
 
-function writeServerCookie(
-  event: H3Event,
-  name: string,
-  value: any,
-  opts: CookieSerializeOptions = {}
-) {
+function writeServerCookie (event: H3Event, name: string, value: any, opts: CookieSerializeOptions = {}) {
   if (event) {
     // update if value is set
     if (value !== null && value !== undefined) {
@@ -177,8 +138,8 @@ function writeServerCookie(
 }
 
 // custom ref that will update the value to undefined if the cookie expire
-function useCustomCookieRef<T>(value: T | undefined, delay?: number) {
-  let timeout: string | number | NodeJS.Timeout | undefined;
+function useCustomCookieRef<T> (value: T | undefined, delay?: number) {
+  let timeout: NodeJS.Timeout
   return customRef((track, trigger) => {
     return {
       get() {
@@ -190,9 +151,11 @@ function useCustomCookieRef<T>(value: T | undefined, delay?: number) {
         clearTimeout(timeout);
         if (delay) {
           timeout = setTimeout(() => {
-            value = undefined;
-            trigger();
-          }, delay);
+            value = undefined
+            console.log("from timeout")
+            trigger()
+          }, delay)
+          timeoutIDToClear = timeout
         }
         trigger();
       },
