@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, toRef, unref, watch } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -40,10 +40,12 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
+  getCachedData?: (key: string) => DataT
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
   immediate?: boolean
+  deep?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -59,15 +61,14 @@ export interface AsyncDataExecuteOptions {
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
   pending: Ref<boolean>
-  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
-  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-const getDefault = () => null
 export function useAsyncData<
   ResT,
   DataE = Error,
@@ -131,25 +132,31 @@ export function useAsyncData<
     throw new TypeError('[nuxt] [asyncData] handler must be a function.')
   }
 
+  // Setup nuxt instance payload
+  const nuxt = useNuxtApp()
+
+  // Used to get default values
+  const getDefault = () => null
+  const getDefaultCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+
   // Apply defaults
   options.server = options.server ?? true
   options.default = options.default ?? (getDefault as () => DefaultT)
+  options.getCachedData = options.getCachedData ?? getDefaultCachedData
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
 
-  // Setup nuxt instance payload
-  const nuxt = useNuxtApp()
-
-  const getCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
-  const hasCachedData = () => getCachedData() !== undefined
+  const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
   // Create or use a shared asyncData entity
   if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt.payload._errors[key] ??= null
 
+    const _ref = options.deep !== true ? shallowRef : ref
+
     nuxt._asyncData[key] = {
-      data: ref(getCachedData() ?? options.default!()),
+      data: _ref(options.getCachedData!(key) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
@@ -163,13 +170,13 @@ export function useAsyncData<
     if (nuxt._asyncDataPromises[key]) {
       if (opts.dedupe === false) {
         // Avoid fetching same key more than once at a time
-        return nuxt._asyncDataPromises[key]
+        return nuxt._asyncDataPromises[key]!
       }
       (nuxt._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
     if ((opts._initial || (nuxt.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return getCachedData()
+      return Promise.resolve(options.getCachedData!(key))
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -217,7 +224,7 @@ export function useAsyncData<
         delete nuxt._asyncDataPromises[key]
       })
     nuxt._asyncDataPromises[key] = promise
-    return nuxt._asyncDataPromises[key]
+    return nuxt._asyncDataPromises[key]!
   }
 
   const initialFetch = () => asyncData.refresh({ _initial: true })
@@ -230,7 +237,7 @@ export function useAsyncData<
     if (getCurrentInstance()) {
       onServerPrefetch(() => promise)
     } else {
-      nuxt.hook('app:created', () => promise)
+      nuxt.hook('app:created', async () => { await promise })
     }
   }
 
@@ -250,7 +257,7 @@ export function useAsyncData<
       }
     }
 
-    if (fetchOnServer && nuxt.isHydrating && hasCachedData()) {
+    if (asyncData.error.value || (fetchOnServer && nuxt.isHydrating && hasCachedData())) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
@@ -265,9 +272,9 @@ export function useAsyncData<
     if (options.watch) {
       watch(options.watch, () => asyncData.refresh())
     }
-    const off = nuxt.hook('app:data:refresh', (keys) => {
+    const off = nuxt.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
-        return asyncData.refresh()
+        await asyncData.refresh()
       }
     })
     if (instance) {

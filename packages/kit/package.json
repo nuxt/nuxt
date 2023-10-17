@@ -2,6 +2,7 @@
   "name": "@nuxt/kit",
   "version": "3.7.4",
   "repository": "nuxt/nuxt",
+  "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -46,9 +47,9 @@
     "lodash-es": "4.17.21",
     "nitropack": "2.6.3",
     "unbuild": "latest",
-    "vite": "4.4.9",
+    "vite": "4.4.11",
     "vitest": "0.33.0",
-    "webpack": "5.88.2"
+    "webpack": "5.89.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

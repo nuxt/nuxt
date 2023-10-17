@@ -11,6 +11,7 @@ const testsToTriggerOn = [
   ['.nuxt/nuxt.config', 'app.vue', false],
   ['nuxt', 'components/Component.vue', true],
   ['nuxt3', 'components/Component.vue', true],
+  ['nuxt-nightly', 'components/Component.vue', true],
   ['/root/node_modules/@vue/composition-api', 'components/Component.vue', true],
   ['@vue/composition-api', 'components/Component.vue', true],
   ['@nuxt/kit', 'components/Component.vue', true],

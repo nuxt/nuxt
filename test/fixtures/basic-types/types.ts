@@ -406,6 +406,17 @@ describe('composables', () => {
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
   })
 
+  it('allows passing reactive values in useFetch', () => {
+    useFetch('/api/hey', {
+      headers: {
+        key: ref('test')
+      },
+      query: {
+        param: computed(() => 'thing')
+      }
+    })
+  })
+
   it('correctly types returns with key signatures', () => {
     interface TestType {
       id: string
