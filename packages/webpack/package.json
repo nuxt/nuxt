@@ -2,6 +2,7 @@
   "name": "@nuxt/webpack-builder",
   "version": "3.7.4",
   "repository": "nuxt/nuxt",
+  "description": "Webpack bundler for Nuxt",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",

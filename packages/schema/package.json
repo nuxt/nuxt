@@ -2,6 +2,7 @@
   "name": "@nuxt/schema",
   "version": "3.7.4",
   "repository": "nuxt/nuxt",
+  "description": "Nuxt types and default configuration",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
