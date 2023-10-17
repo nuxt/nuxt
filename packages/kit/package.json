@@ -48,7 +48,7 @@
     "unbuild": "latest",
     "vite": "4.4.11",
     "vitest": "0.33.0",
-    "webpack": "5.88.2"
+    "webpack": "5.89.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
