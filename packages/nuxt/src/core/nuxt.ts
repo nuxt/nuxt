@@ -305,6 +305,18 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // Add stubs for <NuxtImg> and <NuxtPicture>
+  for (const name of ['NuxtImg', 'NuxtPicture']) {
+    addComponent({
+      name,
+      export: name,
+      priority: -1,
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
+      // @ts-expect-error TODO: refactor to nuxi
+      _internal_install: '@nuxt/image'
+    })
+  }
+
   // Add prerender payload support
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
