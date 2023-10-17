@@ -46,6 +46,11 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*?)["'][\s,]*[^)]*\)/g, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
+          // @ts-expect-error TODO: refactor to nuxi
+          if (component._internal_install) {
+            // @ts-expect-error TODO: refactor to nuxi
+            import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
+          }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
 
