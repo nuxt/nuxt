@@ -109,7 +109,7 @@ type AsyncDataOptions<DataT> = {
   transform?: (input: DataT) => DataT
   pick?: string[]
   watch?: WatchSource[]
-  getCachedData?: (key: string) => any
+  getCachedData?: (key: string) => DataT
 }
 
 type AsyncData<DataT, ErrorT> = {
