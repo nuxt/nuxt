@@ -26,7 +26,7 @@ type UseFetchOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
-  getCachedData?: (key: string) => any
+  getCachedData?: (key: string) => DataT
   deep?: boolean
   default?: () => DataT
   transform?: (input: DataT) => DataT
