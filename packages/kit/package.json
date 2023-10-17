@@ -2,6 +2,7 @@
   "name": "@nuxt/kit",
   "version": "3.7.4",
   "repository": "nuxt/nuxt",
+  "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
