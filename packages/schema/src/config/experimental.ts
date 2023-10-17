@@ -246,6 +246,19 @@ export default defineUntypedSchema({
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
      * should set `routeRules` directly within your `nuxt.config`.
      */
-    inlineRouteRules: false
+    inlineRouteRules: false,
+
+    /**
+     * This allows specifying the default options for core Nuxt components and composables.
+     *
+     * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
+     * `app/` directory.
+     */
+    defaults: {
+      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      nuxtLink: {
+        componentName: 'NuxtLink'
+      }
+    }
   }
 })
