@@ -88,7 +88,7 @@ export async function isPrerendered (url = useRoute().path) {
     return true
   }
   const rules = await getRouteRules(url)
-  return !!rules.prerender
+  return !!rules.prerender && !rules.redirect
 }
 
 let payloadCache: any = null
