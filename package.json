@@ -53,7 +53,7 @@
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jsdoc": "46.8.2",
     "eslint-plugin-no-only-tests": "3.1.0",
-    "execa": "7.2.0",
+    "execa": "8.0.1",
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
     "h3": "1.8.2",
