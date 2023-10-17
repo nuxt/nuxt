@@ -62,8 +62,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       execa:
-        specifier: 7.2.0
-        version: 7.2.0
+        specifier: 8.0.1
+        version: 8.0.1
       fs-extra:
         specifier: 11.1.1
         version: 11.1.1
@@ -539,8 +539,8 @@ importers:
         specifier: ^6.1.2
         version: 6.1.2
       execa:
-        specifier: ^7.2.0
-        version: 7.2.0
+        specifier: ^8.0.1
+        version: 8.0.1
       get-port-please:
         specifier: ^3.1.1
         version: 3.1.1
