@@ -35,14 +35,20 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
-    if (getCurrentScope()) { onScopeDispose(() => { channel?.close() }) }
-
     const callback = () => {
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
       channel?.postMessage(opts.encode(cookie.value as T))
     }
 
     let watchPaused = false
+
+    if (getCurrentScope()) {
+      onScopeDispose(() => {
+        watchPaused = true
+        callback()
+        channel?.close()
+      })
+    }
 
     if (channel) {
       channel.onmessage = (event) => {

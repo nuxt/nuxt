@@ -104,7 +104,7 @@ export function vforToArray (source: any): any[] {
  * @param withoutSlots purge all slots from the HTML string retrieved
  * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false) {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)

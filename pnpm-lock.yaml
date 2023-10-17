@@ -744,9 +744,9 @@ importers:
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
-      lodash-es:
-        specifier: ^4.17.21
-        version: 4.17.21
+      klona:
+        specifier: ^2.0.6
+        version: 2.0.6
       magic-string:
         specifier: ^0.30.4
         version: 0.30.4
@@ -832,9 +832,6 @@ importers:
       '@types/hash-sum':
         specifier: 1.0.0
         version: 1.0.0
-      '@types/lodash-es':
-        specifier: 4.17.9
-        version: 4.17.9
       '@types/pify':
         specifier: 5.0.2
         version: 5.0.2
@@ -1272,6 +1269,7 @@ packages:
   /@babel/highlight@7.22.20:
     resolution: {integrity: sha512-dkdMCN3py0+ksCgYmGG8jKeGA/8Tk+gJwSYYlFGxG5lmhfKNoAy004YpLxpS1W2J8m/EK2Ew+yOs9pVRwO89mg==}
     engines: {node: '>=6.9.0'}
+    requiresBuild: true
     dependencies:
       '@babel/helper-validator-identifier': 7.22.20
       chalk: 2.4.2
@@ -7994,6 +7992,7 @@ packages:
 
   /lodash-es@4.17.21:
     resolution: {integrity: sha512-mKnC+QJ9pWVzv+C4/U3rRsHapFfHvQFoFB92e52xeyGMcX6/OlIl78je1u8vePzYZSkkogMPJ2yjxxsb89cxyw==}
+    dev: true
 
   /lodash._reinterpolate@3.0.0:
     resolution: {integrity: sha512-xYHt68QRoYGjeeM/XOE1uJtvXQAgvszfBhjV4yvsQH0u2i9I6cI6c6/eG4Hh3UAOVn0y/xAXwmTzEay49Q//HA==}
