@@ -69,9 +69,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       channel.onmessage = (event) => {
         watchPaused = true
         cookie.value = opts.decode(event.data)
-        nextTick(() => {
-          watchPaused = false
-        })
+        nextTick(() => { watchPaused = false })
       }
     }
 
