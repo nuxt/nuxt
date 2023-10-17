@@ -20,6 +20,7 @@ export default defineBuildConfig({
   ],
   externals: [
     // Type imports
+    '#app/components/nuxt-link',
     'vue-router',
     '@nuxt/telemetry',
     'vue-bundle-renderer',
