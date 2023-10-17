@@ -14,7 +14,7 @@ This feature is experimental and in order to use it you must enable the `experim
 ## Usage
 
 ```vue [pages/index.vue]
-<script>
+<script setup>
 defineRouteRules({
   prerender: true
 })
