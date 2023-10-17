@@ -19,5 +19,5 @@ Option        | Default          | Description
 `rootDir` | `.` | The root directory of the app you want to enable devtools for.
 
 ::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="_blank"}
-Read more about the **Nuxt Devtools**.
+Read more about the **Nuxt DevTools**.
 ::
