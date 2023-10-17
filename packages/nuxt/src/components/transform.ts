@@ -36,12 +36,12 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         {
           as: c.pascalName,
           from: withMode(mode),
-          name: 'default'
+          name: c.export || 'default'
         },
         {
           as: 'Lazy' + c.pascalName,
           from: withMode([mode, 'async'].filter(Boolean).join(',')),
-          name: 'default'
+          name: c.export || 'default'
         }
       ]
     })
