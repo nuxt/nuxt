@@ -1,2 +1,3 @@
 titleTemplate: 'Migrate to Nuxt 3: %s'
-image: '/socials/guide.jpg'
+title: 'Migrate to Nuxt 3'
+icon: i-ph-arrow-circle-up-duotone
