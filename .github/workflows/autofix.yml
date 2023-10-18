@@ -23,10 +23,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Dedupe dependencies
-        if: ${{ contains(github.head_ref, 'renovate') }}
-        run: pnpm dedupe
-
       - name: Build (stub)
         run: pnpm build:stub
 
@@ -39,7 +35,18 @@ jobs:
       - name: Run build
         run: pnpm build
 
+      - name: Assert bundle size (renovate)
+        if: ${{ contains(github.head_ref, 'renovate') }}
+        run: pnpm vitest run bundle
+
+      - name: Update bundle size (renovate)
+        if: failure()
+        run: |
+          pnpm vitest run bundle -u
+          pnpm dedupe
+
       - name: Update bundle size
+        if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
 
       - uses: autofix-ci/action@d3e591514b99d0fca6779455ff8338516663f7cc
