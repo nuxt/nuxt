@@ -2,6 +2,7 @@
   "name": "@nuxt/vite-builder",
   "version": "3.7.4",
   "repository": "nuxt/nuxt",
+  "description": "Vite bundler for Nuxt",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -19,8 +20,8 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/clear": "0.1.2",
-    "@types/estree": "1.0.2",
+    "@types/clear": "0.1.3",
+    "@types/estree": "1.0.3",
     "@types/fs-extra": "11.0.2",
     "unbuild": "latest",
     "vue": "3.3.4"
