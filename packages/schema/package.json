@@ -43,7 +43,7 @@
     "nitropack": "2.6.3",
     "unbuild": "latest",
     "unctx": "2.3.1",
-    "vite": "4.4.11",
+    "vite": "4.5.0",
     "vue": "3.3.4",
     "vue-bundle-renderer": "2.0.0",
     "vue-loader": "17.3.0",
