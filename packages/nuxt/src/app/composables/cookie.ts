@@ -37,7 +37,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   if (opts.maxAge) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    delay = opts.expires.getTime() - new Date().getTime() // getTime() already return time in ms
+    // getTime() already return time in ms
+    delay = opts.expires.getTime() - Date.now()
   }
   // use customRef if on client side otherwise use basic ref
   const cookie = import.meta.client
