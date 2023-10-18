@@ -39,7 +39,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (opts.expires) {
     delay = opts.expires.getTime() - new Date().getTime() // getTime() already return time in ms
   }
-  // use customRef if on client side overwize use basic ref
+  // use customRef if on client side otherwise use basic ref
   const cookie = import.meta.client
     ? useCustomCookieRef<T | undefined>(
       (cookies[name] as any) ?? opts.default?.(),
