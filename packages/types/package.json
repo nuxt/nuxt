@@ -19,7 +19,7 @@
     "@types/html-minifier": "4.0.4",
     "@types/less": "3.0.5",
     "@types/node": "^16",
-    "@types/optimize-css-assets-webpack-plugin": "5.0.6",
+    "@types/optimize-css-assets-webpack-plugin": "5.0.7",
     "@types/pug": "2.0.7",
     "@types/serve-static": "1.15.3",
     "@types/terser-webpack-plugin": "4.2.1",
