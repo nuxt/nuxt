@@ -1,35 +1,42 @@
 ---
-title: "addRouteMiddleware"
-description: addRouteMiddleware() is a helper function to dynamically add middleware in your application.
+title: 'addRouteMiddleware'
+description: 'addRouteMiddleware() is a helper function to dynamically add middleware in your application.'
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
-# `addRouteMiddleware`
-
-`addRouteMiddleware()` is a helper function to dynamically add route middleware in your Nuxt application.
-
-::alert{type=info}
-Route middleware are navigation guards stored in the [`middleware/`](/docs/guide/directory-structure/middleware) directory of your Nuxt application (unless [set otherwise](/docs/api/configuration/nuxt-config#middleware)).
+::callout
+Route middleware are navigation guards stored in the [`middleware/`](/docs/guide/directory-structure/middleware) directory of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
 ::
 
-## Usage
+## Type
 
-```js
+```ts
 addRouteMiddleware (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {})
 ```
 
-`addRouteMiddleware()` takes three arguments:
+## Parameters
 
-- **name** `type: string | RouteMiddleware`
+### `name`
 
-`name` can be either a string or a function of type `RouteMiddleware`. Function takes the next route `to` as the first argument and the current route `from` as the second argument, both of which are Vue route objects.
+- **Type:** `string` | `RouteMiddleware`
+
+Can be either a string or a function of type `RouteMiddleware`. Function takes the next route `to` as the first argument and the current route `from` as the second argument, both of which are Vue route objects.
 
 Learn more about available properties of [route objects](/docs/api/composables/use-route).
 
-- **middleware** `type: RouteMiddleware`
+### `middleware`
+
+- **Type:** `RouteMiddleware`
 
 The second argument is a function of type `RouteMiddleware`. Same as above, it provides `to` and `from` route objects. It becomes optional if the first argument in `addRouteMiddleware()` is already passed as a function.
 
-- **options** `type: AddRouteMiddlewareOptions`  
+### `options`
+
+- **Type:** `AddRouteMiddlewareOptions`  
 
 An optional `options` argument lets you set the value of `global` to `true` to indicate whether the router middleware is global or not (set to `false` by default).
 

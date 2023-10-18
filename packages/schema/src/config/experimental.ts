@@ -11,11 +11,11 @@ export default defineUntypedSchema({
 
     /**
      * Enable Vue's reactivity transform
-     * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     * @see [Vue Reactivity Transform Docs](https://vuejs.org/guide/extras/reactivity-transform.html)
      *
      * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
      * removed from core in Vue 3.4.
-     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
+     * @see [Vue RFC#369](https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028)
      */
     reactivityTransform: false,
 
@@ -23,13 +23,13 @@ export default defineUntypedSchema({
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     * @see https://github.com/nuxt/nuxt/issues/13632
+     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
      */
     externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
-     * @see https://github.com/nuxt/framework/pull/5750
+     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
      */
     treeshakeClientOnly: true,
 
@@ -42,7 +42,7 @@ export default defineUntypedSchema({
      *
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
-     * @see https://github.com/nuxt/nuxt/pull/19038
+     * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
      * @type {false | 'manual' | 'automatic'}
      */
     emitRouteChunkError: {
@@ -130,7 +130,7 @@ export default defineUntypedSchema({
 
     /**
      * Enable View Transition API integration with client-side router.
-     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
     viewTransition: false,
 
@@ -154,7 +154,7 @@ export default defineUntypedSchema({
 
     /**
      * Config schema support
-     * @see https://github.com/nuxt/nuxt/issues/15592
+     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
 
@@ -216,15 +216,15 @@ export default defineUntypedSchema({
      * performance in large projects or on Windows platforms.
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
-     * @see https://github.com/paulmillr/chokidar
-     * @see https://github.com/parcel-bundler/watcher
+     * @see [chokidar](https://github.com/paulmillr/chokidar)
+     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: 'chokidar-granular',
 
     /**
      * Enable native async context to be accessible for nested composables
-     * @see https://github.com/nuxt/nuxt/pull/20918
+     * @see [Nuxt PR #20918](https://github.com/nuxt/nuxt/pull/20918)
      */
     asyncContext: false,
 
@@ -232,7 +232,7 @@ export default defineUntypedSchema({
      * Use new experimental head optimisations:
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
-     * @see https://github.com/nuxt/nuxt/discussions/22632
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
     headNext: false,
 

@@ -3,3 +3,6 @@
 docs/0.index.md
 docs/1.getting-started/1.introduction.md
 docs/**/*.nuxt.config.md
+docs/5.community/7.changelog.md
+docs/1.getting-started/10.deployment.md
+docs/2.guide/1.concepts/3.rendering.md

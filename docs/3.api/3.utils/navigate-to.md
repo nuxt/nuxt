@@ -1,13 +1,84 @@
 ---
 title: "navigateTo"
 description: navigateTo is a helper function that programmatically navigates users.
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
-# `navigateTo`
+::callout
+`navigateTo` is available on both server side and client side.
+::
 
-`navigateTo` is a router helper function that allows programmatically navigating users through your Nuxt application.
+## Usage
 
-`navigateTo` is available on both server side and client side. It can be used within plugins, middleware or can be called directly to perform page navigation.
+### Within a Vue Component
+
+```vue
+<script setup lang="ts">
+// passing 'to' as a string
+await navigateTo('/search')
+
+// ... or as a route object
+await navigateTo({ path: '/search' })
+
+// ... or as a route object with query parameters
+await navigateTo({
+  path: '/search',
+  query: {
+    page: 1,
+    sort: 'asc'
+  }
+})
+</script>
+```
+
+### Within Route Middleware
+
+```ts
+export default defineNuxtRouteMiddleware((to, from) => {
+  if (to.path !== '/search') {
+    // setting the redirect code to '301 Moved Permanently'
+    return navigateTo('/search', { redirectCode: 301 })
+  }
+})
+```
+
+:read-more{to="/docs/guide/directory-structure/middleware"}
+
+### External URL
+
+```vue
+<script setup lang="ts">
+// will throw an error;
+// navigating to an external URL is not allowed by default
+await navigateTo('https://nuxt.com')
+
+// will redirect successfully with the 'external' parameter set to 'true'
+await navigateTo('https://nuxt.com', {
+  external: true
+})
+</script>
+```
+
+### Using open()
+
+```vue
+<script setup lang="ts">
+// will open 'https://nuxt.com' in a new tab
+await navigateTo('https://nuxt.com', {  
+  open: {
+    target: '_blank',
+    windowFeatures: {
+      width: 500,
+      height: 500
+    }
+  }
+})
+</script>
+```
 
 ## Type
 
@@ -22,7 +93,7 @@ interface NavigateToOptions {
 }
 ```
 
-::alert{type="warning"}
+::callout{color="amber" icon="i-ph-warning-duotone"}
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
 ::
 
@@ -121,72 +192,3 @@ An object accepting the following properties:
       **Type**: `boolean`
 
     Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.
-
-## Examples
-
-### Navigating Within a Vue Component
-
-```vue
-<script setup lang="ts">
-// passing 'to' as a string
-await navigateTo('/search')
-
-// ... or as a route object
-await navigateTo({ path: '/search' })
-
-// ... or as a route object with query parameters
-await navigateTo({
-  path: '/search',
-  query: {
-    page: 1,
-    sort: 'asc'
-  }
-})
-</script>
-```
-
-### Navigating Within Route Middleware
-
-```ts
-export default defineNuxtRouteMiddleware((to, from) => {
-  if (to.path !== '/search') {
-    // setting the redirect code to '301 Moved Permanently'
-    return navigateTo('/search', { redirectCode: 301 })
-  }
-})
-```
-
-::ReadMore{link="/docs/guide/directory-structure/middleware"}
-::
-
-### Navigating to an External URL
-
-```vue
-<script setup lang="ts">
-// will throw an error;
-// navigating to an external URL is not allowed by default
-await navigateTo('https://nuxt.com')
-
-// will redirect successfully with the 'external' parameter set to 'true'
-await navigateTo('https://nuxt.com', {
-  external: true
-})
-</script>
-```
-
-### Navigating using open()
-
-```vue
-<script setup lang="ts">
-// will open 'https://nuxt.com' in a new tab
-await navigateTo('https://nuxt.com', {  
-  open: {
-    target: '_blank',
-    windowFeatures: {
-      width: 500,
-      height: 500
-    }
-  }
-})
-</script>
-```
