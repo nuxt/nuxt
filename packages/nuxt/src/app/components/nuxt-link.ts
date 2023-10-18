@@ -6,7 +6,7 @@ import { hasProtocol, parseQuery, parseURL, joinURL, withTrailingSlash, withoutT
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
-import { useNuxtApp } from '../nuxt'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
 // @ts-expect-error virtual file
