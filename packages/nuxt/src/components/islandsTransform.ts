@@ -187,7 +187,3 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
     }
   }
 })
-
-// function withoutClientSuffixAndExtension (filePath: string): string {
-//   return filePath.replace(/(\.client)?\.(vue|ts|js)$/, '')
-// }
