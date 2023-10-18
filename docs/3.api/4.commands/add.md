@@ -2,7 +2,7 @@
 title: "nuxi add"
 description: "Scaffold an entity into your Nuxt application."
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/add.ts
     size: xs

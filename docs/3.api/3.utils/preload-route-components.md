@@ -2,7 +2,7 @@
 title: 'preloadRouteComponents'
 description: preloadRouteComponents allows you to manually preload individual pages in your Nuxt app.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/preload.ts
     size: xs

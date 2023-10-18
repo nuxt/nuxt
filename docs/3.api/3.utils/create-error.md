@@ -2,7 +2,7 @@
 title: 'createError'
 description: Create an error object with additional metadata.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/error.ts
     size: xs

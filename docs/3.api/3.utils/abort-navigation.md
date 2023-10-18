@@ -2,7 +2,7 @@
 title: 'abortNavigation'
 description: 'abortNavigation is a helper function that prevents navigation from taking place and throws an error if one is set as a parameter.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
     size: xs

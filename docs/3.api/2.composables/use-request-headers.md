@@ -2,7 +2,7 @@
 title: "useRequestHeaders"
 description: "Use useRequestHeaders to access the incoming request headers."
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs

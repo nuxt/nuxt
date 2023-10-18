@@ -2,7 +2,7 @@
 title: "nuxi preview"
 description: The preview command starts a server to preview your application after the build command.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/preview.ts
     size: xs

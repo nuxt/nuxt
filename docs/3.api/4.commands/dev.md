@@ -2,7 +2,7 @@
 title: 'nuxi dev'
 description: The dev command starts a development server with hot module replacement at http://localhost:3000
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/dev.ts
     size: xs

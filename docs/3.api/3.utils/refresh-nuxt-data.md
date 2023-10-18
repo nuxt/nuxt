@@ -2,7 +2,7 @@
 title: 'refreshNuxtData'
 description: refreshNuxtData refetches all data from the server and updates the page.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
     size: xs

@@ -2,7 +2,7 @@
 title: 'nuxi cleanup'
 description: "Remove common generated Nuxt files and caches."
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/cleanup.ts
     size: xs

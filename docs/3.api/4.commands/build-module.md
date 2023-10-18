@@ -2,7 +2,7 @@
 title: 'nuxi build-module'
 description: 'Nuxt command to build your Nuxt module before publishing.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/build-module.ts
     size: xs

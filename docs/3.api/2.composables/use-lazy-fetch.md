@@ -2,7 +2,7 @@
 title: 'useLazyFetch'
 description: This wrapper around useFetch triggers navigation immediately.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/fetch.ts
     size: xs

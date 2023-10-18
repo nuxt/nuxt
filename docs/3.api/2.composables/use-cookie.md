@@ -2,7 +2,7 @@
 title: 'useCookie'
 description: useCookie is an SSR-friendly composable to read and write cookies.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/cookie.ts
     size: xs

@@ -2,7 +2,7 @@
 title: "useState"
 description: The useState composable creates a reactive and SSR-friendly shared state.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/state.ts
     size: xs

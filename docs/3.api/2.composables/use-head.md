@@ -2,7 +2,7 @@
 title: useHead
 description: useHead customizes the head properties of individual pages of your Nuxt app.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useHead.ts
     size: xs

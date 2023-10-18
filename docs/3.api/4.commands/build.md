@@ -2,7 +2,7 @@
 title: "nuxi build"
 description: "Build your Nuxt application."
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/build.ts
     size: xs

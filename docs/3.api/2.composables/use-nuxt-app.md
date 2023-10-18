@@ -2,7 +2,7 @@
 title: 'useNuxtApp'
 description: 'Access the shared runtime context of the Nuxt Application.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/nuxt.ts
     size: xs

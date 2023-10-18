@@ -2,7 +2,7 @@
 title: 'useNuxtData'
 description: 'Access the current cached value of data fetching composables.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
     size: xs

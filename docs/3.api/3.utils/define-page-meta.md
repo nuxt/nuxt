@@ -2,7 +2,7 @@
 title: 'definePageMeta'
 description: 'Define metadata for your page components.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/composables.ts
     size: xs

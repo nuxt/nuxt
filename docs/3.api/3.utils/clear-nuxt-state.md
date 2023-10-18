@@ -2,7 +2,7 @@
 title: 'clearNuxtState'
 description: Delete the cached state of useState.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/state.ts
     size: xs

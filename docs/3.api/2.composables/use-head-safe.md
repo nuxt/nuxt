@@ -2,7 +2,7 @@
 title: useHeadSafe
 description: The recommended way to provide head data with user input.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useHeadSafe.ts
     size: xs

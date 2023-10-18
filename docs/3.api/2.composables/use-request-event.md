@@ -2,7 +2,7 @@
 title: 'useRequestEvent'
 description: 'Access the incoming request event with the useRequestEvent composable.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/ssr.ts
     size: xs

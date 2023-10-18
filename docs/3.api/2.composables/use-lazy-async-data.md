@@ -2,7 +2,7 @@
 title: useLazyAsyncData
 description: This wrapper around useAsyncData triggers navigation immediately.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/asyncData.ts
     size: xs

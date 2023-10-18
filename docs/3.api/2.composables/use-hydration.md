@@ -2,7 +2,7 @@
 title: 'useHydration'
 description: 'Allows full control of the hydration cycle to set and receive data from the server.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/hydrate.ts
     size: xs

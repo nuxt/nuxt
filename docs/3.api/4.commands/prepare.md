@@ -2,7 +2,7 @@
 title: 'nuxi prepare'
 description: The prepare command creates a .nuxt directory in your application and generates types.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/prepare.ts
     size: xs

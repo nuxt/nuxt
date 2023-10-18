@@ -2,7 +2,7 @@
 title: 'preloadComponents'
 description: Nuxt provides utilities to give you control over preloading components.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/preload.ts
     size: xs

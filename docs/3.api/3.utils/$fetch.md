@@ -2,7 +2,7 @@
 title: "$fetch"
 description: Nuxt uses ofetch to expose globally the $fetch helper for making HTTP requests.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/entry.ts
     size: xs

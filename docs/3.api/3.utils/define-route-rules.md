@@ -2,7 +2,7 @@
 title: 'defineRouteRules'
 description: 'Define route rules for hybrid rendering at the page level.'
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/composables.ts
     size: xs

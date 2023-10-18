@@ -2,7 +2,7 @@
 title: "nuxi generate"
 description: Pre-renders every route of the application and stores the result in plain HTML files.
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/cli/blob/main/src/commands/generate.ts
     size: xs

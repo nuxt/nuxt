@@ -2,7 +2,7 @@
 title: "defineNuxtRouteMiddleware"
 description: "Create named route middleware using defineNuxtRouteMiddleware helper function."
 links:
-  - label: Source Code
+  - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
     size: xs
