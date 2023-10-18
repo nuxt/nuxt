@@ -231,8 +231,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@nuxt/devtools':
-        specifier: 1.0.0-beta.3
-        version: 1.0.0-beta.3(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.5.0)
+        specifier: ^1.0.0
+        version: 1.0.0(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.5.0)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -2054,8 +2054,8 @@ packages:
     resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
     dev: false
 
-  /@nuxt/devtools-kit@1.0.0-beta.3(nuxt@packages+nuxt)(vite@4.5.0):
-    resolution: {integrity: sha512-jRIlOZ1mGED6S0knH2mjRPeFr3WA/LHJvAhLHLBhE943e5JTmurR9stin86DRZKjLwn5d1AtUHyM9rxaCO0qLw==}
+  /@nuxt/devtools-kit@1.0.0(nuxt@packages+nuxt)(vite@4.5.0):
+    resolution: {integrity: sha512-cNloBepQYCBW6x/ctfCvyYRZudxhfgh5w5JDswpCzn7KXmm8U6abG2jyT0FXIaceW1d5QYMpGCN1RUw24wSvOA==}
     peerDependencies:
       nuxt: workspace:*
       vite: 4.5.0
@@ -2067,8 +2067,8 @@ packages:
       vite: 4.5.0(@types/node@18.18.5)
     dev: false
 
-  /@nuxt/devtools-wizard@1.0.0-beta.3:
-    resolution: {integrity: sha512-PBcTqzy0Go4sZvSLsbj/LyK+BMmmGyhswI0Wq5hM3Ydy0rJC6MdfOt/1FIG6S/rQIOcYH0Y9k7miRQ77wh5KaQ==}
+  /@nuxt/devtools-wizard@1.0.0:
+    resolution: {integrity: sha512-9OeZM2/Y4VuI06gdlDjmYM8yUzdfnywy4t2u2VAEfA2Lk7vk3U1lYn51IAqr+Gits9tp/Q9OiktMWmPLLNGgFw==}
     hasBin: true
     dependencies:
       consola: 3.2.3
@@ -2083,16 +2083,16 @@ packages:
       semver: 7.5.4
     dev: false
 
-  /@nuxt/devtools@1.0.0-beta.3(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.5.0):
-    resolution: {integrity: sha512-Ah/ho+Y5uv3ky+qDUX+lZMbLSaKt+rmCPuPmRlVWbmQtjlhzCyGAiqJSHhojerG9mp4uu5if99ejxKOj2w4rYQ==}
+  /@nuxt/devtools@1.0.0(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.5.0):
+    resolution: {integrity: sha512-pM5AvystXlFPYOsGbH8PBxEYkttiEWHsZnGw660iMw8QedB6mAweT21XX9LDS69cqnRY5uTFqVOmO9Y4EYL3hg==}
     hasBin: true
     peerDependencies:
       nuxt: workspace:*
       vite: 4.5.0
     dependencies:
       '@antfu/utils': 0.7.6
-      '@nuxt/devtools-kit': 1.0.0-beta.3(nuxt@packages+nuxt)(vite@4.5.0)
-      '@nuxt/devtools-wizard': 1.0.0-beta.3
+      '@nuxt/devtools-kit': 1.0.0(nuxt@packages+nuxt)(vite@4.5.0)
+      '@nuxt/devtools-wizard': 1.0.0
       '@nuxt/kit': link:packages/kit
       birpc: 0.2.14
       consola: 3.2.3
