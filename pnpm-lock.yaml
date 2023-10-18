@@ -461,11 +461,11 @@ importers:
         specifier: 5.0.3
         version: 5.0.3
       '@types/pug':
-        specifier: 2.0.7
-        version: 2.0.7
+        specifier: 2.0.8
+        version: 2.0.8
       '@types/sass-loader':
-        specifier: 8.0.6
-        version: 8.0.6
+        specifier: 8.0.7
+        version: 8.0.7
       '@unhead/schema':
         specifier: 1.7.5
         version: 1.7.5
@@ -2699,17 +2699,17 @@ packages:
     resolution: {integrity: sha512-pfi5GX+1QTZV25QNMUZKf21I0j/6n7YDpzNz1aEh9z4N3jmED81Mhx9+zHrngYPHkad8JOeeFKYj8FjHv9V71A==}
     dev: true
 
-  /@types/pug@2.0.7:
-    resolution: {integrity: sha512-I469DU0UXNC1aHepwirWhu9YKg5fkxohZD95Ey/5A7lovC+Siu+MCLffva87lnfThaOrw9Vb1DUN5t55oULAAw==}
+  /@types/pug@2.0.8:
+    resolution: {integrity: sha512-QzhsZ1dMGyJbn/D9V80zp4GIA4J4rfAjCCxc3MP+new0E8dyVdSkR735Lx+n3LIaHNFcjHL5+TbziccuT+fdoQ==}
     dev: true
 
   /@types/resolve@1.20.2:
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  /@types/sass-loader@8.0.6:
-    resolution: {integrity: sha512-IhUYL6DhlWDKvWrChKsQJFId7qnD4AT9Q+Dy95LyYHqz0pyVkq7VenZjdY8L5tCID80lOahrvmCG24WACgHrsw==}
+  /@types/sass-loader@8.0.7:
+    resolution: {integrity: sha512-CjRu5osnaDpHCdBFRkfIXtt0xb/kFPIbhZEpSfQnmIhX1TIhY9a2BMZeSQ9ef2csUDR9aOowgWiIwRNPR2N+dQ==}
     dependencies:
-      '@types/node': 18.18.5
+      '@types/node': 18.18.6
       '@types/node-sass': 4.11.3
       '@types/webpack': 4.41.33
       sass: 1.64.2
