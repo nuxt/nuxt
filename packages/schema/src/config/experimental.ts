@@ -258,7 +258,15 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink'
-      }
+      },
+      /**
+       * Options that apply to `useAsyncData` (and also therefore `useFetch`)
+       */
+      useAsyncData: {
+        deep: true
+      },
+      /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
+      useFetch: {}
     }
   }
 })

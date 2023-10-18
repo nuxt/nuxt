@@ -3,9 +3,13 @@ import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
+
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+
+// @ts-expect-error virtual file
+import { fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -113,6 +117,7 @@ export function useFetch<
   } = opts
 
   const _fetchOptions = reactive({
+    ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
