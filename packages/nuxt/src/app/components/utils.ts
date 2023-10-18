@@ -1,8 +1,9 @@
 import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import type { Component, RendererNode, TransitionProps } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
+import { defu } from 'defu'
 
 /**
  * Internal utility
@@ -154,4 +155,16 @@ export function getSlotProps (html: string) {
     data[slotName] = slotData
   }
   return data
+}
+
+function _toArray (val: any) {
+  return Array.isArray(val) ? val : (val ? [val] : [])
+}
+
+export function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+  const _props: TransitionProps[] = routeProps.map(prop => ({
+    ...prop,
+    onAfterLeave: _toArray(prop.onAfterLeave)
+  }))
+  return defu(..._props as [TransitionProps, TransitionProps])
 }

@@ -42,6 +42,9 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'layout:start': (Component?: VNode) => HookResult
+  'layout:finish': (Component?: VNode) => HookResult
+  'layout:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }

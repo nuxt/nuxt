@@ -4,7 +4,7 @@ import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
-import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+import { appLayoutTransition as defaultLayoutTransition, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
 
 type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 
@@ -37,9 +37,8 @@ export default <RouterConfig> {
       }
     }
 
-    // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
-    const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
-    const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
+    // Wait for `page:transition:finish`, `page:finish`, or `layout:transition:finish` depending on if transitions are enabled or not
+    const hookToWait = _getHookToWait(from, to)
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
         await nextTick()
@@ -50,6 +49,16 @@ export default <RouterConfig> {
       })
     })
   }
+}
+
+function _getHookToWait (from: RouteLocationNormalized, to: RouteLocationNormalized) {
+  const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
+  const hasLayoutTransition = (route: RouteLocationNormalized) => !!(route.meta.layoutTransition ?? defaultLayoutTransition)
+
+  if (_isDifferentLayout(from, to)) {
+    return (hasLayoutTransition(from) && hasLayoutTransition(to)) ? 'layout:transition:finish' : 'layout:finish'
+  }
+  return (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {
@@ -64,4 +73,8 @@ function _getHashElementScrollMarginTop (selector: string): number {
 
 function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
   return to.path !== from.path || JSON.stringify(from.params) !== JSON.stringify(to.params)
+}
+
+function _isDifferentLayout (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
+  return from.meta.layout !== to.meta.layout
 }
