@@ -1,7 +1,7 @@
 import type { ComputedRef, DefineComponent, InjectionKey, PropType } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw } from '#vue-router'
-import { hasProtocol, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, parseQuery, parseURL, joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -280,7 +280,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         // Resolves `to` value if it's a route location object
         // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-        const href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
+        let href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
+
+        // joins with `baseURL` if it's a relative URL
+        if (!hasProtocol(href, { acceptRelative: true })) {
+          href = joinURL(useRuntimeConfig().app.baseURL, href)
+        }
 
         // Resolves `target` value
         const target = props.target || null
