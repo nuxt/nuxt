@@ -2774,10 +2774,10 @@
   resolved "https://registry.npmjs.org/@types/normalize-package-data/-/normalize-package-data-2.4.1.tgz#d3357479a0fdfdd5907fe67e17e0a85c906e1301"
   integrity sha512-Gj7cI7z+98M282Tqmp2K5EIsoouUEzbBJhQQzDE3jSIRk6r9gsz0oUokqIUR4u1R3dMHo0pDHM7sNOHyhulypw==
 
-"@types/optimize-css-assets-webpack-plugin@5.0.6":
-  version "5.0.6"
-  resolved "https://registry.npmjs.org/@types/optimize-css-assets-webpack-plugin/-/optimize-css-assets-webpack-plugin-5.0.6.tgz#16aea114f178420cc1bec7d5bc047eaad2f73107"
-  integrity sha512-eX/6wuxe3ggrLmau738lVRzeO9ouCGq1+rUShiHgZlvg4Ubc6qV2CSGzJ+LkIljzj96Z+9Vr8vvtM4IjSxG4Ug==
+"@types/optimize-css-assets-webpack-plugin@5.0.7":
+  version "5.0.7"
+  resolved "https://registry.npmjs.org/@types/optimize-css-assets-webpack-plugin/-/optimize-css-assets-webpack-plugin-5.0.7.tgz#56c9418ada90d3c38e43f338c8b20a85e087e45a"
+  integrity sha512-LcYr4KifgRzN4fdKvPlPWYvrKJdLUey1Qq1DUvyhaV8DVrEsTxCKGLeocPrxinzlehC0Z30U9Ea9Dc1cd0FmUg==
   dependencies:
     "@types/webpack" "^4"
 
@@ -14851,10 +14851,10 @@ vue-jest@4.0.1:
     extract-from-css "^0.4.4"
     source-map "0.5.6"
 
-vue-loader@^15.11.0:
-  version "15.11.0"
-  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.11.0.tgz#5890776223eb71fcb19f518472f8553b879ac93a"
-  integrity sha512-5D03kQECBIUmCqha46l5GEBhtg54FIwl3YvV32jmy0u/XI+u2zNWG+fjZpSZQJlXNltuIkR09mJnaGNrLnQ4Mg==
+vue-loader@^15.11.1:
+  version "15.11.1"
+  resolved "https://registry.npmjs.org/vue-loader/-/vue-loader-15.11.1.tgz#dee91169211276ed43c5715caef88a56b1f497b0"
+  integrity sha512-0iw4VchYLePqJfJu9s62ACWUXeSqM30SQqlIftbYWM3C+jpPcEHKSPUZBLjSF9au4HTHQ/naF6OGnO3Q/qGR3Q==
   dependencies:
     "@vue/component-compiler-utils" "^3.1.0"
     hash-sum "^1.0.2"
