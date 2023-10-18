@@ -152,7 +152,6 @@ function useCustomCookieRef<T> (value: T | undefined, delay?: number) {
         if (delay) {
           timeout = setTimeout(() => {
             value = undefined
-            console.log('from timeout')
             trigger()
           }, delay)
           timeoutIDToClear = timeout
