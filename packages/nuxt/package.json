@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "1.0.0-beta.2",
+    "@nuxt/devtools": "1.0.0-beta.3",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.5.2",
@@ -111,7 +111,7 @@
   },
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
-    "@types/estree": "1.0.2",
+    "@types/estree": "1.0.3",
     "@types/fs-extra": "11.0.2",
     "@vitejs/plugin-vue": "4.4.0",
     "unbuild": "latest",
