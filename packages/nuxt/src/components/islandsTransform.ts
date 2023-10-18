@@ -157,7 +157,6 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build.rollupOptions.preserveEntrySignatures = 'allow-extension'
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
-            // (config.build.lib.entry as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
             (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
           }
         }
