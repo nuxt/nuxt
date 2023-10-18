@@ -204,11 +204,11 @@ importers:
         version: 1.4.0
     devDependencies:
       '@types/hash-sum':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       '@types/lodash-es':
-        specifier: 4.17.9
-        version: 4.17.9
+        specifier: 4.17.10
+        version: 4.17.10
       '@types/semver':
         specifier: 7.5.3
         version: 7.5.3
@@ -237,8 +237,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@nuxt/devtools':
-        specifier: 1.0.0-beta.2
-        version: 1.0.0-beta.2(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.4.11)
+        specifier: 1.0.0-beta.3
+        version: 1.0.0-beta.3(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.4.11)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -406,8 +406,8 @@ importers:
         specifier: 2.3.0
         version: 2.3.0
       '@types/estree':
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       '@types/fs-extra':
         specifier: 11.0.2
         version: 11.0.2
@@ -464,8 +464,8 @@ importers:
         specifier: 2.5.2
         version: 2.5.2
       '@types/file-loader':
-        specifier: 5.0.2
-        version: 5.0.2
+        specifier: 5.0.3
+        version: 5.0.3
       '@types/pug':
         specifier: 2.0.7
         version: 2.0.7
@@ -682,11 +682,11 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@types/clear':
-        specifier: 0.1.2
-        version: 0.1.2
+        specifier: 0.1.3
+        version: 0.1.3
       '@types/estree':
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.0.3
+        version: 1.0.3
       '@types/fs-extra':
         specifier: 11.0.2
         version: 11.0.2
@@ -830,8 +830,8 @@ importers:
         specifier: 11.0.2
         version: 11.0.2
       '@types/hash-sum':
-        specifier: 1.0.0
-        version: 1.0.0
+        specifier: 1.0.1
+        version: 1.0.1
       '@types/pify':
         specifier: 5.0.2
         version: 5.0.2
@@ -2423,8 +2423,8 @@ packages:
     resolution: {integrity: sha512-GBzP8zOc7CGWyFQS6dv1lQz8VVpz5C2yRszbXufwG/9zhStTIH50EtD87NmWbTMwXDvZLNg8GIpb1UFdH93JCA==}
     dev: false
 
-  /@nuxt/devtools-kit@1.0.0-beta.2(nuxt@packages+nuxt)(vite@4.4.11):
-    resolution: {integrity: sha512-CLOrUAlerqS2jZw8zFbWM+R5PIfwzFKbmAJDQklqvGcCfi4MtSbOoO7f5O6F6jKzTFkOi1/pW/FSpvpsyMV/gw==}
+  /@nuxt/devtools-kit@1.0.0-beta.3(nuxt@packages+nuxt)(vite@4.4.11):
+    resolution: {integrity: sha512-jRIlOZ1mGED6S0knH2mjRPeFr3WA/LHJvAhLHLBhE943e5JTmurR9stin86DRZKjLwn5d1AtUHyM9rxaCO0qLw==}
     peerDependencies:
       nuxt: workspace:*
       vite: 4.4.11
@@ -2436,8 +2436,8 @@ packages:
       vite: 4.4.11(@types/node@18.18.5)
     dev: false
 
-  /@nuxt/devtools-wizard@1.0.0-beta.2:
-    resolution: {integrity: sha512-kHiLfHuRla+kAQO7xHL+jmPk0OINis3ilakbBm6DtTdqg4citHfP5Qm0IyvOXW9PfI0Gr7mOh50ZtvzA3dMNkw==}
+  /@nuxt/devtools-wizard@1.0.0-beta.3:
+    resolution: {integrity: sha512-PBcTqzy0Go4sZvSLsbj/LyK+BMmmGyhswI0Wq5hM3Ydy0rJC6MdfOt/1FIG6S/rQIOcYH0Y9k7miRQ77wh5KaQ==}
     hasBin: true
     dependencies:
       consola: 3.2.3
@@ -2452,16 +2452,16 @@ packages:
       semver: 7.5.4
     dev: false
 
-  /@nuxt/devtools@1.0.0-beta.2(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.4.11):
-    resolution: {integrity: sha512-GEPnPEsTCFDA+r7IAnUKnVJtk6tJLo0pK2DXBEaCXhnFcrneXLzyNFEtKffTzISGTgVISMAo5ps0Twtq0vNspQ==}
+  /@nuxt/devtools@1.0.0-beta.3(nuxt@packages+nuxt)(rollup@3.29.1)(vite@4.4.11):
+    resolution: {integrity: sha512-Ah/ho+Y5uv3ky+qDUX+lZMbLSaKt+rmCPuPmRlVWbmQtjlhzCyGAiqJSHhojerG9mp4uu5if99ejxKOj2w4rYQ==}
     hasBin: true
     peerDependencies:
       nuxt: workspace:*
       vite: 4.4.11
     dependencies:
       '@antfu/utils': 0.7.6
-      '@nuxt/devtools-kit': 1.0.0-beta.2(nuxt@packages+nuxt)(vite@4.4.11)
-      '@nuxt/devtools-wizard': 1.0.0-beta.2
+      '@nuxt/devtools-kit': 1.0.0-beta.3(nuxt@packages+nuxt)(vite@4.4.11)
+      '@nuxt/devtools-wizard': 1.0.0-beta.3
       '@nuxt/kit': link:packages/kit
       birpc: 0.2.14
       consola: 3.2.3
@@ -2741,6 +2741,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -2943,7 +2944,7 @@ packages:
       rollup:
         optional: true
     dependencies:
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
       estree-walker: 2.0.2
       picomatch: 2.3.1
       rollup: 3.29.1
@@ -3038,8 +3039,8 @@ packages:
     resolution: {integrity: sha512-mEo1sAde+UCE6b2hxn332f1g1E8WfYRu6p5SvTKr2ZKC1f7gFJXk4h5PyGP9Dt6gCaG8y8XhwnXWC6Iy2cmBng==}
     dev: true
 
-  /@types/clear@0.1.2:
-    resolution: {integrity: sha512-h3GHp9BuPgY3X+WKWwJgTIl/h38KkcdU6JG28i1xdrlS8YXVi3V1YrhaZkjuvur97qZo8TMQjVXJorTf87LvfA==}
+  /@types/clear@0.1.3:
+    resolution: {integrity: sha512-T9pwLqQsOl5Sd1QGGkVbzHQkIvVIBUJkh8r9XcOxy5dukshynYRQx5mU4KVWYAVkakKwpJ4DWNYdT7LMFJlTxg==}
     dev: true
 
   /@types/connect@3.4.35:
@@ -3058,19 +3059,22 @@ packages:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
       '@types/eslint': 8.44.2
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
 
   /@types/eslint@8.44.2:
     resolution: {integrity: sha512-sdPRb9K6iL5XZOmBubg8yiFp5yS/JdUDQsq5e6h95km91MCYMuvp7mh1fjPEYUhvHepKpZOjnEaMBR4PxjWDzg==}
     dependencies:
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
       '@types/json-schema': 7.0.12
 
   /@types/estree@1.0.2:
     resolution: {integrity: sha512-VeiPZ9MMwXjO32/Xu7+OwflfmeoRwkE/qzndw42gGtgJwZopBnzy2gD//NN1+go1mADzkDcqf/KnFRSjTJ8xJA==}
 
-  /@types/file-loader@5.0.2:
-    resolution: {integrity: sha512-ig1199lg/Hhfdj4rOYrOLW7jzGRTWPgEbvHqdQ/gKTsKi9Cx4XdgWJXamEwnTuuarp7HEIFK+PAYjEVG6bnh1w==}
+  /@types/estree@1.0.3:
+    resolution: {integrity: sha512-CS2rOaoQ/eAgAfcTfq6amKG7bsN+EMcgGY4FAFQdvSj2y1ixvOZTUA9mOtCai7E1SYu283XNw7urKK30nP3wkQ==}
+
+  /@types/file-loader@5.0.3:
+    resolution: {integrity: sha512-g9CX1svLDYL5Nnaa0Dj+XdGuGHfXVcsxpKsfBn3sQ/8X8RZPg1gCCwlhzEnfrXdyYB5hoKAsXOohZAd8iDBd/g==}
     dependencies:
       '@types/webpack': 4.41.33
     dev: true
@@ -3088,8 +3092,8 @@ packages:
       '@types/node': 18.18.5
     dev: true
 
-  /@types/hash-sum@1.0.0:
-    resolution: {integrity: sha512-FdLBT93h3kcZ586Aee66HPCVJ6qvxVjBlDWNmxSGSbCZe9hTsjRKdSsl4y1T+3zfujxo9auykQMnFsfyHWD7wg==}
+  /@types/hash-sum@1.0.1:
+    resolution: {integrity: sha512-5JLywbPgWZVgxhAV//qTU6LPurKfQeiyw20GKZMi9V7AjHnAP4t1eNCJ1mC2L4TAicuS71MVoFYVcEM+EiR4lg==}
     dev: true
 
   /@types/hast@2.3.5:
@@ -3135,8 +3139,8 @@ packages:
       '@types/node': 18.18.5
     dev: true
 
-  /@types/lodash-es@4.17.9:
-    resolution: {integrity: sha512-ZTcmhiI3NNU7dEvWLZJkzG6ao49zOIjEgIE0RgV7wbPxU0f2xT3VSAHw2gmst8swH6V0YkLRGp4qPlX/6I90MQ==}
+  /@types/lodash-es@4.17.10:
+    resolution: {integrity: sha512-YJP+w/2khSBwbUSFdGsSqmDvmnN3cCKoPOL7Zjle6s30ZtemkkqhjVfFqGwPN7ASil5VyjE2GtyU/yqYY6mC0A==}
     dependencies:
       '@types/lodash': 4.14.196
     dev: true
@@ -6069,7 +6073,7 @@ packages:
   /estree-walker@3.0.3:
     resolution: {integrity: sha512-7RUKfXgSMMkzt6ZuXmqapOurLGPPfgj6l9uRZ7lRGolvk0y2yocc35LdcxKC5PQZdn2DMqioAQ2NoWcrTKmm6g==}
     dependencies:
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
 
   /esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
@@ -7261,7 +7265,7 @@ packages:
   /is-reference@1.2.1:
     resolution: {integrity: sha512-U82MsXXiFIrjCK4otLT+o2NA2Cd2g5MLoOVXUZjIOhLurrRxpEXzI8O0KZHr3IjLvlAH1kTPYSuqer5T9ZVBKQ==}
     dependencies:
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
 
   /is-regex@1.1.4:
     resolution: {integrity: sha512-kvRdxDsxZjhzUX07ZnLydzS1TU/TJlTUHHY4YLL87e37oUA49DfkLqgy+VjFocowy29cKvcSiu+kIv728jTTVg==}
@@ -8848,6 +8852,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -9448,7 +9455,7 @@ packages:
     deprecated: Please migrate to https://github.com/unjs/magicast
     dependencies:
       '@babel/parser': 7.23.0
-      '@types/estree': 1.0.2
+      '@types/estree': 1.0.3
       recast: 0.22.0
     dev: true
 
