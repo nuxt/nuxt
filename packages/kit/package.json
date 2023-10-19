@@ -45,7 +45,7 @@
     "@types/lodash-es": "4.17.10",
     "@types/semver": "7.5.3",
     "lodash-es": "4.17.21",
-    "nitropack": "2.6.3",
+    "nitropack": "2.7.0",
     "unbuild": "latest",
     "vite": "4.5.0",
     "vitest": "0.33.0",
