@@ -272,7 +272,7 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
     expectTypeOf(val.runtimeConfig!.APP).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_APP'>>()
     expectTypeOf(val.runtimeConfig!.APP_NAMES).toEqualTypeOf<undefined | RuntimeValue<Array<string>, 'You can override this value at runtime with NUXT_APP_NAMES'>>()
-    expectTypeOf(val.runtimeConfig!.test_APP_NAME).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_TEST__APP_NAME'>>()
+    expectTypeOf(val.runtimeConfig!.test_APP_NAME).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_TEST_APP_NAME'>>()
   })
 })
 

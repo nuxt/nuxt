@@ -30,24 +30,28 @@ type SliceLast<T extends string> = T extends `${infer A}${infer B}`
   : never
 
 type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' = 'start'> = T extends `${infer A}${infer B}`
-  ? A extends Uppercase<A>
-    ? A extends `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0}`
-      ? `${A}${UpperSnakeCase<B, 'lower'>}`
-      : State extends 'lower' | 'upper'
-        ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
-          ? SliceLast<ExtractUpperChunk<B>> extends ''
-            ? `${A}${UpperSnakeCase<B, 'start'>}`
-            : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+  ? A extends '_'
+    ? `${A}${B}`
+    : A extends Uppercase<A>
+      ? A extends `${1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0}`
+        ? `${A}${UpperSnakeCase<B, 'lower'>}`
+        : State extends 'lower' | 'upper'
+          ? B extends `${SliceLast<ExtractUpperChunk<B>>}${infer Rest}`
+            ? SliceLast<ExtractUpperChunk<B>> extends ''
+              ? `${A}${UpperSnakeCase<B, 'start'>}`
+              : `_${A}${SliceLast<ExtractUpperChunk<B>>}_${UpperSnakeCase<Rest, 'start'>}`
+            : B extends Uppercase<B>
+              ? `_${A}${B}`
+              : `_${A}${UpperSnakeCase<B, 'lower'>}`
+          : State extends 'start'
+            ? `${A}${UpperSnakeCase<B, 'lower'>}`
+            : never
+        : State extends 'start' | 'lower'
+          ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
           : B extends Uppercase<B>
-            ? `_${A}${B}`
-            : `_${A}${UpperSnakeCase<B, 'lower'>}`
-        : State extends 'start'
-          ? `${A}${UpperSnakeCase<B, 'lower'>}`
-          : never
-      : State extends 'start' | 'lower'
-        ? `${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
-        : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
-  : Uppercase<T>
+            ? `_${Uppercase<A>}${B}${UpperSnakeCase<B, 'lower'>}`
+            : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
+    : Uppercase<T>
 
 type UpperUpperSnakeCase<T extends string> = T extends Uppercase<T> ? T : UpperSnakeCase<T>
 
