@@ -29,14 +29,14 @@ importers:
         specifier: 12.1.0
         version: 12.1.0(eslint@8.51.0)(typescript@5.2.2)
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@types/node':
         specifier: 18.18.6
         version: 18.18.6
       '@types/semver':
-        specifier: 7.5.3
-        version: 7.5.3
+        specifier: 7.5.4
+        version: 7.5.4
       case-police:
         specifier: 0.6.1
         version: 0.6.1
@@ -83,11 +83,11 @@ importers:
         specifier: 0.37.0
         version: 0.37.0
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: 2.7.0
+        version: 2.7.0
       nuxi:
-        specifier: 3.9.0
-        version: 3.9.0
+        specifier: 3.9.1
+        version: 3.9.1
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -146,8 +146,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       c12:
-        specifier: ^1.4.2
-        version: 1.4.2
+        specifier: ^1.5.1
+        version: 1.5.1
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -204,14 +204,14 @@ importers:
         specifier: 4.17.10
         version: 4.17.10
       '@types/semver':
-        specifier: 7.5.3
-        version: 7.5.3
+        specifier: 7.5.4
+        version: 7.5.4
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: 2.7.0
+        version: 2.7.0
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -267,8 +267,8 @@ importers:
         specifier: 8.10.0
         version: 8.10.0
       c12:
-        specifier: ^1.4.2
-        version: 1.4.2
+        specifier: ^1.5.1
+        version: 1.5.1
       chokidar:
         specifier: ^3.5.3
         version: 3.5.3
@@ -321,11 +321,11 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
       nitropack:
-        specifier: ^2.6.3
-        version: 2.6.3
+        specifier: ^2.7.0
+        version: 2.7.0
       nuxi:
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       nypm:
         specifier: ^0.3.3
         version: 0.3.3
@@ -403,8 +403,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@vitejs/plugin-vue':
         specifier: 4.4.0
         version: 4.4.0(vite@4.5.0)(vue@3.3.4)
@@ -478,6 +478,9 @@ importers:
       '@vue/compiler-core':
         specifier: 3.3.4
         version: 3.3.4
+      c12:
+        specifier: 1.5.1
+        version: 1.5.1
       esbuild-loader:
         specifier: 4.0.2
         version: 4.0.2(webpack@5.89.0)
@@ -488,8 +491,8 @@ importers:
         specifier: 5.2.4
         version: 5.2.4
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: 2.7.0
+        version: 2.7.0
       ofetch:
         specifier: 1.3.3
         version: 1.3.3
@@ -685,8 +688,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -824,8 +827,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@types/hash-sum':
         specifier: 1.0.1
         version: 1.0.1
@@ -2110,7 +2113,7 @@ packages:
       launch-editor: 2.6.1
       local-pkg: 0.5.0
       magicast: 0.3.0
-      nitropack: 2.6.3
+      nitropack: 2.7.0
       nuxt: link:packages/nuxt
       nypm: 0.3.3
       ofetch: 1.3.3
@@ -2615,8 +2618,8 @@ packages:
       '@types/webpack': 4.41.34
     dev: true
 
-  /@types/fs-extra@11.0.2:
-    resolution: {integrity: sha512-c0hrgAOVYr21EX8J0jBMXGLMgJqVf/v6yxi0dLaJboW9aQPh16Id+z6w2Tx1hm+piJOLv8xPfVKZCLfjPw/IMQ==}
+  /@types/fs-extra@11.0.3:
+    resolution: {integrity: sha512-sF59BlXtUdzEAL1u0MSvuzWd7PdZvZEtnaVkzX5mjpdWTJ8brG0jUqve3jPCzSzvAKKMHTG8F8o/WMQLtleZdQ==}
     dependencies:
       '@types/jsonfile': 6.1.2
       '@types/node': 18.18.6
@@ -2710,8 +2713,8 @@ packages:
       sass: 1.69.4
     dev: true
 
-  /@types/semver@7.5.3:
-    resolution: {integrity: sha512-OxepLK9EuNEIPxWNME+C6WwbRAOOI2o2BaQEGzz5Lu2e4Z5eDnEo+/aVEDMIXywoJitJ7xWd641wrGLZdtwRyw==}
+  /@types/semver@7.5.4:
+    resolution: {integrity: sha512-MMzuxN3GdFwskAnb6fz0orFvhfqi752yjaXylr0Rp4oDg5H0Zn1IuyRhDVvYOwAXoJirx2xuS16I3WjxnAIHiQ==}
     dev: true
 
   /@types/source-list-map@0.1.4:
@@ -2903,7 +2906,7 @@ packages:
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.51.0)
       '@types/json-schema': 7.0.14
-      '@types/semver': 7.5.3
+      '@types/semver': 7.5.4
       '@typescript-eslint/scope-manager': 6.8.0
       '@typescript-eslint/types': 6.8.0
       '@typescript-eslint/typescript-estree': 6.8.0(typescript@5.2.2)
@@ -2968,9 +2971,9 @@ packages:
       vue: 3.3.4
     dev: false
 
-  /@vercel/nft@0.23.1:
-    resolution: {integrity: sha512-NE0xSmGWVhgHF1OIoir71XAd0W0C1UE3nzFyhpFiMr3rVhetww7NvM1kc41trBsPG37Bh+dE5FYCTMzM/gBu0w==}
-    engines: {node: '>=14'}
+  /@vercel/nft@0.24.3:
+    resolution: {integrity: sha512-IyBdIxmFAeGZnEfMgt4QrGK7XX4lWazlQj34HEi9dw04/WeDBJ7r1yaOIO5tTf9pbfvwUFodj9b0H+NDGGoOMg==}
+    engines: {node: '>=16'}
     hasBin: true
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
@@ -3821,8 +3824,8 @@ packages:
     dependencies:
       run-applescript: 5.0.0
 
-  /c12@1.4.2:
-    resolution: {integrity: sha512-3IP/MuamSVRVw8W8+CHWAz9gKN4gd+voF2zm/Ln6D25C2RhytEZ1ABbC8MjKr4BR9rhoV1JQ7jJA158LDiTkLg==}
+  /c12@1.5.1:
+    resolution: {integrity: sha512-BWZRJgDEveT8uI+cliCwvYSSSSvb4xKoiiu5S0jaDbKBopQLQF7E+bq9xKk1pTcG+mUa3yXuFO7bD9d8Lr9Xxg==}
     dependencies:
       chokidar: 3.5.3
       defu: 6.1.2
@@ -3950,7 +3953,7 @@ packages:
     resolution: {integrity: sha512-IzgToIJ/R9NhVKmL+PW33ozYkv53bXvufDNUSH3GTKXq1iCHGgkbgbtqEWbo8tnWNnt7nPDpjL8PwSG2iS8RVw==}
     hasBin: true
     dependencies:
-      c12: 1.4.2
+      c12: 1.5.1
       colorette: 2.0.20
       consola: 3.2.3
       convert-gitmoji: 0.1.3
@@ -7103,8 +7106,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack@2.6.3:
-    resolution: {integrity: sha512-k1GC9GiIrjAmLx48g52/38u6OfWVUAhvWtxm5G4vFUaGAt82WPVl+P5S9YXMRXgNtUnTFfzC4Vfp5TUEG0i7zQ==}
+  /nitropack@2.7.0:
+    resolution: {integrity: sha512-U5/Uq0k4PO3/yDM1Sao6JZc/i1DhiI2Eq/AMm92idgQ6B3NbwD0A3u9SZNIHyqEyFogOgi3qsdnRo9KWc5jgVg==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -7125,9 +7128,9 @@ packages:
       '@rollup/plugin-wasm': 6.2.2(rollup@3.29.4)
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
       '@types/http-proxy': 1.17.13
-      '@vercel/nft': 0.23.1
+      '@vercel/nft': 0.24.3
       archiver: 6.0.1
-      c12: 1.4.2
+      c12: 1.5.1
       chalk: 5.3.0
       chokidar: 3.5.3
       citty: 0.1.4
@@ -7385,8 +7388,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.9.0:
-    resolution: {integrity: sha512-roCfCnQsp/oaHm6PL3HFvvGrwm1d2y1n7G9KzIx+i91eiO4P7fBuaVKibB2e8uqEJBgTwN52KxFha6MJnDykJQ==}
+  /nuxi@3.9.1:
+    resolution: {integrity: sha512-4R4tcC2uQ5QCnHxyKoX5nZm/YUesCcQM3bZBKYU/8ZWrWjK6aPG6Q5zOQG1aLPkAotyahNsqtSiU/CrRoenEgA==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
