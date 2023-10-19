@@ -282,7 +282,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         let href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
 
         // joins with `baseURL` if it's an relative link
-        if (import.meta.client && href && href.startsWith('/') && !href.startsWith('//')) {
+        if (href && href.startsWith('/') && !href.startsWith('//')) {
           const baseURL = useRuntimeConfig().app.baseURL
           if (href !== '/' && !href.startsWith(baseURL)) {
             href = joinURL(withLeadingSlash(withTrailingSlash(baseURL)), href)
