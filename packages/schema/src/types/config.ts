@@ -49,6 +49,8 @@ type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' 
         : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
   : Uppercase<T>
 
+type UpperUpperSnakeCase<T extends string> = T extends Uppercase<T> ? T : UpperSnakeCase<T>
+
 const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
 type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
@@ -56,8 +58,8 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
     ? unknown extends T[K]
       ? unknown
       : T[K] extends Record<string, unknown>
-        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperUpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperUpperSnakeCase<K>}`>
+        : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperUpperSnakeCase<K>}`>
       : K extends number
         ? T[K]
         : never
