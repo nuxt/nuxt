@@ -15,6 +15,7 @@ overrides:
   vue: 3.3.4
   magic-string: ^0.30.5
   nitropack: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
+  h3: npm:h3-nightly
 
 importers:
 
@@ -72,8 +73,8 @@ importers:
         specifier: 13.2.2
         version: 13.2.2
       h3:
-        specifier: 1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1697582360.fb79f41
       happy-dom:
         specifier: 12.9.1
         version: 12.9.1
@@ -301,8 +302,8 @@ importers:
         specifier: ^13.2.2
         version: 13.2.2
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1697582360.fb79f41
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -483,8 +484,8 @@ importers:
         specifier: 4.0.2
         version: 4.0.2(webpack@5.89.0)
       h3:
-        specifier: 1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1697582360.fb79f41
       ignore:
         specifier: 5.2.4
         version: 5.2.4
@@ -616,8 +617,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1697582360.fb79f41
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
@@ -737,8 +738,8 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1697582360.fb79f41
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2104,7 +2105,7 @@ packages:
       flatted: 3.2.9
       get-port-please: 3.1.1
       global-dirs: 3.0.1
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1697582360.fb79f41
       hookable: 5.5.3
       image-meta: 0.1.1
       is-installed-globally: 0.4.0
@@ -5738,18 +5739,6 @@ packages:
       uncrypto: 0.1.3
       unenv: 1.7.4
 
-  /h3@1.8.2:
-    resolution: {integrity: sha512-1Ca0orJJlCaiFY68BvzQtP2lKLk46kcLAxVM8JgYbtm2cUg6IY7pjpYgWMwUvDO9QI30N5JAukOKoT8KD3Q0PQ==}
-    dependencies:
-      cookie-es: 1.0.0
-      defu: 6.1.2
-      destr: 2.0.1
-      iron-webcrypto: 0.10.1
-      radix3: 1.1.0
-      ufo: 1.3.1
-      uncrypto: 0.1.3
-      unenv: 1.7.4
-
   /happy-dom@12.9.1:
     resolution: {integrity: sha512-UvQ3IwKn1G3iiNCdTrhijdLGqf8Vj7d3OpmYcPwlKakjFy83oYbW6TmOKDLMTVLO9whmOC1HIpS09wf/14k7cA==}
     dependencies:
@@ -6012,9 +6001,6 @@ packages:
   /ip@2.0.0:
     resolution: {integrity: sha512-WKa+XuLG1A1R0UWhl2+1XQSi+fZWMsYKffMZTTYsiZaUD8k2yDAj5atimTUD2TZkyCkNEeYE5NhFZmupOGtjYQ==}
     dev: false
-
-  /iron-webcrypto@0.10.1:
-    resolution: {integrity: sha512-QGOS8MRMnj/UiOa+aMIgfyHcvkhqNUsUxb1XzskENvbo+rEfp6TOwqd1KPuDzXC4OnGHcMSVxDGRoilqB8ViqA==}
 
   /iron-webcrypto@1.0.0:
     resolution: {integrity: sha512-anOK1Mktt8U1Xi7fCM3RELTuYbnFikQY5VtrDj7kPgpejV7d43tWKhzgioO0zpkazLEL/j/iayRqnJhrGfqUsg==}
@@ -6577,7 +6563,7 @@ packages:
       consola: 3.2.3
       defu: 6.1.2
       get-port-please: 3.1.1
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1697582360.fb79f41
       http-shutdown: 1.2.2
       jiti: 1.20.0
       mlly: 1.4.2
@@ -9512,7 +9498,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 2.0.1
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1697582360.fb79f41
       ioredis: 5.3.2
       listhen: 1.5.5
       lru-cache: 10.0.1
@@ -9778,7 +9764,7 @@ packages:
       '@vue/test-utils': 2.4.1(vue@3.3.4)
       defu: 6.1.2
       estree-walker: 3.0.3
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1697582360.fb79f41
       happy-dom: 12.9.1
       local-pkg: 0.4.3
       magic-string: 0.30.5
