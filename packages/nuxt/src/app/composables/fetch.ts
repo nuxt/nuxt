@@ -3,9 +3,13 @@ import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
+
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+
+// @ts-expect-error virtual file
+import { fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -13,7 +17,7 @@ type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, Lowercase<M>>
 
 type ComputedOptions<T extends Record<string, any>> = {
-  [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
@@ -85,7 +89,7 @@ export function useFetch<
     return unref(r)
   })
 
-  const _key = opts.key || hash([autoKey, unref(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query)])
+  const _key = opts.key || hash([autoKey, unref(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query), unref(opts.headers)])
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
   }
@@ -107,10 +111,13 @@ export function useFetch<
     pick,
     watch,
     immediate,
+    getCachedData,
+    deep,
     ...fetchOptions
   } = opts
 
   const _fetchOptions = reactive({
+    ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
@@ -122,6 +129,8 @@ export function useFetch<
     transform,
     pick,
     immediate,
+    getCachedData,
+    deep,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 

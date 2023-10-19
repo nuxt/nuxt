@@ -68,7 +68,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         '/__vue-jsx',
         '#app',
         /^nuxt(\/|$)/,
-        /(nuxt|nuxt3)\/(dist|src|app)/
+        /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/
       ]
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),

@@ -1,3 +1,3 @@
+title: 'Utils'
 titleTemplate: '%s · Nuxt Utils'
-navigation.icon: uil:adjust-circle
-image: '/socials/utils.jpg'
+navigation.icon: i-ph-function-duotone

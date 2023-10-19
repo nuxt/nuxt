@@ -134,9 +134,8 @@ export async function writeTypes (nuxt: Nuxt) {
       strict: nuxt.options.typescript?.strict ?? true,
       noImplicitThis: true,
       esModuleInterop: true,
-      // TODO: enable by default in v3.8
-      // types: [],
-      // verbatimModuleSyntax: true,
+      types: [],
+      verbatimModuleSyntax: true,
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,

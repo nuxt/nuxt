@@ -8,10 +8,11 @@ import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
+import { resolveComponentName } from '../core/utils'
+
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
- *
  * @param dirs all folders where components are defined
  * @param srcDir src path of your app
  * @returns {Promise} Component found promise
@@ -65,7 +66,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       /**
        * Create an array of prefixes base on the prefix config
        * Empty prefix will be an empty array
-       *
        * @example prefix: 'nuxt' -> ['nuxt']
        * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
        */
@@ -76,7 +76,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       /**
        * In case we have index as filename the component become the parent path
-       *
        * @example third-components/index.vue -> third-component
        * if not take the filename
        * @example third-components/Awesome.vue -> Awesome
@@ -144,7 +143,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         if (newPriority > existingPriority) {
           components.splice(components.indexOf(existingComponent), 1, component)
         }
-        // Warn if a user-defined (or prioritised) component conflicts with a previously scanned component
+        // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
           warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
         }
@@ -158,34 +157,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   }
 
   return components
-}
-
-export function resolveComponentName (fileName: string, prefixParts: string[]) {
-  /**
-   * Array of fileName parts splitted by case, / or -
-   *
-   * @example third-component -> ['third', 'component']
-   * @example AwesomeComponent -> ['Awesome', 'Component']
-   */
-  const fileNameParts = splitByCase(fileName)
-  const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
-  const componentNameParts: string[] = [...prefixParts]
-  let index = prefixParts.length - 1
-  const matchedSuffix: string[] = []
-  while (index >= 0) {
-    matchedSuffix.unshift(...splitByCase(prefixParts[index] || '').map(p => p.toLowerCase()))
-    const matchedSuffixContent = matchedSuffix.join('/')
-    if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
-      // e.g Item/Item/Item.vue -> Item
-      (prefixParts[index].toLowerCase() === fileNamePartsContent &&
-        prefixParts[index + 1] &&
-        prefixParts[index] === prefixParts[index + 1])) {
-      componentNameParts.length = index
-    }
-    index--
-  }
-
-  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {

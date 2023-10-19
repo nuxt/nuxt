@@ -11,7 +11,7 @@ import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
-const isTestingAppManifest = process.env.TEST_MANIFEST === 'manifest-on'
+const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -269,6 +269,24 @@ describe('pages', () => {
     expect(html).toContain('another-parent/index')
 
     await expectNoClientErrors('/another-parent')
+  })
+
+  it('/client-server', async () => {
+    // expect no hydration issues
+    await expectNoClientErrors('/client-server')
+    const page = await createPage('/client-server')
+    await page.waitForLoadState('networkidle')
+    const bodyHTML = await page.innerHTML('body')
+    expect(await page.locator('.placeholder-to-ensure-no-override').all()).toHaveLength(5)
+    expect(await page.locator('.server').all()).toHaveLength(0)
+    expect(await page.locator('.client-fragment-server.client').all()).toHaveLength(2)
+    expect(await page.locator('.client-fragment-server-fragment.client').all()).toHaveLength(2)
+    expect(await page.locator('.client-server.client').all()).toHaveLength(1)
+    expect(await page.locator('.client-server-fragment.client').all()).toHaveLength(1)
+    expect(await page.locator('.client-server-fragment.client').all()).toHaveLength(1)
+
+    expect(bodyHTML).not.toContain('hello')
+    expect(bodyHTML).toContain('world')
   })
 
   it('/client-only-components', async () => {
@@ -1019,8 +1037,7 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | foo: Injected by extended middleware from foo')
     })
 
-    // theme is added after layers
-    it('extends foo/middleware/override over bar/middleware/override', async () => {
+    it('extends bar/middleware/override over foo/middleware/override', async () => {
       const html = await $fetch('/override')
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
     })
@@ -1896,8 +1913,8 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   it.skipIf(!isRenderingJson)('should not include server-component HTML in payload', async () => {
     const payload = await $fetch('/prefetch/server-components/_payload.json', { responseType: 'text' })
     const entries = Object.entries(parsePayload(payload))
-    const [key, serialisedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
-    expect(serialisedComponent).toEqual(key)
+    const [key, serializedComponent] = entries.find(([key]) => key.startsWith('AsyncServerComponent')) || []
+    expect(serializedComponent).toEqual(key)
   })
 })
 
@@ -1908,6 +1925,12 @@ describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
 })
 
 describe.skipIf(isWindows)('useAsyncData', () => {
+  it('works after useNuxtData call', async () => {
+    const page = await createPage('/useAsyncData/nuxt-data')
+    expect(await page.locator('body').getByText('resolved:true').textContent()).toContain('resolved:true')
+    await page.close()
+  })
+
   it('single request resolves', async () => {
     await expectNoClientErrors('/useAsyncData/single')
   })

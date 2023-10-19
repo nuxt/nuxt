@@ -155,6 +155,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
+        'nuxt-nightly/dist',
         distDir
       ],
       traceInclude: [
@@ -213,7 +214,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     // @ts-expect-error untyped nuxt property
-    const buildId = nuxt.options.appConfig.nuxt!.buildId ||= randomUUID()
+    const buildId = nuxt.options.appConfig.nuxt!.buildId ||=
+      (nuxt.options.test ? 'test' : nuxt.options.dev ? 'dev' : randomUUID())
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')

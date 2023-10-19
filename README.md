@@ -17,7 +17,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - Automatic routing with code-splitting
 - State management
 - SEO Optimization
-- Extandable with [100+ modules](https://nuxt.com/modules)
+- Extensible with [100+ modules](https://nuxt.com/modules)
 - Deployment to a variety of hosting platforms
 - ...[and much more](https://nuxt.com) 🚀
 
@@ -50,7 +50,7 @@ Here are a few ways you can get involved:
 
 ## Local Development
 
-Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#set-up-your-local-development-environment) to contribute to the framework and documentation.
+Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
 
 ## Nuxt 2
 

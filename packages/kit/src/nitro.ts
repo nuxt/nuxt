@@ -45,7 +45,7 @@ export function addServerPlugin (plugin: string) {
 /**
  * Adds routes to be prerendered
  */
-export function prerenderRoutes (routes: string | string[]) {
+export function addPrerenderRoutes (routes: string | string[]) {
   const nuxt = useNuxt()
   if (!Array.isArray(routes)) {
     routes = [routes]
@@ -67,7 +67,6 @@ export function prerenderRoutes (routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
- *
  * @example
  *
  * ```ts
@@ -91,9 +90,8 @@ export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
     config.imports = config.imports || {}
-    config.imports.autoImport = true
     if (Array.isArray(config.imports.imports)) {
-      config.imports.imports = [...config.imports.imports, ...imports]
+      config.imports.imports.push(...imports)
     } else {
       config.imports.imports = [config.imports.imports, ...imports]
     }

@@ -79,7 +79,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
-async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+/** @internal */
+export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
@@ -109,9 +110,9 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.layouts = {}
   for (const config of nuxt.options._layers.map(layer => layer.config)) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file)
+      const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
@@ -151,7 +152,7 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Resolve app.config
