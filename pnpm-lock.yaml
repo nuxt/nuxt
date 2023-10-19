@@ -29,14 +29,14 @@ importers:
         specifier: 12.1.0
         version: 12.1.0(eslint@8.51.0)(typescript@5.2.2)
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@types/node':
         specifier: 18.18.6
         version: 18.18.6
       '@types/semver':
-        specifier: 7.5.3
-        version: 7.5.3
+        specifier: 7.5.4
+        version: 7.5.4
       case-police:
         specifier: 0.6.1
         version: 0.6.1
@@ -86,8 +86,8 @@ importers:
         specifier: 2.7.0
         version: 2.7.0
       nuxi:
-        specifier: 3.9.0
-        version: 3.9.0
+        specifier: 3.9.1
+        version: 3.9.1
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -204,8 +204,8 @@ importers:
         specifier: 4.17.10
         version: 4.17.10
       '@types/semver':
-        specifier: 7.5.3
-        version: 7.5.3
+        specifier: 7.5.4
+        version: 7.5.4
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
@@ -324,8 +324,8 @@ importers:
         specifier: ^2.7.0
         version: 2.7.0
       nuxi:
-        specifier: ^3.9.0
-        version: 3.9.0
+        specifier: ^3.9.1
+        version: 3.9.1
       nypm:
         specifier: ^0.3.3
         version: 0.3.3
@@ -403,8 +403,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@vitejs/plugin-vue':
         specifier: 4.4.0
         version: 4.4.0(vite@4.5.0)(vue@3.3.4)
@@ -688,8 +688,8 @@ importers:
         specifier: 1.0.3
         version: 1.0.3
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -827,8 +827,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@types/fs-extra':
-        specifier: 11.0.2
-        version: 11.0.2
+        specifier: 11.0.3
+        version: 11.0.3
       '@types/hash-sum':
         specifier: 1.0.1
         version: 1.0.1
@@ -2618,8 +2618,8 @@ packages:
       '@types/webpack': 4.41.34
     dev: true
 
-  /@types/fs-extra@11.0.2:
-    resolution: {integrity: sha512-c0hrgAOVYr21EX8J0jBMXGLMgJqVf/v6yxi0dLaJboW9aQPh16Id+z6w2Tx1hm+piJOLv8xPfVKZCLfjPw/IMQ==}
+  /@types/fs-extra@11.0.3:
+    resolution: {integrity: sha512-sF59BlXtUdzEAL1u0MSvuzWd7PdZvZEtnaVkzX5mjpdWTJ8brG0jUqve3jPCzSzvAKKMHTG8F8o/WMQLtleZdQ==}
     dependencies:
       '@types/jsonfile': 6.1.2
       '@types/node': 18.18.6
@@ -2713,8 +2713,8 @@ packages:
       sass: 1.69.4
     dev: true
 
-  /@types/semver@7.5.3:
-    resolution: {integrity: sha512-OxepLK9EuNEIPxWNME+C6WwbRAOOI2o2BaQEGzz5Lu2e4Z5eDnEo+/aVEDMIXywoJitJ7xWd641wrGLZdtwRyw==}
+  /@types/semver@7.5.4:
+    resolution: {integrity: sha512-MMzuxN3GdFwskAnb6fz0orFvhfqi752yjaXylr0Rp4oDg5H0Zn1IuyRhDVvYOwAXoJirx2xuS16I3WjxnAIHiQ==}
     dev: true
 
   /@types/source-list-map@0.1.4:
@@ -2906,7 +2906,7 @@ packages:
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@8.51.0)
       '@types/json-schema': 7.0.14
-      '@types/semver': 7.5.3
+      '@types/semver': 7.5.4
       '@typescript-eslint/scope-manager': 6.8.0
       '@typescript-eslint/types': 6.8.0
       '@typescript-eslint/typescript-estree': 6.8.0(typescript@5.2.2)
@@ -7388,8 +7388,8 @@ packages:
     dependencies:
       boolbase: 1.0.0
 
-  /nuxi@3.9.0:
-    resolution: {integrity: sha512-roCfCnQsp/oaHm6PL3HFvvGrwm1d2y1n7G9KzIx+i91eiO4P7fBuaVKibB2e8uqEJBgTwN52KxFha6MJnDykJQ==}
+  /nuxi@3.9.1:
+    resolution: {integrity: sha512-4R4tcC2uQ5QCnHxyKoX5nZm/YUesCcQM3bZBKYU/8ZWrWjK6aPG6Q5zOQG1aLPkAotyahNsqtSiU/CrRoenEgA==}
     engines: {node: ^14.18.0 || >=16.10.0}
     hasBin: true
     optionalDependencies:
