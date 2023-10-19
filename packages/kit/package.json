@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "3.7.4",
+  "version": "3.8.0",
   "repository": "nuxt/nuxt",
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
