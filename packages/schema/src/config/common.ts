@@ -393,7 +393,7 @@ export default defineUntypedSchema({
    * For ease of configuration, you can also structure them as an hierarchical
    * object in `nuxt.config` (as below).
    * @example
-   * ```js'node:fs'
+   * ```js
    * import fs from 'node:fs'
    * import path from 'node:path'
    * export default {
