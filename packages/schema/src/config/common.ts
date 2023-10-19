@@ -11,8 +11,12 @@ export default defineUntypedSchema({
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
-   * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
-   * @type {string|string[]}
+   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
+   *
+   * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
+   * @see https://github.com/unjs/giget
+   *
+   * @type {(string|string|[string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
 
