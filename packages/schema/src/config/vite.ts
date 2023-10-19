@@ -34,7 +34,7 @@ export default defineUntypedSchema({
     publicDir: {
       $resolve: async (val, get) => {
         if (val) {
-          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/configuration/nuxt-config#public`.')
+          consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
         return val ?? resolve((await get('srcDir')), (await get('dir')).public)
       }

@@ -50,7 +50,7 @@ Here are a few ways you can get involved:
 
 ## Local Development
 
-Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#set-up-your-local-development-environment) to contribute to the framework and documentation.
+Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
 
 ## Nuxt 2
 
