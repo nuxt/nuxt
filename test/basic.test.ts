@@ -1479,6 +1479,16 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('should not preload NuxtIsland on /jsx', async () => {
+    const { page } = await renderPage('/jsx')
+    const links = await page.locator('link').all()
+    for (const link of links) {
+      if (await link.getAttribute('rel') === 'modulepreload') {
+        expect(await link.getAttribute('href')).not.toContain('NuxtIsland')
+      }
+    }
+  })
+
   it('non-lazy server components', async () => {
     const { page } = await renderPage('/server-components/lazy/start')
     await page.waitForLoadState('networkidle')
