@@ -321,7 +321,7 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
       nitropack:
-        specifier: 2.7.0
+        specifier: ^2.7.0
         version: 2.7.0
       nuxi:
         specifier: ^3.9.0
