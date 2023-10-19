@@ -127,7 +127,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', url)
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
       setPayload(key, result)
