@@ -35,7 +35,8 @@
     "nuxt": "workspace:*",
     "vite": "4.5.0",
     "vue": "3.3.4",
-    "magic-string": "^0.30.5"
+    "magic-string": "^0.30.5",
+    "nitropack": "npm:nitropack-nightly@2.7.0-28295301.f3f2acb"
   },
   "devDependencies": {
     "@nuxt/test-utils": "workspace:*",

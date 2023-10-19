@@ -14,6 +14,7 @@ overrides:
   vite: 4.5.0
   vue: 3.3.4
   magic-string: ^0.30.5
+  nitropack: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
 
 importers:
 
@@ -83,8 +84,8 @@ importers:
         specifier: 0.37.0
         version: 0.37.0
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
+        version: /nitropack-nightly@2.7.0-28295301.f3f2acb
       nuxi:
         specifier: 3.9.0
         version: 3.9.0
@@ -210,8 +211,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
+        version: /nitropack-nightly@2.7.0-28295301.f3f2acb
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -321,8 +322,8 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
       nitropack:
-        specifier: ^2.6.3
-        version: 2.6.3
+        specifier: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
+        version: /nitropack-nightly@2.7.0-28295301.f3f2acb
       nuxi:
         specifier: ^3.9.0
         version: 3.9.0
@@ -488,8 +489,8 @@ importers:
         specifier: 5.2.4
         version: 5.2.4
       nitropack:
-        specifier: 2.6.3
-        version: 2.6.3
+        specifier: npm:nitropack-nightly@2.7.0-28295301.f3f2acb
+        version: /nitropack-nightly@2.7.0-28295301.f3f2acb
       ofetch:
         specifier: 1.3.3
         version: 1.3.3
@@ -2110,7 +2111,7 @@ packages:
       launch-editor: 2.6.1
       local-pkg: 0.5.0
       magicast: 0.3.0
-      nitropack: 2.6.3
+      nitropack: /nitropack-nightly@2.7.0-28295301.f3f2acb
       nuxt: link:packages/nuxt
       nypm: 0.3.3
       ofetch: 1.3.3
@@ -2968,9 +2969,9 @@ packages:
       vue: 3.3.4
     dev: false
 
-  /@vercel/nft@0.23.1:
-    resolution: {integrity: sha512-NE0xSmGWVhgHF1OIoir71XAd0W0C1UE3nzFyhpFiMr3rVhetww7NvM1kc41trBsPG37Bh+dE5FYCTMzM/gBu0w==}
-    engines: {node: '>=14'}
+  /@vercel/nft@0.24.3:
+    resolution: {integrity: sha512-IyBdIxmFAeGZnEfMgt4QrGK7XX4lWazlQj34HEi9dw04/WeDBJ7r1yaOIO5tTf9pbfvwUFodj9b0H+NDGGoOMg==}
+    engines: {node: '>=16'}
     hasBin: true
     dependencies:
       '@mapbox/node-pre-gyp': 1.0.11
@@ -5725,6 +5726,18 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
+  /h3-nightly@1.9.0-1697582360.fb79f41:
+    resolution: {integrity: sha512-FgS16YNHZDKyPZBcC/cOD98C9kKA2gre70fqQCK/S1I6rE5Loax9DGn8IxrhBgiSylE9GDugltvmmBJNeAfm8Q==}
+    dependencies:
+      cookie-es: 1.0.0
+      defu: 6.1.2
+      destr: 2.0.1
+      iron-webcrypto: 1.0.0
+      radix3: 1.1.0
+      ufo: 1.3.1
+      uncrypto: 0.1.3
+      unenv: 1.7.4
+
   /h3@1.8.2:
     resolution: {integrity: sha512-1Ca0orJJlCaiFY68BvzQtP2lKLk46kcLAxVM8JgYbtm2cUg6IY7pjpYgWMwUvDO9QI30N5JAukOKoT8KD3Q0PQ==}
     dependencies:
@@ -6002,6 +6015,9 @@ packages:
 
   /iron-webcrypto@0.10.1:
     resolution: {integrity: sha512-QGOS8MRMnj/UiOa+aMIgfyHcvkhqNUsUxb1XzskENvbo+rEfp6TOwqd1KPuDzXC4OnGHcMSVxDGRoilqB8ViqA==}
+
+  /iron-webcrypto@1.0.0:
+    resolution: {integrity: sha512-anOK1Mktt8U1Xi7fCM3RELTuYbnFikQY5VtrDj7kPgpejV7d43tWKhzgioO0zpkazLEL/j/iayRqnJhrGfqUsg==}
 
   /is-array-buffer@3.0.2:
     resolution: {integrity: sha512-y+FyyR/w8vfIRq4eQcM1EYgSTnmHXPqaF+IgzgraytCFq5Xh8lllDVmAZolPJiZttZLeFSINPYMaEJ7/vWUa1w==}
@@ -7103,8 +7119,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack@2.6.3:
-    resolution: {integrity: sha512-k1GC9GiIrjAmLx48g52/38u6OfWVUAhvWtxm5G4vFUaGAt82WPVl+P5S9YXMRXgNtUnTFfzC4Vfp5TUEG0i7zQ==}
+  /nitropack-nightly@2.7.0-28295301.f3f2acb:
+    resolution: {integrity: sha512-E+LXAPg3ZIkiLf2OeWpI+DcRkC22GPStzsc5g7sQ5Wrims2YHDSizpMCwwIXC+FywSpFl1HN8wzatPB4QdjxRA==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -7125,7 +7141,7 @@ packages:
       '@rollup/plugin-wasm': 6.2.2(rollup@3.29.4)
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
       '@types/http-proxy': 1.17.13
-      '@vercel/nft': 0.23.1
+      '@vercel/nft': 0.24.3
       archiver: 6.0.1
       c12: 1.4.2
       chalk: 5.3.0
@@ -7142,7 +7158,7 @@ packages:
       fs-extra: 11.1.1
       globby: 13.2.2
       gzip-size: 7.0.0
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1697582360.fb79f41
       hookable: 5.5.3
       httpxy: 0.1.5
       is-primitive: 3.0.1
