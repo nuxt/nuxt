@@ -79,10 +79,7 @@ async function _importPayload (payloadURL: string) {
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   const nuxtApp = useNuxtApp()
-  if (nuxtApp.payload.prerenderedAt) {
-    return true
-  }
-  if (!appManifest) { return false }
+  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
