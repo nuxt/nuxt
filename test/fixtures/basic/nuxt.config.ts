@@ -47,6 +47,9 @@ export default defineNuxtConfig({
       }
     },
     routeRules: {
+      // TODO: update this test
+      // pretend to be fully prerendered
+      '/**': { prerender: true },
       '/route-rules/spa': { ssr: false },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
