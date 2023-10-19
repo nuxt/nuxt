@@ -479,7 +479,7 @@ importers:
         specifier: 3.3.4
         version: 3.3.4
       c12:
-        specifier: ^1.5.1
+        specifier: 1.5.1
         version: 1.5.1
       esbuild-loader:
         specifier: 4.0.2
