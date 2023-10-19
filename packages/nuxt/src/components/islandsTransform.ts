@@ -31,7 +31,6 @@ const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
-  const components = options.getComponents()
   const isVite = meta.framework === 'vite'
   const { isDev, rootDir } = options
   return {
@@ -39,6 +38,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
+      const components = options.getComponents()
 
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
