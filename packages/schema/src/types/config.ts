@@ -88,7 +88,7 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'run
 
     /**
      * Experimental custom config schema
-     * @see https://github.com/nuxt/nuxt/issues/15592
+     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     $schema?: SchemaDefinition
 }
@@ -125,13 +125,13 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   entry?: string
   /**
    * Options passed to @vitejs/plugin-vue.
-   * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue
+   * @see [@vitejs/plugin-vue](https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue)
    */
   vue?: VuePluginOptions
 
   /**
    * Options passed to @vitejs/plugin-vue-jsx.
-   * @see https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx
+   * @see [@vitejs/plugin-vue-jsx.](https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx)
    */
   vueJsx?: VueJsxPluginOptions
 
@@ -153,7 +153,7 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /**
    * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
    *
-   * You can read more in <https://nuxt.com/docs/api/configuration/nuxt-config#public>.
+   * You can read more in <https://nuxt.com/docs/api/nuxt-config#public>.
    * @deprecated
    */
   publicDir?: never

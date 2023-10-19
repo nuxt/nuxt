@@ -1,12 +1,14 @@
 ---
 title: "defineNuxtRouteMiddleware"
+description: "Create named route middleware using defineNuxtRouteMiddleware helper function."
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
-# `defineNuxtRouteMiddleware`
-
-Create named route middleware using `defineNuxtRouteMiddleware` helper function.
-
-Route middleware are stored in the [`middleware/` directory](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/configuration/nuxt-config#middleware)).
+Route middleware are stored in the [`middleware/`](/docs/guide/directory-structure/middleware) of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
 
 ## Type
 
