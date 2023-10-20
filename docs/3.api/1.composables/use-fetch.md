@@ -4,7 +4,7 @@ This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
 ::alert{type=warning}
-[`useFetch`](/docs/api/composables/use-fetch) is a composable meant to be called directly in a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
+[`useFetch`](/docs/api/composables/use-fetch) is a composable meant to be called directly in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
 ## Type
