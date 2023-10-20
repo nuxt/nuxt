@@ -3,6 +3,9 @@
     ServerWithClient.server.vue :
     <p>count: {{ count }}</p>
 
+    This component should not be preloaded
+    <ComponentWithRef />
+
     This is not interactive
     <SugarCounter :multiplier="1" />
 

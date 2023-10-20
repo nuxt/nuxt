@@ -1479,12 +1479,13 @@ describe('server components/islands', () => {
     await page.close()
   })
 
-  it('should not preload NuxtIsland on /jsx', async () => {
-    const { page } = await renderPage('/jsx')
+  it('should not preload ComponentWithRef', async () => {
+    // should not add <ComponentWithRef> to the modulepreload list since it is used only server side
+    const { page } = await renderPage('/islands')
     const links = await page.locator('link').all()
     for (const link of links) {
       if (await link.getAttribute('rel') === 'modulepreload') {
-        expect(await link.getAttribute('href')).not.toContain('NuxtIsland')
+        expect(await link.getAttribute('href')).not.toContain('ComponentWithRef')
       }
     }
   })
