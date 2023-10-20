@@ -114,7 +114,7 @@ export default defineComponent({
 
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
-        appendResponseHeader(event, 'x-nitro-prerender', url)
+        nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
@@ -127,7 +127,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          prerenderRoutes(hints)
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
       setPayload(key, result)
