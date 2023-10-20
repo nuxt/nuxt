@@ -7,7 +7,7 @@ description: navigateTo is a helper function that programmatically navigates use
 
 `navigateTo` is a router helper function that allows programmatically navigating users through your Nuxt application.
 
-`navigateTo` is available on both server side and client side. It can be used within a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope, or directly, to perform page navigation.
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ## Type
 
