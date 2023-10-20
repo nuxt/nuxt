@@ -284,7 +284,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // joins with `baseURL` if it's an relative link
         if (href && href.startsWith('/') && !href.startsWith('//')) {
           const baseURL = useRuntimeConfig().app.baseURL
-          if (href !== '/' && !href.startsWith(baseURL)) {
+          if (baseURL !== '/' && !href.startsWith(baseURL)) {
             href = joinURL(withLeadingSlash(withTrailingSlash(baseURL)), href)
           }
         }
