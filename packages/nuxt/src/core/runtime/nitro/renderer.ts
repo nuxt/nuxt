@@ -548,7 +548,7 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`
       }
     ]
   }
