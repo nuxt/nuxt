@@ -281,7 +281,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         let href = typeof to.value === 'object' ? router.resolve(to.value)?.href ?? null : to.value || null
 
-        // joins with `baseURL` if it's an relative link
+        // Joins relative links with `baseURL`
         if (href && href.startsWith('/') && !href.startsWith('//')) {
           const baseURL = useRuntimeConfig().app.baseURL
           if (baseURL !== '/' && !href.startsWith(baseURL)) {
