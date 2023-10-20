@@ -4,10 +4,8 @@ on:
   push:
     paths:
       - "docs/**"
-      - .github/workflows/docs-deploy.yml
     branches:
       - main
-      - ci/docs-deploy
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
