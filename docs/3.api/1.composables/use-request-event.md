@@ -5,7 +5,7 @@ description: "You can use useRequestEvent to access the incoming request."
 
 # `useRequestEvent`
 
-Within a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope you can use `useRequestEvent` to access the incoming request.
+Within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) you can use `useRequestEvent` to access the incoming request.
 
 ```js
 // Get underlying request event
