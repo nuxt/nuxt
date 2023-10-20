@@ -110,7 +110,7 @@ export default defineComponent({
       const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
+      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
