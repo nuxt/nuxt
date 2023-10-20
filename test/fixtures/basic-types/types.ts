@@ -284,6 +284,8 @@ describe('runtimeConfig', () => {
     expectTypeOf<UpperUpperSnakeCase<'testAPP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
     expectTypeOf<UpperUpperSnakeCase<'test_APP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
     expectTypeOf<UpperUpperSnakeCase<'TESTAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperUpperSnakeCase<'t'>>().toEqualTypeOf<'T'>()
+    expectTypeOf<UpperUpperSnakeCase<'T'>>().toEqualTypeOf<'T'>()
   })
 })
 
