@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - "docs/**"
-      - .github/workflows/deploy-docs.yml
+      - .github/workflows/docs-deploy.yml
     branches:
       - main
       - ci/docs-deploy
