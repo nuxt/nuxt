@@ -141,9 +141,9 @@ describe('resolveApp', () => {
     // TODO: fix this
     expect(fixtureMiddleware).toMatchInlineSnapshot(`
       [
-        "<rootDir>/layer1/middleware/global.global.ts",
-        "<rootDir>/layer1/middleware/named-from-layer.ts",
-        "<rootDir>/layer1/middleware/named-override.ts",
+        "<rootDir>/layer2/middleware/global.global.ts",
+        "<rootDir>/layer2/middleware/named-from-layer.ts",
+        "<rootDir>/middleware/named-override.ts",
         "<rootDir>/middleware/named.ts",
       ]
     `)
@@ -175,6 +175,55 @@ describe('resolveApp', () => {
         "layer": {
           "file": "<rootDir>/layer2/layouts/layer.vue",
           "name": "layer",
+        },
+      }
+    `)
+  })
+
+  it('resolves nested layouts correctly', async () => {
+    const app = await getResolvedApp([
+      'layouts/default.vue',
+      'layouts/some/layout.vue',
+      'layouts/SomeOther.vue',
+      'layouts/SomeOther/Thing/Index.vue',
+      'layouts/thing/thing/thing.vue',
+      'layouts/desktop-base/base.vue',
+      'layouts/some.vue',
+      'layouts/SomeOther/layout.ts'
+    ])
+    expect(app.layouts).toMatchInlineSnapshot(`
+      {
+        "default": {
+          "file": "<rootDir>/layouts/default.vue",
+          "name": "default",
+        },
+        "desktop-base": {
+          "file": "<rootDir>/layouts/desktop-base/base.vue",
+          "name": "desktop-base",
+        },
+        "some": {
+          "file": "<rootDir>/layouts/some.vue",
+          "name": "some",
+        },
+        "some-layout": {
+          "file": "<rootDir>/layouts/some/layout.vue",
+          "name": "some-layout",
+        },
+        "some-other": {
+          "file": "<rootDir>/layouts/SomeOther.vue",
+          "name": "some-other",
+        },
+        "some-other-layout": {
+          "file": "<rootDir>/layouts/SomeOther/layout.ts",
+          "name": "some-other-layout",
+        },
+        "some-other-thing": {
+          "file": "<rootDir>/layouts/SomeOther/Thing/Index.vue",
+          "name": "some-other-thing",
+        },
+        "thing": {
+          "file": "<rootDir>/layouts/thing/thing/thing.vue",
+          "name": "thing",
         },
       }
     `)

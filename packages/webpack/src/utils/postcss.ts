@@ -1,7 +1,7 @@
 import { createCommonJS } from 'mlly'
-import { cloneDeep, defaults, merge } from 'lodash-es'
 import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
+import { defu } from 'defu'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -26,15 +26,6 @@ const orderPresets = {
 }
 
 export const getPostcssConfig = (nuxt: Nuxt) => {
-  function defaultConfig () {
-    return {
-      sourceMap: nuxt.options.webpack.cssSourceMap,
-      plugins: nuxt.options.postcss.plugins,
-      // Array, String or Function
-      order: 'autoprefixerAndCssnanoLast'
-    }
-  }
-
   function sortPlugins ({ plugins, order }: any) {
     const names = Object.keys(plugins)
     if (typeof order === 'string') {
@@ -43,38 +34,31 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
     return typeof order === 'function' ? order(names, orderPresets) : (order || names)
   }
 
-  function loadPlugins (config: any) {
-    if (!isPureObject(config.plugins)) { return }
+  if (!nuxt.options.webpack.postcss || !nuxt.options.postcss) {
+    return false
+  }
 
+  const postcssOptions = defu({}, nuxt.options.postcss, {
+    sourceMap: nuxt.options.webpack.cssSourceMap,
+    // Array, String or Function
+    order: 'autoprefixerAndCssnanoLast'
+  })
+
+  // Keep the order of default plugins
+  if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
     const cjs = createCommonJS(import.meta.url)
-    config.plugins = sortPlugins(config).map((pluginName: string) => {
+    postcssOptions.plugins = sortPlugins(postcssOptions).map((pluginName: string) => {
       const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
-      const pluginOptions = config.plugins[pluginName]
+      const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions || typeof pluginFn !== 'function') { return null }
       return pluginFn(pluginOptions)
     }).filter(Boolean)
   }
 
-  if (!nuxt.options.webpack.postcss || !nuxt.options.postcss) {
-    return false
-  }
-
-  let postcssOptions = cloneDeep(nuxt.options.postcss)
-  // Apply default plugins
-  if (isPureObject(postcssOptions)) {
-    if (Array.isArray(postcssOptions.plugins)) {
-      defaults(postcssOptions, defaultConfig())
-    } else {
-      // Keep the order of default plugins
-      postcssOptions = merge({}, defaultConfig(), postcssOptions)
-      loadPlugins(postcssOptions)
-    }
-
-    return {
-      sourceMap: nuxt.options.webpack.cssSourceMap,
-      ...nuxt.options.webpack.postcss,
-      postcssOptions
-    }
+  return {
+    sourceMap: nuxt.options.webpack.cssSourceMap,
+    ...nuxt.options.webpack.postcss,
+    postcssOptions
   }
 }
