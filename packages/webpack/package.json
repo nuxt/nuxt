@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.7.4",
+  "version": "3.8.0",
   "repository": "nuxt/nuxt",
   "description": "Webpack bundler for Nuxt",
   "license": "MIT",
@@ -64,7 +64,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/fs-extra": "11.0.2",
+    "@types/fs-extra": "11.0.3",
     "@types/hash-sum": "1.0.1",
     "@types/pify": "5.0.3",
     "@types/webpack-bundle-analyzer": "4.6.2",
