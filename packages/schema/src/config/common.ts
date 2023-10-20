@@ -1,6 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
-import { isDebug, isDevelopment } from 'std-env'
+import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
@@ -158,7 +158,7 @@ export default defineUntypedSchema({
   /**
    * Whether your app is being unit tested.
    */
-  test: Boolean(isDevelopment),
+  test: Boolean(isTest),
 
   /**
    * Set to `true` to enable debug mode.
