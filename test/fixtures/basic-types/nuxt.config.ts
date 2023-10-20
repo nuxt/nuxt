@@ -16,9 +16,6 @@ export default defineNuxtConfig({
     baseURL: '',
     baseAPIToken: '',
     privateConfig: 'secret_key',
-    APP: '',
-    APP_NAMES: [''],
-    test_APP_NAME: 'test',
     public: {
       ids: [1, 2, 3],
       needsFallback: undefined,
