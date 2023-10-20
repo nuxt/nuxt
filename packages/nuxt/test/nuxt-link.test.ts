@@ -2,6 +2,16 @@ import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
+import { useRuntimeConfig } from '../src/app/nuxt'
+
+// mocks `useRuntimeConfig()`
+vi.mock('../src/app/nuxt', () => ({
+  useRuntimeConfig: vi.fn(() => ({
+    app: {
+      baseURL: '/'
+    }
+  }))
+}))
 
 // Mocks `h()`
 vi.mock('vue', async () => {
@@ -124,6 +134,40 @@ describe('nuxt-link:propsOrAttributes', () => {
 
       it('defaults to `null`', () => {
         expect(nuxtLink({ to: 'https://nuxtjs.org' }).props.target).toBe(null)
+      })
+
+      it('prefixes target="_blank" internal links with baseURL', () => {
+        vi.mocked(useRuntimeConfig).withImplementation(() => {
+          return {
+            app: {
+              baseURL: '/base'
+            }
+          } as any
+        }, () => {
+          expect(nuxtLink({ to: '/', target: '_blank' }).props.href).toBe('/base')
+          expect(nuxtLink({ to: '/base', target: '_blank' }).props.href).toBe('/base/base')
+          expect(nuxtLink({ to: '/to', target: '_blank' }).props.href).toBe('/base/to')
+          expect(nuxtLink({ to: '/base/to', target: '_blank' }).props.href).toBe('/base/base/to')
+          expect(nuxtLink({ to: '//base/to', target: '_blank' }).props.href).toBe('//base/to')
+          expect(nuxtLink({ to: '//to.com/thing', target: '_blank' }).props.href).toBe('//to.com/thing')
+          expect(nuxtLink({ to: 'https://test.com/to', target: '_blank' }).props.href).toBe('https://test.com/to')
+
+          expect(nuxtLink({ to: '/', target: '_blank' }, { trailingSlash: 'append' }).props.href).toBe('/base/')
+          expect(nuxtLink({ to: '/base/', target: '_blank' }, { trailingSlash: 'remove' }).props.href).toBe('/base/base')
+        })
+      })
+
+      it('excludes the baseURL for external links', () => {
+        vi.mocked(useRuntimeConfig).withImplementation(() => {
+          return {
+            app: {
+              baseURL: '/base'
+            }
+          } as any
+        }, () => {
+          expect(nuxtLink({ to: 'http://nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('http://nuxtjs.org/app/about')
+          expect(nuxtLink({ to: '//nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('//nuxtjs.org/app/about')
+        })
       })
     })
 
