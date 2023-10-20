@@ -3,7 +3,7 @@ description: setPageLayout allows you to dynamically change the layout of a page
 ---
 # `setPageLayout`
 
-`setPageLayout` allows you to dynamically change the layout of a page. It relies on access to the Nuxt context and therefore can only be called within a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope.
+`setPageLayout` allows you to dynamically change the layout of a page. It relies on access to the Nuxt context and therefore can only be called within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 
 ```ts
 export default defineNuxtRouteMiddleware((to) => {
