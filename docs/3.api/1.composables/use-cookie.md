@@ -11,7 +11,7 @@ const cookie = useCookie(name, options)
 ```
 
 ::alert{icon=👉}
-`useCookie` only works in a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope
+`useCookie` only works in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
 ::alert{icon=😌}
