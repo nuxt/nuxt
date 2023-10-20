@@ -14,7 +14,7 @@ export default defineUntypedSchema({
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
    * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
    * @see https://github.com/unjs/giget
-   * @type {(string|string|[string, typeof import('c12').SourceOptions?])[]}
+   * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
 
