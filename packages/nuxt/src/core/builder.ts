@@ -199,7 +199,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
 
   if (!builderPath) {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/configuration/nuxt-config#builder\``)
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
   return import(pathToFileURL(builderPath).href)
 }

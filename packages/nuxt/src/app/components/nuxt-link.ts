@@ -9,6 +9,9 @@ import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
+// @ts-expect-error virtual file
+import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
@@ -332,7 +335,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   }) as unknown as DefineComponent<NuxtLinkProps>
 }
 
-export default defineNuxtLink({ componentName: 'NuxtLink' })
+export default defineNuxtLink(nuxtLinkDefaults)
 
 // --- Prefetching utils ---
 type CallbackFn = () => void
