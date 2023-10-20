@@ -5,7 +5,7 @@ description: The useRoute composable returns the current route.
 
 # `useRoute`
 
-The [`useRoute`](/docs/api/composables/use-route) composable returns the current route and must be called in a [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) scope.
+The [`useRoute`](/docs/api/composables/use-route) composable returns the current route and must be called in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 
 Within the template of a Vue component, you can access the route using `$route`.
 
