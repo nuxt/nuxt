@@ -183,7 +183,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     url = await islandPropCache!.getItem(event.path) as string
   }
   url = url.substring('/__nuxt_island'.length + 1) || ''
-  const [componentName, hashId] = url.split('?')[0].split('_')
+  const [componentName, hashId] = url.split('?')[0].replace(/\.json$/, '').split('_')
 
   // TODO: Validate context
   const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
@@ -458,8 +458,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       }
     } satisfies RenderResponse
     if (import.meta.prerender) {
-      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.path)
+      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
     }
     return response
   }
@@ -561,7 +561,7 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`
       }
     ]
   }

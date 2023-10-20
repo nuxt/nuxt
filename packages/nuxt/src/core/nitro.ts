@@ -215,7 +215,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.appManifest) {
     // @ts-expect-error untyped nuxt property
     const buildId = nuxt.options.appConfig.nuxt!.buildId ||=
-      (nuxt.options.test ? 'test' : nuxt.options.dev ? 'dev' : randomUUID())
+      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : randomUUID())
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
