@@ -144,10 +144,16 @@ describe('nuxt-link:propsOrAttributes', () => {
             }
           } as any
         }, () => {
-          expect(nuxtLink({ to: '/', target: '_blank' }).props.href).toBe('/base/')
-          expect(nuxtLink({ to: '/base', target: '_blank' }).props.href).toBe('/base')
+          expect(nuxtLink({ to: '/', target: '_blank' }).props.href).toBe('/base')
+          expect(nuxtLink({ to: '/base', target: '_blank' }).props.href).toBe('/base/base')
           expect(nuxtLink({ to: '/to', target: '_blank' }).props.href).toBe('/base/to')
-          expect(nuxtLink({ to: '/base/to', target: '_blank' }).props.href).toBe('/base/to')
+          expect(nuxtLink({ to: '/base/to', target: '_blank' }).props.href).toBe('/base/base/to')
+          expect(nuxtLink({ to: '//base/to', target: '_blank' }).props.href).toBe('//base/to')
+          expect(nuxtLink({ to: '//to.com/thing', target: '_blank' }).props.href).toBe('//to.com/thing')
+          expect(nuxtLink({ to: 'https://test.com/to', target: '_blank' }).props.href).toBe('https://test.com/to')
+
+          expect(nuxtLink({ to: '/', target: '_blank' }, { trailingSlash: 'append' }).props.href).toBe('/base/')
+          expect(nuxtLink({ to: '/base/', target: '_blank' }, { trailingSlash: 'remove' }).props.href).toBe('/base/base')
         })
       })
 
