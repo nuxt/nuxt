@@ -1,6 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
-import { isDebug, isDevelopment } from 'std-env'
+import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
@@ -14,7 +14,7 @@ export default defineUntypedSchema({
    * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
    * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
    * @see https://github.com/unjs/giget
-   * @type {(string|string|[string, typeof import('c12').SourceOptions?])[]}
+   * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
 
@@ -158,7 +158,7 @@ export default defineUntypedSchema({
   /**
    * Whether your app is being unit tested.
    */
-  test: Boolean(isDevelopment),
+  test: Boolean(isTest),
 
   /**
    * Set to `true` to enable debug mode.

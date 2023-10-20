@@ -63,7 +63,7 @@
     "@unhead/dom": "^1.7.4",
     "@unhead/ssr": "^1.7.4",
     "@unhead/vue": "^1.7.4",
-    "@vue/shared": "^3.3.5",
+    "@vue/shared": "^3.3.6",
     "acorn": "8.10.0",
     "c12": "^1.5.1",
     "chokidar": "^3.5.3",
@@ -104,7 +104,7 @@
     "unplugin": "^1.5.0",
     "unplugin-vue-router": "^0.7.0",
     "untyped": "^1.4.0",
-    "vue": "^3.3.5",
+    "vue": "^3.3.6",
     "vue-bundle-renderer": "^2.0.0",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.2.5"
