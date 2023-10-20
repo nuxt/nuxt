@@ -17,7 +17,7 @@ import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
 import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
-import { remoteComponentIslands } from '#build/nuxt.config.mjs'
+import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
@@ -80,7 +80,7 @@ export default defineComponent({
   },
   async setup (props, { slots }) {
     const key = ref(0)
-    const canLoadClientComponent = computed(() => props.dangerouslyLoadClientComponents || !props.source)
+    const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -205,7 +205,7 @@ export default defineComponent({
         key.value++
         error.value = null
 
-        if (import.meta.client) {
+        if (selectiveClient && import.meta.client) {
           if (canLoadClientComponent.value && res.chunks) {
             await loadComponents(props.source, res.chunks)
           }
@@ -238,7 +238,7 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if (canLoadClientComponent.value && nonReactivePayload.chunks) {
+    } else if (selectiveClient && canLoadClientComponent.value && nonReactivePayload.chunks) {
       await loadComponents(props.source, nonReactivePayload.chunks)
     }
 
@@ -265,7 +265,7 @@ export default defineComponent({
             }))
           }
         }
-        if (import.meta.client && canLoadClientComponent.value) {
+        if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
           for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
             const component = components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {

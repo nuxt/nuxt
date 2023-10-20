@@ -18,6 +18,10 @@ interface ServerOnlyComponentTransformPluginOptions {
      */
     rootDir?: string
     isDev?: boolean
+    /**
+     * allow using `nuxt-client` attribute on components
+     */
+    selectiveClient?: boolean
 }
 
 interface ComponentChunkOptions {
@@ -99,7 +103,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
                 s.appendLeft(startingIndex + loc[1].start, '<div nuxt-slot-fallback-end/>')
               }
             }
-          } else if ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes) {
+          } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
             const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
             if (isVite) {
