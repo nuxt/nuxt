@@ -53,7 +53,7 @@ type UpperSnakeCase<T extends string, State extends 'start' | 'lower' | 'upper' 
             : `_${Uppercase<A>}${UpperSnakeCase<B, 'lower'>}`
     : Uppercase<T>
 
-type UpperUpperSnakeCase<T extends string> = T extends Uppercase<T> ? T : UpperSnakeCase<T>
+export type UpperUpperSnakeCase<T extends string> = T extends Uppercase<T> ? T : UpperSnakeCase<T>
 
 const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
