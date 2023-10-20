@@ -287,7 +287,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const href = typeof to.value === 'object'
           ? router.resolve(to.value)?.href ?? null
           : (to.value && !props.external && !isProtocolURL.value)
-              ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve)
+              ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
               : to.value || null
 
         // Resolves `target` value
