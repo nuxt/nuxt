@@ -18,22 +18,20 @@ const getComponents = () => [{
   preload: false
 }] as Component[]
 
-const pluginVite = islandsTransform.raw({
-  getComponents
-}, { framework: 'vite' }) as Plugin
-
-const pluginViteDev = islandsTransform.raw({
-  getComponents,
-  rootDir: '/root',
-  isDev: true
-}, { framework: 'vite' }) as Plugin
-
 const pluginWebpack = islandsTransform.raw({
-  getComponents
+  getComponents,
+  selectiveClient: true
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
-const viteTransform = async (source: string, id: string, dev = false) => {
-  const result = await ((dev ? pluginViteDev : pluginVite).transform! as Function)(source, id)
+const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
+  const vitePlugin = islandsTransform.raw({
+    getComponents,
+    rootDir: '/root',
+    isDev,
+    selectiveClient
+  }, { framework: 'vite' }) as Plugin
+
+  const result = await (vitePlugin.transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -191,7 +189,7 @@ describe('islandTransform - server and island components', () => {
       <script setup lang="ts">
       import HelloWorld from './HelloWorld.vue'
       </script>
-      `, 'hello.server.vue', true)
+      `, 'hello.server.vue', true, true)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
@@ -225,7 +223,7 @@ describe('islandTransform - server and island components', () => {
       <script setup lang="ts">
       import HelloWorld from './HelloWorld.vue'
       </script>
-      `, 'hello.server.vue')
+      `, 'hello.server.vue', false, true)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
@@ -260,13 +258,47 @@ describe('islandTransform - server and island components', () => {
 
       const nuxtClient = false
       </script>
-      `, 'hello.server.vue')
+      `, 'hello.server.vue', false, true)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
                   <div>
                     <HelloWorld />
                     <NuxtTeleportSsrClient to=\\"HelloWorld-eo0XycWCUV\\"  :nuxt-client=\\"nuxtClient\\"><HelloWorld :nuxt-client=\\"nuxtClient\\" /></NuxtTeleportSsrClient>
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+
+                const nuxtClient = false
+                </script>
+                "
+        `)
+      })
+
+      it('should not transform if disabled', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld />
+          <HelloWorld :nuxt-client="nuxtClient" />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+
+      const nuxtClient = false
+      </script>
+      `, 'hello.server.vue', false, false)
+
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <HelloWorld />
+                    <HelloWorld :nuxt-client=\\"nuxtClient\\" />
                   </div>
                 </template>
                 
