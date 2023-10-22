@@ -853,9 +853,6 @@ importers:
 
   playground:
     dependencies:
-      '@fontsource/lora':
-        specifier: ^5.0.8
-        version: 5.0.8
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
@@ -1751,10 +1748,6 @@ packages:
   /@fastify/busboy@2.0.0:
     resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
     engines: {node: '>=14'}
-
-  /@fontsource/lora@5.0.8:
-    resolution: {integrity: sha512-lJBsGmaOCr5INZwxz29TVTrIuZPTYcd3lkwnpoTclb86KsYpyU7chDVUQvf3CW/+hdX3fi1z7GvUz/kJIDyiZA==}
-    dev: false
 
   /@humanwhocodes/config-array@0.11.13:
     resolution: {integrity: sha512-JSBDMiDKSzQVngfRjOdFXgFfklaXI4K9nLF49Auh21lmBWRLIK3+xTErTWD4KU54pb6coM6ESE7Awz/FNU3zgQ==}
