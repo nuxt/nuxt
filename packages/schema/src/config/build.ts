@@ -106,20 +106,17 @@ export default defineUntypedSchema({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
+     * @type {boolean | { enabled?: boolean } & ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
       $resolve: async (val, get) => {
-        if (val !== true) {
-          return val ?? false
-        }
         const rootDir = await get('rootDir')
         const analyzeDir = await get('analyzeDir')
-        return {
+        return defu(typeof val === 'boolean' ? { enabled: val } : val, {
           template: 'treemap',
           projectRoot: rootDir,
           filename: join(analyzeDir, '{name}.html')
-        }
+        })
       }
     }
   },
