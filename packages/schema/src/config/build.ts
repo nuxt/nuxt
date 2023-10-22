@@ -97,7 +97,7 @@ export default defineUntypedSchema({
     templates: [],
 
     /**
-     * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
+     * Nuxt allows visualizing your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
      * @example
@@ -106,7 +106,7 @@ export default defineUntypedSchema({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions}
+     * @type {boolean | ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
       $resolve: async (val, get) => {
