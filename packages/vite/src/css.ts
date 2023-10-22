@@ -10,11 +10,10 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
     }
   }
 
-  const vitePlugins = ['postcss-import', 'postcss-url']
   const lastPlugins = ['autoprefixer', 'cssnano']
   css.postcss.plugins = Object.entries(nuxt.options.postcss.plugins)
     .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))
-    .filter(([name, opts]) => !vitePlugins.includes(name) && opts)
+    .filter(([, opts]) => opts)
     .map(([name, opts]) => {
       const plugin = requireModule(name, {
         paths: [

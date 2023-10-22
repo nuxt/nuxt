@@ -438,9 +438,6 @@ importers:
       pkg-types:
         specifier: ^1.0.3
         version: 1.0.3
-      postcss-import-resolver:
-        specifier: ^2.0.0
-        version: 2.0.0
       std-env:
         specifier: ^3.4.3
         version: 3.4.3
@@ -774,6 +771,9 @@ importers:
       postcss-import:
         specifier: ^15.1.0
         version: 15.1.0(postcss@8.4.31)
+      postcss-import-resolver:
+        specifier: ^2.0.0
+        version: 2.0.0
       postcss-loader:
         specifier: ^7.3.3
         version: 7.3.3(postcss@8.4.31)(typescript@5.2.2)(webpack@5.89.0)
@@ -853,6 +853,9 @@ importers:
 
   playground:
     dependencies:
+      '@fontsource/lora':
+        specifier: ^5.0.8
+        version: 5.0.8
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
@@ -1748,6 +1751,10 @@ packages:
   /@fastify/busboy@2.0.0:
     resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
     engines: {node: '>=14'}
+
+  /@fontsource/lora@5.0.8:
+    resolution: {integrity: sha512-lJBsGmaOCr5INZwxz29TVTrIuZPTYcd3lkwnpoTclb86KsYpyU7chDVUQvf3CW/+hdX3fi1z7GvUz/kJIDyiZA==}
+    dev: false
 
   /@humanwhocodes/config-array@0.11.13:
     resolution: {integrity: sha512-JSBDMiDKSzQVngfRjOdFXgFfklaXI4K9nLF49Auh21lmBWRLIK3+xTErTWD4KU54pb6coM6ESE7Awz/FNU3zgQ==}
