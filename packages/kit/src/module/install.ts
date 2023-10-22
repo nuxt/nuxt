@@ -42,7 +42,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
 
 // --- Internal ---
 
-function getDirectory (p: string) {
+export function getDirectory (p: string) {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
