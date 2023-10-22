@@ -641,12 +641,6 @@ importers:
       postcss:
         specifier: ^8.4.31
         version: 8.4.31
-      postcss-import:
-        specifier: ^15.1.0
-        version: 15.1.0(postcss@8.4.31)
-      postcss-url:
-        specifier: ^10.1.3
-        version: 10.1.3(postcss@8.4.31)
       rollup-plugin-visualizer:
         specifier: ^5.9.2
         version: 5.9.2(rollup@3.29.4)
