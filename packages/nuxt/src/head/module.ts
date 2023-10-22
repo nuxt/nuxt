@@ -48,9 +48,10 @@ export default defineNuxtModule({
     })
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
+    const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+      nuxt.options.alias['@vueuse/head'] = unheadVue
       addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
     }
 
@@ -60,7 +61,7 @@ export default defineNuxtModule({
         if (!nuxt.options.experimental.headNext) {
           return 'export default []'
         }
-        return `import { CapoPlugin } from '@unhead/vue';
+        return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
 export default process.server ? [CapoPlugin({ track: true })] : [];`
       }
     })
