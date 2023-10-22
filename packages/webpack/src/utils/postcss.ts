@@ -26,7 +26,7 @@ const orderPresets = {
   }
 }
 
-export const getPostcssConfig = async async async async (nuxt: Nuxt) => {
+export const getPostcssConfig = (nuxt: Nuxt) => {
   function sortPlugins ({ plugins, order }: any) {
     const names = Object.keys(plugins)
     if (typeof order === 'string') {
