@@ -8,6 +8,7 @@ import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'
+import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
@@ -110,14 +111,14 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 export async function writeTypes (nuxt: Nuxt) {
-  const modulePaths = getModulePaths(nuxt.options.modulesDir)
+  const nodeModulePaths = getModulePaths(nuxt.options.modulesDir)
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modules = await resolveNuxtModule(rootDirWithSlash,
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash,
     nuxt.options._installedModules
       .filter(m => m.entryPath)
-      .map(m => m.entryPath)
+      .map(m => getDirectory(m.entryPath))
   )
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
@@ -150,11 +151,11 @@ export async function writeTypes (nuxt: Nuxt) {
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
@@ -215,7 +216,7 @@ export async function writeTypes (nuxt: Nuxt) {
     ...nuxt.options._modules
   ]
     .filter(f => typeof f === 'string')
-    .map(async id => ({ types: (await readPackageJSON(id, { url: modulePaths }).catch(() => null))?.name || id })))
+    .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
 
   if (nuxt.options.experimental?.reactivityTransform) {
     references.push({ types: 'vue/macros-global' })
