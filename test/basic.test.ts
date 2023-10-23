@@ -368,6 +368,7 @@ describe('pages', () => {
     // force wait for a few ticks
     await page2.waitForTimeout(50)
     expect(consoleLogs2.some(log => log.type === 'error' || log.type === 'warning')).toBeFalsy()
+    await page2.close()
   })
 
   it('/wrapper-expose/layout', async () => {
