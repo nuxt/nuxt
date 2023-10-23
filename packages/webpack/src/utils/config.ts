@@ -68,5 +68,6 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 
 export function getWebpackConfig (ctx: WebpackConfigContext): Configuration {
   // Clone to avoid leaking config between Client and Server
+  // TODO: rewrite webpack implementation to avoid necessity for this
   return cloneDeep(ctx.config)
 }
