@@ -1,4 +1,4 @@
-import defu from 'defu'
+import { defu } from 'defu'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
