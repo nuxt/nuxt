@@ -129,7 +129,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // Add analyze plugin if needed
-  if (ctx.nuxt.options.build.analyze) {
+  if (ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
