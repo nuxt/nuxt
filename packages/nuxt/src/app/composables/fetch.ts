@@ -140,11 +140,14 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
-    const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
     let _$fetch = opts.$fetch || globalThis.$fetch
+
     // Use fetch with request context and headers for server direct API calls
-    if (import.meta.server && !opts.$fetch && isLocalFetch) {
-      _$fetch = useRequestFetch()
+    if (import.meta.server && !opts.$fetch) {
+      const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/') && (!unref(opts.baseURL) || unref(opts.baseURL)!.startsWith('/'))
+      if (isLocalFetch) {
+        _$fetch = useRequestFetch()
+      }
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>

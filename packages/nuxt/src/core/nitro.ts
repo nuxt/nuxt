@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 
@@ -78,11 +78,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern }
     },
-    analyze: nuxt.options.build.analyze && {
-      template: 'treemap',
-      projectRoot: nuxt.options.rootDir,
-      filename: join(nuxt.options.analyzeDir, '{name}.html')
-    },
+    analyze: nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
+      ? {
+          template: 'treemap',
+          projectRoot: nuxt.options.rootDir,
+          filename: join(nuxt.options.analyzeDir, '{name}.html')
+        }
+      : false,
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
@@ -99,6 +101,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
+      app: {
+        ...nuxt.options.runtimeConfig.app,
+        baseURL: nuxt.options.runtimeConfig.app.baseURL.startsWith('./')
+          ? nuxt.options.runtimeConfig.app.baseURL.slice(1)
+          : nuxt.options.runtimeConfig.app.baseURL
+      } satisfies RuntimeConfig['app'],
       nitro: {
         envPrefix: 'NUXT_',
         ...nuxt.options.runtimeConfig.nitro
