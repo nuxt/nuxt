@@ -3,7 +3,7 @@ import webpack from 'webpack'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
-import { applyPresets, getWebpackConfig } from '../utils/config'
+import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
 
@@ -20,8 +20,6 @@ export function server (ctx: WebpackConfigContext) {
     serverPreset,
     serverPlugins
   ])
-
-  return getWebpackConfig(ctx)
 }
 
 function serverPreset (ctx: WebpackConfigContext) {
