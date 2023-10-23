@@ -261,7 +261,7 @@ export function useAsyncData<
       }
     }
 
-    if (asyncData.error.value || (fetchOnServer && nuxt.isHydrating && hasCachedData())) {
+    if (fetchOnServer && nuxt.isHydrating && (asyncData.error.value || hasCachedData())) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
