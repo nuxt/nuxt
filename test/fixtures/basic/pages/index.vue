@@ -32,6 +32,9 @@
     <NuxtLink to="/chunk-error" :prefetch="false">
       Chunk error
     </NuxtLink>
+    <NuxtLink id="to-client-only-components" to="/client-only-components">
+      createClientOnly()
+    </NuxtLink>
     <NuxtLink id="middleware-abort-non-fatal" to="/middleware-abort-non-fatal" :prefetch="false">
       Middleware abort navigation
     </NuxtLink>
