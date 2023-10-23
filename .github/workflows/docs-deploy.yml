@@ -1,0 +1,20 @@
+name: Deploy docs
+
+on:
+  push:
+    paths:
+      - "docs/**"
+    branches:
+      - main
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+jobs:
+  deploy-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - if: ${{ github.repository_owner == 'nuxt' && github.event_name == 'push' }}
+        run: curl "${{ secrets.DOCS_WEBHOOK }}"
