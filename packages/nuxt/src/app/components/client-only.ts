@@ -41,7 +41,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           : h(res)
       } else {
         const fragment = getFragmentHTML(ctx._.vnode.el ?? null)
-        return process.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.$attrs ?? ctx._.attrs)
+        return process.client ? createStaticVNode(fragment.join('') || '<div></div>', fragment.length) : h('div', ctx.$attrs ?? ctx._.attrs)
       }
     }
   } else if (clone.template) {
@@ -80,7 +80,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
                   : h(res)
               } else {
                 const fragment = getFragmentHTML(instance?.vnode.el ?? null)
-                return process.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.attrs)
+                return process.client ? createStaticVNode(fragment.join('') || '<div></div>', fragment.length) : h('div', ctx.attrs)
               }
             }
       })

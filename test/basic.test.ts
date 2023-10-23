@@ -83,7 +83,7 @@ describe('modules', () => {
   })
 })
 
-describe.only('pages', () => {
+describe('pages', () => {
   it('render index', async () => {
     const html = await $fetch('/')
 
