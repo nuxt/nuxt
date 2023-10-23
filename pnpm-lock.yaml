@@ -441,6 +441,9 @@ importers:
       postcss-import-resolver:
         specifier: ^2.0.0
         version: 2.0.0
+      scule:
+        specifier: ^1.0.0
+        version: 1.0.0
       std-env:
         specifier: ^3.4.3
         version: 3.4.3

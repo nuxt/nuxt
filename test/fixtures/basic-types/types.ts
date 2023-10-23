@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
-import type { AppConfig, RuntimeValue, UpperUpperSnakeCase } from 'nuxt/schema'
+import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -275,17 +275,18 @@ describe('runtimeConfig', () => {
   it('correctly converts different kinds of names to snake case', () => {
     // https://github.com/unjs/nitro/blob/be25a21d79acf272b3629d69332d66795ae90b6e/src/runtime/config.ts#L56
     // require('scule').snakeCase(key).toUpperCase()
-    expectTypeOf<UpperUpperSnakeCase<'testAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'TEST_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'test_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'test_app_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'testAppNAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'testAPPName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'testAPP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'test_APP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'TESTAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
-    expectTypeOf<UpperUpperSnakeCase<'t'>>().toEqualTypeOf<'T'>()
-    expectTypeOf<UpperUpperSnakeCase<'T'>>().toEqualTypeOf<'T'>()
+    expectTypeOf<UpperSnakeCase<'testAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TEST_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_app_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAppNAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testApp123NAME'>>().toEqualTypeOf<'TEST_APP123NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPPName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TESTAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'t'>>().toEqualTypeOf<'T'>()
+    expectTypeOf<UpperSnakeCase<'T'>>().toEqualTypeOf<'T'>()
   })
 })
 
