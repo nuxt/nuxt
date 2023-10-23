@@ -42,6 +42,10 @@ export default defineComponent({
       indicator.finish()
     })
     router.beforeResolve((to, from) => {
+      if (to === from) {
+        indicator.finish()
+        return
+      }
       const paramsTo = Object.entries(to.params)
       const paramsFrom = Object.entries(from.params)
 
@@ -50,12 +54,13 @@ export default defineComponent({
         return JSON.stringify(valueTo) === JSON.stringify(valueFrom)
       })
 
-      const areComponentsSame = to.matched.every((comp, index) =>
-        comp.components && comp.components.default === from.matched[index]?.components?.default
-      )
-
-      if (to === from || (areParamsEqual && areComponentsSame)) {
-        indicator.finish()
+      if (areParamsEqual) {
+        const areComponentsSame = to.matched.every((comp, index) =>
+          comp.components && comp.components.default === from.matched[index]?.components?.default
+        )
+        if (areComponentsSame) {
+          indicator.finish()
+        }
       }
     })
 
