@@ -54,13 +54,13 @@ export default defineComponent({
         return JSON.stringify(valueTo) === JSON.stringify(valueFrom)
       })
 
-      if (areParamsEqual) {
-        const areComponentsSame = to.matched.every((comp, index) =>
-          comp.components && comp.components.default === from.matched[index]?.components?.default
-        )
-        if (areComponentsSame) {
-          indicator.finish()
-        }
+      if (!areParamsEqual) { return }
+
+      const areComponentsSame = to.matched.every((comp, index) =>
+        comp.components && comp.components.default === from.matched[index]?.components?.default
+      )
+      if (areComponentsSame) {
+        indicator.finish()
       }
     })
 
