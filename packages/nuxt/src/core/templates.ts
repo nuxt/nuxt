@@ -345,7 +345,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
       '    baseURL: baseURL()',
       '  })',
       '}'
-    ].filter(Boolean).join('\n')
+    ].join('\n')
   }
 }
 
