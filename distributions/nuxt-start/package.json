@@ -17,10 +17,15 @@
     "vuejs"
   ],
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
-  "repository": "nuxt/nuxt.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/nuxt-start.js",
-  "bin": "bin/nuxt-start.js",
+  "bin": {
+    "nuxt-start": "bin/nuxt-start.js"
+  },
   "files": [
     "bin",
     "dist"

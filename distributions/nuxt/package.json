@@ -16,11 +16,14 @@
     "vue.js",
     "vuejs"
   ],
-  "repository": "nuxt/nuxt.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/nuxt.js",
   "bin": {
-    "nuxt": "./bin/nuxt.js"
+    "nuxt": "bin/nuxt.js"
   },
   "files": [
     "bin",
