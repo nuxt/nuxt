@@ -73,10 +73,10 @@ export default defineComponent({
 
     const ssrHTML = ref<string>('')
     if (import.meta.client) {
-      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null)?.join('') ?? ''
       if (renderedHTML && nuxtApp.isHydrating) {
         setPayload(`${props.name}_${hashId.value}`, {
-          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+          html: getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') ?? '',
           state: {},
           head: {
             link: [],
