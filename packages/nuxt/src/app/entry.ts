@@ -2,9 +2,7 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 
 // These files must be imported first for webpack as we set __webpack_public_path__ there
-// @ts-expect-error virtual file
 import '#build/paths.mjs'
-// @ts-expect-error virtual file
 import '#build/fetch.mjs'
 
 import type { CreateOptions } from '#app'

@@ -1,6 +1,6 @@
 import { $fetch } from 'ofetch'
 import type { $Fetch, NitroFetchRequest } from 'nitropack'
-import { baseURL } from '#build/paths.mjs'
+import { baseURL } from './paths'
 
 if (!globalThis.$fetch) {
   globalThis.$fetch = $fetch.create({
