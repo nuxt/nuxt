@@ -1,7 +1,7 @@
 // We set __webpack_public_path via this import with webpack builder
 import { createApp, createSSRApp, nextTick } from 'vue'
 
-// These files must be imported first for webpack as we set __webpack_public_path__ there
+// These files must be imported first as they have side effects
 import '#build/paths.mjs'
 import '#build/fetch.mjs'
 
