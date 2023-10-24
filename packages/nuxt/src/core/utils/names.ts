@@ -1,5 +1,5 @@
 import { basename, dirname, extname, normalize } from 'pathe'
-import { kebabCase, pascalCase, splitByCase } from 'scule'
+import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
 
 export function getNameFromPath (path: string, relativeTo?: string) {
