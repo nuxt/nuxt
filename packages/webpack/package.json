@@ -26,7 +26,7 @@
     "css-loader": "^6.8.1",
     "css-minimizer-webpack-plugin": "^5.0.1",
     "cssnano": "^6.0.1",
-    "defu": "^6.1.2",
+    "defu": "^6.1.3",
     "esbuild-loader": "^4.0.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
@@ -72,7 +72,7 @@
     "@types/webpack-hot-middleware": "2.25.8",
     "@types/webpack-virtual-modules": "0.1.3",
     "unbuild": "latest",
-    "vue": "3.3.6"
+    "vue": "3.3.7"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
