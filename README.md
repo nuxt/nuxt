@@ -1,4 +1,5 @@
-[![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
+[![banner](https://github.com/abhishek213-alb/nuxt/assets/76660005/cd3b96c9-3694-4f14-8873-0e0f9b8ccbc0)
+](https://nuxt.com)
 
 # Nuxt
 
