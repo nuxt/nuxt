@@ -5,6 +5,9 @@ import { useNuxtApp } from '../nuxt'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 
+// @ts-expect-error virtual file
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output
@@ -146,6 +149,7 @@ export function useAsyncData<
 
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
+  options.deep = options.deep ?? asyncDataDefaults.deep
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
@@ -153,7 +157,7 @@ export function useAsyncData<
   if (!nuxt._asyncData[key] || !options.immediate) {
     nuxt.payload._errors[key] ??= null
 
-    const _ref = options.deep !== true ? shallowRef : ref
+    const _ref = options.deep ? ref : shallowRef
 
     nuxt._asyncData[key] = {
       data: _ref(options.getCachedData!(key) ?? options.default!()),
@@ -257,7 +261,7 @@ export function useAsyncData<
       }
     }
 
-    if (asyncData.error.value || (fetchOnServer && nuxt.isHydrating && hasCachedData())) {
+    if (fetchOnServer && nuxt.isHydrating && (asyncData.error.value || hasCachedData())) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'

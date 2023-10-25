@@ -66,11 +66,10 @@ export default defineComponent({
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
-            // @ts-expect-error seems to be an issue in vue types
             LayoutProvider,
             {
               layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-              key: layout.value,
+              key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
               hasTransition: !!transitionProps
@@ -88,7 +87,7 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean]
+      type: [String, Boolean] as unknown as () => string | false
     },
     layoutProps: {
       type: Object
@@ -136,7 +135,6 @@ const LayoutProvider = defineComponent({
 
       if (import.meta.dev && import.meta.client && props.hasTransition) {
         vnode = h(
-          // @ts-expect-error seems to be an issue in vue types
           LayoutLoader,
           { key: name, layoutProps: props.layoutProps, name },
           context.slots
@@ -146,7 +144,6 @@ const LayoutProvider = defineComponent({
       }
 
       return h(
-        // @ts-expect-error seems to be an issue in vue types
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
         context.slots

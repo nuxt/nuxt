@@ -3,9 +3,13 @@ import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
+
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+
+// @ts-expect-error virtual file
+import { fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -113,6 +117,7 @@ export function useFetch<
   } = opts
 
   const _fetchOptions = reactive({
+    ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
@@ -135,11 +140,14 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
-    const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
     let _$fetch = opts.$fetch || globalThis.$fetch
+
     // Use fetch with request context and headers for server direct API calls
-    if (import.meta.server && !opts.$fetch && isLocalFetch) {
-      _$fetch = useRequestFetch()
+    if (import.meta.server && !opts.$fetch) {
+      const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/') && (!unref(opts.baseURL) || unref(opts.baseURL)!.startsWith('/'))
+      if (isLocalFetch) {
+        _$fetch = useRequestFetch()
+      }
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>

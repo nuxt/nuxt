@@ -334,10 +334,30 @@ export const publicPathTemplate: NuxtTemplate = {
   }
 }
 
+export const dollarFetchTemplate: NuxtTemplate = {
+  filename: 'fetch.mjs',
+  getContents () {
+    return [
+      "import { $fetch } from 'ofetch'",
+      "import { baseURL } from '#build/paths.mjs'",
+      'if (!globalThis.$fetch) {',
+      '  globalThis.$fetch = $fetch.create({',
+      '    baseURL: baseURL()',
+      '  })',
+      '}'
+    ].join('\n')
+  }
+}
+
 // Allow direct access to specific exposed nuxt.config
 export const nuxtConfigTemplate = {
   filename: 'nuxt.config.mjs',
   getContents: (ctx: TemplateContext) => {
+    const fetchDefaults = {
+      ...ctx.nuxt.options.experimental.defaults.useFetch,
+      baseURL: undefined,
+      headers: undefined
+    }
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
@@ -347,6 +367,9 @@ export const nuxtConfigTemplate = {
       `export const remoteComponentIslands = ${ctx.nuxt.options.experimental.componentIslands === 'local+remote'}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
+      `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`
     ].join('\n\n')
   }
