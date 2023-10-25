@@ -24,7 +24,7 @@
     "@nuxt/schema": "workspace:*",
     "c12": "^1.5.1",
     "consola": "^3.2.3",
-    "defu": "^6.1.2",
+    "defu": "^6.1.3",
     "globby": "^13.2.2",
     "hash-sum": "^2.0.0",
     "ignore": "^5.2.4",
