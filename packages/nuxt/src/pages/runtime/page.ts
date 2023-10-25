@@ -94,12 +94,11 @@ export default defineComponent({
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
-              // @ts-expect-error seems to be an issue in vue types
               default: () => h(RouteProvider, {
-                key,
+                key: key || undefined,
                 vnode: routeProps.Component,
                 route: routeProps.route,
-                renderKey: key,
+                renderKey: key || undefined,
                 trackRootNodes: hasTransition,
                 vnodeRef: pageRef
               })
