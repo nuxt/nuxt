@@ -20,6 +20,8 @@ export default defineBuildConfig({
   ],
   externals: [
     // Type imports
+    '#app/components/nuxt-link',
+    'ofetch',
     'vue-router',
     '@nuxt/telemetry',
     'vue-bundle-renderer',
@@ -47,6 +49,7 @@ export default defineBuildConfig({
     'file-loader',
     'pug',
     'sass-loader',
+    'c12',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

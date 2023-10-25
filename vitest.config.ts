@@ -6,6 +6,7 @@ import { isWindows } from 'std-env'
 export default defineConfig({
   resolve: {
     alias: {
+      '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
       '#app': resolve('./packages/nuxt/dist/app/index'),
       '@nuxt/test-utils/experimental': resolve('./packages/test-utils/src/experimental.ts'),
       '@nuxt/test-utils': resolve('./packages/test-utils/src/index.ts')

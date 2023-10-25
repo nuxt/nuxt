@@ -1,10 +1,13 @@
 import type { Plugin } from 'vite'
 import { transform } from 'esbuild'
 import { visualizer } from 'rollup-plugin-visualizer'
+import defu from 'defu'
+import type { NuxtOptions } from 'nuxt/schema'
 import type { ViteBuildContext } from '../vite'
 
 export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
-  if (typeof ctx.nuxt.options.build.analyze === 'boolean') { return [] }
+  const analyzeOptions = defu({}, ctx.nuxt.options.build.analyze) as Exclude<NuxtOptions['build']['analyze'], boolean>
+  if (!analyzeOptions.enabled) { return [] }
 
   return [
     {
@@ -22,8 +25,8 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
       }
     },
     visualizer({
-      ...ctx.nuxt.options.build.analyze,
-      filename: 'filename' in ctx.nuxt.options.build.analyze ? ctx.nuxt.options.build.analyze.filename!.replace('{name}', 'client') : undefined,
+      ...analyzeOptions,
+      filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
       title: 'Client bundle stats',
       gzipSize: true
     })
