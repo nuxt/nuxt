@@ -79,7 +79,7 @@
     "lodash": "4.17.21",
     "node-fetch-native": "1.4.0",
     "ofetch": "1.3.3",
-    "puppeteer-core": "21.4.0",
+    "puppeteer-core": "21.4.1",
     "request": "2.88.2",
     "rimraf": "4.4.1",
     "rollup": "4.1.4",
