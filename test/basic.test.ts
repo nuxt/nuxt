@@ -362,6 +362,13 @@ describe('pages', () => {
 
     expect(pageErrors).toEqual([])
     await page.close()
+    // don't expect any errors or warning on client-side navigation
+    const { page: page2, consoleLogs: consoleLogs2 } = await renderPage('/')
+    await page2.locator('#to-client-only-components').click()
+    // force wait for a few ticks
+    await page2.waitForTimeout(50)
+    expect(consoleLogs2.some(log => log.type === 'error' || log.type === 'warning')).toBeFalsy()
+    await page2.close()
   })
 
   it('/wrapper-expose/layout', async () => {
