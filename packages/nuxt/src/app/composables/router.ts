@@ -5,11 +5,11 @@ import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 
 import type { PageMeta } from '#app'
-import { PageRouteSymbol } from '#app/components/injections'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
