@@ -1,11 +1,14 @@
 import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { PageMeta } from '../../pages/runtime/composables'
+
 import { useRoute } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
-import type { PageMeta } from '#app'
 
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'

@@ -1,5 +1,5 @@
 import { useNuxtApp } from '../nuxt'
-import type { NuxtPayload } from '#app'
+import type { NuxtPayload } from '../nuxt'
 
 /**
  * Allows full control of the hydration cycle to set and receive data from the server.

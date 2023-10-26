@@ -3,7 +3,7 @@ import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack'
-import type { NuxtError } from '#app'
+import type { NuxtError } from '#app/composables/error'
 
 export interface PageMeta {
   [key: string]: unknown

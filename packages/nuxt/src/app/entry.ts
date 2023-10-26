@@ -6,7 +6,7 @@ import '#build/paths.mjs'
 import '#build/fetch.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
-import type { CreateOptions } from '#app'
+import type { CreateOptions } from './nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
