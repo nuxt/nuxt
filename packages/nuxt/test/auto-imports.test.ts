@@ -68,7 +68,7 @@ describe('imports:nuxt', () => {
         continue
       }
       it(`should register ${name} globally`, () => {
-        expect(defaultPresets.flatMap(a => a.from === '#app' ? a.imports : [])).to.include(name)
+        expect(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : [])).to.include(name)
       })
     }
   } catch (e) {
