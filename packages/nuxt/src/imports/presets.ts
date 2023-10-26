@@ -12,62 +12,64 @@ const commonPresets: InlinePreset[] = [
   })
 ]
 
-const appPreset = defineUnimportPreset({
-  from: '#app',
-  imports: [
-    'useAsyncData',
-    'useLazyAsyncData',
-    'useNuxtData',
-    'refreshNuxtData',
-    'clearNuxtData',
-    'defineNuxtComponent',
-    'useNuxtApp',
-    'defineNuxtPlugin',
-    'definePayloadPlugin',
-    'reloadNuxtApp',
-    'useRuntimeConfig',
-    'useState',
-    'clearNuxtState',
-    'useFetch',
-    'useLazyFetch',
-    'useCookie',
-    'useRequestHeaders',
-    'useRequestEvent',
-    'useRequestFetch',
-    'useRequestURL',
-    'setResponseStatus',
-    'setPageLayout',
-    'prerenderRoutes',
-    'onNuxtReady',
-    'useRouter',
-    'useRoute',
-    'defineNuxtRouteMiddleware',
-    'navigateTo',
-    'abortNavigation',
-    'addRouteMiddleware',
-    'showError',
-    'clearError',
-    'isNuxtError',
-    'useError',
-    'createError',
-    'defineNuxtLink',
-    'useAppConfig',
-    'updateAppConfig',
-    'defineAppConfig',
-    'preloadComponents',
-    'preloadRouteComponents',
-    'prefetchComponents',
-    'loadPayload',
-    'preloadPayload',
-    'isPrerendered',
-    'getAppManifest',
-    'getRouteRules',
-    'definePayloadReducer',
-    'definePayloadReviver',
-    'requestIdleCallback',
-    'cancelIdleCallback'
-  ]
-})
+const granularAppPresets: InlinePreset[] = [
+  {
+    imports: ['defineNuxtComponent'],
+    from: '#app/composables/component'
+  },
+  {
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    from: '#app/composables/asyncData'
+  },
+  {
+    imports: ['useHydration'],
+    from: '#app/composables/hydrate'
+  },
+  {
+    imports: ['useState', 'clearNuxtState'],
+    from: '#app/composables/state'
+  },
+  {
+    imports: ['clearError', 'createError', 'isNuxtError', 'showError', 'useError'],
+    from: '#app/composables/error'
+  },
+  {
+    imports: ['useFetch', 'useLazyFetch'],
+    from: '#app/composables/fetch'
+  },
+  {
+    imports: ['useCookie'],
+    from: '#app/composables/cookie'
+  },
+  {
+    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    from: '#app/composables/ssr'
+  },
+  {
+    imports: ['onNuxtReady'],
+    from: '#app/composables/ready'
+  },
+  {
+    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'onBeforeRouteLeave', 'onBeforeRouteUpdate', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter', 'preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
+    from: '#app/composables/preload'
+  },
+  {
+    imports: ['isPrerendered', 'loadPayload', 'preloadPayload', 'definePayloadReducer', 'definePayloadReviver'],
+    from: '#app/composables/payload'
+  },
+  {
+    imports: ['getAppManifest', 'getRouteRules'],
+    from: '#app/composables/manifest'
+  },
+  {
+    imports: ['reloadNuxtApp'],
+    from: '#app/composables/chunk'
+  },
+  {
+    imports: ['useRequestURL'],
+    from: '#app/composables/url'
+  }
+]
 
 // vue-router
 const routerPreset = defineUnimportPreset({
@@ -180,7 +182,7 @@ const vueTypesPreset = defineUnimportPreset({
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
-  appPreset,
+  ...granularAppPresets,
   routerPreset,
   vuePreset,
   vueTypesPreset
