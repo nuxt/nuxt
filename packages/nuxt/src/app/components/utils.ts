@@ -3,6 +3,7 @@ import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
+import type { RouteLocationNormalized } from '#vue-router'
 
 /**
  * Internal utility
@@ -11,6 +12,34 @@ import destr from 'destr'
 export const _wrapIf = (component: Component, props: any, slots: any) => {
   props = props === true ? {} : props
   return { default: () => props ? h(component, props, slots) : slots.default?.() }
+}
+
+/**
+ * Utility used within router guards
+ * return true if the route has been changed with a page change during navigation
+ */
+export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized) {
+  if (to === from) {
+    return false
+  }
+
+  const paramsTo = Object.entries(to.params)
+  const paramsFrom = Object.entries(from.params)
+
+  const areParamsEqual = paramsTo.every(([key, valueTo]) => {
+    const [, valueFrom] = paramsFrom.find(([keyFrom]) => keyFrom === key) || []
+    return JSON.stringify(valueTo) === JSON.stringify(valueFrom)
+  })
+
+  if (!areParamsEqual) { return true }
+
+  const areComponentsSame = to.matched.every((comp, index) =>
+    comp.components && comp.components.default === from.matched[index]?.components?.default
+  )
+  if (areComponentsSame) {
+    return false
+  }
+  return true
 }
 
 // eslint-disable-next-line no-use-before-define

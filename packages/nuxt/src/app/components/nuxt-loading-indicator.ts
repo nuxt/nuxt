@@ -1,4 +1,5 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
+import { isChangingPage } from './utils'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 
@@ -42,24 +43,7 @@ export default defineComponent({
       indicator.finish()
     })
     router.beforeResolve((to, from) => {
-      if (to === from) {
-        indicator.finish()
-        return
-      }
-      const paramsTo = Object.entries(to.params)
-      const paramsFrom = Object.entries(from.params)
-
-      const areParamsEqual = paramsTo.every(([key, valueTo]) => {
-        const [, valueFrom] = paramsFrom.find(([keyFrom]) => keyFrom === key) || []
-        return JSON.stringify(valueTo) === JSON.stringify(valueFrom)
-      })
-
-      if (!areParamsEqual) { return }
-
-      const areComponentsSame = to.matched.every((comp, index) =>
-        comp.components && comp.components.default === from.matched[index]?.components?.default
-      )
-      if (areComponentsSame) {
+      if (!isChangingPage(to, from)) {
         indicator.finish()
       }
     })
