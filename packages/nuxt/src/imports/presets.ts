@@ -14,6 +14,22 @@ const commonPresets: InlinePreset[] = [
 
 const granularAppPresets: InlinePreset[] = [
   {
+    from: '#app/components/nuxt-link',
+    imports: ['defineNuxtLink']
+  },
+  {
+    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig'],
+    from: '#app/nuxt'
+  },
+  {
+    imports: ['requestIdleCallback', 'cancelIdleCallback'],
+    from: '#app/compat/idle-callback'
+  },
+  {
+    imports: ['useAppConfig', 'updateAppConfig', 'defineAppConfig'],
+    from: '#app/config'
+  },
+  {
     imports: ['defineNuxtComponent'],
     from: '#app/composables/component'
   },
@@ -50,8 +66,12 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/ready'
   },
   {
-    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'onBeforeRouteLeave', 'onBeforeRouteUpdate', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter', 'preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
+    imports: ['preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
     from: '#app/composables/preload'
+  },
+  {
+    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter'],
+    from: '#app/composables/router'
   },
   {
     imports: ['isPrerendered', 'loadPayload', 'preloadPayload', 'definePayloadReducer', 'definePayloadReviver'],
@@ -71,13 +91,10 @@ const granularAppPresets: InlinePreset[] = [
   }
 ]
 
-// vue-router
+// This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
-  from: '#app',
-  imports: [
-    'onBeforeRouteLeave',
-    'onBeforeRouteUpdate'
-  ]
+  imports: ['onBeforeRouteLeave', 'onBeforeRouteUpdate'],
+  from: '#app/composables/router'
 })
 
 // vue
