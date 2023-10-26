@@ -88,20 +88,27 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
+          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
-            wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
+            wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
-              default: () => h(RouteProvider, {
-                key: key || undefined,
-                vnode: routeProps.Component,
-                route: routeProps.route,
-                renderKey: key || undefined,
-                trackRootNodes: hasTransition,
-                vnodeRef: pageRef
-              })
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  trackRootNodes: hasTransition,
+                  vnodeRef: pageRef
+                })
+                if (import.meta.client && keepaliveConfig) {
+                  (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
+                }
+                return providerVNode
+              }
             })
             )).default()
 
