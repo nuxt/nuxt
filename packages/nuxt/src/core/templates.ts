@@ -285,7 +285,7 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents: async ({ app, nuxt }) => {
     return `
-import { updateAppConfig } from '#app'
+import { updateAppConfig } from '#app/config'
 import { defuFn } from '${await _resolveId('defu')}'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
