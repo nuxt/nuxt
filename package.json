@@ -59,7 +59,7 @@
     "happy-dom": "12.10.1",
     "jiti": "1.20.0",
     "markdownlint-cli": "0.37.0",
-    "nitropack": "2.7.0",
+    "nitropack": "2.7.1",
     "nuxi": "3.9.1",
     "nuxt": "workspace:*",
     "nuxt-vitest": "0.11.0",
@@ -77,7 +77,7 @@
     "vue": "3.3.7",
     "vue-eslint-parser": "9.3.2",
     "vue-router": "4.2.5",
-    "vue-tsc": "1.8.21"
+    "vue-tsc": "1.8.22"
   },
   "packageManager": "pnpm@8.9.2",
   "engines": {
