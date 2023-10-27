@@ -34,7 +34,3 @@ export type { NuxtAppManifest, NuxtAppManifestMeta } from './manifest'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
 export { useRequestURL } from './url'
-
-if (import.meta.dev) {
-  console.log('Directly importing from `#app/composables` is discouraged as it can decrease performance in Vite. Instead, you can import from `#imports`. You can read more at https://nuxt.com/docs/guide/concepts/auto-imports#explicit-imports.')
-}

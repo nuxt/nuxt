@@ -13,7 +13,3 @@ export type { PageMeta } from '../pages/runtime/index'
 
 export const isVue2 = false
 export const isVue3 = true
-
-if (import.meta.dev) {
-  console.log('Directly importing from `#app` is discouraged as it can decrease performance in Vite. Instead, you can import from `#imports`. You can read more at https://nuxt.com/docs/guide/concepts/auto-imports#explicit-imports.')
-}
