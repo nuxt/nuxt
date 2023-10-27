@@ -1,3 +1,4 @@
+import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
 import { defineNuxtPlugin } from '#app/nuxt'
 
@@ -10,7 +11,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve((to, from) => {
-    if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
+    if (!isChangingPage(to, from)) {
       return
     }
     const promise = new Promise<void>((resolve, reject) => {
