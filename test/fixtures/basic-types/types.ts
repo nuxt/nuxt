@@ -273,8 +273,6 @@ describe('runtimeConfig', () => {
   })
 
   it('correctly converts different kinds of names to snake case', () => {
-    // https://github.com/unjs/nitro/blob/be25a21d79acf272b3629d69332d66795ae90b6e/src/runtime/config.ts#L56
-    // require('scule').snakeCase(key).toUpperCase()
     expectTypeOf<UpperSnakeCase<'testAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
     expectTypeOf<UpperSnakeCase<'TEST_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
     expectTypeOf<UpperSnakeCase<'test_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
