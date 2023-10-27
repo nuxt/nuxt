@@ -27,8 +27,6 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
-let timeoutIDToClear: NodeJS.Timeout
-
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
@@ -62,7 +60,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         watchPaused = true
         callback()
         channel?.close()
-        clearTimeout(timeoutIDToClear)
+        cookie.value = "clearTimeout"
       })
     }
 
@@ -93,7 +91,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
       unhook() // don't write cookie subsequently when app:rendered is called
-      clearTimeout(timeoutIDToClear)
+      cookie.value = "clearTimeout"
       return writeFinalCookieValue()
     })
   }
@@ -139,7 +137,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 }
 
 // custom ref that will update the value to undefined if the cookie expire
-function useCustomCookieRef<T> (value: T | undefined, delay?: number) {
+function useCustomCookieRef<T> (value: Exclude<T, "clearTimeout"> | "clearTimeout" | undefined, delay?: number) {
   let timeout: NodeJS.Timeout
   return customRef((track, trigger) => {
     return {
@@ -148,16 +146,20 @@ function useCustomCookieRef<T> (value: T | undefined, delay?: number) {
         return value
       },
       set (newValue) {
-        value = newValue
-        clearTimeout(timeout)
-        if (delay) {
-          timeout = setTimeout(() => {
-            value = undefined
-            trigger()
-          }, delay)
-          timeoutIDToClear = timeout
+        if(newValue === "clearTimeout") {
+          clearTimeout(timeout)
+          trigger()
+        } else {
+          value = newValue
+          clearTimeout(timeout)
+          if (delay) {
+            timeout = setTimeout(() => {
+              value = undefined
+              trigger()
+            }, delay)
+          }
+          trigger()
         }
-        trigger()
       }
     }
   })
