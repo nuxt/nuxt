@@ -5,7 +5,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
 // TODO: expose SnakeCase type from scule
-import type { snakeCase } from 'scule'
+import type { SnakeCase } from 'scule'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
@@ -13,7 +13,7 @@ export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
-export type UpperSnakeCase<S extends string> = Uppercase<ReturnType<typeof snakeCase<S>>>
+export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
 const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
