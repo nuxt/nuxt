@@ -13,6 +13,7 @@ function fileToUrl (file: string, root: string) {
   return '/' + normalize(url)
 }
 
+// TODO: use built-in warmup logic when we update to vite 5
 export async function warmupViteServer (
   server: ViteDevServer,
   entries: string[],
