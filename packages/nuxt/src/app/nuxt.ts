@@ -390,7 +390,7 @@ export function useNuxtApp (): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }
