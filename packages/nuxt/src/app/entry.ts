@@ -1,11 +1,9 @@
 // We set __webpack_public_path via this import with webpack builder
 import { createApp, createSSRApp, nextTick } from 'vue'
-import { $fetch } from 'ofetch'
-import type { $Fetch, NitroFetchRequest } from 'nitropack'
 
-// This file must be imported first for webpack as we set __webpack_public_path__ there
-// @ts-expect-error virtual file
-import { baseURL } from '#build/paths.mjs'
+// These files must be imported first as they have side effects
+import '#build/paths.mjs'
+import '#build/fetch.mjs'
 
 import type { CreateOptions } from '#app'
 import { applyPlugins, createNuxtApp } from '#app/nuxt'
@@ -17,12 +15,6 @@ import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
-
-if (!globalThis.$fetch) {
-  globalThis.$fetch = $fetch.create({
-    baseURL: baseURL()
-  }) as $Fetch<unknown, NitroFetchRequest>
-}
 
 let entry: Function
 
