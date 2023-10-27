@@ -40,10 +40,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
   // use customRef if on client side otherwise use basic ref
   const cookie = import.meta.client && delay
-    ? cookieRef<T | undefined>(
-      (cookies[name] as any) ?? opts.default?.(),
-      delay
-    )
+    ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
     : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
 
   if (import.meta.client) {
