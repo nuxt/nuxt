@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
+import { customRef, getCurrentScope, nextTick, onScopeDispose, ref, watch } from 'vue'
 import type { CookieParseOptions, CookieSerializeOptions } from 'cookie-es'
 import { parse, serialize } from 'cookie-es'
 import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
@@ -31,7 +31,17 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
-  const cookie = ref<T | undefined>(cookies[name] as any ?? opts.default?.())
+  let delay: number | undefined
+  if (opts.maxAge) {
+    delay = opts.maxAge * 1000 // convert to ms for setTimeout
+  } else if (opts.expires) {
+    // getTime() already return time in ms
+    delay = opts.expires.getTime() - Date.now()
+  }
+  // use customRef if on client side otherwise use basic ref
+  const cookie = import.meta.client && delay
+    ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
+    : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
@@ -119,4 +129,27 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 
     // else ignore if cookie doesn't exist in browser and value is null/undefined
   }
+}
+
+// custom ref that will update the value to undefined if the cookie expire
+function cookieRef<T> (value: T | undefined, delay: number) {
+  let timeout: NodeJS.Timeout
+  onScopeDispose(() => { clearTimeout(timeout) })
+  return customRef((track, trigger) => {
+    return {
+      get () {
+        track()
+        return value
+      },
+      set (newValue) {
+        clearTimeout(timeout)
+        timeout = setTimeout(() => {
+          value = undefined
+          trigger()
+        }, delay)
+        value = newValue
+        trigger()
+      }
+    }
+  })
 }
