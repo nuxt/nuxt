@@ -198,7 +198,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       !(env.isServer && ctx.nuxt.options.vite.devBundler !== 'legacy')
     ) {
       const start = Date.now()
-      warmupViteServer(server, [join('/@fs/', ctx.entry)], env.isServer)
+      warmupViteServer(server, [ctx.entry], env.isServer)
         .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
         .catch(logger.error)
     }
