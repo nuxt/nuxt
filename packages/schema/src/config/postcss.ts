@@ -15,7 +15,7 @@ export default defineUntypedSchema({
       autoprefixer: {},
 
       cssnano: {
-        $resolve: async (val, get) => val ?? !(await get('dev') && {
+        $resolve: async (val, get) => val ?? (!(await get('dev')) && {
           preset: ['default', {
             // Keep quotes in font values to prevent from HEX conversion
             // https://github.com/nuxt/nuxt/issues/6306
