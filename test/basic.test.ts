@@ -1989,6 +1989,70 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   })
 })
 
+describe('useAsyncData regression with immediate:false', () => {
+  it('shared data, pending', async () => {
+    const page = await createPage('/useAsyncData/shared')
+    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(
+      () => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/shared'
+    )
+
+    expect(await page.locator('#pageWithSharedAsyncData__data').innerText()).toContain('default data')
+    expect(await page.locator('#pageWithSharedAsyncData__pending').innerText()).toContain('true')
+
+    expect(await page.locator('#componentWithSharedUseAsyncData__data').innerText()).toContain(
+      'default data'
+    )
+    expect(await page.locator('#componentWithSharedUseAsyncData__pending').innerText()).toContain(
+      'true'
+    )
+
+    await page.click('#pageWithSharedAsyncData__execute')
+
+    expect(await page.locator('#pageWithSharedAsyncData__data').innerText()).toContain('some data')
+    expect(await page.locator('#pageWithSharedAsyncData__pending').innerText()).toContain('false')
+
+    expect(await page.locator('#componentWithSharedUseAsyncData__data').innerText()).toContain(
+      'some data'
+    )
+    expect(await page.locator('#componentWithSharedUseAsyncData__pending').innerText()).toContain(
+      'false'
+    )
+  })
+
+  it('watch', async () => {
+    const page = await createPage('/useAsyncData/shared')
+    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(
+      () => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/shared'
+    )
+
+    expect(await page.locator('#pageWithSharedAsyncData__data').innerText()).toContain('default data')
+    expect(await page.locator('#pageWithSharedAsyncData__pending').innerText()).toContain('true')
+
+    expect(await page.locator('#componentWithSharedUseAsyncData__data').innerText()).toContain(
+      'default data'
+    )
+    expect(await page.locator('#componentWithSharedUseAsyncData__pending').innerText()).toContain(
+      'true'
+    )
+
+    await page.click('#pageWithSharedAsyncData__changeQuery')
+
+    expect(await page.locator('#pageWithSharedAsyncData__data').innerText()).toContain('some data')
+    expect(await page.locator('#pageWithSharedAsyncData__pending').innerText()).toContain('false')
+
+    expect(await page.locator('#componentWithSharedUseAsyncData__data').innerText()).toContain(
+      'some data'
+    )
+    expect(await page.locator('#componentWithSharedUseAsyncData__pending').innerText()).toContain(
+      'false'
+    )
+
+    await page.close()
+  })
+})
+
 describe.runIf(isDev())('component testing', () => {
   it('should work', async () => {
     const comp1 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 2 })

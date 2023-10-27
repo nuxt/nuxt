@@ -5,3 +5,23 @@ export const useSleep = () => useAsyncData('sleep', async () => {
 })
 
 export const useCounter = () => useFetch('/api/useAsyncData/count')
+
+export const useSharedAsyncData = () => {
+  const route = useRoute()
+
+  const { data, execute, pending } = useAsyncData(
+    'sharedAsyncData',
+    () => Promise.resolve('some data'),
+    {
+      default: () => 'default data',
+      immediate: false,
+      watch: [() => route.query]
+    }
+  )
+
+  return {
+    data,
+    execute,
+    pending
+  }
+}
