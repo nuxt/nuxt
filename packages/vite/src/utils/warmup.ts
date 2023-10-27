@@ -1,5 +1,7 @@
 import { logger } from '@nuxt/kit'
 import { join, normalize, relative } from 'pathe'
+import { withoutBase } from 'ufo'
+import { isCSSRequest } from 'vite'
 import type { ViteDevServer } from 'vite'
 
 // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/server/warmup.ts#L62-L70
@@ -22,6 +24,14 @@ export async function warmupViteServer (
   const warmedUrls = new Set<String>()
 
   const warmup = async (url: string) => {
+    // remove any base url
+    url = withoutBase(url, server.config.base)
+    // unwrap record
+    if (url.startsWith('/@id/')) {
+      url = url.slice('/@id/'.length).replace('__x00__', '\0')
+    }
+    // strip query
+    url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
     if (warmedUrls.has(url)) { return }
     warmedUrls.add(url)
     try {
@@ -29,6 +39,13 @@ export async function warmupViteServer (
     } catch (e) {
       logger.debug('Warmup for %s failed with: %s', url, e)
     }
+
+    // Don't warmup CSS file dependencies as they have already all been loaded to produce result
+    if (isCSSRequest(url)) { return }
+
+    const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
+    const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
+    await Promise.all(deps.map(m => warmup(m)))
   }
 
   await Promise.all(entries.map(entry => warmup(fileToUrl(entry, server.config.root))))
