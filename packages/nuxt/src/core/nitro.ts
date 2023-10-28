@@ -42,7 +42,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
-    preset: process.env.BUILD_PRESET || undefined,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
@@ -215,6 +214,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       plugins: []
     }
   } satisfies NitroConfig)
+
+  // TODO: fix type error in defu that prevents us from including this in the above defu call
+  if (!nitroConfig.preset) {
+    nitroConfig.preset = process.env.BUILD_PRESET
+  }
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
