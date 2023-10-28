@@ -42,6 +42,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
+    preset: process.env.BUILD_PRESET,
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
