@@ -111,3 +111,17 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
     }
   })
 }
+
+/**
+ * Add directories to be scanned for server routes by Nitro
+ */
+export function addServerRoutesDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.scanDirs = config.scanDirs || []
+
+    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
+      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
+    }
+  })
+}
