@@ -15,6 +15,18 @@ function fileToUrl (file: string, root: string) {
   return '/' + normalize(url)
 }
 
+function normaliseURL (url: string, base: string) {
+  // remove any base url
+  url = withoutBase(url, base)
+  // unwrap record
+  if (url.startsWith('/@id/')) {
+    url = url.slice('/@id/'.length).replace('__x00__', '\0')
+  }
+  // strip query
+  url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
+  return url
+}
+
 // TODO: use built-in warmup logic when we update to vite 5
 export async function warmupViteServer (
   server: ViteDevServer,
@@ -24,14 +36,8 @@ export async function warmupViteServer (
   const warmedUrls = new Set<String>()
 
   const warmup = async (url: string) => {
-    // remove any base url
-    url = withoutBase(url, server.config.base)
-    // unwrap record
-    if (url.startsWith('/@id/')) {
-      url = url.slice('/@id/'.length).replace('__x00__', '\0')
-    }
-    // strip query
-    url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')
+    url = normaliseURL(url, server.config.base)
+
     if (warmedUrls.has(url)) { return }
     warmedUrls.add(url)
     try {
