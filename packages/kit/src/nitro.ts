@@ -99,15 +99,13 @@ export function addServerImports (imports: Import[]) {
 }
 
 /**
- * Add directories to be scanned by Nitro
+ * Add directories to be scanned for auto-imports by Nitro
  */
 export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
-    config.scanDirs = config.scanDirs || []
-
-    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
-      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
-    }
+    config.imports = config.imports || {}
+    config.imports.dirs = config.imports.dirs || []
+    config.imports.dirs[opts.prepend ? 'unshift' : 'push'](...dirs)
   })
 }
