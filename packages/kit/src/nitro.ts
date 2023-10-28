@@ -103,9 +103,10 @@ export function addServerImports (imports: Import[]) {
  */
 export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
+  const _dirs = Array.isArray(dirs) ? dirs : [dirs]
   nuxt.hook('nitro:config', (config) => {
     config.imports = config.imports || {}
     config.imports.dirs = config.imports.dirs || []
-    config.imports.dirs[opts.prepend ? 'unshift' : 'push'](...dirs)
+    config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
   })
 }
