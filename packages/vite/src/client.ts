@@ -8,7 +8,7 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import { defineEventHandler } from 'h3'
+import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
@@ -105,6 +105,12 @@ export async function buildClient (ctx: ViteBuildContext) {
     clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
+  // Inject an h3-based CORS handler in preference to vite's
+  const useViteCors = clientConfig.server?.cors !== undefined
+  if (!useViteCors) {
+    clientConfig.server!.cors = false
+  }
+
   // We want to respect users' own rollup output options
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
@@ -167,6 +173,12 @@ export async function buildClient (ctx: ViteBuildContext) {
       if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
+      } else if (!useViteCors) {
+        if (event.method === 'OPTIONS') {
+          appendCorsPreflightHeaders(event, {})
+          return null
+        }
+        appendCorsHeaders(event, {})
       }
 
       // Workaround: vite devmiddleware modifies req.url
