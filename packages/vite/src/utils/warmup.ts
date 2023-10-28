@@ -41,7 +41,7 @@ export async function warmupViteServer (
     if (warmedUrls.has(url)) { return }
     const m = await server.moduleGraph.getModuleByUrl(url, isServer)
     // a module that is already compiled (and can't be warmed up anyway)
-    if (m?.transformResult?.code) {
+    if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
       return
     }
     warmedUrls.add(url)
