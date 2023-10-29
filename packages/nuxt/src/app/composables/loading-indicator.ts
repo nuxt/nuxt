@@ -1,17 +1,23 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
+export type LoadingIndicatorOpts = {
+  duration: number,
+  throttle: number
+}
+
 /**
  * composable to handle the loading state of the page
  */
-export function useLoadingIndicator (opts: {
+export function useLoadingIndicator (opts: Partial<{
     duration: number,
     throttle: number
-  }) {
+  }> = {}) {
+  const { duration = 2000, throttle = 200 } = opts
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
-  const step = computed(() => 10000 / opts.duration)
+  const step = computed(() => 10000 / duration)
 
   let _timer: any = null
   let _throttle: any = null
@@ -26,7 +32,7 @@ export function useLoadingIndicator (opts: {
       _throttle = setTimeout(() => {
         isLoading.value = true
         _startTimer()
-      }, opts.throttle)
+      }, throttle)
     } else {
       isLoading.value = true
       _startTimer()
