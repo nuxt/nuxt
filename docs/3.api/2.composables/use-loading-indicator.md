@@ -1,6 +1,6 @@
 ---
-title: 'useLazyFetch'
-description: This wrapper around useFetch triggers navigation immediately.
+title: 'useLoadingIndicator'
+description: This composable gives you access to the loading state of the app page.
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -11,3 +11,30 @@ links:
 ## Description
 
 A composable which returns the loading state of the page. Used by `<NuxtLoadingIndicator>` and controllable.
+It hooks into `page:loading:start` and `page:loading:end` to change its state.
+
+## Properties
+
+### `isLoading`
+
+- **type**: `Ref<boolean>`
+- **description**: The loading state
+
+### `progress`
+
+- **type**: `number`
+- **description**: The progress state. From `0` to `100`.
+
+## Methods
+
+### `start()`
+
+Set `isLoading` to true and start to increase the `progress` value.
+
+### `finish()`
+
+Set the `progress` value to `100`, stop all timers and intervals then reset the loading state `500` ms later.
+
+### `clear()`
+
+Used by `finish()`. Clear all timers and intervals used by the composable.
