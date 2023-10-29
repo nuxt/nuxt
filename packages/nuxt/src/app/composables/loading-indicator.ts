@@ -1,6 +1,9 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
+/**
+ * composable to handle the loading state of the page
+ */
 export function useLoadingIndicator (opts: {
     duration: number,
     throttle: number
@@ -41,10 +44,16 @@ export function useLoadingIndicator (opts: {
     _throttle = null
   }
 
+  /**
+   * @internal
+   */
   function _increase (num: number) {
     progress.value = Math.min(100, progress.value + num)
   }
 
+  /**
+   * @internal
+   */
   function _hide () {
     clear()
     if (import.meta.client) {
@@ -55,6 +64,9 @@ export function useLoadingIndicator (opts: {
     }
   }
 
+  /**
+   * @internal
+   */
   function _startTimer () {
     if (import.meta.client) {
       _timer = setInterval(() => { _increase(step.value) }, 100)
