@@ -53,6 +53,11 @@ export default defineNuxtModule({
     }
     nuxt.options.pages = await isPagesEnabled()
 
+    nuxt.hook('app:templates', async (app) => {
+      app.pages = await resolvePagesRoutes()
+      await nuxt.callHook('pages:extend', app.pages)
+    })
+
     // Restart Nuxt when pages dir is added or removed
     const restartPaths = nuxt.options._layers.flatMap((layer) => {
       const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
@@ -110,8 +115,11 @@ export default defineNuxtModule({
         logs: nuxt.options.debug,
         async beforeWriteFiles (rootPage) {
           rootPage.children.forEach(child => child.delete())
-          const pages = await resolvePagesRoutes()
-          await nuxt.callHook('pages:extend', pages)
+          let pages = nuxt.apps.default?.pages
+          if (!pages) {
+            pages = await resolvePagesRoutes()
+            await nuxt.callHook('pages:extend', pages)
+          }
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
             // @ts-expect-error TODO: either fix types upstream or figure out another
             // way to add a route without a file, which must be possible
@@ -339,12 +347,9 @@ export default defineNuxtModule({
       )
 
     // Do not prefetch page chunks
-    nuxt.hook('build:manifest', async (manifest) => {
+    nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
-      const pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', pages)
-
-      const sourceFiles = getSources(pages)
+      const sourceFiles = getSources(nuxt.apps.default.pages || [])
 
       for (const key in manifest) {
         if (manifest[key].isEntry) {
@@ -357,10 +362,8 @@ export default defineNuxtModule({
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
-      async getContents () {
-        const pages = await resolvePagesRoutes()
-        await nuxt.callHook('pages:extend', pages)
-        const { routes, imports } = normalizeRoutes(pages)
+      getContents ({ app }) {
+        const { routes, imports } = normalizeRoutes(app.pages)
         return [...imports, `export default ${routes}`].join('\n')
       }
     })
