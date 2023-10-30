@@ -1,9 +1,23 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
+import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
 export type LoadingIndicatorOpts = {
   duration: number,
   throttle: number
+}
+
+function _increase (progress: Ref<number>, num: number) {
+  progress.value = Math.min(100, progress.value + num)
+}
+
+function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
+  if (import.meta.client) {
+    setTimeout(() => {
+      isLoading.value = false
+      setTimeout(() => { progress.value = 0 }, 400)
+    }, 500)
+  }
 }
 
 /**
@@ -38,9 +52,11 @@ export function useLoadingIndicator (opts: Partial<{
       _startTimer()
     }
   }
+
   function finish () {
     progress.value = 100
-    _hide()
+    clear()
+    _hide(isLoading, progress)
   }
 
   function clear () {
@@ -50,32 +66,9 @@ export function useLoadingIndicator (opts: Partial<{
     _throttle = null
   }
 
-  /**
-   * @internal
-   */
-  function _increase (num: number) {
-    progress.value = Math.min(100, progress.value + num)
-  }
-
-  /**
-   * @internal
-   */
-  function _hide () {
-    clear()
-    if (import.meta.client) {
-      setTimeout(() => {
-        isLoading.value = false
-        setTimeout(() => { progress.value = 0 }, 400)
-      }, 500)
-    }
-  }
-
-  /**
-   * @internal
-   */
   function _startTimer () {
     if (import.meta.client) {
-      _timer = setInterval(() => { _increase(step.value) }, 100)
+      _timer = setInterval(() => { _increase(progress, step.value) }, 100)
     }
   }
 
