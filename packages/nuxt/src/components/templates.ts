@@ -90,7 +90,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       (c) => {
         const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
         const comment = createImportMagicComments(c)
-        return `export const ${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+        return `export const ${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
       }
     )].join('\n')
   }
