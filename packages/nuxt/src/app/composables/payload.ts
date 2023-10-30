@@ -4,8 +4,8 @@ import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
-import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useRoute } from '#app/composables'
+import { useRoute } from './router'
+import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
 import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
@@ -23,7 +23,7 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   if (payloadURL in cache) {
     return cache[payloadURL]
   }
-  cache[payloadURL] = isPrerendered().then((prerendered) => {
+  cache[payloadURL] = isPrerendered(url).then((prerendered) => {
     if (!prerendered) {
       cache[payloadURL] = null
       return null
@@ -78,11 +78,7 @@ async function _importPayload (payloadURL: string) {
 
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
-  const nuxtApp = useNuxtApp()
-  if (nuxtApp.payload.prerenderedAt) {
-    return true
-  }
-  if (!appManifest) { return false }
+  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true

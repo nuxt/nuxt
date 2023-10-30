@@ -12,70 +12,89 @@ const commonPresets: InlinePreset[] = [
   })
 ]
 
-const appPreset = defineUnimportPreset({
-  from: '#app',
-  imports: [
-    'useAsyncData',
-    'useLazyAsyncData',
-    'useNuxtData',
-    'refreshNuxtData',
-    'clearNuxtData',
-    'defineNuxtComponent',
-    'useNuxtApp',
-    'defineNuxtPlugin',
-    'definePayloadPlugin',
-    'reloadNuxtApp',
-    'useRuntimeConfig',
-    'useState',
-    'clearNuxtState',
-    'useFetch',
-    'useLazyFetch',
-    'useCookie',
-    'useRequestHeaders',
-    'useRequestEvent',
-    'useRequestFetch',
-    'useRequestURL',
-    'setResponseStatus',
-    'setPageLayout',
-    'prerenderRoutes',
-    'onNuxtReady',
-    'useRouter',
-    'useRoute',
-    'defineNuxtRouteMiddleware',
-    'navigateTo',
-    'abortNavigation',
-    'addRouteMiddleware',
-    'showError',
-    'clearError',
-    'isNuxtError',
-    'useError',
-    'createError',
-    'defineNuxtLink',
-    'useAppConfig',
-    'updateAppConfig',
-    'defineAppConfig',
-    'preloadComponents',
-    'preloadRouteComponents',
-    'prefetchComponents',
-    'loadPayload',
-    'preloadPayload',
-    'isPrerendered',
-    'getAppManifest',
-    'getRouteRules',
-    'definePayloadReducer',
-    'definePayloadReviver',
-    'requestIdleCallback',
-    'cancelIdleCallback'
-  ]
-})
+const granularAppPresets: InlinePreset[] = [
+  {
+    from: '#app/components/nuxt-link',
+    imports: ['defineNuxtLink']
+  },
+  {
+    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    from: '#app/nuxt'
+  },
+  {
+    imports: ['requestIdleCallback', 'cancelIdleCallback'],
+    from: '#app/compat/idle-callback'
+  },
+  {
+    imports: ['useAppConfig', 'updateAppConfig'],
+    from: '#app/config'
+  },
+  {
+    imports: ['defineNuxtComponent'],
+    from: '#app/composables/component'
+  },
+  {
+    imports: ['useAsyncData', 'useLazyAsyncData', 'useNuxtData', 'refreshNuxtData', 'clearNuxtData'],
+    from: '#app/composables/asyncData'
+  },
+  {
+    imports: ['useHydration'],
+    from: '#app/composables/hydrate'
+  },
+  {
+    imports: ['useState', 'clearNuxtState'],
+    from: '#app/composables/state'
+  },
+  {
+    imports: ['clearError', 'createError', 'isNuxtError', 'showError', 'useError'],
+    from: '#app/composables/error'
+  },
+  {
+    imports: ['useFetch', 'useLazyFetch'],
+    from: '#app/composables/fetch'
+  },
+  {
+    imports: ['useCookie'],
+    from: '#app/composables/cookie'
+  },
+  {
+    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    from: '#app/composables/ssr'
+  },
+  {
+    imports: ['onNuxtReady'],
+    from: '#app/composables/ready'
+  },
+  {
+    imports: ['preloadComponents', 'prefetchComponents', 'preloadRouteComponents'],
+    from: '#app/composables/preload'
+  },
+  {
+    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter'],
+    from: '#app/composables/router'
+  },
+  {
+    imports: ['isPrerendered', 'loadPayload', 'preloadPayload', 'definePayloadReducer', 'definePayloadReviver'],
+    from: '#app/composables/payload'
+  },
+  {
+    imports: ['getAppManifest', 'getRouteRules'],
+    from: '#app/composables/manifest'
+  },
+  {
+    imports: ['reloadNuxtApp'],
+    from: '#app/composables/chunk'
+  },
+  {
+    imports: ['useRequestURL'],
+    from: '#app/composables/url'
+  }
+]
 
-// vue-router
+// This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
-  from: '#app',
-  imports: [
-    'onBeforeRouteLeave',
-    'onBeforeRouteUpdate'
-  ]
+  imports: ['onBeforeRouteLeave', 'onBeforeRouteUpdate'],
+  from: '#app/composables/router'
 })
 
 // vue
@@ -180,7 +199,7 @@ const vueTypesPreset = defineUnimportPreset({
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,
-  appPreset,
+  ...granularAppPresets,
   routerPreset,
   vuePreset,
   vueTypesPreset

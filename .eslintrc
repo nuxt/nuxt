@@ -71,6 +71,11 @@
             "message": "app should not directly import from modules."
           },
           {
+            "from": "packages/nuxt/src/app/**/index.ts",
+            "target": "packages/nuxt/src",
+            "message": "should not import from barrel/index files"
+          },
+          {
             "from": "packages/nitro",
             "target": "packages/!(nitro)/**/*",
             "message": "nitro should not directly import other packages."

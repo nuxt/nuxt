@@ -1,8 +1,8 @@
 import { joinURL } from 'ufo'
 import type { RouteLocationNormalized } from 'vue-router'
-import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
-import { useRouter } from '#app/composables/router'
-import { reloadNuxtApp } from '#app/composables/chunk'
+import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import { useRouter } from '../composables/router'
+import { reloadNuxtApp } from '../composables/chunk'
 
 export default defineNuxtPlugin({
   name: 'nuxt:chunk-reload',

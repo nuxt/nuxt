@@ -9,14 +9,14 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
-
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import type { RouteMiddleware } from '../../app'
+import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
-import type { NuxtAppManifestMeta } from '#app/composables'
+import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
