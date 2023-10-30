@@ -76,5 +76,6 @@ export const definePageMeta = (meta: PageMeta): void => {
  * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
  * should set `routeRules` directly within your `nuxt.config`.
  */
+/*! @__NO_SIDE_EFFECTS__ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const defineRouteRules = (rules: NitroRouteConfig): void => {}
