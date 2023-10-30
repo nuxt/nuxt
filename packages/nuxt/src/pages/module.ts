@@ -182,7 +182,7 @@ export default defineNuxtModule({
 
     // Add vue-router route guard imports
     nuxt.hook('imports:sources', (sources) => {
-      const routerImports = sources.find(s => s.from === '#app' && s.imports.includes('onBeforeRouteLeave'))
+      const routerImports = sources.find(s => s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave'))
       if (routerImports) {
         routerImports.from = '#vue-router'
       }

@@ -1,5 +1,5 @@
-import { defineNuxtRouteMiddleware } from '#app/composables/router'
-import { getRouteRules } from '#app/composables/manifest'
+import { defineNuxtRouteMiddleware } from '../composables/router'
+import { getRouteRules } from '../composables/manifest'
 
 export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server || import.meta.test) { return }

@@ -1,5 +1,5 @@
 import destr from 'destr'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export interface ReloadNuxtAppOptions {
   /**
