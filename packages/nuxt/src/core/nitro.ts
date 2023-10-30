@@ -244,53 +244,55 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       }
     )
 
-    nuxt.hook('nitro:build:before', async (nitro) => {
-      const routeRules = {} as Record<string, any>
-      const _routeRules = nitro.options.routeRules
-      for (const key in _routeRules) {
-        if (key === '/__nuxt_error') { continue }
-        const filteredRules = Object.entries(_routeRules[key])
-          .filter(([key, value]) => ['prerender', 'redirect'].includes(key) && value)
-          .map(([key, value]: any) => {
-            if (key === 'redirect') {
-              return [key, typeof value === 'string' ? value : value.to]
-            }
-            return [key, value]
-          })
-        if (filteredRules.length > 0) {
-          routeRules[key] = Object.fromEntries(filteredRules)
-        }
-      }
-
-      // Add pages prerendered but not covered by route rules
-      const prerenderedRoutes = new Set<string>()
-      const routeRulesMatcher = toRouteMatcher(
-        createRadixRouter({ routes: routeRules })
-      )
-      const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
-      for (const route of nitro._prerenderedRoutes || []) {
-        if (!route.error && route.route.endsWith(payloadSuffix)) {
-          const url = route.route.slice(0, -payloadSuffix.length) || '/'
-          const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
-          if (!rules.prerender) {
-            prerenderedRoutes.add(url)
+    nuxt.hook('nitro:init', (nitro) => {
+      nitro.hooks.hook('rollup:before', async (nitro) => {
+        const routeRules = {} as Record<string, any>
+        const _routeRules = nitro.options.routeRules
+        for (const key in _routeRules) {
+          if (key === '/__nuxt_error') { continue }
+          const filteredRules = Object.entries(_routeRules[key])
+            .filter(([key, value]) => ['prerender', 'redirect'].includes(key) && value)
+            .map(([key, value]: any) => {
+              if (key === 'redirect') {
+                return [key, typeof value === 'string' ? value : value.to]
+              }
+              return [key, value]
+            })
+          if (filteredRules.length > 0) {
+            routeRules[key] = Object.fromEntries(filteredRules)
           }
         }
-      }
 
-      const manifest = {
-        id: buildId,
-        timestamp: buildTimestamp,
-        matcher: exportMatcher(routeRulesMatcher),
-        prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
-      }
+        // Add pages prerendered but not covered by route rules
+        const prerenderedRoutes = new Set<string>()
+        const routeRulesMatcher = toRouteMatcher(
+          createRadixRouter({ routes: routeRules })
+        )
+        const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+        for (const route of nitro._prerenderedRoutes || []) {
+          if (!route.error && route.route.endsWith(payloadSuffix)) {
+            const url = route.route.slice(0, -payloadSuffix.length) || '/'
+            const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+            if (!rules.prerender) {
+              prerenderedRoutes.add(url)
+            }
+          }
+        }
 
-      await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-      await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
-        id: buildId,
-        timestamp: buildTimestamp
-      }))
-      await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+        const manifest = {
+          id: buildId,
+          timestamp: buildTimestamp,
+          matcher: exportMatcher(routeRulesMatcher),
+          prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
+        }
+
+        await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
+        await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
+          id: buildId,
+          timestamp: buildTimestamp
+        }))
+        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+      })
     })
   }
 
@@ -457,6 +459,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  // Copy public assets after prerender so app manifest can be present
+  if (!nuxt.options.dev) {
+    nitro.hooks.hook('rollup:before', async (nitro) => {
+      await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
+    })
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
@@ -464,8 +474,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
     } else {
       await prepare(nitro)
-      await copyPublicAssets(nitro)
-      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
 
       logger.restoreAll()
