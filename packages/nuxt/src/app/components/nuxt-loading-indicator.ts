@@ -1,6 +1,7 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from '../composables/router'
+import { isChangingPage } from './utils'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
@@ -42,7 +43,7 @@ export default defineComponent({
       indicator.finish()
     })
     router.beforeResolve((to, from) => {
-      if (to === from || to.matched.every((comp, index) => comp.components && comp.components?.default === from.matched[index]?.components?.default)) {
+      if (!isChangingPage(to, from)) {
         indicator.finish()
       }
     })
