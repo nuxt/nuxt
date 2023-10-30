@@ -1,7 +1,6 @@
 import { createHead as createClientHead, setHeadInjectionHandler } from '@unhead/vue'
 import { renderDOMHead } from '@unhead/dom'
-import { defineNuxtPlugin } from '#app/nuxt'
-import { useNuxtApp } from '#app'
+import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
 
 // @ts-expect-error virtual file
 import unheadPlugins from '#build/unhead-plugins.mjs'

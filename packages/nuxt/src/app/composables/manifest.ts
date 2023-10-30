@@ -1,7 +1,7 @@
 import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport } from 'radix3'
 import { defu } from 'defu'
-import { useAppConfig } from '#app'
+import { useAppConfig } from '../config'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file

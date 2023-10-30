@@ -4,8 +4,8 @@ import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
-import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useRoute } from '#app/composables'
+import { useRoute } from './router'
+import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
 import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'

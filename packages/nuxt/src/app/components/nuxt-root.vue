@@ -9,10 +9,10 @@
 
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
-import { isNuxtError, showError, useError } from '#app/composables/error'
-import { useRoute } from '#app/composables/router'
-import { PageRouteSymbol } from '#app/components/injections'
+import { useNuxtApp } from '../nuxt'
+import { isNuxtError, showError, useError } from '../composables/error'
+import { useRoute } from '../composables/router'
+import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
 
