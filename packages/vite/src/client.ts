@@ -15,7 +15,6 @@ import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
 import { typeCheckPlugin } from './plugins/type-check'
-import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
@@ -80,11 +79,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx),
-      pureAnnotationsPlugin.vite({
-        sourcemap: !!ctx.nuxt.options.sourcemap.client,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
-      })
+      viteNodePlugin(ctx)
     ],
     appType: 'custom',
     server: {
