@@ -32,7 +32,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookies = readRawCookies(opts) || {}
 
   let delay: number | undefined
-  if (opts.maxAge) {
+
+  if (opts.maxAge !== undefined) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
     // getTime() already return time in ms
@@ -143,10 +144,16 @@ function cookieRef<T> (value: T | undefined, delay: number) {
       },
       set (newValue) {
         clearTimeout(timeout)
-        timeout = setTimeout(() => {
+
+        if (delay >= 1) {
+          timeout = setTimeout(() => {
+            value = undefined
+            trigger()
+          }, delay)
+        } else {
           value = undefined
-          trigger()
-        }, delay)
+        }
+
         value = newValue
         trigger()
       }
