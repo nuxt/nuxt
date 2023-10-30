@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { parseURL } from 'ufo'
 import { useHead } from '@unhead/vue'
-import { defineNuxtPlugin } from '#app/nuxt'
+import { defineNuxtPlugin } from '../nuxt'
 
 export default defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',

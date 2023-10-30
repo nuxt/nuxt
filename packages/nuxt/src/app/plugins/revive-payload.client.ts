@@ -1,8 +1,8 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import destr from 'destr'
-import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
-import { createError } from '#app/composables/error'
-import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
+import { createError } from '../composables/error'
+import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
