@@ -99,7 +99,7 @@ function createGranularWatcher () {
 
   let pending = 0
 
-  const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
+  const ignoredDirs = new Set(nuxt.options.modulesDir)
   const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir || layer.cwd).filter(d => d && !isIgnored(d))
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }

@@ -347,7 +347,7 @@ export default defineUntypedSchema({
       '**/*.d.{cts,mts,ts}', // ignore type declarations
       '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
       relative(await get('rootDir'), await get('analyzeDir')),
-      relative(await get('rootDir'), await get('buildDir')),
+      relative(await get('rootDir'), join(await get('buildDir'), '**/*')),
       await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
     ].concat(val).filter(Boolean)
   },
