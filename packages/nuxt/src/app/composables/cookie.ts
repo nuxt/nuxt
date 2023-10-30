@@ -36,7 +36,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   if (opts.maxAge !== undefined) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    // getTime() already return time in ms
+    // getTime() already returns time in ms
     delay = opts.expires.getTime() - Date.now()
   }
   // use customRef if on client side otherwise use basic ref
@@ -132,7 +132,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
   }
 }
 
-// custom ref that will update the value to undefined if the cookie expire
+// custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
   onScopeDispose(() => { clearTimeout(timeout) })
