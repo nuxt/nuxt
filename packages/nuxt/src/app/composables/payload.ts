@@ -125,6 +125,7 @@ export function parsePayload (payload: string) {
 /**
  * This is an experimental function for configuring passing rich data from server -> client.
  */
+/*! @__NO_SIDE_EFFECTS__ */
 export function definePayloadReducer (
   name: string,
   reduce: (data: any) => any
@@ -139,6 +140,7 @@ export function definePayloadReducer (
  *
  * This function _must_ be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.
  */
+/*! @__NO_SIDE_EFFECTS__ */
 export function definePayloadReviver (
   name: string,
   revive: (data: any) => any | undefined
