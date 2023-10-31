@@ -341,15 +341,20 @@ export default defineUntypedSchema({
    * inside the `ignore` array will be ignored in building.
    */
   ignore: {
-    $resolve: async (val, get) => [
-      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
-      '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
-      relative(await get('rootDir'), await get('analyzeDir')),
-      relative(await get('rootDir'), join(await get('buildDir'), '**/*')),
-      await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
-    ].concat(val).filter(Boolean)
+    $resolve: async (val, get) => {
+      const buildDir = relative(await get('rootDir'), await get('buildDir'))
+      const shouldDeoptimiseBuildWatcher = val && Array.isArray(val) && val.some(pattern => typeof pattern === 'string' && pattern.includes('!' + buildDir))
+
+      return [
+        '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+        '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+        '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        relative(await get('rootDir'), await get('analyzeDir')),
+        shouldDeoptimiseBuildWatcher ? relative(await get('rootDir'), join(await get('buildDir'), '**/*')) : buildDir,
+        await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
+      ].concat(val).filter(Boolean)
+    }
   },
 
   /**
