@@ -1126,8 +1126,7 @@ describe('deferred app suspense resolve', () => {
   })
 })
 
-// eslint-disable-next-line
-describe.only('nested suspense', () => {
+describe('nested suspense', () => {
   const navigations = ([
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
@@ -1200,6 +1199,8 @@ describe.only('nested suspense', () => {
 
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+
+    await new Promise<void>(resolve => setTimeout(resolve, 50))
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
