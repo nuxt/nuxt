@@ -3,7 +3,7 @@ if (import.meta.client) {
   console.log('[sync] [async]')
 }
 const route = useRoute('suspense-async-parent-sync-child')
-await new Promise(resolve => setTimeout(resolve, 500))
+await new Promise(resolve => setTimeout(resolve, 50))
 if (import.meta.client) {
   console.log(`[sync] [${route.params.parent}] [async] [${route.params.child}] running async data`)
 }
