@@ -368,7 +368,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Trigger Nitro reload when SPA loading template changes
   nuxt.hook('builder:watch', (_event, path) => {
-    if (normalize(path) === relative(nuxt.options.rootDir, resolve(nuxt.options.srcDir, 'app/spa-loading-template.html'))) {
+    if (normalize(path) === spaLoadingTemplatePath(nuxt)) {
       nitro.hooks.callHook('rollup:reload')
     }
   })
@@ -514,12 +514,16 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
+function spaLoadingTemplatePath (nuxt: Nuxt) {
+  return typeof nuxt.options.spaLoadingTemplate === 'string'
+    ? resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+}
+
 function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = typeof nuxt.options.spaLoadingTemplate === 'string'
-    ? nuxt.options.spaLoadingTemplate
-    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  const spaLoadingTemplate = spaLoadingTemplatePath(nuxt)
 
   try {
     if (existsSync(spaLoadingTemplate)) {
