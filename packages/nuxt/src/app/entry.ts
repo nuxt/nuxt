@@ -5,8 +5,8 @@ import { createApp, createSSRApp, nextTick } from 'vue'
 import '#build/paths.mjs'
 import '#build/fetch.mjs'
 
-import type { CreateOptions } from '#app'
-import { applyPlugins, createNuxtApp } from '#app/nuxt'
+import { applyPlugins, createNuxtApp } from './nuxt'
+import type { CreateOptions } from './nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
