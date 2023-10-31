@@ -1,5 +1,7 @@
-import type { NuxtAppManifestMeta } from '#app'
-import { defineNuxtPlugin, getAppManifest, onNuxtReady } from '#app'
+import { defineNuxtPlugin } from '../nuxt'
+import { getAppManifest } from '../composables/manifest'
+import type { NuxtAppManifestMeta } from '../composables/manifest'
+import { onNuxtReady } from '../composables/ready'
 // @ts-expect-error virtual file
 import { buildAssetsURL } from '#build/paths.mjs'
 

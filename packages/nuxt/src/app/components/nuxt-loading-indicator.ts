@@ -1,7 +1,7 @@
 import { computed, defineComponent, h, onBeforeUnmount, ref } from 'vue'
+import { useNuxtApp } from '../nuxt'
+import { useRouter } from '../composables/router'
 import { isChangingPage } from './utils'
-import { useNuxtApp } from '#app/nuxt'
-import { useRouter } from '#app/composables/router'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
