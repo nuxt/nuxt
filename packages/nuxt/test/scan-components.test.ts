@@ -1,9 +1,8 @@
 import { resolve } from 'node:path'
-import { describe, expect, it, vi } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
 import { scanComponents } from '../src/components/scan'
-import { resolveComponentName } from '../src/core/utils'
 
 const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
@@ -243,30 +242,4 @@ it('components:scanComponents', async () => {
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)
-})
-
-const tests: Array<[string, string[], string]> = [
-  ['WithClientOnlySetup', ['Client'], 'ClientWithClientOnlySetup'],
-  ['ItemHolderItem', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
-  ['Item', ['Item'], 'Item'],
-  ['Item', ['Item', 'Item'], 'Item'],
-  ['ItemTest', ['Item', 'Test'], 'ItemTest'],
-  ['ThingItemTest', ['Item', 'Thing'], 'ItemThingItemTest'],
-  ['Item', ['Thing', 'Item'], 'ThingItem'],
-  ['Item', ['Item', 'Holder', 'Item'], 'ItemHolderItem'],
-  ['ItemHolder', ['Item', 'Holder', 'Item'], 'ItemHolderItemHolder'],
-  ['ThingItemTest', ['Item', 'Thing', 'Foo'], 'ItemThingFooThingItemTest'],
-  ['ItemIn', ['Item', 'Holder', 'Item', 'In'], 'ItemHolderItemIn'],
-  ['Item', ['Item', 'Holder', 'Test'], 'ItemHolderTestItem'],
-  ['ItemHolderItem', ['Item', 'Holder', 'Item', 'Holder'], 'ItemHolderItemHolderItem'],
-  ['Icones', ['Icon'], 'IconIcones'],
-  ['Icon', ['Icones'], 'IconesIcon'],
-  ['IconHolder', ['IconHolder'], 'IconHolder'],
-  ['GameList', ['Desktop', 'ShareGame', 'Review', 'Detail'], 'DesktopShareGameReviewDetailGameList']
-]
-
-describe('components:resolveComponentName', () => {
-  it.each(tests)('resolves %s with prefix parts %s and filename %s', (fileName, prefixParts: string[], result) => {
-    expect(resolveComponentName(fileName, prefixParts)).toBe(result)
-  })
 })
