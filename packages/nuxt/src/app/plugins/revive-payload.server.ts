@@ -1,7 +1,7 @@
 import { isReactive, isRef, isShallow, toRaw } from 'vue'
-import { definePayloadReducer } from '#app/composables/payload'
-import { isNuxtError } from '#app/composables/error'
-import { defineNuxtPlugin } from '#app/nuxt'
+import { definePayloadReducer } from '../composables/payload'
+import { isNuxtError } from '../composables/error'
+import { defineNuxtPlugin } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
