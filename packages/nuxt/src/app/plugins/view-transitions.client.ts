@@ -1,6 +1,6 @@
-import { isChangingPage } from '#app/components/utils'
-import { useRouter } from '#app/composables/router'
-import { defineNuxtPlugin } from '#app/nuxt'
+import { isChangingPage } from '../components/utils'
+import { useRouter } from '../composables/router'
+import { defineNuxtPlugin } from '../nuxt'
 
 export default defineNuxtPlugin((nuxtApp) => {
   if (!document.startViewTransition) { return }

@@ -8,7 +8,6 @@ import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
-import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 
@@ -101,12 +100,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       preTransformRequests: false,
       hmr: false
     },
-    plugins: [
-      pureAnnotationsPlugin.vite({
-        sourcemap: !!ctx.nuxt.options.sourcemap.server,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
-      })
-    ]
+    plugins: []
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
