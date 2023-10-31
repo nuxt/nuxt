@@ -40,7 +40,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     delay = opts.expires.getTime() - Date.now()
   }
   // use customRef if on client side otherwise use basic ref
-  const cookie = import.meta.client && delay && delay >= 1
+  const cookie = import.meta.client && delay !== undefined
     ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
     : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
 
@@ -144,11 +144,18 @@ function cookieRef<T> (value: T | undefined, delay: number) {
       },
       set (newValue) {
         clearTimeout(timeout)
-        timeout = setTimeout(() => {
+
+        if (delay >= 1) {
+          timeout = setTimeout(() => {
+            value = undefined
+            trigger()
+          }, delay)
+
+          value = newValue
+        } else {
           value = undefined
-          trigger()
-        }, delay)
-        value = newValue
+        }
+
         trigger()
       }
     }
