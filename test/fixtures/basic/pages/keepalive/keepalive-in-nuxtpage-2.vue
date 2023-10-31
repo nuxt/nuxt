@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { useLifecyleLogs } from './composables'
-
 useLifecyleLogs('keepalive-in-nuxtpage-2')
 </script>
 

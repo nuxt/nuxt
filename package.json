@@ -20,7 +20,6 @@
     "play": "nuxi dev playground",
     "play:build": "nuxi build playground",
     "play:preview": "nuxi preview playground",
-    "fixtures:basic:dev": "nuxi dev test/fixtures/basic",
     "test": "pnpm test:fixtures && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm test:runtime && pnpm test:types && pnpm typecheck",
     "test:fixtures": "nuxi prepare test/fixtures/basic && nuxi prepare test/fixtures/runtime-compiler && vitest run --dir test",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
