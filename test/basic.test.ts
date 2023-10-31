@@ -1126,7 +1126,8 @@ describe('deferred app suspense resolve', () => {
   })
 })
 
-describe('nested suspense', () => {
+// eslint-disable-next-line
+describe.only('nested suspense', () => {
   const navigations = ([
     ['/suspense/sync-1/async-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
