@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { join, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -366,6 +366,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Init nitro
   const nitro = await createNitro(nitroConfig)
 
+  // Trigger Nitro reload when SPA loading template changes
+  nuxt.hook('builder:watch', async (_event, path) => {
+    if (normalize(path) === spaLoadingTemplatePath(nuxt)) {
+      await nitro.hooks.callHook('rollup:reload')
+    }
+  })
+
   // Set prerender-only options
   nitro.options._config.storage ||= {}
   nitro.options._config.storage['internal:nuxt:prerender'] = { driver: 'memory' }
@@ -507,12 +514,16 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
+function spaLoadingTemplatePath (nuxt: Nuxt) {
+  return typeof nuxt.options.spaLoadingTemplate === 'string'
+    ? resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+}
+
 function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = typeof nuxt.options.spaLoadingTemplate === 'string'
-    ? nuxt.options.spaLoadingTemplate
-    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  const spaLoadingTemplate = spaLoadingTemplatePath(nuxt)
 
   try {
     if (existsSync(spaLoadingTemplate)) {
