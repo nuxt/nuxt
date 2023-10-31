@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { join, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -365,6 +365,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Init nitro
   const nitro = await createNitro(nitroConfig)
+
+  // Trigger Nitro reload when SPA loading template changes
+  nuxt.hook('builder:watch', (_event, path) => {
+    if (normalize(path) === relative(nuxt.options.rootDir, resolve(nuxt.options.srcDir, 'app/spa-loading-template.html'))) {
+      nitro.hooks.callHook('rollup:reload')
+    }
+  })
 
   // Set prerender-only options
   nitro.options._config.storage ||= {}

@@ -361,15 +361,7 @@ export default defineUntypedSchema({
    * @type {Array<string | RegExp>}
    */
   watch: {
-    $resolve: async (val, get) => {
-      let spaLoadingTemplate = await get('spaLoadingTemplate')
-      if (typeof spaLoadingTemplate !== 'string') {
-        spaLoadingTemplate = 'app/spa-loading-template.html'
-      }
-      return [
-        relative(await get('rootDir'), resolve(await get('srcDir'), spaLoadingTemplate))
-      ].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
-    }
+    $resolve: val => [].concat(val).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
   },
 
   /**
