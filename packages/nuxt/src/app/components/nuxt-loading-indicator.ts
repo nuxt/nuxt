@@ -28,44 +28,46 @@ export default defineComponent({
   },
   setup (props, { slots }) {
     // TODO: use computed values in useLoadingIndicator
-    const indicator = useLoadingIndicator({
+    const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle
     })
 
-    // Hook to app lifecycle
-    // TODO: Use unified loading API
-    const nuxtApp = useNuxtApp()
-    const router = useRouter()
+    if (import.meta.client) {
+      // Hook to app lifecycle
+      // TODO: Use unified loading API
+      const nuxtApp = useNuxtApp()
+      const router = useRouter()
 
-    globalMiddleware.unshift(indicator.start)
-    router.onError(() => {
-      indicator.finish()
-    })
-    router.beforeResolve((to, from) => {
-      if (!isChangingPage(to, from)) {
-        indicator.finish()
-      }
-    })
+      globalMiddleware.unshift(start)
+      router.onError(() => {
+        finish()
+      })
+      router.beforeResolve((to, from) => {
+        if (!isChangingPage(to, from)) {
+          finish()
+        }
+      })
 
-    router.afterEach((_to, _from, failure) => {
-      if (failure) {
-        indicator.finish()
-      }
-    })
+      router.afterEach((_to, _from, failure) => {
+        if (failure) {
+          finish()
+        }
+      })
 
-    const unsubPage = nuxtApp.hook('page:finish', indicator.finish)
-    const unsubError = nuxtApp.hook('vue:error', indicator.finish)
+      const unsubPage = nuxtApp.hook('page:finish', finish)
+      const unsubError = nuxtApp.hook('vue:error', finish)
 
-    onBeforeUnmount(() => {
-      const index = globalMiddleware.indexOf(indicator.start)
-      if (index >= 0) {
-        globalMiddleware.splice(index, 1)
-      }
-      unsubPage()
-      unsubError()
-      indicator.clear()
-    })
+      onBeforeUnmount(() => {
+        const index = globalMiddleware.indexOf(start)
+        if (index >= 0) {
+          globalMiddleware.splice(index, 1)
+        }
+        unsubPage()
+        unsubError()
+        clear()
+      })
+    }
 
     return () => h('div', {
       class: 'nuxt-loading-indicator',
@@ -77,10 +79,10 @@ export default defineComponent({
         pointerEvents: 'none',
         width: 'auto',
         height: `${props.height}px`,
-        opacity: indicator.isLoading.value ? 1 : 0,
+        opacity: isLoading.value ? 1 : 0,
         background: props.color || undefined,
-        backgroundSize: `${(100 / indicator.progress.value) * 100}% auto`,
-        transform: `scaleX(${indicator.progress.value}%)`,
+        backgroundSize: `${(100 / progress.value) * 100}% auto`,
+        transform: `scaleX(${progress.value}%)`,
         transformOrigin: 'left',
         transition: 'transform 0.1s, height 0.4s, opacity 0.4s',
         zIndex: 999999
