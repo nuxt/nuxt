@@ -1,4 +1,4 @@
-import type { CreateOptions } from '#app'
+import type { CreateOptions } from './nuxt'
 
 const entry = import.meta.server
   ? (ctx?: CreateOptions['ssrContext']) => import('#app/entry').then(m => m.default(ctx))

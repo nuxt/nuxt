@@ -11,7 +11,10 @@ import {
 import { createError } from 'h3'
 import { isEqual, withoutBase } from 'ufo'
 
-import type { PageMeta, Plugin, RouteMiddleware } from '../../../app/index'
+import type { PageMeta } from '../composables'
+
+import type { RouteMiddleware } from '#app/composables/router'
+import type { Plugin } from '#app/nuxt'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
