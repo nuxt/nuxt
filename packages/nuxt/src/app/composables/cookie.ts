@@ -48,9 +48,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         delay
       )
       : ref<T | undefined>(undefined)
-    : delay && delay >= 1
-      ? ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
-      : ref<T | undefined>(undefined)
+    : ref<T | undefined>(delay && delay >= 1 ? ((cookies[name] as any) ?? opts.default?.()) : undefined)
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
