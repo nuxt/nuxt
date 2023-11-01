@@ -28,44 +28,8 @@ export default defineComponent({
     })
 
     expose({
-      ...indicator
+      progress, isLoading, start, finish, clear
     })
-
-    if (import.meta.client) {
-      // Hook to app lifecycle
-      // TODO: Use unified loading API
-      const nuxtApp = useNuxtApp()
-      const router = useRouter()
-
-      globalMiddleware.unshift(start)
-      router.onError(() => {
-        finish()
-      })
-      router.beforeResolve((to, from) => {
-        if (!isChangingPage(to, from)) {
-          finish()
-        }
-      })
-
-      router.afterEach((_to, _from, failure) => {
-        if (failure) {
-          finish()
-        }
-      })
-
-      const unsubPage = nuxtApp.hook('page:finish', finish)
-      const unsubError = nuxtApp.hook('vue:error', finish)
-
-      onBeforeUnmount(() => {
-        const index = globalMiddleware.indexOf(start)
-        if (index >= 0) {
-          globalMiddleware.splice(index, 1)
-        }
-        unsubPage()
-        unsubError()
-        clear()
-      })
-    }
 
     return () => h('div', {
       class: 'nuxt-loading-indicator',
