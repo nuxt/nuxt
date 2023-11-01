@@ -39,10 +39,18 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     // getTime() already returns time in ms
     delay = opts.expires.getTime() - Date.now()
   }
+
   // use customRef if on client side otherwise use basic ref
-  const cookie = import.meta.client && delay !== undefined
-    ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
-    : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
+  const cookie = import.meta.client
+    ? delay && delay >= 1
+      ? cookieRef<T | undefined>(
+        (cookies[name] as any) ?? opts.default?.(),
+        delay
+      )
+      : ref<T | undefined>(undefined)
+    : delay && delay >= 1
+      ? ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
+      : ref<T | undefined>(undefined)
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
@@ -144,18 +152,11 @@ function cookieRef<T> (value: T | undefined, delay: number) {
       },
       set (newValue) {
         clearTimeout(timeout)
-
-        if (delay >= 1) {
-          timeout = setTimeout(() => {
-            value = undefined
-            trigger()
-          }, delay)
-
-          value = newValue
-        } else {
+        timeout = setTimeout(() => {
           value = undefined
-        }
-
+          trigger()
+        }, delay)
+        value = newValue
         trigger()
       }
     }
