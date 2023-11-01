@@ -6,7 +6,6 @@ import { generateTypes, resolveSchema } from 'untyped'
 import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
-import { resolvePath } from 'mlly'
 import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
 import { annotatePlugins } from './app'
@@ -283,10 +282,10 @@ declare module '@nuxt/schema' {
 export const appConfigTemplate: NuxtTemplate = {
   filename: 'app.config.mjs',
   write: true,
-  getContents: async ({ app, nuxt }) => {
+  getContents ({ app, nuxt }) {
     return `
 import { updateAppConfig } from '#app/config'
-import { defuFn } from '${await _resolveId('defu')}'
+import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
@@ -306,9 +305,9 @@ export default /* #__PURE__ */ defuFn(${app.configs.map((_id: string, index: num
 
 export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
-  async getContents ({ nuxt }) {
+  getContents ({ nuxt }) {
     return [
-      `import { joinURL } from '${await _resolveId('ufo')}'`,
+      'import { joinURL } from \'ufo\'',
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
 
       nuxt.options.dev
@@ -338,7 +337,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.mjs',
   getContents () {
     return [
-      "import { $fetch } from 'ofetch'",
+      'import { $fetch } from \'ofetch\'',
       "import { baseURL } from '#build/paths.mjs'",
       'if (!globalThis.$fetch) {',
       '  globalThis.$fetch = $fetch.create({',
@@ -373,16 +372,4 @@ export const nuxtConfigTemplate = {
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`
     ].join('\n\n')
   }
-}
-
-// TODO: Move to kit
-function _resolveId (id: string) {
-  return resolvePath(id, {
-    url: [
-      ...(typeof global.__NUXT_PREPATHS__ === 'string' ? [global.__NUXT_PREPATHS__] : global.__NUXT_PREPATHS__ || []),
-      import.meta.url,
-      process.cwd(),
-      ...(typeof global.__NUXT_PATHS__ === 'string' ? [global.__NUXT_PATHS__] : global.__NUXT_PATHS__ || [])
-    ]
-  })
 }
