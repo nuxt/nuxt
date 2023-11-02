@@ -1,5 +1,7 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+// eslint-disable-next-line
+import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { createBuffer } from './utils'
 
@@ -34,7 +36,7 @@ const NuxtClientFallbackServer = defineComponent({
       return true
     }
   },
-  setup (props, ctx) {
+  async setup (props, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
 
@@ -51,6 +53,11 @@ const NuxtClientFallbackServer = defineComponent({
 
       for (let i = 0; i < (defaultSlot?.length || 0); i++) {
         ssrRenderVNode(ssrVNodes.push, defaultSlot![i], vm!)
+      }
+
+      const buffer = ssrVNodes.getBuffer()
+      if (buffer.hasAsync) {
+        await Promise.all(buffer.filter(isPromise))
       }
 
       return { ssrFailed, ssrVNodes }

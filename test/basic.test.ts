@@ -424,7 +424,8 @@ describe('pages', () => {
       'clientfallback-non-stateful-setup',
       'clientfallback-non-stateful',
       'clientfallback-stateful-setup',
-      'clientfallback-stateful'
+      'clientfallback-stateful',
+      'clientfallback-async-setup'
     ]
     const html = await $fetch('/client-fallback')
     // ensure failed components are not rendered server-side
@@ -440,6 +441,9 @@ describe('pages', () => {
     // ensure not failed component are correctly rendered
     expect(html).not.toContain('<p></p>')
     expect(html).toContain('hi')
+
+    // aysnc setup
+    expect(html).toContain('Work with async setup')
 
     const { page, pageErrors } = await renderPage('/client-fallback')
     // ensure components reactivity once mounted
