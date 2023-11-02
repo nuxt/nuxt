@@ -142,7 +142,7 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
