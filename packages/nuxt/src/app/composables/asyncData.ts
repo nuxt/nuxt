@@ -212,7 +212,7 @@ export function useAsyncData<
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
-        asyncData.error.value = error
+        asyncData.error.value = createError(error) as DataE
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
       })
