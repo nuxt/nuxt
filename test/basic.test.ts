@@ -1497,6 +1497,8 @@ describe('server components/islands', () => {
         expect(await link.getAttribute('href')).not.toContain('ComponentWithRef')
       }
     }
+
+    await page.close()
   })
 
   it('non-lazy server components', async () => {
