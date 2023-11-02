@@ -36,27 +36,31 @@ export async function warmupViteServer (
   const warmedUrls = new Set<String>()
 
   const warmup = async (url: string) => {
-    url = normaliseURL(url, server.config.base)
-
-    if (warmedUrls.has(url)) { return }
-    const m = await server.moduleGraph.getModuleByUrl(url, isServer)
-    // a module that is already compiled (and can't be warmed up anyway)
-    if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
-      return
-    }
-    warmedUrls.add(url)
     try {
+      url = normaliseURL(url, server.config.base)
+
+      if (warmedUrls.has(url)) { return }
+      const m = await server.moduleGraph.getModuleByUrl(url, isServer)
+      // a module that is already compiled (and can't be warmed up anyway)
+      if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
+        return
+      }
+      warmedUrls.add(url)
       await server.transformRequest(url, { ssr: isServer })
     } catch (e) {
-      logger.debug('Warmup for %s failed with: %s', url, e)
+      logger.debug('[nuxt] warmup for %s failed with: %s', url, e)
     }
 
     // Don't warmup CSS file dependencies as they have already all been loaded to produce result
     if (isCSSRequest(url)) { return }
 
-    const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
-    const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
-    await Promise.all(deps.map(m => warmup(m)))
+    try {
+      const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
+      const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
+      await Promise.all(deps.map(m => warmup(m)))
+    } catch (e) {
+      logger.debug('[warmup] tracking dependencies for %s failed with: %s', url, e)
+    }
   }
 
   await Promise.all(entries.map(entry => warmup(fileToUrl(entry, server.config.root))))
