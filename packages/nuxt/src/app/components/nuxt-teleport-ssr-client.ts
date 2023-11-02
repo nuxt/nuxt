@@ -1,7 +1,7 @@
 import { relative } from 'node:path'
 import type { Component } from 'vue'
 import { Teleport, defineComponent, h } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
 

@@ -118,6 +118,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       })
 
       if (!isVite && hasNuxtClient) {
+        // eslint-disable-next-line no-console
         console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
       }
 
