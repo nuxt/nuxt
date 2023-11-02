@@ -2,6 +2,7 @@ import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
 import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
+import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -23,7 +24,7 @@ export default <RouterConfig> {
     const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
 
     // Scroll to top if route is changed by default
-    if (!position && from && to && routeAllowsScrollToTop !== false && _isDifferentRoute(from, to)) {
+    if (!position && from && to && routeAllowsScrollToTop !== false && isChangingPage(to, from)) {
       position = { left: 0, top: 0 }
     }
 
@@ -60,8 +61,4 @@ function _getHashElementScrollMarginTop (selector: string): number {
     }
   } catch {}
   return 0
-}
-
-function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
-  return to.path !== from.path || JSON.stringify(from.params) !== JSON.stringify(to.params)
 }
