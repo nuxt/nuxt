@@ -8,8 +8,6 @@ links:
     size: xs
 ---
 
-:read-more{to="/docs/guide/directory-structure/app-config"}
-
 ## Usage
 
 ```ts

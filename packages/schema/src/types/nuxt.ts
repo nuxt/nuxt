@@ -1,6 +1,6 @@
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
 
@@ -61,6 +61,7 @@ export interface NuxtApp {
   middleware: NuxtMiddleware[]
   templates: NuxtTemplate[]
   configs: string[]
+  pages?: NuxtPage[]
 }
 
 export interface Nuxt {

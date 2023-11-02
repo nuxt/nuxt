@@ -123,7 +123,10 @@ export default defineNuxtConfig({
     undefined
   ],
   vite: {
-    logLevel: 'silent'
+    logLevel: 'silent',
+    build: {
+      assetsInlineLimit: 100 // keep SVG as assets URL
+    }
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {

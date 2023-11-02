@@ -11,10 +11,9 @@ import { join } from 'pathe'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
-
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -124,7 +123,7 @@ export default defineComponent({
     const ssrHTML = ref<string>('')
 
     if (import.meta.client) {
-      ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
     }
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))

@@ -29,7 +29,7 @@ initial = data.value!.count
 await refresh2()
 
 if (data.value!.count !== initial + 1) {
-  throw new Error('data2 refresh not syncronised?')
+  throw new Error('data2 refresh not synchronised?')
 }
 
 if (data.value!.count !== data2.value!.count) {
