@@ -40,15 +40,17 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     delay = opts.expires.getTime() - Date.now()
   }
 
-  // use customRef if on client side otherwise use basic ref
-  const cookie = import.meta.client
-    ? delay && delay >= 1
-      ? cookieRef<T | undefined>(
-        (cookies[name] as any) ?? opts.default?.(),
-        delay
-      )
-      : ref<T | undefined>(undefined)
-    : ref<T | undefined>(delay && delay >= 1 ? ((cookies[name] as any) ?? opts.default?.()) : undefined)
+  const hasExpired = delay !== undefined && delay <= 0
+  const cookieValue = hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.()
+
+  // use a custom ref to expire the cookie on client side otherwise use basic ref
+  const cookie = import.meta.client && delay && !hasExpired
+    ? cookieRef<T | undefined>(cookieValue, delay)
+    : ref<T | undefined>(cookieValue)
+
+  if (import.meta.dev && delay !== undefined && delay <= 0) {
+    console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
+  }
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
