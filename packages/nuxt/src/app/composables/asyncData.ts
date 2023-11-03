@@ -212,7 +212,11 @@ export function useAsyncData<
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
-        asyncData.error.value = createError(error) as DataE
+        const nuxtError = createError(error)
+
+        nuxt.payload._errors[key] = nuxtError
+
+        asyncData.error.value = nuxtError as DataE
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
       })
@@ -221,10 +225,7 @@ export function useAsyncData<
 
         asyncData.pending.value = false
         nuxt.payload.data[key] = asyncData.data.value
-        if (asyncData.error.value) {
-          // We use `createError` and its .toJSON() property to normalize the error
-          nuxt.payload._errors[key] = createError(asyncData.error.value)
-        }
+
         delete nuxt._asyncDataPromises[key]
       })
     nuxt._asyncDataPromises[key] = promise
