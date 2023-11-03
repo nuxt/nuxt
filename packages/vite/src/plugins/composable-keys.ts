@@ -1,4 +1,3 @@
-import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { isAbsolute, relative } from 'pathe'
 import type { Node } from 'estree-walker'
@@ -9,7 +8,7 @@ import type { CallExpression, Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { matchWithStringOrRegex } from '../utils'
+import { matchWithStringOrRegex, parseId } from '../utils'
 
 interface ComposableKeysOptions {
   sourcemap: boolean
@@ -32,7 +31,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     name: 'nuxt:composable-keys',
     enforce: 'post',
     transformInclude (id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname, search } = parseId(id)
       return !NUXT_LIB_RE.test(pathname) && SUPPORTED_EXT_RE.test(pathname) && parseQuery(search).type !== 'style' && !parseQuery(search).macro
     },
     transform (code, id) {

@@ -1,4 +1,7 @@
+import { pathToFileURL } from 'node:url'
 import { hash } from 'ohash'
+import { isAbsolute } from 'pathe'
+import { parseURL } from 'ufo'
 
 export function uniq<T> (arr: T[]): T[] {
   return Array.from(new Set(arr))
@@ -23,4 +26,9 @@ export function matchWithStringOrRegex (value: string, matcher: string | RegExp)
   }
 
   return false
+}
+
+export function parseId (id: string) {
+  id = id.replace(/^(virtual:nuxt:|virtual:)/, '')
+  return parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id))
 }

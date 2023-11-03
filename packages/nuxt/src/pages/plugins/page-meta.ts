@@ -9,6 +9,7 @@ import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
+import { parseId } from '../../core/utils'
 
 export interface PageMetaPluginOptions {
   dev?: boolean
@@ -90,7 +91,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
           s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
-          const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+          const { pathname } = parseId(id)
           logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
         } else {
           s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))

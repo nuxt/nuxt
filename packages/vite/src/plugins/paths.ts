@@ -1,8 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
-import { parseQuery, parseURL } from 'ufo'
+import { parseQuery } from 'ufo'
 import type { Plugin } from 'vite'
-import { isCSS } from '../utils'
+import { isCSS, parseId } from '../utils'
 
 interface RuntimePathsOptions {
   sourcemap?: boolean
@@ -15,7 +15,7 @@ export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
     name: 'nuxt:runtime-paths-dep',
     enforce: 'post',
     transform (code, id) {
-      const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname, search } = parseId(id)
 
       // skip import into css files
       if (isCSS(pathname)) { return }

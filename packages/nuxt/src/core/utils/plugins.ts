@@ -1,9 +1,15 @@
 import { pathToFileURL } from 'node:url'
+import { isAbsolute } from 'pathe'
 import { parseQuery, parseURL } from 'ufo'
+
+export function parseId (id: string) {
+  id = id.replace(/^(virtual:nuxt:|virtual:)/, '')
+  return parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id))
+}
 
 export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 'style'> } = {}) {
   // Bare `.vue` file (in Vite)
-  const { search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { search } = parseId(id)
   if (id.endsWith('.vue') && !search) {
     return true
   }
@@ -38,6 +44,6 @@ const JS_RE = /\.((c|m)?j|t)sx?$/
 
 export function isJS (id: string) {
   // JavaScript files
-  const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+  const { pathname } = parseId(id)
   return JS_RE.test(pathname)
 }

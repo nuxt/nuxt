@@ -1,10 +1,8 @@
-import { pathToFileURL } from 'node:url'
 import type { Component } from '@nuxt/schema'
-import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
-import { isVue } from '../core/utils'
+import { isVue, parseId } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
     getComponents: () => Component[]
@@ -25,7 +23,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const islands = components.filter(component =>
         component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
       )
-      const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const { pathname } = parseId(id)
       return islands.some(c => c.filePath === pathname)
     },
     async transform (code, id) {
