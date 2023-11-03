@@ -1,5 +1,5 @@
 import destr from 'destr'
-import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 export default defineNuxtPlugin({
   name: 'nuxt:restore-state',

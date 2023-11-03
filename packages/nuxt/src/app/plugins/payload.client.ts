@@ -1,9 +1,9 @@
 import { parseURL } from 'ufo'
-import { defineNuxtPlugin } from '#app/nuxt'
-import { loadPayload } from '#app/composables/payload'
-import { onNuxtReady } from '#app/composables/ready'
-import { useRouter } from '#app/composables/router'
-import { getAppManifest } from '#app/composables/manifest'
+import { defineNuxtPlugin } from '../nuxt'
+import { loadPayload } from '../composables/payload'
+import { onNuxtReady } from '../composables/ready'
+import { useRouter } from '../composables/router'
+import { getAppManifest } from '../composables/manifest'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 

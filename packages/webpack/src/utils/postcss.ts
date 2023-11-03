@@ -1,3 +1,4 @@
+import createResolver from 'postcss-import-resolver'
 import { createCommonJS } from 'mlly'
 import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
@@ -39,6 +40,22 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
   }
 
   const postcssOptions = defu({}, nuxt.options.postcss, {
+    plugins: {
+      /**
+       * https://github.com/postcss/postcss-import
+       */
+      'postcss-import': {
+        resolve: createResolver({
+          alias: { ...nuxt.options.alias },
+          modules: nuxt.options.modulesDir
+        })
+      },
+
+      /**
+       * https://github.com/postcss/postcss-url
+       */
+      'postcss-url': {}
+    },
     sourceMap: nuxt.options.webpack.cssSourceMap,
     // Array, String or Function
     order: 'autoprefixerAndCssnanoLast'
