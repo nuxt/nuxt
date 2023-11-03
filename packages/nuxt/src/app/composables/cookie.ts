@@ -48,7 +48,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     ? cookieRef<T | undefined>(cookieValue, delay)
     : ref<T | undefined>(cookieValue)
 
-  if (import.meta.dev && delay !== undefined && delay <= 0) {
+  if (import.meta.dev && hasExpired) {
     console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
   }
 
