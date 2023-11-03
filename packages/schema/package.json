@@ -33,7 +33,7 @@
     "@types/file-loader": "5.0.3",
     "@types/pug": "2.0.8",
     "@types/sass-loader": "8.0.7",
-    "@unhead/schema": "1.8.1",
+    "@unhead/schema": "1.8.2",
     "@vitejs/plugin-vue": "4.4.0",
     "@vitejs/plugin-vue-jsx": "3.0.2",
     "@vue/compiler-core": "3.3.7",
@@ -48,7 +48,7 @@
     "vite": "4.5.0",
     "vue": "3.3.7",
     "vue-bundle-renderer": "2.0.0",
-    "vue-loader": "17.3.0",
+    "vue-loader": "17.3.1",
     "vue-router": "4.2.5",
     "webpack": "5.89.0",
     "webpack-dev-middleware": "6.1.1"
