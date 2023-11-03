@@ -14,7 +14,7 @@ export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin 
       }
     },
     transform (code, id) {
-      if (id.replace(MODULE_ID_RE, '$1') !== entry) { return }
+      if (id.replace(QUERY_RE, '') !== entry) { return }
 
       const s = new MagicString(code)
 
