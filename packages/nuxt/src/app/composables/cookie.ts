@@ -32,16 +32,25 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   const cookies = readRawCookies(opts) || {}
 
   let delay: number | undefined
-  if (opts.maxAge) {
+
+  if (opts.maxAge !== undefined) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    // getTime() already return time in ms
+    // getTime() already returns time in ms
     delay = opts.expires.getTime() - Date.now()
   }
-  // use customRef if on client side otherwise use basic ref
-  const cookie = import.meta.client && delay
-    ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
-    : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
+
+  const hasExpired = delay !== undefined && delay <= 0
+  const cookieValue = hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.()
+
+  // use a custom ref to expire the cookie on client side otherwise use basic ref
+  const cookie = import.meta.client && delay && !hasExpired
+    ? cookieRef<T | undefined>(cookieValue, delay)
+    : ref<T | undefined>(cookieValue)
+
+  if (import.meta.dev && hasExpired) {
+    console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
+  }
 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
@@ -131,7 +140,7 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
   }
 }
 
-// custom ref that will update the value to undefined if the cookie expire
+// custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
   onScopeDispose(() => { clearTimeout(timeout) })
