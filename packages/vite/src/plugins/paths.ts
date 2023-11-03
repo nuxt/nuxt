@@ -1,4 +1,3 @@
-import { pathToFileURL } from 'node:url'
 import MagicString from 'magic-string'
 import { parseQuery } from 'ufo'
 import type { Plugin } from 'vite'
