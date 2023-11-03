@@ -182,6 +182,7 @@ function rewriteQuery (id: string) {
 }
 
 function parseMacroQuery (id: string) {
+  id = id.replace(/^(virtual:nuxt:|virtual:)/, '')
   const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
   const query = parseQuery(search)
   if (id.includes('?macro=true')) {
