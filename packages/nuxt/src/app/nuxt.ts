@@ -10,6 +10,7 @@ import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import { isDevelopment } from 'std-env'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -83,6 +84,7 @@ export interface NuxtPayload {
   } | null
   _errors: Record<string, NuxtError | null>
   [key: string]: unknown
+  // TODO: if isDevelopment, add isNuxtLayoutUsed
 }
 
 interface _NuxtApp {
@@ -215,7 +217,8 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
+      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
+      ...(isDevelopment ? { isNuxtLayoutUsed: false } : {})
     }),
     static: {
       data: {}
