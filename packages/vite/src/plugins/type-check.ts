@@ -1,7 +1,7 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 
-const MODULE_ID_RE = /([^?]+)(?:[?].+)?/
+const QUERY_RE = /\?.+$/
 
 export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
   let entry: string
