@@ -28,7 +28,7 @@
     "@types/html-minifier": "^4.0.4",
     "@types/lodash.template": "^4.5.2",
     "critters": "0.0.20",
-    "execa": "^7.2.0",
+    "execa": "^8.0.1",
     "globby": "^13.2.2",
     "html-minifier": "^4.0.0",
     "jiti": "^1.21.0",
