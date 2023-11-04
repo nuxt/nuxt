@@ -190,6 +190,14 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
    * @default false
    */
   parallel?: boolean
+  /**
+   * Await async plugin to be finished before running this plugin.
+   */
+  dependsOn?: string[]
+  /**
+   * @internal
+   */
+  _name?: string
 }
 
 /** @deprecated Use `ObjectPlugin` */
@@ -331,11 +339,18 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
+  const pluginMap: Record<string, any> = {}
   const parallels: Promise<any>[] = []
-  const errors: Error[] = []
+  const errors: Error[] = [] 
+
   for (const plugin of plugins) {
     if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
-    const promise = applyPlugin(nuxtApp, plugin)
+    const promise = plugin.dependsOn ? Promise.all(plugin.dependsOn.map(name => pluginMap[name])).then(() => applyPlugin(nuxtApp, plugin)).catch(e => errors.push(e)) : applyPlugin(nuxtApp, plugin)
+
+    if(plugin._name) {
+      pluginMap[plugin._name] = promise  
+    } 
+
     if (plugin.parallel) {
       parallels.push(promise.catch(e => errors.push(e)))
     } else {
@@ -343,14 +358,17 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
     }
   }
   await Promise.all(parallels)
+
   if (errors.length) { throw errors[0] }
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
   if (typeof plugin === 'function') { return plugin }
+
+  const _name = plugin._name || plugin.name
   delete plugin.name
-  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true } as const)
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
