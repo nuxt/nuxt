@@ -1,6 +1,7 @@
 import { defineNuxtPlugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 
+// @ts-expect-error virtual file
 import layouts from '#build/layouts'
 
 export default defineNuxtPlugin({
