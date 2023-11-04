@@ -28,7 +28,8 @@
     "@types/terser-webpack-plugin": "4.2.1",
     "@types/webpack": "^4.41.35",
     "@types/webpack-bundle-analyzer": "3.9.5",
-    "@types/webpack-hot-middleware": "2.25.5"
+    "@types/webpack-hot-middleware": "2.25.5",
+    "sass": "1.69.5"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
