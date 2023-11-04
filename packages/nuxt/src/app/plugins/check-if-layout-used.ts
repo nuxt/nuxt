@@ -17,7 +17,7 @@ export default defineNuxtPlugin({
     onNuxtReady(() => {
       if (!nuxtApp.payload.isNuxtLayoutUsed && projectHasLayouts()) {
         // TODO: Use logger
-        console.log('Your project has layouts but the <NuxtLayout /> component has not been used.')
+        console.warn('Your project has layouts but the <NuxtLayout /> component has not been used.')
       }
     })
   }
