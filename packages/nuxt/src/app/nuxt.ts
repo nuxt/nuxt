@@ -345,7 +345,13 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
 
   for (const plugin of plugins) {
     if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
-    const promise = plugin.dependsOn ? Promise.all(plugin.dependsOn.map(name => pluginMap[name])).then(() => applyPlugin(nuxtApp, plugin)).catch(e => errors.push(e)) : applyPlugin(nuxtApp, plugin)
+    const promise = plugin.dependsOn ? Promise.all(plugin.dependsOn.map(name => {
+      const pluginPromise = pluginMap[name]
+      if(import.meta.dev && !pluginPromise) {
+        console.warn(`[nuxt] ${plugin._name ? `Plugin "${plugin._name}"` : 'A plugin'} depends on "${name}" but "${name}" plugin is does not exist or hasn't been registered yet.`)
+      }
+      return pluginPromise
+    })).then(() => applyPlugin(nuxtApp, plugin)).catch(e => errors.push(e)) : applyPlugin(nuxtApp, plugin)
 
     if(plugin._name) {
       pluginMap[plugin._name] = promise  
