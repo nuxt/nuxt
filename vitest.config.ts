@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
-      '#app': resolve('./packages/nuxt/dist/app/index'),
+      '#app': resolve('./packages/nuxt/dist/app/index')
     }
   },
   define: {
