@@ -191,7 +191,7 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
    */
   parallel?: boolean
   /**
-   * Await async plugin to be finished before running this plugin.
+   * Await for plugin to be finished before running this plugin.
    */
   dependsOn?: string[]
   /**
