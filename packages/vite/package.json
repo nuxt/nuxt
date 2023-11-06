@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "repository": "nuxt/nuxt",
   "description": "Vite bundler for Nuxt",
   "license": "MIT",
