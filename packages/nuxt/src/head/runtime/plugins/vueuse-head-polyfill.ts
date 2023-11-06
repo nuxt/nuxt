@@ -1,4 +1,3 @@
-// @ts-expect-error ts failing with type
 import { polyfillAsVueUseHead } from '@unhead/vue/polyfill'
 import { defineNuxtPlugin } from '#app/nuxt'
 
