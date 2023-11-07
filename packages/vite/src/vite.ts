@@ -110,7 +110,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           virtual(nuxt.vfs)
         ],
         vue: {
-          reactivityTransform: nuxt.options.experimental.reactivityTransform
+          reactivityTransform: nuxt.options.experimental.reactivityTransform,
+          template: {
+            transformAssetUrls: {
+              video: ['src', 'poster'],
+              source: ['src'],
+              img: ['src'],
+              image: ['xlink:href', 'href'],
+              use: ['xlink:href', 'href']
+            }
+          }
         },
         server: {
           watch: { ignored: isIgnored },
@@ -202,18 +211,4 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   await buildClient(ctx)
   await buildServer(ctx)
-}
-
-export function mergeTransformAssetUrls (config: ViteConfig) {
-  config.vue = vite.mergeConfig(config.vue || {}, {
-    template: {
-      transformAssetUrls: {
-        video: ['src', 'poster'],
-        source: ['src'],
-        img: ['src'],
-        image: ['xlink:href', 'href'],
-        use: ['xlink:href', 'href']
-      }
-    }
-  })
 }

@@ -5,7 +5,7 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
-import { type ViteBuildContext, mergeTransformAssetUrls } from './vite'
+import { type ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
@@ -115,11 +115,6 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig)
-
-  // Merge transformAssetsUrl with defaults
-  if (ctx.nuxt.options.vite.vue?.template?.transformAssetUrls) {
-    mergeTransformAssetUrls(serverConfig)
-  }
 
   await ctx.nuxt.callHook('vite:extendConfig', serverConfig, { isClient: false, isServer: true })
 
