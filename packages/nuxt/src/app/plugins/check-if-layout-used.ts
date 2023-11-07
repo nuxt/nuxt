@@ -8,14 +8,10 @@ export default defineNuxtPlugin({
   name: 'nuxt:checkIfLayoutUsed',
   enforce: 'post',
   setup (nuxtApp) {
-    const projectHasLayouts:()=>boolean = () => {
-      const numLayouts = Object.keys(layouts).length
-      // TODO: Also check layers
-      return numLayouts > 0
-    }
+    const projectHasLayouts = Object.keys(layouts).length > 0
 
     onNuxtReady(() => {
-      if (!nuxtApp.payload.isNuxtLayoutUsed && projectHasLayouts()) {
+      if (!nuxtApp.payload.isNuxtLayoutUsed && projectHasLayouts) {
         // TODO: Use logger
         console.warn('Your project has layouts but the <NuxtLayout /> component has not been used.')
       }
