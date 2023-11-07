@@ -197,11 +197,11 @@ importers:
         version: 1.4.0
     devDependencies:
       '@types/hash-sum':
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.0.2
+        version: 1.0.2
       '@types/lodash-es':
-        specifier: 4.17.10
-        version: 4.17.10
+        specifier: 4.17.11
+        version: 4.17.11
       '@types/semver':
         specifier: 7.5.4
         version: 7.5.4
@@ -457,11 +457,11 @@ importers:
         specifier: 5.0.4
         version: 5.0.4
       '@types/pug':
-        specifier: 2.0.8
-        version: 2.0.8
+        specifier: 2.0.9
+        version: 2.0.9
       '@types/sass-loader':
-        specifier: 8.0.7
-        version: 8.0.7
+        specifier: 8.0.8
+        version: 8.0.8
       '@unhead/schema':
         specifier: 1.8.3
         version: 1.8.3
@@ -777,11 +777,11 @@ importers:
         specifier: 11.0.3
         version: 11.0.3
       '@types/hash-sum':
-        specifier: 1.0.1
-        version: 1.0.1
+        specifier: 1.0.2
+        version: 1.0.2
       '@types/pify':
-        specifier: 5.0.3
-        version: 5.0.3
+        specifier: 5.0.4
+        version: 5.0.4
       '@types/webpack-bundle-analyzer':
         specifier: 4.6.2
         version: 4.6.2
@@ -2406,8 +2406,8 @@ packages:
       '@types/node': 20.8.10
     dev: true
 
-  /@types/hash-sum@1.0.1:
-    resolution: {integrity: sha512-5JLywbPgWZVgxhAV//qTU6LPurKfQeiyw20GKZMi9V7AjHnAP4t1eNCJ1mC2L4TAicuS71MVoFYVcEM+EiR4lg==}
+  /@types/hash-sum@1.0.2:
+    resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
     dev: true
 
   /@types/http-proxy@1.17.13:
@@ -2444,8 +2444,8 @@ packages:
       '@types/node': 20.8.10
     dev: true
 
-  /@types/lodash-es@4.17.10:
-    resolution: {integrity: sha512-YJP+w/2khSBwbUSFdGsSqmDvmnN3cCKoPOL7Zjle6s30ZtemkkqhjVfFqGwPN7ASil5VyjE2GtyU/yqYY6mC0A==}
+  /@types/lodash-es@4.17.11:
+    resolution: {integrity: sha512-eCw8FYAWHt2DDl77s+AMLLzPn310LKohruumpucZI4oOFJkIgnlaJcy23OKMJxx4r9PeTF13Gv6w+jqjWQaYUg==}
     dependencies:
       '@types/lodash': 4.14.200
     dev: true
@@ -2469,19 +2469,19 @@ packages:
     resolution: {integrity: sha512-ehPtgRgaULsFG8x0NeYJvmyH1hmlfsNLujHe9dQEia/7MAJYdzMSi19JtchUHjmBA6XC/75dK55mzZH+RyieSg==}
     dev: true
 
-  /@types/pify@5.0.3:
-    resolution: {integrity: sha512-pfi5GX+1QTZV25QNMUZKf21I0j/6n7YDpzNz1aEh9z4N3jmED81Mhx9+zHrngYPHkad8JOeeFKYj8FjHv9V71A==}
+  /@types/pify@5.0.4:
+    resolution: {integrity: sha512-gxKJ1Aw8LbyCsCQWIsip9bYKJCNsKHMoZoQMAe2IWH7U7hgp/l6TvJpbFvu8ZlGBimjZZNvEx2S1ZQlj02ayNQ==}
     dev: true
 
-  /@types/pug@2.0.8:
-    resolution: {integrity: sha512-QzhsZ1dMGyJbn/D9V80zp4GIA4J4rfAjCCxc3MP+new0E8dyVdSkR735Lx+n3LIaHNFcjHL5+TbziccuT+fdoQ==}
+  /@types/pug@2.0.9:
+    resolution: {integrity: sha512-Yg4LkgFYvn1faISbDNWmcAC1XoDT8IoMUFspp5mnagKk+UvD2N0IWt5A7GRdMubsNWqgCLmrkf8rXkzNqb4szA==}
     dev: true
 
   /@types/resolve@1.20.2:
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  /@types/sass-loader@8.0.7:
-    resolution: {integrity: sha512-CjRu5osnaDpHCdBFRkfIXtt0xb/kFPIbhZEpSfQnmIhX1TIhY9a2BMZeSQ9ef2csUDR9aOowgWiIwRNPR2N+dQ==}
+  /@types/sass-loader@8.0.8:
+    resolution: {integrity: sha512-hjP8aUyTDde2blD6clAGso/+ctC+9Rch/mDpvMe/kZrpXGZBDqf1K/48jWzXOX7hbd4jXQKQMPWdbBv4MRp0yQ==}
     dependencies:
       '@types/node': 20.8.10
       '@types/node-sass': 4.11.6
