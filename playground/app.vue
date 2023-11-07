@@ -4,7 +4,7 @@
 <template>
   <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    <img src="@/assets/logo.svg">
+    Nuxt 3 Playground
   </div>
 </template>
 
