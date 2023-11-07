@@ -198,12 +198,17 @@ export function useAsyncData<
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
         let result = _result as unknown as DataT
+
         if (options.transform) {
           result = options.transform(_result)
         }
+
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT
         }
+
+        nuxt.payload.data[key] = result
+
         asyncData.data.value = result
         asyncData.error.value = null
         asyncData.status.value = 'success'
@@ -224,7 +229,6 @@ export function useAsyncData<
         if ((promise as any).cancelled) { return }
 
         asyncData.pending.value = false
-        nuxt.payload.data[key] = asyncData.data.value
 
         delete nuxt._asyncDataPromises[key]
       })
