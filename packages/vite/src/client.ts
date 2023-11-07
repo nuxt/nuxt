@@ -16,6 +16,7 @@ import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
 import { typeCheckPlugin } from './plugins/type-check'
 import { viteNodePlugin } from './vite-node'
+import { mergeTransformAssetUrls } from './vite'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
@@ -88,6 +89,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
+
+  // Merge transformAssetsUrl with defaults
+  if (ctx.nuxt.options.vite.vue?.template?.transformAssetUrls) {
+    mergeTransformAssetUrls(clientConfig)
+  }
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)

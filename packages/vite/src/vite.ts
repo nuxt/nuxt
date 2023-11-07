@@ -203,3 +203,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await buildClient(ctx)
   await buildServer(ctx)
 }
+
+export function mergeTransformAssetUrls (config: ViteConfig) {
+  config.vue = vite.mergeConfig(config.vue || {}, {
+    template: {
+      transformAssetUrls: {
+        video: ['src', 'poster'],
+        source: ['src'],
+        img: ['src'],
+        image: ['xlink:href', 'href'],
+        use: ['xlink:href', 'href']
+      }
+    }
+  })
+}
