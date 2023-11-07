@@ -13,6 +13,9 @@ for PKG in packages/* ; do
   if [[ $PKG == "packages/nuxi" ]] ; then
     continue
   fi
+  if [[ $p == "packages/test-utils" ]] ; then
+    continue
+  fi
   pushd $PKG
   TAG="latest"
   echo "⚡ Publishing $PKG with tag $TAG"
