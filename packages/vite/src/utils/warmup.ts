@@ -1,3 +1,4 @@
+import { isBuiltin } from 'node:module'
 import { logger } from '@nuxt/kit'
 import { join, normalize, relative } from 'pathe'
 import { withoutBase } from 'ufo'
@@ -39,7 +40,7 @@ export async function warmupViteServer (
     try {
       url = normaliseURL(url, server.config.base)
 
-      if (warmedUrls.has(url)) { return }
+      if (warmedUrls.has(url) || isBuiltin(url)) { return }
       const m = await server.moduleGraph.getModuleByUrl(url, isServer)
       // a module that is already compiled (and can't be warmed up anyway)
       if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
