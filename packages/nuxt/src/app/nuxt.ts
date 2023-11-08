@@ -83,7 +83,6 @@ export interface NuxtPayload {
   } | null
   _errors: Record<string, NuxtError | null>
   [key: string]: unknown
-  // TODO: if isDevelopment, add isNuxtLayoutUsed
 }
 
 interface _NuxtApp {
@@ -216,8 +215,7 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
       state: {},
       _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
-      ...(import.meta.dev ? { isNuxtLayoutUsed: false } : {})
+      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
       data: {}

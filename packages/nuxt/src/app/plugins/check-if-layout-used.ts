@@ -9,7 +9,7 @@ export default defineNuxtPlugin({
   enforce: 'post',
   setup (nuxtApp) {
     onNuxtReady(() => {
-      if (!nuxtApp.payload.isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
+      if (!nuxtApp.payload._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
         // TODO: Use logger
         console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
       }
