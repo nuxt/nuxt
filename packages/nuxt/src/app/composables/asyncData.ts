@@ -198,11 +198,9 @@ export function useAsyncData<
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
         let result = _result as unknown as DataT
-
         if (options.transform) {
           result = options.transform(_result)
         }
-
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT
         }
@@ -217,11 +215,7 @@ export function useAsyncData<
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
-        const nuxtError = createError(error)
-
-        nuxt.payload._errors[key] = nuxtError
-
-        asyncData.error.value = nuxtError as DataE
+        asyncData.error.value = createError(error) as DataE
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
       })
