@@ -21,6 +21,6 @@ export default defineNuxtModule({
       name: 'someUtils'
     }])
 
-    addServerImportsDir(resolver.resolve('./runtime/server'))
+    addServerImportsDir(resolver.resolve('./runtime/server/utils'))
   }
 })

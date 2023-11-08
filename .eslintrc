@@ -11,7 +11,10 @@
     "NodeJS": true,
     "$fetch": true
   },
-  "plugins": ["jsdoc", "no-only-tests"],
+  "plugins": [
+    "jsdoc",
+    "no-only-tests"
+  ],
   "extends": [
     "plugin:jsdoc/recommended",
     "@nuxtjs/eslint-config-typescript",
@@ -42,14 +45,6 @@
       {
         "pathGroups": [
           {
-            "pattern": "@nuxt/test-utils/experimental",
-            "group": "external"
-          },
-          {
-            "pattern": "@nuxt/test-utils",
-            "group": "external"
-          },
-          {
             "pattern": "#vue-router",
             "group": "external"
           }
@@ -69,6 +64,11 @@
             "from": "packages/nuxt/src/!(app)/**/*",
             "target": "packages/nuxt/src/app",
             "message": "app should not directly import from modules."
+          },
+          {
+            "from": "packages/nuxt/src/app/**/index.ts",
+            "target": "packages/nuxt/src",
+            "message": "should not import from barrel/index files"
           },
           {
             "from": "packages/nitro",
@@ -103,26 +103,36 @@
     "jsdoc/check-tag-names": [
       "error",
       {
-        "definedTags": ["__NO_SIDE_EFFECTS__"]
+        "definedTags": [
+          "__NO_SIDE_EFFECTS__"
+        ]
       }
     ]
   },
   "overrides": [
     {
-        "files": ["packages/schema/**"],
-        "rules": {
-          "jsdoc/no-undefined-types": "off",
-          "jsdoc/valid-types": "off",
-          "jsdoc/check-tag-names": [
-            "error",
-            {
-              "definedTags": ["experimental"]
-            }
-          ]
-        }
+      "files": [
+        "packages/schema/**"
+      ],
+      "rules": {
+        "jsdoc/no-undefined-types": "off",
+        "jsdoc/valid-types": "off",
+        "jsdoc/check-tag-names": [
+          "error",
+          {
+            "definedTags": [
+              "experimental"
+            ]
+          }
+        ]
+      }
     },
     {
-      "files": ["packages/nuxt/src/app/**", "test/**", "**/runtime/**"],
+      "files": [
+        "packages/nuxt/src/app/**",
+        "test/**",
+        "**/runtime/**"
+      ],
       "rules": {
         "no-console": "off"
       }

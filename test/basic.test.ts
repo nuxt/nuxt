@@ -5,6 +5,7 @@ import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
+// @ts-expect-error subpath export needs to be fixed upstream
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -424,7 +425,8 @@ describe('pages', () => {
       'clientfallback-non-stateful-setup',
       'clientfallback-non-stateful',
       'clientfallback-stateful-setup',
-      'clientfallback-stateful'
+      'clientfallback-stateful',
+      'clientfallback-async-setup'
     ]
     const html = await $fetch('/client-fallback')
     // ensure failed components are not rendered server-side
@@ -440,6 +442,9 @@ describe('pages', () => {
     // ensure not failed component are correctly rendered
     expect(html).not.toContain('<p></p>')
     expect(html).toContain('hi')
+
+    // aysnc setup
+    expect(html).toContain('Work with async setup')
 
     const { page, pageErrors } = await renderPage('/client-fallback')
     // ensure components reactivity once mounted
@@ -1199,6 +1204,8 @@ describe('nested suspense', () => {
 
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
+
+    await new Promise<void>(resolve => setTimeout(resolve, 50))
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
