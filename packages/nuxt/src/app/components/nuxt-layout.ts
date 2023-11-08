@@ -58,7 +58,7 @@ export default defineComponent({
     const done = nuxtApp.deferHydration()
 
     if (import.meta.dev) {
-      nuxtApp.payload._isNuxtLayoutUsed = true
+      nuxtApp._isNuxtLayoutUsed = true
     }
 
     return () => {
