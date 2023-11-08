@@ -7,7 +7,7 @@
     "directory": "packages/schema"
   },
   "description": "Nuxt types and default configuration",
-  "homepage": "https://nuxt.com/",
+  "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
