@@ -92,7 +92,7 @@ importers:
         version: link:packages/nuxt
       nuxt-vitest:
         specifier: 0.11.3
-        version: 0.11.3(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.4.0)(happy-dom@12.10.3)(vite@4.5.0)(vitest@0.33.0)(vue-router@4.2.5)(vue@3.3.8)
+        version: 0.11.3(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.4.1)(happy-dom@12.10.3)(vite@4.5.0)(vitest@0.33.0)(vue-router@4.2.5)(vue@3.3.8)
       ofetch:
         specifier: 1.3.3
         version: 1.3.3
@@ -405,8 +405,8 @@ importers:
         specifier: 11.0.4
         version: 11.0.4
       '@vitejs/plugin-vue':
-        specifier: 4.4.0
-        version: 4.4.0(vite@4.5.0)(vue@3.3.8)
+        specifier: 4.4.1
+        version: 4.4.1(vite@4.5.0)(vue@3.3.8)
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -466,8 +466,8 @@ importers:
         specifier: 1.8.3
         version: 1.8.3
       '@vitejs/plugin-vue':
-        specifier: 4.4.0
-        version: 4.4.0(vite@4.5.0)(vue@3.3.8)
+        specifier: 4.4.1
+        version: 4.4.1(vite@4.5.0)(vue@3.3.8)
       '@vitejs/plugin-vue-jsx':
         specifier: 3.0.2
         version: 3.0.2(vite@4.5.0)(vue@3.3.8)
@@ -529,8 +529,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(rollup@3.29.4)
       '@vitejs/plugin-vue':
-        specifier: ^4.4.0
-        version: 4.4.0(vite@4.5.0)(vue@3.3.8)
+        specifier: ^4.4.1
+        version: 4.4.1(vite@4.5.0)(vue@3.3.8)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.0.2
         version: 3.0.2(vite@4.5.0)(vue@3.3.8)
@@ -2780,8 +2780,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@vitejs/plugin-vue@4.4.0(vite@4.5.0)(vue@3.3.8):
-    resolution: {integrity: sha512-xdguqb+VUwiRpSg+nsc2HtbAUSGak25DXYvpQQi4RVU1Xq1uworyoH/md9Rfd8zMmPR/pSghr309QNcftUVseg==}
+  /@vitejs/plugin-vue@4.4.1(vite@4.5.0)(vue@3.3.8):
+    resolution: {integrity: sha512-HCQG8VDFDM7YDAdcj5QI5DvUi+r6xvo9LgvYdk7LSkUNwdpempdB5horkMSZsbdey9Ywsf5aaU8kEPw9M5kREA==}
     engines: {node: ^14.18.0 || >=16.0.0}
     peerDependencies:
       vite: 4.5.0
@@ -7007,7 +7007,7 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /nuxt-vitest@0.11.3(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.4.0)(happy-dom@12.10.3)(vite@4.5.0)(vitest@0.33.0)(vue-router@4.2.5)(vue@3.3.8):
+  /nuxt-vitest@0.11.3(@vitejs/plugin-vue-jsx@3.0.2)(@vitejs/plugin-vue@4.4.1)(happy-dom@12.10.3)(vite@4.5.0)(vitest@0.33.0)(vue-router@4.2.5)(vue@3.3.8):
     resolution: {integrity: sha512-jGyrOXbgwlakVaDsQCLtdttXXY2bX4J5r22rr0CTXqIFO3jhnf8e3kAU+zCQe/WSp/xtM+2HZEwrU+jqy5zuDQ==}
     peerDependencies:
       '@vitejs/plugin-vue': '*'
@@ -7016,7 +7016,7 @@ packages:
       vitest: ^0.24.5 || ^0.26.0 || ^0.27.0 || ^0.28.0 || ^0.29.0 || ^0.30.0 || ^0.33.0
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@vitejs/plugin-vue': 4.4.0(vite@4.5.0)(vue@3.3.8)
+      '@vitejs/plugin-vue': 4.4.1(vite@4.5.0)(vue@3.3.8)
       '@vitejs/plugin-vue-jsx': 3.0.2(vite@4.5.0)(vue@3.3.8)
       '@vitest/ui': 0.33.0(vitest@0.33.0)
       defu: 6.1.3
