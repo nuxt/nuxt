@@ -6,12 +6,16 @@ import layouts from '#build/layouts'
 
 export default defineNuxtPlugin({
   name: 'nuxt:checkIfLayoutUsed',
-  enforce: 'post',
   setup (nuxtApp) {
-    onNuxtReady(() => {
-      if (!nuxtApp.payload._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
+    function checkIfLayoutUsed () {
+      if (!nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
         console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
       }
-    })
+    }
+    if (import.meta.server) {
+      nuxtApp.hook('app:rendered', checkIfLayoutUsed)
+    } else {
+      onNuxtReady(checkIfLayoutUsed)
+    }
   }
 })
