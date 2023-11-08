@@ -49,7 +49,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
-      'module.hot': false
+      'module.hot': false,
+      'typeof process': '"undefined"',
     },
     optimizeDeps: {
       entries: [ctx.entry]
