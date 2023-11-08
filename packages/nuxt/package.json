@@ -5,6 +5,7 @@
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git"
   },
+  "homepage": "https://nuxt.com",
   "description": "Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.",
   "license": "MIT",
   "type": "module",
