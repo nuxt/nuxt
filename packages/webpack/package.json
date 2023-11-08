@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/webpack-builder",
   "version": "3.8.1",
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git"
+  },
   "description": "Webpack bundler for Nuxt",
   "license": "MIT",
   "type": "module",

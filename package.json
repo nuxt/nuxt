@@ -1,7 +1,10 @@
 {
   "name": "nuxt-framework",
   "private": true,
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git"
+  },
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -81,5 +84,6 @@
   "packageManager": "pnpm@8.10.2",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
-  }
+  },
+  "version": ""
 }
