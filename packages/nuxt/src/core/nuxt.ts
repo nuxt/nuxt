@@ -7,7 +7,6 @@ import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
-import { isDevelopment } from 'std-env'
 /* eslint-disable import/no-restricted-paths */
 import defu from 'defu'
 import pagesModule from '../pages/module'
@@ -160,7 +159,7 @@ async function initNuxt (nuxt: Nuxt) {
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
   }
 
-  if (isDevelopment) {
+  if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
   }

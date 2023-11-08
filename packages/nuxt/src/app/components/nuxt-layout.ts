@@ -1,7 +1,6 @@
 import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { isDevelopment } from 'std-env'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
@@ -58,7 +57,7 @@ export default defineComponent({
 
     const done = nuxtApp.deferHydration()
 
-    if (isDevelopment) {
+    if (import.meta.dev) {
       nuxtApp.payload.isNuxtLayoutUsed = true
     }
 
