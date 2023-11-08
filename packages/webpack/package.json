@@ -3,7 +3,8 @@
   "version": "3.8.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/webpack"
   },
   "description": "Webpack bundler for Nuxt",
   "license": "MIT",

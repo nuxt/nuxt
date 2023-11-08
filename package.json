@@ -1,10 +1,7 @@
 {
   "name": "nuxt-framework",
   "private": true,
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.git"
-  },
+  "repository": "nuxt/nuxt",
   "license": "MIT",
   "type": "module",
   "scripts": {
