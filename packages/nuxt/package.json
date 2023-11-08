@@ -117,7 +117,7 @@
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
     "@types/estree": "1.0.5",
-    "@types/fs-extra": "11.0.3",
+    "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "4.4.0",
     "unbuild": "latest",
     "vite": "4.5.0",
