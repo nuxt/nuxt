@@ -38,6 +38,7 @@
       <ClientFallbackStatefulSetup />
       <ClientFallbackNonStatefulSetup />
       <ClientFallbackNonStateful />
+      <ClientFallbackAsyncSetup />
       <NuxtClientFallback keep-fallback>
         <div>
           <BreakInSetup />

@@ -11,7 +11,10 @@
     "NodeJS": true,
     "$fetch": true
   },
-  "plugins": ["jsdoc", "no-only-tests"],
+  "plugins": [
+    "jsdoc",
+    "no-only-tests"
+  ],
   "extends": [
     "plugin:jsdoc/recommended",
     "@nuxtjs/eslint-config-typescript",
@@ -41,14 +44,6 @@
       "error",
       {
         "pathGroups": [
-          {
-            "pattern": "@nuxt/test-utils/experimental",
-            "group": "external"
-          },
-          {
-            "pattern": "@nuxt/test-utils",
-            "group": "external"
-          },
           {
             "pattern": "#vue-router",
             "group": "external"
@@ -108,26 +103,36 @@
     "jsdoc/check-tag-names": [
       "error",
       {
-        "definedTags": ["__NO_SIDE_EFFECTS__"]
+        "definedTags": [
+          "__NO_SIDE_EFFECTS__"
+        ]
       }
     ]
   },
   "overrides": [
     {
-        "files": ["packages/schema/**"],
-        "rules": {
-          "jsdoc/no-undefined-types": "off",
-          "jsdoc/valid-types": "off",
-          "jsdoc/check-tag-names": [
-            "error",
-            {
-              "definedTags": ["experimental"]
-            }
-          ]
-        }
+      "files": [
+        "packages/schema/**"
+      ],
+      "rules": {
+        "jsdoc/no-undefined-types": "off",
+        "jsdoc/valid-types": "off",
+        "jsdoc/check-tag-names": [
+          "error",
+          {
+            "definedTags": [
+              "experimental"
+            ]
+          }
+        ]
+      }
     },
     {
-      "files": ["packages/nuxt/src/app/**", "test/**", "**/runtime/**"],
+      "files": [
+        "packages/nuxt/src/app/**",
+        "test/**",
+        "**/runtime/**"
+      ],
       "rules": {
         "no-console": "off"
       }
