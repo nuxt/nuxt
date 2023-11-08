@@ -3,8 +3,10 @@
   "version": "3.8.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/kit"
   },
+  "homepage": "https://nuxt.com/docs/api/kit",
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",

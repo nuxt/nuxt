@@ -3,9 +3,11 @@
   "version": "3.8.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/vite"
   },
   "description": "Vite bundler for Nuxt",
+  "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
