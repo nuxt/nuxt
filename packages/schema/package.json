@@ -3,9 +3,11 @@
   "version": "3.8.1",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/schema"
   },
   "description": "Nuxt types and default configuration",
+  "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
