@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/schema",
   "version": "3.8.1",
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git"
+  },
   "description": "Nuxt types and default configuration",
   "license": "MIT",
   "type": "module",

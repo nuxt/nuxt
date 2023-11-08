@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/kit",
   "version": "3.8.1",
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git"
+  },
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
