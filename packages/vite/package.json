@@ -27,7 +27,7 @@
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.5",
-    "@types/fs-extra": "11.0.3",
+    "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
     "vue": "3.3.8"
   },
