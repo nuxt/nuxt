@@ -103,7 +103,7 @@ export default defineNuxtConfig({
         name: 'internal-' + page.name,
         path: withoutLeadingSlash(page.path),
         meta: {
-          ...page.meta || {},
+          ...page.meta,
           layout: undefined,
           _layout: page.meta?.layout
         }

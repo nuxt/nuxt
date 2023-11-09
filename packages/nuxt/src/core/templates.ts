@@ -138,7 +138,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
     const moduleInfo = nuxt.options._installedModules.map(m => ({
-      ...m.meta || {},
+      ...m.meta,
       importName: m.entryPath || m.meta?.name
     })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
 

@@ -24,13 +24,23 @@ definePageMeta({
     <div style="display: flex; flex-direction: row; gap: 10vw;">
       <div>
         <h1>With extended layout</h1>
-        <NuxtLink v-for="link in links" :key="link" :to="link" style="display: block;">
+        <NuxtLink
+          v-for="link in links"
+          :key="link"
+          :to="link"
+          style="display: block;"
+        >
           {{ link }}
         </NuxtLink>
       </div>
       <div>
         <h1>With custom layout</h1>
-        <NuxtLink v-for="link in links" :key="link" :to="`${link}?layout=custom`" style="display: block;">
+        <NuxtLink
+          v-for="link in links"
+          :key="link"
+          :to="`${link}?layout=custom`"
+          style="display: block;"
+        >
           {{ link }}
         </NuxtLink>
       </div>

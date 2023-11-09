@@ -33,7 +33,10 @@ export default defineNuxtComponent({
   <div>
     <Head>
       <Title>Using a dynamic component</Title>
-      <Meta http-equiv="content-security-policy" content="default-src https" />
+      <Meta
+        http-equiv="content-security-policy"
+        content="default-src https"
+      />
     </Head>
   </div>
 </template>

@@ -12,7 +12,9 @@ export default defineNuxtPlugin({
           sessionStorage.removeItem('nuxt:reload:state')
           Object.assign(nuxtApp.payload.state, destr<Record<string, any>>(state)?.state)
         }
-      } catch {}
+      } catch {
+        // don't throw an error if we have issues reading sessionStorage
+      }
     }
   }
 })
