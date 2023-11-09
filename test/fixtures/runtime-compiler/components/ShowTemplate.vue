@@ -1,5 +1,8 @@
 <template>
-  <component :is="showIt" :name="name" />
+  <component
+    :is="showIt"
+    :name="name"
+  />
 </template>
 
 <script>

@@ -3,7 +3,10 @@
     <p>
       hello
     </p>
-    <NuxtLink id="to-foo" to="/wrapper-expose/page">
+    <NuxtLink
+      id="to-foo"
+      to="/wrapper-expose/page"
+    >
       to foo
     </NuxtLink>
   </div>
