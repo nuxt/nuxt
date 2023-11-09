@@ -40,9 +40,9 @@
     "magic-string": "^0.30.5"
   },
   "devDependencies": {
+    "@nuxt/eslint-config": "^0.2.0",
     "@nuxt/test-utils": "3.8.1",
     "@nuxt/webpack-builder": "workspace:*",
-    "@nuxtjs/eslint-config-typescript": "12.1.0",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.9.0",
     "@types/semver": "7.5.5",
@@ -54,6 +54,7 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-jsdoc": "46.8.2",
     "eslint-plugin-no-only-tests": "3.1.0",
+    "eslint-plugin-unicorn": "^49.0.0",
     "execa": "8.0.1",
     "fs-extra": "11.1.1",
     "globby": "13.2.2",
