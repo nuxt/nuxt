@@ -118,7 +118,7 @@
     "@parcel/watcher": "2.3.0",
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
-    "@vitejs/plugin-vue": "4.4.0",
+    "@vitejs/plugin-vue": "4.4.1",
     "unbuild": "latest",
     "vite": "4.5.0",
     "vitest": "0.33.0"
