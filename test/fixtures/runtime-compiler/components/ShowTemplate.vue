@@ -6,7 +6,6 @@
 </template>
 
 <script>
-
 export default defineNuxtComponent({
   props: {
     template: {

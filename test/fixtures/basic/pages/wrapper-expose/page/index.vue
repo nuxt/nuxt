@@ -11,7 +11,6 @@
 </template>
 
 <script setup lang="ts">
-
 function foo () {
   console.log('bar')
 }

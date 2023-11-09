@@ -13,7 +13,6 @@
 </template>
 
 <script setup lang="ts">
-
 function hello () {
   console.log('world')
 }
