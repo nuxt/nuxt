@@ -1291,6 +1291,17 @@ describe('page key', () => {
   })
 })
 
+describe('route provider', () => {
+  it('should preserve current route when navigation is suspended', async () => {
+    const { page } = await renderPage('/route-provider/foo')
+    await page.click('[href="/route-provider/bar"]')
+    expect(await page.getByTestId('foo').innerText()).toMatchInlineSnapshot('"foo: /route-provider/foo - /route-provider/foo"')
+    expect(await page.getByTestId('bar').innerText()).toMatchInlineSnapshot('"bar: /route-provider/bar - /route-provider/bar"')
+
+    await page.close()
+  })
+})
+
 // Bug #6592
 describe('layout change not load page twice', () => {
   const cases = {

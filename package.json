@@ -1,7 +1,10 @@
 {
   "name": "nuxt-framework",
   "private": true,
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git"
+  },
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -40,9 +43,9 @@
     "@nuxt/test-utils": "3.8.1",
     "@nuxt/webpack-builder": "workspace:*",
     "@nuxtjs/eslint-config-typescript": "12.1.0",
-    "@types/fs-extra": "11.0.3",
-    "@types/node": "20.8.10",
-    "@types/semver": "7.5.4",
+    "@types/fs-extra": "11.0.4",
+    "@types/node": "20.9.0",
+    "@types/semver": "7.5.5",
     "case-police": "0.6.1",
     "changelogen": "0.5.5",
     "consola": "3.2.3",
@@ -81,5 +84,6 @@
   "packageManager": "pnpm@8.10.2",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
-  }
+  },
+  "version": ""
 }

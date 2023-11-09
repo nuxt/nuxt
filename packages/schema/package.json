@@ -1,8 +1,13 @@
 {
   "name": "@nuxt/schema",
   "version": "3.8.1",
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/schema"
+  },
   "description": "Nuxt types and default configuration",
+  "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
   "types": "./dist/index.d.ts",
@@ -34,7 +39,7 @@
     "@types/pug": "2.0.9",
     "@types/sass-loader": "8.0.8",
     "@unhead/schema": "1.8.3",
-    "@vitejs/plugin-vue": "4.4.0",
+    "@vitejs/plugin-vue": "4.4.1",
     "@vitejs/plugin-vue-jsx": "3.0.2",
     "@vue/compiler-core": "3.3.8",
     "c12": "1.5.1",

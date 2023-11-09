@@ -1,14 +1,19 @@
 {
   "name": "nuxt",
   "version": "3.8.1",
-  "repository": "nuxt/nuxt",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/nuxt"
+  },
+  "homepage": "https://nuxt.com",
   "description": "Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.",
   "license": "MIT",
   "type": "module",
   "types": "./types.d.ts",
   "bin": {
-    "nuxi": "./bin/nuxt.mjs",
-    "nuxt": "./bin/nuxt.mjs"
+    "nuxi": "bin/nuxt.mjs",
+    "nuxt": "bin/nuxt.mjs"
   },
   "exports": {
     ".": {
@@ -112,8 +117,8 @@
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
     "@types/estree": "1.0.5",
-    "@types/fs-extra": "11.0.3",
-    "@vitejs/plugin-vue": "4.4.0",
+    "@types/fs-extra": "11.0.4",
+    "@vitejs/plugin-vue": "4.4.1",
     "unbuild": "latest",
     "vite": "4.5.0",
     "vitest": "0.33.0"
