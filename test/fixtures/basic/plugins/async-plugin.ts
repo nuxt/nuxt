@@ -1,6 +1,6 @@
 export default defineNuxtPlugin({
   name: 'async-plugin',
-  setup: async (/* nuxtApp */) => {
+  async setup (/* nuxtApp */) {
     const config1 = useRuntimeConfig()
     await new Promise(resolve => setTimeout(resolve, 100))
     const { data } = useFetch('/api/hey', { key: 'hey' })
