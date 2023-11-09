@@ -1,6 +1,22 @@
 // @ts-check
-import { defineEslintConfig } from "@nuxt/eslint-config-tooling";
+import {
+  defineEslintConfig,
+  javaScriptConfig,
+  typeScriptConfig,
+  unicornConfig,
+  vueConfig,
+} from "@nuxt/eslint-config-tooling";
 
-export default defineEslintConfig({
-  tsconfigPath: "tsconfig.json",
-});
+export default defineEslintConfig(
+  {
+    ignores: ["**/dist", "**/*.tmpl.*", "sw.js", "packages/schema/schema"],
+  },
+  javaScriptConfig(),
+  vueConfig({
+    isTypeScriptEnabled: true,
+  }),
+  typeScriptConfig({
+    tsconfigPaths: "tsconfig.json",
+  }),
+  unicornConfig()
+);
