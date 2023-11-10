@@ -8,7 +8,7 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "strict": true,
-    "noImplicitAny": true,
+    "noUncheckedIndexedAccess": true,
     "allowJs": true,
     "noEmit": true,
     "noUnusedLocals": true,
