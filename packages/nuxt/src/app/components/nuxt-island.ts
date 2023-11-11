@@ -44,6 +44,22 @@ export default defineComponent({
     source: {
       type: String,
       default: () => undefined
+    },
+    /**
+     * use the NuxtIslandResponse which has been cached if available
+     * @default true
+     */
+    useCache: {
+      type: Boolean,
+      default: true
+    },
+    /**
+     * allows to set the NuxtIslandResponse into the cache for future updates
+     * @default true
+     */
+    setCache: {
+      type: Boolean,
+      default: true
     }
   },
   async setup (props, { slots }) {
@@ -130,7 +146,9 @@ export default defineComponent({
           appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
-      setPayload(key, result)
+      if (import.meta.client && props.setCache) {
+        setPayload(key, result)
+      }
       return result
     }
     const key = ref(0)
@@ -167,7 +185,7 @@ export default defineComponent({
     }
 
     if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100))
+      watch(props, debounce(() => fetchComponent(!props.useCache), 100))
     }
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
