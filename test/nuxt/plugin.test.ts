@@ -92,4 +92,32 @@ describe('plugin dependsOn', () => {
       'end B'
     ])
   })
+
+  it('expect C to block the depends on of A-B since C is sequential', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      defineNuxtPlugin({
+        name,
+        async setup () {
+          sequence.push('start C')
+          await new Promise(resolve => setTimeout(resolve, 50))
+          sequence.push('end C')
+        }
+      }),
+      pluginFactory('B', ['A'], sequence)
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start C',
+      'end A',
+      'end C',
+      'start B',
+      'end B'
+    ])
+  })
 })
