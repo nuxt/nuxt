@@ -140,10 +140,25 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
   }
 }
 
+/**
+ * The maximum value allowed on a timeout delay.
+ *
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ */
+const MAX_TIMEOUT_DELAY = 2_147_483_647
+
 // custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
-  onScopeDispose(() => { clearTimeout(timeout) })
+  let interval: NodeJS.Timeout
+  onScopeDispose(() => { 
+    clearTimeout(timeout)
+    clearInterval(interval)
+  })
+
+  // Divide delay into intervals to work around the maximum delay value for setTimeout
+  const intervalsNeeded = Math.max(Math.ceil(delay / MAX_TIMEOUT_DELAY) - 1, 0)
+  const lastDelay = delay - MAX_TIMEOUT_DELAY * intervalsNeeded
   return customRef((track, trigger) => {
     return {
       get () {
@@ -152,10 +167,31 @@ function cookieRef<T> (value: T | undefined, delay: number) {
       },
       set (newValue) {
         clearTimeout(timeout)
-        timeout = setTimeout(() => {
-          value = undefined
-          trigger()
-        }, delay)
+        clearInterval(interval)
+
+        let currentIntervalIdx = 0
+        if (intervalsNeeded) {
+          // We need intervals to go around the MAX_TIMEOUT_DELAY of setTimeout
+          interval = setInterval(() => {
+            currentIntervalIdx++
+
+            if (currentIntervalIdx >= intervalsNeeded) {
+              // We're on the final interval. Use the remainder as a timeout.
+              clearInterval(interval)
+              timeout = setTimeout(() => {
+                value = undefined
+                trigger()
+              }, lastDelay)
+            }
+          }, MAX_TIMEOUT_DELAY)
+        } else {
+          // The original delay is safe to use in setTimeout
+          timeout = setTimeout(() => {
+            value = undefined
+            trigger()
+          }, delay)
+        }
+
         value = newValue
         trigger()
       }
