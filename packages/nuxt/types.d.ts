@@ -2,7 +2,7 @@
 export * from './dist/index'
 
 import type { DefineNuxtConfig } from 'nuxt/config'
-import type { SchemaDefinition, RuntimeConfig } from 'nuxt/schema'
+import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/core/runtime/nitro/renderer'
 

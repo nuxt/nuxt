@@ -128,10 +128,20 @@ describe('useAsyncData', () => {
   })
 
   it('should capture errors', async () => {
-    const { error, status, pending } = await useAsyncData(() => Promise.reject(new Error('test')))
+    const { data, error, status, pending } = await useAsyncData('error-test', () => Promise.reject(new Error('test')), { default: () => 'default' })
+    expect(data.value).toMatchInlineSnapshot('"default"')
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
     expect(status.value).toBe('error')
     expect(pending.value).toBe(false)
+    expect(useNuxtApp().payload._errors['error-test']).toMatchInlineSnapshot('[Error: test]')
+
+    // TODO: fix the below
+    // const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({}), { immediate: false })
+
+    // expect(syncedData.value).toEqual(null)
+    // expect(syncedError.value).toEqual(error.value)
+    // expect(syncedStatus.value).toEqual('idle')
+    // expect(syncedPending.value).toEqual(true)
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -181,6 +191,22 @@ describe('useAsyncData', () => {
         "val": false,
       }
     `)
+  })
+
+  it('should use default while pending', async () => {
+    const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
+    const { data, pending } = promise
+
+    expect(pending.value).toBe(true)
+    expect(data.value).toMatchInlineSnapshot('"default"')
+
+    await promise
+    expect(data.value).toMatchInlineSnapshot('"test"')
+  })
+
+  it('should use default after reject', async () => {
+    const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
+    expect(data.value).toMatchInlineSnapshot('"default"')
   })
 })
 

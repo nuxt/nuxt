@@ -5,6 +5,7 @@ import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
+// @ts-expect-error subpath export needs to be fixed upstream
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -1286,6 +1287,17 @@ describe('page key', () => {
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
     expect(consoleLogs.filter(l => l.text.includes('Child Setup')).length).toBe(2)
+    await page.close()
+  })
+})
+
+describe('route provider', () => {
+  it('should preserve current route when navigation is suspended', async () => {
+    const { page } = await renderPage('/route-provider/foo')
+    await page.click('[href="/route-provider/bar"]')
+    expect(await page.getByTestId('foo').innerText()).toMatchInlineSnapshot('"foo: /route-provider/foo - /route-provider/foo"')
+    expect(await page.getByTestId('bar').innerText()).toMatchInlineSnapshot('"bar: /route-provider/bar - /route-provider/bar"')
+
     await page.close()
   })
 })

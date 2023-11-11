@@ -3,7 +3,11 @@
     Hello World
     <div id="locator-for-playwright">
       <!-- single child -->
-      <NuxtClientFallback fallback-tag="span" class="break-in-ssr" fallback="this failed to render">
+      <NuxtClientFallback
+        fallback-tag="span"
+        class="break-in-ssr"
+        fallback="this failed to render"
+      >
         <BreakInSetup />
       </NuxtClientFallback>
       <!-- multi child -->
@@ -14,7 +18,10 @@
       <!-- don't render if one child fails in ssr -->
       <NuxtClientFallback>
         <BreakInSetup />
-        <SugarCounter id="sugar-counter" :multiplier="multiplier" />
+        <SugarCounter
+          id="sugar-counter"
+          :multiplier="multiplier"
+        />
       </NuxtClientFallback>
       <!-- nested children fails -->
       <NuxtClientFallback>
@@ -50,7 +57,10 @@
         </template>
       </NuxtClientFallback>
     </div>
-    <button id="increment-count" @click="multiplier++">
+    <button
+      id="increment-count"
+      @click="multiplier++"
+    >
       increment count
     </button>
   </div>

@@ -35,5 +35,4 @@ if (data.value!.count !== initial + 1) {
 if (data.value!.count !== data2.value!.count) {
   throw new Error('AsyncData not synchronised')
 }
-
 </script>
