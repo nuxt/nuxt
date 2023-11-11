@@ -65,4 +65,23 @@ describe('runtime server component', () => {
 
     await server.close()
   })
+
+  it('force refresh', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => ({
+      id: '123',
+      html: '<div>mock</div>',
+      state: {},
+      head: {
+        link: [],
+        style: []
+      }
+    })))
+
+    const component = await mountSuspended(createServerComponent('dummyName'))
+    expect(fetch).toHaveBeenCalledOnce()
+
+    component.vm.$.exposed!.refresh()
+    expect(fetch).toHaveBeenCalledTimes(2)
+    vi.mocked(fetch).mockRestore()
+  })
 })
