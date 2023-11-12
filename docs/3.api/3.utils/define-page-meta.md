@@ -1,10 +1,14 @@
 ---
-title: "definePageMeta"
+title: 'definePageMeta'
+description: 'Define metadata for your page components.'
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/composables.ts
+    size: xs
 ---
 
-# `definePageMeta`
-
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/` directory](/docs/guide/directory-structure/pages) (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
@@ -14,8 +18,7 @@ definePageMeta({
 </script>
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/pages/#page-metadata"}
-::
+:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
 
 ## Type
 
@@ -25,6 +28,7 @@ definePageMeta(meta: PageMeta) => void
 interface PageMeta {
   validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
   redirect?: RouteRecordRedirectOption
+  name?: string
   path?: string
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
@@ -45,6 +49,12 @@ interface PageMeta {
 - **Type**: `PageMeta`
 
   An object accepting the following page metadata:
+
+  **`name`**
+
+  - **Type**: `string`
+
+    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/guide/directory-structure/pages).
 
   **`path`**
 

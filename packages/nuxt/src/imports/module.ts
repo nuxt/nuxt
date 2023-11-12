@@ -1,4 +1,4 @@
-import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports } from 'unimport'
@@ -69,7 +69,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (composablesDirs.includes(path)) {
-        console.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
         return nuxt.callHook('restart')
       }
     })

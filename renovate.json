@@ -25,7 +25,6 @@
         "main"
       ],
       "ignoreDeps": [
-        "markdownlint-cli",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"

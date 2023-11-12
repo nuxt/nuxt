@@ -2,6 +2,7 @@ import { execSync } from 'node:child_process'
 import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
+import { consola } from 'consola'
 import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
 
 async function main () {
@@ -72,6 +73,6 @@ async function main () {
 }
 
 main().catch((err) => {
-  console.error(err)
+  consola.error(err)
   process.exit(1)
 })

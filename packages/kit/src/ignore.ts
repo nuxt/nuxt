@@ -57,7 +57,6 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
  * This function turns string containing groups '**\/*.{spec,test}.{js,ts}' into an array of strings.
  * For example will '**\/*.{spec,test}.{js,ts}' be resolved to:
  * ['**\/*.spec.js', '**\/*.spec.ts', '**\/*.test.js', '**\/*.test.ts']
- *
  * @param group string containing the group syntax
  * @returns {string[]} array of strings without the group syntax
  */

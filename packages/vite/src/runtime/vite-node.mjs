@@ -7,6 +7,7 @@ import { consola } from 'consola'
 import { viteNodeFetch, viteNodeOptions } from './vite-node-shared.mjs'
 
 const runner = createRunner()
+
 /** @type {(ssrContext: import('#app').NuxtSSRContext) => Promise<any>} */
 let render
 
@@ -71,7 +72,6 @@ function createRunner () {
 /**
  * @param errorData {any}
  * @param id {string}
- * @param importer {string}
  */
 function formatViteError (errorData, id) {
   const errorCode = errorData.name || errorData.reasonCode || errorData.code

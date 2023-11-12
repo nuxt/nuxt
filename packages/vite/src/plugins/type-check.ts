@@ -1,6 +1,8 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 
+const QUERY_RE = /\?.+$/
+
 export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
   let entry: string
   return {
@@ -12,7 +14,7 @@ export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin 
       }
     },
     transform (code, id) {
-      if (id !== entry) { return }
+      if (id.replace(QUERY_RE, '') !== entry) { return }
 
       const s = new MagicString(code)
 

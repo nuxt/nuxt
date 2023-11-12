@@ -1,11 +1,12 @@
 import { execSync } from 'node:child_process'
 import { inc } from 'semver'
+import { consola } from 'consola'
 import { determineBumpType, loadWorkspace } from './_utils'
 
 const nightlyPackages = {
-  nitropack: 'nitropack-edge',
+  nitropack: 'nitropack-nightly',
   h3: 'h3-nightly',
-  nuxi: 'nuxi-edge'
+  nuxi: 'nuxi-nightly'
 }
 
 async function main () {
@@ -26,7 +27,7 @@ async function main () {
         pkg.data.dependencies[name] = `npm:${nightlyName}@latest`
       }
     }
-    const newname = pkg.data.name === 'nuxt' ? 'nuxt3' : (pkg.data.name + '-edge')
+    const newname = pkg.data.name + '-nightly'
     workspace.rename(pkg.data.name, newname)
   }
 
@@ -34,6 +35,6 @@ async function main () {
 }
 
 main().catch((err) => {
-  console.error(err)
+  consola.error(err)
   process.exit(1)
 })

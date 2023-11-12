@@ -16,6 +16,13 @@ export interface Component {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * Allow bypassing client/server transforms for internal Nuxt components like
+   * ServerPlaceholder and NuxtClientFallback.
+   *
+   * @internal
+   */
+  _raw?: boolean
 }
 
 export interface ScanDir {
@@ -104,7 +111,6 @@ export interface ComponentsOptions {
    * but they can also be used dynamically, for example `<component :is="`icon-${myIcon}`">`.
    *
    * This can be overridden by an individual component directory entry.
-   *
    * @default false
    */
   global?: boolean
