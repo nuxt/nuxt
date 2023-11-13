@@ -52,7 +52,7 @@
     "devalue": "4.3.2",
     "eslint": "8.53.0",
     "eslint-plugin-import": "2.29.0",
-    "eslint-plugin-jsdoc": "46.8.2",
+    "eslint-plugin-jsdoc": "46.9.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-unicorn": "49.0.0",
     "execa": "8.0.1",
@@ -82,7 +82,7 @@
     "vue-router": "4.2.5",
     "vue-tsc": "1.8.22"
   },
-  "packageManager": "pnpm@8.10.2",
+  "packageManager": "pnpm@8.10.3",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
