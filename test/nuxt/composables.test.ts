@@ -39,6 +39,33 @@ registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
   prerendered: ['/specific-prerendered']
 })))
 
+describe('app config', () => {
+  it('can be updated', () => {
+    const appConfig = useAppConfig()
+    expect(appConfig).toMatchInlineSnapshot(`
+      {
+        "nuxt": {
+          "buildId": "override",
+        },
+      }
+    `)
+    updateAppConfig({
+      new: 'value',
+      // @ts-expect-error property does not exist
+      nuxt: { nested: 42 }
+    })
+    expect(appConfig).toMatchInlineSnapshot(`
+      {
+        "new": "value",
+        "nuxt": {
+          "buildId": "override",
+          "nested": 42,
+        },
+      }
+    `)
+  })
+})
+
 describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
