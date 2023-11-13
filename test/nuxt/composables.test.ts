@@ -79,6 +79,7 @@ describe('composables', () => {
       'showError',
       'useError',
       'getAppManifest',
+      'useHydration',
       'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
@@ -111,7 +112,6 @@ describe('composables', () => {
       'useCookie',
       'useFetch',
       'useHead',
-      'useHydration',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRoute',
@@ -286,6 +286,20 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+  })
+})
+
+describe('useHydration', () => {
+  it('should hydrate value from payload', async () => {
+    let val: any
+    const nuxtApp = useNuxtApp()
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('undefined')
+
+    nuxtApp.payload.key = 'from payload'
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('"from payload"')
   })
 })
 
