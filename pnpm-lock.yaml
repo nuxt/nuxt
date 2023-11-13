@@ -19,7 +19,7 @@ importers:
   .:
     devDependencies:
       '@nuxt/eslint-config':
-        specifier: ^0.2.0
+        specifier: 0.2.0
         version: 0.2.0(eslint@8.53.0)
       '@nuxt/test-utils':
         specifier: 3.8.1
@@ -61,7 +61,7 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       eslint-plugin-unicorn:
-        specifier: ^49.0.0
+        specifier: 49.0.0
         version: 49.0.0(eslint@8.53.0)
       execa:
         specifier: 8.0.1
@@ -2769,7 +2769,7 @@ packages:
       vite: 4.5.0
       vue: 3.3.8
     dependencies:
-      vite: 4.5.0(@types/node@20.9.0)
+      vite: 4.5.0(@types/node@20.8.10)
       vue: 3.3.8(typescript@5.2.2)
 
   /@vitest/expect@0.33.0:
