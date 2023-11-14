@@ -21,7 +21,7 @@ export default defineConfig({
     testTimeout: isWindows ? 60000 : 10000,
     coverage: {
       // TODO: remove when we upgrade to vitest 0.34.0: https://github.com/vitest-dev/vitest/pull/3794
-      exclude: [...coverageConfigDefaults.exclude, '**/virtual:nuxt:/**'],
+      exclude: [...coverageConfigDefaults.exclude, '**/virtual:nuxt:**'],
     },
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
     exclude: [...configDefaults.exclude, '**/test/nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
