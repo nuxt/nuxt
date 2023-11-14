@@ -1,6 +1,7 @@
 [![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
 
 # Nuxt
+- 我的一个测试，供fork使用
 
 <p>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
