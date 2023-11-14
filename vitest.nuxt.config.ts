@@ -10,6 +10,7 @@ export default defineVitestConfig({
     dir: './test/nuxt',
     environment: 'nuxt',
     coverage: {
+      // TODO: remove when we upgrade to vitest 0.34.0: https://github.com/vitest-dev/vitest/pull/3794
       exclude: [...coverageConfigDefaults.exclude, '**/virtual:nuxt:/**'],
     },
     environmentOptions: {
