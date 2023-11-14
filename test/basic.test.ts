@@ -2086,12 +2086,12 @@ describe('keepalive', () => {
       'keepalive-in-nuxtpage: onDeactivated',
       'keepalive-in-nuxtpage-2: onMounted',
       'keepalive-in-nuxtpage-2: onActivated',
-      'keepalive-in-nuxtpage-2: onDeactivated',
       'keepalive-in-nuxtpage: onActivated',
+      'keepalive-in-nuxtpage-2: onDeactivated',
       'keepalive-in-nuxtpage: onDeactivated',
       'not-keepalive: onMounted',
-      'not-keepalive: onUnmounted',
-      'keepalive-in-nuxtpage-2: onActivated'
+      'keepalive-in-nuxtpage-2: onActivated',
+      'not-keepalive: onUnmounted'
     ])
 
     await page.close()
