@@ -1,4 +1,5 @@
 import { defineVitestConfig } from 'nuxt-vitest/config'
+import { coverageConfigDefaults } from 'vitest/config'
 
 export default defineVitestConfig({
   // TODO: investigate
@@ -8,6 +9,9 @@ export default defineVitestConfig({
   test: {
     dir: './test/nuxt',
     environment: 'nuxt',
+    coverage: {
+      exclude: [...coverageConfigDefaults.exclude, '**/virtual:nuxt:/**'],
+    },
     environmentOptions: {
       nuxt: {
         overrides: {
