@@ -37,8 +37,8 @@ importers:
         specifier: 7.5.5
         version: 7.5.5
       '@vitest/coverage-v8':
-        specifier: ^0.34.6
-        version: 0.34.6(vitest@0.33.0)
+        specifier: 0.33.0
+        version: 0.33.0(vitest@0.33.0)
       case-police:
         specifier: 0.6.1
         version: 0.6.1
@@ -2799,8 +2799,8 @@ packages:
       vite: 4.5.0(@types/node@20.8.10)
       vue: 3.3.8(typescript@5.2.2)
 
-  /@vitest/coverage-v8@0.34.6(vitest@0.33.0):
-    resolution: {integrity: sha512-fivy/OK2d/EsJFoEoxHFEnNGTg+MmdZBAVK9Ka4qhXR2K3J0DS08vcGVwzDtXSuUMabLv4KtPcpSKkcMXFDViw==}
+  /@vitest/coverage-v8@0.33.0(vitest@0.33.0):
+    resolution: {integrity: sha512-Rj5IzoLF7FLj6yR7TmqsfRDSeaFki6NAJ/cQexqhbWkHEV2htlVGrmuOde3xzvFsCbLCagf4omhcIaVmfU8Okg==}
     peerDependencies:
       vitest: '>=0.32.0 <1'
     dependencies:

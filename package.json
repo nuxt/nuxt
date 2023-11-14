@@ -46,7 +46,7 @@
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.9.0",
     "@types/semver": "7.5.5",
-    "@vitest/coverage-v8": "^0.34.6",
+    "@vitest/coverage-v8": "0.33.0",
     "case-police": "0.6.1",
     "changelogen": "0.5.5",
     "consola": "3.2.3",
