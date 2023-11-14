@@ -115,8 +115,8 @@ importers:
         specifier: 7.5.4
         version: 7.5.4
       std-env:
-        specifier: 3.4.3
-        version: 3.4.3
+        specifier: 3.5.0
+        version: 3.5.0
       typescript:
         specifier: 5.2.2
         version: 5.2.2
@@ -356,8 +356,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       std-env:
-        specifier: ^3.4.3
-        version: 3.4.3
+        specifier: ^3.5.0
+        version: 3.5.0
       strip-literal:
         specifier: ^1.3.0
         version: 1.3.0
@@ -444,8 +444,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       std-env:
-        specifier: ^3.4.3
-        version: 3.4.3
+        specifier: ^3.5.0
+        version: 3.5.0
       ufo:
         specifier: ^1.3.1
         version: 1.3.1
@@ -604,8 +604,8 @@ importers:
         specifier: ^5.9.2
         version: 5.9.2(rollup@3.29.4)
       std-env:
-        specifier: ^3.4.3
-        version: 3.4.3
+        specifier: ^3.5.0
+        version: 3.5.0
       strip-literal:
         specifier: ^1.3.0
         version: 1.3.0
@@ -737,8 +737,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(pug@3.0.2)
       std-env:
-        specifier: ^3.4.3
-        version: 3.4.3
+        specifier: ^3.5.0
+        version: 3.5.0
       time-fix-plugin:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.89.0)
@@ -761,8 +761,8 @@ importers:
         specifier: ^5.89.0
         version: 5.89.0
       webpack-bundle-analyzer:
-        specifier: ^4.9.1
-        version: 4.9.1
+        specifier: ^4.10.0
+        version: 4.10.0
       webpack-dev-middleware:
         specifier: ^6.1.1
         version: 6.1.1(webpack@5.89.0)
@@ -1993,7 +1993,7 @@ packages:
       parse-git-config: 3.0.0
       pathe: 1.1.1
       rc9: 2.1.1
-      std-env: 3.4.3
+      std-env: 3.5.0
 
   /@nuxt/test-utils@3.8.1(playwright-core@1.39.0)(vitest@0.33.0)(vue@3.3.8):
     resolution: {integrity: sha512-8ZQ+OZ7z5Sc5KG2aCvk0piheYSpGb2UQJMCWr8ORwEyZIw4awrkkwGzUY06e344E4StvJB8zxN122MEcFNOkow==}
@@ -2796,7 +2796,7 @@ packages:
       vite: 4.5.0
       vue: 3.3.8
     dependencies:
-      vite: 4.5.0(@types/node@20.9.0)
+      vite: 4.5.0(@types/node@20.8.10)
       vue: 3.3.8(typescript@5.2.2)
 
   /@vitest/coverage-v8@0.34.6(vitest@0.33.0):
@@ -2812,7 +2812,7 @@ packages:
       istanbul-reports: 3.1.6
       magic-string: 0.30.5
       picocolors: 1.0.0
-      std-env: 3.4.3
+      std-env: 3.5.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.1.3
       vitest: 0.33.0(happy-dom@12.10.3)
@@ -3770,7 +3770,7 @@ packages:
       pkg-types: 1.0.3
       scule: 1.0.0
       semver: 7.5.4
-      std-env: 3.4.3
+      std-env: 3.5.0
       yaml: 2.3.3
     transitivePeerDependencies:
       - supports-color
@@ -4180,6 +4180,10 @@ packages:
 
   /de-indent@1.0.2:
     resolution: {integrity: sha512-e/1zu3xH5MQryN2zdVaF0OrdNLUbvWxzMbi+iNA6Bky7l1RoP8a2fIbRocyHclXt/arDrrR6lL3TqFD9pMQTsg==}
+
+  /debounce@1.2.1:
+    resolution: {integrity: sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug==}
+    dev: false
 
   /debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -5480,7 +5484,6 @@ packages:
 
   /html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
-    dev: true
 
   /html-tags@3.3.1:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
@@ -6155,7 +6158,7 @@ packages:
       mlly: 1.4.2
       node-forge: 1.3.1
       pathe: 1.1.1
-      std-env: 3.4.3
+      std-env: 3.5.0
       ufo: 1.3.1
       untun: 0.1.2
       uqr: 0.1.2
@@ -6219,18 +6222,6 @@ packages:
   /lodash.defaults@4.2.0:
     resolution: {integrity: sha512-qjxPLHd3r5DnsdGacqOMU6pb/avJzdh9tFX2ymgoZE27BmjXrNy/y4LoaiTeAb+O3gL8AfpJGtqfX/ae2leYYQ==}
 
-  /lodash.escape@4.0.1:
-    resolution: {integrity: sha512-nXEOnb/jK9g0DYMr1/Xvq6l5xMD7GDG55+GSYIYmS0G4tBk/hURD4JR9WCavs04t33WmJx9kCyp9vJ+mr4BOUw==}
-    dev: false
-
-  /lodash.flatten@4.4.0:
-    resolution: {integrity: sha512-C5N2Z3DgnnKr0LOpv/hKCgKdb7ZZwafIrsesve6lmzvZIRZRGaZ/l6Q8+2W7NaT+ZwO3fFlSCzCzrDCFdJfZ4g==}
-    dev: false
-
-  /lodash.invokemap@4.6.0:
-    resolution: {integrity: sha512-CfkycNtMqgUlfjfdh2BhKO/ZXrP8ePOX5lEU/g0R3ItJcnuxWDwokMGKx1hWcfOikmyOVx6X9IwWnDGlgKl61w==}
-    dev: false
-
   /lodash.isarguments@3.1.0:
     resolution: {integrity: sha512-chi4NHZlZqZD18a0imDHnZPrDeBbTtVN7GXMwuGdRH9qotxAjYs3aVLKc7zNOG9eddR5Ksd8rvFEBc9SsggPpg==}
 
@@ -6249,16 +6240,8 @@ packages:
     resolution: {integrity: sha512-hXt6Ul/5yWjfklSGvLQl8vM//l3FtyHZeuelpzK6mm99pNvN9yTDruNZPEJZD1oWrqo+izBmB7oUfWgcCX7s4Q==}
     dev: false
 
-  /lodash.pullall@4.2.0:
-    resolution: {integrity: sha512-VhqxBKH0ZxPpLhiu68YD1KnHmbhQJQctcipvmFnqIBDYzcIHzf3Zpu0tpeOKtR4x76p9yohc506eGdOjTmyIBg==}
-    dev: false
-
   /lodash.uniq@4.5.0:
     resolution: {integrity: sha512-xfBaXQd9ryd9dlSDvnvI0lvxfLJlYAZzXomUYzLKtUeOQvOP5piqAWuGtrhWeqaXK9hhoM/iyJc5AV+XfsX3HQ==}
-    dev: false
-
-  /lodash.uniqby@4.7.0:
-    resolution: {integrity: sha512-e/zcLx6CSbmaEgFHCA7BnoQKyCtKMxnuWrJygbwPs/AIn+IMKl66L8/s+wBUn5LRw2pZx3bUHibiV1b6aTWIww==}
     dev: false
 
   /lodash@4.17.21:
@@ -6990,7 +6973,7 @@ packages:
       defu: 6.1.3
       get-port-please: 3.1.1
       perfect-debounce: 1.0.0
-      std-env: 3.4.3
+      std-env: 3.5.0
       vite: 4.5.0(@types/node@20.9.0)
       vitest: 0.33.0(happy-dom@12.10.3)
       vitest-environment-nuxt: 0.11.3(happy-dom@12.10.3)(vitest@0.33.0)(vue-router@4.2.5)(vue@3.3.8)
@@ -8461,6 +8444,9 @@ packages:
   /std-env@3.4.3:
     resolution: {integrity: sha512-f9aPhy8fYBuMN+sNfakZV18U39PbalgjXG3lLB9WkaYTxijru61wb57V9wxxNthXM5Sd88ETBWi29qLAsHO52Q==}
 
+  /std-env@3.5.0:
+    resolution: {integrity: sha512-JGUEaALvL0Mf6JCfYnJOTcobY+Nc7sG/TemDRBqCA0wEr4DER7zDchaaixTlmOxAjG1uRJmX82EQcxwTQTkqVA==}
+
   /streamx@2.15.1:
     resolution: {integrity: sha512-fQMzy2O/Q47rgwErk/eGeLu/roaFWV0jVsogDmrszM9uIw8L5OA+t+V93MgYlufNptfjmYR1tOMWhei/Eh7TQA==}
     dependencies:
@@ -9660,8 +9646,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /webpack-bundle-analyzer@4.9.1:
-    resolution: {integrity: sha512-jnd6EoYrf9yMxCyYDPj8eutJvtjQNp8PHmni/e/ulydHBWhT5J3menXt3HEkScsu9YqMAcG4CfFjs3rj5pVU1w==}
+  /webpack-bundle-analyzer@4.10.0:
+    resolution: {integrity: sha512-j+apH0Cs+FY8IOIwxLbkgEJnbQgEPEG8uqLVnRb9tAoGbyKNxQA1u9wNDrTQHK3PinO4Pckew7AE7pnX/RS3wA==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
     dependencies:
@@ -9669,15 +9655,11 @@ packages:
       acorn: 8.11.2
       acorn-walk: 8.2.0
       commander: 7.2.0
+      debounce: 1.2.1
       escape-string-regexp: 4.0.0
       gzip-size: 6.0.0
+      html-escaper: 2.0.2
       is-plain-object: 5.0.0
-      lodash.debounce: 4.0.8
-      lodash.escape: 4.0.1
-      lodash.flatten: 4.4.0
-      lodash.invokemap: 4.6.0
-      lodash.pullall: 4.2.0
-      lodash.uniqby: 4.7.0
       opener: 1.5.2
       picocolors: 1.0.0
       sirv: 2.0.3
@@ -9776,7 +9758,7 @@ packages:
       chalk: 4.1.2
       consola: 2.15.3
       pretty-time: 1.1.0
-      std-env: 3.4.3
+      std-env: 3.5.0
       webpack: 5.89.0
     dev: false
 
