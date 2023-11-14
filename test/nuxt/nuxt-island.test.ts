@@ -1,9 +1,11 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
 import { h } from 'vue'
 import { mountSuspended } from 'nuxt-vitest/utils'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
+import { flushPromises } from '@vue/test-utils'
+import { useNuxtApp } from '../../packages/nuxt/src/app'
 
 vi.mock('#build/nuxt.config.mjs', async (original) => {
   return {
@@ -19,6 +21,10 @@ vi.mock('vue', async (original) => {
     ...vue,
     h: vi.fn(vue.h)
   }
+})
+
+beforeEach(() => {
+  vi.mocked(h).mockClear()
 })
 
 describe('runtime server component', () => {
@@ -64,5 +70,109 @@ describe('runtime server component', () => {
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hello world from another server</div>"')
 
     await server.close()
+  })
+
+
+  describe('Cache control', () => {
+    beforeEach(() => {
+      let count = 0
+      const ogFetch = fetch
+      const stubFetch = vi.fn((...args: Parameters<typeof fetch>) => {
+        const [url] = args
+
+        if (typeof url === 'string' && url.startsWith('/__nuxt_island')) {
+          count++
+          return {
+            id: '123',
+            html: `<div>${count}</div>`,
+            state: {},
+            head: {
+              link: [],
+              style: []
+            },
+            json() {
+              return this
+            }
+          }
+        }
+        return ogFetch(...args)
+      })
+      vi.stubGlobal('fetch', stubFetch)
+    })
+
+    afterEach(() => {
+      vi.mocked(fetch).mockRestore()
+    })
+
+    it('expect to not use cached payload', async () => {
+      const wrapper = await mountSuspended(
+        createServerComponent('CacheTest'), {
+        props: {
+          useCache: false,
+          props: {
+            test: 1
+          }
+        }
+      })
+
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
+      await wrapper.setProps({
+        useCache: false,
+        props: {
+          test: 2
+        }
+      })
+
+      await flushPromises()
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
+      await wrapper.setProps({
+        useCache: false,
+        props: {
+          test: 1
+        }
+      })
+      await flushPromises()
+      // NuxtIsland should fetch again, because the cache is not used
+      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>3</div>"')
+    })
+
+    it('expect to use cached payload', async () => {
+      useNuxtApp().payload.data = {}
+      const wrapper = await mountSuspended(
+        createServerComponent('CacheTest'), {
+        props: {
+          useCache: true,
+          props: {
+            test: 1
+          }
+        }
+      })
+
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
+      await wrapper.setProps({
+        useCache: true,
+        props: {
+          test: 2
+        }
+      })
+
+      await flushPromises()
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
+      await wrapper.setProps({
+        useCache: true,
+        props: {
+          test: 2
+        }
+      })
+      await flushPromises()
+      // should not fetch the component, because the cache is used
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
+    })
   })
 })
