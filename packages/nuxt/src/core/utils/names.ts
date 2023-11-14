@@ -1,5 +1,5 @@
 import { basename, dirname, extname, normalize } from 'pathe'
-import { kebabCase, pascalCase, splitByCase } from 'scule'
+import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
 
 export function getNameFromPath (path: string, relativeTo?: string) {
@@ -8,14 +8,15 @@ export function getNameFromPath (path: string, relativeTo?: string) {
     : basename(path)
   const prefixParts = splitByCase(dirname(relativePath))
   const fileName = basename(relativePath, extname(relativePath))
-  return kebabCase(resolveComponentName(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts)).replace(/["']/g, '')
+  const segments = resolveComponentNameSegments(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts).filter(Boolean)
+  return kebabCase(segments).replace(/["']/g, '')
 }
 
 export function hasSuffix (path: string, suffix: string) {
   return basename(path).replace(extname(path), '').endsWith(suffix)
 }
 
-export function resolveComponentName (fileName: string, prefixParts: string[]) {
+export function resolveComponentNameSegments (fileName: string, prefixParts: string[]) {
   /**
    * Array of fileName parts splitted by case, / or -
    * @example third-component -> ['third', 'component']
@@ -38,6 +39,5 @@ export function resolveComponentName (fileName: string, prefixParts: string[]) {
     }
     index--
   }
-
-  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
+  return [...componentNameParts, ...fileNameParts]
 }

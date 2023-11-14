@@ -9,14 +9,14 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
-
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import type { RouteMiddleware } from '../../app'
+import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
-import type { NuxtAppManifestMeta } from '#app/composables'
+import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -250,7 +250,7 @@ export function createNuxtApp (options: CreateOptions) {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    async function contextCaller (hooks: HookCallback[], args: any[]) {
+    const contextCaller = async function (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }
@@ -390,7 +390,7 @@ export function useNuxtApp (): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }

@@ -5,6 +5,7 @@ import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
+// @ts-expect-error subpath export needs to be fixed upstream
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -362,6 +363,13 @@ describe('pages', () => {
 
     expect(pageErrors).toEqual([])
     await page.close()
+    // don't expect any errors or warning on client-side navigation
+    const { page: page2, consoleLogs: consoleLogs2 } = await renderPage('/')
+    await page2.locator('#to-client-only-components').click()
+    // force wait for a few ticks
+    await page2.waitForTimeout(50)
+    expect(consoleLogs2.some(log => log.type === 'error' || log.type === 'warning')).toBeFalsy()
+    await page2.close()
   })
 
   it('/wrapper-expose/layout', async () => {
@@ -417,7 +425,8 @@ describe('pages', () => {
       'clientfallback-non-stateful-setup',
       'clientfallback-non-stateful',
       'clientfallback-stateful-setup',
-      'clientfallback-stateful'
+      'clientfallback-stateful',
+      'clientfallback-async-setup'
     ]
     const html = await $fetch('/client-fallback')
     // ensure failed components are not rendered server-side
@@ -433,6 +442,9 @@ describe('pages', () => {
     // ensure not failed component are correctly rendered
     expect(html).not.toContain('<p></p>')
     expect(html).toContain('hi')
+
+    // aysnc setup
+    expect(html).toContain('Work with async setup')
 
     const { page, pageErrors } = await renderPage('/client-fallback')
     // ensure components reactivity once mounted
@@ -1193,6 +1205,8 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
 
+    await new Promise<void>(resolve => setTimeout(resolve, 50))
+
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
@@ -1273,6 +1287,17 @@ describe('page key', () => {
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
     expect(consoleLogs.filter(l => l.text.includes('Child Setup')).length).toBe(2)
+    await page.close()
+  })
+})
+
+describe('route provider', () => {
+  it('should preserve current route when navigation is suspended', async () => {
+    const { page } = await renderPage('/route-provider/foo')
+    await page.click('[href="/route-provider/bar"]')
+    expect(await page.getByTestId('foo').innerText()).toMatchInlineSnapshot('"foo: /route-provider/foo - /route-provider/foo"')
+    expect(await page.getByTestId('bar').innerText()).toMatchInlineSnapshot('"bar: /route-provider/bar - /route-provider/bar"')
+
     await page.close()
   })
 })

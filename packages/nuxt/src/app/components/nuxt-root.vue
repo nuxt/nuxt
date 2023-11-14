@@ -1,18 +1,27 @@
 <template>
   <Suspense @resolve="onResolve">
-    <ErrorComponent v-if="error" :error="error" />
-    <IslandRenderer v-else-if="islandContext" :context="islandContext" />
-    <component :is="SingleRenderer" v-else-if="SingleRenderer" />
+    <ErrorComponent
+      v-if="error"
+      :error="error"
+    />
+    <IslandRenderer
+      v-else-if="islandContext"
+      :context="islandContext"
+    />
+    <component
+      :is="SingleRenderer"
+      v-else-if="SingleRenderer"
+    />
     <AppComponent v-else />
   </Suspense>
 </template>
 
 <script setup>
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
-import { isNuxtError, showError, useError } from '#app/composables/error'
-import { useRoute } from '#app/composables/router'
-import { PageRouteSymbol } from '#app/components/injections'
+import { useNuxtApp } from '../nuxt'
+import { isNuxtError, showError, useError } from '../composables/error'
+import { useRoute } from '../composables/router'
+import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
 
@@ -24,7 +33,7 @@ const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
-const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && /* #__PURE__ */ defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
+const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
   .then(r => r.default(import.meta.server ? url : window.location.href)))
 
 // Inject default route (outside of pages) as active route

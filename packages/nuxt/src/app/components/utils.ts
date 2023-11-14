@@ -3,6 +3,7 @@ import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
+import type { RouteLocationNormalized } from '#vue-router'
 
 /**
  * Internal utility
@@ -11,6 +12,35 @@ import destr from 'destr'
 export const _wrapIf = (component: Component, props: any, slots: any) => {
   props = props === true ? {} : props
   return { default: () => props ? h(component, props, slots) : slots.default?.() }
+}
+
+// TODO: consider refactoring into single utility
+// See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
+function generateRouteKey (route: RouteLocationNormalized) {
+  const source = route?.meta.key ?? route.path
+    .replace(/(:\w+)\([^)]+\)/g, '$1')
+    .replace(/(:\w+)[?+*]/g, '$1')
+    .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
+  return typeof source === 'function' ? source(route) : source
+}
+
+/**
+ * Utility used within router guards
+ * return true if the route has been changed with a page change during navigation
+ */
+export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized) {
+  if (to === from) { return false }
+
+  // If route keys are different then it will result in a rerender
+  if (generateRouteKey(to) !== generateRouteKey(from)) { return true }
+
+  const areComponentsSame = to.matched.every((comp, index) =>
+    comp.components && comp.components.default === from.matched[index]?.components?.default
+  )
+  if (areComponentsSame) {
+    return false
+  }
+  return true
 }
 
 // eslint-disable-next-line no-use-before-define
@@ -104,7 +134,7 @@ export function vforToArray (source: any): any[] {
  * @param withoutSlots purge all slots from the HTML string retrieved
  * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | null {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
@@ -116,7 +146,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     return [element.outerHTML]
   }
-  return []
+  return null
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {

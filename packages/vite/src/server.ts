@@ -9,7 +9,6 @@ import replace from '@rollup/plugin-replace'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
-import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 
@@ -107,10 +106,6 @@ export async function buildServer (ctx: ViteBuildContext) {
           'typeof XMLHttpRequest': '"undefined"'
         },
         preventAssignment: true
-      }),
-      pureAnnotationsPlugin.vite({
-        sourcemap: !!ctx.nuxt.options.sourcemap.server,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
       })
     ]
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
