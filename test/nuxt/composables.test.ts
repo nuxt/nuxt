@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
-import { registerEndpoint } from 'nuxt-vitest/utils'
+import { mountSuspended, registerEndpoint } from 'nuxt-vitest/utils'
 
 import * as composables from '#app/composables'
 
@@ -39,6 +39,33 @@ registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
   prerendered: ['/specific-prerendered']
 })))
 
+describe('app config', () => {
+  it('can be updated', () => {
+    const appConfig = useAppConfig()
+    expect(appConfig).toMatchInlineSnapshot(`
+      {
+        "nuxt": {
+          "buildId": "override",
+        },
+      }
+    `)
+    updateAppConfig({
+      new: 'value',
+      // @ts-expect-error property does not exist
+      nuxt: { nested: 42 }
+    })
+    expect(appConfig).toMatchInlineSnapshot(`
+      {
+        "new": "value",
+        "nuxt": {
+          "buildId": "override",
+          "nested": 42,
+        },
+      }
+    `)
+  })
+})
+
 describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
@@ -52,6 +79,7 @@ describe('composables', () => {
       'showError',
       'useError',
       'getAppManifest',
+      'useHydration',
       'getRouteRules',
       'onNuxtReady',
       'setResponseStatus',
@@ -62,17 +90,19 @@ describe('composables', () => {
       'useRequestHeaders',
       'clearNuxtState',
       'useState',
-      'useRequestURL'
+      'useRequestURL',
+      'useRoute',
+      'navigateTo',
+      'abortNavigation',
+      'setPageLayout',
+      'defineNuxtComponent',
     ]
     const skippedComposables: string[] = [
-      'abortNavigation',
       'addRouteMiddleware',
-      'defineNuxtComponent',
       'defineNuxtRouteMiddleware',
       'definePayloadReducer',
       'definePayloadReviver',
       'loadPayload',
-      'navigateTo',
       'onBeforeRouteLeave',
       'onBeforeRouteUpdate',
       'prefetchComponents',
@@ -80,14 +110,11 @@ describe('composables', () => {
       'preloadPayload',
       'preloadRouteComponents',
       'reloadNuxtApp',
-      'setPageLayout',
       'useCookie',
       'useFetch',
       'useHead',
-      'useHydration',
       'useLazyFetch',
       'useLazyAsyncData',
-      'useRoute',
       'useRouter',
       'useSeoMeta',
       'useServerSeoMeta'
@@ -262,6 +289,20 @@ describe('ssr composables', () => {
   })
 })
 
+describe('useHydration', () => {
+  it('should hydrate value from payload', async () => {
+    let val: any
+    const nuxtApp = useNuxtApp()
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('undefined')
+
+    nuxtApp.payload.key = 'from payload'
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('"from payload"')
+  })
+})
+
 describe('useState', () => {
   it('default', () => {
     expect(useState(() => 'default').value).toBe('default')
@@ -377,4 +418,78 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
   })
+})
+
+describe('routing utilities: `navigateTo`', () => {
+  it('navigateTo should disallow navigation to external URLs by default', () => {
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('"Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`."')
+    expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
+  })
+  it('navigateTo should disallow navigation to data/script URLs', () => {
+    const urls = [
+      ['data:alert("hi")', 'data'],
+      ['\0data:alert("hi")', 'data'],
+    ]
+    for (const [url, protocol] of urls) {
+      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    }
+  })
+})
+
+describe('routing utilities: `useRoute`', () => {
+  it('should show provide a mock route', async () => {
+    expect(useRoute()).toMatchObject({
+      fullPath: '/',
+      hash: '',
+      href: '/',
+      matched: [],
+      meta: {},
+      name: undefined,
+      params: {},
+      path: '/',
+      query: {},
+      redirectedFrom: undefined,
+    })
+  })
+})
+
+describe('routing utilities: `abortNavigation`', () => {
+  it('should throw an error if one is provided', () => {
+    const error = useError()
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('"Page not found"')
+    expect(error.value).toBeFalsy()
+  })
+  it('should block navigation if no error is provided', () => {
+    expect(abortNavigation()).toMatchInlineSnapshot('false')
+  })
+})
+
+describe('routing utilities: `setPageLayout`', () => {
+  it('should set error on page metadata if run outside middleware', () => {
+    const route = useRoute()
+    expect(route.meta.layout).toBeUndefined()
+    setPageLayout('custom')
+    expect(route.meta.layout).toEqual('custom')
+    route.meta.layout = undefined
+  })
+
+  it('should not set layout directly if run within middleware', async () => {
+    const route = useRoute()
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    setPageLayout('custom')
+    expect(route.meta.layout).toBeUndefined()
+    nuxtApp._processingMiddleware = false
+  })
+})
+
+describe('defineNuxtComponent', () => {
+  it('should produce a Vue component', async () => {
+    const wrapper = await mountSuspended(defineNuxtComponent({
+      render: () => h('div', 'hi there')
+    }))
+    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
+  })
+  it.todo('should support Options API asyncData')
+  it.todo('should support Options API head')
 })
