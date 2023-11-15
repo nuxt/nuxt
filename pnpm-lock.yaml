@@ -184,8 +184,8 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
       scule:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       semver:
         specifier: ^7.5.4
         version: 7.5.4
@@ -353,8 +353,8 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       scule:
-        specifier: ^1.0.0
-        version: 1.0.0
+        specifier: ^1.1.0
+        version: 1.1.0
       std-env:
         specifier: ^3.5.0
         version: 3.5.0
@@ -1917,7 +1917,7 @@ packages:
       perfect-debounce: 1.0.0
       pkg-types: 1.0.3
       rc9: 2.1.1
-      scule: 1.0.0
+      scule: 1.1.0
       semver: 7.5.4
       simple-git: 3.20.0
       sirv: 2.0.3
@@ -2799,7 +2799,7 @@ packages:
       vite: 4.5.0
       vue: 3.3.8
     dependencies:
-      vite: 4.5.0(@types/node@20.8.10)
+      vite: 4.5.0(@types/node@20.9.0)
       vue: 3.3.8(typescript@5.2.2)
 
   /@vitest/coverage-v8@0.33.0(vitest@0.33.0):
@@ -6738,7 +6738,7 @@ packages:
       radix3: 1.1.0
       rollup: 3.29.4
       rollup-plugin-visualizer: 5.9.2(rollup@3.29.4)
-      scule: 1.0.0
+      scule: 1.1.0
       semver: 7.5.4
       serve-placeholder: 2.0.1
       serve-static: 1.15.0
@@ -8194,9 +8194,6 @@ packages:
       ajv-formats: 2.1.1(ajv@8.12.0)
       ajv-keywords: 5.1.0(ajv@8.12.0)
 
-  /scule@1.0.0:
-    resolution: {integrity: sha512-4AsO/FrViE/iDNEPaAQlb77tf0csuq27EsVpy6ett584EcRTp6pTDLoGWVxCD77y5iU5FauOvhsI4o1APwPoSQ==}
-
   /scule@1.1.0:
     resolution: {integrity: sha512-vRUjqhyM/YWYzT+jsMk6tnl3NkY4A4soJ8uyh3O6Um+JXEQL9ozUCe7pqrxn3CSKokw0hw3nFStfskzpgYwR0g==}
 
@@ -8922,7 +8919,7 @@ packages:
       pretty-bytes: 6.1.1
       rollup: 3.29.4
       rollup-plugin-dts: 6.1.0(rollup@3.29.4)(typescript@5.2.2)
-      scule: 1.0.0
+      scule: 1.1.0
       typescript: 5.2.2
       untyped: 1.4.0
     transitivePeerDependencies:
@@ -9021,7 +9018,7 @@ packages:
       local-pkg: 0.4.3
       mlly: 1.4.2
       pathe: 1.1.1
-      scule: 1.0.0
+      scule: 1.1.0
       unplugin: 1.5.0
       vue-router: 4.2.5(vue@3.3.8)
       yaml: 2.3.3
@@ -9112,7 +9109,7 @@ packages:
       defu: 6.1.3
       jiti: 1.21.0
       mri: 1.2.0
-      scule: 1.0.0
+      scule: 1.1.0
     transitivePeerDependencies:
       - supports-color
 
