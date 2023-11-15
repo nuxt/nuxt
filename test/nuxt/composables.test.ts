@@ -269,7 +269,7 @@ describe('useFetch', () => {
     /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { headers: [['id', ref('3')]] }, '')
     /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: [['id', '3']] }, '')
+    await useFetch('/api/test', { headers: [[computed(() => 'id'), '3']] }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 })
