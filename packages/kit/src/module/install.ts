@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
+import { type ModuleMeta, type Nuxt, type NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
@@ -10,44 +10,63 @@ import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
 
 /** Installs a module on a Nuxt instance. */
-export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
-  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
+export async function installModule(
+  moduleToInstall: string | NuxtModule,
+  // eslint-disable-next-line ts/no-explicit-any
+  inlineOptions?: any,
+  nuxt: Nuxt = useNuxt()
+) {
+  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(
+    moduleToInstall,
+    nuxt
+  )
 
   // Call module
-  const res = (
+  const result = (
+    // eslint-disable-next-line ts/no-unnecessary-condition
     isNuxt2()
+
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
+      // eslint-disable-next-line ts/no-unsafe-argument
       ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
       : await nuxtModule(inlineOptions, nuxt)
   ) ?? {}
-  if (res === false /* setup aborted */) {
+
+  if (result === false /* setup aborted */) {
     return
   }
 
   if (typeof moduleToInstall === 'string') {
-    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
+    nuxt.options.build.transpile.push(
+      normalizeModuleTranspilePath(moduleToInstall)
+    )
+
     const directory = getDirectory(moduleToInstall)
+
     if (directory !== moduleToInstall) {
       nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
     }
   }
 
-  nuxt.options._installedModules = nuxt.options._installedModules || []
+  // eslint-disable-next-line ts/no-unnecessary-condition
+  nuxt.options._installedModules ||= []
+
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
-    timings: res.timings,
+    timings: result.timings,
     entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
   })
 }
 
 // --- Internal ---
 
-export function getDirectory (p: string) {
+export function getDirectory(p: string) {
   try {
     // we need to target directories instead of module file paths themselves
-    // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
+    // /home/user/project/node_modules/module/index.js
+    // -> /home/user/project/node_modules/module
     return isAbsolute(p) && lstatSync(p).isFile() ? dirname(p) : p
-  } catch (e) {
+  } catch {
     // maybe the path is absolute but does not exist, allow this to bubble up
   }
   return p
@@ -57,21 +76,35 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
 
-export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
+export async function loadNuxtModuleInstance(
+  nuxtModule: string | NuxtModule,
+  nuxt: Nuxt = useNuxt()
+) {
   let buildTimeModuleMeta: ModuleMeta = {}
+
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const src = await resolvePath(nuxtModule)
+    const source = await resolvePath(nuxtModule)
     try {
       // Prefer ESM resolution if possible
-      nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
+      // eslint-disable-next-line ts/no-unsafe-assignment
+      nuxtModule = await importModule(source, nuxt.options.modulesDir)
+        .catch(() => {})
+        ?? requireModule(source, { paths: nuxt.options.modulesDir })
     } catch (error: unknown) {
+      // eslint-disable-next-line ts/restrict-template-expressions
       logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
+
       throw error
     }
-    // nuxt-module-builder generates a module.json with metadata including the version
-    if (existsSync(join(dirname(src), 'module.json'))) {
-      buildTimeModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
+
+    // nuxt-module-builder generates a module.json
+    // with metadata including the version
+    if (existsSync(join(dirname(source), 'module.json'))) {
+      // eslint-disable-next-line ts/no-unsafe-assignment
+      buildTimeModuleMeta = JSON.parse(
+        await fsp.readFile(join(dirname(source), 'module.json'), 'utf8')
+      )
     }
   }
 
@@ -80,5 +113,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
   }
 
-  return { nuxtModule, buildTimeModuleMeta } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
+  return {
+    nuxtModule,
+    buildTimeModuleMeta
+  // eslint-disable-next-line ts/no-explicit-any
+  } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
 }
