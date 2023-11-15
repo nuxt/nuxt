@@ -98,6 +98,8 @@ describe('runtime server component', () => {
         return ogFetch(...args)
       })
       vi.stubGlobal('fetch', stubFetch)
+
+      useNuxtApp().payload.data = {}
     })
 
     afterEach(() => {
@@ -140,7 +142,6 @@ describe('runtime server component', () => {
     })
 
     it('expect to use cached payload', async () => {
-      useNuxtApp().payload.data = {}
       const wrapper = await mountSuspended(
         createServerComponent('CacheTest'), {
         props: {
@@ -173,6 +174,64 @@ describe('runtime server component', () => {
       // should not fetch the component, because the cache is used
       expect(fetch).toHaveBeenCalledTimes(2)
       expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
+    })
+
+    it('expect server component to set the response into the payload', async () => {
+      const wrapper = await mountSuspended(
+        createServerComponent('CacheTest'), {
+        props: {
+          useCache: false,
+          setCache: true,
+          props: {
+            test: 1
+          }
+        }
+      })
+
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
+ 
+      expect(Object.keys(useNuxtApp().payload.data).length).toBeGreaterThan(0)
+    })
+
+    it('expect server component to NOT set the response into the payload', async () => {
+      const wrapper = await mountSuspended(
+        createServerComponent('CacheTest'), {
+        props: {
+          useCache: false,
+          setCache: false,
+          props: {
+            test: 1
+          }
+        }
+      })
+
+      expect(fetch).toHaveBeenCalledOnce()
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
+      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
+      await wrapper.setProps({
+        useCache: false,
+        setCache: false,
+        props: {
+          test: 2
+        }
+      })
+
+      await flushPromises()
+      expect(fetch).toHaveBeenCalledTimes(2)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
+      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
+      await wrapper.setProps({
+        useCache: false,
+        setCache: false,
+        props: {
+          test: 2
+        }
+      })
+      await flushPromises()
+      expect(fetch).toHaveBeenCalledTimes(3)
+      expect(wrapper.html()).toMatchInlineSnapshot('"<div>3</div>"')
+      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
     })
   })
 })
