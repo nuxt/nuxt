@@ -30,8 +30,13 @@ The example below adds the `authorization` request header to an isomorphic `$fet
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
-const { data } = await useFetch('/api/confidential', {
-  headers: useRequestHeaders(['authorization'])
-})
+const headers = useRequestHeaders(['authorization'])
+const { data } = await useAsyncData(() => $fetch('/api/confidential', {
+  headers
+}))
 </script>
 ```
+
+::callout
+We are not using `useFetch` here as `headers` would then form part of the automatically generated key, causing this result to mismatch between client and server.
+::
