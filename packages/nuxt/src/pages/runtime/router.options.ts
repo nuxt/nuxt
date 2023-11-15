@@ -2,6 +2,7 @@ import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
 import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
+import { isChangingPage } from '#app/components/utils'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
 import { appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -20,8 +21,10 @@ export default <RouterConfig> {
     // savedPosition is only available for popstate navigations (back button)
     let position: ScrollPosition = savedPosition || undefined
 
+    const routeAllowsScrollToTop = typeof to.meta.scrollToTop === 'function' ? to.meta.scrollToTop(to, from) : to.meta.scrollToTop
+
     // Scroll to top if route is changed by default
-    if (!position && from && to && to.meta.scrollToTop !== false && _isDifferentRoute(from, to)) {
+    if (!position && from && to && routeAllowsScrollToTop !== false && isChangingPage(to, from)) {
       position = { left: 0, top: 0 }
     }
 
@@ -56,18 +59,8 @@ function _getHashElementScrollMarginTop (selector: string): number {
     if (elem) {
       return parseFloat(getComputedStyle(elem).scrollMarginTop)
     }
-  } catch {}
+  } catch {
+    // ignore any errors parsing scrollMarginTop
+  }
   return 0
-}
-
-function _isDifferentRoute (from: RouteLocationNormalized, to: RouteLocationNormalized): boolean {
-  const samePageComponent = to.matched.every((comp, index) => comp.components?.default === from.matched[index]?.components?.default)
-
-  if (!samePageComponent) {
-    return true
-  }
-  if (samePageComponent && JSON.stringify(from.params) !== JSON.stringify(to.params)) {
-    return true
-  }
-  return false
 }

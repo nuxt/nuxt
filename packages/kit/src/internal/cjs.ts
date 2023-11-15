@@ -57,18 +57,23 @@ function getRequireCacheItem (id: string) {
   try {
     return _require.cache[id]
   } catch (e) {
+    // ignore issues accessing require.cache
   }
+}
+
+export function getModulePaths (paths?: string[] | string) {
+  return ([] as Array<string | undefined>).concat(
+    global.__NUXT_PREPATHS__,
+    paths || [],
+    process.cwd(),
+    global.__NUXT_PATHS__
+  ).filter(Boolean) as string[]
 }
 
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: ([] as Array<string | undefined>).concat(
-      global.__NUXT_PREPATHS__,
-      opts.paths || [],
-      process.cwd(),
-      global.__NUXT_PATHS__
-    ).filter(Boolean) as string[]
+    paths: getModulePaths(opts.paths)
   }))
 }
 
@@ -101,13 +106,16 @@ export function importModule (id: string, opts: RequireModuleOptions = {}) {
 export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
   try {
     return importModule(id, opts).catch(() => undefined)
-  } catch {}
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }
 
 /** @deprecated Do not use CJS utils */
 export function tryRequireModule (id: string, opts: RequireModuleOptions = {}) {
   try {
     return requireModule(id, opts)
-  } catch (e) {
+  } catch {
+    // intentionally empty as this is a `try-` function
   }
 }

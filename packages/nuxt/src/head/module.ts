@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addComponent, addImportsSources, addPlugin, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -48,11 +48,28 @@ export default defineNuxtModule({
     })
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
+    const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
     if (nuxt.options.experimental.polyfillVueUseHead) {
       // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+      nuxt.options.alias['@vueuse/head'] = unheadVue
       addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
     }
+
+    addTemplate({
+      filename: 'unhead-plugins.mjs',
+      getContents () {
+        if (!nuxt.options.experimental.headNext) {
+          return 'export default []'
+        }
+        return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
+export default process.server ? [CapoPlugin({ track: true })] : [];`
+      }
+    })
+
+    // template is only exposed in nuxt context, expose in nitro context as well
+    nuxt.hooks.hook('nitro:config', (config) => {
+      config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins']
+    })
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })

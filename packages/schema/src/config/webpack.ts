@@ -1,4 +1,4 @@
-import { join } from 'pathe'
+import { defu } from 'defu'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
@@ -7,27 +7,17 @@ export default defineUntypedSchema({
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
      *
      * Set to `true` to enable bundle analysis, or pass an object with options: [for webpack](https://github.com/webpack-contrib/webpack-bundle-analyzer#options-for-plugin) or [for vite](https://github.com/btd/rollup-plugin-visualizer#options).
-     *
      * @example
      * ```js
      * analyze: {
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
+     * @type {boolean | { enabled?: boolean } & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
      */
     analyze: {
       $resolve: async (val, get) => {
-        if (val !== true) {
-          return val ?? false
-        }
-        const rootDir = await get('rootDir')
-        const analyzeDir = await get('analyzeDir')
-        return {
-          template: 'treemap',
-          projectRoot: rootDir,
-          filename: join(analyzeDir, '{name}.html')
-        }
+        return defu(val, await get('build.analyze'))
       }
     },
 
@@ -35,7 +25,6 @@ export default defineUntypedSchema({
      * Enable the profiler in webpackbar.
      *
      * It is normally enabled by CLI argument `--profile`.
-     *
      * @see [webpackbar](https://github.com/unjs/webpackbar#profile).
      */
     profile: process.argv.includes('--profile'),
@@ -46,7 +35,6 @@ export default defineUntypedSchema({
      * Using [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) under the hood, your CSS will be extracted
      * into separate files, usually one per component. This allows caching your CSS and
      * JavaScript separately.
-     *
      * @example
      * ```js
      * export default {
@@ -65,7 +53,6 @@ export default defineUntypedSchema({
      * Extracting into multiple CSS files is better for caching and preload isolation. It
      * can also improve page performance by downloading and resolving only those resources
      * that are needed.
-     *
      * @example
      * ```js
      * export default {
@@ -108,19 +95,16 @@ export default defineUntypedSchema({
      * Customize bundle filenames.
      *
      * To understand a bit more about the use of manifests, take a look at [this webpack documentation](https://webpack.js.org/guides/code-splitting/).
-     *
      * @note Be careful when using non-hashed based filenames in production
      * as most browsers will cache the asset and not detect the changes on first load.
      *
      * This example changes fancy chunk names to numerical ids:
-     *
      * @example
      * ```js
      * filenames: {
      *   chunk: ({ isDev }) => (isDev ? '[name].js' : '[id].[contenthash].js')
      * }
      * ```
-     * 
      * @type {
      *  Record<
      *    string,
@@ -140,8 +124,8 @@ export default defineUntypedSchema({
      * }
      */
     filenames: {
-      app: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
-      chunk: ({ isDev }: { isDev: boolean }) => isDev ? `[name].js` : `[contenthash:7].js`,
+      app: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
+      chunk: ({ isDev }: { isDev: boolean }) => isDev ? '[name].js' : '[contenthash:7].js',
       css: ({ isDev }: { isDev: boolean }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
@@ -169,13 +153,12 @@ export default defineUntypedSchema({
       /**
        * See https://github.com/esbuild-kit/esbuild-loader
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
-      */
+       */
       esbuild: {},
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
-       *
        * @default
        * ```ts
        * { esModule: false }
@@ -186,7 +169,6 @@ export default defineUntypedSchema({
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
-       *
        * @default
        * ```ts
        * { esModule: false, limit: 1000  }
@@ -197,7 +179,6 @@ export default defineUntypedSchema({
       /**
        * See: https://github.com/webpack-contrib/file-loader#options
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
-       *
        * @default
        * ```ts
        * { esModule: false, limit: 1000  }
@@ -224,13 +205,13 @@ export default defineUntypedSchema({
         },
         compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
         propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
-        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) }
       },
 
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false
       },
@@ -238,7 +219,7 @@ export default defineUntypedSchema({
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, resourcePath: string) => !url.startsWith('/'),
+          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
         },
         esModule: false,
         modules: {
@@ -254,7 +235,6 @@ export default defineUntypedSchema({
       /**
        * See: https://github.com/webpack-contrib/sass-loader#options
        * @type {typeof import('sass-loader')['Options']}
-       * 
        * @default
        * ```ts
        * {
@@ -286,7 +266,6 @@ export default defineUntypedSchema({
 
     /**
      * Add webpack plugins.
-     *
      * @example
      * ```js
      * import webpack from 'webpack'
@@ -310,9 +289,7 @@ export default defineUntypedSchema({
      * OptimizeCSSAssets plugin options.
      *
      * Defaults to true when `extractCSS` is enabled.
-     *
      * @see [css-minimizer-webpack-plugin documentation](https://github.com/webpack-contrib/css-minimizer-webpack-plugin).
-     *
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
     optimizeCSS: {
@@ -339,7 +316,6 @@ export default defineUntypedSchema({
     /**
      * Customize PostCSS Loader.
      * Same options as https://github.com/webpack-contrib/postcss-loader#options
-     *
      * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
@@ -350,7 +326,7 @@ export default defineUntypedSchema({
         plugins: {
           $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
         }
-      },
+      }
     },
 
     /**

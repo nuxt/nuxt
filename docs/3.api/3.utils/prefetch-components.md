@@ -1,25 +1,28 @@
 ---
-description: Nuxt provides utilities to give you control over prefetching and preloading components.
+title: 'prefetchComponents'
+description: Nuxt provides utilities to give you control over prefetching components.
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/preload.ts
+    size: xs
 ---
 
-# `prefetchComponents`
 
-Nuxt provides composables and utilities to give you fine-grained control over prefetching and preloading components.
+Prefetching component downloads the code in the background, this is based on the assumption that the component will likely be used for rendering, enabling the component to load instantly if and when the user requests it. The component is downloaded and cached for anticipated future use without the user making an explicit request for it.
 
-> Prefetching component downloads the code in the background, this is based on the assumption that the component will likely be used for rendering, enabling the component to load instantly if and when the user requests it. The component is downloaded and cached for anticipated future use without the user making an explicit request for it.
+Use `prefetchComponents` to manually prefetch individual components that have been registered globally in your Nuxt app. By default Nuxt registers these as async components. You must use the Pascal-cased version of the component name.
 
-Use `prefetchComponents` to manually prefetch individual components that have been registered globally in your Nuxt app. (By default Nuxt registers these as async components.) You must use the Pascal-cased version of the component name.
-
-```js
+```ts
 await prefetchComponents('MyGlobalComponent')
 
 await prefetchComponents(['MyGlobalComponent1', 'MyGlobalComponent2'])
 ```
 
-::alert{icon=👉}
+::callout
 Current implementation behaves exactly the same as [`preloadComponents`](/docs/api/utils/preload-components) by preloading components instead of just prefetching we are working to improve this behavior.
 ::
 
-::alert{icon=👉}
-Currently, on server, `prefetchComponents` will have no effect.
+::callout
+On server, `prefetchComponents` will have no effect.
 ::

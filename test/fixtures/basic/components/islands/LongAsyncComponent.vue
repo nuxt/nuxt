@@ -8,19 +8,34 @@
     <div id="long-async-component-count">
       {{ count }}
     </div>
-    <slot name="test" :count="count" />
+    {{ headers['custom-head'] }}
+    <slot
+      name="test"
+      :count="count"
+    />
     <p>hello world !!!</p>
-    <slot v-for="(t, index) in 3" name="hello" :t="t">
+    <slot
+      v-for="(t, index) in 3"
+      name="hello"
+      :t="t"
+    >
       <div :key="t">
         fallback slot -- index: {{ index }}
       </div>
     </slot>
 
-    <slot v-for="(t, index) in ['fall', 'back']" name="fallback" :t="t">
+    <slot
+      v-for="(t, index) in ['fall', 'back']"
+      name="fallback"
+      :t="t"
+    >
       <div :key="t">
         {{ t }} slot -- index: {{ index }}
       </div>
-      <div :key="t" class="fallback-slot-content">
+      <div
+        :key="t"
+        class="fallback-slot-content"
+      >
         wonderful fallback
       </div>
     </slot>
@@ -28,8 +43,12 @@
 </template>
 
 <script setup lang="ts">
+import { getResponseHeaders } from 'h3'
 defineProps<{
   count: number
 }>()
+
+const evt = useRequestEvent()
+const headers = getResponseHeaders(evt)
 const { data } = await useFetch('/api/very-long-request')
 </script>

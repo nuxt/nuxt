@@ -1,10 +1,9 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
-import { PageRouteSymbol } from '#app/components/injections'
+import { PageRouteSymbol } from './injections'
 
 export const RouteProvider = defineComponent({
-  name: 'RouteProvider',
   props: {
     vnode: {
       type: Object as () => VNode,
@@ -20,9 +19,7 @@ export const RouteProvider = defineComponent({
   },
   setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousKey = props.renderKey
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const previousRoute = props.route
 
     // Provide a reactive route within the page
@@ -36,7 +33,7 @@ export const RouteProvider = defineComponent({
     provide(PageRouteSymbol, shallowReactive(route))
 
     let vnode: VNode
-    if (process.dev && process.client && props.trackRootNodes) {
+    if (import.meta.dev && import.meta.client && props.trackRootNodes) {
       onMounted(() => {
         nextTick(() => {
           if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
@@ -48,7 +45,7 @@ export const RouteProvider = defineComponent({
     }
 
     return () => {
-      if (process.dev && process.client) {
+      if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
         return vnode
       }

@@ -7,14 +7,20 @@ on:
       - edited
       - synchronize
 
+permissions:
+  contents: read
+
 jobs:
   main:
-    if: github.repository == 'nuxt/nuxt'
+    permissions:
+      pull-requests: read  # for amannn/action-semantic-pull-request to analyze PRs
+      statuses: write  # for amannn/action-semantic-pull-request to mark status of analyzed PR
+    if: github.repository == 'nuxt/nuxt' && !startsWith(github.head_ref, 'v')
     runs-on: ubuntu-latest
     name: Semantic pull request
     steps:
       - name: Validate PR title
-        uses: amannn/action-semantic-pull-request@v5
+        uses: amannn/action-semantic-pull-request@e9fabac35e210fea40ca5b14c0da95a099eff26f # v5.4.0
         with:
           scopes: |
             kit

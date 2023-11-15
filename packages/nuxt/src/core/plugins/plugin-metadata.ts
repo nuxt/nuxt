@@ -9,6 +9,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
+import { logger } from '@nuxt/kit'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { ObjectPlugin, PluginMeta } from '#app'
@@ -122,7 +123,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const exports = findExports(code)
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
-        console.error(`[warn] [nuxt] Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
+        logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
         s.overwrite(0, code.length, 'export default () => {}')
         return {
           code: s.toString(),
@@ -131,6 +132,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       }
 
       let wrapped = false
+      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
         walk(this.parse(code, {
@@ -138,9 +140,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           ecmaVersion: 'latest'
         }) as Node, {
           enter (_node) {
+            if (_node.type === 'ImportSpecifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
+              wrapperNames.add(_node.local.name)
+            }
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
-                console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
+                logger.warn(`Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
                 s.overwrite(0, code.length, 'export default () => {}')
                 wrapped = true // silence a duplicate error
                 return
@@ -149,13 +154,13 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
             if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
             const node = _node as CallExpression & { start: number, end: number }
             const name = 'name' in node.callee && node.callee.name
-            if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+            if (!name || !wrapperNames.has(name)) { return }
             wrapped = true
 
             if (node.arguments[0].type !== 'ObjectExpression') {
               // TODO: Warn if legacy plugin format is detected
               if ('params' in node.arguments[0] && node.arguments[0].params.length > 1) {
-                console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
+                logger.warn(`Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
                 s.overwrite(0, code.length, 'export default () => {}')
                 return
               }
@@ -184,12 +189,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           }
         })
       } catch (e) {
-        console.error(e)
+        logger.error(e)
         return
       }
 
       if (!wrapped) {
-        console.warn(`[warn] [nuxt] Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
+        logger.warn(`Plugin \`${plugin.src}\` is not wrapped in \`defineNuxtPlugin\`. It is advised to wrap your plugins as in the future this may enable enhancements.`)
       }
 
       if (s.hasChanged()) {

@@ -1,10 +1,14 @@
 ---
-title: "definePageMeta"
+title: 'definePageMeta'
+description: 'Define metadata for your page components.'
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/pages/runtime/composables.ts
+    size: xs
 ---
 
-# `definePageMeta`
-
-`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/` directory](/docs/guide/directory-structure/pages) (unless [set otherwise](/docs/api/configuration/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
+`definePageMeta` is a compiler macro that you can use to set metadata for your **page** components located in the [`pages/`](/docs/guide/directory-structure/pages) directory (unless [set otherwise](/docs/api/nuxt-config#pages)). This way you can set custom metadata for each static or dynamic route of your Nuxt application.
 
 ```vue [pages/some-page.vue]
 <script setup lang="ts">
@@ -14,8 +18,7 @@ definePageMeta({
 </script>
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/pages/#page-metadata"}
-::
+:read-more{to="/docs/guide/directory-structure/pages/#page-metadata"}
 
 ## Type
 
@@ -25,6 +28,8 @@ definePageMeta(meta: PageMeta) => void
 interface PageMeta {
   validate?: (route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>
   redirect?: RouteRecordRedirectOption
+  name?: string
+  path?: string
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
@@ -32,6 +37,7 @@ interface PageMeta {
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
+  scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
 }
 ```
@@ -43,6 +49,18 @@ interface PageMeta {
 - **Type**: `PageMeta`
 
   An object accepting the following page metadata:
+
+  **`name`**
+
+  - **Type**: `string`
+
+    You may define a name for this page's route. By default, name is generated based on path inside the [`pages/` directory](/docs/guide/directory-structure/pages).
+
+  **`path`**
+
+  - **Type**: `string`
+
+    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -97,6 +115,12 @@ interface PageMeta {
   - **Type**: `(route: RouteLocationNormalized) => boolean | Promise<boolean> | Partial<NuxtError> | Promise<Partial<NuxtError>>`
 
     Validate whether a given route can validly be rendered with this page. Return true if it is valid, or false if not. If another match can't be found, this will mean a 404. You can also directly return an object with `statusCode`/`statusMessage` to respond immediately with an error (other matches will not be checked).
+
+  **`scrollToTop`**
+
+  - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
+
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
 
   **`[key: string]`**
 

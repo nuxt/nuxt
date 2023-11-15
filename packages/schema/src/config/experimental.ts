@@ -6,30 +6,30 @@ export default defineUntypedSchema({
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: (val) => val ?? false
+      $resolve: val => val ?? false
     },
 
     /**
      * Enable Vue's reactivity transform
-     * @see https://vuejs.org/guide/extras/reactivity-transform.html
+     * @see [Vue Reactivity Transform Docs](https://vuejs.org/guide/extras/reactivity-transform.html)
      *
      * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
      * removed from core in Vue 3.4.
-     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
+     * @see [Vue RFC#369](https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028)
      */
     reactivityTransform: false,
 
-    // TODO: Remove in v3.6 when nitro has support for mocking traced dependencies
+    // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     * @see https://github.com/nuxt/nuxt/issues/13632
+     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
      */
     externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
-     * @see https://github.com/nuxt/framework/pull/5750
+     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
      */
     treeshakeClientOnly: true,
 
@@ -42,12 +42,11 @@ export default defineUntypedSchema({
      *
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
-     *
-     * @see https://github.com/nuxt/nuxt/pull/19038
+     * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
      * @type {false | 'manual' | 'automatic'}
      */
     emitRouteChunkError: {
-      $resolve: val => {
+      $resolve: (val) => {
         if (val === true) {
           return 'manual'
         }
@@ -55,8 +54,19 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      },
+      }
     },
+
+    /**
+     * By default the route object returned by the auto-imported `useRoute()` composable
+     * is kept in sync with the current page in view in `<NuxtPage>`. This is not true for
+     * `vue-router`'s exported `useRoute` or for the default `$route` object available in your
+     * Vue templates.
+     *
+     * By enabling this option a mixin will be injected to keep the `$route` template object
+     * in sync with Nuxt's managed `useRoute()`.
+     */
+    templateRouteInjection: true,
 
     /**
      * Whether to restore Nuxt app state from `sessionStorage` when reloading the page
@@ -68,7 +78,6 @@ export default defineUntypedSchema({
      * Consider carefully before enabling this as it can cause unexpected behavior, and
      * consider providing explicit keys to `useState` as auto-generated keys may not match
      * across builds.
-     *
      * @type {boolean}
      */
     restoreState: false,
@@ -78,7 +87,6 @@ export default defineUntypedSchema({
      *
      * You can also pass a function that receives the path of a Vue component
      * and returns a boolean indicating whether to inline the styles for that component.
-     *
      * @type {boolean | ((id?: string) => boolean)}
      */
     inlineSSRStyles: {
@@ -102,15 +110,14 @@ export default defineUntypedSchema({
 
     /**
      * Disable vue server renderer endpoint within nitro.
-    */
+     */
     noVueServer: false,
 
     /**
-     * When this option is enabled (by default) payload of pages generated with `nuxt generate` are extracted
-     *
+     * When this option is enabled (by default) payload of pages that are prerendered are extracted
      * @type {boolean | undefined}
      */
-    payloadExtraction: undefined,
+    payloadExtraction: true,
 
     /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client
@@ -123,27 +130,31 @@ export default defineUntypedSchema({
 
     /**
      * Enable View Transition API integration with client-side router.
-     *
-     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
     viewTransition: false,
 
     /**
      * Write early hints when using node server.
-     *
      * @note nginx does not support 103 Early hints in the current version.
      */
     writeEarlyHints: false,
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     * @type {true | 'local' | 'local+remote' | false}
      */
-    componentIslands: false,
+    componentIslands: {
+      $resolve: (val) => {
+        if (typeof val === 'string') { return val }
+        if (val === true) { return 'local' }
+        return false
+      }
+    },
 
     /**
      * Config schema support
-     *
-     * @see https://github.com/nuxt/nuxt/issues/15592
+     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
 
@@ -186,6 +197,16 @@ export default defineUntypedSchema({
     typedPages: false,
 
     /**
+     * Use app manifests to respect route rules on client-side.
+     */
+    appManifest: true,
+
+    // This is enabled when `experimental.payloadExtraction` is set to `true`.
+    // appManifest: {
+    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
+    // },
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
      * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
@@ -195,11 +216,57 @@ export default defineUntypedSchema({
      * performance in large projects or on Windows platforms.
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
-     *
-     * @see https://github.com/paulmillr/chokidar
-     * @see https://github.com/parcel-bundler/watcher
+     * @see [chokidar](https://github.com/paulmillr/chokidar)
+     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular'
+    watcher: 'chokidar-granular',
+
+    /**
+     * Enable native async context to be accessible for nested composables
+     * @see [Nuxt PR #20918](https://github.com/nuxt/nuxt/pull/20918)
+     */
+    asyncContext: false,
+
+    /**
+     * Use new experimental head optimisations:
+     * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
+     * - Uses the hash hydration plugin to reduce initial hydration
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
+     */
+    headNext: false,
+
+    /**
+     * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
+     *
+     * Rules are converted (based on the path) and applied for server requests. For example, a rule
+     * defined in `~/pages/foo/bar.vue` will be applied to `/foo/bar` requests. A rule in `~/pages/foo/[id].vue`
+     * will be applied to `/foo/**` requests.
+     *
+     * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
+     * should set `routeRules` directly within your `nuxt.config`.
+     */
+    inlineRouteRules: false,
+
+    /**
+     * This allows specifying the default options for core Nuxt components and composables.
+     *
+     * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
+     * `app/` directory.
+     */
+    defaults: {
+      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      nuxtLink: {
+        componentName: 'NuxtLink'
+      },
+      /**
+       * Options that apply to `useAsyncData` (and also therefore `useFetch`)
+       */
+      useAsyncData: {
+        deep: true
+      },
+      /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
+      useFetch: {}
+    }
   }
 })

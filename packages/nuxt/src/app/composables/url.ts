@@ -1,10 +1,10 @@
 import { getRequestURL } from 'h3'
 import { joinURL } from 'ufo'
+import { useRuntimeConfig } from '../nuxt'
 import { useRequestEvent } from './ssr'
-import { useRuntimeConfig } from '#app'
 
 export function useRequestURL () {
-  if (process.server) {
+  if (import.meta.server) {
     const url = getRequestURL(useRequestEvent())
     url.pathname = joinURL(useRuntimeConfig().app.baseURL, url.pathname)
     return url

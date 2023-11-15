@@ -22,7 +22,7 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   }
   if (data.value && typeof data.value === 'object') {
     Object.assign(await res, toRefs(reactive(data.value)))
-  } else if (process.dev) {
+  } else if (import.meta.dev) {
     console.warn('[nuxt] asyncData should return an object', data)
   }
 }

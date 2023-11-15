@@ -1,16 +1,27 @@
-import type { FetchError } from 'ofetch'
-import type { AvailableRouterMethod, NitroFetchOptions, NitroFetchRequest, TypedInternalResponse } from 'nitropack'
-import type { Ref } from 'vue'
+import type { FetchError, FetchOptions } from 'ofetch'
+import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
+import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, unref } from 'vue'
 import { hash } from 'ohash'
+
 import { useRequestFetch } from './ssr'
-import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom, _Transform } from './asyncData'
+import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
 
-export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, M>
+// @ts-expect-error virtual file
+import { fetchDefaults } from '#build/nuxt.config.mjs'
+
+// support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
+type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
+
+export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, Lowercase<M>>
 
 type ComputedOptions<T extends Record<string, any>> = {
-  [K in keyof T]: T[K] extends Function ? T[K] : T[K] extends Record<string, any> ? ComputedOptions<T[K]> | Ref<T[K]> | T[K] : Ref<T[K]> | T[K]
+  [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
+}
+
+interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
+  method?: M;
 }
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
@@ -49,6 +60,19 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
+> (
+  request: Ref<ReqT> | ReqT | (() => ReqT),
+  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+export function useFetch<
+  ResT = void,
+  ErrorT = FetchError,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
@@ -56,15 +80,6 @@ export function useFetch<
   arg2?: string
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
-  const _key = opts.key || hash([autoKey, unref(opts.baseURL), typeof request === 'string' ? request : '', unref(opts.params || opts.query)])
-  if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
-  }
-  if (!request) {
-    throw new Error('[nuxt] [useFetch] request is missing.')
-  }
-
-  const key = _key === autoKey ? '$f' + _key : _key
 
   const _request = computed(() => {
     let r = request
@@ -73,6 +88,16 @@ export function useFetch<
     }
     return unref(r)
   })
+
+  const _key = opts.key || hash([autoKey, unref(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query), unref(opts.headers)])
+  if (!_key || typeof _key !== 'string') {
+    throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
+  }
+  if (!request) {
+    throw new Error('[nuxt] [useFetch] request is missing.')
+  }
+
+  const key = _key === autoKey ? '$f' + _key : _key
 
   if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
@@ -86,10 +111,13 @@ export function useFetch<
     pick,
     watch,
     immediate,
+    getCachedData,
+    deep,
     ...fetchOptions
   } = opts
 
   const _fetchOptions = reactive({
+    ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
@@ -101,6 +129,8 @@ export function useFetch<
     transform,
     pick,
     immediate,
+    getCachedData,
+    deep,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
@@ -110,11 +140,14 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
-    const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
     let _$fetch = opts.$fetch || globalThis.$fetch
+
     // Use fetch with request context and headers for server direct API calls
-    if (process.server && !opts.$fetch && isLocalFetch) {
-      _$fetch = useRequestFetch()
+    if (import.meta.server && !opts.$fetch) {
+      const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/') && (!unref(opts.baseURL) || unref(opts.baseURL)!.startsWith('/'))
+      if (isLocalFetch) {
+        _$fetch = useRequestFetch()
+      }
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
@@ -132,6 +165,19 @@ export function useLazyFetch<
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
+> (
+  request: Ref<ReqT> | ReqT | (() => ReqT),
+  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+export function useLazyFetch<
+  ResT = void,
+  ErrorT = FetchError,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
+  PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
+  DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>

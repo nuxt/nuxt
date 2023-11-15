@@ -1,5 +1,5 @@
 import { defineComponent, onErrorCaptured, ref } from 'vue'
-import { useNuxtApp } from '#app/nuxt'
+import { useNuxtApp } from '../nuxt'
 
 export default defineComponent({
   emits: {
@@ -12,7 +12,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
 
     onErrorCaptured((err, target, info) => {
-      if (process.client && !nuxtApp.isHydrating) {
+      if (import.meta.client && !nuxtApp.isHydrating) {
         emit('error', err)
         nuxtApp.hooks.callHook('vue:error', err, target, info)
         error.value = err

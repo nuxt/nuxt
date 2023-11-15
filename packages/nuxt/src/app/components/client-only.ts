@@ -1,5 +1,6 @@
-import { createElementBlock, createElementVNode, defineComponent, h, mergeProps, onMounted, ref } from 'vue'
-import type { ComponentOptions } from 'vue'
+import { createElementBlock, createElementVNode, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, ref } from 'vue'
+import type { ComponentInternalInstance, ComponentOptions } from 'vue'
+import { getFragmentHTML } from './utils'
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -34,12 +35,13 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     // override the component render (non script setup component)
     clone.render = (ctx: any, ...args: any[]) => {
       if (ctx.mounted$) {
-        const res = component.render!(ctx, ...args)
+        const res = component.render?.bind(ctx)(ctx, ...args)
         return (res.children === null || typeof res.children === 'string')
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
       } else {
-        return h('div', mergeProps(ctx.$attrs ?? ctx._.attrs, { key: 'placeholder-key' }))
+        const fragment = getFragmentHTML(ctx._.vnode.el ?? null) ?? ['<div></div>']
+        return process.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.$attrs ?? ctx._.attrs)
       }
     }
   } else if (clone.template) {
@@ -51,8 +53,20 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   }
 
   clone.setup = (props, ctx) => {
+    const instance = getCurrentInstance()!
+
+    const attrs = instance.attrs
+    // remove existing directives during hydration
+    const directives = extractDirectives(instance)
+    // prevent attrs inheritance since a staticVNode is rendered before hydration
+    instance.attrs = {}
     const mounted$ = ref(false)
-    onMounted(() => { mounted$.value = true })
+
+    onMounted(() => {
+      instance.attrs = attrs
+      instance.vnode.dirs = directives
+      mounted$.value = true
+    })
 
     return Promise.resolve(component.setup?.(props, ctx) || {})
       .then((setupState) => {
@@ -65,7 +79,8 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
                   ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
                   : h(res)
               } else {
-                return h('div', mergeProps(ctx.attrs, { key: 'placeholder-key' }))
+                const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
+                return process.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.attrs)
               }
             }
       })
@@ -74,4 +89,11 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   cache.set(component, clone)
 
   return clone
+}
+
+function extractDirectives (instance: ComponentInternalInstance | null) {
+  if (!instance || !instance.vnode.dirs) { return null }
+  const directives = instance.vnode.dirs
+  instance.vnode.dirs = null
+  return directives
 }

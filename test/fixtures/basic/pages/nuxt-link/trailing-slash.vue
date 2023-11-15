@@ -18,8 +18,11 @@ const links = [
 
 const route = useRoute()
 const windowState = computed(() => {
-  console.log(route.fullPath)
-  return process.client ? window.history.state.foo : ''
+  if (import.meta.client) {
+    console.log(route.fullPath)
+    return window.history.state.foo
+  }
+  return ''
 })
 </script>
 
@@ -31,9 +34,19 @@ const windowState = computed(() => {
       </ClientOnly>
     </div>
     <ul>
-      <li v-for="(link, index) in links" :key="index">
-        <LinkWithTrailingSlash :to="link" class="link-with-trailing-slash">
-          <LinkWithTrailingSlash v-slot="{ href }" custom :to="link">
+      <li
+        v-for="(link, index) in links"
+        :key="index"
+      >
+        <LinkWithTrailingSlash
+          :to="link"
+          class="link-with-trailing-slash"
+        >
+          <LinkWithTrailingSlash
+            v-slot="{ href }"
+            custom
+            :to="link"
+          >
             {{ href }}
           </LinkWithTrailingSlash>
         </LinkWithTrailingSlash>
@@ -41,9 +54,19 @@ const windowState = computed(() => {
     </ul>
     <hr>
     <ul>
-      <li v-for="(link, index) in links" :key="index">
-        <LinkWithoutTrailingSlash :to="link" class="link-without-trailing-slash">
-          <LinkWithoutTrailingSlash v-slot="{ href }" custom :to="link">
+      <li
+        v-for="(link, index) in links"
+        :key="index"
+      >
+        <LinkWithoutTrailingSlash
+          :to="link"
+          class="link-without-trailing-slash"
+        >
+          <LinkWithoutTrailingSlash
+            v-slot="{ href }"
+            custom
+            :to="link"
+          >
             {{ href }}
           </LinkWithoutTrailingSlash>
         </LinkWithoutTrailingSlash>
@@ -51,9 +74,19 @@ const windowState = computed(() => {
     </ul>
     <hr>
     <ul>
-      <li v-for="(link, index) in links" :key="index">
-        <NuxtLink :to="link" class="nuxt-link">
-          <NuxtLink v-slot="{ href }" custom :to="link">
+      <li
+        v-for="(link, index) in links"
+        :key="index"
+      >
+        <NuxtLink
+          :to="link"
+          class="nuxt-link"
+        >
+          <NuxtLink
+            v-slot="{ href }"
+            custom
+            :to="link"
+          >
             {{ href }}
           </NuxtLink>
         </NuxtLink>
@@ -61,9 +94,19 @@ const windowState = computed(() => {
     </ul>
     <hr>
     <ul>
-      <li v-for="(link, index) in links" :key="index">
-        <RouterLink :to="link" class="router-link">
-          <RouterLink v-slot="{ href }" custom :to="link">
+      <li
+        v-for="(link, index) in links"
+        :key="index"
+      >
+        <RouterLink
+          :to="link"
+          class="router-link"
+        >
+          <RouterLink
+            v-slot="{ href }"
+            custom
+            :to="link"
+          >
             {{ href }}
           </RouterLink>
         </RouterLink>

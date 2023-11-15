@@ -75,11 +75,13 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
             source: ''
           })
 
+        const baseDir = dirname(base)
+
         emitted[file] = this.emitFile({
           type: 'asset',
           name: `${filename(file)}-styles.mjs`,
           source: [
-            ...files.map((css, i) => `import style_${i} from './${relative(dirname(base), this.getFileName(css))}';`),
+            ...files.map((css, i) => `import style_${i} from './${relative(baseDir, this.getFileName(css))}';`),
             `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`
           ].join('\n')
         })

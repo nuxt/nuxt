@@ -51,24 +51,25 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
-          const isRenderingNewRouteInOldFork = process.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
-          const hasSameChildren = process.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
+          const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
+          const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
 
           if (!routeProps.Component) {
             // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
             // we'll render the old vnode until the new route finishes resolving
-            if (process.client && vnode && !hasSameChildren) {
+            if (import.meta.client && vnode && !hasSameChildren) {
               return vnode
             }
+            done()
             return
           }
 
           // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-          if (process.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+          if (import.meta.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
             return vnode
           }
 
-          if (process.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
+          if (import.meta.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
             // if leaving a route with an existing child route, render the old vnode
             if (hasSameChildren) {
               return vnode
@@ -87,21 +88,27 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
+          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
-            wrapInKeepAlive(props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps), h(Suspense, {
+            wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
-              // @ts-expect-error seems to be an issue in vue types
-              default: () => h(RouteProvider, {
-                key,
-                vnode: routeProps.Component,
-                route: routeProps.route,
-                renderKey: key,
-                trackRootNodes: hasTransition,
-                vnodeRef: pageRef
-              })
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  trackRootNodes: hasTransition,
+                  vnodeRef: pageRef
+                })
+                if (import.meta.client && keepaliveConfig) {
+                  (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
+                }
+                return providerVNode
+              }
             })
             )).default()
 

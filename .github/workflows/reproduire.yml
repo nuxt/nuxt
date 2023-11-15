@@ -1,0 +1,16 @@
+name: Reproduire
+on:
+  issues:
+    types: [labeled]
+
+permissions:
+  issues: write
+
+jobs:
+  reproduire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: Hebilicious/reproduire@4b686ae9cbb72dad60f001d278b6e3b2ce40a9ac # v0.0.9-mp
+        with:
+          label: needs reproduction
