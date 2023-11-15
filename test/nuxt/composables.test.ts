@@ -250,15 +250,15 @@ describe('useFetch', () => {
     await useFetch('/api/test')
     expect(getPayloadEntries()).toBe(baseCount + 1)
 
-    /** @ts-expect-error Overriding auto-key */
+    /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { method: 'POST' }, '')
-    /** @ts-expect-error Overriding auto-key */
+    /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { method: ref('POST') }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 2)
 
-    /** @ts-expect-error Overriding auto-key */
+    /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { headers: { id: '3' } }, '')
-    /** @ts-expect-error Overriding auto-key */
+    /* @ts-expect-error Overriding auto-key */
     await useFetch('/api/test', { headers: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
