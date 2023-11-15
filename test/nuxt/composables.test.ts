@@ -38,6 +38,10 @@ registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
   },
   prerendered: ['/specific-prerendered']
 })))
+registerEndpoint('/api/test', defineEventHandler((event) => ({
+  method: event.method,
+  headers: Object.fromEntries(event.headers.entries())
+})))
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -234,6 +238,39 @@ describe('useAsyncData', () => {
   it('should use default after reject', async () => {
     const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
+  })
+})
+
+describe('useFetch', () => {
+  it('should match with/without computed values', async () => {
+    const nuxtApp = useNuxtApp()
+    const getPayloadEntries = () => Object.keys(nuxtApp.payload.data).length
+    const baseCount = getPayloadEntries()
+
+    await useFetch('/api/test')
+    expect(getPayloadEntries()).toBe(baseCount + 1)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: ref('POST') }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 2)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers: { id: '3' } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers: { id: ref('3') } }, '')
+    const headers = new Headers()
+    headers.append('id', '3')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers: [['id', '3']] }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers: [['id', ref('3')]] }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { headers: [[computed(() => 'id'), '3']] }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
 })
 
