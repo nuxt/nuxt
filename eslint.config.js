@@ -20,7 +20,17 @@ export default defineEslintConfig(
   typeScriptConfig({
     tsconfigPaths: 'tsconfig.json'
   }),
-  unicornConfig(),
+  unicornConfig({
+    override: {
+      rules: {
+        'unicorn/prevent-abbreviations': ['error', {
+          allowList: {
+            addComponentsDir: true
+          }
+        }]
+      }
+    }
+  }),
   stylisticConfig(),
   importConfig()
 )
