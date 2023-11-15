@@ -1,9 +1,12 @@
-import type { SchemaDefinition } from '@nuxt/schema'
+import { type SchemaDefinition } from '@nuxt/schema'
 import { useNuxt } from '../context'
 
-export function extendNuxtSchema (def: SchemaDefinition | (() => SchemaDefinition)) {
+export function extendNuxtSchema(
+  definition: SchemaDefinition | (() => SchemaDefinition)
+) {
   const nuxt = useNuxt()
+
   nuxt.hook('schema:extend', (schemas) => {
-    schemas.push(typeof def === 'function' ? def() : def)
+    schemas.push(typeof definition === 'function' ? definition() : definition)
   })
 }
