@@ -1,10 +1,8 @@
 import { getContext } from 'unctx'
-import type { Nuxt } from '@nuxt/schema'
+import { type Nuxt } from '@nuxt/schema'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
-export const nuxtCtx = getContext<Nuxt>('nuxt')
-
-// TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
+export const nuxtContext = getContext<Nuxt>('nuxt')
 
 /**
  * Get access to Nuxt instance.
@@ -15,11 +13,13 @@ export const nuxtCtx = getContext<Nuxt>('nuxt')
  * const nuxt = useNuxt()
  * ```
  */
-export function useNuxt (): Nuxt {
-  const instance = nuxtCtx.tryUse()
+export function useNuxt(): Nuxt {
+  const instance = nuxtContext.tryUse()
+
   if (!instance) {
     throw new Error('Nuxt instance is unavailable!')
   }
+
   return instance
 }
 
@@ -30,11 +30,12 @@ export function useNuxt (): Nuxt {
  * @example
  * ```js
  * const nuxt = tryUseNuxt()
+ *
  * if (nuxt) {
  *  // Do something
  * }
  * ```
  */
-export function tryUseNuxt (): Nuxt | null {
-  return nuxtCtx.tryUse()
+export function tryUseNuxt(): Nuxt | null {
+  return nuxtContext.tryUse()
 }
