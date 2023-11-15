@@ -71,7 +71,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"507k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"508k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"76.5k"')
