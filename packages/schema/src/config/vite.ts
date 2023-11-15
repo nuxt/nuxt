@@ -25,7 +25,7 @@ export default defineUntypedSchema({
         'import.meta.dev': await get('dev'),
         'process.test': isTest,
         'import.meta.test': isTest,
-        ...val || {}
+        ...val
       })
     },
     resolve: {
@@ -61,7 +61,7 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => {
         return {
           isCustomElement: (await get('vue')).compilerOptions?.isCustomElement,
-          ...(val || {})
+          ...val
         }
       }
     },
