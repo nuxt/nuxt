@@ -1,10 +1,10 @@
-import { describe, expect, it, vi, afterEach, beforeEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { h } from 'vue'
 import { mountSuspended } from 'nuxt-vitest/utils'
+import { flushPromises } from '@vue/test-utils'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
-import { flushPromises } from '@vue/test-utils'
 import { useNuxtApp } from '../../packages/nuxt/src/app'
 
 vi.mock('#build/nuxt.config.mjs', async (original) => {
