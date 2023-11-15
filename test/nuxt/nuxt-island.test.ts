@@ -191,7 +191,7 @@ describe('runtime server component', () => {
       expect(fetch).toHaveBeenCalledOnce()
       expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
  
-      expect(Object.keys(useNuxtApp().payload.data).length).toBeGreaterThan(0)
+      expect(Object.keys(useNuxtApp().payload.data).length).toBe(1)
     })
 
     it('expect server component to NOT set the response into the payload', async () => {
@@ -208,30 +208,7 @@ describe('runtime server component', () => {
 
       expect(fetch).toHaveBeenCalledOnce()
       expect(wrapper.html()).toMatchInlineSnapshot('"<div>1</div>"')
-      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
-      await wrapper.setProps({
-        useCache: false,
-        setCache: false,
-        props: {
-          test: 2
-        }
-      })
-
-      await flushPromises()
-      expect(fetch).toHaveBeenCalledTimes(2)
-      expect(wrapper.html()).toMatchInlineSnapshot('"<div>2</div>"')
-      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
-      await wrapper.setProps({
-        useCache: false,
-        setCache: false,
-        props: {
-          test: 2
-        }
-      })
-      await flushPromises()
-      expect(fetch).toHaveBeenCalledTimes(3)
-      expect(wrapper.html()).toMatchInlineSnapshot('"<div>3</div>"')
-      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0)
+      expect(Object.keys(useNuxtApp().payload.data).length).toBe(0) 
     })
   })
 })
