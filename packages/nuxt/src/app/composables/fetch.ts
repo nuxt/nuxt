@@ -213,13 +213,14 @@ function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_
   ]
   for (const _obj of [opts.params || opts.query, opts.headers]) {
     const obj = toValue(_obj)
-    if (obj) {
-      const unwrapped: Record<string, string> = {}
-      for (const key in obj) {
-        unwrapped[key] = toValue(obj[key as keyof typeof obj])
-      }
-      segments.push(unwrapped)
+    if (!obj) { continue }
+
+    const unwrapped: Record<string, string> = {}
+    const iterator = Array.isArray(obj) ? obj : obj instanceof Headers ? obj.entries() : Object.entries(obj)
+    for (const [key, value] of iterator) {
+      unwrapped[toValue(key)] = toValue(value)
     }
+    segments.push(unwrapped)
   }
   return segments
 }
