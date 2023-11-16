@@ -257,14 +257,14 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 20.9.0
       '@unhead/dom':
-        specifier: ^1.8.3
-        version: 1.8.3
+        specifier: ^1.8.4
+        version: 1.8.4
       '@unhead/ssr':
-        specifier: ^1.8.3
-        version: 1.8.3
+        specifier: ^1.8.4
+        version: 1.8.4
       '@unhead/vue':
-        specifier: ^1.8.3
-        version: 1.8.3(vue@3.3.8)
+        specifier: ^1.8.4
+        version: 1.8.4(vue@3.3.8)
       '@vue/shared':
         specifier: ^3.3.8
         version: 3.3.8
@@ -472,8 +472,8 @@ importers:
         specifier: 8.0.8
         version: 8.0.8
       '@unhead/schema':
-        specifier: 1.8.3
-        version: 1.8.3
+        specifier: 1.8.4
+        version: 1.8.4
       '@vitejs/plugin-vue':
         specifier: 4.4.1
         version: 4.4.1(vite@4.5.0)(vue@3.3.8)
@@ -764,8 +764,8 @@ importers:
         specifier: ^5.89.0
         version: 5.89.0
       webpack-bundle-analyzer:
-        specifier: ^4.10.0
-        version: 4.10.0
+        specifier: ^4.10.1
+        version: 4.10.1
       webpack-dev-middleware:
         specifier: ^6.1.1
         version: 6.1.1(webpack@5.89.0)
@@ -2097,6 +2097,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -2693,41 +2694,41 @@ packages:
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  /@unhead/dom@1.8.3:
-    resolution: {integrity: sha512-rPj9PiRTDf+Qy7tSK/UCGxwKfsOOQ+YniANxQy9v2AhWsDy2amW7kbfgR9fVaSlOFdpsyuh2wLCbMcyj9Wn0Jw==}
+  /@unhead/dom@1.8.4:
+    resolution: {integrity: sha512-WJ/NM+M+JqHJpiRUcPlj+H1qqbw3MykqvfHh1tT1J/WMNFS4lac+gAFCSFFSP1P19CW+30Q92XbAgMbgA45cow==}
     dependencies:
-      '@unhead/schema': 1.8.3
-      '@unhead/shared': 1.8.3
+      '@unhead/schema': 1.8.4
+      '@unhead/shared': 1.8.4
     dev: false
 
-  /@unhead/schema@1.8.3:
-    resolution: {integrity: sha512-3XbcJzdlyLr/RV2TKaygI21YorlU6XPgHn/MoWjQvH4PYiHkH8PtTGg8Je6k3gvcUURSiDfucFKaGEYdJXAVqQ==}
+  /@unhead/schema@1.8.4:
+    resolution: {integrity: sha512-Lfeu123sFpqUJbFYIWUygUXjTq9TTtEH148VV8iiN1NC4THa7GeDgHWbb7FbigV9c5pFTGI7oREHKFCaTtLGSg==}
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
 
-  /@unhead/shared@1.8.3:
-    resolution: {integrity: sha512-E1knEiAO0iENLzZd+LjWA4mUp8JRaSxo5V0vMjSENyf5hSVB/SxAVjDPmTIelLY7KrP5mJrNMen2ZmQrr/AZJw==}
+  /@unhead/shared@1.8.4:
+    resolution: {integrity: sha512-DXgzbFPqdrms2TLJzmjG1F1tZPyejuCF95AF0cz/GjVEJErEyBMKyhWogVbkyYqPGiVCQT1uCKMYucuM9LhdZw==}
     dependencies:
-      '@unhead/schema': 1.8.3
+      '@unhead/schema': 1.8.4
     dev: false
 
-  /@unhead/ssr@1.8.3:
-    resolution: {integrity: sha512-GSTkUCL4qymGkPU8BXiV74Epj0yyXJgmfTSJ3EqalpQTYyJHl910Mq2oDWk7Xyl5lHBrz2Bn0lzNXfSkS7Ao0Q==}
+  /@unhead/ssr@1.8.4:
+    resolution: {integrity: sha512-PBFLKqaNXY1kHYpLuv+DnpHa9ioQcfHwL7kqpgK6WqUdNqMrxxSFn/rLMpqYTuifx58WBweaAMXRajOQ4GcUVQ==}
     dependencies:
-      '@unhead/schema': 1.8.3
-      '@unhead/shared': 1.8.3
+      '@unhead/schema': 1.8.4
+      '@unhead/shared': 1.8.4
     dev: false
 
-  /@unhead/vue@1.8.3(vue@3.3.8):
-    resolution: {integrity: sha512-sj/1VosMreUQXd68rn5jDLdpgFVdN0mKrjW/8eZMWbomZkzbzs7FxyRUApd584xNjFVdtyWrTepmrNSKmEwKgg==}
+  /@unhead/vue@1.8.4(vue@3.3.8):
+    resolution: {integrity: sha512-U2rXe5qocVK5qHaEj5/V2VimHVWbc6IJ4PpjpD7IwgN8uhxSt9oxNObhLIyRzdqim13PoAfS+zUAwFii4y0hpQ==}
     peerDependencies:
       vue: 3.3.8
     dependencies:
-      '@unhead/schema': 1.8.3
-      '@unhead/shared': 1.8.3
+      '@unhead/schema': 1.8.4
+      '@unhead/shared': 1.8.4
       hookable: 5.5.3
-      unhead: 1.8.3
+      unhead: 1.8.4
       vue: 3.3.8(typescript@5.2.2)
     dev: false
 
@@ -6574,6 +6575,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -8862,12 +8866,12 @@ packages:
       node-fetch-native: 1.4.1
       pathe: 1.1.1
 
-  /unhead@1.8.3:
-    resolution: {integrity: sha512-2/5NJs7nY1MgCkUNuyevALM9nSgGp2loRv5QPhYyZXUPdF+F76CpKvkqATEOEJ/1yDzWjCaWrNh4u5lS6BEioA==}
+  /unhead@1.8.4:
+    resolution: {integrity: sha512-r2SFK18KzjKgSaOBawjQXXAz4odqKjy+fYtw7g+nwlc3FU1JNQqScVeTic0gEK69IJ/cRsqL6bPqF1ILkyVmTQ==}
     dependencies:
-      '@unhead/dom': 1.8.3
-      '@unhead/schema': 1.8.3
-      '@unhead/shared': 1.8.3
+      '@unhead/dom': 1.8.4
+      '@unhead/schema': 1.8.4
+      '@unhead/shared': 1.8.4
       hookable: 5.5.3
     dev: false
 
@@ -9497,8 +9501,8 @@ packages:
     engines: {node: '>=12'}
     dev: true
 
-  /webpack-bundle-analyzer@4.10.0:
-    resolution: {integrity: sha512-j+apH0Cs+FY8IOIwxLbkgEJnbQgEPEG8uqLVnRb9tAoGbyKNxQA1u9wNDrTQHK3PinO4Pckew7AE7pnX/RS3wA==}
+  /webpack-bundle-analyzer@4.10.1:
+    resolution: {integrity: sha512-s3P7pgexgT/HTUSYgxJyn28A+99mmLq4HsJepMPzu0R8ImJc52QNqaFYW1Z2z2uIb1/J3eYgaAWVpaC+v/1aAQ==}
     engines: {node: '>= 10.13.0'}
     hasBin: true
     dependencies:
