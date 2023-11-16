@@ -211,12 +211,12 @@ function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query, opts.headers]) {
+  for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 
     const unwrapped: Record<string, string> = {}
-    const iterator = Array.isArray(obj) ? obj : obj instanceof Headers ? obj.entries() : Object.entries(obj)
+    const iterator = Array.isArray(obj) ? obj : Object.entries(obj)
     for (const [key, value] of iterator) {
       unwrapped[toValue(key)] = toValue(value)
     }
