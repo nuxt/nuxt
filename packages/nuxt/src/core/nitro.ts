@@ -14,7 +14,7 @@ import { dynamicEventHandler } from 'h3'
 import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
-
+import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
@@ -51,6 +51,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
       typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+    },
+    // @ts-expect-error TODO: Romove after nitro 2.8 upgrade
+    framework: {
+      name: 'nuxt',
+      version: nuxtVersion
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
