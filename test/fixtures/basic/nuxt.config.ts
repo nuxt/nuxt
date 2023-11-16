@@ -22,6 +22,9 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'description', content: 'Nuxt Fixture' }
       ]
+    },
+    keepalive: {
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage']
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
@@ -103,7 +106,7 @@ export default defineNuxtConfig({
         name: 'internal-' + page.name,
         path: withoutLeadingSlash(page.path),
         meta: {
-          ...page.meta || {},
+          ...page.meta,
           layout: undefined,
           _layout: page.meta?.layout
         }

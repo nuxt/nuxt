@@ -68,7 +68,9 @@ function _getHashElementScrollMarginTop (selector: string): number {
     if (elem) {
       return parseFloat(getComputedStyle(elem).scrollMarginTop)
     }
-  } catch {}
+  } catch {
+    // ignore any errors parsing scrollMarginTop
+  }
   return 0
 }
 

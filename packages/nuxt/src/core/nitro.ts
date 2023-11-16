@@ -529,7 +529,9 @@ function spaLoadingTemplate (nuxt: Nuxt) {
     if (existsSync(spaLoadingTemplate)) {
       return readFileSync(spaLoadingTemplate, 'utf-8')
     }
-  } catch {}
+  } catch {
+    // fall through if we have issues reading the file
+  }
 
   if (nuxt.options.spaLoadingTemplate === true) {
     return defaultSpaLoadingTemplate({})

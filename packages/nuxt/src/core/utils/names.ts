@@ -24,7 +24,7 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
    */
   const fileNameParts = splitByCase(fileName)
   const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
-  const componentNameParts: string[] = [...prefixParts]
+  const componentNameParts: string[] = prefixParts.flatMap(p => splitByCase(p))
   let index = prefixParts.length - 1
   const matchedSuffix: string[] = []
   while (index >= 0) {

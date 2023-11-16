@@ -4,7 +4,6 @@ import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
 import { PageRouteSymbol } from './injections'
 
 export const RouteProvider = defineComponent({
-  name: 'RouteProvider',
   props: {
     vnode: {
       type: Object as () => VNode,

@@ -62,7 +62,9 @@ export const definePageMeta = (meta: PageMeta): void => {
         // don't warn if it's being used in a route component
         return
       }
-    } catch {}
+    } catch {
+      // ignore any errors with accessing current instance or route
+    }
     warnRuntimeUsage('definePageMeta')
   }
 }

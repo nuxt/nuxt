@@ -1,15 +1,27 @@
 <template>
   <div>
-    <NuxtLink to="/" prefetched-class="prefetched">
+    <NuxtLink
+      to="/"
+      prefetched-class="prefetched"
+    >
       Home
     </NuxtLink>
-    <NuxtLink to="/random/a" prefetched-class="prefetched">
+    <NuxtLink
+      to="/random/a"
+      prefetched-class="prefetched"
+    >
       Random (A)
     </NuxtLink>
-    <NuxtLink to="/random/b" prefetched-class="prefetched">
+    <NuxtLink
+      to="/random/b"
+      prefetched-class="prefetched"
+    >
       Random (B)
     </NuxtLink>
-    <NuxtLink to="/random/c" prefetched-class="prefetched">
+    <NuxtLink
+      to="/random/c"
+      prefetched-class="prefetched"
+    >
       Random (C)
     </NuxtLink>
     <ServerOnlyComponent />
@@ -24,7 +36,10 @@
     Here are some random numbers for you:
 
     <ul>
-      <li v-for="n in randomNumbers" :key="n">
+      <li
+        v-for="n in randomNumbers"
+        :key="n"
+      >
         {{ n }}
       </li>
     </ul>
