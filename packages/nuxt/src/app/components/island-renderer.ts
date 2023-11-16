@@ -1,9 +1,10 @@
 import type { defineAsyncComponent } from 'vue'
 import { createVNode, defineComponent } from 'vue'
 
+import { createError } from '../composables/error'
+
 // @ts-expect-error virtual file
 import * as islandComponents from '#build/components.islands.mjs'
-import { createError } from '#app/composables/error'
 
 export default defineComponent({
   props: {

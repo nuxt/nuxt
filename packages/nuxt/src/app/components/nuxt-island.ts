@@ -9,9 +9,9 @@ import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -73,10 +73,10 @@ export default defineComponent({
 
     const ssrHTML = ref<string>('')
     if (import.meta.client) {
-      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null).join('')
+      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null)?.join('') ?? ''
       if (renderedHTML && nuxtApp.isHydrating) {
         setPayload(`${props.name}_${hashId.value}`, {
-          html: getFragmentHTML(instance.vnode?.el ?? null, true).join(''),
+          html: getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') ?? '',
           state: {},
           head: {
             link: [],
@@ -110,11 +110,11 @@ export default defineComponent({
       const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}`, props.source).href : `/__nuxt_island/${key}`
+      const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
       if (import.meta.server && import.meta.prerender) {
         // Hint to Nitro to prerender the island component
-        appendResponseHeader(event, 'x-nitro-prerender', url)
+        nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
@@ -127,7 +127,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          prerenderRoutes(hints)
+          appendResponseHeader(event, 'x-nitro-prerender', hints)
         }
       }
       setPayload(key, result)

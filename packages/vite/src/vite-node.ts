@@ -118,7 +118,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     const node: ViteNodeServer = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
-          /\/node_modules\/(.*\/)?(nuxt|nuxt3)\//,
+          /\/node_modules\/(.*\/)?(nuxt|nuxt3|nuxt-nightly)\//,
           /^#/,
           ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev })
         ]

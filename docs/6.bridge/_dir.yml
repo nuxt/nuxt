@@ -1,2 +1,3 @@
-titleTemplate: 'Migrate to Bridge: %s'
-image: '/socials/guide.jpg'
+titleTemplate: 'Migrate to Nuxt Bridge: %s'
+title: 'Migrate to Nuxt Bridge'
+icon: i-ph-bridge-duotone

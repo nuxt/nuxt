@@ -83,7 +83,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
-  if (!ctx.isDev && ctx.name === 'client' && ctx.userConfig.analyze) {
+  if (!ctx.isDev && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
     const statsDir = resolve(ctx.options.analyzeDir)
 
     ctx.config.plugins!.push(new BundleAnalyzerPlugin({

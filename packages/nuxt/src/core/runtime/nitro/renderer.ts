@@ -18,12 +18,12 @@ import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
+import type { Link, Script, Style } from '@unhead/vue'
+import { createServerHead } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
@@ -176,7 +176,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     url = await islandPropCache!.getItem(event.path) as string
   }
   url = url.substring('/__nuxt_island'.length + 1) || ''
-  const [componentName, hashId] = url.split('?')[0].split('_')
+  const [componentName, hashId] = url.split('?')[0].replace(/\.json$/, '').split('_')
 
   // TODO: Validate context
   const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
@@ -445,8 +445,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       }
     } satisfies RenderResponse
     if (import.meta.prerender) {
-      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}`, event.path)
+      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
+      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
     }
     return response
   }
@@ -548,7 +548,7 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})`
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`
       }
     ]
   }
@@ -584,7 +584,7 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
     if (!match) { continue }
     const [, uid, slot] = match
     if (!uid || !slot) { continue }
-    html = html.replace(new RegExp(`<div nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
+    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
       return full + teleports[key]
     })
   }

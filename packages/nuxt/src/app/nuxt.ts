@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
-import { getCurrentInstance, hasInjectionContext, reactive } from 'vue'
-import type { App, Ref, VNode, onErrorCaptured } from 'vue'
+import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
+import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
@@ -9,14 +9,14 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
-
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
+
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
-import type { RouteMiddleware } from '../../app'
+import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
-import type { NuxtAppManifestMeta } from '#app/composables'
+import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 
 const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -99,6 +99,8 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
+  _scope: EffectScope
+  /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
   _asyncData: Record<string, {
@@ -163,7 +165,6 @@ export interface PluginEnvContext {
   /**
    * This enable the plugin for islands components.
    * Require `experimental.componentsIslands`.
-   *
    * @default true
    */
   islands?: boolean
@@ -186,7 +187,6 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
   env?: PluginEnvContext
   /**
    * Execute plugin in parallel with other parallel plugins.
-   *
    * @default false
    */
   parallel?: boolean
@@ -204,6 +204,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
+    _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
     versions: {
@@ -219,7 +220,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {}
     },
-    runWithContext: (fn: any) => callWithNuxt(nuxtApp, fn),
+    runWithContext: (fn: any) => nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn)),
     isHydrating: import.meta.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
@@ -249,7 +250,7 @@ export function createNuxtApp (options: CreateOptions) {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    async function contextCaller (hooks: HookCallback[], args: any[]) {
+    const contextCaller = async function (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }
@@ -361,7 +362,6 @@ export function isNuxtPlugin (plugin: unknown) {
 
 /**
  * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
- *
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
@@ -390,7 +390,7 @@ export function useNuxtApp (): NuxtApp {
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
-      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#using-vue-and-nuxt-composables`.')
+      throw new Error('[nuxt] A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug. Find out more at `https://nuxt.com/docs/guide/concepts/auto-imports#vue-and-nuxt-composables`.')
     } else {
       throw new Error('[nuxt] instance unavailable')
     }
