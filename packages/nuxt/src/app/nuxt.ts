@@ -250,7 +250,7 @@ export function createNuxtApp (options: CreateOptions) {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    async function contextCaller (hooks: HookCallback[], args: any[]) {
+    const contextCaller = async function (hooks: HookCallback[], args: any[]) {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }

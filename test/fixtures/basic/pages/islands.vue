@@ -16,18 +16,37 @@ const count = ref(0)
   <div>
     Pure island component:
     <div class="box">
-      <NuxtIsland name="PureComponent" :props="islandProps" />
-      <NuxtIsland name="PureComponent" :props="islandProps" />
+      <NuxtIsland
+        name="PureComponent"
+        :props="islandProps"
+      />
+      <NuxtIsland
+        name="PureComponent"
+        :props="islandProps"
+      />
     </div>
-    <button id="increase-pure-component" @click="islandProps.number++">
+    <button
+      id="increase-pure-component"
+      @click="islandProps.number++"
+    >
       Increase
     </button>
     <hr>
     Route island component:
-    <div v-if="routeIslandVisible" class="box">
-      <NuxtIsland name="RouteComponent" :context="{ url: '/test' }" />
+    <div
+      v-if="routeIslandVisible"
+      class="box"
+    >
+      <NuxtIsland
+        name="RouteComponent"
+        :context="{ url: '/test' }"
+      />
     </div>
-    <button v-else id="show-route" @click="routeIslandVisible = true">
+    <button
+      v-else
+      id="show-route"
+      @click="routeIslandVisible = true"
+    >
       Show
     </button>
 
@@ -40,7 +59,10 @@ const count = ref(0)
     <div>
       Async component (1000ms):
       <div>
-        <NuxtIsland name="LongAsyncComponent" :props="{ count }">
+        <NuxtIsland
+          name="LongAsyncComponent"
+          :props="{ count }"
+        >
           <div>Interactive testing slot</div>
           <div id="first-sugar-counter">
             <SugarCounter :multiplier="testCount" />
@@ -56,18 +78,28 @@ const count = ref(0)
             </div>
           </template>
         </NuxtIsland>
-        <button id="update-server-components" @click="count++">
+        <button
+          id="update-server-components"
+          @click="count++"
+        >
           add +1 to count
         </button>
       </div>
     </div>
     <div>
       <p>Island with props mounted client side</p>
-      <button id="show-island" @click="showIslandSlot = true">
+      <button
+        id="show-island"
+        @click="showIslandSlot = true"
+      >
         Show Interactive island
       </button>
       <div id="island-mounted-client-side">
-        <NuxtIsland v-if="showIslandSlot" name="LongAsyncComponent" :props="{ count }">
+        <NuxtIsland
+          v-if="showIslandSlot"
+          name="LongAsyncComponent"
+          :props="{ count }"
+        >
           <div>Interactive testing slot post SSR</div>
           <SugarCounter :multiplier="testCount" />
         </NuxtIsland>

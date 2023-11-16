@@ -275,7 +275,7 @@ export default defineNuxtModule({
         updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
       })
 
-      async function updatePage (path: string) {
+      const updatePage = async function updatePage (path: string) {
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
         try {

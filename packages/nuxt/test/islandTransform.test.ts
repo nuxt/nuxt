@@ -48,11 +48,15 @@ describe('islandTransform - server and island components', () => {
         <slot />
 
         <slot name="named" :some-data="someData" />
+        <slot
+          name="other"
+          :some-data="someData"
+        />
       </div>
       </template>
       <script setup lang="ts">
       const someData = 'some data'
-      
+
       </script>`
       , 'hello.server.vue')
 
@@ -62,13 +66,14 @@ describe('islandTransform - server and island components', () => {
                 <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"default\\" />
 
                 <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"named\\" :nuxt-ssr-slot-data=\\"JSON.stringify([{ some-data: someData }])\\"/>
+                <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"other\\" :nuxt-ssr-slot-data=\\"JSON.stringify([{ some-data: someData }])\\"/>
               </div>
               </template>
               <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
-              
+
               </script>"
       `)
     })
@@ -83,7 +88,7 @@ describe('islandTransform - server and island components', () => {
       </template>
       <script setup lang="ts">
       const someData = 'some data'
-      
+
       </script>`
       , 'hello.server.vue')
 
@@ -99,7 +104,7 @@ describe('islandTransform - server and island components', () => {
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
-              
+
               </script>"
       `)
     })
@@ -125,13 +130,13 @@ describe('islandTransform - server and island components', () => {
         </UCard>
       </div>
     </template>
-    
+
     <script setup lang="ts">
     export interface Props {
       count?: number;
     }
     const props = withDefaults(defineProps<Props>(), { count: 0 });
-    
+
     const message = "Hello World";
     </script>
     `
@@ -158,7 +163,7 @@ describe('islandTransform - server and island components', () => {
                 </UCard>
               </div>
             </template>
-            
+
             <script setup lang=\\"ts\\">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
@@ -166,7 +171,7 @@ describe('islandTransform - server and island components', () => {
               count?: number;
             }
             const props = withDefaults(defineProps<Props>(), { count: 0 });
-            
+
             const message = \\"Hello World\\";
             </script>
             "

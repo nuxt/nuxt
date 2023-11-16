@@ -18,12 +18,12 @@ import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
+import type { Link, Script, Style } from '@unhead/vue'
+import { createServerHead } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
-import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
@@ -616,6 +616,7 @@ function replaceClientTeleport (ssrContext: NuxtSSRContext, html: string) {
     const [, uid, clientId] = match
     if (!uid || !clientId) { continue }
     html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-client="${clientId}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-client="${clientId}"[^>]*>`), (full) => {
+
       return full + teleports[key]
     })
   }

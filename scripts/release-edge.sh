@@ -23,6 +23,9 @@ for p in packages/* ; do
   if [[ $p == "packages/nuxi" ]] ; then
     continue
   fi
+  if [[ $p == "packages/test-utils" ]] ; then
+    continue
+  fi
   pushd $p
   echo "Publishing $p"
   cp ../../LICENSE .
