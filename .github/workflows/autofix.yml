@@ -49,4 +49,4 @@ jobs:
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@d3e591514b99d0fca6779455ff8338516663f7cc
+      - uses: autofix-ci/action@bee19d72e71787c12ca0f29de72f2833e437e4c9
