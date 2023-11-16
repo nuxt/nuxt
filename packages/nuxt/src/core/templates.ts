@@ -249,6 +249,18 @@ export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
 `
 }
 
+export const pagesDeclarationTemplate: NuxtTemplate = {
+  filename: 'types/pages.d.ts',
+  getContents: ({app, nuxt}) => {
+    if (!nuxt.options.experimental.typedPages) return ``;
+    const pageNames = app.pages.map((page:any) => `'${page.name}'`).join(" | ");
+    // TODO: Not sure if it should be under 'vue-router/auto', couldn't come up with where to place it. Help needed.
+    return `declare module 'vue-router/auto' {
+  export type RouteName = ${pageNames};;
+}`
+  }
+}
+
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents: ({ app, nuxt }) => {

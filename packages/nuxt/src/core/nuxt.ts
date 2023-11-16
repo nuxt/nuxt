@@ -69,6 +69,10 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
 
+    if (nuxt.options.experimental.typedPages) {
+      opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/pages.d.ts') })
+    }
+
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
       if (fse.existsSync(declaration)) {
