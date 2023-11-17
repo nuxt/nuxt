@@ -2,12 +2,20 @@ import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
 import { type Nuxt, type NuxtCompatibility, type NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
-export function normalizeSemanticVersion(version: string) {
-  return version.replace(/-\d+\.[\da-f]+/, '') // Remove edge prefix
+/**
+ * Normalizes semantic version by removing nightly prefix.
+ * @param version - Semantic version.
+ * @returns Normalized semantic version
+ */
+export function normalizeSemanticVersion(version: string): string {
+  return version.replace(/-\d+\.[\da-f]+/, '') // Remove nightly prefix
 }
 
 /**
- * Check version constraints and return incompatibility issues as an array
+ * Checks if constraints are met for the current Nuxt version. If not, returns an array of messages. Nuxt 2 version also checks for `bridge` support.
+ * @param constraints - Constraints to check for.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns Compatibility issues
  */
 export async function checkNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -64,8 +72,10 @@ export async function checkNuxtCompatibility(
 }
 
 /**
- * Check version constraints and throw a detailed error if has any,
- * otherwise returns true
+ * Asserts that constraints are met for the current Nuxt version. If not, throws an error with the list of issues as string.
+ * @param constraints - Constraints to check for.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns `true` if no issues are found
  */
 export async function assertNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -81,7 +91,10 @@ export async function assertNuxtCompatibility(
 }
 
 /**
- * Check version constraints and return true if passed, otherwise returns false
+ * Checks if constraints are met for the current Nuxt version. Return `true` if all constraints are met, otherwise returns `false`. Nuxt 2 version also checks for `bridge` support.
+ * @param constraints - Constraints to check for.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns `true` if no compatibility issues are found, `false` otherwise
  */
 export async function hasNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -93,21 +106,28 @@ export async function hasNuxtCompatibility(
 }
 
 /**
- * Check if current Nuxt instance is version 2 legacy
+ * Checks if the current Nuxt version is 2.x.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns `true` if the current Nuxt version is 2.x, `false` otherwise
  */
 export function isNuxt2(nuxt: Nuxt = useNuxt()) {
   return getNuxtVersion(nuxt).startsWith('2.')
 }
 
 /**
- * Check if current Nuxt instance is version 3
+ * Checks if the current Nuxt version is 3.x.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns `true` if the current Nuxt version is 3.x, `false` otherwise
  */
 export function isNuxt3(nuxt: Nuxt = useNuxt()) {
   return getNuxtVersion(nuxt).startsWith('3.')
 }
 
 /**
- * Get Nuxt version
+ * Returns the current Nuxt version.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @returns Current Nuxt version
+ * @throws Will throw an error if Nuxt version cannot be determined.
  */
 export function getNuxtVersion(
   nuxt: Nuxt | object = useNuxt() /* TODO: LegacyNuxt */
