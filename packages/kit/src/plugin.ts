@@ -55,6 +55,10 @@ export interface AddPluginOptions {
  *
  * **Note:** By default plugin is prepended to the plugins array.
  * You can use second argument to append (push) instead.
+ * @param plugin - A plugin object or a string with the path to the plugin. If a string is provided, it will be converted to a plugin object with `src` set to the string value. If a plugin object is provided, it must have the {@link https://nuxt.com/docs/api/kit/plugins#plugin following properties}.
+ * @param options - Options to pass to the plugin. If `append` is set to true, the plugin will be appended to the plugins array instead of prepended.
+ * @returns Nuxt plugin
+ * @see {@link https://nuxt.com/docs/api/kit/plugins#addplugin documentation}
  * @example
  * ```js
  * addPlugin({
@@ -62,10 +66,6 @@ export interface AddPluginOptions {
  *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```
- * @param plugin - A plugin object or a string with the path to the plugin. If a string is provided, it will be converted to a plugin object with `src` set to the string value. If a plugin object is provided, it must have the {@link https://nuxt.com/docs/api/kit/plugins#plugin following properties}.
- * @param options - Options to pass to the plugin. If `append` is set to true, the plugin will be appended to the plugins array instead of prepended.
- * @returns Nuxt plugin
- * @see {@link https://nuxt.com/docs/api/kit/plugins#addplugin documentation}
  */
 export function addPlugin(
   plugin: NuxtPlugin | string,

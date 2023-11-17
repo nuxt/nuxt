@@ -79,15 +79,15 @@ export function addPrerenderRoutes(routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
+ * @returns Nitro instance
+ * @throws Will throw an error if Nitro is not initialized yet.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#usenitro documentation}
  * @example
  * ```ts
  * nuxt.hook('ready', () => {
  *   console.log(useNitro())
  * })
  * ```
- * @returns Nitro instance
- * @throws Will throw an error if Nitro is not initialized yet.
- * @see {@link https://nuxt.com/docs/api/kit/nitro#usenitro documentation}
  */
 export function useNitro(): Nitro {
   const nuxt = useNuxt()

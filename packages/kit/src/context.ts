@@ -6,13 +6,13 @@ export const nuxtContext = getContext<Nuxt>('nuxt')
 
 /**
  * Get the Nuxt instance from the context. It will throw an error if Nuxt is not available.
+ * @returns Nuxt instance
+ * @throws Will throw an error if Nuxt instance in not available.
+ * @see {@link https://nuxt.com/docs/api/kit/context#usenuxt documentation}
  * @example
  * ```js
  * const nuxt = useNuxt()
  * ```
- * @returns Nuxt instance
- * @throws Will throw an error if Nuxt instance in not available.
- * @see {@link https://nuxt.com/docs/api/kit/context#usenuxt documentation}
  */
 export function useNuxt(): Nuxt {
   const instance = nuxtContext.tryUse()
@@ -26,6 +26,8 @@ export function useNuxt(): Nuxt {
 
 /**
  * Get the Nuxt instance from the context. It will return `null` if Nuxt is not available.
+ * @returns Nuxt instance if available, `null` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/context#tryusenuxt documentation}
  * @example
  * ```js
  * const nuxt = tryUseNuxt()
@@ -34,8 +36,6 @@ export function useNuxt(): Nuxt {
  *  // Do something
  * }
  * ```
- * @returns Nuxt instance if available, `null` otherwise
- * @see {@link https://nuxt.com/docs/api/kit/context#tryusenuxt documentation}
  */
 export function tryUseNuxt(): Nuxt | null {
   return nuxtContext.tryUse()
