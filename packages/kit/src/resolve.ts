@@ -20,10 +20,11 @@ export interface ResolvePathOptions {
 }
 
 /**
- * Resolve full path to a file or directory
- * respecting Nuxt alias and extensions options
- *
- * If path could not be resolved, normalized input path will be returned
+ * Resolves full path to a file or directory respecting Nuxt alias and extensions options. If path could not be resolved, normalized input path will be returned.
+ * @param path - Path to resolve.
+ * @param options - Options to pass to the resolver. This object can have the {@link https://nuxt.com/docs/api/kit/resolving#options following properties}.
+ * @returns Resolved path
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvepath documentation}
  */
 export async function resolvePath(
   path: string,
@@ -95,7 +96,12 @@ export async function resolvePath(
 }
 
 /**
- * Try to resolve first existing file in paths
+ * Try to resolve first existing file in given paths.
+ * @param paths - A path or an array of paths to resolve.
+ * @param options - Options to pass to the resolver. This object can have the {@link https://nuxt.com/docs/api/kit/resolving#options-1 following properties}.
+ * @param pathType - Type of path to resolve. If set to `'file'`, the function will try to resolve a file. If set to `'dir'`, the function will try to resolve a directory.
+ * @returns Path to first existing file if found, `null` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#findpath documentation}
  */
 export async function findPath(
   paths: string | string[],
@@ -119,7 +125,11 @@ export async function findPath(
 }
 
 /**
- * Resolve path aliases respecting Nuxt alias options
+ * Resolves path aliases respecting Nuxt alias options.
+ * @param path - Path to resolve.
+ * @param alias - Alias map. If not provided, it will be read from `nuxt.options.alias`.
+ * @returns Resolved path alias
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvealias documentation}
  */
 export function resolveAlias(
   path: string,
@@ -133,38 +143,42 @@ export function resolveAlias(
 }
 
 export interface Resolver {
-  resolve (...path: string[]): string
-  resolvePath (path: string, options?: ResolvePathOptions): Promise<string>
+  resolve(...path: string[]): string
+  resolvePath(path: string, options?: ResolvePathOptions): Promise<string>
 }
 
 /**
- * Create a relative resolver
+ * Creates resolver relative to base path.
+ * @param basePath - Base path to resolve from.
+ * @returns Resolver
+ * @throws Will throw an error if `basePath` argument is missing.
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#createresolver documentation}
  */
-export function createResolver(base: string | URL): Resolver {
-  if (!base) {
-    throw new Error('`base` argument is missing for createResolver(base)!')
+export function createResolver(basePath: string | URL): Resolver {
+  if (!basePath) {
+    throw new Error('`basePath` argument is missing for createResolver(basePath)!')
   }
 
-  base = base.toString()
+  basePath = basePath.toString()
 
-  if (base.startsWith('file://')) {
-    base = dirname(fileURLToPath(base))
+  if (basePath.startsWith('file://')) {
+    basePath = dirname(fileURLToPath(basePath))
   }
 
   return {
-    resolve: (...path) => resolve(base as string, ...path),
+    resolve: (...path) => resolve(basePath as string, ...path),
     resolvePath: (path, options) => resolvePath(
-      path, { cwd: base as string, ...options }
+      path, { cwd: basePath as string, ...options }
     )
   }
 }
 
-export async function resolveNuxtModule(base: string, paths: string[]) {
+export async function resolveNuxtModule(basePath: string, paths: string[]) {
   const resolved = []
-  const resolver = createResolver(base)
+  const resolver = createResolver(basePath)
 
   for (const path of paths) {
-    if (path.startsWith(base)) {
+    if (path.startsWith(basePath)) {
       resolved.push(path.split('/index.ts')[0])
     } else {
       const resolvedPath = await resolver.resolvePath(path)
