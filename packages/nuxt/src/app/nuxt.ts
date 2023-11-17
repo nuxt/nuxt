@@ -104,10 +104,10 @@ interface _NuxtApp {
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
   _asyncData: Record<string, {
-    data: Ref<any>
-    pending: Ref<boolean>
-    error: Ref<Error | null>
-    status: Ref<AsyncDataRequestStatus>
+    data?: Ref<any>
+    pending?: Ref<boolean>
+    error?: Ref<Error | null>
+    status?: Ref<AsyncDataRequestStatus>
   } | undefined>
 
   /** @internal */

@@ -1,5 +1,5 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
-import type { Ref, WatchSource } from 'vue'
+import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import type { Ref, WatchSource, WritableComputedRef } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { createError } from './error'
@@ -43,7 +43,7 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
-  getCachedData?: (key: string) => DataT
+  getCachedData?: (key: string) => DataT 
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
@@ -62,7 +62,7 @@ export interface AsyncDataExecuteOptions {
 }
 
 export interface _AsyncData<DataT, ErrorT> {
-  data: Ref<DataT>
+  data: WritableComputedRef<DataT>
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
@@ -153,22 +153,27 @@ export function useAsyncData<
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
-  // Create or use a shared asyncData entity
-  if (!nuxt._asyncData[key] || !options.immediate) {
-    nuxt.payload._errors[key] ??= null
-
-    const _ref = options.deep ? ref : shallowRef
-
-    nuxt._asyncData[key] = {
-      data: _ref(options.getCachedData!(key) ?? options.default!()),
-      pending: ref(!hasCachedData()),
-      error: toRef(nuxt.payload._errors, key),
-      status: ref('idle')
-    }
-  }
+  nuxt.payload._errors[key] ??= null;
+  const _ref = options.deep ? ref : shallowRef;
+  
+  nuxt._asyncData[key] ??= {};
+  nuxt._asyncData[key]!.data ??= _ref(options.getCachedData!(key));
+  nuxt._asyncData[key]!.pending ??= ref(!hasCachedData());
+  nuxt._asyncData[key]!.error ??= toRef(nuxt.payload._errors, key);
+  nuxt._asyncData[key]!.status ??= ref('idle');
 
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
-  const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, DataE>
+  const asyncData = {
+    ...nuxt._asyncData[key],
+    data: computed({
+      get() {
+        return nuxt._asyncData[key]?.data?.value ?? options.default!();
+      },
+      set(value) {
+        nuxt._asyncData[key]!.data!.value = value;
+      },
+    }) 
+  } as AsyncData<DataT | DefaultT, DataE>;
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
@@ -348,17 +353,17 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
-export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
-  const nuxt = useNuxtApp()
+export function useNuxtData<DataT = any>(
+  key: string
+): { data: Ref<DataT | null> } {
+  const nuxt = useNuxtApp();
 
-  // Initialize value when key is not already set
-  if (!(key in nuxt.payload.data)) {
-    nuxt.payload.data[key] = null
-  }
+  nuxt._asyncData[key] ??= {};
+  nuxt._asyncData[key]!.data ??= ref(null);
 
   return {
-    data: toRef(nuxt.payload.data, key)
-  }
+    data: nuxt._asyncData[key]!.data!
+  };
 }
 
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
@@ -388,12 +393,12 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     if (key in nuxtApp.payload._errors) {
       nuxtApp.payload._errors[key] = null
     }
-    if (nuxtApp._asyncData[key]) {
-      nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = null
-      nuxtApp._asyncData[key]!.pending.value = false
-      nuxtApp._asyncData[key]!.status.value = 'idle'
-    }
+    
+    if (nuxtApp._asyncData?.[key]?.data) nuxtApp._asyncData[key]!.data!.value = undefined
+    if (nuxtApp._asyncData?.[key]?.error) nuxtApp._asyncData[key]!.error!.value = null
+    if (nuxtApp._asyncData?.[key]?.pending) nuxtApp._asyncData[key]!.pending!.value = false
+    if (nuxtApp._asyncData?.[key]?.status) nuxtApp._asyncData[key]!.status!.value = 'idle'
+
     if (key in nuxtApp._asyncDataPromises) {
       nuxtApp._asyncDataPromises[key] = undefined
     }

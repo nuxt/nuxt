@@ -241,9 +241,7 @@ describe('useAsyncData', () => {
     const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
     const { data: fetchData } = promise
 
-    // useNuxtData called before useAsyncData, leads to skipping the default
-    expect(fetchData.value).toBeNull()
-    expect(nuxtData.value).toBeNull()
+    expect(fetchData.value).toMatchInlineSnapshot('"default"')
 
     nuxtData.value = 'before-fetch'
     expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
