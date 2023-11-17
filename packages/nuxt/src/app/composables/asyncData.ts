@@ -156,7 +156,7 @@ export function useAsyncData<
   nuxt.payload._errors[key] ??= null;
   const _ref = options.deep ? ref : shallowRef;
   
-  if (!nuxt._asyncData[key] || !options.immediate) nuxt._asyncData = {};
+  if (!nuxt._asyncData[key] || !options.immediate) nuxt._asyncData[key] = {};
 
   nuxt._asyncData[key]!.data ??= _ref(options.getCachedData!(key));
   nuxt._asyncData[key]!.pending ??= ref(!hasCachedData());
