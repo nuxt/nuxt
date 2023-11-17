@@ -5,9 +5,6 @@ import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
 import { logger } from './logger'
 
-/**
- * Normalize a Nuxt plugin object
- */
 export function normalizePlugin(plugin: NuxtPlugin | string): NuxtPlugin {
   // Normalize src
   plugin = typeof plugin === 'string' ? { src: plugin } : { ...plugin }
@@ -46,13 +43,17 @@ export function normalizePlugin(plugin: NuxtPlugin | string): NuxtPlugin {
   return plugin
 }
 
+export interface AddPluginOptions {
+  append?: boolean
+}
+
 /**
- * Registers a nuxt plugin and to the plugins array.
+ * Registers a Nuxt plugin and adds it to the plugins array.
  *
- * Note: You can use mode or .client and .server modifiers with fileName option
- * to use plugin only in client or server side.
+ * **Note:** You can use mode or .client and .server modifiers with fileName option
+ * to use plugin only on the client or server side.
  *
- * Note: By default plugin is prepended to the plugins array.
+ * **Note:** By default plugin is prepended to the plugins array.
  * You can use second argument to append (push) instead.
  * @example
  * ```js
@@ -61,33 +62,38 @@ export function normalizePlugin(plugin: NuxtPlugin | string): NuxtPlugin {
  *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```
+ * @param plugin - A plugin object or a string with the path to the plugin. If a string is provided, it will be converted to a plugin object with `src` set to the string value. If a plugin object is provided, it must have the {@link https://nuxt.com/docs/api/kit/plugins#plugin following properties}.
+ * @param options - Options to pass to the plugin. If `append` is set to true, the plugin will be appended to the plugins array instead of prepended.
+ * @returns Nuxt plugin
+ * @see {@link https://nuxt.com/docs/api/kit/plugins#addplugin documentation}
  */
-export interface AddPluginOptions {
-  append?: boolean
-}
 export function addPlugin(
-  _plugin: NuxtPlugin | string,
+  plugin: NuxtPlugin | string,
   options: AddPluginOptions = {}
 ) {
   const nuxt = useNuxt()
 
   // Normalize plugin
-  const plugin = normalizePlugin(_plugin)
+  const normalizedPlugin = normalizePlugin(plugin)
 
   // Remove any existing plugin with the same src
   nuxt.options.plugins = nuxt.options.plugins.filter(
-    (p) => normalizePlugin(p).src !== plugin.src
+    (p) => normalizePlugin(p).src !== normalizedPlugin.src
   )
 
   // Prepend to array by default to be before user provided plugins
   // since is usually used by modules
-  nuxt.options.plugins[options.append ? 'push' : 'unshift'](plugin)
+  nuxt.options.plugins[options.append ? 'push' : 'unshift'](normalizedPlugin)
 
-  return plugin
+  return normalizedPlugin
 }
 
 /**
- * Adds a template and registers as a nuxt plugin.
+ * Adds a template and registers it as a Nuxt plugin. This is useful for plugins that need to generate code at build time.
+ * @param plugin - A plugin template object with the {@link https://nuxt.com/docs/api/kit/plugins#pluginoptions following properties}.
+ * @param options - Options to pass to the plugin. If `append` is set to true, the plugin will be appended to the plugins array instead of prepended.
+ * @returns Nuxt plugin
+ * @see {@link https://nuxt.com/docs/api/kit/plugins#addplugintemplate documentation}
  */
 export function addPluginTemplate(
   plugin: NuxtPluginTemplate | string,
