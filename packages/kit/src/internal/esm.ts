@@ -29,7 +29,7 @@ export async function importModule(
 
 export function tryImportModule(id: string, url = import.meta.url) {
   try {
-    return importModule(id, url).catch(() => undefined)
+    return importModule(id, url).catch(() => {})
   } catch {
     // intentionally empty as this is a `try-` function
   }

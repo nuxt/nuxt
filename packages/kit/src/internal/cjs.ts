@@ -68,7 +68,7 @@ function clearRequireCache(id: string) {
 function getRequireCacheItem(id: string) {
   try {
     return _require.cache[id]
-  } catch (e) {
+  } catch {
     // ignore issues accessing require.cache
   }
 }
@@ -128,7 +128,7 @@ export function tryImportModule(
   options: RequireModuleOptions = {}
 ) {
   try {
-    return importModule(id, options).catch(() => undefined)
+    return importModule(id, options).catch(() => {})
   } catch {
     // intentionally empty as this is a `try-` function
   }
@@ -141,6 +141,7 @@ export function tryRequireModule(
   options: RequireModuleOptions = {}
 ) {
   try {
+    // eslint-disable-next-line ts/no-unsafe-return
     return requireModule(id, options)
   } catch {
     // intentionally empty as this is a `try-` function
