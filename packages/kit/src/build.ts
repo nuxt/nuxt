@@ -39,12 +39,10 @@ export interface ExtendWebpackConfigOptions extends ExtendConfigOptions { }
 export interface ExtendViteConfigOptions extends ExtendConfigOptions { }
 
 /**
- * Extend webpack config
- *
- * The callback function might be called multiple times
- * when applying to both client and server builds.
+ * Extends the webpack configuration. Callback function can be called multiple times, when applying to both client and server builds.
  * @param callbackFunction - A callback function that will be called with the webpack configuration object.
- * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options documentation}.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#extendwebpackconfig documentation}
  */
 export function extendWebpackConfig(
   callbackFunction: ((config: WebpackConfig) => void),
@@ -77,9 +75,10 @@ export function extendWebpackConfig(
 }
 
 /**
- * Extend Vite config
+ * Extends the Vite configuration. Callback function can be called multiple times, when applying to both client and server builds.
  * @param callbackFunction - A callback function that will be called with the Vite configuration object.
- * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-1 documentation}.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-1 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#extendviteconfig documentation}
  */
 export function extendViteConfig(
   callbackFunction: ((config: ViteConfig) => void),
@@ -116,7 +115,8 @@ export function extendViteConfig(
 /**
  * Append webpack plugin to the config.
  * @param pluginOrGetter - A webpack plugin instance or an array of webpack plugin instances. If a function is provided, it must return a webpack plugin instance or an array of webpack plugin instances.
- * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-2 documentation}.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-2 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addwebpackplugin documentation}
  */
 export function addWebpackPlugin(
   pluginOrGetter:
@@ -143,7 +143,8 @@ export function addWebpackPlugin(
 /**
  * Append Vite plugin to the config.
  * @param pluginOrGetter - A Vite plugin instance or an array of Vite plugin instances. If a function is provided, it must return a Vite plugin instance or an array of Vite plugin instances.
- * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-3 documentation}.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-3 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addviteplugin documentation}
  */
 export function addVitePlugin(
   pluginOrGetter:
@@ -171,9 +172,10 @@ interface AddBuildPluginFactory {
 }
 
 /**
- *
+ * Builder-agnostic version of `addWebpackPlugin` and `addVitePlugin`. It will add the plugin to both webpack and Vite configurations if they are present.
  * @param pluginFactory - A factory function that returns an object with `vite` and/or `webpack` properties. These properties must be functions that return a Vite plugin instance or an array of Vite plugin instances and/or a webpack plugin instance or an array of webpack plugin instances.
- * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-4 documentation}.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-4 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addbuildplugin documentation}
  */
 export function addBuildPlugin(
   pluginFactory: AddBuildPluginFactory,
