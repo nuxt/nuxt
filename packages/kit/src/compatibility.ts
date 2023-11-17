@@ -16,6 +16,7 @@ export function normalizeSemanticVersion(version: string): string {
  * @param constraints - Constraints to check for.
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns Compatibility issues
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#checknuxtcompatibility documentation}
  */
 export async function checkNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -76,6 +77,7 @@ export async function checkNuxtCompatibility(
  * @param constraints - Constraints to check for.
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns `true` if no issues are found
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#assertnuxtcompatibility documentation}
  */
 export async function assertNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -95,6 +97,7 @@ export async function assertNuxtCompatibility(
  * @param constraints - Constraints to check for.
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns `true` if no compatibility issues are found, `false` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#hasnuxtcompatibility documentation}
  */
 export async function hasNuxtCompatibility(
   constraints: NuxtCompatibility,
@@ -109,6 +112,7 @@ export async function hasNuxtCompatibility(
  * Checks if the current Nuxt version is 2.x.
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns `true` if the current Nuxt version is 2.x, `false` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#isnuxt2 documentation}
  */
 export function isNuxt2(nuxt: Nuxt = useNuxt()) {
   return getNuxtVersion(nuxt).startsWith('2.')
@@ -118,6 +122,7 @@ export function isNuxt2(nuxt: Nuxt = useNuxt()) {
  * Checks if the current Nuxt version is 3.x.
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns `true` if the current Nuxt version is 3.x, `false` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#isnuxt3 documentation}
  */
 export function isNuxt3(nuxt: Nuxt = useNuxt()) {
   return getNuxtVersion(nuxt).startsWith('3.')
@@ -128,6 +133,7 @@ export function isNuxt3(nuxt: Nuxt = useNuxt()) {
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @returns Current Nuxt version
  * @throws Will throw an error if Nuxt version cannot be determined.
+ * @see {@link https://nuxt.com/docs/api/kit/compatibility#getnuxtversion documentation}
  */
 export function getNuxtVersion(
   nuxt: Nuxt | object = useNuxt() /* TODO: LegacyNuxt */
