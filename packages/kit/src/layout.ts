@@ -6,6 +6,13 @@ import { useNuxt } from './context'
 import { logger } from './logger'
 import { addTemplate } from './template'
 
+/**
+ * Register template as layout and add it to the layouts.
+ * @param this - Nuxt 2 instance
+ * @param template - A template object or a string with the path to the template. If a string is provided, it will be converted to a template object with src set to the string value. If a template object is provided, it must have the {@link https://nuxt.com/docs/api/kit/layout#layout following properties}.
+ * @param name - Custom name of the template.
+ * @see {@link https://nuxt.com/docs/api/kit/layout#addlayout documentation}
+ */
 export function addLayout(
   // eslint-disable-next-line ts/no-explicit-any
   this: any,
