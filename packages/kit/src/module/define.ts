@@ -10,9 +10,10 @@ import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
 import { compileTemplate, templateUtils } from '../internal/template'
 
 /**
- * Define a Nuxt module, automatically merging defaults
- * with user provided options, installing any hooks that are provided,
- * and calling an optional setup function for full control.
+ * Define a Nuxt module, automatically merging defaults with user provided options, installing any hooks that are provided, and calling an optional setup function for full control.
+ * @param definition - A module definition object or a module function with the {@link https://nuxt.com/docs/api/kit/modules#definition following properties}.
+ * @returns Nuxt module
+ * @see {@link https://nuxt.com/docs/api/kit/modules#definenuxtmodule documentation}
  */
 export function defineNuxtModule<OptionsT extends ModuleOptions>(
   definition: ModuleDefinition<OptionsT> | NuxtModule<OptionsT>
