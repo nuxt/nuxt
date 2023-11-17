@@ -1,3 +1,4 @@
+/* eslint-disable vue/multi-word-component-names */
 import { defineComponent } from 'vue'
 import type { PropType, SetupContext } from 'vue'
 import { useHead } from '@unhead/vue'

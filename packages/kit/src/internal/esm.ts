@@ -13,7 +13,9 @@ export async function tryResolveModule(
 ) {
   try {
     return await resolvePath(id, { url })
-  } catch {}
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }
 
 export async function importModule(
@@ -27,6 +29,8 @@ export async function importModule(
 
 export function tryImportModule(id: string, url = import.meta.url) {
   try {
-    return importModule(id, url).catch(() => {})
-  } catch {}
+    return importModule(id, url).catch(() => undefined)
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }

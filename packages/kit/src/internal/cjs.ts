@@ -68,7 +68,9 @@ function clearRequireCache(id: string) {
 function getRequireCacheItem(id: string) {
   try {
     return _require.cache[id]
-  } catch {}
+  } catch (e) {
+    // ignore issues accessing require.cache
+  }
 }
 
 export function getModulePaths(paths?: string[] | string) {
@@ -126,8 +128,10 @@ export function tryImportModule(
   options: RequireModuleOptions = {}
 ) {
   try {
-    return importModule(id, options).catch(() => {})
-  } catch {}
+    return importModule(id, options).catch(() => undefined)
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
@@ -137,7 +141,8 @@ export function tryRequireModule(
   options: RequireModuleOptions = {}
 ) {
   try {
-    // eslint-disable-next-line ts/no-unsafe-return
     return requireModule(id, options)
-  } catch {}
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }

@@ -9,8 +9,8 @@ export default defineUntypedSchema({
   nitro: {
     routeRules: {
       $resolve: async (val, get) => ({
-        ...await get('routeRules') || {},
-        ...val || {}
+        ...await get('routeRules'),
+        ...val
       })
     }
   },
