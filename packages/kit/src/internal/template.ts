@@ -7,6 +7,7 @@ import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import { type NuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4
 // eslint-disable-next-line ts/no-explicit-any
@@ -34,6 +35,7 @@ export async function compileTemplate(template: NuxtTemplate, context: any) {
   throw new Error('Invalid template: ' + JSON.stringify(template))
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated */
 // eslint-disable-next-line ts/no-explicit-any
 const serialize = (data: any) => JSON
@@ -45,6 +47,7 @@ const serialize = (data: any) => JSON
     (r) => JSON.parse(r).replace(/^{(.*)}$/, '$1')
   )
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated */
 const importSources = (sources: string | string[], { lazy = false } = {}) => {
   if (!Array.isArray(sources)) {

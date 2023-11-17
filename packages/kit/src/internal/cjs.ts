@@ -16,20 +16,24 @@ export interface ResolveModuleOptions {
 export interface RequireModuleOptions extends ResolveModuleOptions {
   // TODO: use create-require for jest environment
   // native?: boolean
-  /** Clear the require cache (force fresh require)
-   * but only if not within `node_modules` */
+  /**
+   * Clear the require cache (force fresh require)
+   * but only if not within `node_modules`
+   */
   clearCache?: boolean
 
   /** Automatically de-default the result of requiring the module. */
   interopDefault?: boolean
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function isNodeModules(id: string) {
   // TODO: Follow symlinks
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function clearRequireCache(id: string) {
   if (isNodeModules(id)) {
@@ -59,6 +63,7 @@ function clearRequireCache(id: string) {
   delete _require.cache[id]
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function getRequireCacheItem(id: string) {
   try {
@@ -75,6 +80,7 @@ export function getModulePaths(paths?: string[] | string) {
   ]
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function resolveModule(id: string, options: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
@@ -82,6 +88,7 @@ export function resolveModule(id: string, options: ResolveModuleOptions = {}) {
   }))
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function requireModule(id: string, options: RequireModuleOptions = {}) {
   // Resolve id
@@ -100,6 +107,7 @@ export function requireModule(id: string, options: RequireModuleOptions = {}) {
   return requiredModule
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function importModule(id: string, options: RequireModuleOptions = {}) {
   const resolvedPath = resolveModule(id, options)
@@ -111,6 +119,7 @@ export function importModule(id: string, options: RequireModuleOptions = {}) {
   return import(pathToFileURL(resolvedPath).href)
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function tryImportModule(
   id: string,
@@ -121,6 +130,7 @@ export function tryImportModule(
   } catch {}
 }
 
+// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function tryRequireModule(
   id: string,
