@@ -43,7 +43,7 @@ export interface AsyncDataOptions<
   server?: boolean
   lazy?: boolean
   default?: () => DefaultT | Ref<DefaultT>
-  getCachedData?: (key: string) => DataT 
+  getCachedData?: (key: string) => DataT
   transform?: _Transform<ResT, DataT>
   pick?: PickKeys
   watch?: MultiWatchSources
@@ -156,7 +156,8 @@ export function useAsyncData<
   nuxt.payload._errors[key] ??= null;
   const _ref = options.deep ? ref : shallowRef;
   
-  nuxt._asyncData[key] ??= {};
+  if (!nuxt._asyncData[key] || !options.immediate) nuxt._asyncData = {};
+
   nuxt._asyncData[key]!.data ??= _ref(options.getCachedData!(key));
   nuxt._asyncData[key]!.pending ??= ref(!hasCachedData());
   nuxt._asyncData[key]!.error ??= toRef(nuxt.payload._errors, key);
