@@ -22,9 +22,11 @@ function resolveNuxtModuleEntryName(
 /**
  * Check if a Nuxt module is installed by name.
  *
- * This will check both the installed modules and the modules to be installed.
- * Note that it cannot detect if a module is _going to be_ installed
+ * This will check both the installed modules and the modules to be installed. Note that it cannot detect if a module is _going to be_ installed.
  * programmatically by another module.
+ * @param moduleName - Module name.
+ * @param nuxt - Nuxt instance.
+ * @returns `true` if the module is installed or to be installed, `false` otherwise
  */
 export function hasNuxtModule(
   moduleName: string, nuxt: Nuxt = useNuxt()
@@ -43,6 +45,10 @@ export function hasNuxtModule(
 
 /**
  * Checks if a Nuxt Module is compatible with a given semver version.
+ * @param module - Module name or Nuxt module.
+ * @param semverVersion - Semver version.
+ * @param nuxt - Nuxt instance.
+ * @returns `true` if the module is compatible, `false` otherwise
  */
 export async function hasNuxtModuleCompatibility(
   module: string | NuxtModule,
@@ -63,9 +69,10 @@ export async function hasNuxtModuleCompatibility(
 /**
  * Get the version of a Nuxt module.
  *
- * Scans installed modules for the version.
- * If it's not found it will attempt to load the module instance
- * and get the version from there.
+ * Scans installed modules for the version. If it's not found it will attempt to load the module instance and get the version from there.
+ * @param module - Module name or Nuxt module.
+ * @param nuxt - Nuxt instance.
+ * @returns Module version if available, `false` otherwise
  */
 export async function getNuxtModuleVersion(
   module: string | NuxtModule, nuxt: Nuxt | object = useNuxt()
