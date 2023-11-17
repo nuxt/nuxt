@@ -4,7 +4,9 @@ import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
 
 /**
- * Return a filter function to filter an array of paths
+ * Checks if pathname is ignored.
+ * @param pathname - Pathname to check.
+ * @returns `true` if ignored, `false` otherwise
  */
 export function isIgnored(pathname: string): boolean {
   const nuxt = tryUseNuxt()
@@ -35,6 +37,11 @@ export function isIgnored(pathname: string): boolean {
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
 }
 
+/**
+ * Resolve ignore patterns.
+ * @param relativePath - Relative path.
+ * @returns Ignore patterns
+ */
 export function resolveIgnorePatterns(relativePath?: string): string[] {
   const nuxt = tryUseNuxt()
 
@@ -70,12 +77,9 @@ export function resolveIgnorePatterns(relativePath?: string): string[] {
 }
 
 /**
- * This function turns string containing groups
- * '**\/*.{spec,test}.{js,ts}' into an array of strings.
- * For example '**\/*.{spec,test}.{js,ts}' will be resolved to:
- * ['**\/*.spec.js', '**\/*.spec.ts', '**\/*.test.js', '**\/*.test.ts']
- * @param group string containing the group syntax
- * @returns {string[]} array of strings without the group syntax
+ * Turns string containing groups '**\/*.{spec,test}.{js,ts}' into an array of strings. For example '**\/*.{spec,test}.{js,ts}' will be resolved to: ['**\/*.spec.js', '**\/*.spec.ts', '**\/*.test.js', '**\/*.test.ts'].
+ * @param group - String containing the group syntax.
+ * @returns Array of strings without the group syntax
  */
 export function resolveGroupSyntax(group: string): string[] {
   let groups = [group]
