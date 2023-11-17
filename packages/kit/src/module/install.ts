@@ -9,7 +9,13 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
 
-/** Installs a module on a Nuxt instance. */
+/**
+ * Install specified Nuxt module programmatically. This is helpful when your module depends on other modules. You can pass the module options as an object to `inlineOptions` and they will be passed to the module's `setup` function.
+ * @param moduleToInstall - The module to install. Can be either a string with the module name or a module object itself.
+ * @param inlineOptions - An object with the module options to be passed to the module's `setup` function.
+ * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
+ * @see {@link https://nuxt.com/docs/api/kit/modules#installmodule documentation}
+ */
 export async function installModule(
   moduleToInstall: string | NuxtModule,
   // eslint-disable-next-line ts/no-explicit-any
