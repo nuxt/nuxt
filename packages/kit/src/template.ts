@@ -14,51 +14,55 @@ import { getModulePaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
 
 /**
- * Renders given template using lodash template during build
- * into the project buildDir.
+ * Renders given template during build into the project buildDir.
+ * @param template - A template object or a string with the path to the template. If a string is provided, it will be converted to a template object with `src` set to the string value. If a template object is provided, it must have the {@link https://nuxt.com/docs/api/kit/templates#template following properties}.
+ * @returns Nuxt template
+ * @see {@link https://nuxt.com/docs/api/kit/templates#addtemplate documentation}
  */
 // eslint-disable-next-line ts/no-explicit-any
-export function addTemplate(_template: NuxtTemplate<any> | string) {
+export function addTemplate(template: NuxtTemplate<any> | string) {
   const nuxt = useNuxt()
 
   // Normalize template
-  const template = normalizeTemplate(_template)
+  const normalizedTemplate = normalizeTemplate(template)
 
   // Remove any existing template with the same filename
   nuxt.options.build.templates = nuxt.options.build.templates
-    .filter((p) => normalizeTemplate(p).filename !== template.filename)
+    .filter(
+      (p) => normalizeTemplate(p).filename !== normalizedTemplate.filename
+    )
 
   // Add to templates array
-  nuxt.options.build.templates.push(template)
+  nuxt.options.build.templates.push(normalizedTemplate)
 
-  return template
+  return normalizedTemplate
 }
 
 /**
- * Renders given types using lodash template during build
- * into the project buildDir and register them as types.
+ * RRenders given template during build into the project buildDir, then registers it as types.
+ * @param template - A template object or a string with the path to the template. If a string is provided, it will be converted to a template object with `src` set to the string value. If a template object is provided, it must have the {@link https://nuxt.com/docs/api/kit/templates#template-1 following properties}.
+ * @returns Nuxt template
+ * @throws Will throw an error if template's filename does not end with '.d.ts'
+ * @see {@link https://nuxt.com/docs/api/kit/templates#addtypetemplate documentation}
  */
 // eslint-disable-next-line ts/no-explicit-any
-export function addTypeTemplate(_template: NuxtTypeTemplate<any>) {
+export function addTypeTemplate(template: NuxtTypeTemplate<any>) {
   const nuxt = useNuxt()
 
-  const template = addTemplate(_template)
+  const _template = addTemplate(template)
 
-  if (!template.filename.endsWith('.d.ts')) {
-    throw new Error(`Invalid type template. Filename must end with .d.ts : "${template.filename}"`)
+  if (!_template.filename.endsWith('.d.ts')) {
+    throw new Error(`Invalid type template. Filename must end with .d.ts : "${_template.filename}"`)
   }
 
   // Add template to types reference
   nuxt.hook('prepare:types', ({ references }) => {
-    references.push({ path: template.dst })
+    references.push({ path: _template.dst })
   })
 
-  return template
+  return _template
 }
 
-/**
- * Normalize a nuxt template object
- */
 export function normalizeTemplate(
   // eslint-disable-next-line ts/no-explicit-any
   template: NuxtTemplate<any> | string
@@ -112,17 +116,16 @@ export function normalizeTemplate(
 }
 
 /**
- * Trigger rebuilding Nuxt templates
- *
- * You can pass a filter within the options
- * to selectively regenerate a subset of templates.
+ * Regenerate templates that match the filter. If no filter is provided, all templates will be regenerated.
+ * @param options - Options to pass to the template.
+ * @param options.filter - A function that will be called with the `template` object. It should return a boolean indicating whether the template should be regenerated. If `filter` is not provided, all templates will be regenerated.
+ * @see {@link https://nuxt.com/docs/api/kit/templates#updatetemplates documentation}
  */
 export async function updateTemplates(
   // eslint-disable-next-line ts/no-explicit-any
   options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }
 ) {
-  // eslint-disable-next-line ts/no-unsafe-return
-  return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
+  await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
 export async function writeTypes(nuxt: Nuxt) {
