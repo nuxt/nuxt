@@ -5,32 +5,32 @@ import { toArray } from './utils'
 
 export interface ExtendConfigOptions {
   /**
-     * Install plugin on dev
-     * @default true
-     */
+   * Install plugin on dev
+   * @default true
+   */
   dev?: boolean
 
   /**
-     * Install plugin on build
-     * @default true
-     */
+   * Install plugin on build
+   * @default true
+   */
   build?: boolean
 
   /**
-     * Install plugin on server side
-     * @default true
-     */
+   * Install plugin on server side
+   * @default true
+   */
   server?: boolean
 
   /**
-     * Install plugin on client side
-     * @default true
-     */
+   * Install plugin on client side
+   * @default true
+   */
   client?: boolean
 
   /**
-     * Prepends the plugin to the array with `unshift()` instead of `push()`.
-     */
+   * Prepends the plugin to the array with `unshift()` instead of `push()`.
+   */
   prepend?: boolean
 }
 
@@ -43,6 +43,8 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions { }
  *
  * The callback function might be called multiple times
  * when applying to both client and server builds.
+ * @param {(config: WebpackConfig) => void} callbackFunction - A callback function that will be called with the webpack configuration object.
+ * @param {ExtendWebpackConfigOptions} options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options documentation}.
  */
 export function extendWebpackConfig(
   callbackFunction: ((config: WebpackConfig) => void),
@@ -76,6 +78,8 @@ export function extendWebpackConfig(
 
 /**
  * Extend Vite config
+ * @param {(config: ViteConfig) => void} callbackFunction - A callback function that will be called with the Vite configuration object.
+ * @param {ExtendViteConfigOptions} options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-1 documentation}.
  */
 export function extendViteConfig(
   callbackFunction: ((config: ViteConfig) => void),
@@ -92,9 +96,11 @@ export function extendViteConfig(
 
   if (options.server !== false && options.client !== false) {
     // Call callbackFunction() only once
-    return nuxt.hook('vite:extend', ({ config }) => {
+    nuxt.hook('vite:extend', ({ config }) => {
       callbackFunction(config)
     })
+
+    return
   }
 
   nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
@@ -109,6 +115,8 @@ export function extendViteConfig(
 
 /**
  * Append webpack plugin to the config.
+ * @param {WebpackPluginInstance | WebpackPluginInstance[] | (() => WebpackPluginInstance | WebpackPluginInstance[])} pluginOrGetter - A webpack plugin instance or an array of webpack plugin instances. If a function is provided, it must return a webpack plugin instance or an array of webpack plugin instances.
+ * @param {ExtendWebpackConfigOptions} options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-2 documentation}.
  */
 export function addWebpackPlugin(
   pluginOrGetter:
@@ -134,6 +142,8 @@ export function addWebpackPlugin(
 
 /**
  * Append Vite plugin to the config.
+ * @param {VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[])} pluginOrGetter - A Vite plugin instance or an array of Vite plugin instances. If a function is provided, it must return a Vite plugin instance or an array of Vite plugin instances.
+ * @param {ExtendViteConfigOptions} options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-3 documentation}.
  */
 export function addVitePlugin(
   pluginOrGetter:
@@ -160,6 +170,11 @@ interface AddBuildPluginFactory {
   webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
 }
 
+/**
+ *
+ * @param {AddBuildPluginFactory} pluginFactory - A factory function that returns an object with `vite` and/or `webpack` properties. These properties must be functions that return a Vite plugin instance or an array of Vite plugin instances and/or a webpack plugin instance or an array of webpack plugin instances.
+ * @param {ExtendConfigOptions} options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-4 documentation}.
+ */
 export function addBuildPlugin(
   pluginFactory: AddBuildPluginFactory,
   options?: ExtendConfigOptions
