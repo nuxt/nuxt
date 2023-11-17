@@ -7,7 +7,7 @@ import { assertNuxtCompatibility } from './compatibility'
 /**
  * Register a directory to be scanned for components and imported only when used. Keep in mind, that this does not register components globally, until you specify `global: true` option.
  *
- * Requires Nuxt 2.13+
+ * **Note:** Requires Nuxt 2.13+
  * @param directory - An object with the {@link https://nuxt.com/docs/api/kit/components#dir following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/components#addcomponentsdir documentation}
  */
@@ -38,7 +38,7 @@ export type AddComponentOptions = {
 /**
  * Register a component to be automatically imported.
  *
- * Requires Nuxt 2.13+
+ * **Note:** Requires Nuxt 2.13+
  * @param options - An object with the {@link https://nuxt.com/docs/api/kit/components#options following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/components#addcomponent documentation}
  */
