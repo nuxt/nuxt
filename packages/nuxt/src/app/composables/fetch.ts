@@ -140,6 +140,10 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
+    if(toValue(opts.timeout)){
+      setTimeout(() => controller.abort(), toValue(opts.timeout));
+    }
+
     let _$fetch = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
