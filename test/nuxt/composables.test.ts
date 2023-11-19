@@ -266,6 +266,13 @@ describe('useFetch', () => {
     await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
+
+  it('should timeout', async () => {
+    const { pending, status, error } = await useFetch('https://httpbin.org/delay/10', { timeout: 1 })
+    await pending.value
+    expect(status.value).toBe('error')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "https://httpbin.org/delay/10": <no response> The operation was aborted.]')
+  })
 })
 
 describe('errors', () => {
