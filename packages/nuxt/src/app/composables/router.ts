@@ -1,6 +1,6 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { LocationQuery, NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, RouteParams, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
@@ -25,6 +25,14 @@ export const useRoute: typeof _useRoute = () => {
   }
   return useNuxtApp()._route
 }
+
+export const useRouteParams = (): RouteParams => {
+  return useRoute().params;
+};
+
+export const useRouteQuery = (): LocationQuery => {
+  return useRoute().query;
+};
 
 export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach((to, from, next) => {
