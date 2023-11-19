@@ -70,7 +70,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preload'
   },
   {
-    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter'],
+    imports: ['abortNavigation', 'addRouteMiddleware', 'defineNuxtRouteMiddleware', 'setPageLayout', 'navigateTo', 'useRoute', 'useRouter','useRouteParams','useRouteQuery'],
     from: '#app/composables/router'
   },
   {
