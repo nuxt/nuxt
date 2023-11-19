@@ -13,6 +13,8 @@ overrides:
   vite: 4.5.0
   vue: 3.3.8
   magic-string: ^0.30.5
+  nitropack: npm:nitropack-nightly
+  h3: npm:h3-nightly
 
 importers:
 
@@ -76,8 +78,8 @@ importers:
         specifier: 13.2.2
         version: 13.2.2
       h3:
-        specifier: 1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1699405275.b7aca96
       happy-dom:
         specifier: 12.10.3
         version: 12.10.3
@@ -88,8 +90,8 @@ importers:
         specifier: 0.37.0
         version: 0.37.0
       nitropack:
-        specifier: 2.7.2
-        version: 2.7.2
+        specifier: npm:nitropack-nightly
+        version: /nitropack-nightly@2.8.0-28340502.22e181c
       nuxi:
         specifier: 3.9.1
         version: 3.9.1
@@ -305,8 +307,8 @@ importers:
         specifier: ^13.2.2
         version: 13.2.2
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1699405275.b7aca96
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -490,8 +492,8 @@ importers:
         specifier: 4.0.2
         version: 4.0.2(webpack@5.89.0)
       h3:
-        specifier: 1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1699405275.b7aca96
       ignore:
         specifier: 5.3.0
         version: 5.3.0
@@ -577,8 +579,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1699405275.b7aca96
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
@@ -692,8 +694,8 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       h3:
-        specifier: ^1.8.2
-        version: 1.8.2
+        specifier: npm:h3-nightly
+        version: /h3-nightly@1.9.0-1699405275.b7aca96
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2031,6 +2033,7 @@ packages:
     dependencies:
       '@netlify/serverless-functions-api': 1.9.0
       is-promise: 4.0.0
+    dev: false
 
   /@netlify/functions@2.4.0:
     resolution: {integrity: sha512-dIqhdj5u4Lu/8qbYwtYpn8NfvIyPHbSTV2lAP4ocL+iwC9As06AXT0wa/xOpO2vRWJa0IMxdZaqCPnkyHlHiyg==}
@@ -2056,6 +2059,7 @@ packages:
     dependencies:
       '@netlify/node-cookies': 0.1.0
       urlpattern-polyfill: 8.0.2
+    dev: false
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2197,7 +2201,7 @@ packages:
       fast-glob: 3.3.2
       flatted: 3.2.9
       get-port-please: 3.1.1
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       hookable: 5.5.3
       image-meta: 0.2.0
       is-installed-globally: 1.0.0
@@ -2541,6 +2545,7 @@ packages:
       estree-walker: 2.0.2
       magic-string: 0.30.5
       rollup: 3.29.4
+    dev: false
 
   /@rollup/plugin-inject@5.0.5(rollup@4.5.0):
     resolution: {integrity: sha512-2+DEJbNBoPROPkgTDNe8/1YXWcqxbN5DTjASVIOx8HS+pITXushyNiBV56RB08zuptzz8gT3YfkqriTBVycepg==}
@@ -2653,6 +2658,7 @@ packages:
       serialize-javascript: 6.0.1
       smob: 1.4.1
       terser: 5.22.0
+    dev: false
 
   /@rollup/plugin-terser@0.4.4(rollup@4.5.0):
     resolution: {integrity: sha512-XHeJC5Bgvs8LfukDwWZp7yeqin6ns8RTl2B9avbejt6tZqsqvVoWI7ZTQrcNsfKEDWBTnTxM8nMDkO2IFFbd0A==}
@@ -2679,6 +2685,7 @@ packages:
     dependencies:
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
       rollup: 3.29.4
+    dev: false
 
   /@rollup/plugin-wasm@6.2.2(rollup@4.5.0):
     resolution: {integrity: sha512-gpC4R1G9Ni92ZIRTexqbhX7U+9estZrbhP+9SRb0DW9xpB9g7j34r+J2hqrcW/lRI7dJaU84MxZM0Rt82tqYPQ==}
@@ -2934,6 +2941,7 @@ packages:
     resolution: {integrity: sha512-GkhdWcMNiR5QSQRYnJ+/oXzu0+7JJEPC8vkWXK351BkhjraZF+1W13CUYARUvX9+NqIU2n6YHA4iwywsc/M6Sw==}
     dependencies:
       '@types/node': 20.9.1
+    dev: false
 
   /@types/http-proxy@1.17.14:
     resolution: {integrity: sha512-SSrD0c1OQzlFX7pGu1eXxSEjemej64aaNPRhhVYUGqXh0BtldAAx37MG8btcumvpgKyZp1F5Gn3JkktdxiFv6w==}
@@ -5913,18 +5921,6 @@ packages:
       uncrypto: 0.1.3
       unenv: 1.7.4
 
-  /h3@1.8.2:
-    resolution: {integrity: sha512-1Ca0orJJlCaiFY68BvzQtP2lKLk46kcLAxVM8JgYbtm2cUg6IY7pjpYgWMwUvDO9QI30N5JAukOKoT8KD3Q0PQ==}
-    dependencies:
-      cookie-es: 1.0.0
-      defu: 6.1.3
-      destr: 2.0.2
-      iron-webcrypto: 0.10.1
-      radix3: 1.1.0
-      ufo: 1.3.2
-      uncrypto: 0.1.3
-      unenv: 1.7.4
-
   /happy-dom@12.10.3:
     resolution: {integrity: sha512-JzUXOh0wdNGY54oKng5hliuBkq/+aT1V3YpTM+lrN/GoLQTANZsMaIvmHiHe612rauHvPJnDZkZ+5GZR++1Abg==}
     dependencies:
@@ -6194,9 +6190,6 @@ packages:
   /ip@2.0.0:
     resolution: {integrity: sha512-WKa+XuLG1A1R0UWhl2+1XQSi+fZWMsYKffMZTTYsiZaUD8k2yDAj5atimTUD2TZkyCkNEeYE5NhFZmupOGtjYQ==}
     dev: false
-
-  /iron-webcrypto@0.10.1:
-    resolution: {integrity: sha512-QGOS8MRMnj/UiOa+aMIgfyHcvkhqNUsUxb1XzskENvbo+rEfp6TOwqd1KPuDzXC4OnGHcMSVxDGRoilqB8ViqA==}
 
   /iron-webcrypto@1.0.0:
     resolution: {integrity: sha512-anOK1Mktt8U1Xi7fCM3RELTuYbnFikQY5VtrDj7kPgpejV7d43tWKhzgioO0zpkazLEL/j/iayRqnJhrGfqUsg==}
@@ -6684,7 +6677,7 @@ packages:
       consola: 3.2.3
       defu: 6.1.3
       get-port-please: 3.1.1
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       http-shutdown: 1.2.2
       jiti: 1.21.0
       mlly: 1.4.2
@@ -7337,7 +7330,7 @@ packages:
       fs-extra: 11.1.1
       globby: 13.2.2
       gzip-size: 7.0.0
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       hookable: 5.5.3
       httpxy: 0.1.5
       is-primitive: 3.0.1
@@ -7385,6 +7378,7 @@ packages:
       - encoding
       - idb-keyval
       - supports-color
+    dev: false
 
   /node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -7732,6 +7726,7 @@ packages:
       supports-color: 9.4.0
       undici: 5.26.3
       yargs-parser: 21.1.1
+    dev: false
 
   /openapi-typescript@6.7.1:
     resolution: {integrity: sha512-Q3Ltt0KUm2smcPrsaR8qKmSwQ1KM4yGDJVoQdpYa0yvKPeN8huDx5utMT7DvwvJastHHzUxajjivK3WN2+fobg==}
@@ -8742,6 +8737,7 @@ packages:
       rollup: 3.29.4
       source-map: 0.7.4
       yargs: 17.7.2
+    dev: false
 
   /rollup-plugin-visualizer@5.9.2(rollup@4.5.0):
     resolution: {integrity: sha512-waHktD5mlWrYFrhOLbti4YgQCn1uR24nYsNuXxg7LkPH8KdTXVWR9DNY1WU0QqokyMixVXJS4J04HNrVTMP01A==}
@@ -9619,6 +9615,7 @@ packages:
     engines: {node: '>=14.0'}
     dependencies:
       '@fastify/busboy': 2.0.0
+    dev: false
 
   /undici@5.27.2:
     resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
@@ -9664,6 +9661,7 @@ packages:
       unplugin: 1.5.1
     transitivePeerDependencies:
       - rollup
+    dev: false
 
   /unimport@3.5.0(rollup@4.5.0):
     resolution: {integrity: sha512-0Ei1iTeSYxs7oxxUf79/KaBc2dPjZxe7qdVpw7yIz5YcdTZjmBYO6ToLDW+fX9QOHiueZ3xtwb5Z/wqaSfXx6A==}
@@ -9787,7 +9785,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 2.0.2
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       ioredis: 5.3.2
       listhen: 1.5.5
       lru-cache: 10.0.3
@@ -9839,7 +9837,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 2.0.2
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       ioredis: 5.3.2
       listhen: 1.5.5
       lru-cache: 10.0.1
@@ -9849,6 +9847,7 @@ packages:
       ufo: 1.3.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
 
   /untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
@@ -10173,7 +10172,7 @@ packages:
       defu: 6.1.3
       estree-walker: 3.0.3
       fake-indexeddb: 4.0.2
-      h3: 1.8.2
+      h3: /h3-nightly@1.9.0-1699405275.b7aca96
       happy-dom: 12.10.3
       local-pkg: 0.5.0
       magic-string: 0.30.5
