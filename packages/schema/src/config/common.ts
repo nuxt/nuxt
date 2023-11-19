@@ -325,6 +325,7 @@ export default defineUntypedSchema({
    *   ignorecase: false
    * }
    * ```
+   * @type {typeof import('ignore').Options}
    */
   ignoreOptions: undefined,
 

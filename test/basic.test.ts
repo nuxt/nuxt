@@ -2017,6 +2017,87 @@ describe.runIf(isDev())('component testing', () => {
   })
 })
 
+describe('keepalive', () => {
+  it('should not keepalive by default', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive')
+
+    const pageName = 'not-keepalive'
+    await page.click(`#${pageName}`)
+    await page.waitForTimeout(25)
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
+
+    await page.close()
+  })
+
+  it('should not keepalive when included in app config but config in nuxt-page is not undefined', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive')
+
+    const pageName = 'keepalive-in-config'
+    await page.click(`#${pageName}`)
+    await page.waitForTimeout(25)
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
+
+    await page.close()
+  })
+
+  it('should not keepalive when included in app config but exclueded in nuxt-page', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive')
+
+    const pageName = 'not-keepalive-in-nuxtpage'
+    await page.click(`#${pageName}`)
+    await page.waitForTimeout(25)
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
+
+    await page.close()
+  })
+
+  it('should keepalive when included in nuxt-page', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive')
+
+    const pageName = 'keepalive-in-nuxtpage'
+    await page.click(`#${pageName}`)
+    await page.waitForTimeout(25)
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`, `${pageName}: onActivated`])
+
+    await page.close()
+  })
+
+  it('should preserve keepalive config when navigate routes in nuxt-page', async () => {
+    const { page, consoleLogs } = await renderPage('/keepalive')
+
+    await page.click('#keepalive-in-nuxtpage')
+    await page.waitForTimeout(25)
+    await page.click('#keepalive-in-nuxtpage-2')
+    await page.waitForTimeout(25)
+    await page.click('#keepalive-in-nuxtpage')
+    await page.waitForTimeout(25)
+    await page.click('#not-keepalive')
+    await page.waitForTimeout(25)
+    await page.click('#keepalive-in-nuxtpage-2')
+    await page.waitForTimeout(25)
+
+    expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([
+      'keepalive-in-nuxtpage: onMounted',
+      'keepalive-in-nuxtpage: onActivated',
+      'keepalive-in-nuxtpage: onDeactivated',
+      'keepalive-in-nuxtpage-2: onMounted',
+      'keepalive-in-nuxtpage-2: onActivated',
+      'keepalive-in-nuxtpage: onActivated',
+      'keepalive-in-nuxtpage-2: onDeactivated',
+      'keepalive-in-nuxtpage: onDeactivated',
+      'not-keepalive: onMounted',
+      'keepalive-in-nuxtpage-2: onActivated',
+      'not-keepalive: onUnmounted'
+    ])
+
+    await page.close()
+  })
+})
+
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
