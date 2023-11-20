@@ -58,6 +58,15 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
+    async function handleVueError(err: any) {
+      await nuxt.callHook('app:error', err)
+      nuxt.payload.error = (nuxt.payload.error || err) as any
+    }
+
+    const prevVueErrorHandler = vueApp.config.errorHandler
+    if (!vueApp.config.errorHandler)
+      vueApp.config.errorHandler = handleVueError
+
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
@@ -75,6 +84,8 @@ if (import.meta.client) {
       await nuxt.callHook('app:error', err)
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
+
+    vueApp.config.errorHandler = prevVueErrorHandler
 
     return vueApp
   }
