@@ -80,6 +80,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `body`: Request body - automatically stringified (if an object is passed).
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
+  - `timeout`: Milliseconds to automatically abort request
 
 ::callout
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
