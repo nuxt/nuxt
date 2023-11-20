@@ -110,12 +110,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         baseURL: nuxt.options.runtimeConfig.app.baseURL.startsWith('./')
           ? nuxt.options.runtimeConfig.app.baseURL.slice(1)
           : nuxt.options.runtimeConfig.app.baseURL
-      } satisfies RuntimeConfig['app'],
+      },
       nitro: {
         envPrefix: 'NUXT_',
-        ...nuxt.options.runtimeConfig.nitro
+        // TODO: address upstream issue with defu types...?
+        ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any
       }
-    },
+    } ,
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, 'app.config')
