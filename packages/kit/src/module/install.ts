@@ -16,7 +16,7 @@ import { logger } from '../logger'
  * @param nuxt - Nuxt instance. If not provided, it will be retrieved from the context via `useNuxt()` call.
  * @see {@link https://nuxt.com/docs/api/kit/modules#installmodule documentation}
  */
-export async function installModule(
+export async function installModule (
   moduleToInstall: string | NuxtModule,
   // eslint-disable-next-line ts/no-explicit-any
   inlineOptions?: any,
@@ -66,7 +66,7 @@ export async function installModule(
 
 // --- Internal ---
 
-export function getDirectory(p: string) {
+export function getDirectory (p: string) {
   try {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js
@@ -82,7 +82,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
 
-export async function loadNuxtModuleInstance(
+export async function loadNuxtModuleInstance (
   nuxtModule: string | NuxtModule,
   nuxt: Nuxt = useNuxt()
 ) {

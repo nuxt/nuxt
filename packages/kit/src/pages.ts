@@ -6,7 +6,7 @@ import { isNuxt2 } from './compatibility'
 import { logger } from './logger'
 import { toArray } from './utils'
 
-export function extendPages(callback: NuxtHooks['pages:extend']) {
+export function extendPages (callback: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()
 
   if (isNuxt2(nuxt)) {
@@ -25,7 +25,7 @@ export interface ExtendRouteRulesOptions {
   override?: boolean
 }
 
-export function extendRouteRules(
+export function extendRouteRules (
   route: string,
   rule: NitroRouteConfig,
   options: ExtendRouteRulesOptions = {}
@@ -51,7 +51,7 @@ export interface AddRouteMiddlewareOptions {
   override?: boolean
 }
 
-export function addRouteMiddleware(
+export function addRouteMiddleware (
   input: NuxtMiddleware | NuxtMiddleware[],
   options: AddRouteMiddlewareOptions = {}
 ) {

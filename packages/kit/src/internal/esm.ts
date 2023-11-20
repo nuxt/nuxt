@@ -7,7 +7,7 @@ import { interopDefault, resolvePath } from 'mlly'
  * the upcoming `import.meta.resolve`. It returns a file URL
  * @internal
  */
-export async function tryResolveModule(
+export async function tryResolveModule (
   id: string,
   url: string | string[] = import.meta.url
 ) {
@@ -18,7 +18,7 @@ export async function tryResolveModule(
   }
 }
 
-export async function importModule(
+export async function importModule (
   id: string,
   url: string | string[] = import.meta.url
 ) {
@@ -27,7 +27,7 @@ export async function importModule(
   return import(pathToFileURL(resolvedPath).href).then(interopDefault)
 }
 
-export function tryImportModule(id: string, url = import.meta.url) {
+export function tryImportModule (id: string, url = import.meta.url) {
   try {
     return importModule(id, url).catch(() => {})
   } catch {

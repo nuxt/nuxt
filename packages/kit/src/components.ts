@@ -11,7 +11,7 @@ import { assertNuxtCompatibility } from './compatibility'
  * @param directory - An object with the {@link https://nuxt.com/docs/api/kit/components#dir following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/components#addcomponentsdir documentation}
  */
-export async function addComponentsDir(directory: ComponentsDir) {
+export async function addComponentsDir (directory: ComponentsDir) {
   const nuxt = useNuxt()
 
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
@@ -42,7 +42,7 @@ export type AddComponentOptions = {
  * @param options - An object with the {@link https://nuxt.com/docs/api/kit/components#options following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/components#addcomponent documentation}
  */
-export async function addComponent(options: AddComponentOptions) {
+export async function addComponent (options: AddComponentOptions) {
   const nuxt = useNuxt()
 
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)

@@ -8,7 +8,7 @@ import { tryUseNuxt } from './context'
  * @param pathname - Pathname to check.
  * @returns `true` if ignored, `false` otherwise
  */
-export function isIgnored(pathname: string): boolean {
+export function isIgnored (pathname: string): boolean {
   const nuxt = tryUseNuxt()
 
   // Happens with CLI reloads
@@ -42,7 +42,7 @@ export function isIgnored(pathname: string): boolean {
  * @param relativePath - Relative path.
  * @returns Ignore patterns
  */
-export function resolveIgnorePatterns(relativePath?: string): string[] {
+export function resolveIgnorePatterns (relativePath?: string): string[] {
   const nuxt = tryUseNuxt()
 
   // Happens with CLI reloads
@@ -81,7 +81,7 @@ export function resolveIgnorePatterns(relativePath?: string): string[] {
  * @param group - String containing the group syntax.
  * @returns Array of strings without the group syntax
  */
-export function resolveGroupSyntax(group: string): string[] {
+export function resolveGroupSyntax (group: string): string[] {
   let groups = [group]
   while (groups.some((group) => group.includes('{'))) {
     groups = groups.flatMap((group) => {

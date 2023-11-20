@@ -18,7 +18,7 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   config?: LoadNuxtConfigOptions['overrides']
 }
 
-export async function loadNuxt(options: LoadNuxtOptions): Promise<Nuxt> {
+export async function loadNuxt (options: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
   options.cwd = options.cwd || options.rootDir
 
@@ -113,7 +113,7 @@ export async function loadNuxt(options: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 // eslint-disable-next-line ts/no-explicit-any
-export async function buildNuxt(nuxt: Nuxt): Promise<any> {
+export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   const rootDirectory = pathToFileURL(nuxt.options.rootDir).href
 
   // Nuxt 3

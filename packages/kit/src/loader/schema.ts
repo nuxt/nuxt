@@ -1,7 +1,7 @@
 import { type SchemaDefinition } from '@nuxt/schema'
 import { useNuxt } from '../context'
 
-export function extendNuxtSchema(
+export function extendNuxtSchema (
   definition: SchemaDefinition | (() => SchemaDefinition)
 ) {
   const nuxt = useNuxt()

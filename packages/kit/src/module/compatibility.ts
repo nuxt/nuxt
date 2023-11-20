@@ -4,7 +4,7 @@ import { useNuxt } from '../context'
 import { normalizeSemanticVersion } from '../compatibility'
 import { loadNuxtModuleInstance } from './install'
 
-function resolveNuxtModuleEntryName(
+function resolveNuxtModuleEntryName (
   module: NuxtOptions['modules'][number]
 ): string | false {
   if (typeof module === 'object' && !Array.isArray(module)) {
@@ -28,7 +28,7 @@ function resolveNuxtModuleEntryName(
  * @param nuxt - Nuxt instance.
  * @returns `true` if the module is installed or to be installed, `false` otherwise
  */
-export function hasNuxtModule(
+export function hasNuxtModule (
   moduleName: string, nuxt: Nuxt = useNuxt()
 ): boolean {
   const hasInstalledModules = nuxt.options._installedModules.some(
@@ -50,7 +50,7 @@ export function hasNuxtModule(
  * @param nuxt - Nuxt instance.
  * @returns `true` if the module is compatible, `false` otherwise
  */
-export async function hasNuxtModuleCompatibility(
+export async function hasNuxtModuleCompatibility (
   module: string | NuxtModule,
   semverVersion: string,
   nuxt: Nuxt = useNuxt()
@@ -74,7 +74,7 @@ export async function hasNuxtModuleCompatibility(
  * @param nuxt - Nuxt instance.
  * @returns Module version if available, `false` otherwise
  */
-export async function getNuxtModuleVersion(
+export async function getNuxtModuleVersion (
   module: string | NuxtModule, nuxt: Nuxt | object = useNuxt()
 ): Promise<string | false> {
   const moduleMeta = (typeof module === 'string' ? { name: module } : await module.getMeta?.()) || {}

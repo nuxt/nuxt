@@ -8,6 +8,6 @@ export const logger = consola
  * @returns Consola instance
  * @see {@link https://nuxt.com/docs/api/kit/logging#uselogger documentation}
  */
-export function useLogger(tag?: string) {
+export function useLogger (tag?: string) {
   return tag ? logger.withTag(tag) : logger
 }

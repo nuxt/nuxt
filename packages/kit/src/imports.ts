@@ -9,7 +9,7 @@ import { toArray } from './utils'
  * @param imports - An object or an array of objects with the {@link https://nuxt.com/docs/api/kit/autoimports#imports following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/autoimports#addimports documentation}
  */
-export async function addImports(imports: Import | Import[]) {
+export async function addImports (imports: Import | Import[]) {
   await assertNuxtCompatibility({ bridge: true })
 
   useNuxt().hook('imports:extend', (_imports) => {
@@ -24,7 +24,7 @@ export async function addImports(imports: Import | Import[]) {
  * @param options.prepend - If set to `true`, the imports will be prepended to the list of imports.
  * @see {@link https://nuxt.com/docs/api/kit/autoimports#addimportsdir documentation}
  */
-export async function addImportsDir(
+export async function addImportsDir (
   directories: string | string[],
   options: { prepend?: boolean } = {}
 ) {
@@ -42,7 +42,7 @@ export async function addImportsDir(
  * @param presets - An object or an array of objects with the {@link https://nuxt.com/docs/api/kit/autoimports#importsources following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/autoimports#addimportssources documentation}
  */
-export async function addImportsSources(
+export async function addImportsSources (
   presets: ImportPresetWithDeprecation | ImportPresetWithDeprecation[]
 ) {
   await assertNuxtCompatibility({ bridge: true })

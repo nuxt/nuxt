@@ -8,7 +8,7 @@ import { NuxtConfigSchema } from '@nuxt/schema'
 
 export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 
-export async function loadNuxtConfig(
+export async function loadNuxtConfig (
   options: LoadNuxtConfigOptions
 ): Promise<NuxtOptions> {
   // eslint-disable-next-line style/max-len

@@ -28,14 +28,14 @@ export interface RequireModuleOptions extends ResolveModuleOptions {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-function isNodeModules(id: string) {
+function isNodeModules (id: string) {
   // TODO: Follow symlinks
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-function clearRequireCache(id: string) {
+function clearRequireCache (id: string) {
   if (isNodeModules(id)) {
     return
   }
@@ -65,7 +65,7 @@ function clearRequireCache(id: string) {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-function getRequireCacheItem(id: string) {
+function getRequireCacheItem (id: string) {
   try {
     return _require.cache[id]
   } catch {
@@ -73,7 +73,7 @@ function getRequireCacheItem(id: string) {
   }
 }
 
-export function getModulePaths(paths?: string[] | string) {
+export function getModulePaths (paths?: string[] | string) {
   return [
     ...toArray((global.__NUXT_PREPATHS__ || [])),
     ...toArray((paths || [])),
@@ -84,7 +84,7 @@ export function getModulePaths(paths?: string[] | string) {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-export function resolveModule(id: string, options: ResolveModuleOptions = {}) {
+export function resolveModule (id: string, options: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
     paths: getModulePaths(options.paths)
   }))
@@ -92,7 +92,7 @@ export function resolveModule(id: string, options: ResolveModuleOptions = {}) {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-export function requireModule(id: string, options: RequireModuleOptions = {}) {
+export function requireModule (id: string, options: RequireModuleOptions = {}) {
   // Resolve id
   const resolvedPath = resolveModule(id, options)
 
@@ -111,7 +111,7 @@ export function requireModule(id: string, options: RequireModuleOptions = {}) {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-export function importModule(id: string, options: RequireModuleOptions = {}) {
+export function importModule (id: string, options: RequireModuleOptions = {}) {
   const resolvedPath = resolveModule(id, options)
 
   if (options.interopDefault !== false) {
@@ -123,7 +123,7 @@ export function importModule(id: string, options: RequireModuleOptions = {}) {
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-export function tryImportModule(
+export function tryImportModule (
   id: string,
   options: RequireModuleOptions = {}
 ) {
@@ -136,7 +136,7 @@ export function tryImportModule(
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
-export function tryRequireModule(
+export function tryRequireModule (
   id: string,
   options: RequireModuleOptions = {}
 ) {

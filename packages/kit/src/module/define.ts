@@ -15,7 +15,7 @@ import { compileTemplate, templateUtils } from '../internal/template'
  * @returns Nuxt module
  * @see {@link https://nuxt.com/docs/api/kit/modules#definenuxtmodule documentation}
  */
-export function defineNuxtModule<OptionsT extends ModuleOptions>(
+export function defineNuxtModule<OptionsT extends ModuleOptions> (
   definition: ModuleDefinition<OptionsT> | NuxtModule<OptionsT>
 ): NuxtModule<OptionsT> {
   if (typeof definition === 'function') {
@@ -31,7 +31,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions>(
 
   // Resolves module options from inline options,
   // [configKey] in nuxt.config, defaults and schema
-  async function getOptions(inlineOptions?: OptionsT, nuxt: Nuxt = useNuxt()) {
+  async function getOptions (inlineOptions?: OptionsT, nuxt: Nuxt = useNuxt()) {
     // eslint-disable-next-line ts/no-non-null-assertion
     const configKey = module.meta.configKey || module.meta.name!
 
@@ -52,7 +52,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions>(
   }
 
   // Module format is always a simple function
-  async function normalizedModule(
+  async function normalizedModule (
     this: unknown,
     inlineOptions: OptionsT,
     nuxt: Nuxt
@@ -152,7 +152,7 @@ export function defineNuxtModule<OptionsT extends ModuleOptions>(
 
 // -- Nuxt 2 compatibility shims --
 const NUXT2_SHIMS_KEY = '__nuxt2_shims_key__'
-function nuxt2Shims(nuxt: Nuxt) {
+function nuxt2Shims (nuxt: Nuxt) {
   // Avoid duplicate install and only apply to Nuxt2
   if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) {
     return

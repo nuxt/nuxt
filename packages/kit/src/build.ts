@@ -44,7 +44,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions { }
  * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options available options}.
  * @see {@link https://nuxt.com/docs/api/kit/builder#extendwebpackconfig documentation}
  */
-export function extendWebpackConfig(
+export function extendWebpackConfig (
   callbackFunction: ((config: WebpackConfig) => void),
   options: ExtendWebpackConfigOptions = {}
 ) {
@@ -80,7 +80,7 @@ export function extendWebpackConfig(
  * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-1 available options}.
  * @see {@link https://nuxt.com/docs/api/kit/builder#extendviteconfig documentation}
  */
-export function extendViteConfig(
+export function extendViteConfig (
   callbackFunction: ((config: ViteConfig) => void),
   options: ExtendViteConfigOptions = {}
 ) {
@@ -118,7 +118,7 @@ export function extendViteConfig(
  * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-2 available options}.
  * @see {@link https://nuxt.com/docs/api/kit/builder#addwebpackplugin documentation}
  */
-export function addWebpackPlugin(
+export function addWebpackPlugin (
   pluginOrGetter:
   | WebpackPluginInstance
   | WebpackPluginInstance[]
@@ -146,7 +146,7 @@ export function addWebpackPlugin(
  * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-3 available options}.
  * @see {@link https://nuxt.com/docs/api/kit/builder#addviteplugin documentation}
  */
-export function addVitePlugin(
+export function addVitePlugin (
   pluginOrGetter:
   | VitePlugin
   | VitePlugin[]
@@ -177,7 +177,7 @@ interface AddBuildPluginFactory {
  * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-4 available options}.
  * @see {@link https://nuxt.com/docs/api/kit/builder#addbuildplugin documentation}
  */
-export function addBuildPlugin(
+export function addBuildPlugin (
   pluginFactory: AddBuildPluginFactory,
   options?: ExtendConfigOptions
 ) {

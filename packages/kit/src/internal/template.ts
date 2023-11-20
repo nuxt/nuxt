@@ -11,7 +11,7 @@ import { logger } from '../logger'
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4
 // eslint-disable-next-line ts/no-explicit-any
-export async function compileTemplate(template: NuxtTemplate, context: any) {
+export async function compileTemplate (template: NuxtTemplate, context: any) {
   // eslint-disable-next-line ts/no-unsafe-assignment
   const data = { ...context, options: template.options }
 

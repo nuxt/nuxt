@@ -5,7 +5,7 @@ import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
 import { logger } from './logger'
 
-export function normalizePlugin(plugin: NuxtPlugin | string): NuxtPlugin {
+export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   // Normalize src
   plugin = typeof plugin === 'string' ? { src: plugin } : { ...plugin }
 
@@ -67,7 +67,7 @@ export interface AddPluginOptions {
  * })
  * ```
  */
-export function addPlugin(
+export function addPlugin (
   plugin: NuxtPlugin | string,
   options: AddPluginOptions = {}
 ) {
@@ -95,7 +95,7 @@ export function addPlugin(
  * @returns Nuxt plugin
  * @see {@link https://nuxt.com/docs/api/kit/plugins#addplugintemplate documentation}
  */
-export function addPluginTemplate(
+export function addPluginTemplate (
   plugin: NuxtPluginTemplate | string,
   options: AddPluginOptions = {}
 ): NuxtPlugin {

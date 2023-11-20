@@ -4,7 +4,7 @@ import { normalize } from 'pathe'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 
-function normalizeHandlerMethod(handler: NitroEventHandler) {
+function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method] = handler.handler.match(
     /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
@@ -22,7 +22,7 @@ function normalizeHandlerMethod(handler: NitroEventHandler) {
  * @param handler - A handler object with the {@link https://nuxt.com/docs/api/kit/nitro#handler following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverhandler documentation}
  */
-export function addServerHandler(handler: NitroEventHandler) {
+export function addServerHandler (handler: NitroEventHandler) {
   useNuxt().options.serverHandlers.push(normalizeHandlerMethod(handler))
 }
 
@@ -31,7 +31,7 @@ export function addServerHandler(handler: NitroEventHandler) {
  * @param handler - A handler object with the {@link https://nuxt.com/docs/api/kit/nitro#handler-1 following properties}.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#adddevserverhandler documentation}
  */
-export function addDevServerHandler(handler: NitroDevEventHandler) {
+export function addDevServerHandler (handler: NitroDevEventHandler) {
   useNuxt().options.devServerHandlers.push(handler)
 }
 
@@ -40,7 +40,7 @@ export function addDevServerHandler(handler: NitroDevEventHandler) {
  * @param plugin - Path to the plugin. The plugin must export a function that accepts Nitro instance as an argument.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverplugin documentation}
  */
-export function addServerPlugin(plugin: string) {
+export function addServerPlugin (plugin: string) {
   const nuxt = useNuxt()
 
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins || []
@@ -53,7 +53,7 @@ export function addServerPlugin(plugin: string) {
  * @param routes - A route or an array of routes to prerender.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#addprerenderroutes documentation}
  */
-export function addPrerenderRoutes(routes: string | string[]) {
+export function addPrerenderRoutes (routes: string | string[]) {
   const nuxt = useNuxt()
 
   if (!Array.isArray(routes)) {
@@ -89,7 +89,7 @@ export function addPrerenderRoutes(routes: string | string[]) {
  * })
  * ```
  */
-export function useNitro(): Nitro {
+export function useNitro (): Nitro {
   const nuxt = useNuxt()
 
   // eslint-disable-next-line style/max-len
@@ -108,7 +108,7 @@ export function useNitro(): Nitro {
  * Add server imports to be auto-imported by Nitro.
  * @param imports - An array of imports to be added.
  */
-export function addServerImports(imports: Import[]) {
+export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
 
   nuxt.hook('nitro:config', (config) => {
@@ -127,7 +127,7 @@ export function addServerImports(imports: Import[]) {
  * @param options.prepend - If set to `true`, the directories will be prepended to the list.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverimportsdir documentation}
  */
-export function addServerImportsDir(
+export function addServerImportsDir (
   directories: string | string[],
   options: { prepend?: boolean } = {}
 ) {

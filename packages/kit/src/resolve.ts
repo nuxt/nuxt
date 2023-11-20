@@ -26,7 +26,7 @@ export interface ResolvePathOptions {
  * @returns Resolved path
  * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvepath documentation}
  */
-export async function resolvePath(
+export async function resolvePath (
   path: string,
   options: ResolvePathOptions = {}
 ): Promise<string> {
@@ -103,7 +103,7 @@ export async function resolvePath(
  * @returns Path to first existing file if found, `null` otherwise
  * @see {@link https://nuxt.com/docs/api/kit/resolving#findpath documentation}
  */
-export async function findPath(
+export async function findPath (
   paths: string | string[],
   options?: ResolvePathOptions,
   pathType: 'file' | 'dir' = 'file'
@@ -131,7 +131,7 @@ export async function findPath(
  * @returns Resolved path alias
  * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvealias documentation}
  */
-export function resolveAlias(
+export function resolveAlias (
   path: string,
   alias?: Record<string, string>
 ): string {
@@ -154,7 +154,7 @@ export interface Resolver {
  * @throws Will throw an error if `basePath` argument is missing.
  * @see {@link https://nuxt.com/docs/api/kit/resolving#createresolver documentation}
  */
-export function createResolver(basePath: string | URL): Resolver {
+export function createResolver (basePath: string | URL): Resolver {
   if (!basePath) {
     throw new Error('`basePath` argument is missing for createResolver(basePath)!')
   }
@@ -173,7 +173,7 @@ export function createResolver(basePath: string | URL): Resolver {
   }
 }
 
-export async function resolveNuxtModule(basePath: string, paths: string[]) {
+export async function resolveNuxtModule (basePath: string, paths: string[]) {
   const resolved = []
   const resolver = createResolver(basePath)
 
@@ -194,7 +194,7 @@ export async function resolveNuxtModule(basePath: string, paths: string[]) {
 
 // --- Internal ---
 
-async function existsSensitive(path: string) {
+async function existsSensitive (path: string) {
   if (!existsSync(path)) {
     return false
   }
@@ -205,13 +205,13 @@ async function existsSensitive(path: string) {
 }
 
 // Usage note: We assume path existence is already ensured
-async function isDirectory(path: string) {
+async function isDirectory (path: string) {
   const pathStats = await fsp.lstat(path)
 
   return pathStats.isDirectory()
 }
 
-export async function resolveFiles(
+export async function resolveFiles (
   path: string,
   pattern: string | string[],
   options: { followSymbolicLinks?: boolean } = {}

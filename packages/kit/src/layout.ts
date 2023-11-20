@@ -13,7 +13,7 @@ import { addTemplate } from './template'
  * @param name - Custom name of the template.
  * @see {@link https://nuxt.com/docs/api/kit/layout#addlayout documentation}
  */
-export function addLayout(
+export function addLayout (
   // eslint-disable-next-line ts/no-explicit-any
   this: any,
   template: NuxtTemplate | string,

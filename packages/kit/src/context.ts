@@ -14,7 +14,7 @@ export const nuxtCtx = getContext<Nuxt>('nuxt')
  * const nuxt = useNuxt()
  * ```
  */
-export function useNuxt(): Nuxt {
+export function useNuxt (): Nuxt {
   const instance = nuxtCtx.tryUse()
 
   if (!instance) {
@@ -37,6 +37,6 @@ export function useNuxt(): Nuxt {
  * }
  * ```
  */
-export function tryUseNuxt(): Nuxt | null {
+export function tryUseNuxt (): Nuxt | null {
   return nuxtCtx.tryUse()
 }
