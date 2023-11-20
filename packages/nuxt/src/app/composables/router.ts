@@ -1,14 +1,14 @@
-import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
-import type { Ref } from 'vue'
 import type { LocationQuery, NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, RouteParams, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import type { Ref } from 'vue'
+import { computed, getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
-import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 
@@ -26,13 +26,9 @@ export const useRoute: typeof _useRoute = () => {
   return useNuxtApp()._route
 }
 
-export const useRouteParams = (): RouteParams => {
-  return useRoute().params;
-};
+export const useRouteParams = computed<RouteParams>(()=>useRoute().params) 
 
-export const useRouteQuery = (): LocationQuery => {
-  return useRoute().query;
-};
+export const useRouteQuery = computed<LocationQuery>(()=>useRoute().query)
 
 export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach((to, from, next) => {
