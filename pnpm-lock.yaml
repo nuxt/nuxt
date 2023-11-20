@@ -13,8 +13,8 @@ overrides:
   vite: 4.5.0
   vue: 3.3.8
   magic-string: ^0.30.5
-  nitropack: npm:nitropack-nightly
-  h3: npm:h3-nightly
+  nitropack: npm:nitropack-nightly@2.8.0-28341234.30e1c13
+  h3: npm:h3-nightly@1.9.0-1700448935.0ff34bc
 
 importers:
 
@@ -78,8 +78,8 @@ importers:
         specifier: 13.2.2
         version: 13.2.2
       h3:
-        specifier: npm:h3-nightly
-        version: /h3-nightly@1.9.0-1699405275.b7aca96
+        specifier: npm:h3-nightly@1.9.0-1700448935.0ff34bc
+        version: /h3-nightly@1.9.0-1700448935.0ff34bc
       happy-dom:
         specifier: 12.10.3
         version: 12.10.3
@@ -90,8 +90,8 @@ importers:
         specifier: 0.37.0
         version: 0.37.0
       nitropack:
-        specifier: npm:nitropack-nightly
-        version: /nitropack-nightly@2.8.0-28340502.22e181c
+        specifier: npm:nitropack-nightly@2.8.0-28341234.30e1c13
+        version: /nitropack-nightly@2.8.0-28341234.30e1c13
       nuxi:
         specifier: 3.9.1
         version: 3.9.1
@@ -217,8 +217,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: npm:nitropack-nightly
-        version: /nitropack-nightly@2.8.0-28340502.22e181c
+        specifier: npm:nitropack-nightly@2.8.0-28341234.30e1c13
+        version: /nitropack-nightly@2.8.0-28341234.30e1c13
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.2.2)
@@ -307,8 +307,8 @@ importers:
         specifier: ^13.2.2
         version: 13.2.2
       h3:
-        specifier: npm:h3-nightly
-        version: /h3-nightly@1.9.0-1699405275.b7aca96
+        specifier: npm:h3-nightly@1.9.0-1700448935.0ff34bc
+        version: /h3-nightly@1.9.0-1700448935.0ff34bc
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -328,8 +328,8 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
       nitropack:
-        specifier: npm:nitropack-nightly
-        version: /nitropack-nightly@2.8.0-28340502.22e181c
+        specifier: npm:nitropack-nightly@2.8.0-28341234.30e1c13
+        version: /nitropack-nightly@2.8.0-28341234.30e1c13
       nuxi:
         specifier: ^3.9.1
         version: 3.9.1
@@ -492,14 +492,14 @@ importers:
         specifier: 4.0.2
         version: 4.0.2(webpack@5.89.0)
       h3:
-        specifier: npm:h3-nightly
-        version: /h3-nightly@1.9.0-1699405275.b7aca96
+        specifier: npm:h3-nightly@1.9.0-1700448935.0ff34bc
+        version: /h3-nightly@1.9.0-1700448935.0ff34bc
       ignore:
         specifier: 5.3.0
         version: 5.3.0
       nitropack:
-        specifier: npm:nitropack-nightly
-        version: /nitropack-nightly@2.8.0-28340502.22e181c
+        specifier: npm:nitropack-nightly@2.8.0-28341234.30e1c13
+        version: /nitropack-nightly@2.8.0-28341234.30e1c13
       ofetch:
         specifier: 1.3.3
         version: 1.3.3
@@ -579,8 +579,8 @@ importers:
         specifier: ^3.1.1
         version: 3.1.1
       h3:
-        specifier: npm:h3-nightly
-        version: /h3-nightly@1.9.0-1699405275.b7aca96
+        specifier: npm:h3-nightly@1.9.0-1700448935.0ff34bc
+        version: /h3-nightly@1.9.0-1700448935.0ff34bc
       knitwork:
         specifier: ^1.0.0
         version: 1.0.0
@@ -694,8 +694,8 @@ importers:
         specifier: ^11.1.1
         version: 11.1.1
       h3:
-        specifier: npm:h3-nightly
-        version: /h3-nightly@1.9.0-1699405275.b7aca96
+        specifier: npm:h3-nightly@1.9.0-1700448935.0ff34bc
+        version: /h3-nightly@1.9.0-1700448935.0ff34bc
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -2027,14 +2027,6 @@ packages:
       - encoding
       - supports-color
 
-  /@netlify/functions@2.3.0:
-    resolution: {integrity: sha512-E3kzXPWMP/r1rAWhjTaXcaOT47dhEvg/eQUJjRLhD9Zzp0WqkdynHr+bqff4rFNv6tuXrtFZrpbPJFKHH0c0zw==}
-    engines: {node: '>=14.0.0'}
-    dependencies:
-      '@netlify/serverless-functions-api': 1.9.0
-      is-promise: 4.0.0
-    dev: false
-
   /@netlify/functions@2.4.0:
     resolution: {integrity: sha512-dIqhdj5u4Lu/8qbYwtYpn8NfvIyPHbSTV2lAP4ocL+iwC9As06AXT0wa/xOpO2vRWJa0IMxdZaqCPnkyHlHiyg==}
     engines: {node: '>=14.0.0'}
@@ -2052,14 +2044,6 @@ packages:
     dependencies:
       '@netlify/node-cookies': 0.1.0
       urlpattern-polyfill: 8.0.2
-
-  /@netlify/serverless-functions-api@1.9.0:
-    resolution: {integrity: sha512-Jq4uk1Mwa5vyxImupJYXPP+I5yYcp3PtguvXtJRutKdm9DPALXfZVtCQzBWMNdZiqVWCM3La9hvaBsPjSMfeug==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    dependencies:
-      '@netlify/node-cookies': 0.1.0
-      urlpattern-polyfill: 8.0.2
-    dev: false
 
   /@nodelib/fs.scandir@2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -2201,14 +2185,14 @@ packages:
       fast-glob: 3.3.2
       flatted: 3.2.9
       get-port-please: 3.1.1
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
+      h3: /h3-nightly@1.9.0-1700448935.0ff34bc
       hookable: 5.5.3
       image-meta: 0.2.0
       is-installed-globally: 1.0.0
       launch-editor: 2.6.1
       local-pkg: 0.5.0
       magicast: 0.3.2
-      nitropack: 2.7.2
+      nitropack: /nitropack-nightly@2.8.0-28341234.30e1c13
       nuxt: link:packages/nuxt
       nypm: 0.3.3
       ofetch: 1.3.3
@@ -2236,6 +2220,7 @@ packages:
       - '@azure/keyvault-secrets'
       - '@azure/storage-blob'
       - '@capacitor/preferences'
+      - '@netlify/blobs'
       - '@planetscale/database'
       - '@upstash/redis'
       - '@vercel/kv'
@@ -2485,6 +2470,7 @@ packages:
     dependencies:
       rollup: 3.29.4
       slash: 4.0.0
+    dev: true
 
   /@rollup/plugin-alias@5.0.1(rollup@4.5.0):
     resolution: {integrity: sha512-JObvbWdOHoMy9W7SU0lvGhDtWq9PllP5mjpAy+TUslZG/WzOId9u80Hsqq1vCUn9pFJ0cxpdcnAv+QzU2zFH3Q==}
@@ -2514,6 +2500,7 @@ packages:
       is-reference: 1.2.1
       magic-string: 0.30.5
       rollup: 3.29.4
+    dev: true
 
   /@rollup/plugin-commonjs@25.0.7(rollup@4.5.0):
     resolution: {integrity: sha512-nEvcR+LRjEjsaSsc4x3XZfCCvZIaSMenZu/OiwOKGN2UhQpAYI7ru7czFvyWbErlpoGjnSX3D5Ch5FcMA3kRWQ==}
@@ -2531,21 +2518,6 @@ packages:
       is-reference: 1.2.1
       magic-string: 0.30.5
       rollup: 4.5.0
-
-  /@rollup/plugin-inject@5.0.5(rollup@3.29.4):
-    resolution: {integrity: sha512-2+DEJbNBoPROPkgTDNe8/1YXWcqxbN5DTjASVIOx8HS+pITXushyNiBV56RB08zuptzz8gT3YfkqriTBVycepg==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
-      estree-walker: 2.0.2
-      magic-string: 0.30.5
-      rollup: 3.29.4
-    dev: false
 
   /@rollup/plugin-inject@5.0.5(rollup@4.5.0):
     resolution: {integrity: sha512-2+DEJbNBoPROPkgTDNe8/1YXWcqxbN5DTjASVIOx8HS+pITXushyNiBV56RB08zuptzz8gT3YfkqriTBVycepg==}
@@ -2572,6 +2544,7 @@ packages:
     dependencies:
       '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
       rollup: 3.29.4
+    dev: true
 
   /@rollup/plugin-json@6.0.1(rollup@4.5.0):
     resolution: {integrity: sha512-RgVfl5hWMkxN1h/uZj8FVESvPuBJ/uf6ly6GTj0GONnkfoBN5KC0MSz+PN2OLDgYXMhtG0mWpTrkiOjoxAIevw==}
@@ -2601,6 +2574,7 @@ packages:
       is-module: 1.0.0
       resolve: 1.22.8
       rollup: 3.29.4
+    dev: true
 
   /@rollup/plugin-node-resolve@15.2.3(rollup@4.5.0):
     resolution: {integrity: sha512-j/lym8nf5E21LwBT4Df1VD6hRO2L2iwUeUmP7litikRsVp1H6NWx20NEp0Y7su+7XGc476GnXXc4kFeZNGmaSQ==}
@@ -2645,21 +2619,6 @@ packages:
       magic-string: 0.30.5
       rollup: 4.5.0
 
-  /@rollup/plugin-terser@0.4.4(rollup@3.29.4):
-    resolution: {integrity: sha512-XHeJC5Bgvs8LfukDwWZp7yeqin6ns8RTl2B9avbejt6tZqsqvVoWI7ZTQrcNsfKEDWBTnTxM8nMDkO2IFFbd0A==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      rollup: 3.29.4
-      serialize-javascript: 6.0.1
-      smob: 1.4.1
-      terser: 5.22.0
-    dev: false
-
   /@rollup/plugin-terser@0.4.4(rollup@4.5.0):
     resolution: {integrity: sha512-XHeJC5Bgvs8LfukDwWZp7yeqin6ns8RTl2B9avbejt6tZqsqvVoWI7ZTQrcNsfKEDWBTnTxM8nMDkO2IFFbd0A==}
     engines: {node: '>=14.0.0'}
@@ -2673,19 +2632,6 @@ packages:
       serialize-javascript: 6.0.1
       smob: 1.4.1
       terser: 5.22.0
-
-  /@rollup/plugin-wasm@6.2.2(rollup@3.29.4):
-    resolution: {integrity: sha512-gpC4R1G9Ni92ZIRTexqbhX7U+9estZrbhP+9SRb0DW9xpB9g7j34r+J2hqrcW/lRI7dJaU84MxZM0Rt82tqYPQ==}
-    engines: {node: '>=14.0.0'}
-    peerDependencies:
-      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
-    peerDependenciesMeta:
-      rollup:
-        optional: true
-    dependencies:
-      '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
-      rollup: 3.29.4
-    dev: false
 
   /@rollup/plugin-wasm@6.2.2(rollup@4.5.0):
     resolution: {integrity: sha512-gpC4R1G9Ni92ZIRTexqbhX7U+9estZrbhP+9SRb0DW9xpB9g7j34r+J2hqrcW/lRI7dJaU84MxZM0Rt82tqYPQ==}
@@ -2936,12 +2882,6 @@ packages:
   /@types/hash-sum@1.0.2:
     resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
     dev: true
-
-  /@types/http-proxy@1.17.13:
-    resolution: {integrity: sha512-GkhdWcMNiR5QSQRYnJ+/oXzu0+7JJEPC8vkWXK351BkhjraZF+1W13CUYARUvX9+NqIU2n6YHA4iwywsc/M6Sw==}
-    dependencies:
-      '@types/node': 20.9.1
-    dev: false
 
   /@types/http-proxy@1.17.14:
     resolution: {integrity: sha512-SSrD0c1OQzlFX7pGu1eXxSEjemej64aaNPRhhVYUGqXh0BtldAAx37MG8btcumvpgKyZp1F5Gn3JkktdxiFv6w==}
@@ -5909,8 +5849,8 @@ packages:
     dependencies:
       duplexer: 0.1.2
 
-  /h3-nightly@1.9.0-1699405275.b7aca96:
-    resolution: {integrity: sha512-21W+dlNhBmgJcrLQBZoqV4+nLiNJSJNXGa3uHjYOn/8SvQvw9woWCSq+HzEi+Ak2tgXrGVYLf+3qjf6XHLqazw==}
+  /h3-nightly@1.9.0-1700448935.0ff34bc:
+    resolution: {integrity: sha512-4FVlL3EDpv/55dKuT9LAXURorKSGroCIeeVu/khjunD8OaxfsT1TH894Z/FnP4y2fslUL0lk3kDKG+GKNAWi6Q==}
     dependencies:
       cookie-es: 1.0.0
       defu: 6.1.3
@@ -6677,7 +6617,7 @@ packages:
       consola: 3.2.3
       defu: 6.1.3
       get-port-please: 3.1.1
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
+      h3: /h3-nightly@1.9.0-1700448935.0ff34bc
       http-shutdown: 1.2.2
       jiti: 1.21.0
       mlly: 1.4.2
@@ -7202,8 +7142,8 @@ packages:
   /neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  /nitropack-nightly@2.8.0-28340502.22e181c:
-    resolution: {integrity: sha512-X19ew8dCJIN5LyxEolBoBS0iZKwdOzjio36NSRG2oG0FhwvudvEwsnfL9JCy4PWHYrCGadXHLU63lgHDhRXK6g==}
+  /nitropack-nightly@2.8.0-28341234.30e1c13:
+    resolution: {integrity: sha512-woPbwIEaKKOTQb/P7xRXY+tHyAgvtYWBboXOjVAq6pOdnAA1RBPc+suN0h0msSS/cvLYFf7/xl18iJcS5671KA==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -7241,7 +7181,7 @@ packages:
       fs-extra: 11.1.1
       globby: 14.0.0
       gzip-size: 7.0.0
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
+      h3: /h3-nightly@1.9.0-1700448935.0ff34bc
       hookable: 5.5.3
       httpxy: 0.1.5
       is-primitive: 3.0.1
@@ -7290,95 +7230,6 @@ packages:
       - encoding
       - idb-keyval
       - supports-color
-
-  /nitropack@2.7.2:
-    resolution: {integrity: sha512-6vQbGdBNR20N8wTChzIQUZQmNVhWVDrjUdpOYD68u2hlyUiJembth2fQuoWw3KlsoNYWFvcyqL9X3DPjjnoEUQ==}
-    engines: {node: ^16.11.0 || >=17.0.0}
-    hasBin: true
-    peerDependencies:
-      xml2js: ^0.6.2
-    peerDependenciesMeta:
-      xml2js:
-        optional: true
-    dependencies:
-      '@cloudflare/kv-asset-handler': 0.3.0
-      '@netlify/functions': 2.3.0
-      '@rollup/plugin-alias': 5.0.1(rollup@3.29.4)
-      '@rollup/plugin-commonjs': 25.0.7(rollup@3.29.4)
-      '@rollup/plugin-inject': 5.0.5(rollup@3.29.4)
-      '@rollup/plugin-json': 6.0.1(rollup@3.29.4)
-      '@rollup/plugin-node-resolve': 15.2.3(rollup@3.29.4)
-      '@rollup/plugin-replace': 5.0.5(rollup@3.29.4)
-      '@rollup/plugin-terser': 0.4.4(rollup@3.29.4)
-      '@rollup/plugin-wasm': 6.2.2(rollup@3.29.4)
-      '@rollup/pluginutils': 5.0.5(rollup@3.29.4)
-      '@types/http-proxy': 1.17.13
-      '@vercel/nft': 0.24.3
-      archiver: 6.0.1
-      c12: 1.5.1
-      chalk: 5.3.0
-      chokidar: 3.5.3
-      citty: 0.1.4
-      consola: 3.2.3
-      cookie-es: 1.0.0
-      defu: 6.1.3
-      destr: 2.0.2
-      dot-prop: 8.0.2
-      esbuild: 0.19.5
-      escape-string-regexp: 5.0.0
-      etag: 1.8.1
-      fs-extra: 11.1.1
-      globby: 13.2.2
-      gzip-size: 7.0.0
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
-      hookable: 5.5.3
-      httpxy: 0.1.5
-      is-primitive: 3.0.1
-      jiti: 1.21.0
-      klona: 2.0.6
-      knitwork: 1.0.0
-      listhen: 1.5.5
-      magic-string: 0.30.5
-      mime: 3.0.0
-      mlly: 1.4.2
-      mri: 1.2.0
-      node-fetch-native: 1.4.1
-      ofetch: 1.3.3
-      ohash: 1.1.3
-      openapi-typescript: 6.7.0
-      pathe: 1.1.1
-      perfect-debounce: 1.0.0
-      pkg-types: 1.0.3
-      pretty-bytes: 6.1.1
-      radix3: 1.1.0
-      rollup: 3.29.4
-      rollup-plugin-visualizer: 5.9.2(rollup@3.29.4)
-      scule: 1.1.0
-      semver: 7.5.4
-      serve-placeholder: 2.0.1
-      serve-static: 1.15.0
-      std-env: 3.5.0
-      ufo: 1.3.2
-      uncrypto: 0.1.3
-      unctx: 2.3.1
-      unenv: 1.7.4
-      unimport: 3.5.0(rollup@3.29.4)
-      unstorage: 1.9.0
-    transitivePeerDependencies:
-      - '@azure/app-configuration'
-      - '@azure/cosmos'
-      - '@azure/data-tables'
-      - '@azure/identity'
-      - '@azure/keyvault-secrets'
-      - '@azure/storage-blob'
-      - '@capacitor/preferences'
-      - '@planetscale/database'
-      - '@upstash/redis'
-      - '@vercel/kv'
-      - encoding
-      - idb-keyval
-      - supports-color
-    dev: false
 
   /node-abort-controller@3.1.1:
     resolution: {integrity: sha512-AGK2yQKIjRuqnc6VkX2Xj5d+QW8xZ87pa1UK6yA6ouUyuxfHuMP6umE5QK7UmTeOAymo+Zx1Fxiuw9rVx8taHQ==}
@@ -7715,18 +7566,6 @@ packages:
       define-lazy-prop: 3.0.0
       is-inside-container: 1.0.0
       is-wsl: 2.2.0
-
-  /openapi-typescript@6.7.0:
-    resolution: {integrity: sha512-eoUfJwhnMEug7euZ1dATG7iRiDVsEROwdPkhLUDiaFjcClV4lzft9F0Ii0fYjULCPNIiWiFi0BqMpSxipuvAgQ==}
-    hasBin: true
-    dependencies:
-      ansi-colors: 4.1.3
-      fast-glob: 3.3.2
-      js-yaml: 4.1.0
-      supports-color: 9.4.0
-      undici: 5.26.3
-      yargs-parser: 21.1.1
-    dev: false
 
   /openapi-typescript@6.7.1:
     resolution: {integrity: sha512-Q3Ltt0KUm2smcPrsaR8qKmSwQ1KM4yGDJVoQdpYa0yvKPeN8huDx5utMT7DvwvJastHHzUxajjivK3WN2+fobg==}
@@ -9610,13 +9449,6 @@ packages:
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  /undici@5.26.3:
-    resolution: {integrity: sha512-H7n2zmKEWgOllKkIUkLvFmsJQj062lSm3uA4EYApG8gLuiOM0/go9bIoC3HVaSnfg4xunowDE2i9p8drkXuvDw==}
-    engines: {node: '>=14.0'}
-    dependencies:
-      '@fastify/busboy': 2.0.0
-    dev: false
-
   /undici@5.27.2:
     resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
     engines: {node: '>=14.0'}
@@ -9785,7 +9617,7 @@ packages:
       anymatch: 3.1.3
       chokidar: 3.5.3
       destr: 2.0.2
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
+      h3: /h3-nightly@1.9.0-1700448935.0ff34bc
       ioredis: 5.3.2
       listhen: 1.5.5
       lru-cache: 10.0.3
@@ -9795,59 +9627,6 @@ packages:
       ufo: 1.3.2
     transitivePeerDependencies:
       - supports-color
-
-  /unstorage@1.9.0:
-    resolution: {integrity: sha512-VpD8ZEYc/le8DZCrny3bnqKE4ZjioQxBRnWE+j5sGNvziPjeDlaS1NaFFHzl/kkXaO3r7UaF8MGQrs14+1B4pQ==}
-    peerDependencies:
-      '@azure/app-configuration': ^1.4.1
-      '@azure/cosmos': ^3.17.3
-      '@azure/data-tables': ^13.2.2
-      '@azure/identity': ^3.2.3
-      '@azure/keyvault-secrets': ^4.7.0
-      '@azure/storage-blob': ^12.14.0
-      '@capacitor/preferences': ^5.0.0
-      '@planetscale/database': ^1.8.0
-      '@upstash/redis': ^1.22.0
-      '@vercel/kv': ^0.2.2
-      idb-keyval: ^6.2.1
-    peerDependenciesMeta:
-      '@azure/app-configuration':
-        optional: true
-      '@azure/cosmos':
-        optional: true
-      '@azure/data-tables':
-        optional: true
-      '@azure/identity':
-        optional: true
-      '@azure/keyvault-secrets':
-        optional: true
-      '@azure/storage-blob':
-        optional: true
-      '@capacitor/preferences':
-        optional: true
-      '@planetscale/database':
-        optional: true
-      '@upstash/redis':
-        optional: true
-      '@vercel/kv':
-        optional: true
-      idb-keyval:
-        optional: true
-    dependencies:
-      anymatch: 3.1.3
-      chokidar: 3.5.3
-      destr: 2.0.2
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
-      ioredis: 5.3.2
-      listhen: 1.5.5
-      lru-cache: 10.0.1
-      mri: 1.2.0
-      node-fetch-native: 1.4.1
-      ofetch: 1.3.3
-      ufo: 1.3.2
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
@@ -10172,7 +9951,7 @@ packages:
       defu: 6.1.3
       estree-walker: 3.0.3
       fake-indexeddb: 4.0.2
-      h3: /h3-nightly@1.9.0-1699405275.b7aca96
+      h3: /h3-nightly@1.9.0-1700448935.0ff34bc
       happy-dom: 12.10.3
       local-pkg: 0.5.0
       magic-string: 0.30.5

@@ -38,8 +38,8 @@
     "vite": "4.5.0",
     "vue": "3.3.8",
     "magic-string": "^0.30.5",
-    "nitropack": "npm:nitropack-nightly",
-    "h3": "npm:h3-nightly"
+    "nitropack": "npm:nitropack-nightly@2.8.0-28341234.30e1c13",
+    "h3": "npm:h3-nightly@1.9.0-1700448935.0ff34bc"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "0.2.0",
