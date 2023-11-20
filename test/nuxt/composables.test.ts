@@ -266,6 +266,16 @@ describe('useFetch', () => {
     await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
   })
+
+  it('should timeout', async () => {
+    const { status, error } = await useFetch(
+      () => new Promise(resolve => setTimeout(resolve, 5000)),
+      { timeout: 1 }
+    )
+    await new Promise(resolve => setTimeout(resolve, 2))
+    expect(status.value).toBe('error')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+  })
 })
 
 describe('errors', () => {
