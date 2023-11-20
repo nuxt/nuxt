@@ -268,10 +268,13 @@ describe('useFetch', () => {
   })
 
   it('should timeout', async () => {
-    const { pending, status, error } = await useFetch('https://httpbin.org/delay/10', { timeout: 1 })
+    const { pending, status, error } = await useFetch(
+      () => new Promise(resolve => setTimeout(resolve, 5000)),
+      { timeout: 1 }
+    )
     await pending.value
     expect(status.value).toBe('error')
-    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "https://httpbin.org/delay/10": <no response> The operation was aborted.]')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
   })
 })
 
