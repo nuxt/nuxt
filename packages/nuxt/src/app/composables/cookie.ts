@@ -150,47 +150,30 @@ const MAX_TIMEOUT_DELAY = 2_147_483_647
 // custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
-  let interval: NodeJS.Timeout
-  onScopeDispose(() => { 
-    clearTimeout(timeout)
-    clearInterval(interval)
-  })
+  let elapsed = 0
+  onScopeDispose(() => {  clearTimeout(timeout) })
 
-  // Divide delay into intervals to work around the maximum delay value for setTimeout
-  const intervalsNeeded = Math.max(Math.ceil(delay / MAX_TIMEOUT_DELAY) - 1, 0)
-  const lastDelay = delay - MAX_TIMEOUT_DELAY * intervalsNeeded
   return customRef((track, trigger) => {
+    function createExpirationTimeout () {
+      clearTimeout(timeout)
+      const timeRemaining = delay - elapsed
+      const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
+      timeout = setTimeout(() => {
+        elapsed += timeoutLength
+        if (elapsed < delay) { return createExpirationTimeout() }
+
+        value = undefined
+        trigger()
+      }, timeoutLength)
+    }
+
     return {
       get () {
         track()
         return value
       },
       set (newValue) {
-        clearTimeout(timeout)
-        clearInterval(interval)
-
-        let currentIntervalIdx = 0
-        if (intervalsNeeded) {
-          // We need intervals to go around the MAX_TIMEOUT_DELAY of setTimeout
-          interval = setInterval(() => {
-            currentIntervalIdx++
-
-            if (currentIntervalIdx >= intervalsNeeded) {
-              // We're on the final interval. Use the remainder as a timeout.
-              clearInterval(interval)
-              timeout = setTimeout(() => {
-                value = undefined
-                trigger()
-              }, lastDelay)
-            }
-          }, MAX_TIMEOUT_DELAY)
-        } else {
-          // The original delay is safe to use in setTimeout
-          timeout = setTimeout(() => {
-            value = undefined
-            trigger()
-          }, delay)
-        }
+        createExpirationTimeout()
 
         value = newValue
         trigger()
