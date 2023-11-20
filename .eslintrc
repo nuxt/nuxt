@@ -4,7 +4,8 @@
     "dist",
     "public",
     "node_modules",
-    "packages/schema/schema"
+    "packages/schema/schema",
+    "packages/kit"
   ],
   "globals": {
     "NodeJS": true,
