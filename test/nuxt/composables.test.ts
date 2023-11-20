@@ -268,11 +268,11 @@ describe('useFetch', () => {
   })
 
   it('should timeout', async () => {
-    const { pending, status, error } = await useFetch(
+    const { status, error } = await useFetch(
       () => new Promise(resolve => setTimeout(resolve, 5000)),
       { timeout: 1 }
     )
-    await pending.value
+    await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
     expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
   })
