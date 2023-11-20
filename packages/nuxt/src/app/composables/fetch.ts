@@ -146,7 +146,7 @@ export function useFetch<
      * @see https://github.com/unjs/ofetch/issues/326
      * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
      */
-    if(toValue(opts.timeout)){
+    if (toValue(opts.timeout)) {
       setTimeout(() => controller.abort(), toValue(opts.timeout));
     }
 
