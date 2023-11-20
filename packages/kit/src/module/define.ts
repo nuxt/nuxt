@@ -5,7 +5,7 @@ import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
 import { type ModuleDefinition, type ModuleOptions, type ModuleSetupReturn, type Nuxt, type NuxtModule, type NuxtOptions, type ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
-import { nuxtContext, tryUseNuxt, useNuxt } from '../context'
+import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
 import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
 import { compileTemplate, templateUtils } from '../internal/template'
 
@@ -165,11 +165,11 @@ function nuxt2Shims(nuxt: Nuxt) {
   nuxt.hooks = nuxt
 
   // Allow using useNuxt()
-  if (!nuxtContext.tryUse()) {
-    nuxtContext.set(nuxt)
+  if (!nuxtCtx.tryUse()) {
+    nuxtCtx.set(nuxt)
 
     nuxt.hook('close', () => {
-      nuxtContext.unset()
+      nuxtCtx.unset()
     })
   }
 

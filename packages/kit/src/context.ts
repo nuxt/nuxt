@@ -2,7 +2,7 @@ import { getContext } from 'unctx'
 import { type Nuxt } from '@nuxt/schema'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
-export const nuxtContext = getContext<Nuxt>('nuxt')
+export const nuxtCtx = getContext<Nuxt>('nuxt')
 
 /**
  * Get the Nuxt instance from the context. It will throw an error if Nuxt is not available.
@@ -15,7 +15,7 @@ export const nuxtContext = getContext<Nuxt>('nuxt')
  * ```
  */
 export function useNuxt(): Nuxt {
-  const instance = nuxtContext.tryUse()
+  const instance = nuxtCtx.tryUse()
 
   if (!instance) {
     throw new Error('Nuxt instance is unavailable!')
@@ -38,5 +38,5 @@ export function useNuxt(): Nuxt {
  * ```
  */
 export function tryUseNuxt(): Nuxt | null {
-  return nuxtContext.tryUse()
+  return nuxtCtx.tryUse()
 }
