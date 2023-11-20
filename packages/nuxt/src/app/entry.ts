@@ -63,9 +63,7 @@ if (import.meta.client) {
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
 
-    const prevVueErrorHandler = vueApp.config.errorHandler
-    if (!vueApp.config.errorHandler)
-      vueApp.config.errorHandler = handleVueError
+    vueApp.config.errorHandler = handleVueError
 
     try {
       await applyPlugins(nuxt, plugins)
@@ -85,7 +83,9 @@ if (import.meta.client) {
       nuxt.payload.error = (nuxt.payload.error || err) as any
     }
 
-    vueApp.config.errorHandler = prevVueErrorHandler
+    // If the errorHandler is not overridden by the user, we unset it
+    if (vueApp.config.errorHandler === handleVueError)
+      vueApp.config.errorHandler = undefined
 
     return vueApp
   }
