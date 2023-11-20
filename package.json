@@ -58,7 +58,7 @@
     "eslint-plugin-unicorn": "49.0.0",
     "execa": "8.0.1",
     "fs-extra": "11.1.1",
-    "globby": "13.2.2",
+    "globby": "14.0.0",
     "h3": "1.8.2",
     "happy-dom": "12.10.3",
     "jiti": "1.21.0",
