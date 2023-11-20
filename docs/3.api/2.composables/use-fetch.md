@@ -36,7 +36,7 @@ const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev
 })
 ```
 
-Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
+The above example results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`.
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
