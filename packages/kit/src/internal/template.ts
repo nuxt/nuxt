@@ -32,6 +32,7 @@ export async function compileTemplate(template: NuxtTemplate, context: any) {
     // eslint-disable-next-line ts/no-unsafe-argument
     return template.getContents(data)
   }
+
   throw new Error('Invalid template: ' + JSON.stringify(template))
 }
 
