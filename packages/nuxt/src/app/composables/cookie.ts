@@ -151,7 +151,9 @@ const MAX_TIMEOUT_DELAY = 2_147_483_647
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
   let elapsed = 0
-  onScopeDispose(() => {  clearTimeout(timeout) })
+  if (getCurrentScope()) {
+    onScopeDispose(() => { clearTimeout(timeout) })
+  }
 
   return customRef((track, trigger) => {
     function createExpirationTimeout () {
