@@ -29,7 +29,7 @@
     "@types/lodash.template": "^4.5.3",
     "critters": "0.0.20",
     "execa": "^8.0.1",
-    "globby": "^13.2.2",
+    "globby": "^14.0.0",
     "html-minifier": "^4.0.0",
     "jiti": "^1.21.0",
     "knitwork": "^1.0.0",
