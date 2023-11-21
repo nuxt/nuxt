@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import { type ModuleMeta, type Nuxt, type NuxtModule } from '@nuxt/schema'
+import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'

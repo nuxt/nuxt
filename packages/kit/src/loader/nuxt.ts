@@ -1,8 +1,8 @@
 import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import { type Nuxt } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 import { importModule, tryImportModule } from '../internal/esm'
-import { type LoadNuxtConfigOptions } from './config'
+import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   /** Load nuxt with development mode */

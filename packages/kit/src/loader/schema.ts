@@ -1,4 +1,4 @@
-import { type SchemaDefinition } from '@nuxt/schema'
+import type { SchemaDefinition } from '@nuxt/schema'
 import { useNuxt } from '../context'
 
 export function extendNuxtSchema (

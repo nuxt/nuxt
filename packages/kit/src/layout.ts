@@ -1,4 +1,4 @@
-import { type NuxtTemplate } from '@nuxt/schema'
+import type { NuxtTemplate } from '@nuxt/schema'
 import { join, parse, relative } from 'pathe'
 import { kebabCase } from 'scule'
 import { isNuxt2 } from './compatibility'

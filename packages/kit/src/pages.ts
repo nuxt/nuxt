@@ -1,5 +1,5 @@
-import { type NuxtHooks, type NuxtMiddleware } from '@nuxt/schema'
-import { type NitroRouteConfig } from 'nitropack'
+import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
+import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { isNuxt2 } from './compatibility'

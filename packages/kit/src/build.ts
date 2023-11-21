@@ -1,5 +1,5 @@
-import { type Configuration as WebpackConfig, type WebpackPluginInstance } from 'webpack'
-import { type UserConfig as ViteConfig, type Plugin as VitePlugin } from 'vite'
+import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
+import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 

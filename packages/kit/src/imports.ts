@@ -1,5 +1,5 @@
-import { type Import } from 'unimport'
-import { type ImportPresetWithDeprecation } from '@nuxt/schema'
+import type { Import } from 'unimport'
+import type { ImportPresetWithDeprecation } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 import { toArray } from './utils'

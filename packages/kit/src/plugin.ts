@@ -1,5 +1,5 @@
 import { normalize } from 'pathe'
-import { type NuxtPlugin, type NuxtPluginTemplate } from '@nuxt/schema'
+import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'

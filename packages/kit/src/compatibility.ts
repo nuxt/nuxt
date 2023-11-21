@@ -1,5 +1,5 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
-import { type Nuxt, type NuxtCompatibility, type NuxtCompatibilityIssues } from '@nuxt/schema'
+import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
 /**

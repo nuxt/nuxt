@@ -1,10 +1,10 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import { type Nuxt, type NuxtTemplate, type NuxtTypeTemplate, type ResolvedNuxtTemplate, type TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
-import { type TSConfig } from 'pkg-types'
+import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'

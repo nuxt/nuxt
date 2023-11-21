@@ -1,5 +1,5 @@
 import { getContext } from 'unctx'
-import { type Nuxt } from '@nuxt/schema'
+import type { Nuxt } from '@nuxt/schema'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
 export const nuxtCtx = getContext<Nuxt>('nuxt')

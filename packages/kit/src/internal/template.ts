@@ -4,7 +4,7 @@ import { promises as fsp } from 'node:fs'
 import { template as lodashTemplate } from 'lodash-es'
 import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
-import { type NuxtTemplate } from '@nuxt/schema'
+import type { NuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 
 // eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
