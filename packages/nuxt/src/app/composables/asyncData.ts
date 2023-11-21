@@ -2,6 +2,7 @@ import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, 
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
+import type { NuxtError} from './error';
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 
@@ -74,27 +75,27 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
 
 export function useAsyncData<
   ResT,
-  DataE = Error,
+  NuxtErrorDataT = any,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtError<NuxtErrorDataT> | null>
 export function useAsyncData<
   ResT,
-  DataE = Error,
+  NuxtErrorDataT = any,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtError<NuxtErrorDataT> | null>
 export function useAsyncData<
   ResT,
-  DataE = Error,
+  NuxtErrorDataT = any,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
@@ -102,10 +103,10 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtError<NuxtErrorDataT> | null>
 export function useAsyncData<
   ResT,
-  DataE = Error,
+  NuxtErrorDataT = any,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
@@ -113,14 +114,14 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtError<NuxtErrorDataT> | null>
 export function useAsyncData<
   ResT,
-  DataE = Error,
+  NuxtErrorDataT = any,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, DataE | null> {
+> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, NuxtError<NuxtErrorDataT> | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
@@ -168,7 +169,7 @@ export function useAsyncData<
   }
 
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
-  const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, DataE>
+  const asyncData = { ...nuxt._asyncData[key] } as AsyncData<DataT | DefaultT, NuxtError<NuxtErrorDataT>>
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
@@ -215,7 +216,7 @@ export function useAsyncData<
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
-        asyncData.error.value = createError(error) as DataE
+        asyncData.error.value = createError<NuxtErrorDataT>(error)
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
       })
@@ -286,10 +287,10 @@ export function useAsyncData<
   }
 
   // Allow directly awaiting on asyncData
-  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, DataE>
+  const asyncDataPromise = Promise.resolve(nuxt._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, NuxtError<NuxtErrorDataT>>
   Object.assign(asyncDataPromise, asyncData)
 
-  return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, DataE>
+  return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, NuxtError<NuxtErrorDataT>>
 }
 export function useLazyAsyncData<
   ResT,
