@@ -55,7 +55,7 @@ export async function checkNuxtCompatibility (
         name: 'bridge',
         message: 'Nuxt bridge is required'
       })
-    } else if (isBridgeRequired && hasBridge) {
+    } else if (!isBridgeRequired && hasBridge) {
       issues.push({
         name: 'bridge',
         message: 'Nuxt bridge is not supported'
