@@ -28,6 +28,7 @@ export type NuxtPage = {
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
+  server?: boolean
 }
 
 export type NuxtMiddleware = {

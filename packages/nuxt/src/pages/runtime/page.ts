@@ -1,4 +1,4 @@
-import { Suspense, Transition, defineComponent, h, inject, nextTick, ref } from 'vue'
+import { Suspense, Transition, defineAsyncComponent, defineComponent, h, inject, nextTick, ref } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
@@ -37,6 +37,7 @@ export default defineComponent({
     }
   },
   setup (props, { attrs, expose }) {
+    const NuxtIsland = defineAsyncComponent(() => import('#app/components/nuxt-island'))
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -87,7 +88,16 @@ export default defineComponent({
             defaultPageTransition,
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
+          if(routeProps.route.meta.server) {
+    
+      console.log(routeProps.route.name, 'name')
+              return h(NuxtIsland, {
+                props: {
+                },
+                name: routeProps.route.name as string,
 
+              }) 
+          }
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
