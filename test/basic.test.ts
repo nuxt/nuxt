@@ -814,6 +814,17 @@ describe('errors', () => {
         "url": "/__nuxt_error",
       }
     `)
+
+    it('should not recursively throw an error when there is an error rendering the error page', async () => {
+      const res = await $fetch('/', {
+        headers: {
+          'x-test-recurse-error': 'true',
+          accept: 'text/html'
+        }
+      })
+      expect(typeof res).toBe('string')
+      expect(res).toContain('Hello Nuxt 3!')
+    })
   })
 
   // TODO: need to create test for webpack
