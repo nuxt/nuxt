@@ -818,7 +818,7 @@ describe('errors', () => {
     it('should not recursively throw an error when there is an error rendering the error page', async () => {
       const res = await $fetch('/', {
         headers: {
-          'x-recurse': 'true',
+          'x-test-recurse-error': 'true',
           accept: 'text/html'
         }
       })
