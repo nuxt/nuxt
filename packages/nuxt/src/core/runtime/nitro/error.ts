@@ -48,7 +48,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Access request headers
   const reqHeaders = getRequestHeaders(event)
 
-  // Detect to avoid recusrion in SSR rendering of errors
+  // Detect to avoid recursion in SSR rendering of errors
   const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
 
   // HTML response (via SSR)
