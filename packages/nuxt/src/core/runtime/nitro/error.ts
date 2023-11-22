@@ -6,7 +6,7 @@ import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
 
-export default <NitroErrorHandler>async function errorhandler(error: H3Error, event) {
+export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
