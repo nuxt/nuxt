@@ -25,7 +25,7 @@
     "prepack": "unbuild"
   },
   "dependencies": {
-    "@nuxt/friendly-errors-webpack-plugin": "^2.5.2",
+    "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
     "autoprefixer": "^10.4.16",
     "css-loader": "^6.8.1",
