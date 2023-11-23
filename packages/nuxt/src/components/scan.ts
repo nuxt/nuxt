@@ -1,17 +1,16 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
-import { pascalCase, splitByCase } from 'scule'
+import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, logger, useNuxt } from '@nuxt/kit'
-// eslint-disable-next-line vue/prefer-import-from-vue
-import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
+
+import { resolveComponentNameSegments } from '../core/utils'
 
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
- *
  * @param dirs all folders where components are defined
  * @param srcDir src path of your app
  * @returns {Promise} Component found promise
@@ -65,7 +64,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       /**
        * Create an array of prefixes base on the prefix config
        * Empty prefix will be an empty array
-       *
        * @example prefix: 'nuxt' -> ['nuxt']
        * @example prefix: 'nuxt-test' -> ['nuxt', 'test']
        */
@@ -76,7 +74,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
       /**
        * In case we have index as filename the component become the parent path
-       *
        * @example third-components/index.vue -> third-component
        * if not take the filename
        * @example third-components/Awesome.vue -> Awesome
@@ -93,16 +90,16 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const componentName = resolveComponentName(fileName, prefixParts)
+      const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
+      const pascalName = pascalCase(componentNameSegments)
 
-      if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
+      if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
+        warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
       }
-      resolvedNames.set(componentName + suffix, filePath)
+      resolvedNames.set(pascalName + suffix, filePath)
 
-      const pascalName = pascalCase(componentName).replace(/["']/g, '')
-      const kebabName = hyphenate(componentName)
+      const kebabName = kebabCase(componentNameSegments)
       const shortPath = relative(srcDir, filePath)
       const chunkName = 'components/' + kebabName + suffix
 
@@ -129,7 +126,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
-      if (!componentName) {
+      if (!pascalName) {
         logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
         continue
       }
@@ -144,9 +141,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         if (newPriority > existingPriority) {
           components.splice(components.indexOf(existingComponent), 1, component)
         }
-        // Warn if a user-defined (or prioritised) component conflicts with a previously scanned component
+        // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
-          warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+          warnAboutDuplicateComponent(pascalName, filePath, existingComponent.filePath)
         }
 
         continue
@@ -158,34 +155,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   }
 
   return components
-}
-
-export function resolveComponentName (fileName: string, prefixParts: string[]) {
-  /**
-   * Array of fileName parts splitted by case, / or -
-   *
-   * @example third-component -> ['third', 'component']
-   * @example AwesomeComponent -> ['Awesome', 'Component']
-   */
-  const fileNameParts = splitByCase(fileName)
-  const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
-  const componentNameParts: string[] = [...prefixParts]
-  let index = prefixParts.length - 1
-  const matchedSuffix: string[] = []
-  while (index >= 0) {
-    matchedSuffix.unshift(...splitByCase(prefixParts[index] || '').map(p => p.toLowerCase()))
-    const matchedSuffixContent = matchedSuffix.join('/')
-    if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
-      // e.g Item/Item/Item.vue -> Item
-      (prefixParts[index].toLowerCase() === fileNamePartsContent &&
-        prefixParts[index + 1] &&
-        prefixParts[index] === prefixParts[index + 1])) {
-      componentNameParts.length = index
-    }
-    index--
-  }
-
-  return pascalCase(componentNameParts) + pascalCase(fileNameParts)
 }
 
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {

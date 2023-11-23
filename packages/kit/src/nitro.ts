@@ -67,7 +67,6 @@ export function addPrerenderRoutes (routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
- *
  * @example
  *
  * ```ts
@@ -91,9 +90,8 @@ export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
     config.imports = config.imports || {}
-    config.imports.autoImport = true
     if (Array.isArray(config.imports.imports)) {
-      config.imports.imports = [...config.imports.imports, ...imports]
+      config.imports.imports.push(...imports)
     } else {
       config.imports.imports = [config.imports.imports, ...imports]
     }
@@ -101,15 +99,14 @@ export function addServerImports (imports: Import[]) {
 }
 
 /**
- * Add directories to be scanned by Nitro
+ * Add directories to be scanned for auto-imports by Nitro
  */
 export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
+  const _dirs = Array.isArray(dirs) ? dirs : [dirs]
   nuxt.hook('nitro:config', (config) => {
-    config.scanDirs = config.scanDirs || []
-
-    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
-      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
-    }
+    config.imports = config.imports || {}
+    config.imports.dirs = config.imports.dirs || []
+    config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
   })
 }

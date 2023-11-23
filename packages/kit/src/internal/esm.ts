@@ -10,7 +10,9 @@ import { interopDefault, resolvePath } from 'mlly'
 export async function tryResolveModule (id: string, url: string | string[] = import.meta.url) {
   try {
     return await resolvePath(id, { url })
-  } catch { }
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }
 
 export async function importModule (id: string, url: string | string[] = import.meta.url) {
@@ -21,5 +23,7 @@ export async function importModule (id: string, url: string | string[] = import.
 export function tryImportModule (id: string, url = import.meta.url) {
   try {
     return importModule(id, url).catch(() => undefined)
-  } catch { }
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
 }

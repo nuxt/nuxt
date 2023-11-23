@@ -93,7 +93,6 @@ export interface AcceptOptions {
 export interface WebpackHot {
   /**
    * Accept code updates for the specified dependencies. The callback is called when dependencies were replaced.
-   *
    * @param dependencies
    * @param callback
    * @param errorHandler
@@ -101,7 +100,6 @@ export interface WebpackHot {
   accept (dependencies: string[], callback?: (updatedDependencies: WebpackModuleId[]) => void, errorHandler?: (err: Error) => void): void
   /**
    * Accept code updates for the specified dependencies. The callback is called when dependencies were replaced.
-   *
    * @param dependency
    * @param callback
    * @param errorHandler
@@ -111,7 +109,6 @@ export interface WebpackHot {
    * Accept code updates for this module without notification of parents.
    * This should only be used if the module doesn’t export anything.
    * The errHandler can be used to handle errors that occur while loading the updated module.
-   *
    * @param errHandler
    */
   accept (errHandler?: (err: Error) => void): void
@@ -132,7 +129,6 @@ export interface WebpackHot {
    * Here you should destroy/remove any persistent resource you have claimed/created.
    * If you want to transfer state to the new module, add it to data object.
    * The data will be available at module.hot.data on the new module.
-   *
    * @param callback
    */
   dispose (callback: (data: any) => void): void
@@ -142,7 +138,6 @@ export interface WebpackHot {
    * Here you should destroy/remove any persistent resource you have claimed/created.
    * If you want to transfer state to the new module, add it to data object.
    * The data will be available at module.hot.data on the new module.
-   *
    * @param callback
    */
   addDisposeHandler (callback: (data: any) => void): void
@@ -150,7 +145,6 @@ export interface WebpackHot {
   /**
    * Remove a handler.
    * This can useful to add a temporary dispose handler. You could i. e. replace code while in the middle of a multi-step async function.
-   *
    * @param callback
    */
   removeDisposeHandler (callback: (data: any) => void): void
@@ -162,7 +156,6 @@ export interface WebpackHot {
    * If autoApply is truthy the callback will be called with all modules that were disposed.
    * apply() is automatically called with autoApply as options parameter.
    * If autoApply is not set the callback will be called with all modules that will be disposed on apply().
-   *
    * @param autoApply
    * @param callback
    */
@@ -172,14 +165,12 @@ export interface WebpackHot {
    * Check all currently loaded modules for updates and apply updates if found.
    * If no update was found, the callback is called with null.
    * The callback will be called with all modules that will be disposed on apply().
-   *
    * @param callback
    */
   check (callback: (err: Error, outdatedModules: WebpackModuleId[]) => void): void
   /**
    * If status() != "ready" it throws an error.
    * Continue the update process.
-   *
    * @param options
    * @param callback
    */
@@ -187,7 +178,6 @@ export interface WebpackHot {
   /**
    * If status() != "ready" it throws an error.
    * Continue the update process.
-   *
    * @param callback
    */
   apply (callback: (err: Error, outdatedModules: WebpackModuleId[]) => void): void
@@ -201,7 +191,6 @@ export interface WebpackHot {
   addStatusHandler (callback: (status: string) => void): void
   /**
    * Remove a registered status change handler.
-   *
    * @param callback
    */
   removeStatusHandler (callback: (status: string) => void): void
