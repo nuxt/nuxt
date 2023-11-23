@@ -24,7 +24,6 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
         }
       }
     },
-    // @ts-expect-error rollup 4 types
     visualizer({
       ...analyzeOptions,
       filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
