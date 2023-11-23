@@ -155,7 +155,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const nuxtApp = useNuxtApp()
 
   if (import.meta.server) {
-    if (nuxtApp.ssrContext && !nuxtApp.ssrContext.islandContext) {
+    if (nuxtApp.ssrContext) {
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 

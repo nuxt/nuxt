@@ -206,7 +206,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL && !nuxtApp.ssrContext?.islandContext) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
