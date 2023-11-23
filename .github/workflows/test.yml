@@ -80,6 +80,32 @@ jobs:
 
       - name: lint
         run: yarn test:lint
+    needs: setup
+
+  typecheck:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - run: corepack enable
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        with:
+          node-version: 18
+          cache: "yarn"
+
+      - name: restore workspace cache
+        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: test types
         run: yarn test:types
