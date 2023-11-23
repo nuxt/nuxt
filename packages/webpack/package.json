@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.8.1",
+  "version": "3.8.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -38,7 +38,7 @@
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "fs-extra": "^11.1.1",
-    "h3": "^1.8.2",
+    "h3": "^1.9.0",
     "hash-sum": "^2.0.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.5",
@@ -65,7 +65,7 @@
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.4",
-    "webpack-virtual-modules": "^0.6.0",
+    "webpack-virtual-modules": "^0.6.1",
     "webpackbar": "^5.0.2"
   },
   "devDependencies": {
