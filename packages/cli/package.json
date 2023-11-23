@@ -36,7 +36,7 @@
     "pretty-bytes": "^5.6.0",
     "semver": "^7.5.4",
     "serve-static": "^1.15.0",
-    "std-env": "^3.4.3",
+    "std-env": "^3.5.0",
     "upath": "^2.0.1",
     "wrap-ansi": "^7.0.0"
   },

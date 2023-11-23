@@ -228,6 +228,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -670,6 +684,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -1124,6 +1152,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -1566,6 +1608,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -2020,6 +2076,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -2468,6 +2538,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -2928,6 +3012,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -3379,6 +3477,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -3842,6 +3954,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -4290,6 +4416,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -4750,6 +4890,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
                           "resize": [Function anonymous],
                         },
                         "postcssPlugin": "postcss-logical-resize",
@@ -5198,6 +5352,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
