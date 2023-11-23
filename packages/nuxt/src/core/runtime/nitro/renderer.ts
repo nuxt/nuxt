@@ -182,7 +182,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
 
   const ctx: NuxtIslandContext = {
-    url: event.path,
+    url: event.path, // i.e /__nuxt_island/<component>_<hash>.json
     ...context,
     id: hashId,
     name: componentName,
