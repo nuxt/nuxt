@@ -8,9 +8,9 @@ export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 
 export const useError = () => toRef(useNuxtApp().payload, 'error')
 
-export interface NuxtError<DataT = any> extends H3Error<DataT> {}
+export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
 
-export const showError = <DataT = any>(
+export const showError = <DataT = unknown>(
     error: string | Error | Partial<NuxtError<DataT>>
 ) => {
   const nuxtError = createError<DataT>(error)
@@ -44,13 +44,13 @@ export const clearError = async (options: { redirect?: string } = {}) => {
   error.value = null
 }
 
-export const isNuxtError = <DataT = any>(
+export const isNuxtError = <DataT = unknown>(
     error?: string | object
 ): error is NuxtError<DataT> => (
   !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 )
 
-export const createError = <DataT = any>(
+export const createError = <DataT = unknown>(
     error: string | Partial<NuxtError<DataT>>
 ) => {
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
