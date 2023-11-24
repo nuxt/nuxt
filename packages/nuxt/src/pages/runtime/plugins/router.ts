@@ -135,6 +135,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
+    if(import.meta.server && nuxtApp.ssrContext?.islandContext) {
+      // We're in an island context, so we don't need to do anything else
+      return { provide: { router } }
+    }
+
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
       to.meta = reactive(to.meta)

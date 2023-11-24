@@ -5,6 +5,7 @@ import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
+import { useRoute } from '#vue-router'
 import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
@@ -47,6 +48,7 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
+    const route = useRoute()
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -119,6 +121,8 @@ export default defineComponent({
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+        // url is overrideable
+        url: route.fullPath,
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
