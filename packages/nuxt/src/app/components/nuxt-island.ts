@@ -12,7 +12,7 @@ import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useRoute } from '#imports'
+import { useRoute } from '../../app/composables/router'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
