@@ -5,7 +5,6 @@ import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import { useRoute } from '#imports'
 import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
@@ -13,6 +12,7 @@ import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
+import { useRoute } from '#imports'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
