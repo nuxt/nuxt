@@ -135,7 +135,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    if(import.meta.server && nuxtApp.ssrContext?.islandContext) {
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, so we don't need to do anything else
       return { provide: { router } }
     }
@@ -205,13 +205,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
       }
-      if (to.matched.length === 0 && (!import.meta.server || !nuxtApp.ssrContext?.islandContext)) {
+      if (to.matched.length === 0 && !import.meta.server) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL && !nuxtApp.ssrContext?.islandContext) {
+      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
