@@ -5,7 +5,7 @@ import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
-import { useRoute } from '#vue-router'
+import { useRoute } from '#imports'
 import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
