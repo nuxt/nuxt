@@ -15,7 +15,10 @@ onMounted(() => {
 
 <template>
   <div>
-    <NuxtLink id="with-use-fetch" to="/preview/with-use-fetch">
+    <NuxtLink
+      id="with-use-fetch"
+      to="/preview/with-use-fetch"
+    >
       fetch check
     </NuxtLink>
 
@@ -27,7 +30,10 @@ onMounted(() => {
       {{ state.data2 }}
     </p>
 
-    <button id="toggle-preview" @click="enabled = !enabled">
+    <button
+      id="toggle-preview"
+      @click="enabled = !enabled"
+    >
       toggle preview mode
     </button>
   </div>
