@@ -17,6 +17,7 @@ function useLegacyVueUseHead () {
 useLegacyUseHead()
 useLegacyVueUseHead()
 </script>
+
 <template>
   <div>
     <h1>VueUse head polyfill test</h1>

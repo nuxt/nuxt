@@ -26,7 +26,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const nearestNuxtPkg = await Promise.all(['nuxt3', 'nuxt', 'nuxt-edge']
+  const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
     .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
@@ -54,6 +54,19 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     envConfig: opts.dotenv // TODO: Backward format conversion
   })
 
+  // Mock new hookable methods
+  nuxt.removeHook ||= nuxt.clearHook.bind(nuxt)
+  nuxt.removeAllHooks ||= nuxt.clearHooks.bind(nuxt)
+  nuxt.hookOnce ||= (name: string, fn: (...args: any[]) => any, ...hookArgs: any[]) => {
+    const unsub = nuxt.hook(name, (...args: any[]) => {
+      unsub()
+      return fn(...args)
+    }, ...hookArgs)
+    return unsub
+  }
+  // https://github.com/nuxt/nuxt/tree/main/packages/kit/src/module/define.ts#L111-L113
+  nuxt.hooks ||= nuxt
+
   return nuxt as Nuxt
 }
 
@@ -62,7 +75,7 @@ export async function buildNuxt (nuxt: Nuxt): Promise<any> {
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
+    const { build } = await tryImportModule('nuxt-nightly', rootDir) || await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
     return build(nuxt)
   }
 

@@ -2,10 +2,16 @@
   <div>
     <NuxtPage ref="page" />
 
-    <button id="log-hello" @click="logHello">
+    <button
+      id="log-hello"
+      @click="logHello"
+    >
       hello
     </button>
-    <button id="log-foo" @click="logFoo">
+    <button
+      id="log-foo"
+      @click="logFoo"
+    >
       foo
     </button>
   </div>

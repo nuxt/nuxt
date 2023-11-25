@@ -3,7 +3,7 @@ import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
-import type { AppConfig, RuntimeValue } from 'nuxt/schema'
+import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -271,6 +271,21 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
   })
+
+  it('correctly converts different kinds of names to snake case', () => {
+    expectTypeOf<UpperSnakeCase<'testAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TEST_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_app_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAppNAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testApp123NAME'>>().toEqualTypeOf<'TEST_APP123NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPPName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TESTAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'t'>>().toEqualTypeOf<'T'>()
+    expectTypeOf<UpperSnakeCase<'T'>>().toEqualTypeOf<'T'>()
+  })
 })
 
 describe('head', () => {
@@ -346,7 +361,7 @@ describe('composables', () => {
     expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test' }).data).toEqualTypeOf<Ref<string>>()
 
-    // transform must match the explicit generic because of typescript limiations microsoft/TypeScript#14400
+    // transform must match the explicit generic because of typescript limitations microsoft/TypeScript#14400
     expectTypeOf(useFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyFetch<string>('/test', { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string | null>>()
@@ -404,6 +419,17 @@ describe('composables', () => {
     })
     const { test } = useRequestHeaders(['test'])
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
+  })
+
+  it('allows passing reactive values in useFetch', () => {
+    useFetch('/api/hey', {
+      headers: {
+        key: ref('test')
+      },
+      query: {
+        param: computed(() => 'thing')
+      }
+    })
   })
 
   it('correctly types returns with key signatures', () => {
