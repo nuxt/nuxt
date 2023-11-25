@@ -1,17 +1,18 @@
 import { resolve } from 'pathe'
 import VueLoaderPlugin from 'vue-loader/dist/pluginWebpack5.js'
 import webpack from 'webpack'
+import { tryResolveModule } from '@nuxt/kit'
 import VueSSRClientPlugin from '../plugins/vue/client'
 import VueSSRServerPlugin from '../plugins/vue/server'
 import type { WebpackConfigContext } from '../utils/config'
 
-export function vue (ctx: WebpackConfigContext) {
+export async function vue (ctx: WebpackConfigContext) {
   // @ts-expect-error de-default vue-loader
   ctx.config.plugins!.push(new (VueLoaderPlugin.default || VueLoaderPlugin)())
 
   ctx.config.module!.rules!.push({
     test: /\.vue$/i,
-    loader: 'vue-loader',
+    loader: await tryResolveModule('vue-loader', import.meta.url) ?? 'vue-loader',
     options: {
       reactivityTransform: ctx.nuxt.options.experimental.reactivityTransform,
       ...ctx.userConfig.loaders.vue

@@ -1,7 +1,8 @@
 import { EsbuildPlugin } from 'esbuild-loader'
+import { tryResolveModule } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 
-export function esbuild (ctx: WebpackConfigContext) {
+export async function esbuild (ctx: WebpackConfigContext) {
   // https://esbuild.github.io/getting-started/#bundling-for-the-browser
   // https://gs.statcounter.com/browser-version-market-share
   // https://nodejs.org/en/
@@ -13,7 +14,7 @@ export function esbuild (ctx: WebpackConfigContext) {
   ctx.config.module!.rules!.push(
     {
       test: /\.m?[jt]s$/i,
-      loader: 'esbuild-loader',
+      loader: await tryResolveModule('esbuild-loader', import.meta.url) ?? 'esbuild-loader',
       exclude: (file) => {
         // Not exclude files outside node_modules
         file = file.split('node_modules', 2)[1]
@@ -32,7 +33,7 @@ export function esbuild (ctx: WebpackConfigContext) {
     },
     {
       test: /\.m?[jt]sx$/,
-      loader: 'esbuild-loader',
+      loader: await tryResolveModule('esbuild-loader', import.meta.url) ?? 'esbuild-loader',
       options: {
         target,
         ...ctx.nuxt.options.webpack.loaders.esbuild,

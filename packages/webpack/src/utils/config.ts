@@ -36,15 +36,15 @@ export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   }
 }
 
-export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
+export async function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
   if (!Array.isArray(presets)) {
     presets = [presets]
   }
   for (const preset of presets) {
     if (Array.isArray(preset)) {
-      preset[0](ctx, preset[1])
+      await preset[0](ctx, preset[1])
     } else {
-      preset(ctx)
+      await preset(ctx)
     }
   }
 }

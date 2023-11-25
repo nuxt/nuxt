@@ -137,7 +137,7 @@ export default defineNuxtConfig({
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
         const esbuildRules = config.module!.rules!.filter(
-          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader?.includes('esbuild-loader')
         )
         for (const rule of esbuildRules) {
           if (typeof rule === 'object' && typeof rule.options === 'object') {
