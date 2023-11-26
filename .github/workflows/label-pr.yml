@@ -2,8 +2,8 @@ name: Label PR
 
 on:
   pull_request:
-    types:
-      - opened
+    # types:
+    #   - opened
     branches:
       - main
       - 2.x
