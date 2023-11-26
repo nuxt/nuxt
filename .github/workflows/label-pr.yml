@@ -8,16 +8,20 @@ on:
       - main
       - 2.x
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   add-pr-label:
     name: Add PR label
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     if: github.repository == 'nuxt/nuxt'
     steps:
       - uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const baseName = "${{github.event.pull_request.base.label}}"
             const PRNumber = "${{github.event.pull_request.number}}"
