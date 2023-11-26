@@ -4,7 +4,7 @@ import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
-import * as islandComponents from '#build/components.islands.mjs'
+import { islandComponents } from '#build/components.islands.mjs'
 
 export default defineComponent({
   props: {
@@ -14,7 +14,7 @@ export default defineComponent({
     }
   },
   setup (props) {
-    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
+    const component = (islandComponents as ([string, ReturnType<typeof defineAsyncComponent>])[]).find(([c]) => c === props.context.name)
 
     if (!component) {
       throw createError({
@@ -27,6 +27,6 @@ export default defineComponent({
       console.log(e)
     })
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
+    return () => createVNode(component[1] || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
   }
 })
