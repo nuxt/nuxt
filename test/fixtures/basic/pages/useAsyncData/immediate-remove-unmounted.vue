@@ -4,10 +4,16 @@
     <div id="immediate-data">
       {{ data === null ? "null" : data }}
     </div>
-    <button id="execute-btn" @click="execute">
+    <button
+      id="execute-btn"
+      @click="execute"
+    >
       execute
     </button>
-    <NuxtLink id="to-index" to="/">
+    <NuxtLink
+      id="to-index"
+      to="/"
+    >
       index
     </NuxtLink>
   </div>

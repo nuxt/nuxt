@@ -4,6 +4,8 @@ cache = true
 exclude_all_private = true
 # HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
 accept = [200, 429]
+# retry
+max_retries = 6
 # Explicitly exclude some URLs
 exclude = [
   "https://twitter.nuxt.dev/",

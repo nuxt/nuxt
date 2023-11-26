@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
 import { h } from 'vue'
+import { mountSuspended } from 'nuxt-vitest/utils'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
+import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
+import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'
+
+vi.mock('#build/nuxt.config.mjs', async (original) => {
+  return {
+    // @ts-expect-error virtual file
+    ...(await original()),
+    remoteComponentIslands: true
+  }
+})
 
 vi.mock('vue', async (original) => {
   const vue = await original<typeof import('vue')>()
@@ -37,5 +48,21 @@ describe('runtime server component', () => {
         "test": 1,
       }
     `)
+    vi.mocked(h).mockRestore()
+  })
+
+  it('expect remote island to be rendered', async () => {
+    const server = createSimpleRemoteIslandProvider()
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'Test',
+        source: 'http://localhost:3001'
+      }
+    })
+
+    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hello world from another server</div>"')
+
+    await server.close()
   })
 })

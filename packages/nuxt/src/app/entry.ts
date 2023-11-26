@@ -1,14 +1,13 @@
-// We set __webpack_public_path via this import with webpack builder
 import { createApp, createSSRApp, nextTick } from 'vue'
-import { $fetch } from 'ofetch'
-import type { $Fetch, NitroFetchRequest } from 'nitropack'
 
-// This file must be imported first for webpack as we set __webpack_public_path__ there
-// @ts-expect-error virtual file
-import { baseURL } from '#build/paths.mjs'
+// These files must be imported first as they have side effects:
+// 1. (we set __webpack_public_path via this import, if using webpack builder)
+import '#build/paths.mjs'
+// 2. we set globalThis.$fetch via this import
+import '#build/fetch.mjs'
 
-import type { CreateOptions } from '#app'
-import { applyPlugins, createNuxtApp } from '#app/nuxt'
+import { applyPlugins, createNuxtApp } from './nuxt'
+import type { CreateOptions } from './nuxt'
 
 import '#build/css'
 // @ts-expect-error virtual file
@@ -17,12 +16,6 @@ import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
-
-if (!globalThis.$fetch) {
-  globalThis.$fetch = $fetch.create({
-    baseURL: baseURL()
-  }) as $Fetch<unknown, NitroFetchRequest>
-}
 
 let entry: Function
 
@@ -65,11 +58,17 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
+    async function handleVueError(err: any) {
+      await nuxt.callHook('app:error', err)
+      nuxt.payload.error = (nuxt.payload.error || err) as any
+    }
+
+    vueApp.config.errorHandler = handleVueError
+
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
 
     try {
@@ -79,9 +78,12 @@ if (import.meta.client) {
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
+
+    // If the errorHandler is not overridden by the user, we unset it
+    if (vueApp.config.errorHandler === handleVueError)
+      vueApp.config.errorHandler = undefined
 
     return vueApp
   }

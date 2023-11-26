@@ -171,7 +171,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
   ctx.transpile = [...transpile, ...ctx.transpile]
 }
 
-function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
+function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
   if (!ctx.options.dev) {
     return false
   }
@@ -192,7 +192,7 @@ function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
   // }
 }
 
-function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] {
+function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
   return {
     path: resolve(ctx.options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', ctx.options.app.buildAssetsDir)),
     filename: fileName(ctx, 'app'),

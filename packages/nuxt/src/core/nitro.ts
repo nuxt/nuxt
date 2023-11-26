@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { join, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -11,10 +11,10 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import type { Nuxt } from 'nuxt/schema'
+import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
-
+import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
@@ -52,6 +52,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       asyncContext: nuxt.options.experimental.asyncContext,
       typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
+    framework: {
+      name: 'nuxt',
+      version: nuxtVersion
+    },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
       imports: [
@@ -78,11 +82,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern }
     },
-    analyze: nuxt.options.build.analyze && {
-      template: 'treemap',
-      projectRoot: nuxt.options.rootDir,
-      filename: join(nuxt.options.analyzeDir, '{name}.html')
-    },
+    analyze: nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
+      ? {
+          template: 'treemap',
+          projectRoot: nuxt.options.rootDir,
+          filename: join(nuxt.options.analyzeDir, '{name}.html')
+        }
+      : false,
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
@@ -99,11 +105,18 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     runtimeConfig: {
       ...nuxt.options.runtimeConfig,
+      app: {
+        ...nuxt.options.runtimeConfig.app,
+        baseURL: nuxt.options.runtimeConfig.app.baseURL.startsWith('./')
+          ? nuxt.options.runtimeConfig.app.baseURL.slice(1)
+          : nuxt.options.runtimeConfig.app.baseURL
+      },
       nitro: {
         envPrefix: 'NUXT_',
-        ...nuxt.options.runtimeConfig.nitro
+        // TODO: address upstream issue with defu types...?
+        ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any
       }
-    },
+    } ,
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, 'app.config')
@@ -155,6 +168,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
+        'nuxt-nightly/dist',
         distDir
       ],
       traceInclude: [
@@ -213,7 +227,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     // @ts-expect-error untyped nuxt property
-    const buildId = nuxt.options.appConfig.nuxt!.buildId ||= randomUUID()
+    const buildId = nuxt.options.appConfig.nuxt!.buildId ||=
+      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : randomUUID())
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
@@ -234,53 +249,55 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       }
     )
 
-    nuxt.hook('nitro:build:before', async (nitro) => {
-      const routeRules = {} as Record<string, any>
-      const _routeRules = nitro.options.routeRules
-      for (const key in _routeRules) {
-        if (key === '/__nuxt_error') { continue }
-        const filteredRules = Object.entries(_routeRules[key])
-          .filter(([key, value]) => ['prerender', 'redirect'].includes(key) && value)
-          .map(([key, value]: any) => {
-            if (key === 'redirect') {
-              return [key, typeof value === 'string' ? value : value.to]
-            }
-            return [key, value]
-          })
-        if (filteredRules.length > 0) {
-          routeRules[key] = Object.fromEntries(filteredRules)
-        }
-      }
-
-      // Add pages prerendered but not covered by route rules
-      const prerenderedRoutes = new Set<string>()
-      const routeRulesMatcher = toRouteMatcher(
-        createRadixRouter({ routes: routeRules })
-      )
-      const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
-      for (const route of nitro._prerenderedRoutes || []) {
-        if (!route.error && route.route.endsWith(payloadSuffix)) {
-          const url = route.route.slice(0, -payloadSuffix.length) || '/'
-          const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
-          if (!rules.prerender) {
-            prerenderedRoutes.add(url)
+    nuxt.hook('nitro:init', (nitro) => {
+      nitro.hooks.hook('rollup:before', async (nitro) => {
+        const routeRules = {} as Record<string, any>
+        const _routeRules = nitro.options.routeRules
+        for (const key in _routeRules) {
+          if (key === '/__nuxt_error') { continue }
+          const filteredRules = Object.entries(_routeRules[key])
+            .filter(([key, value]) => ['prerender', 'redirect'].includes(key) && value)
+            .map(([key, value]: any) => {
+              if (key === 'redirect') {
+                return [key, typeof value === 'string' ? value : value.to]
+              }
+              return [key, value]
+            })
+          if (filteredRules.length > 0) {
+            routeRules[key] = Object.fromEntries(filteredRules)
           }
         }
-      }
 
-      const manifest = {
-        id: buildId,
-        timestamp: buildTimestamp,
-        matcher: exportMatcher(routeRulesMatcher),
-        prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
-      }
+        // Add pages prerendered but not covered by route rules
+        const prerenderedRoutes = new Set<string>()
+        const routeRulesMatcher = toRouteMatcher(
+          createRadixRouter({ routes: routeRules })
+        )
+        const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+        for (const route of nitro._prerenderedRoutes || []) {
+          if (!route.error && route.route.endsWith(payloadSuffix)) {
+            const url = route.route.slice(0, -payloadSuffix.length) || '/'
+            const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+            if (!rules.prerender) {
+              prerenderedRoutes.add(url)
+            }
+          }
+        }
 
-      await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-      await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
-        id: buildId,
-        timestamp: buildTimestamp
-      }))
-      await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+        const manifest = {
+          id: buildId,
+          timestamp: buildTimestamp,
+          matcher: exportMatcher(routeRulesMatcher),
+          prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes]
+        }
+
+        await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
+        await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
+          id: buildId,
+          timestamp: buildTimestamp
+        }))
+        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+      })
     })
   }
 
@@ -314,6 +331,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
   nitroConfig.rollupConfig!.plugins!.push(
+    // @ts-expect-error rollup 4 types
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
       patterns: [
@@ -353,6 +371,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Init nitro
   const nitro = await createNitro(nitroConfig)
+
+  // Trigger Nitro reload when SPA loading template changes
+  nuxt.hook('builder:watch', async (_event, path) => {
+    if (normalize(path) === spaLoadingTemplatePath(nuxt)) {
+      await nitro.hooks.callHook('rollup:reload')
+    }
+  })
 
   // Set prerender-only options
   nitro.options._config.storage ||= {}
@@ -447,6 +472,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  // Copy public assets after prerender so app manifest can be present
+  if (!nuxt.options.dev) {
+    nitro.hooks.hook('rollup:before', async (nitro) => {
+      await copyPublicAssets(nitro)
+      await nuxt.callHook('nitro:build:public-assets', nitro)
+    })
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
@@ -454,8 +487,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
     } else {
       await prepare(nitro)
-      await copyPublicAssets(nitro)
-      await nuxt.callHook('nitro:build:public-assets', nitro)
       await prerender(nitro)
 
       logger.restoreAll()
@@ -489,18 +520,24 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
+function spaLoadingTemplatePath (nuxt: Nuxt) {
+  return typeof nuxt.options.spaLoadingTemplate === 'string'
+    ? resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+}
+
 function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = typeof nuxt.options.spaLoadingTemplate === 'string'
-    ? nuxt.options.spaLoadingTemplate
-    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  const spaLoadingTemplate = spaLoadingTemplatePath(nuxt)
 
   try {
     if (existsSync(spaLoadingTemplate)) {
       return readFileSync(spaLoadingTemplate, 'utf-8')
     }
-  } catch {}
+  } catch {
+    // fall through if we have issues reading the file
+  }
 
   if (nuxt.options.spaLoadingTemplate === true) {
     return defaultSpaLoadingTemplate({})
