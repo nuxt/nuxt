@@ -89,7 +89,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
     )
 
     function normalizeName (p: NuxtPage) {
-      return p.name!.replace('-', '_')
+      return p.name!.replaceAll('-', '_')
     }
 
     const pageExports = pages?.map((p) => {
@@ -100,8 +100,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
       return `export const ${normalizeName(p)} = defineAsyncComponent(${genDynamicImport(p.file)})`
     }) || ['']
-
-    console.log(pageExports)
+ 
 
     return ['import { defineAsyncComponent } from \'vue\'', ...islands.map(
       (c) => {

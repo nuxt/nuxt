@@ -45,17 +45,9 @@ export const RouteProvider = defineComponent({
       })
     }
 
-    return () => {
-      if(props.route.meta.server) {
-console.log(props.route.name, 'name')
-        return h(NuxtIsland, {
-          props: {
-            name: props.route.name,
-            props: {}
-          }
-        })
-      }
+    
 
+    return () => {
       if (import.meta.dev && import.meta.client) {
         vnode = h(props.vnode, { ref: props.vnodeRef })
         return vnode

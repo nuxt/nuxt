@@ -3,6 +3,7 @@ import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
+import NuxtIsland from '#app/components/nuxt-island'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
@@ -37,7 +38,7 @@ export default defineComponent({
     }
   },
   setup (props, { attrs, expose }) {
-    const NuxtIsland = defineAsyncComponent(() => import('#app/components/nuxt-island'))
+
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -52,6 +53,12 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
+          if(routeProps.route.meta.server) {
+            return h(NuxtIsland, {
+                props: attrs,
+                name: routeProps.route.name as string,
+              }) 
+          }
           const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
           const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
 
@@ -88,16 +95,7 @@ export default defineComponent({
             defaultPageTransition,
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
-          if(routeProps.route.meta.server) {
-    
-      console.log(routeProps.route.name, 'name')
-              return h(NuxtIsland, {
-                props: {
-                },
-                name: routeProps.route.name as string,
-
-              }) 
-          }
+        
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
@@ -106,6 +104,8 @@ export default defineComponent({
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
               default: () => {
+                
+
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
                   vnode: routeProps.Component,

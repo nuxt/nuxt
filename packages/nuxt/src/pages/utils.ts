@@ -75,6 +75,12 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
+    if(segments[segments.length - 1].endsWith('.server')) {
+      segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
+      route.server = true
+      route.meta = {...route.meta, server: true}
+    }
+
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
 
@@ -311,13 +317,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports).routes
       }
-
+ 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
       if (!page.file) {
         for (const key of ['name', 'path', 'meta', 'alias', 'redirect'] as const) {
           if (page[key]) { route[key] = JSON.stringify(page[key]) }
         }
-        return route
+         return route
       }
 
       const file = normalize(page.file)
@@ -335,8 +341,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
       route.alias = aliasCode
       route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
-      route.component = genDynamicImport(file, { interopDefault: true })
+      route.component = page.server  ? undefined :  genDynamicImport(file, { interopDefault: true })
 
+      if(page.server) { console.log(route) }
       return route
     }))
   }

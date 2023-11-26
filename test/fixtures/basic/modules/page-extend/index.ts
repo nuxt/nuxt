@@ -7,16 +7,6 @@ export default defineNuxtModule({
   setup () {
     const nuxt = useNuxt()
     const resolver = createResolver(import.meta.url)
-    nuxt.hook('pages:extend', (p) => {
-      p.push(
-       { 
-        file: resolver.resolve('../../pages/index.vue'), 
-        path: '/server-page',
-         server: true,
-          meta: {server: true},
-        name: 'server-page' }
-      )
-    })
     nuxt.hook('pages:extend', (pages) => {
       pages.push({
         name: 'page-extend',

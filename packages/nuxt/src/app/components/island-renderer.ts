@@ -15,7 +15,6 @@ export default defineComponent({
   },
   setup (props) {
     const component = islandComponents[props.context.name.replaceAll('-', '_')] as ReturnType<typeof defineAsyncComponent>
-    console.log(component, 'd')
     if (!component) {
       throw createError({
         statusCode: 404,

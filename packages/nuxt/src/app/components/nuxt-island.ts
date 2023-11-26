@@ -1,4 +1,4 @@
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onErrorCaptured, onMounted, ref, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -12,6 +12,7 @@ import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
+import { useRoute } from '../../app/composables/router'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -47,6 +48,7 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
+    const route = useRoute()
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -106,6 +108,7 @@ export default defineComponent({
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
+    onErrorCaptured((err) => { console.error(err)})
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
       if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
@@ -116,9 +119,11 @@ export default defineComponent({
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
-      // TODO: Validate response
+
+ // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+        url: route.fullPath,
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
@@ -132,6 +137,8 @@ export default defineComponent({
       }
       setPayload(key, result)
       return result
+  
+     
     }
     const key = ref(0)
     async function fetchComponent (force = false) {
