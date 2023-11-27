@@ -2,8 +2,8 @@
 const props = defineProps<{
   multiplier: number
 }>()
-const count = $ref(12)
-const doubled = $computed(() => count * props.multiplier)
+const count = ref(12)
+const doubled = computed(() => count.value * props.multiplier)
 </script>
 
 <template>
