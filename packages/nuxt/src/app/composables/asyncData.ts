@@ -161,7 +161,7 @@ export function useAsyncData<
 
     nuxt._asyncData[key] = {
       data: _ref(options.getCachedData!(key) ?? options.default!()),
-      pending: ref(!hasCachedData()),
+      pending: ref(options.immediate ? !hasCachedData() : false),
       error: toRef(nuxt.payload._errors, key),
       status: ref('idle')
     }
