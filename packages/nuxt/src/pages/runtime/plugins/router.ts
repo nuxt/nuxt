@@ -136,7 +136,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     }
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
-      // We're in an island context, so we don't need to do anything else
+      // We're in an island context, and don't need to handle middleware or redirections
       return { provide: { router } }
     }
 
@@ -205,7 +205,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
       }
-      if (to.matched.length === 0 && !import.meta.server) {
+      if (to.matched.length === 0) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
