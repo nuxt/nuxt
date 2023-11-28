@@ -346,6 +346,11 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
+  it('enforces readonly cookies', () => {
+    // @ts-expect-error readonly cookie
+    useCookie('test', { readonly: true }).value = 'thing'
+  })
+
   it('correct types when using ResT type-assertion with default function', () => {
     // @ts-expect-error default type should match generic type
     useFetch<string>('/test', { default: () => 0 })
