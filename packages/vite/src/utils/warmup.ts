@@ -28,6 +28,7 @@ function normaliseURL (url: string, base: string) {
   return url
 }
 
+// TODO: remove when we drop support for node 18
 const builtinSet = new Set(builtinModules)
 function isBuiltin (id: string) {
   return id.startsWith('node:') || builtinSet.has(id)
