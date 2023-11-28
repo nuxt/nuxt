@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Plugin } from 'vite'
-import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
+import { DevOnlyPlugin } from '../src/components/dev-only'
 import { normalizeLineEndings } from './utils'
 const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
 
@@ -70,10 +70,10 @@ describe('test devonly transform ', () => {
 
     const result = await  viteTransform(source, 'some id')
 
-    expect(result).toBe(`
+    expect(result).toMatchInlineSnapshot(`
       "<template>
           
-              <div class="red">This should also be red.</div>
+              <div class=\\"red\\">This should also be red.</div>
             
         </template>
         "
