@@ -29,9 +29,9 @@ function normaliseURL (url: string, base: string) {
 }
 
 // TODO: remove when we drop support for node 18
-const builtinSet = new Set(builtinModules)
+const builtins = new Set(builtinModules)
 function isBuiltin (id: string) {
-  return id.startsWith('node:') || builtinSet.has(id)
+  return id.startsWith('node:') || builtins.has(id)
 }
 
 // TODO: use built-in warmup logic when we update to vite 5
