@@ -1,7 +1,7 @@
 import MagicString from 'magic-string'
 import { createUnplugin } from 'unplugin'
 import { type Node, parse } from 'ultrahtml'
-import { isVue } from '../core/utils'
+import { isVue } from '../utils'
 
 interface DevOnlyPluginOptions {
   sourcemap?: boolean

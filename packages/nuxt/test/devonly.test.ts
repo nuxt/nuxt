@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Plugin } from 'vite'
-import { DevOnlyPlugin } from '../src/components/dev-only'
+import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
 import { normalizeLineEndings } from './utils'
 const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
 
@@ -37,16 +37,16 @@ describe('test devonly transform ', () => {
     expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
       "<template>
           <div>
-            
+
           </div>
           <SomeComponent>
-            
+
           </SomeComponent>
           <div>
-            
+
           </div>
           <SomeComponent>
-            
+
           </SomeComponent>
           </template>"
     `)
@@ -72,9 +72,9 @@ describe('test devonly transform ', () => {
 
     expect(result).toMatchInlineSnapshot(`
       "<template>
-          
+
               <div class=\\"red\\">This should also be red.</div>
-            
+
         </template>
         "
     `)
