@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.3.8"
+    "vue": "3.3.9"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -41,7 +41,7 @@
     "consola": "^3.2.3",
     "cssnano": "^6.0.1",
     "defu": "^6.1.3",
-    "esbuild": "^0.19.7",
+    "esbuild": "^0.19.8",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
@@ -56,7 +56,7 @@
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.0.3",
     "postcss": "^8.4.31",
-    "rollup-plugin-visualizer": "^5.9.2",
+    "rollup-plugin-visualizer": "^5.9.3",
     "std-env": "^3.5.0",
     "strip-literal": "^1.3.0",
     "ufo": "^1.3.2",
