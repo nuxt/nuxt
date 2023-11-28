@@ -57,7 +57,7 @@ describe('test devonly transform ', () => {
     expect(result).not.toContain('LazyDevOnly')
   })
 
-  it('should not remove class -> #24491', async  () => {
+  it('should not remove class -> nuxt#24491', async  () => {
     const source = `<template>
     <DevOnly>
       <div class="red">This is red.</div>
