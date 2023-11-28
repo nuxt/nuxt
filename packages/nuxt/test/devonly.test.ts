@@ -56,4 +56,27 @@ describe('test devonly transform ', () => {
     expect(result).not.toContain('lazy-dev-only')
     expect(result).not.toContain('LazyDevOnly')
   })
+
+  it('should not remove class -> nuxt#24491', async  () => {
+    const source = `<template>
+    <DevOnly>
+      <div class="red">This is red.</div>
+      <template #fallback>
+        <div class="red">This should also be red.</div>
+      </template>
+    </DevOnly>
+  </template>
+  `
+
+    const result = await  viteTransform(source, 'some id')
+
+    expect(result).toMatchInlineSnapshot(`
+      "<template>
+          
+              <div class=\\"red\\">This should also be red.</div>
+            
+        </template>
+        "
+    `)
+  })
 })
