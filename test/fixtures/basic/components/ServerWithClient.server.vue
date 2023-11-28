@@ -9,10 +9,16 @@
     This is not interactive
     <Counter :multiplier="1" />
 
-    <div class="interactive-component-wrapper" style="border: solid 1px red;">
+    <div
+      class="interactive-component-wrapper"
+      style="border: solid 1px red;"
+    >
       The component bellow is not a slot but declared as interactive
 
-      <Counter nuxt-client :multiplier="1" />
+      <Counter
+        nuxt-client
+        :multiplier="1"
+      />
     </div>
   </div>
 </template>
