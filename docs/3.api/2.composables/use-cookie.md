@@ -133,7 +133,7 @@ be returned as the cookie's value.
 
 Specifies a function that returns the cookie's default value. The function can also return a `Ref`.
 
-### `readonly`:
+### `readonly`
 
 Allows _accessing_ a cookie value without the ability to set it.
 
