@@ -6,7 +6,7 @@ import { getPort, rp, waitFor } from '../utils'
 let port
 const rootDir = resolve(__dirname, '..', 'fixtures/cli')
 
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 const nuxtBin = resolve(__dirname, '../../packages/cli/bin/nuxt-cli.js')
 const spawnNuxt = (command, opts) => spawn(nuxtBin, [command, rootDir], opts)

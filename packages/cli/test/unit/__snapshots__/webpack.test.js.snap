@@ -133,6 +133,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -224,6 +225,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -380,6 +395,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -388,10 +411,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -519,7 +538,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -573,6 +592,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -664,6 +684,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -820,6 +854,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -828,10 +870,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -959,7 +997,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -1019,6 +1057,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1110,6 +1149,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -1266,6 +1319,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -1274,10 +1335,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1405,7 +1462,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -1459,6 +1516,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1550,6 +1608,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -1706,6 +1778,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -1714,10 +1794,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1845,7 +1921,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -1905,6 +1981,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1996,6 +2073,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -2152,6 +2243,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -2160,10 +2259,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2291,7 +2386,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -2351,6 +2446,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -2442,6 +2538,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -2598,6 +2708,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -2606,10 +2724,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2737,7 +2851,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -2803,6 +2917,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -2894,6 +3009,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -3050,6 +3179,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -3058,10 +3195,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3189,7 +3322,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -3252,6 +3385,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -3343,6 +3477,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -3499,6 +3647,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -3507,10 +3663,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3638,7 +3790,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -3707,6 +3859,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -3798,6 +3951,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -3954,6 +4121,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -3962,10 +4137,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4093,7 +4264,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -4153,6 +4324,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -4244,6 +4416,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -4400,6 +4586,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -4408,10 +4602,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4539,7 +4729,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -4605,6 +4795,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -4696,6 +4887,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -4852,6 +5057,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -4860,10 +5073,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4991,7 +5200,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },
@@ -5051,6 +5260,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -5142,6 +5352,20 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "float": [Function makeTransform],
                         },
                         "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
                       },
                       Object {
                         "Declaration": Object {
@@ -5298,6 +5522,14 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-cascade-layers",
                       },
                       Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
@@ -5306,10 +5538,6 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -5437,7 +5665,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.28",
+                    "version": "8.4.31",
                   },
                 ],
               },

@@ -2,7 +2,7 @@ import fetch from 'node-fetch-native'
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + encodeURI(route)
+const url = route => 'http://127.0.0.1:' + port + encodeURI(route)
 
 let nuxt = null
 
@@ -13,7 +13,7 @@ describe('encoding', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('/ö/ (router base)', async () => {

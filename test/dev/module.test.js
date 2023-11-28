@@ -3,7 +3,7 @@ import consola from 'consola'
 import { loadFixture, getPort, Nuxt, Builder, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 const rootDir = resolve(__dirname, '..', 'fixtures/module')
 
 let nuxt = null
@@ -16,7 +16,7 @@ describe('module', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('Plugin', async () => {

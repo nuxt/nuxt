@@ -1,19 +1,22 @@
 {
   "name": "@nuxt/core",
-  "version": "2.17.1",
-  "repository": "nuxt/nuxt.js",
+  "version": "2.17.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/core.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.17.1",
-    "@nuxt/server": "2.17.1",
-    "@nuxt/utils": "2.17.1",
+    "@nuxt/config": "2.17.2",
+    "@nuxt/server": "2.17.2",
+    "@nuxt/utils": "2.17.2",
     "consola": "^3.2.3",
     "fs-extra": "^10.1.0",
-    "hable": "^3.0.0",
+    "hookable": "^4.4.1",
     "hash-sum": "^2.0.0",
     "lodash": "^4.17.21"
   },

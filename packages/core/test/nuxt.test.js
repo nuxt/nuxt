@@ -1,7 +1,7 @@
 import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
 import { Server } from '@nuxt/server'
-import Hookable from 'hable'
+import Hookable from 'hookable'
 
 import Nuxt from '../src/nuxt'
 import ModuleContainer from '../src/module'

@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/vue-renderer",
-  "version": "2.17.1",
-  "repository": "nuxt/nuxt.js",
+  "version": "2.17.2",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/vue-renderer.js",
   "files": [
@@ -9,16 +12,16 @@
   ],
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/utils": "2.17.1",
+    "@nuxt/utils": "2.17.2",
     "consola": "^3.2.3",
-    "defu": "^6.1.2",
+    "defu": "^6.1.3",
     "fs-extra": "^10.1.0",
     "lodash": "^4.17.21",
     "lru-cache": "^5.1.1",
-    "ufo": "^1.3.0",
+    "ufo": "^1.3.2",
     "vue": "^2.7.10",
     "vue-meta": "^2.4.0",
-    "vue-server-renderer": "^2.7.14"
+    "vue-server-renderer": "^2.7.15"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

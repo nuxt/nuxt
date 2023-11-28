@@ -5,7 +5,7 @@ import { getPKG } from '@nuxt/utils'
 const dependencies = {
   webpack: '^4.46.0',
   'css-loader': '>=4.2.0',
-  'sass-loader': '^10.1.1'
+  'sass-loader': '^10.4.1'
 }
 
 const nodeVersion = '>=14.18.0'
