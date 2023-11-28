@@ -14,7 +14,7 @@ export default defineComponent({
     }
   },
   setup (props) {
-    const component = (islandComponents as ([string, ReturnType<typeof defineAsyncComponent>])[]).find(([c]) => c === props.context.name)
+    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
     if (!component) {
       throw createError({
@@ -27,6 +27,6 @@ export default defineComponent({
       console.log(e)
     })
 
-    return () => createVNode(component[1] || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
+    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
   }
 })

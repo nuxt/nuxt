@@ -89,15 +89,15 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = [',
+      'export const islandComponents = {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
           const comment = createImportMagicComments(c)
-          return `  ["${c.pascalName}", defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))]`
+          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         }
       ).join(',\n'),
-      ']'
+      '}'
     ].join('\n')
   }
 }
