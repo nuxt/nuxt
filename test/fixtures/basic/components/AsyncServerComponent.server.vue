@@ -6,7 +6,7 @@
       {{ count }}
     </div>
 
-    <SugarCounter :multiplier="1" />
+    <Counter :multiplier="1" />
     <slot />
   </div>
 </template>
