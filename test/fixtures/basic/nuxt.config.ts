@@ -200,7 +200,6 @@ export default defineNuxtConfig({
     componentIslands: {
       selectiveClient: true
     },
-    reactivityTransform: true,
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',

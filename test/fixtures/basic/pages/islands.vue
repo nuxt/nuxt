@@ -65,7 +65,7 @@ const count = ref(0)
         >
           <div>Interactive testing slot</div>
           <div id="first-sugar-counter">
-            <SugarCounter :multiplier="testCount" />
+            <Counter :multiplier="testCount" />
           </div>
           <template #test="scoped">
             <div id="test-slot">
@@ -101,7 +101,7 @@ const count = ref(0)
           :props="{ count }"
         >
           <div>Interactive testing slot post SSR</div>
-          <SugarCounter :multiplier="testCount" />
+          <Counter :multiplier="testCount" />
         </NuxtIsland>
       </div>
     </div>

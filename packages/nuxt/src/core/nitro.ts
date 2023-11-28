@@ -234,6 +234,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
 
+    nitroConfig.prerender ||= {}
+    nitroConfig.prerender.ignore ||= []
+    nitroConfig.prerender.ignore.push(manifestPrefix)
+
     nitroConfig.publicAssets!.unshift(
       // build manifest
       {
