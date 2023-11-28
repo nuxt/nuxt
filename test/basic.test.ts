@@ -963,14 +963,6 @@ describe('layouts', () => {
   })
 })
 
-describe('reactivity transform', () => {
-  it('should works', async () => {
-    const html = await $fetch('/')
-
-    expect(html).toContain('Sugar Counter 12 x 2 = 24')
-  })
-})
-
 describe('composable tree shaking', () => {
   it('should work', async () => {
     const html = await $fetch('/tree-shake')
@@ -2020,10 +2012,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
 describe.runIf(isDev())('component testing', () => {
   it('should work', async () => {
-    const comp1 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 2 })
+    const comp1 = await $fetchComponent('components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    const comp2 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 4 })
+    const comp2 = await $fetchComponent('components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })
 })
