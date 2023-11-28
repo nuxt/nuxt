@@ -111,7 +111,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           virtual(nuxt.vfs)
         ],
         vue: {
-          reactivityTransform: nuxt.options.experimental.reactivityTransform,
           template: {
             transformAssetUrls: {
               video: ['src', 'poster'],
