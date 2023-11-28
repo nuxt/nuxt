@@ -37,16 +37,16 @@ describe('test devonly transform ', () => {
     expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
       "<template>
           <div>
-
+            
           </div>
           <SomeComponent>
-
+            
           </SomeComponent>
           <div>
-
+            
           </div>
           <SomeComponent>
-
+            
           </SomeComponent>
           </template>"
     `)
@@ -72,9 +72,9 @@ describe('test devonly transform ', () => {
 
     expect(result).toMatchInlineSnapshot(`
       "<template>
-
+          
               <div class=\\"red\\">This should also be red.</div>
-
+            
         </template>
         "
     `)
