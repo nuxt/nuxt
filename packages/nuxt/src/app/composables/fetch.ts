@@ -140,6 +140,17 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
+    /**
+     * Workaround for `timeout` not working due to custom abort controller
+     * TODO: remove this when upstream issue is resolved
+     * @see https://github.com/unjs/ofetch/issues/326
+     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
+     */
+    const timeoutLength = toValue(opts.timeout)
+    if (timeoutLength) {
+      setTimeout(() => controller.abort(), timeoutLength)
+    }
+
     let _$fetch = opts.$fetch || globalThis.$fetch
 
     // Use fetch with request context and headers for server direct API calls
@@ -211,12 +222,12 @@ function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
   ]
-  for (const _obj of [opts.params || opts.query, opts.headers]) {
+  for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)
     if (!obj) { continue }
 
     const unwrapped: Record<string, string> = {}
-    const iterator = Array.isArray(obj) ? obj : obj instanceof Headers ? obj.entries() : Object.entries(obj)
+    const iterator = Array.isArray(obj) ? obj : Object.entries(obj)
     for (const [key, value] of iterator) {
       unwrapped[toValue(key)] = toValue(value)
     }

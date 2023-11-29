@@ -57,6 +57,10 @@ export default defineComponent({
 
     const done = nuxtApp.deferHydration()
 
+    if (import.meta.dev) {
+      nuxtApp._isNuxtLayoutUsed = true
+    }
+
     return () => {
       const hasLayout = layout.value && layout.value in layouts
       if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {

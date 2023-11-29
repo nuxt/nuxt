@@ -814,6 +814,17 @@ describe('errors', () => {
         "url": "/__nuxt_error",
       }
     `)
+
+    it('should not recursively throw an error when there is an error rendering the error page', async () => {
+      const res = await $fetch('/', {
+        headers: {
+          'x-test-recurse-error': 'true',
+          accept: 'text/html'
+        }
+      })
+      expect(typeof res).toBe('string')
+      expect(res).toContain('Hello Nuxt 3!')
+    })
   })
 
   // TODO: need to create test for webpack
@@ -949,14 +960,6 @@ describe('layouts', () => {
     const html = await $fetch('/layouts/with-props')
     expect(html).toContain('some prop was passed')
     await expectNoClientErrors('/layouts/with-props')
-  })
-})
-
-describe('reactivity transform', () => {
-  it('should works', async () => {
-    const html = await $fetch('/')
-
-    expect(html).toContain('Sugar Counter 12 x 2 = 24')
   })
 })
 
@@ -2009,10 +2012,10 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
 describe.runIf(isDev())('component testing', () => {
   it('should work', async () => {
-    const comp1 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 2 })
+    const comp1 = await $fetchComponent('components/Counter.vue', { multiplier: 2 })
     expect(comp1).toContain('12 x 2 = 24')
 
-    const comp2 = await $fetchComponent('components/SugarCounter.vue', { multiplier: 4 })
+    const comp2 = await $fetchComponent('components/Counter.vue', { multiplier: 4 })
     expect(comp2).toContain('12 x 4 = 48')
   })
 })

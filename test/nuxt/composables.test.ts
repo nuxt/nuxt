@@ -257,20 +257,24 @@ describe('useFetch', () => {
     expect.soft(getPayloadEntries()).toBe(baseCount + 2)
 
     /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: { id: '3' } }, '')
+    await useFetch('/api/test', { query: { id: '3' } }, '')
     /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: { id: ref('3') } }, '')
-    const headers = new Headers()
-    headers.append('id', '3')
+    await useFetch('/api/test', { query: { id: ref('3') } }, '')
     /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers }, '')
+    await useFetch('/api/test', { params: { id: '3' } }, '')
     /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: [['id', '3']] }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: [['id', ref('3')]] }, '')
-    /* @ts-expect-error Overriding auto-key */
-    await useFetch('/api/test', { headers: [[computed(() => 'id'), '3']] }, '')
+    await useFetch('/api/test', { params: { id: ref('3') } }, '')
     expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('should timeout', async () => {
+    const { status, error } = await useFetch(
+      () => new Promise(resolve => setTimeout(resolve, 5000)),
+      { timeout: 1 }
+    )
+    await new Promise(resolve => setTimeout(resolve, 2))
+    expect(status.value).toBe('error')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
   })
 })
 
