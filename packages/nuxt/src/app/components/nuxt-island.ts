@@ -11,7 +11,6 @@ import type { FetchResponse } from 'ofetch'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { useRoute } from '../../app/composables/router'
 import { getFragmentHTML, getSlotProps } from './utils'
 
 // @ts-expect-error virtual file
@@ -48,7 +47,6 @@ export default defineComponent({
     }
   },
   async setup (props, { slots }) {
-    const route = useRoute()
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -121,8 +119,6 @@ export default defineComponent({
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
-        // url is overrideable
-        url: route.fullPath,
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
