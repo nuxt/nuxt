@@ -48,7 +48,6 @@ export default defineComponent({
         const path = '_nuxt/' +  paths[name]
         islandContext.chunks[name] = path
       } else {
-        console.log(name, paths[name])
         islandContext.chunks[name] = paths[name]
       }
 
