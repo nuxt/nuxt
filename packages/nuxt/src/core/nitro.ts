@@ -216,7 +216,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     rollupConfig: {
       output: {},
-      plugins: []
+      plugins: [],
+      makeAbsoluteExternalsRelative: 'ifRelativeSource'
     }
   } satisfies NitroConfig)
 
