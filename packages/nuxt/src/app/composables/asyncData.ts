@@ -49,6 +49,7 @@ export interface AsyncDataOptions<
   watch?: MultiWatchSources
   immediate?: boolean
   deep?: boolean
+  deduplication?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -172,7 +173,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
-      if (opts.dedupe === false) {
+      if (opts.dedupe === false || options.deduplication) {
         // Avoid fetching same key more than once at a time
         return nuxt._asyncDataPromises[key]!
       }
