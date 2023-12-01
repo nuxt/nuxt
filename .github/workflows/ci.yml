@@ -249,8 +249,8 @@ jobs:
     if: |
       github.event_name == 'push' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
-      !contains(github.event.head_commit.message, 'chore') &&
-      !contains(github.event.head_commit.message, 'docs')
+      !startsWith(github.event.head_commit.message, 'chore') &&
+      !startsWith(github.event.head_commit.message, 'docs')
     needs:
       - lint
       - build
