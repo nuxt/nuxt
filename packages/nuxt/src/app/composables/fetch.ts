@@ -26,11 +26,30 @@ interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRout
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
 
-type ExtractRouteParams<T extends string> = T extends `${infer _Start}:${infer Param}/${infer Rest}`
-  ? Param | ExtractRouteParams<Rest>
-  : T extends `${infer _Start}:${infer Param}`
-  ? Param
-  : never;
+type ExtractRouteParams<Path extends string> =
+
+    Path extends `**:${infer Param}/${infer Rest}`
+        ? `**:${Param}` | ExtractRouteParams<Rest>
+
+        : Path extends `**/${infer Rest}`
+            ? `**` | ExtractRouteParams<Rest>
+
+            : Path extends `:${infer Param}/${infer Rest}`
+                ? `:${Param}` | ExtractRouteParams<Rest>
+
+                : Path extends `${infer _NonDynamicParam}/${infer Rest}`
+                    ? ExtractRouteParams<Rest>
+
+                    : Path extends `**:${infer Param}`
+                        ? `**:${Param}`
+
+                        : Path extends `**`
+                            ? `**`
+
+                            : Path extends `:${infer Param}`
+                                ? `:${Param}`
+
+                                :never
 
 export interface UseFetchOptions<
   ResT,
@@ -97,7 +116,7 @@ export function useFetch<
 
     if (opts.routeParams && typeof normalizedRequest === 'string') {
         Object.entries(opts.routeParams).forEach(([key, value]) => {
-            normalizedRequest = (normalizedRequest as string).replaceAll(`:${key}`, String(value)) as ReqT
+            normalizedRequest = (normalizedRequest as string).replaceAll(key, String(value)) as ReqT
         })
     }
 
