@@ -1,6 +1,6 @@
 export default defineNuxtPlugin({
   name: 'depends-on-plugin',
-  dependsOn: ['async-plugin', 'unexisting-plugin'],
+  dependsOn: ['async-plugin'],
   async setup () {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.$asyncPlugin) {
