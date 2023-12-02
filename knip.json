@@ -12,18 +12,6 @@
         "src/runtime/**/*.ts"
       ]
     },
-    "packages/test-utils": {
-      "entry": [
-        "src/experimental.ts",
-        "src/index.ts"
-      ]
-    },
-    "packages/nuxi": {
-      "entry": [
-        "src/index.ts",
-        "src/commands/*.ts"
-      ]
-    },
     "packages/nuxt": {
       "entry": [
         "src/app/**/*.ts",

@@ -135,7 +135,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // Add type checking client panel
-  if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
+  if (ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
     clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 

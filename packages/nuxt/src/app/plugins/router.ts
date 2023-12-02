@@ -1,4 +1,4 @@
-import { h, isReadonly, reactive } from 'vue'
+import { defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
@@ -188,10 +188,13 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
-    nuxtApp.vueApp.component('RouterLink', {
+    nuxtApp.vueApp.component('RouterLink', defineComponent({
       functional: true,
       props: {
-        to: String,
+        to: {
+          type: String,
+          required: true
+        },
         custom: Boolean,
         replace: Boolean,
         // Not implemented
@@ -200,15 +203,15 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         ariaCurrentValue: String
       },
       setup: (props, { slots }) => {
-        const navigate = () => handleNavigation(props.to, props.replace)
+        const navigate = () => handleNavigation(props.to!, props.replace)
         return () => {
-          const route = router.resolve(props.to)
+          const route = router.resolve(props.to!)
           return props.custom
             ? slots.default?.({ href: props.to, navigate, route })
             : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
       }
-    })
+    }))
 
     if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
