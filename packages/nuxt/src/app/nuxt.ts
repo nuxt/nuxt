@@ -404,7 +404,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   const _name = plugin._name || plugin.name
   delete plugin.name
-  return Object.assign(plugin.setup || (() => { }), plugin, { [NuxtPluginIndicator]: true, _name } as const)
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
 /*@__NO_SIDE_EFFECTS__*/
@@ -419,7 +419,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
-export function callWithNuxt<T extends (...args: any[]) => any>(nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
