@@ -350,14 +350,14 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   // todo move it to build time
-  plugins.forEach((plugin) => {
+  for (const plugin of plugins) {
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
       if (import.meta.dev) {
         console.warn(`Plugin ${plugin._name} depends on ${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')} but they are not registered.`)
       }
       plugin.dependsOn = plugin.dependsOn.filter(name => pluginNames.includes(name))
     }
-  })
+  }
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
     if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
