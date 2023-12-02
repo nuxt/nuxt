@@ -1,8 +1,14 @@
 <template>
-  <div v-bind="$attrs" class="multi-root-node-count">
+  <div
+    v-bind="$attrs"
+    class="multi-root-node-count"
+  >
     {{ count }}
   </div>
-  <button class="multi-root-node-button" @click="add">
+  <button
+    class="multi-root-node-button"
+    @click="add"
+  >
     add 1 to count
   </button>
 </template>

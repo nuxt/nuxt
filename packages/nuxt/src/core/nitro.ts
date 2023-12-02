@@ -14,7 +14,7 @@ import { dynamicEventHandler } from 'h3'
 import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
-
+import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
@@ -51,6 +51,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
       typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+    },
+    framework: {
+      name: 'nuxt',
+      version: nuxtVersion
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
@@ -106,12 +110,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         baseURL: nuxt.options.runtimeConfig.app.baseURL.startsWith('./')
           ? nuxt.options.runtimeConfig.app.baseURL.slice(1)
           : nuxt.options.runtimeConfig.app.baseURL
-      } satisfies RuntimeConfig['app'],
+      },
       nitro: {
         envPrefix: 'NUXT_',
-        ...nuxt.options.runtimeConfig.nitro
+        // TODO: address upstream issue with defu types...?
+        ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any
       }
-    },
+    } ,
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, 'app.config')
@@ -229,6 +234,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
 
+    nitroConfig.prerender ||= {}
+    nitroConfig.prerender.ignore ||= []
+    nitroConfig.prerender.ignore.push(manifestPrefix)
+
     nitroConfig.publicAssets!.unshift(
       // build manifest
       {
@@ -326,6 +335,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
   nitroConfig.rollupConfig!.plugins!.push(
+    // @ts-expect-error rollup 4 types
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
       patterns: [
@@ -529,7 +539,9 @@ function spaLoadingTemplate (nuxt: Nuxt) {
     if (existsSync(spaLoadingTemplate)) {
       return readFileSync(spaLoadingTemplate, 'utf-8')
     }
-  } catch {}
+  } catch {
+    // fall through if we have issues reading the file
+  }
 
   if (nuxt.options.spaLoadingTemplate === true) {
     return defaultSpaLoadingTemplate({})

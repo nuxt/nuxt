@@ -55,7 +55,7 @@ export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
 
 // HMR Support
 if (import.meta.dev) {
-  function applyHMR (newConfig: AppConfig) {
+  const applyHMR = (newConfig: AppConfig) => {
     const appConfig = useAppConfig()
     if (newConfig && appConfig) {
       deepAssign(appConfig, newConfig)

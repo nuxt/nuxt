@@ -36,7 +36,7 @@ const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev
 })
 ```
 
-Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
+The above example results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`.
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
@@ -80,13 +80,14 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `body`: Request body - automatically stringified (if an object is passed).
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
+  - `timeout`: Milliseconds to automatically abort request
 
 ::callout
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
 ::
 
 - `Options` (from [`useAsyncData`](/docs/api/composables/use-async-data)):
-  - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAsyncData` is used.
+  - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be automatically generated based on URL and fetch options
   - `server`: whether to fetch the data on the server (defaults to `true`)
   - `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
