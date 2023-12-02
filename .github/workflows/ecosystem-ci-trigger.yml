@@ -68,7 +68,7 @@ jobs:
         with:
           app_id: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_ID }}
           private_key: ${{ secrets.ECOSYSTEM_CI_GITHUB_APP_PRIVATE_KEY }}
-          repository: "${{ github.repository_owner }}/ecosystem-ci"
+          installation_retrieval_payload: "${{ github.repository_owner }}/ecosystem-ci"
       - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         id: trigger
         env:
