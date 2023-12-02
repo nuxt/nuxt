@@ -373,7 +373,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
             }
           }))
         }
-      }).catch(console.log)
+      })
 
       if (plugin.parallel) {
         parallels.push(promise.catch(e => errors.push(e)))
