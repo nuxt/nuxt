@@ -26,6 +26,12 @@ interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRout
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
 
+type ExtractRouteParams<T extends string> = T extends `${infer _Start}:${infer Param}/${infer Rest}`
+  ? Param | ExtractRouteParams<Rest>
+  : T extends `${infer _Start}:${infer Param}`
+  ? Param
+  : never;
+
 export interface UseFetchOptions<
   ResT,
   DataT = ResT,
@@ -37,6 +43,7 @@ export interface UseFetchOptions<
   key?: string
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
+  routeParams?: ExtractRouteParams<R extends string ? R : never> extends never ? undefined : Record<ExtractRouteParams<R extends string ? R : never>, unknown>
 }
 
 export function useFetch<
@@ -82,11 +89,19 @@ export function useFetch<
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
   const _request = computed(() => {
-    let r = request
-    if (typeof r === 'function') {
-      r = r()
+    if (typeof request === 'function') {
+      request = request()
     }
-    return toValue(r)
+
+    let normalizedRequest = toValue(request)
+
+    if (opts.routeParams && typeof normalizedRequest === 'string') {
+        Object.entries(opts.routeParams).forEach(([key, value]) => {
+            normalizedRequest = (normalizedRequest as string).replaceAll(`:${key}`, String(value)) as ReqT
+        })
+    }
+
+    return normalizedRequest
   })
 
   const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
