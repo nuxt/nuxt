@@ -339,33 +339,61 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
-  const pluginMap: Record<string, any> = {}
+  const resolvedPlugins: string[] = []
+  const pluginNames = plugins.map(plugin => plugin._name)
+  const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
+  let promiseDepth = 0
+
+  // todo move it to build time
+  plugins.forEach((plugin) => {
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
+      if (import.meta.dev) {
+        console.warn(`Plugin ${plugin._name} depends on ${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')} but they are not registered.`)
+      }
+      plugin.dependsOn = plugin.dependsOn.filter(name => pluginNames.includes(name))
+    }
+  })
+
+  async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
+    if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
+      unresolvedPlugins.push([new Set(plugin.dependsOn), plugin])
+    } else {
+      const promise = applyPlugin(nuxtApp, plugin).then(async () => {
+        if (plugin._name) {
+          resolvedPlugins.push(plugin._name)
+          await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
+            if (dependsOn.has(plugin._name!)) {
+              dependsOn.delete(plugin._name!)
+              if (dependsOn.size === 0) {
+                promiseDepth++
+                await executePlugin(unexecutedPlugin)
+              }
+            }
+          }))
+        }
+      }).catch(console.log)
+
+      if (plugin.parallel) {
+        parallels.push(promise.catch(e => errors.push(e)))
+      } else {
+        await promise
+      }
+    }
+  }
 
   for (const plugin of plugins) {
     if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
-    const promise = plugin.dependsOn
-      ? Promise.all(plugin.dependsOn.map((name) => {
-        const pluginPromise = pluginMap[name]
-        if (import.meta.dev && !pluginPromise) {
-          console.warn(`[nuxt] ${plugin._name ? `Plugin "${plugin._name}"` : 'A plugin'} depends on "${name}" but "${name}" plugin does not exist or hasn't been registered yet.`)
-        }
-        return pluginPromise
-      })).then(() => applyPlugin(nuxtApp, plugin)).catch(e => errors.push(e))
-      : applyPlugin(nuxtApp, plugin)
+    await executePlugin(plugin)
+  }
 
-    if (plugin._name) {
-      pluginMap[plugin._name] = promise
-    }
-
-    if (plugin.parallel) {
-      parallels.push(promise.catch(e => errors.push(e)))
-    } else {
-      await promise
+  await Promise.all(parallels)
+  if (promiseDepth) {
+    for (let i = 0; i < promiseDepth; i++) {
+      await Promise.all(parallels)
     }
   }
-  await Promise.all(parallels)
 
   if (errors.length) { throw errors[0] }
 }
@@ -376,7 +404,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 
   const _name = plugin._name || plugin.name
   delete plugin.name
-  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
+  return Object.assign(plugin.setup || (() => { }), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
 /*! @__NO_SIDE_EFFECTS__ */
@@ -391,7 +419,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any>(nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))

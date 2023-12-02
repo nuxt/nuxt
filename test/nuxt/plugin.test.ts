@@ -120,4 +120,125 @@ describe('plugin dependsOn', () => {
       'end B'
     ])
   })
+
+  it('relying on plugin not registed yet', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('C', ['A'], sequence),
+      pluginFactory('A', undefined, sequence, true),
+      pluginFactory('E', ['B', 'C'], sequence, false),
+      pluginFactory('B', undefined, sequence),
+      pluginFactory('D', ['C'], sequence, false)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start B',
+      'end A',
+      'start C',
+      'end B',
+      'end C',
+      'start E',
+      'start D',
+      'end E',
+      'end D'
+    ])
+  })
+
+  it('test depending on not yet registered plugin and already resolved plugin', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      pluginFactory('B', ['A', 'C'], sequence),
+      pluginFactory('C', undefined, sequence, false),
+      pluginFactory('D', undefined, sequence, false),
+      pluginFactory('E', ['C'], sequence, false)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start C',
+      'end A',
+      'end C',
+      'start B',
+      'start D',
+      'end B',
+      'end D',
+      'start E',
+      'end E'
+    ])
+  })
+
+  it('multiple depth of plugin dependency', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      pluginFactory('C', ['B', 'A'], sequence),
+      pluginFactory('B', undefined, sequence, false),
+      pluginFactory('E', ['D'], sequence, false),
+      pluginFactory('D', ['C'], sequence, false)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start B',
+      'end A',
+      'end B',
+      'start C',
+      'end C',
+      'start D',
+      'end D',
+      'start E',
+      'end E'
+    ])
+  })
+
+  it('function plugin', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      defineNuxtPlugin(() => {
+        sequence.push('start C')
+        sequence.push('end C')
+      }),
+      pluginFactory('B', undefined, sequence, false)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start C',
+      'end C',
+      'start B',
+      'end A',
+      'end B'
+    ])
+  })
+
+  it('test plugin depending on a plugin that don\'t exist, B should still run in the correct order', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      pluginFactory('B', ['D'], sequence, false),
+      pluginFactory('C', undefined, sequence, false)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start B',
+      'end A',
+      'end B',
+      'start C',
+      'end C'
+    ])
+  })
 })
