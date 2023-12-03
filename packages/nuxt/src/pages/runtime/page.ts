@@ -1,9 +1,8 @@
-import { Suspense, Transition, defineAsyncComponent, defineComponent, h, inject, nextTick, ref } from 'vue'
+import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, defineAsyncComponent } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
-import NuxtIsland from '#app/components/nuxt-island'
 
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
@@ -38,7 +37,7 @@ export default defineComponent({
     }
   },
   setup (props, { attrs, expose }) {
-
+    const NuxtIsland = defineAsyncComponent(() => import('#app/components/nuxt-island'))
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -104,8 +103,6 @@ export default defineComponent({
               onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).finally(done)) }
             }, {
               default: () => {
-                
-
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
                   vnode: routeProps.Component,

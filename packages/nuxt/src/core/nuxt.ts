@@ -159,6 +159,11 @@ async function initNuxt (nuxt: Nuxt) {
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
   }
 
+  if (nuxt.options.dev) {
+    // Add plugin to check if layouts are defined without NuxtLayout being instantiated
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+  }
+
   // Transform initial composable call within `<script setup>` to preserve context
   if (nuxt.options.experimental.asyncContext) {
     addBuildPlugin(AsyncContextInjectionPlugin(nuxt))

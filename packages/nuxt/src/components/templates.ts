@@ -88,27 +88,28 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
 
-    function normalizeName (p: NuxtPage) {
-      return p.name!.replaceAll('-', '_')
-    }
-
     const pageExports = pages?.map((p) => {
       if(!p.file || !p.name || !p.server) return ''
       const comment = createImportMagicComments({
         chunkName: p.file
       })
 
-      return `export const ${normalizeName(p)} = defineAsyncComponent(${genDynamicImport(p.file)})`
-    }) || ['']
- 
+      return `"${p}": defineAsyncComponent(${genDynamicImport(p.file)})`
+    }) || []
 
-    return ['import { defineAsyncComponent } from \'vue\'', ...islands.map(
-      (c) => {
-        const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-        const comment = createImportMagicComments(c)
-        return `export const ${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
-      }
-    ), ...pageExports].join('\n')
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+      'export const islandComponents = {',
+      islands.map(
+        (c) => {
+          const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+          const comment = createImportMagicComments(c)
+          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+        }
+      ).join(',\n'),
+      pageExports.join(',\n'),
+      '}'
+    ].join('\n')
   }
 }
 

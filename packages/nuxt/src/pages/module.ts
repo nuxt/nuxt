@@ -222,7 +222,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static) { return }
+      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
       // Prerender all non-dynamic page routes when generating app
       const prerenderRoutes = new Set<string>()
       nuxt.hook('pages:extend', (pages) => {
