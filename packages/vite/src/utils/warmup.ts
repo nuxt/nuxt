@@ -34,6 +34,10 @@ function isBuiltin (id: string) {
   return id.startsWith('node:') || builtins.has(id)
 }
 
+function isVirtual (id: string) {
+  return id.startsWith('virtual:')
+}
+
 // TODO: use built-in warmup logic when we update to vite 5
 export async function warmupViteServer (
   server: ViteDevServer,
@@ -50,7 +54,10 @@ export async function warmupViteServer (
       const m = await server.moduleGraph.getModuleByUrl(url, isServer)
       // a module that is already compiled (and can't be warmed up anyway)
       if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
-        return
+        // warming up virtual modules is needed to resolve dependency graph with dynamic imports
+        // this is important for Nuxt Server components
+        if (!isVirtual(url))
+          return
       }
       warmedUrls.add(url)
       await server.transformRequest(url, { ssr: isServer })
