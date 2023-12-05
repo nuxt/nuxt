@@ -34,6 +34,8 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+export type Dedupe = boolean | 'cancel' | 'defer'
+
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
@@ -49,7 +51,7 @@ export interface AsyncDataOptions<
   watch?: MultiWatchSources
   immediate?: boolean
   deep?: boolean
-  dedupe?: boolean
+  dedupe?: Dedupe
 }
 
 export interface AsyncDataExecuteOptions {
@@ -59,7 +61,7 @@ export interface AsyncDataExecuteOptions {
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
    */
-  dedupe?: boolean
+  dedupe?: Dedupe
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -72,6 +74,10 @@ export interface _AsyncData<DataT, ErrorT> {
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
+
+const deferDedupeSet = new Set(['defer', false])
+
+const isDefer = (dedupe?: Dedupe) => deferDedupeSet.has(dedupe || 'cancel')
 
 export function useAsyncData<
   ResT,
@@ -151,6 +157,7 @@ export function useAsyncData<
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
+  options.dedupe = options.dedupe ?? 'cancel'
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
@@ -173,7 +180,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
-      if (opts.dedupe === false || options.dedupe) {
+      if (isDefer(opts.dedupe) || isDefer(options.dedupe)) {
         // Avoid fetching same key more than once at a time
         return nuxt._asyncDataPromises[key]!
       }
