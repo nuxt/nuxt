@@ -88,13 +88,12 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
 
-    const pageExports = pages?.map((p) => {
-      if(!p.file || !p.name || !p.server) return ''
+    const pageExports = pages?.filter(p => (p.server && p.file && p.name)).map((p) => {
       const comment = createImportMagicComments({
-        chunkName: p.file
+        chunkName: p.file!
       })
 
-      return `"${p}": defineAsyncComponent(${genDynamicImport(p.file)})`
+      return `"${p.name}": defineAsyncComponent(${genDynamicImport(p.file!, { comment })})`
     }) || []
 
     return [
@@ -106,8 +105,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
           const comment = createImportMagicComments(c)
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
         }
-      ).join(',\n'),
-      pageExports.join(',\n'),
+      ).concat(pageExports).join(',\n'),
       '}'
     ].join('\n')
   }
