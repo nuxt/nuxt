@@ -125,7 +125,7 @@ type NuxtAppInjections = \n  ${tsImports.map(p => `InjectionType<typeof ${genDyn
 declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
 
-  interface NuxtAppTypes {
+  interface NuxtAppLiterals {
     pluginName: ${pluginsName.join(' | ')}
   }
 }
