@@ -68,7 +68,7 @@
     <NuxtLink to="/no-scripts">
       to no script
     </NuxtLink>
-    <NestedSugarCounter :multiplier="2" />
+    <Counter :multiplier="2" />
     <CustomComponent />
     <component :is="`global${'-'.toString()}sync`" />
     <Spin>Test</Spin>
@@ -103,8 +103,8 @@ const config = useRuntimeConfig()
 
 const someValue = useState('val', () => 1)
 
-const NestedSugarCounter = resolveComponent('NestedSugarCounter')
-if (!NestedSugarCounter) {
+const Counter = resolveComponent('Counter')
+if (!Counter) {
   throw new Error('Component not found')
 }
 
