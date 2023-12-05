@@ -18,8 +18,7 @@ import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 
-// @ts-expect-error virtual file
-import { NuxtPluginKey } from "#app"
+import type { NuxtAppTypes } from '#app'
 
 const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -196,7 +195,7 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
   /**
    * Await for plugin to be finished before running this plugin.
    */
-  dependsOn?: NuxtPluginKey[]
+  dependsOn?: NuxtAppTypes['pluginName'][]
   /**
    * @internal
    */
