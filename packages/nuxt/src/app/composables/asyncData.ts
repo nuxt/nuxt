@@ -180,7 +180,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
-      if (isDefer(opts.dedupe) || isDefer(options.dedupe)) {
+      if (isDefer(opts.dedupe ?? options.dedupe)) {
         // Avoid fetching same key more than once at a time
         return nuxt._asyncDataPromises[key]!
       }
