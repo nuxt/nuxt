@@ -82,7 +82,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern }
     },
-    analyze: nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
+    analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
           template: 'treemap',
           projectRoot: nuxt.options.rootDir,
