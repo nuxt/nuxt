@@ -47,7 +47,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install && /* we are running this plugin in a Nuxt context */ tryUseNuxt()) {
+          if (component._internal_install && tryUseNuxt()?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
