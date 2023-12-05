@@ -100,7 +100,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // Normally type checking runs in server config, but in `ssr: false` there is
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
-    if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+    if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
       ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
         logger
       }))
