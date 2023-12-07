@@ -1,8 +1,8 @@
 import { join, normalize, relative, resolve } from 'pathe'
-import { createDebugger, createHooks } from 'hookable'
+import { createDebugger, createHooks, mergeHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
-import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
+import type { Nuxt, NuxtConfig, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -51,11 +51,13 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
+  let hooks: NuxtConfig['hooks'] = {}
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
-      nuxt.hooks.addHooks(config.hooks)
+      mergeHooks(hooks, config.hooks)
     }
   }
+  nuxt.hooks.addHooks(hooks)
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
