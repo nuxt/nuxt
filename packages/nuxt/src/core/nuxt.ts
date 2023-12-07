@@ -51,12 +51,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
-  let hooks: NuxtConfig['hooks'] = {}
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
-    if (config.hooks) {
-      mergeHooks(hooks, config.hooks)
-    }
-  }
+  const hooks: NuxtConfig['hooks'] = mergeHooks(nuxt.options._layers.map(layer => layer.config.hooks).reverse()) || {}
   nuxt.hooks.addHooks(hooks)
 
   // Set nuxt instance for useNuxt
