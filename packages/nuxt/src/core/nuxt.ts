@@ -51,7 +51,11 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
-  nuxt.hooks.addHooks(nuxt.options.hooks)
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    if (config.hooks) {
+      nuxt.hooks.addHooks(config.hooks)
+    }
+  }
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
