@@ -248,7 +248,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
                   statusCode: 404,
                   statusMessage: `Page Not Found: ${initialURL}`,
                   data: {
-                    to
+                    path: to.fullPath
                   }
                 })
                 delete nuxtApp._processingMiddleware

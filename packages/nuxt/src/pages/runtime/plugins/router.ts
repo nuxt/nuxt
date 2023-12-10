@@ -211,7 +211,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
           data: {
-            to
+            path: to.fullPath
           }
         })))
       } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
