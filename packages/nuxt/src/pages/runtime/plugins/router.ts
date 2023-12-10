@@ -99,7 +99,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
- 
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
