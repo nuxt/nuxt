@@ -7,7 +7,7 @@ settings:
 overrides:
   '@nuxt/kit': workspace:*
   '@nuxt/schema': workspace:*
-  '@nuxt/test-utils': npm:@nuxt/test-utils-nightly@3.8.2-1702104193.f19cb1b
+  '@nuxt/test-utils': 3.9.0-alpha.1
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   nuxt: workspace:*
@@ -23,8 +23,8 @@ importers:
         specifier: 0.2.0
         version: 0.2.0(eslint@8.55.0)
       '@nuxt/test-utils':
-        specifier: npm:@nuxt/test-utils-nightly@3.8.2-1702104193.f19cb1b
-        version: /@nuxt/test-utils-nightly@3.8.2-1702104193.f19cb1b(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+        specifier: 3.9.0-alpha.1
+        version: 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -128,8 +128,8 @@ importers:
         specifier: 1.0.2
         version: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
       vitest-environment-nuxt:
-        specifier: 1.0.0-alpha.0
-        version: 1.0.0-alpha.0(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+        specifier: 1.0.0-alpha.1
+        version: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
       vue:
         specifier: 3.3.11
         version: 3.3.11(typescript@5.3.3)
@@ -2001,8 +2001,8 @@ packages:
       rc9: 2.1.1
       std-env: 3.6.0
 
-  /@nuxt/test-utils-nightly@3.8.2-1702104193.f19cb1b(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
-    resolution: {integrity: sha512-ciraWFEC6Z7hPIr8AxZvbl48h6WioYiUkqA5LuH6gPfyF43LNs8/G4lxLJ6Fhj9YCW0Pz1YfwqaRGSBbVt9iOw==}
+  /@nuxt/test-utils@3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
+    resolution: {integrity: sha512-cPR2Z2REMyIRGM3/2zEf5IAfMHT2GniMx4IkeeexlG7O0y3VMA1SumoWFa5/pRLxXhUjR2Vg3je1WaUr/ACZkw==}
     engines: {node: ^14.18.0 || >=16.10.0}
     peerDependencies:
       '@jest/globals': ^29.5.0
@@ -2060,7 +2060,7 @@ packages:
       unplugin: 1.5.1
       vite: 5.0.7(@types/node@20.10.4)
       vitest: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
-      vitest-environment-nuxt: 1.0.0-alpha.0(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+      vitest-environment-nuxt: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
       vue: 3.3.11(typescript@5.3.3)
       vue-router: 4.2.5(vue@3.3.11)
     dev: true
@@ -2151,6 +2151,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -6879,6 +6880,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -9601,10 +9605,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitest-environment-nuxt@1.0.0-alpha.0(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
-    resolution: {integrity: sha512-oROV1wlxUHI/3o4+3Cj5XuARTurQ4FPSzUSx8IA3sxx+4G+ljbXhTKUPmLuSec2EWuZjr3eEy6ameqKByB2YwA==}
+  /vitest-environment-nuxt@1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
+    resolution: {integrity: sha512-0/gfNcZNNqFRjocmGZN/R4PlZ0p4MlmmsTkplKf9FwgBadGxN4eYtxOqk1ubhz+qf8ZvPRER3toydmOASovMcg==}
     dependencies:
-      '@nuxt/test-utils': /@nuxt/test-utils-nightly@3.8.2-1702104193.f19cb1b(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+      '@nuxt/test-utils': 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
     transitivePeerDependencies:
       - '@jest/globals'
       - '@testing-library/vue'
