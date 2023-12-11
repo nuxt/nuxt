@@ -246,7 +246,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
               if (result === false || result instanceof Error) {
                 const error = result || createError({
                   statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                  data: {
+                    path: initialURL
+                  }
                 })
                 delete nuxtApp._processingMiddleware
                 return nuxtApp.runWithContext(() => showError(error))

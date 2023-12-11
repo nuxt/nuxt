@@ -155,6 +155,7 @@ describe('pages', () => {
 
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
+    expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /forbidden"')
 
     await gotoPath(page, '/navigate-to-forbidden')
     await page.getByText('should be caught by catchall').click()
