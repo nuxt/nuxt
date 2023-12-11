@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils'
+import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
 
