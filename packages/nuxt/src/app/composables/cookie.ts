@@ -16,6 +16,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   encode?(value: T): string
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
+  readonly?: boolean
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -27,6 +28,8 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
+export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
@@ -55,6 +58,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
       channel?.postMessage(opts.encode(cookie.value as T))
     }
@@ -72,7 +76,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (channel) {
       channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = opts.decode(event.data)
+        cookies[name] = cookie.value = opts.decode(event.data)
         nextTick(() => { watchPaused = false })
       }
     }
@@ -89,9 +93,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
-      }
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
