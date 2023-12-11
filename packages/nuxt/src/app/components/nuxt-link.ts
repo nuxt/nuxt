@@ -347,13 +347,10 @@ export default defineNuxtLink(nuxtLinkDefaults)
 // -- NuxtLink utils --
 function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
   const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
+  // Until https://github.com/unjs/ufo/issues/189 is resolved
   const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
   if (hasProtocolDifferentFromHttp) {
     return to
-  }
-  const [link, fragment] = to.split('#')
-  if (fragment) {
-    return `${normalizeFn(link, true)}#${fragment}`
   }
   return normalizeFn(to, true)
 }
