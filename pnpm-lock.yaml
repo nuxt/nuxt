@@ -41,7 +41,7 @@ importers:
         specifier: 1.0.2
         version: 1.0.2(vitest@1.0.2)
       '@vue/test-utils':
-        specifier: ^2.4.3
+        specifier: 2.4.3
         version: 2.4.3(vue@3.3.11)
       case-police:
         specifier: 0.6.1
