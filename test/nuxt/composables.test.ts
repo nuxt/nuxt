@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
-import { mountSuspended, registerEndpoint } from 'nuxt-vitest/utils'
+import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import * as composables from '#app/composables'
 
@@ -312,9 +312,10 @@ describe('errors', () => {
 })
 
 describe('onNuxtReady', () => {
-  it('should call callback immediately once nuxt is hydrated', () => {
+  it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
+    await new Promise(resolve => setTimeout(resolve, 1))
     expect(fn).toHaveBeenCalled()
   })
 })
@@ -463,7 +464,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
 
 describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('"Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`."')
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[Error: Navigating to an external URL is not allowed by default. Use \`navigateTo(url, { external: true })\`.]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -497,7 +498,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('"Page not found"')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot(`[Error: Page not found]`)
     expect(error.value).toBeFalsy()
   })
   it('should block navigation if no error is provided', () => {
