@@ -24,7 +24,7 @@ importers:
         version: 0.2.0(eslint@8.55.0)
       '@nuxt/test-utils':
         specifier: 3.9.0-alpha.1
-        version: 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+        version: 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11)
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -38,8 +38,8 @@ importers:
         specifier: 7.5.6
         version: 7.5.6
       '@vitest/coverage-v8':
-        specifier: 1.0.2
-        version: 1.0.2(vitest@1.0.2)
+        specifier: 1.0.4
+        version: 1.0.4(vitest@1.0.4)
       '@vue/test-utils':
         specifier: 2.4.3
         version: 2.4.3(vue@3.3.11)
@@ -125,11 +125,11 @@ importers:
         specifier: 1.3.2
         version: 1.3.2
       vitest:
-        specifier: 1.0.2
-        version: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.10.4)(happy-dom@12.10.3)
       vitest-environment-nuxt:
         specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+        version: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11)
       vue:
         specifier: 3.3.11
         version: 3.3.11(typescript@5.3.3)
@@ -222,8 +222,8 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@20.10.4)
       vitest:
-        specifier: 1.0.2
-        version: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.10.4)(happy-dom@12.10.3)
       webpack:
         specifier: 5.89.0
         version: 5.89.0
@@ -418,8 +418,8 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@20.10.4)
       vitest:
-        specifier: 1.0.2
-        version: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
+        specifier: 1.0.4
+        version: 1.0.4(@types/node@20.10.4)(happy-dom@12.10.3)
 
   packages/schema:
     dependencies:
@@ -620,7 +620,7 @@ importers:
         specifier: 5.0.7
         version: 5.0.7(@types/node@20.10.4)
       vite-node:
-        specifier: ^1.0.2
+        specifier: ^1.0.4
         version: 1.0.4(@types/node@20.10.4)
       vite-plugin-checker:
         specifier: ^0.6.2
@@ -1074,6 +1074,7 @@ packages:
   /@babel/highlight@7.23.4:
     resolution: {integrity: sha512-acGdbYSfp2WheJoJm/EBBBLh/ID8KDc64ISZ9DYtBmC8/Q204PZJLHyzeB5qMzJ5trcOkybd78M4x2KWsUq++A==}
     engines: {node: '>=6.9.0'}
+    requiresBuild: true
     dependencies:
       '@babel/helper-validator-identifier': 7.22.20
       chalk: 2.4.2
@@ -2177,7 +2178,7 @@ packages:
       rc9: 2.1.1
       std-env: 3.6.0
 
-  /@nuxt/test-utils@3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
+  /@nuxt/test-utils@3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11):
     resolution: {integrity: sha512-cPR2Z2REMyIRGM3/2zEf5IAfMHT2GniMx4IkeeexlG7O0y3VMA1SumoWFa5/pRLxXhUjR2Vg3je1WaUr/ACZkw==}
     engines: {node: ^14.18.0 || >=16.10.0}
     peerDependencies:
@@ -2235,8 +2236,8 @@ packages:
       unenv: 1.8.0
       unplugin: 1.5.1
       vite: 5.0.7(@types/node@20.10.4)
-      vitest: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
-      vitest-environment-nuxt: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+      vitest: 1.0.4(@types/node@20.10.4)(happy-dom@12.10.3)
+      vitest-environment-nuxt: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11)
       vue: 3.3.11(typescript@5.3.3)
       vue-router: 4.2.5(vue@3.3.11)
     dev: true
@@ -3266,8 +3267,8 @@ packages:
       vite: 5.0.7(@types/node@20.10.4)
       vue: 3.3.11(typescript@5.3.3)
 
-  /@vitest/coverage-v8@1.0.2(vitest@1.0.2):
-    resolution: {integrity: sha512-WCTbfnvFPqH8TGVPNnPXcLBK/tbMX5GGZ/Lc9EuYvVX4xbO0ULKLzWDbVU37C2Y2YIlNu/VP1kp7QKUZolUDgA==}
+  /@vitest/coverage-v8@1.0.4(vitest@1.0.4):
+    resolution: {integrity: sha512-xD6Yuql6RW0Ir/JJIs6rVrmnG2/KOWJF+IRX1oJQk5wGKGxbtdrYPbl+WTUn/4ICCQ2G20zbE1e8/nPNyAG5Vg==}
     peerDependencies:
       vitest: ^1.0.0
     dependencies:
@@ -3284,7 +3285,7 @@ packages:
       std-env: 3.6.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.0.2(@types/node@20.10.4)(happy-dom@12.10.3)
+      vitest: 1.0.4(@types/node@20.10.4)(happy-dom@12.10.3)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -3297,10 +3298,26 @@ packages:
       chai: 4.3.10
     dev: true
 
+  /@vitest/expect@1.0.4:
+    resolution: {integrity: sha512-/NRN9N88qjg3dkhmFcCBwhn/Ie4h064pY3iv7WLRsDJW7dXnEgeoa8W9zy7gIPluhz6CkgqiB3HmpIXgmEY5dQ==}
+    dependencies:
+      '@vitest/spy': 1.0.4
+      '@vitest/utils': 1.0.4
+      chai: 4.3.10
+    dev: true
+
   /@vitest/runner@1.0.2:
     resolution: {integrity: sha512-ZcHJXPT2kg/9Hc4fNkCbItlsgZSs3m4vQbxB8LCSdzpbG85bExCmSvu6K9lWpMNdoKfAr1Jn0BwS9SWUcGnbTQ==}
     dependencies:
       '@vitest/utils': 1.0.2
+      p-limit: 5.0.0
+      pathe: 1.1.1
+    dev: true
+
+  /@vitest/runner@1.0.4:
+    resolution: {integrity: sha512-rhOQ9FZTEkV41JWXozFM8YgOqaG9zA7QXbhg5gy6mFOVqh4PcupirIJ+wN7QjeJt8S8nJRYuZH1OjJjsbxAXTQ==}
+    dependencies:
+      '@vitest/utils': 1.0.4
       p-limit: 5.0.0
       pathe: 1.1.1
     dev: true
@@ -3313,14 +3330,36 @@ packages:
       pretty-format: 29.7.0
     dev: true
 
+  /@vitest/snapshot@1.0.4:
+    resolution: {integrity: sha512-vkfXUrNyNRA/Gzsp2lpyJxh94vU2OHT1amoD6WuvUAA12n32xeVZQ0KjjQIf8F6u7bcq2A2k969fMVxEsxeKYA==}
+    dependencies:
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      pretty-format: 29.7.0
+    dev: true
+
   /@vitest/spy@1.0.2:
     resolution: {integrity: sha512-YlnHmDntp+zNV3QoTVFI5EVHV0AXpiThd7+xnDEbWnD6fw0TH/J4/+3GFPClLimR39h6nA5m0W4Bjm5Edg4A/A==}
     dependencies:
       tinyspy: 2.2.0
     dev: true
 
+  /@vitest/spy@1.0.4:
+    resolution: {integrity: sha512-9ojTFRL1AJVh0hvfzAQpm0QS6xIS+1HFIw94kl/1ucTfGCaj1LV/iuJU4Y6cdR03EzPDygxTHwE1JOm+5RCcvA==}
+    dependencies:
+      tinyspy: 2.2.0
+    dev: true
+
   /@vitest/utils@1.0.2:
     resolution: {integrity: sha512-GPQkGHAnFAP/+seSbB9pCsj339yRrMgILoI5H2sPevTLCYgBq0VRjF8QSllmnQyvf0EontF6KUIt2t5s2SmqoQ==}
+    dependencies:
+      diff-sequences: 29.6.3
+      loupe: 2.3.7
+      pretty-format: 29.7.0
+    dev: true
+
+  /@vitest/utils@1.0.4:
+    resolution: {integrity: sha512-gsswWDXxtt0QvtK/y/LWukN7sGMYmnCcv1qv05CsY6cU/Y1zpGX1QuvLs+GO1inczpE6Owixeel3ShkjhYtGfA==}
     dependencies:
       diff-sequences: 29.6.3
       loupe: 2.3.7
@@ -9675,7 +9714,6 @@ packages:
       - sugarss
       - supports-color
       - terser
-    dev: false
 
   /vite-plugin-checker@0.6.2(eslint@8.55.0)(typescript@5.3.3)(vite@5.0.7)(vue-tsc@1.8.25):
     resolution: {integrity: sha512-YvvvQ+IjY09BX7Ab+1pjxkELQsBd4rPhWNw8WLBeFVxu/E7O+n6VYAqNsKdK/a2luFlX/sMpoWdGFfg4HvwdJQ==}
@@ -9810,10 +9848,10 @@ packages:
     optionalDependencies:
       fsevents: 2.3.3
 
-  /vitest-environment-nuxt@1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11):
+  /vitest-environment-nuxt@1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11):
     resolution: {integrity: sha512-0/gfNcZNNqFRjocmGZN/R4PlZ0p4MlmmsTkplKf9FwgBadGxN4eYtxOqk1ubhz+qf8ZvPRER3toydmOASovMcg==}
     dependencies:
-      '@nuxt/test-utils': 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.2)(vue-router@4.2.5)(vue@3.3.11)
+      '@nuxt/test-utils': 3.9.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.7)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.11)
     transitivePeerDependencies:
       - '@jest/globals'
       - '@testing-library/vue'
@@ -9876,6 +9914,64 @@ packages:
       tinypool: 0.8.1
       vite: 5.0.7(@types/node@20.10.4)
       vite-node: 1.0.2(@types/node@20.10.4)
+      why-is-node-running: 2.2.2
+    transitivePeerDependencies:
+      - less
+      - lightningcss
+      - sass
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+    dev: true
+
+  /vitest@1.0.4(@types/node@20.10.4)(happy-dom@12.10.3):
+    resolution: {integrity: sha512-s1GQHp/UOeWEo4+aXDOeFBJwFzL6mjycbQwwKWX2QcYfh/7tIerS59hWQ20mxzupTJluA2SdwiBuWwQHH67ckg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
+      '@vitest/browser': ^1.0.0
+      '@vitest/ui': ^1.0.0
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/node': 20.10.4
+      '@vitest/expect': 1.0.4
+      '@vitest/runner': 1.0.4
+      '@vitest/snapshot': 1.0.4
+      '@vitest/spy': 1.0.4
+      '@vitest/utils': 1.0.4
+      acorn-walk: 8.3.1
+      cac: 6.7.14
+      chai: 4.3.10
+      debug: 4.3.4
+      execa: 8.0.1
+      happy-dom: 12.10.3
+      local-pkg: 0.5.0
+      magic-string: 0.30.5
+      pathe: 1.1.1
+      picocolors: 1.0.0
+      std-env: 3.6.0
+      strip-literal: 1.3.0
+      tinybench: 2.5.1
+      tinypool: 0.8.1
+      vite: 5.0.7(@types/node@20.10.4)
+      vite-node: 1.0.4(@types/node@20.10.4)
       why-is-node-running: 2.2.2
     transitivePeerDependencies:
       - less
