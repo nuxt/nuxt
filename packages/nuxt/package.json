@@ -121,7 +121,7 @@
     "@vitejs/plugin-vue": "4.5.2",
     "unbuild": "latest",
     "vite": "5.0.7",
-    "vitest": "1.0.2"
+    "vitest": "1.0.4"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
