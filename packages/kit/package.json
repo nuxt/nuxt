@@ -53,7 +53,7 @@
     "nitropack": "2.8.1",
     "unbuild": "latest",
     "vite": "5.0.7",
-    "vitest": "0.33.0",
+    "vitest": "1.0.2",
     "webpack": "5.89.0"
   },
   "engines": {

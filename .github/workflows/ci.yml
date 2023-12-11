@@ -158,6 +158,33 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+  test-unit:
+    # autofix workflow will be triggered instead for PRs
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - run: corepack enable
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm build:stub
+
+      - name: Test (unit)
+        run: pnpm test:unit
+
+      - name: Test (runtime unit)
+        run: pnpm test:runtime
+
   test-fixtures:
     runs-on: ${{ matrix.os }}
     needs:
@@ -222,12 +249,6 @@ jobs:
         with:
           name: dist
           path: packages
-
-      - name: Test (unit)
-        run: pnpm test:unit
-
-      - name: Test (runtime unit)
-        run: pnpm test:runtime
 
       - name: Test (fixtures)
         run: pnpm test:fixtures
