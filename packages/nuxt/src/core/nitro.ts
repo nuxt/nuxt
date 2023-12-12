@@ -525,10 +525,6 @@ function relativeWithDot (from: string, to: string) {
 }
 
 async function spaLoadingTemplatePath (nuxt: Nuxt) {
-  if (typeof nuxt.options.spaLoadingTemplate === "string") {
-    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate);
-  }
-
   return (await findPath(
     nuxt.options._layers.map(layer => {
       const layerSourceDir = layer.config.srcDir;
