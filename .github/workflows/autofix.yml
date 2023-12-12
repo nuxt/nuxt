@@ -32,6 +32,9 @@ jobs:
       - name: Test (unit)
         run: pnpm test:unit -u
 
+      - name: Test (runtime unit)
+        run: pnpm test:runtime -u
+
       - name: Run build
         run: pnpm build
 

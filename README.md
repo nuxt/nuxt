@@ -17,8 +17,9 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - Automatic routing with code-splitting
 - State management
 - SEO Optimization
-- Extensible with [100+ modules](https://nuxt.com/modules)
-- Deployment to a variety of hosting platforms
+- Auto imports
+- Extensible with [180+ modules](https://nuxt.com/modules)
+- Deployment to a variety of [hosting platforms](https://nuxt.com/deploy)
 - ...[and much more](https://nuxt.com) 🚀
 
 ## Getting Started
@@ -30,6 +31,36 @@ npx nuxi@latest init <my-project>
 ```
 
 Discover also [nuxt.new](https://nuxt.new): Open a Nuxt starter on CodeSandbox, StackBlitz or locally to get up and running in a few seconds.
+
+## Vue Development
+
+Simple, intuitive and powerful, Nuxt lets you write Vue components in a way that makes sense. Every repetitive task is automated, so you can focus on writing your full-stack Vue application with confidence.
+
+Example of an `app.vue`:
+
+```vue
+<script setup>
+useSeoMeta({
+  title: 'Meet Nuxt',
+  description: 'The Intuitive Vue Framework.'
+})
+</script>
+
+<template>
+  <div id="app">
+    <AppHeader />
+    <NuxtPage />
+    <AppFooter />
+  </div>
+</template>
+
+<style>
+#app {
+  background-color: #020420;
+  color: #00DC82;
+}
+</style>
+```
 
 ## Documentation
 
