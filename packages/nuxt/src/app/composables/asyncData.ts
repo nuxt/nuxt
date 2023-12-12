@@ -354,9 +354,7 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
-export function useNuxtData<DataT = any>(
-  key: string
-): { data: Ref<DataT | null> } {
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
   const nuxt = useNuxtApp()
 
   nuxt._asyncData[key] ??= {}
