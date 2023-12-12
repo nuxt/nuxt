@@ -34,9 +34,6 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
-// TODO: remove boolean option in future minor
-export type Dedupe = boolean | 'cancel' | 'defer'
-
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
@@ -52,17 +49,21 @@ export interface AsyncDataOptions<
   watch?: MultiWatchSources
   immediate?: boolean
   deep?: boolean
-  dedupe?: Dedupe
+  dedupe?: 'cancel' | 'defer'
 }
 
 export interface AsyncDataExecuteOptions {
   _initial?: boolean
+  // TODO: deprecate boolean option in future minor
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
+   *
+   * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
+   * Boolean values will be removed in a future release.
    */
-  dedupe?: Dedupe
+  dedupe?: boolean | 'cancel' | 'defer'
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -76,7 +77,8 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-const isDefer = (dedupe?: Dedupe) => dedupe === 'defer' || dedupe === false
+// TODO: deprecate boolean option in future minor
+const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 export function useAsyncData<
   ResT,
