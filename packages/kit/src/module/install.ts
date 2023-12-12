@@ -61,7 +61,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   let buildTimeModuleMeta: ModuleMeta = {}
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'module'), nuxtModule]
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
     let error: unknown
     for (const path of paths) {
       const src = await resolvePath(path)
