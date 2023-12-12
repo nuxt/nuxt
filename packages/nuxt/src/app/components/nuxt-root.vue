@@ -1,8 +1,17 @@
 <template>
   <Suspense @resolve="onResolve">
-    <ErrorComponent v-if="error" :error="error" />
-    <IslandRenderer v-else-if="islandContext" :context="islandContext" />
-    <component :is="SingleRenderer" v-else-if="SingleRenderer" />
+    <ErrorComponent
+      v-if="error"
+      :error="error"
+    />
+    <IslandRenderer
+      v-else-if="islandContext"
+      :context="islandContext"
+    />
+    <component
+      :is="SingleRenderer"
+      v-else-if="SingleRenderer"
+    />
     <AppComponent v-else />
   </Suspense>
 </template>

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { h } from 'vue'
-import { mountSuspended } from 'nuxt-vitest/utils'
+import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
 import NuxtIsland from '../../packages/nuxt/src/app/components/nuxt-island'

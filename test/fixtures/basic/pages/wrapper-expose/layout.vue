@@ -1,12 +1,21 @@
 <template>
   <div>
-    <button class="swap-layout" @click="swapLayout">
+    <button
+      class="swap-layout"
+      @click="swapLayout"
+    >
       swap layout
     </button>
-    <button class="log-foo" @click="logFoo">
+    <button
+      class="log-foo"
+      @click="logFoo"
+    >
       log foo
     </button>
-    <button class="log-hello" @click="logHello">
+    <button
+      class="log-hello"
+      @click="logHello"
+    >
       log hello
     </button>
     <NuxtLayout ref="layout" />
