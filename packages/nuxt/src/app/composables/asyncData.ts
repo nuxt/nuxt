@@ -153,28 +153,28 @@ export function useAsyncData<
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
-  nuxt.payload._errors[key] ??= null;
-  const _ref = options.deep ? ref : shallowRef;
-  
-  if (!nuxt._asyncData[key] || !options.immediate) nuxt._asyncData[key] = {};
+  nuxt.payload._errors[key] ??= null
+  const _ref = options.deep ? ref : shallowRef
 
-  nuxt._asyncData[key]!.data ??= _ref(options.getCachedData!(key));
-  nuxt._asyncData[key]!.pending ??= ref(!hasCachedData());
-  nuxt._asyncData[key]!.error ??= toRef(nuxt.payload._errors, key);
-  nuxt._asyncData[key]!.status ??= ref('idle');
+  if (!nuxt._asyncData[key] || !options.immediate) nuxt._asyncData[key] = {}
+
+  nuxt._asyncData[key]!.data ??= _ref(options.getCachedData!(key))
+  nuxt._asyncData[key]!.pending ??= ref(!hasCachedData())
+  nuxt._asyncData[key]!.error ??= toRef(nuxt.payload._errors, key)
+  nuxt._asyncData[key]!.status ??= ref('idle')
 
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = {
     ...nuxt._asyncData[key],
     data: computed({
       get() {
-        return nuxt._asyncData[key]?.data?.value ?? options.default!();
+        return nuxt._asyncData[key]?.data?.value ?? options.default!()
       },
       set(value) {
-        nuxt._asyncData[key]!.data!.value = value;
+        nuxt._asyncData[key]!.data!.value = value
       },
-    }) 
-  } as AsyncData<DataT | DefaultT, DataE>;
+    })
+  } as AsyncData<DataT | DefaultT, DataE>
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
@@ -357,14 +357,14 @@ export function useLazyAsyncData<
 export function useNuxtData<DataT = any>(
   key: string
 ): { data: Ref<DataT | null> } {
-  const nuxt = useNuxtApp();
+  const nuxt = useNuxtApp()
 
-  nuxt._asyncData[key] ??= {};
-  nuxt._asyncData[key]!.data ??= ref(null);
+  nuxt._asyncData[key] ??= {}
+  nuxt._asyncData[key]!.data ??= ref(null)
 
   return {
     data: nuxt._asyncData[key]!.data!
-  };
+  }
 }
 
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
@@ -394,7 +394,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     if (key in nuxtApp.payload._errors) {
       nuxtApp.payload._errors[key] = null
     }
-    
+
     if (nuxtApp._asyncData?.[key]?.data) nuxtApp._asyncData[key]!.data!.value = undefined
     if (nuxtApp._asyncData?.[key]?.error) nuxtApp._asyncData[key]!.error!.value = null
     if (nuxtApp._asyncData?.[key]?.pending) nuxtApp._asyncData[key]!.pending!.value = false
