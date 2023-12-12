@@ -85,7 +85,6 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     }
   }
 
-
   // Throw error if input is not a function
   if (typeof nuxtModule !== 'function') {
     throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
