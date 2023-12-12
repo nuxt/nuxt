@@ -526,16 +526,13 @@ function relativeWithDot (from: string, to: string) {
 }
 
 async function spaLoadingTemplatePath (nuxt: Nuxt) {
-  return (await findPath(
-    nuxt.options._layers.map(layer => {
-      const layerSourceDir = layer.config.srcDir;
-      if (typeof layer.config.spaLoadingTemplate === "string") {
-        return join(layerSourceDir, layer.config.spaLoadingTemplate)
-      }
+  if (typeof nuxt.options.spaLoadingTemplate === 'string') {
+    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+  }
 
-      return join(layerSourceDir, "app/spa-loading-template.html")
-    })
-  )) ?? resolve(nuxt.options.srcDir, "app/spa-loading-template.html");
+  const possiblePaths = nuxt.options._layers.map(layer => join(layer.config.srcDir, 'app/spa-loading-template.html'))
+
+  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {
