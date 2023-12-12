@@ -103,14 +103,12 @@ function useAsyncData<DataT, DataE>(
   options?: AsyncDataOptions<DataT>
 ): Promise<AsyncData<DataT, DataE>
 
-type Dedupe = boolean | 'cancel' | 'defer'
-
 type AsyncDataOptions<DataT> = {
   server?: boolean
   lazy?: boolean
   immediate?: boolean
   deep?: boolean
-  dedupe?: Dedupe
+  dedupe?: 'cancel' | 'defer'
   default?: () => DataT | Ref<DataT> | null
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -128,7 +126,7 @@ type AsyncData<DataT, ErrorT> = {
 };
 
 interface AsyncDataExecuteOptions {
-  dedupe?: Dedupe
+  dedupe?: 'cancel' | 'defer'
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'

@@ -139,6 +139,7 @@ type UseFetchOptions<DataT> = {
   immediate?: boolean
   getCachedData?: (key: string) => DataT
   deep?: boolean
+  dedupe?: 'cancel' | 'defer'
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -155,7 +156,7 @@ type AsyncData<DataT, ErrorT> = {
 }
 
 interface AsyncDataExecuteOptions {
-  dedupe?: boolean
+  dedupe?: 'cancel' | 'defer'
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
