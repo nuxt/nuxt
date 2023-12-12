@@ -34,6 +34,7 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+// TODO: remove boolean option in future minor
 export type Dedupe = boolean | 'cancel' | 'defer'
 
 export interface AsyncDataOptions<
