@@ -27,7 +27,7 @@ import { useNitroApp } from '#internal/nitro/app'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
+import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file

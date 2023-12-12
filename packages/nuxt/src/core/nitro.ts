@@ -82,7 +82,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: { exclude: excludePattern }
     },
-    analyze: nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
+    analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
           template: 'treemap',
           projectRoot: nuxt.options.rootDir,
@@ -233,6 +233,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
+
+    nitroConfig.prerender ||= {}
+    nitroConfig.prerender.ignore ||= []
+    nitroConfig.prerender.ignore.push(manifestPrefix)
 
     nitroConfig.publicAssets!.unshift(
       // build manifest

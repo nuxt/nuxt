@@ -97,6 +97,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       hmr: false
     },
     plugins: [
+      // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
       replace({
         values: {
           'typeof window': '"undefined"',
