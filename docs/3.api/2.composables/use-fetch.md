@@ -36,7 +36,7 @@ const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev
 })
 ```
 
-Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
+The above example results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`.
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
@@ -80,6 +80,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `body`: Request body - automatically stringified (if an object is passed).
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
+  - `timeout`: Milliseconds to automatically abort request
 
 ::callout
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.

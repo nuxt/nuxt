@@ -1,5 +1,4 @@
 <script setup>
-
 async function getData () { }
 await getData()
 

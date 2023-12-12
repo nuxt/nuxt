@@ -222,7 +222,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static) { return }
+      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
       // Prerender all non-dynamic page routes when generating app
       const prerenderRoutes = new Set<string>()
       nuxt.hook('pages:extend', (pages) => {
@@ -275,7 +275,7 @@ export default defineNuxtModule({
         updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
       })
 
-      async function updatePage (path: string) {
+      const updatePage = async function updatePage (path: string) {
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
         try {
