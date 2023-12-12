@@ -209,7 +209,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`
+          statusMessage: `Page not found: ${to.fullPath}`,
+          data: {
+            path: to.fullPath
+          }
         })))
       } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
