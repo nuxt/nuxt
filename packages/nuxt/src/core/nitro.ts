@@ -6,7 +6,7 @@ import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -524,35 +524,27 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
-function spaLoadingTemplatePath (nuxt: Nuxt) {
+async function spaLoadingTemplatePath (nuxt: Nuxt) {
   if (typeof nuxt.options.spaLoadingTemplate === "string") {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate);
   }
 
-  const baseLayer = nuxt.options._layers.find((layer) =>
-    layer.cwd.includes("base"),
-  );
-  if (baseLayer && existsSync(baseLayer.cwd)) {
-    if (typeof baseLayer.config.spaLoadingTemplate === "string") {
-      return resolve(
-        baseLayer.config.srcDir,
-        baseLayer.config.spaLoadingTemplate,
-      );
-    }
+  return (await findPath(
+    nuxt.options._layers.map(layer => {
+      const layerSourceDir = layer.config.srcDir;
+      if (typeof layer.config.spaLoadingTemplate === "string") {
+        return join(layerSourceDir, layer.config.spaLoadingTemplate)
+      }
 
-    return resolve(
-      baseLayer.config.srcDir,
-      "app/spa-loading-template.html",
-    );
-  }
-
-  return resolve(nuxt.options.srcDir, "app/spa-loading-template.html");
+      return join(layerSourceDir, "app/spa-loading-template.html")
+    })
+  )) ?? resolve(nuxt.options.srcDir, "app/spa-loading-template.html");
 }
 
-function spaLoadingTemplate (nuxt: Nuxt) {
+async function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = spaLoadingTemplatePath(nuxt)
+  const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)
 
   try {
     if (existsSync(spaLoadingTemplate)) {
