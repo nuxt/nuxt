@@ -337,7 +337,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add experimental automatic view transition api support
   if (nuxt.options.experimental.viewTransition) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+    if (nuxt.options.experimental.viewTransition === 'always') {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+    } else {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions-safe.client'))
+    }
   }
 
   // Add experimental support for custom types in JSON payload
