@@ -532,7 +532,7 @@ function spaLoadingTemplatePath (nuxt: Nuxt) {
   const baseLayer = nuxt.options._layers.find((layer) =>
     layer.cwd.includes("base"),
   );
-  if (baseLayer) {
+  if (baseLayer && existsSync(baseLayer.cwd)) {
     if (typeof baseLayer.config.spaLoadingTemplate === "string") {
       return resolve(
         baseLayer.config.srcDir,
