@@ -61,17 +61,27 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   let buildTimeModuleMeta: ModuleMeta = {}
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const src = await resolvePath(nuxtModule)
-    try {
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
+    let error: unknown
+    for (const path of paths) {
+      const src = await resolvePath(path)
       // Prefer ESM resolution if possible
-      nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
-    } catch (error: unknown) {
+      try {
+        nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
+
+        // nuxt-module-builder generates a module.json with metadata including the version
+        if (existsSync(join(dirname(src), 'module.json'))) {
+          buildTimeModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
+        }
+        break
+      } catch (_err: unknown) {
+        error = _err
+        continue
+      }
+    }
+    if (!nuxtModule && error) {
       logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
       throw error
-    }
-    // nuxt-module-builder generates a module.json with metadata including the version
-    if (existsSync(join(dirname(src), 'module.json'))) {
-      buildTimeModuleMeta = JSON.parse(await fsp.readFile(join(dirname(src), 'module.json'), 'utf-8'))
     }
   }
 
