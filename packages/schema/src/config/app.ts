@@ -183,7 +183,8 @@ export default defineUntypedSchema({
    * rendered with `ssr: false`.
    * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
+   * - If true, Nuxt will first look for a layer called `base` and its `spa-loading-template` in `nuxt.config` file.
+   * - If true and no layer named base extended, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    * @example ~/app/spa-loading-template.html

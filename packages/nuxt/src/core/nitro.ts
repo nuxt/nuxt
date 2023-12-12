@@ -525,9 +525,28 @@ function relativeWithDot (from: string, to: string) {
 }
 
 function spaLoadingTemplatePath (nuxt: Nuxt) {
-  return typeof nuxt.options.spaLoadingTemplate === 'string'
-    ? resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
-    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  if (typeof nuxt.options.spaLoadingTemplate === "string") {
+    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate);
+  }
+
+  const baseLayer = nuxt.options._layers.find((layer) =>
+    layer.cwd.includes("base"),
+  );
+  if (baseLayer) {
+    if (typeof baseLayer.config.spaLoadingTemplate === "string") {
+      return resolve(
+        baseLayer.config.srcDir,
+        baseLayer.config.spaLoadingTemplate,
+      );
+    }
+
+    return resolve(
+      baseLayer.config.srcDir,
+      "app/spa-loading-template.html",
+    );
+  }
+
+  return resolve(nuxt.options.srcDir, "app/spa-loading-template.html");
 }
 
 function spaLoadingTemplate (nuxt: Nuxt) {
