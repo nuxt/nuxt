@@ -35,12 +35,13 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
 
   for (const key in clientManifest) {
-    if (clientManifest[key].file) {
-      clientManifest[key].file = clientManifest[key].file.replace(BASE_RE, '')
+    const cliManifestKey=clientManifest[key]
+    if (cliManifestKey.file) {
+      cliManifestKey.file = cliManifestKey.file.replace(BASE_RE, '')
     }
     for (const item of ['css', 'assets']) {
-      if (clientManifest[key][item]) {
-        clientManifest[key][item] = clientManifest[key][item].map((i: string) => i.replace(BASE_RE, ''))
+      if (cliManifestKey[item]) {
+        cliManifestKey[item] = cliManifestKey[item].map((i: string) => i.replace(BASE_RE, ''))
       }
     }
   }
