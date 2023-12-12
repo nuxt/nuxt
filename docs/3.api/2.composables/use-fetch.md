@@ -117,7 +117,7 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
 ::callout
-If you have not fetched data on the server (for example, with `server: false`), then the data *will not* be fetched until hydration completes. This means even if you await `useFetch` on client-side, `data` will remain null within `<script setup>`.
+If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await `useFetch` on client-side, `data` will remain null within `<script setup>`.
 ::
 
 ## Type
