@@ -25,7 +25,6 @@ export interface ResolvePathOptions {
  */
 export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
   // Always normalize input
-  const _path = path
   path = normalize(path)
 
   // Fast return if the path exists
@@ -71,7 +70,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Try to resolve as module id
-  const resolveModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
+  const resolveModulePath = await _resolvePath(path, { url: [cwd, ...modulesDir] }).catch(() => null)
   if (resolveModulePath) {
     return resolveModulePath
   }
