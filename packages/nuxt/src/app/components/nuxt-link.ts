@@ -67,9 +67,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return to
     }
 
-    const normalizeTrailingSlash = options.trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
     if (typeof to === 'string') {
-      return normalizeTrailingSlash(to, true)
+      return applyTrailingSlashBehavior(to, options.trailingSlash)
     }
 
     const path = 'path' in to ? to.path : resolve(to).path
@@ -77,7 +76,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     return {
       ...to,
       name: undefined, // named routes would otherwise always override trailing slash behavior
-      path: normalizeTrailingSlash(path, true)
+      path: applyTrailingSlashBehavior(path, options.trailingSlash)
     }
   }
 
@@ -344,6 +343,17 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)
+
+// -- NuxtLink utils --
+function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
+  const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
+  // Until https://github.com/unjs/ufo/issues/189 is resolved
+  const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
+  if (hasProtocolDifferentFromHttp) {
+    return to
+  }
+  return normalizeFn(to, true)
+}
 
 // --- Prefetching utils ---
 type CallbackFn = () => void
