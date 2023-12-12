@@ -10,6 +10,7 @@ import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
+import replace from '@rollup/plugin-replace'
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
@@ -48,8 +49,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
-      'module.hot': false,
-      'typeof process': '"undefined"'
+      'module.hot': false
     },
     optimizeDeps: {
       entries: [ctx.entry]
@@ -79,6 +79,13 @@ export async function buildClient (ctx: ViteBuildContext) {
       }),
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client
+      }),
+      // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
+      replace({
+        values: {
+          'typeof process': '"undefined"'
+        },
+        preventAssignment: true
       }),
       viteNodePlugin(ctx)
     ],
