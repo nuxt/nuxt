@@ -75,9 +75,7 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-const deferDedupeSet = new Set(['defer', false])
-
-const isDefer = (dedupe?: Dedupe) => deferDedupeSet.has(dedupe || 'cancel')
+const isDefer = (dedupe?: Dedupe) => dedupe === 'defer' || dedupe === false
 
 export function useAsyncData<
   ResT,
