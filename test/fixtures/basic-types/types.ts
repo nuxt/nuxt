@@ -41,6 +41,9 @@ describe('API routes', () => {
 
     expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | null>>()
     expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | null>>()
+    // backwards compatibility
+    expectTypeOf(useAsyncData<any, Error>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | null>>()
+    expectTypeOf(useAsyncData<any, NuxtError<string>>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | null>>()
 
     expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
