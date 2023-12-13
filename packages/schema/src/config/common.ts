@@ -444,13 +444,14 @@ export default defineUntypedSchema({
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get) => {
+      const app = await get('app')
       provideFallbackValues(val)
       return defu(val, {
         public: {},
         app: {
-          baseURL: (await get('app')).baseURL,
-          buildAssetsDir: (await get('app')).buildAssetsDir,
-          cdnURL: (await get('app')).cdnURL
+          baseURL: app.baseURL,
+          buildAssetsDir: app.buildAssetsDir,
+          cdnURL: app.cdnURL
         }
       })
     }
