@@ -1,0 +1,113 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Install Dependencies",
+      "command": "pnpm install"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "build": {
+      "name": "build",
+      "command": "pnpm build",
+      "runAtStart": false
+    },
+    "build:stub": {
+      "name": "build:stub",
+      "command": "pnpm build:stub",
+      "runAtStart": false
+    },
+    "cleanup": {
+      "name": "cleanup",
+      "command": "pnpm cleanup",
+      "runAtStart": false
+    },
+    "dev": {
+      "name": "dev",
+      "command": "pnpm dev",
+      "runAtStart": true
+    },
+    "lint": {
+      "name": "lint",
+      "command": "pnpm lint",
+      "runAtStart": false
+    },
+    "lint:fix": {
+      "name": "lint:fix",
+      "command": "pnpm lint:fix",
+      "runAtStart": false
+    },
+    "lint:docs": {
+      "name": "lint:docs",
+      "command": "pnpm lint:docs",
+      "runAtStart": false
+    },
+    "lint:docs:fix": {
+      "name": "lint:docs:fix",
+      "command": "pnpm lint:docs:fix",
+      "runAtStart": false
+    },
+    "lint:knip": {
+      "name": "lint:knip",
+      "command": "pnpm lint:knip",
+      "runAtStart": false
+    },
+    "play": {
+      "name": "play",
+      "command": "pnpm play",
+      "runAtStart": false
+    },
+    "play:build": {
+      "name": "play:build",
+      "command": "pnpm play:build",
+      "runAtStart": false
+    },
+    "play:preview": {
+      "name": "play:preview",
+      "command": "pnpm play:preview",
+      "runAtStart": false
+    },
+    "test": {
+      "name": "test",
+      "command": "pnpm test",
+      "runAtStart": false
+    },
+    "test:fixtures": {
+      "name": "test:fixtures",
+      "command": "pnpm test:fixtures",
+      "runAtStart": false
+    },
+    "test:fixtures:dev": {
+      "name": "test:fixtures:dev",
+      "command": "pnpm test:fixtures:dev",
+      "runAtStart": false
+    },
+    "test:fixtures:webpack": {
+      "name": "test:fixtures:webpack",
+      "command": "pnpm test:fixtures:webpack",
+      "runAtStart": false
+    },
+    "test:runtime": {
+      "name": "test:runtime",
+      "command": "pnpm test:runtime",
+      "runAtStart": false
+    },
+    "test:types": {
+      "name": "test:types",
+      "command": "pnpm test:types",
+      "runAtStart": false
+    },
+    "test:unit": {
+      "name": "test:unit",
+      "command": "pnpm test:unit",
+      "runAtStart": false
+    },
+    "typecheck": {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "runAtStart": false
+    }
+  }
+}
