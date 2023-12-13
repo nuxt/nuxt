@@ -64,6 +64,11 @@ describe('route rules', () => {
     await expectNoClientErrors('/route-rules/spa')
   })
 
+  it('should not render loading template in spa mode if it is not enabled', async () => {
+    const html = await $fetch('/route-rules/spa')
+    expect(html).toContain('<div id="__nuxt"></div>')
+  })
+
   it('should allow defining route rules inline', async () => {
     const res = await fetch('/route-rules/inline')
     expect(res.status).toEqual(200)
