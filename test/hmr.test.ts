@@ -2,8 +2,8 @@ import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { join, resolve } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils'
+import { join } from 'pathe'
+import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
 
@@ -21,8 +21,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     nuxtConfig: {
       builder: isWebpack ? 'webpack' : 'vite',
       buildDir: process.env.NITRO_BUILD_DIR,
-      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
-
+      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
     }
   })
 
@@ -111,7 +110,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
         const text = await node?.innerText() || ''
         return Number(text?.trim().split(':')[1].trim())
       }
-      const componentPath = resolve(fixturePath, 'components/islands/HmrComponent.vue')
+      const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
       const triggerHmr = async () => fsp.writeFile(
         componentPath,
         (await fsp.readFile(componentPath, 'utf8'))
