@@ -34,10 +34,6 @@ function isBuiltin (id: string) {
   return id.startsWith('node:') || builtins.has(id)
 }
 
-function isInNodeModules (id: string) {
-  return id.includes('node_modules')
-}
-
 // TODO: use built-in warmup logic when we update to vite 5
 export async function warmupViteServer (
   server: ViteDevServer,
@@ -53,10 +49,9 @@ export async function warmupViteServer (
       if (warmedUrls.has(url) || isBuiltin(url)) { return }
       const m = await server.moduleGraph.getModuleByUrl(url, isServer)
       // a module that is already compiled (and can't be warmed up anyway)
-      const transformedCode = isServer ? m?.ssrTransformResult?.code : m?.transformResult?.code
-      // we need to warm up app / virtual modules for server component HMR to work
-      if (isInNodeModules(url) && transformedCode)
+      if (m?.transformResult?.code || m?.ssrTransformResult?.code) {
         return
+      }
       warmedUrls.add(url)
       await server.transformRequest(url, { ssr: isServer })
     } catch (e) {
