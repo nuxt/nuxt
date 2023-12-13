@@ -348,14 +348,30 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const errors: Error[] = []
   let promiseDepth = 0
 
-  // todo move it to build time
+  // TODO: move it to build time
+  const deps: Record<string, string[]> = Object.create(null)
   for (const plugin of plugins) {
+    // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
       if (import.meta.dev) {
-        console.warn(`Plugin ${plugin._name} depends on ${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')} but they are not registered.`)
+        console.warn(`Plugin \`${plugin._name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
       }
       plugin.dependsOn = plugin.dependsOn.filter(name => pluginNames.includes(name))
     }
+    // Make graph to detect circular dependencies
+    if (plugin._name) {
+      deps[plugin._name] = plugin.dependsOn || []
+    }
+  }
+  const checkDeps = (name: string, visited: string[] = []): string[] => {
+    if (visited.includes(name)) {
+      throw new Error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+    }
+    visited.push(name)
+    return (deps[name] || []).flatMap(dep => checkDeps(dep, visited))
+  }
+  for (const name in deps) {
+    checkDeps(name)
   }
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
