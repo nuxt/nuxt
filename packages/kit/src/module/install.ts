@@ -70,9 +70,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
 
         // nuxt-module-builder generates a module.json with metadata including the version
-        const moduleFile=join(dirname(src), 'module.json')
-        if (existsSync(moduleFile)) {
-          buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleFile, 'utf-8'))
+        const moduleMetadataPath = join(dirname(src), 'module.json')
+        if (existsSync(moduleMetadataPath)) {
+          buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
         }
         break
       } catch (_err: unknown) {
