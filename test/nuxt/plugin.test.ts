@@ -244,24 +244,4 @@ describe('plugin dependsOn', () => {
       'end B'
     ])
   })
-
-  it('test plugin depending on a plugin that don\'t exist, B should still run in the correct order', async () => {
-    const nuxtApp = useNuxtApp()
-    const sequence: string[] = []
-    const plugins = [
-      pluginFactory('A', undefined, sequence),
-      pluginFactory('B', ['D'], sequence, false),
-      pluginFactory('C', undefined, sequence, false)
-    ]
-    await applyPlugins(nuxtApp, plugins)
-
-    expect(sequence).toMatchObject([
-      'start A',
-      'start B',
-      'end A',
-      'end B',
-      'start C',
-      'end C'
-    ])
-  })
 })

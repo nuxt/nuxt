@@ -65,8 +65,29 @@ describe('plugin-metadata', () => {
   })
 })
 
-describe('plugin circular dependencies', () => {
-  it('are warned', () => {
+describe('plugin sanity checking', () => {
+  it('non-existent depends are warned', () => {
+    vi.spyOn(console, 'warn')
+    checkForCircularDependencies([
+      {
+        name: 'A',
+        src: ''
+      },
+      {
+        name: 'B',
+        dependsOn: ['D'],
+        src: ''
+      },
+      {
+        name: 'C',
+        src: ''
+      }
+    ])
+    expect(console.warn).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
+    vi.restoreAllMocks()
+  })
+
+  it('circular dependencies are warned', () => {
     vi.spyOn(console, 'error')
     checkForCircularDependencies([
       {
@@ -90,5 +111,4 @@ describe('plugin circular dependencies', () => {
     expect(console.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
     vi.restoreAllMocks()
   })
-
 })
