@@ -22,7 +22,7 @@ export function isIgnored (pathname: string): boolean {
   const cwds = nuxt.options._layers?.map(layer => layer.cwd).sort((a, b) => b.length - a.length)
   const layer = cwds?.find(cwd => pathname.startsWith(cwd))
   const relativePath = relative(layer ?? nuxt.options.rootDir, pathname)
-  if (relativePath.startsWith('..')) {
+  if (relativePath[0] === '.' && relativePath[1] === '.') {
     return false
   }
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
