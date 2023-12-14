@@ -17,6 +17,7 @@ import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
+import type { LoadingIndicator } from '#app/composables/loading-indicator'
 
 const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
@@ -111,6 +112,11 @@ interface _NuxtApp {
     error: Ref<Error | null>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
+
+  /** @internal */
+  _loadingIndicator?: LoadingIndicator
+  /** @internal */
+  _loadingIndicatorDeps?: number
 
   /** @internal */
   _middleware: {

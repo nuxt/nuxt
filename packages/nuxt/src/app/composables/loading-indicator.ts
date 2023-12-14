@@ -1,4 +1,4 @@
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
@@ -22,10 +22,16 @@ function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
   }
 }
 
-/**
- * composable to handle the loading state of the page
- */
-export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
+export type LoadingIndicator = {
+  _cleanup: () => void
+  progress: Ref<number>
+  isLoading: Ref<boolean>
+  start: () => void
+  finish: () => void
+  clear: () => void
+}
+
+function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200 } = opts
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
@@ -71,6 +77,7 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
+  let _cleanup = () => {}
   if (import.meta.client) {
     const unsubLoadingStartHook = nuxtApp.hook('page:loading:start', () => {
       start()
@@ -80,19 +87,49 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     })
     const unsubError = nuxtApp.hook('vue:error', finish)
 
-    onBeforeUnmount(() => {
+    _cleanup = () => {
       unsubError()
       unsubLoadingStartHook()
       unsubLoadingFinishHook()
       clear()
-    })
+    }
   }
 
   return {
+    _cleanup,
     progress,
     isLoading,
     start,
     finish,
     clear
+  }
+}
+
+/**
+ * composable to handle the loading state of the page
+ */
+export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
+  const nuxtApp = useNuxtApp()
+
+  // Initialise global loading indicator if it doesn't exist already
+  const indicator = nuxtApp._loadingIndicator = nuxtApp._loadingIndicator || createLoadingIndicator(opts)
+  if (import.meta.client) {
+    nuxtApp._loadingIndicatorDeps = nuxtApp._loadingIndicatorDeps || 0
+    nuxtApp._loadingIndicatorDeps++
+    onScopeDispose(() => {
+      nuxtApp._loadingIndicatorDeps!--
+      if (nuxtApp._loadingIndicatorDeps === 0) {
+        indicator._cleanup()
+        delete nuxtApp._loadingIndicator
+      }
+    })
+  }
+
+  return {
+    progress: indicator.progress,
+    isLoading: indicator.isLoading,
+    start: indicator.start,
+    finish: indicator.finish,
+    clear: indicator.clear
   }
 }
