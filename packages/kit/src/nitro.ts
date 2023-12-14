@@ -112,11 +112,8 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
 }
 
 /**
- * Add directories to be scanned by Nitro. It will check for:
- *
- * - `api/` folder (which will create API routes)
- * - `middleware/` folder (which will register server middleware)
- * - `utils/` folder (which will register auto-imports within your Nitro server)
+ * Add directories to be scanned by Nitro. It will check for subdirectories,
+ * which will be registered just like the `~/server` folder is.
  */
 export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
