@@ -1,0 +1,39 @@
+name: Label PR
+
+on:
+  pull_request_target:
+    types:
+      - opened
+    branches:
+      - main
+      - 2.x
+
+jobs:
+  add-pr-label:
+    name: Add PR label
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const baseName = "${{ github.event.pull_request.base.label }}"
+            const PRNumber = "${{ github.event.pull_request.number }}"
+
+            if(baseName === "nuxt:2.x") {
+              github.rest.issues.addLabels({
+                issue_number: PRNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ["2.x"]
+              })
+            } else if(baseName === "nuxt:main") {
+              github.rest.issues.addLabels({
+                issue_number: PRNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ["3.x"]
+              })
+            }

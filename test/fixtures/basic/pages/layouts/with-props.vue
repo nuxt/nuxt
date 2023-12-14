@@ -6,7 +6,10 @@ definePageMeta({
 
 <template>
   <div>
-    <NuxtLayout name="with-props" some-prop="some prop was passed">
+    <NuxtLayout
+      name="with-props"
+      some-prop="some prop was passed"
+    >
       <div>
         some page content
       </div>

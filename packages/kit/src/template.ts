@@ -218,10 +218,6 @@ export async function writeTypes (nuxt: Nuxt) {
     .filter(f => typeof f === 'string')
     .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
 
-  if (nuxt.options.experimental?.reactivityTransform) {
-    references.push({ types: 'vue/macros-global' })
-  }
-
   const declarations: string[] = []
 
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })

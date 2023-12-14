@@ -6,6 +6,7 @@ if (!isSameApp) {
   throw new Error('💀')
 }
 </script>
+
 <template>
   <div>
     This should be false: {{ $wasVueAppInstanceWronglyPreserved }}

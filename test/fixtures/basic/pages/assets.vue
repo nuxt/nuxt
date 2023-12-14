@@ -1,8 +1,17 @@
 <template>
   <div>
-    <img src="~/assets/logo.svg" class="h-20 mb-4">
-    <img src="/public.svg" class="h-20 mb-4">
-    <img :src="logo" class="h-20 mb-4">
+    <img
+      src="~/assets/logo.svg"
+      class="h-20 mb-4"
+    >
+    <img
+      src="/public.svg"
+      class="h-20 mb-4"
+    >
+    <img
+      :src="logo"
+      class="h-20 mb-4"
+    >
   </div>
 </template>
 

@@ -49,16 +49,21 @@ export interface AsyncDataOptions<
   watch?: MultiWatchSources
   immediate?: boolean
   deep?: boolean
+  dedupe?: 'cancel' | 'defer'
 }
 
 export interface AsyncDataExecuteOptions {
   _initial?: boolean
+  // TODO: deprecate boolean option in future minor
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
+   *
+   * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
+   * Boolean values will be removed in a future release.
    */
-  dedupe?: boolean
+  dedupe?: boolean | 'cancel' | 'defer'
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -71,6 +76,9 @@ export interface _AsyncData<DataT, ErrorT> {
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
+
+// TODO: deprecate boolean option in future minor
+const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 export function useAsyncData<
   ResT,
@@ -150,6 +158,7 @@ export function useAsyncData<
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
+  options.dedupe = options.dedupe ?? 'cancel'
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
@@ -172,7 +181,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxt._asyncDataPromises[key]) {
-      if (opts.dedupe === false) {
+      if (isDefer(opts.dedupe ?? options.dedupe)) {
         // Avoid fetching same key more than once at a time
         return nuxt._asyncDataPromises[key]!
       }
@@ -204,6 +213,9 @@ export function useAsyncData<
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT
         }
+
+        nuxt.payload.data[key] = result
+
         asyncData.data.value = result
         asyncData.error.value = null
         asyncData.status.value = 'success'
@@ -212,7 +224,7 @@ export function useAsyncData<
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxt._asyncDataPromises[key] }
 
-        asyncData.error.value = error
+        asyncData.error.value = createError(error) as DataE
         asyncData.data.value = unref(options.default!())
         asyncData.status.value = 'error'
       })
@@ -220,11 +232,7 @@ export function useAsyncData<
         if ((promise as any).cancelled) { return }
 
         asyncData.pending.value = false
-        nuxt.payload.data[key] = asyncData.data.value
-        if (asyncData.error.value) {
-          // We use `createError` and its .toJSON() property to normalize the error
-          nuxt.payload._errors[key] = createError(asyncData.error.value)
-        }
+
         delete nuxt._asyncDataPromises[key]
       })
     nuxt._asyncDataPromises[key] = promise
