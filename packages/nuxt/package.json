@@ -120,7 +120,7 @@
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "4.5.2",
     "unbuild": "latest",
-    "vite": "5.0.8",
+    "vite": "5.0.9",
     "vitest": "1.0.4"
   },
   "peerDependencies": {
