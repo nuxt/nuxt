@@ -212,7 +212,7 @@ jobs:
         run: yarn test:fixtures -i
 
       - name: Save fixtures
-        uses: actions/upload-artifact@a8a3f3ad30e3422c9c7b888a15615d19a852ae32 # v3.1.3
+        uses: actions/upload-artifact@c7d193f32edcb7bfad88892161225aeda64e9392 # v4.0.0
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -244,7 +244,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@7a1cd3216ca9260cd8022db641d960b1db4d1be4 # v4.0.0
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -280,7 +280,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@7a1cd3216ca9260cd8022db641d960b1db4d1be4 # v4.0.0
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -316,7 +316,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@7a1cd3216ca9260cd8022db641d960b1db4d1be4 # v4.0.0
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
