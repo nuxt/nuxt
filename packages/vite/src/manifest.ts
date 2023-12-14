@@ -27,9 +27,10 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
     }
   }
 
+  const manifestFile = resolve(clientDist, 'manifest.json')
   const clientManifest = ctx.nuxt.options.dev
     ? devClientManifest
-    : await fse.readJSON(resolve(clientDist, 'manifest.json'))
+    : await fse.readJSON(manifestFile)
 
   const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir))
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
@@ -63,6 +64,6 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   await fse.writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + JSON.stringify(manifest, null, 2), 'utf8')
 
   if (!ctx.nuxt.options.dev) {
-    await fse.rm(resolve(clientDist, 'manifest.json'), { force: true })
+    await fse.rm(manifestFile, { force: true })
   }
 }
