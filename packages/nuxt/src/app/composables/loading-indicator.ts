@@ -3,7 +3,9 @@ import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
 export type LoadingIndicatorOpts = {
-  duration: number,
+  /** @default 2000 */
+  duration: number
+  /** @default 200 */
   throttle: number
 }
 
@@ -23,10 +25,7 @@ function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
 /**
  * composable to handle the loading state of the page
  */
-export function useLoadingIndicator (opts: Partial<{
-    duration: number,
-    throttle: number
-  }> = {}) {
+export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200 } = opts
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
@@ -42,7 +41,7 @@ export function useLoadingIndicator (opts: Partial<{
     }
     clear()
     progress.value = 0
-    if (opts.throttle && import.meta.client) {
+    if (throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
         _startTimer()
