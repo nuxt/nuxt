@@ -210,7 +210,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   for (const plugin of _plugins) {
     // Make sure dependency plugins are registered
     if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      console.warn(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {

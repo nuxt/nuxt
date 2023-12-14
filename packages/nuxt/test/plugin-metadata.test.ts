@@ -67,7 +67,7 @@ describe('plugin-metadata', () => {
 
 describe('plugin sanity checking', () => {
   it('non-existent depends are warned', () => {
-    vi.spyOn(console, 'warn')
+    vi.spyOn(console, 'error')
     checkForCircularDependencies([
       {
         name: 'A',
@@ -83,7 +83,7 @@ describe('plugin sanity checking', () => {
         src: ''
       }
     ])
-    expect(console.warn).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
+    expect(console.error).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
     vi.restoreAllMocks()
   })
 
