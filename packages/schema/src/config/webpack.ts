@@ -199,7 +199,7 @@ export default defineUntypedSchema({
       vue: {
         $resolve: async (val, get) => {
           const vue = await get('vue')
-          return def(val, {
+          return defu(val, {
             transformAssetUrls: {
               video: 'src',
               source: 'src',
@@ -207,8 +207,8 @@ export default defineUntypedSchema({
               embed: 'src'
             },
             compilerOptions: vue.compilerOptions,
-            propsDestructure: Boolean(vue.propsDestructure) },
-            defineModel: Boolean(vue.defineModel) }
+            propsDestructure: Boolean(vue.propsDestructure),
+            defineModel: Boolean(vue.defineModel)
           })
         }
       },
