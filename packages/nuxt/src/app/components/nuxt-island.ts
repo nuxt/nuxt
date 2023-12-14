@@ -46,7 +46,7 @@ export default defineComponent({
       default: () => undefined
     }
   },
-  async setup (props, { slots }) {
+  async setup (props, { slots, expose }) {
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -159,6 +159,10 @@ export default defineComponent({
         error.value = e
       }
     }
+
+    expose({
+      refresh: () => fetchComponent(true)
+    })
 
     if (import.meta.hot) {
       import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {

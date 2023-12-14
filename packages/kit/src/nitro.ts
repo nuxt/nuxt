@@ -110,3 +110,18 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
     config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
   })
 }
+
+/**
+ * Add directories to be scanned by Nitro. It will check for subdirectories,
+ * which will be registered just like the `~/server` folder is.
+ */
+export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.scanDirs = config.scanDirs || []
+
+    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
+      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
+    }
+  })
+}

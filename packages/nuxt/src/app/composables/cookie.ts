@@ -16,6 +16,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   encode?(value: T): string
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
+  readonly?: boolean
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -27,6 +28,8 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
+export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
@@ -55,6 +58,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   if (import.meta.client) {
     const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
       channel?.postMessage(opts.encode(cookie.value as T))
     }
@@ -72,7 +76,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (channel) {
       channel.onmessage = (event) => {
         watchPaused = true
-        cookie.value = opts.decode(event.data)
+        cookies[name] = cookie.value = opts.decode(event.data)
         nextTick(() => { watchPaused = false })
       }
     }
@@ -89,9 +93,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
-      }
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -140,22 +143,43 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
   }
 }
 
+/**
+ * The maximum value allowed on a timeout delay.
+ *
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ */
+const MAX_TIMEOUT_DELAY = 2_147_483_647
+
 // custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
-  onScopeDispose(() => { clearTimeout(timeout) })
+  let elapsed = 0
+  if (getCurrentScope()) {
+    onScopeDispose(() => { clearTimeout(timeout) })
+  }
+
   return customRef((track, trigger) => {
+    function createExpirationTimeout () {
+      clearTimeout(timeout)
+      const timeRemaining = delay - elapsed
+      const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
+      timeout = setTimeout(() => {
+        elapsed += timeoutLength
+        if (elapsed < delay) { return createExpirationTimeout() }
+
+        value = undefined
+        trigger()
+      }, timeoutLength)
+    }
+
     return {
       get () {
         track()
         return value
       },
       set (newValue) {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-          value = undefined
-          trigger()
-        }, delay)
+        createExpirationTimeout()
+
         value = newValue
         trigger()
       }

@@ -58,11 +58,17 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
+    async function handleVueError(err: any) {
+      await nuxt.callHook('app:error', err)
+      nuxt.payload.error = (nuxt.payload.error || err) as any
+    }
+
+    vueApp.config.errorHandler = handleVueError
+
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
 
     try {
@@ -72,9 +78,12 @@ if (import.meta.client) {
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
+
+    // If the errorHandler is not overridden by the user, we unset it
+    if (vueApp.config.errorHandler === handleVueError)
+      vueApp.config.errorHandler = undefined
 
     return vueApp
   }

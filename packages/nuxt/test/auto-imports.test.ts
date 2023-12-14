@@ -44,7 +44,7 @@ describe('imports:transform', () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
       "import { computed } from 'bar';
-      // import { computed } from \\"foo\\"
+      // import { computed } from "foo"
       ;const a = computed(0)"
     `)
   })
