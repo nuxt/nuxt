@@ -11,9 +11,6 @@ export default defineConfig({
       '#app': resolve('./packages/nuxt/dist/app')
     }
   },
-  define: {
-    'process.env.NUXT_ASYNC_CONTEXT': 'false'
-  },
   test: {
     globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
