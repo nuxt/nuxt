@@ -318,7 +318,7 @@ export const publicPathTemplate: NuxtTemplate = {
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
-        : 'const appConfig = useRuntimeConfig().app || {}',
+        : 'const appConfig = useRuntimeConfig()?.app || {}',
 
       'export const baseURL = () => appConfig.baseURL',
       'export const buildAssetsDir = () => appConfig.buildAssetsDir',
