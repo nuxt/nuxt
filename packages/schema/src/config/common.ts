@@ -305,15 +305,21 @@ export default defineUntypedSchema({
    * @type {Record<string, string>}
    */
   alias: {
-    $resolve: async (val, get) => ({
-      '~': await get('srcDir'),
-      '@': await get('srcDir'),
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
-      [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
-      [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
-      ...val
-    })
+    $resolve: async (val, get) => {
+      const srcDir = await get('srcDir')
+      const rootDir = await get('rootDir')
+      const dirAssets = await get('dir.assets')
+      const dirPublic = await get('dir.public')
+      return {
+        '~': srcDir,
+        '@': srcDir,
+        '~~': rootDir,
+        '@@': rootDir,
+        [dirAssets]: join(srcDir, dirAssets),
+        [dirPublic]: join(srcDir, dirPublic),
+        ...val
+      }
+    }
   },
 
   /**
