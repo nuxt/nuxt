@@ -48,13 +48,27 @@ const Interactive = h({
   <div>
     <Helloworld id="hello-world" />
     <ComponentDefinedInSetup id="component-defined-in-setup" />
-    <button id="increment-count" @click="count++">
+    <button
+      id="increment-count"
+      @click="count++"
+    >
       {{ count }}
     </button>
     <template v-if="!pending">
-      <Name id="name" template="<div>I am the Name.ts component</div>" />
-      <show-template id="show-template" :template="data?.templateString ?? ''" name="John" />
-      <Interactive id="interactive" lastname="Doe" firstname="John" />
+      <Name
+        id="name"
+        template="<div>I am the Name.ts component</div>"
+      />
+      <show-template
+        id="show-template"
+        :template="data?.templateString ?? ''"
+        name="John"
+      />
+      <Interactive
+        id="interactive"
+        lastname="Doe"
+        firstname="John"
+      />
     </template>
   </div>
 </template>

@@ -8,6 +8,8 @@ import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
+import type { PluginMeta } from '#app'
+
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
     dir: nuxt.options.srcDir,
@@ -107,19 +109,21 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve layouts/ from all config layers
+  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
+  const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file)
+      const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
 
   // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
@@ -130,7 +134,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve plugins, first extended layers and then base
   app.plugins = []
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of reversedConfigs) {
     const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
@@ -152,12 +156,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Resolve app.config
   app.configs = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of layerConfigs) {
     const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
     if (appConfigPath) {
       app.configs.push(appConfigPath)
@@ -183,7 +187,7 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 }
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: NuxtPlugin[] = []
+  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
@@ -198,4 +202,30 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
+}
+
+export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
+  const deps: Record<string, string[]> = Object.create(null)
+  const pluginNames = _plugins.map(plugin => plugin.name)
+  for (const plugin of _plugins) {
+    // Make sure dependency plugins are registered
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    }
+    // Make graph to detect circular dependencies
+    if (plugin.name) {
+      deps[plugin.name] = plugin.dependsOn || []
+    }
+  }
+  const checkDeps = (name: string, visited: string[] = []): string[] => {
+    if (visited.includes(name)) {
+      console.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      return []
+    }
+    visited.push(name)
+    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
+  }
+  for (const name in deps) {
+    checkDeps(name)
+  }
 }

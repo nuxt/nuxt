@@ -1,4 +1,4 @@
-import type { CallExpression, Property, SpreadElement } from 'estree'
+import type { CallExpression, Literal, Property, SpreadElement } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import { transform } from 'esbuild'
@@ -87,7 +87,8 @@ type PluginMetaKey = keyof PluginMeta
 const keys: Record<PluginMetaKey, string> = {
   name: 'name',
   order: 'order',
-  enforce: 'enforce'
+  enforce: 'enforce',
+  dependsOn: 'dependsOn'
 }
 function isMetadataKey (key: string): key is PluginMetaKey {
   return key in keys
@@ -106,6 +107,12 @@ function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
     }
     if (property.value.type === 'UnaryExpression' && property.value.argument.type === 'Literal') {
       meta[propertyKey] = JSON.parse(property.value.operator + property.value.argument.raw!)
+    }
+    if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
+      if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
+        throw new Error('dependsOn must take an array of string literals')
+      }
+      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as string)
     }
   }
   return meta
@@ -132,6 +139,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       }
 
       let wrapped = false
+      const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
         walk(this.parse(code, {
@@ -139,6 +147,9 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           ecmaVersion: 'latest'
         }) as Node, {
           enter (_node) {
+            if (_node.type === 'ImportSpecifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
+              wrapperNames.add(_node.local.name)
+            }
             if (_node.type === 'ExportDefaultDeclaration' && (_node.declaration.type === 'FunctionDeclaration' || _node.declaration.type === 'ArrowFunctionExpression')) {
               if ('params' in _node.declaration && _node.declaration.params.length > 1) {
                 logger.warn(`Plugin \`${plugin.src}\` is in legacy Nuxt 2 format (context, inject) which is likely to be broken and will be ignored.`)
@@ -150,7 +161,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
             if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
             const node = _node as CallExpression & { start: number, end: number }
             const name = 'name' in node.callee && node.callee.name
-            if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+            if (!name || !wrapperNames.has(name)) { return }
             wrapped = true
 
             if (node.arguments[0].type !== 'ObjectExpression') {

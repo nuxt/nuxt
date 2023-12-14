@@ -10,7 +10,6 @@ export default defineUntypedSchema({
   vue: {
     /**
      * Options for the Vue compiler that will be passed at build time.
-     *
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
      * @type {typeof import('@vue/compiler-core').CompilerOptions}
      */
@@ -25,7 +24,6 @@ export default defineUntypedSchema({
 
     /**
      * Vue Experimental: Enable reactive destructure for `defineProps`
-     *
      * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
      * @type {boolean}
      */
@@ -33,7 +31,6 @@ export default defineUntypedSchema({
 
     /**
      * Vue Experimental: Enable macro `defineModel`
-     *
      * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
      * @type {boolean}
      */
@@ -48,7 +45,6 @@ export default defineUntypedSchema({
      * The base path of your Nuxt application.
      *
      * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
-     *
      * @example
      * ```bash
      * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
@@ -67,7 +63,6 @@ export default defineUntypedSchema({
      * An absolute URL to serve the public folder from (production-only).
      *
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
-     *
      * @example
      * ```bash
      * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
@@ -79,7 +74,6 @@ export default defineUntypedSchema({
 
     /**
      * Set default configuration for `<head>` on every page.
-     *
      * @example
      * ```js
      * app: {
@@ -143,7 +137,6 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     *
      * @see https://vuejs.org/api/built-in-components.html#transition
      * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
      */
@@ -154,7 +147,6 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     *
      * @see https://vuejs.org/api/built-in-components.html#transition
      * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
      */
@@ -165,7 +157,6 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     *
      * @see https://vuejs.org/api/built-in-components.html#keepalive
      * @type {typeof import('../src/types/config').NuxtAppConfig['keepalive']}
      */
@@ -173,7 +164,6 @@ export default defineUntypedSchema({
 
     /**
      * Customize Nuxt root element id.
-     *
      * @type {string | false}
      */
     rootId: {
@@ -191,12 +181,12 @@ export default defineUntypedSchema({
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
-   * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
+   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
+   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   *   default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
-   *
    * @example ~/app/spa-loading-template.html
    * ```html
    * <!-- https://github.com/barelyhuman/snips/blob/dev/pages/css-loader.md -->
@@ -254,7 +244,6 @@ export default defineUntypedSchema({
    * in the appropriate context.
    *
    * It can also be an object with `src` and `mode` keys.
-   *
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
@@ -281,16 +270,15 @@ export default defineUntypedSchema({
    * Nuxt will automatically guess the file type by its extension and use the
    * appropriate pre-processor. You will still need to install the required
    * loader if you need to use them.
-   *
    * @example
    * ```js
    * css: [
    *   // Load a Node.js module directly (here it's a Sass file).
    *   'bulma',
    *   // CSS file in the project
-   *   '@/assets/css/main.css',
+   *   '~/assets/css/main.css',
    *   // SCSS file in the project
-   *   '@/assets/css/main.scss'
+   *   '~/assets/css/main.scss'
    * ]
    * ```
    * @type {string[]}

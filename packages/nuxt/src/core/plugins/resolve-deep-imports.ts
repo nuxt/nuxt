@@ -12,7 +12,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
     async resolveId (id, importer, options) {
-      if (!importer || isAbsolute(id) || !isAbsolute(importer) || exclude.some(e => id.startsWith(e))) {
+      if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:')) || exclude.some(e => id.startsWith(e))) {
         return
       }
       id = normalize(id)
@@ -23,7 +23,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
         // TODO: respect nitro runtime conditions
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
       }).catch(() => {
-        logger.log('Could not resolve id', id, importer)
+        logger.debug('Could not resolve id', id, importer)
         return null
       })
     }

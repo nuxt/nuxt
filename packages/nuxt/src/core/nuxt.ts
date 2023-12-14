@@ -51,7 +51,11 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
-  nuxt.hooks.addHooks(nuxt.options.hooks)
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    if (config.hooks) {
+      nuxt.hooks.addHooks(config.hooks)
+    }
+  }
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
@@ -77,7 +81,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
-  // Add plugin normalisation plugin
+  // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
@@ -157,6 +161,11 @@ async function initNuxt (nuxt: Nuxt) {
     // DevOnly component tree-shaking - build time only
     addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+  }
+
+  if (nuxt.options.dev) {
+    // Add plugin to check if layouts are defined without NuxtLayout being instantiated
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
   }
 
   // Transform initial composable call within `<script setup>` to preserve context
@@ -305,6 +314,18 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // Add stubs for <NuxtImg> and <NuxtPicture>
+  for (const name of ['NuxtImg', 'NuxtPicture']) {
+    addComponent({
+      name,
+      export: name,
+      priority: -1,
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
+      // @ts-expect-error TODO: refactor to nuxi
+      _internal_install: '@nuxt/image'
+    })
+  }
+
   // Add prerender payload support
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
@@ -391,7 +412,7 @@ async function initNuxt (nuxt: Nuxt) {
     const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
     for (const pattern of nuxt.options.watch) {
       if (typeof pattern === 'string') {
-        // Test (normalised) strings against absolute path and relative path to any layer `srcDir`
+        // Test (normalized) strings against absolute path and relative path to any layer `srcDir`
         if (pattern === path || layerRelativePaths.includes(pattern)) { return nuxt.callHook('restart') }
         continue
       }
@@ -441,18 +462,25 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
 
-  // Nuxt DevTools is currently opt-in
-  if (options.devtools === true || (options.devtools && options.devtools.enabled !== false)) {
-    if (await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/devtools', options.modulesDir))) {
-      options._modules.push('@nuxt/devtools')
-    } else {
-      logger.warn('Failed to install `@nuxt/devtools`, please install it manually, or disable `devtools` in `nuxt.config`')
+  // Nuxt DevTools only works for Vite
+  if (options.builder === '@nuxt/vite-builder') {
+    const isDevToolsEnabled = typeof options.devtools === 'boolean'
+      ? options.devtools
+      : options.devtools?.enabled !== false // enabled by default unless explicitly disabled
+
+    if (isDevToolsEnabled) {
+      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
+        options._modules.push('@nuxt/devtools')
+      }
     }
   }
 
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
-    if (!await import('./features').then(r => r.ensurePackageInstalled(options.rootDir, '@nuxt/webpack-builder', options.modulesDir))) {
+    if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
+      rootDir: options.rootDir,
+      searchPaths: options.modulesDir
+    }))) {
       logger.warn('Failed to install `@nuxt/webpack-builder`, please install it manually, or change the `builder` option to vite in `nuxt.config`')
     }
   }

@@ -5,7 +5,6 @@ import { generateApp as _generateApp } from './app'
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
  * and warns the user about them.
- *
  * @see {@link https://nuxt.com/docs/getting-started/configuration#external-configuration-files}
  */
 export async function checkForExternalConfigurationFiles () {
@@ -31,7 +30,7 @@ async function checkViteConfig () {
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'vite.config',
     extensions: ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts'],
-    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#vite\`.`
+    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.vite\` instead. You can read more in \`https://nuxt.com/docs/api/nuxt-config#vite\`.`
   })
 }
 
@@ -40,7 +39,7 @@ async function checkWebpackConfig () {
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'webpack.config',
     extensions: ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', 'coffee'],
-    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.webpack\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#webpack-1\`.`
+    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.webpack\` instead. You can read more in \`https://nuxt.com/docs/api/nuxt-config#webpack-1\`.`
   })
 }
 
@@ -49,7 +48,7 @@ async function checkNitroConfig () {
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'nitro.config',
     extensions: ['.ts', '.mts'],
-    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.nitro\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#nitro\`.`
+    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.nitro\` instead. You can read more in \`https://nuxt.com/docs/api/nuxt-config#nitro\`.`
   })
 }
 
@@ -57,7 +56,7 @@ async function checkPostCSSConfig () {
   return await checkAndWarnAboutConfigFileExistence({
     fileName: 'postcss.config',
     extensions: ['.js', '.cjs'],
-    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.postcss\` instead. You can read more in \`https://nuxt.com/docs/api/configuration/nuxt-config#postcss\`.`
+    createWarningMessage: foundFile => `Using \`${foundFile}\` is not supported together with Nuxt. Use \`options.postcss\` instead. You can read more in \`https://nuxt.com/docs/api/nuxt-config#postcss\`.`
   })
 }
 

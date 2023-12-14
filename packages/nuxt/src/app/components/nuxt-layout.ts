@@ -1,12 +1,15 @@
 import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { PageMeta } from '../../pages/runtime/composables'
+
+import { useRoute } from '../composables/router'
+import { useNuxtApp } from '../nuxt'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
-import type { PageMeta } from '#app'
 
-import { useRoute } from '#app/composables/router'
-import { useNuxtApp } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
 // @ts-expect-error virtual file
@@ -54,6 +57,10 @@ export default defineComponent({
 
     const done = nuxtApp.deferHydration()
 
+    if (import.meta.dev) {
+      nuxtApp._isNuxtLayoutUsed = true
+    }
+
     return () => {
       const hasLayout = layout.value && layout.value in layouts
       if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {
@@ -66,11 +73,10 @@ export default defineComponent({
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
-            // @ts-expect-error seems to be an issue in vue types
             LayoutProvider,
             {
               layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-              key: layout.value,
+              key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
               hasTransition: !!transitionProps
@@ -88,7 +94,7 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean]
+      type: [String, Boolean] as unknown as () => string | false
     },
     layoutProps: {
       type: Object
@@ -136,7 +142,6 @@ const LayoutProvider = defineComponent({
 
       if (import.meta.dev && import.meta.client && props.hasTransition) {
         vnode = h(
-          // @ts-expect-error seems to be an issue in vue types
           LayoutLoader,
           { key: name, layoutProps: props.layoutProps, name },
           context.slots
@@ -146,7 +151,6 @@ const LayoutProvider = defineComponent({
       }
 
       return h(
-        // @ts-expect-error seems to be an issue in vue types
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
         context.slots

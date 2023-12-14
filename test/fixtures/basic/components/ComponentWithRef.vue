@@ -5,7 +5,11 @@ const templateRef = ref<HTMLElement[] | null>(null)
 
 <template>
   <div>
-    <div v-for="item in list" ref="templateRef" :key="item">
+    <div
+      v-for="item in list"
+      ref="templateRef"
+      :key="item"
+    >
       {{ item }}
     </div>
   </div>

@@ -13,19 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - run: corepack enable
-      - uses: actions/setup-node@5e21ff4d9bc1a8cf6de233a3057d20ec6b3fb69d # v3.8.1
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
         with:
           node-version: 20
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
-
-      - name: Dedupe dependencies
-        if: ${{ contains(github.head_ref, 'renovate') }}
-        run: pnpm dedupe
 
       - name: Build (stub)
         run: pnpm build:stub
@@ -36,10 +32,24 @@ jobs:
       - name: Test (unit)
         run: pnpm test:unit -u
 
+      - name: Test (runtime unit)
+        run: pnpm test:runtime -u
+
       - name: Run build
         run: pnpm build
 
+      - name: Assert bundle size (renovate)
+        if: ${{ contains(github.head_ref, 'renovate') }}
+        run: pnpm vitest run bundle
+
+      - name: Update bundle size (renovate)
+        if: failure()
+        run: |
+          pnpm vitest run bundle -u
+          pnpm dedupe
+
       - name: Update bundle size
+        if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@8caa572fd27b0019a65e4c695447089c8d3138b9
+      - uses: autofix-ci/action@bee19d72e71787c12ca0f29de72f2833e437e4c9

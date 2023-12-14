@@ -171,7 +171,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
   ctx.transpile = [...transpile, ...ctx.transpile]
 }
 
-function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
+function getCache (ctx: WebpackConfigContext): Configuration['cache'] {
   if (!ctx.options.dev) {
     return false
   }
@@ -192,7 +192,7 @@ function getCache (ctx: WebpackConfigContext): webpack.Configuration['cache'] {
   // }
 }
 
-function getOutput (ctx: WebpackConfigContext): webpack.Configuration['output'] {
+function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
   return {
     path: resolve(ctx.options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', ctx.options.app.buildAssetsDir)),
     filename: fileName(ctx, 'app'),
@@ -217,8 +217,8 @@ function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
+     __NUXT_ASYNC_CONTEXT__: ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
-    'process.env.NUXT_ASYNC_CONTEXT': ctx.options.experimental.asyncContext,
     'process.dev': ctx.options.dev,
     'process.test': isTest,
     'process.browser': ctx.isClient,

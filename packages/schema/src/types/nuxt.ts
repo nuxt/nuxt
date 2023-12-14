@@ -1,6 +1,6 @@
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
 
@@ -16,6 +16,10 @@ export interface NuxtPlugin {
    * Default Nuxt priorities can be seen at [here](https://github.com/nuxt/nuxt/blob/9904849bc87c53dfbd3ea3528140a5684c63c8d8/packages/nuxt/src/core/plugins/plugin-metadata.ts#L15-L34).
    */
   order?: number
+  /**
+   * @internal
+   */
+  name?: string
 }
 
 // Internal type for simpler NuxtTemplate interface extension
@@ -61,6 +65,7 @@ export interface NuxtApp {
   middleware: NuxtMiddleware[]
   templates: NuxtTemplate[]
   configs: string[]
+  pages?: NuxtPage[]
 }
 
 export interface Nuxt {

@@ -44,7 +44,7 @@ describe('imports:transform', () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
       "import { computed } from 'bar';
-      // import { computed } from \\"foo\\"
+      // import { computed } from "foo"
       ;const a = computed(0)"
     `)
   })
@@ -68,7 +68,7 @@ describe('imports:nuxt', () => {
         continue
       }
       it(`should register ${name} globally`, () => {
-        expect(defaultPresets.flatMap(a => a.from === '#app' ? a.imports : [])).to.include(name)
+        expect(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : [])).to.include(name)
       })
     }
   } catch (e) {
@@ -81,6 +81,8 @@ describe('imports:nuxt', () => {
 })
 
 const excludedVueHelpers = [
+  // Nuxt stub for this helper
+  'defineComponent',
   // Already globally registered
   'defineEmits',
   'defineExpose',

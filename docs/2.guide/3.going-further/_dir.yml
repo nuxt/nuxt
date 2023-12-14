@@ -1,4 +1,3 @@
-title: Going further
+title: Going Further
 titleTemplate: '%s · Nuxt Advanced'
-navigation.icon: uil:star
-image: '/socials/going-further.jpg'
+icon: i-ph-star-duotone
