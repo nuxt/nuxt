@@ -20,13 +20,16 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
     define: {
-      $resolve: async (val, get) => ({
-        'process.dev': await get('dev'),
-        'import.meta.dev': await get('dev'),
-        'process.test': isTest,
-        'import.meta.test': isTest,
-        ...val
-      })
+      $resolve: async (val, get) => {
+        const dev = await get('dev')
+        return {
+          'process.dev': dev,
+          'import.meta.dev': dev,
+          'process.test': isTest,
+          'import.meta.test': isTest,
+          ...val
+        }
+      }
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
