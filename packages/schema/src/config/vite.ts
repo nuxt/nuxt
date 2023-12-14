@@ -21,10 +21,11 @@ export default defineUntypedSchema({
     },
     define: {
       $resolve: async (val, get) => {
-        const dev = await get('dev')
+        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
         return {
-          'process.dev': dev,
-          'import.meta.dev': dev,
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: isDebug,
+          'process.dev': isDev,
+          'import.meta.dev': isDev,
           'process.test': isTest,
           'import.meta.test': isTest,
           ...val
