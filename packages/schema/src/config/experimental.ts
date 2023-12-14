@@ -9,16 +9,6 @@ export default defineUntypedSchema({
       $resolve: val => val ?? false
     },
 
-    /**
-     * Enable Vue's reactivity transform
-     * @see [Vue Reactivity Transform Docs](https://vuejs.org/guide/extras/reactivity-transform.html)
-     *
-     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
-     * removed from core in Vue 3.4.
-     * @see [Vue RFC#369](https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028)
-     */
-    reactivityTransform: false,
-
     // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**

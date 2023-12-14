@@ -83,7 +83,7 @@ function clientOptimization (_ctx: WebpackConfigContext) {
 function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack-contrib/webpack-bundle-analyzer
-  if (!ctx.isDev && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
+  if (!ctx.isDev && !ctx.nuxt.options.test && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
     const statsDir = resolve(ctx.options.analyzeDir)
 
     ctx.config.plugins!.push(new BundleAnalyzerPlugin({
@@ -100,7 +100,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   // Normally type checking runs in server config, but in `ssr: false` there is
   // no server build, so we inject here instead.
   if (!ctx.nuxt.options.ssr) {
-    if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+    if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
       ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
         logger
       }))

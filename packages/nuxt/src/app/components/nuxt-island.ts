@@ -9,9 +9,9 @@ import type { FetchResponse } from 'ofetch'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
-import { useNuxtApp, useRuntimeConfig } from '#app/nuxt'
-import { prerenderRoutes, useRequestEvent } from '#app/composables/ssr'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands } from '#build/nuxt.config.mjs'
@@ -46,7 +46,7 @@ export default defineComponent({
       default: () => undefined
     }
   },
-  async setup (props, { slots }) {
+  async setup (props, { slots, expose }) {
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -159,6 +159,10 @@ export default defineComponent({
         error.value = e
       }
     }
+
+    expose({
+      refresh: () => fetchComponent(true)
+    })
 
     if (import.meta.hot) {
       import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
