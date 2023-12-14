@@ -32,18 +32,24 @@ export function reloadNuxtApp (options: ReloadNuxtAppOptions = {}) {
   let handledPath: Record<string, any> = {}
   try {
     handledPath = destr(sessionStorage.getItem('nuxt:reload') || '{}')
-  } catch {}
+  } catch {
+    // fail gracefully if we can't access sessionStorage
+  }
 
   if (options.force || handledPath?.path !== path || handledPath?.expires < Date.now()) {
     try {
       sessionStorage.setItem('nuxt:reload', JSON.stringify({ path, expires: Date.now() + (options.ttl ?? 10000) }))
-    } catch {}
+    } catch {
+      // fail gracefully if we can't access sessionStorage
+    }
 
     if (options.persistState) {
       try {
         // TODO: handle serializing/deserializing complex states as JSON: https://github.com/nuxt/nuxt/pull/19205
         sessionStorage.setItem('nuxt:reload:state', JSON.stringify({ state: useNuxtApp().payload.state }))
-      } catch {}
+      } catch {
+        // fail gracefully if we can't access sessionStorage
+      }
     }
 
     if (window.location.pathname !== path) {

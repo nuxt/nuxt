@@ -1,7 +1,13 @@
 <template>
   <div>
-    <ClientOnlyScript class="client-only-script" foo="bar" />
-    <LazyClientOnlySetupScript class="lazy-client-only-script-setup" foo="hello" />
+    <ClientOnlyScript
+      class="client-only-script"
+      foo="bar"
+    />
+    <LazyClientOnlySetupScript
+      class="lazy-client-only-script-setup"
+      foo="hello"
+    />
   </div>
 </template>
 
