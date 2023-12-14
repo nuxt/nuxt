@@ -3,7 +3,7 @@ import type { ComponentOptions, DefineComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { withAsyncContext } from './asyncContext'
+import { withNuxtContext } from './asyncContext'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 import { createError } from './error'
@@ -72,13 +72,13 @@ export const defineNuxtComponent: typeof _defineComponent =
 
 export const defineComponent: typeof _defineComponent = (arg1: Function | Record<string, any>, arg2?: Partial<ComponentOptions>) => {
   if (typeof arg1 === 'function') {
-    return _defineComponent((...args) => withAsyncContext(() => arg1(...args)), arg2)
+    return _defineComponent((...args) => withNuxtContext(() => arg1(...args)), arg2)
   }
 
   if (arg1.setup) {
     return _defineComponent({
       ...arg1,
-      setup: (...args) => withAsyncContext(() => arg1.setup(...args))
+      setup: (...args: any[]) => withNuxtContext(() => arg1.setup(...args))
     }) as any
   }
 
