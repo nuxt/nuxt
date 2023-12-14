@@ -35,7 +35,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"200k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"1843k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"1847k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -74,7 +74,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"510k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"76.9k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"77.0k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

@@ -9,7 +9,7 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key]
+npx nuxi dev [rootDir] [--dotenv] [--log-level] [--clipboard] [--open, -o] [--no-clear] [--port, -p] [--host, -h] [--https] [--ssl-cert] [--ssl-key] [--tunnel]
 ```
 
 The `dev` command starts a development server with hot module replacement at [http://localhost:3000](https://localhost:3000)
@@ -18,14 +18,15 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The root directory of the application to serve.
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
-`--clipboard` | `false` | Copy URL to clipboard.
 `--open, -o` | `false` | Open URL in browser.
+`--clipboard` | `false` | Copy URL to clipboard.
 `--no-clear` | `false` | Does not clear the console after startup.
 `--port, -p` | `3000` | Port to listen.
 `--host, -h` | `localhost` | Hostname of the server.
 `--https` | `false` | Listen with `https` protocol with a self-signed certificate by default.
 `--ssl-cert` |`null` | Specify a certificate for https.
 `--ssl-key` |`null` | Specify the key for the https certificate.
+`--tunnel` | `false` | Tunnel your local server to the internet with [unjs/untun](https://github.com/unjs/untun)
 
 The port and host can also be set via NUXT_PORT, PORT, NUXT_HOST or HOST environment variables.
 
