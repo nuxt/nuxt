@@ -368,7 +368,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
       throw new Error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
     }
     visited.push(name)
-    return (deps[name] || []).flatMap(dep => checkDeps(dep, visited))
+    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
   }
   for (const name in deps) {
     checkDeps(name)

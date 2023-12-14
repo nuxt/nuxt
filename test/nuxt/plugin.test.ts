@@ -212,6 +212,29 @@ describe('plugin dependsOn', () => {
       .toThrowError('Circular dependency detected in plugins: A -> B -> C -> A')
   })
 
+  it('does not throw when circular dependency is not a problem', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', ['B'], sequence),
+      pluginFactory('B', ['C'], sequence),
+      pluginFactory('C', ['D'], sequence),
+      pluginFactory('D', [], sequence),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start D',
+      'end D',
+      'start C',
+      'end C',
+      'start B',
+      'end B',
+      'start A',
+      'end A'
+    ])
+  })
+
   it('function plugin', async () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
