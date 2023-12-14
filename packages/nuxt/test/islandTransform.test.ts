@@ -49,13 +49,13 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"default\\" />
+                <div style="display: contents;" nuxt-ssr-slot-name="default" />
 
-                <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"named\\" :nuxt-ssr-slot-data=\\"JSON.stringify([{ some-data: someData }])\\"/>
-                <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"other\\" :nuxt-ssr-slot-data=\\"JSON.stringify([{ some-data: someData }])\\"/>
+                <div style="display: contents;" nuxt-ssr-slot-name="named" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
+                <div style="display: contents;" nuxt-ssr-slot-name="other" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
               </div>
               </template>
-              <script setup lang=\\"ts\\">
+              <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
               const someData = 'some data'
 
@@ -80,12 +80,12 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"default\\" :nuxt-ssr-slot-data=\\"JSON.stringify([{ some-data: someData }])\\"><div nuxt-slot-fallback-start=\\"default\\"/><div  style=\\"display: contents;\\">
+                <div style="display: contents;" nuxt-ssr-slot-name="default" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"><div nuxt-slot-fallback-start="default"/><div  style="display: contents;">
                   <div>fallback</div>
                 </div><div nuxt-slot-fallback-end/></div>
               </div>
               </template>
-              <script setup lang=\\"ts\\">
+              <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
               const someData = 'some data'
 
@@ -137,7 +137,7 @@ describe('islandTransform - server and island components', () => {
                     <p>message: {{ message }}</p>
                     <p>Below is the slot I want to be hydrated on the client</p>
                     <div>
-                      <div style=\\"display: contents;\\" nuxt-ssr-slot-name=\\"default\\" ><div nuxt-slot-fallback-start=\\"default\\"/>
+                      <div style="display: contents;" nuxt-ssr-slot-name="default" ><div nuxt-slot-fallback-start="default"/>
                         This is the default content of the slot, I should not see this after
                         the client loading has completed.
                       <div nuxt-slot-fallback-end/></div>
@@ -148,14 +148,14 @@ describe('islandTransform - server and island components', () => {
               </div>
             </template>
 
-            <script setup lang=\\"ts\\">
+            <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
             export interface Props {
               count?: number;
             }
             const props = withDefaults(defineProps<Props>(), { count: 0 });
 
-            const message = \\"Hello World\\";
+            const message = "Hello World";
             </script>
             "
       `)
