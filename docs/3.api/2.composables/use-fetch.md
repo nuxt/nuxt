@@ -96,6 +96,9 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
   - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+  - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
+    - `cancel` - cancels existing requests when a new one is made
+    - `defer` - does not make new requests at all if there is a pending request
 
 ::callout
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
@@ -136,6 +139,7 @@ type UseFetchOptions<DataT> = {
   immediate?: boolean
   getCachedData?: (key: string) => DataT
   deep?: boolean
+  dedupe?: 'cancel' | 'defer'
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -152,7 +156,7 @@ type AsyncData<DataT, ErrorT> = {
 }
 
 interface AsyncDataExecuteOptions {
-  dedupe?: boolean
+  dedupe?: 'cancel' | 'defer'
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
