@@ -3,7 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
-import { mountSuspended, registerEndpoint } from 'nuxt-vitest/utils'
+import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import * as composables from '#app/composables'
 
@@ -37,6 +37,10 @@ registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
     dynamic: {}
   },
   prerendered: ['/specific-prerendered']
+})))
+registerEndpoint('/api/test', defineEventHandler((event) => ({
+  method: event.method,
+  headers: Object.fromEntries(event.headers.entries())
 })))
 
 describe('app config', () => {
@@ -235,6 +239,70 @@ describe('useAsyncData', () => {
     const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
   })
+
+  it('should execute the promise function once when dedupe option is "defer" for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+  })
+
+  it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('useFetch', () => {
+  it('should match with/without computed values', async () => {
+    const nuxtApp = useNuxtApp()
+    const getPayloadEntries = () => Object.keys(nuxtApp.payload.data).length
+    const baseCount = getPayloadEntries()
+
+    await useFetch('/api/test')
+    expect(getPayloadEntries()).toBe(baseCount + 1)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: ref('POST') }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 2)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { query: { id: '3' } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { query: { id: ref('3') } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { params: { id: '3' } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { params: { id: ref('3') } }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('should timeout', async () => {
+    const { status, error } = await useFetch(
+      () => new Promise(resolve => setTimeout(resolve, 5000)),
+      { timeout: 1 }
+    )
+    await new Promise(resolve => setTimeout(resolve, 2))
+    expect(status.value).toBe('error')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+  })
 })
 
 describe('errors', () => {
@@ -271,9 +339,10 @@ describe('errors', () => {
 })
 
 describe('onNuxtReady', () => {
-  it('should call callback immediately once nuxt is hydrated', () => {
+  it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
+    await new Promise(resolve => setTimeout(resolve, 1))
     expect(fn).toHaveBeenCalled()
   })
 })
@@ -422,7 +491,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
 
 describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('"Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`."')
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[Error: Navigating to an external URL is not allowed by default. Use \`navigateTo(url, { external: true })\`.]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
@@ -456,7 +525,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('"Page not found"')
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot(`[Error: Page not found]`)
     expect(error.value).toBeFalsy()
   })
   it('should block navigation if no error is provided', () => {

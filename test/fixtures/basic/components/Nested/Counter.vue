@@ -9,6 +9,6 @@ defineProps({
 
 <template>
   <div>
-    <SugarCounter :multiplier="multiplier" />
+    <Counter :multiplier="multiplier" />
   </div>
 </template>

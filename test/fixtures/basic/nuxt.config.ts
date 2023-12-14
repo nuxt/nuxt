@@ -22,6 +22,9 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'description', content: 'Nuxt Fixture' }
       ]
+    },
+    keepalive: {
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage']
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
@@ -77,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    '~/modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -195,7 +199,6 @@ export default defineNuxtConfig({
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: true,
-    reactivityTransform: true,
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
