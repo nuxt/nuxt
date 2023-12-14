@@ -107,8 +107,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve layouts/ from all config layers
+  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
+  const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
@@ -119,7 +121,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
     app.middleware.push(...middlewareFiles.map((file) => {
@@ -130,7 +132,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve plugins, first extended layers and then base
   app.plugins = []
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of reversedConfigs) {
     const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
@@ -157,7 +159,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   // Resolve app.config
   app.configs = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of layerConfigs) {
     const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
     if (appConfigPath) {
       app.configs.push(appConfigPath)
