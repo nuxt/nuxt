@@ -19,7 +19,7 @@ import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 
 const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
+  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
 })
 
 type HookResult = Promise<void> | void
