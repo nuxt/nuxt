@@ -50,7 +50,10 @@ export default defineUntypedSchema({
    * It is normally not needed to configure this option.
    */
   workspaceDir: {
-    $resolve: async (val, get) => val ? resolve(await get('rootDir'), val) : await findWorkspaceDir(await get('rootDir')).catch(() => get('rootDir'))
+    $resolve: async (val, get) => {
+      const rootDir = get('rootDir')
+      return val ? resolve(await rootDir, val) : await findWorkspaceDir(await rootDir).catch(() => rootDir)
+    }
   },
 
   /**
@@ -348,15 +351,19 @@ export default defineUntypedSchema({
    * inside the `ignore` array will be ignored in building.
    */
   ignore: {
-    $resolve: async (val, get) => [
-      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
-      '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
-      relative(await get('rootDir'), await get('analyzeDir')),
-      relative(await get('rootDir'), await get('buildDir')),
-      await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
-    ].concat(val).filter(Boolean)
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      const ignorePrefix = await get('ignorePrefix')
+      return [
+        '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+        '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+        '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        relative(rootDir, await get('analyzeDir')),
+        relative(rootDir, await get('buildDir')),
+        ignorePrefix && `**/${ignorePrefix}*.*`
+      ].concat(val).filter(Boolean)
+    }
   },
 
   /**
