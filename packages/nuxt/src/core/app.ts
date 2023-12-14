@@ -8,6 +8,8 @@ import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
 
+import type { PluginMeta } from '#app'
+
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
     dir: nuxt.options.srcDir,
@@ -185,7 +187,7 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 }
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: NuxtPlugin[] = []
+  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
@@ -200,4 +202,30 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
+}
+
+export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
+  const deps: Record<string, string[]> = Object.create(null)
+  const pluginNames = _plugins.map(plugin => plugin.name)
+  for (const plugin of _plugins) {
+    // Make sure dependency plugins are registered
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    }
+    // Make graph to detect circular dependencies
+    if (plugin.name) {
+      deps[plugin.name] = plugin.dependsOn || []
+    }
+  }
+  const checkDeps = (name: string, visited: string[] = []): string[] => {
+    if (visited.includes(name)) {
+      console.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      return []
+    }
+    visited.push(name)
+    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
+  }
+  for (const name in deps) {
+    checkDeps(name)
+  }
 }
