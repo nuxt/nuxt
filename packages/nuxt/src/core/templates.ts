@@ -8,7 +8,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
 import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
-import { annotatePlugins } from './app'
+import { annotatePlugins, checkForCircularDependencies } from './app'
 
 interface TemplateContext {
   nuxt: Nuxt
@@ -62,7 +62,7 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/client.mjs',
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
-    await annotatePlugins(ctx.nuxt, clientPlugins)
+    checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of clientPlugins) {
@@ -82,6 +82,7 @@ export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'plugins/server.mjs',
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
+    checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
     const imports: string[] = []
     for (const plugin of serverPlugins) {

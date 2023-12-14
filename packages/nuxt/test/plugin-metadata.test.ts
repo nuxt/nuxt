@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { parse } from 'acorn'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata'
+import { checkForCircularDependencies } from '../src/core/app'
 
 describe('plugin-metadata', () => {
   it('should extract metadata from object-syntax plugins', async () => {
@@ -62,4 +63,32 @@ describe('plugin-metadata', () => {
           "
     `)
   })
+})
+
+describe('plugin circular dependencies', () => {
+  it('are warned', () => {
+    vi.spyOn(console, 'error')
+    checkForCircularDependencies([
+      {
+        name: 'A',
+        dependsOn: ['B'],
+        src: ''
+      },
+      {
+        name: 'B',
+        dependsOn: ['C'],
+        src: ''
+      },
+      {
+        name: 'C',
+        dependsOn: ['A'],
+        src: ''
+      }
+    ])
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
+    vi.restoreAllMocks()
+  })
+
 })

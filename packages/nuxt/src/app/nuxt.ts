@@ -157,6 +157,10 @@ export interface PluginMeta {
   name?: string
   enforce?: 'pre' | 'default' | 'post'
   /**
+   * Await for other named plugins to finish before running this plugin.
+   */
+  dependsOn?: NuxtAppLiterals['pluginName'][]
+  /**
    * This allows more granular control over plugin order and should only be used by advanced users.
    * It overrides the value of `enforce` and is used to sort plugins.
    */
@@ -192,10 +196,6 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
    * @default false
    */
   parallel?: boolean
-  /**
-   * Await for plugin to be finished before running this plugin.
-   */
-  dependsOn?: NuxtAppLiterals['pluginName'][]
   /**
    * @internal
    */
@@ -342,37 +342,10 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
   const resolvedPlugins: string[] = []
-  const pluginNames = plugins.map(plugin => plugin._name)
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   let promiseDepth = 0
-
-  // TODO: move it to build time
-  const deps: Record<string, string[]> = Object.create(null)
-  for (const plugin of plugins) {
-    // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      if (import.meta.dev) {
-        console.warn(`Plugin \`${plugin._name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
-      }
-      plugin.dependsOn = plugin.dependsOn.filter(name => pluginNames.includes(name))
-    }
-    // Make graph to detect circular dependencies
-    if (plugin._name) {
-      deps[plugin._name] = plugin.dependsOn || []
-    }
-  }
-  const checkDeps = (name: string, visited: string[] = []): string[] => {
-    if (visited.includes(name)) {
-      throw new Error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
-    }
-    visited.push(name)
-    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
-  }
-  for (const name in deps) {
-    checkDeps(name)
-  }
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
     if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {

@@ -199,19 +199,6 @@ describe('plugin dependsOn', () => {
     ])
   })
 
-  it('circular plugin dependencies', async () => {
-    const nuxtApp = useNuxtApp()
-    const sequence: string[] = []
-    const plugins = [
-      pluginFactory('A', ['B'], sequence),
-      pluginFactory('B', ['C'], sequence),
-      pluginFactory('C', ['A'], sequence),
-    ]
-
-    await expect(applyPlugins(nuxtApp, plugins)).rejects
-      .toThrowError('Circular dependency detected in plugins: A -> B -> C -> A')
-  })
-
   it('does not throw when circular dependency is not a problem', async () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
