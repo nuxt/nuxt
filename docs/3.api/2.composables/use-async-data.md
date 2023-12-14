@@ -61,6 +61,7 @@ const { data: posts } = await useAsyncData(
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
+  - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
   - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
@@ -74,6 +75,10 @@ Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the rout
 
 ::read-more{to="/docs/api/composables/use-lazy-async-data"}
 You can use `useLazyAsyncData` to have the same behavior as `lazy: true` with `useAsyncData`.
+::
+
+::callout{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
+Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
 ::
 
 ## Return Values
