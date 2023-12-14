@@ -86,7 +86,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@407ffafae6a767df3e0230c3df91b6443ae8df75 # v2.22.8
+        uses: github/codeql-action/init@b374143c1149a9115d881581d29b8390bbcbb59c # v3.22.11
         with:
           languages: javascript
           queries: +security-and-quality
@@ -98,7 +98,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@407ffafae6a767df3e0230c3df91b6443ae8df75 # v2.22.8
+        uses: github/codeql-action/analyze@b374143c1149a9115d881581d29b8390bbcbb59c # v3.22.11
         with:
           category: "/language:javascript"
 
@@ -157,6 +157,33 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+  test-unit:
+    # autofix workflow will be triggered instead for PRs
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs:
+      - build
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - run: corepack enable
+      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm build:stub
+
+      - name: Test (unit)
+        run: pnpm test:unit
+
+      - name: Test (runtime unit)
+        run: pnpm test:runtime
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
@@ -223,12 +250,6 @@ jobs:
           name: dist
           path: packages
 
-      - name: Test (unit)
-        run: pnpm test:unit
-
-      - name: Test (runtime unit)
-        run: pnpm test:runtime
-
       - name: Test (fixtures)
         run: pnpm test:fixtures
         env:
@@ -249,8 +270,8 @@ jobs:
     if: |
       github.event_name == 'push' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
-      !contains(github.event.head_commit.message, 'chore') &&
-      !contains(github.event.head_commit.message, 'docs')
+      !startsWith(github.event.head_commit.message, 'chore') &&
+      !startsWith(github.event.head_commit.message, 'docs')
     needs:
       - lint
       - build

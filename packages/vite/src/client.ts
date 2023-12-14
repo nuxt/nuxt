@@ -130,12 +130,12 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // Add analyze plugin if needed
-  if (ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
+  if (!ctx.nuxt.options.test && ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
   // Add type checking client panel
-  if (ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
+  if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
     clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
