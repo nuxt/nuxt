@@ -36,13 +36,11 @@ const previewEnabled = computed({
   }
 })
 
-export function usePreviewMode<Controls extends boolean = false, GetPreviewState extends GetStateFunc = GetStateFunc> (options?: {
-  controls?: Controls,
+export function usePreviewMode<GetPreviewState extends GetStateFunc = GetStateFunc> (options?: {
   getState?: GetPreviewState
   shouldEnable?: ShouldEnableFunc;
 }) {
   const normalizedOptions = defu(options, {
-    controls: false,
     getState: (state: Preview['state']) => {
       const route = useRoute()
       const token = state.token ??
@@ -80,7 +78,5 @@ export function usePreviewMode<Controls extends boolean = false, GetPreviewState
   const enabled = previewEnabled
   const state = preview.value.state as NonNullable<ReturnType<GetPreviewState>>
 
-  return (normalizedOptions.controls
-    ? { enabled, state }
-    : enabled) as Controls extends true ? { enabled: typeof enabled, state: typeof state } : typeof enabled
+  return { enabled, state }
 }
