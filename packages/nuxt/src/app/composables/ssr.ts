@@ -17,10 +17,10 @@ export function useRequestHeaders (include?: any[]) {
   return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
 }
 
-export function useRequestHeader(include: string) {
+export function useRequestHeader(header: string) {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
-  return event ? getRequestHeader(event, include) : undefined
+  return event ? getRequestHeader(event, header) : undefined
 }
 
 export function useRequestFetch (): typeof global.$fetch {
