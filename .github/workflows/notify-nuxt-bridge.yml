@@ -15,7 +15,7 @@ jobs:
       - name: repository dispatch
         uses: peter-evans/repository-dispatch@bf47d102fdb849e755b0b0023ea3e81a44b6f570 #v2.1.2
         with:
-          token: ${{ secrets.ACCESS_TOKEN }}
+          token: ${{ secrets.BRIDGE_GITHUB_TOKEN }}
           repository: ${{ matrix.repo }}
           event-type: port-upstream
           client-payload: '{"url": "${{ github.event.pull_request.html_url }}"}'
