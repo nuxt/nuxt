@@ -242,6 +242,18 @@ describe('nuxtApp', () => {
   })
 })
 
+describe('plugins', () => {
+  it('dependsOn is strongly typed', () => {
+    defineNuxtPlugin({
+      // @ts-expect-error invalid plugin name
+      dependsOn: ['something']
+    })
+    defineNuxtPlugin({
+      dependsOn: ['nuxt:router']
+    })
+  })
+})
+
 describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()

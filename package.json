@@ -36,7 +36,7 @@
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "nuxt": "workspace:*",
-    "vite": "5.0.8",
+    "vite": "5.0.9",
     "vue": "3.3.11",
     "magic-string": "^0.30.5"
   },
@@ -54,7 +54,7 @@
     "consola": "3.2.3",
     "devalue": "4.3.2",
     "eslint": "8.55.0",
-    "eslint-plugin-import": "2.29.0",
+    "eslint-plugin-import": "2.29.1",
     "eslint-plugin-jsdoc": "46.9.1",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-unicorn": "49.0.0",
