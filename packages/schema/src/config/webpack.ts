@@ -197,20 +197,15 @@ export default defineUntypedSchema({
        * @type {Partial<typeof import('vue-loader')['VueLoaderOptions']>}
        */
       vue: {
-        $resolve: async (val, get) => {
-          const vue = await get('vue')
-          return defu(val, {
-            transformAssetUrls: {
-              video: 'src',
-              source: 'src',
-              object: 'src',
-              embed: 'src'
-            },
-            compilerOptions: vue.compilerOptions,
-            propsDestructure: Boolean(vue.propsDestructure),
-            defineModel: Boolean(vue.defineModel)
-          })
-        }
+        transformAssetUrls: {
+          video: 'src',
+          source: 'src',
+          object: 'src',
+          embed: 'src'
+        },
+        compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
+        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
+        defineModel: { $resolve: async (val, get) => val ?? Boolean(await get('vue.defineModel')) }
       },
 
       css: {
