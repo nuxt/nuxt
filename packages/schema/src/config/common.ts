@@ -136,10 +136,9 @@ export default defineUntypedSchema({
     $default: ['node_modules'],
     $resolve: async (val, get) => {
       const rootDir = await get('rootDir')
-      const currentDir = process.cwd()
       return [
         ...await Promise.all(val.map(async (dir: string) => resolve(rootDir, dir))),
-        resolve(currentDir, 'node_modules')
+        resolve(process.cwd(), 'node_modules')
       ]
     }
   },
