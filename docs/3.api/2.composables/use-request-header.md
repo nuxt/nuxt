@@ -16,7 +16,7 @@ const authorization = useRequestHeader('authorization')
 ```
 
 ::callout
-In the browser, `useRequestHeader` will return an empty string.
+In the browser, `useRequestHeader` will return `undefined`.
 ::
 
 ## Example
