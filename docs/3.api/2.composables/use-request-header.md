@@ -12,7 +12,7 @@ You can use built-in [`useRequestHeader`](/docs/api/composables/use-request-head
 
 ```ts
 // Get the authorization request header
-const cookie = useRequestHeader('authorization')
+const cookie = useRequestHeader('cookie')
 ```
 
 ::callout
