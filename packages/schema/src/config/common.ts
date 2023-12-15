@@ -134,10 +134,14 @@ export default defineUntypedSchema({
    */
   modulesDir: {
     $default: ['node_modules'],
-    $resolve: async (val, get) => [
-      ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
-      resolve(process.cwd(), 'node_modules')
-    ]
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      const currentDir = process.cwd()
+      return [
+        ...await Promise.all(val.map(async (dir: string) => resolve(rootDir, dir))),
+        resolve(currentDir, 'node_modules')
+      ]
+    }
   },
 
   /**
@@ -309,10 +313,7 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => {
-      const srcDir = await get('srcDir')
-      const rootDir = await get('rootDir')
-      const dirAssets = await get('dir.assets')
-      const dirPublic = await get('dir.public')
+      const [srcDir, rootDir, dirAssets, dirPublic] = await Promise.all(get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'))
       return {
         '~': srcDir,
         '@': srcDir,
@@ -352,8 +353,7 @@ export default defineUntypedSchema({
    */
   ignore: {
     $resolve: async (val, get) => {
-      const rootDir = await get('rootDir')
-      const ignorePrefix = await get('ignorePrefix')
+      const[rootDir, ignorePrefix] = await Promise.all(get('rootDir'), get('ignorePrefix'))
       return [
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
