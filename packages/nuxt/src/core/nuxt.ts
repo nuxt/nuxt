@@ -94,15 +94,6 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
 
-  if (nuxt.options.experimental.appManifest) {
-    addRouteMiddleware({
-      name: 'manifest-route-rule',
-      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
-      global: true
-    })
-
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
-  }
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
@@ -397,6 +388,18 @@ async function initNuxt (nuxt: Nuxt) {
     } else {
       await installModule(m, {})
     }
+  }
+
+  // register the app manifest middleware now to allow user modules to disable it
+  // otherwise the app will crash (#24672)
+  if (nuxt.options.experimental.appManifest) {
+    addRouteMiddleware({
+      name: 'manifest-route-rule',
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
+      global: true
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
   }
 
   await nuxt.callHook('modules:done')
