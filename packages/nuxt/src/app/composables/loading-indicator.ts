@@ -98,7 +98,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   return {
     _cleanup,
     progress,
-    isLoading,
+    isLoading: computed(() => isLoading.value),
     start,
     finish,
     clear
