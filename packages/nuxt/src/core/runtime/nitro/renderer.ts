@@ -149,7 +149,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
       _errors: {},
       serverRendered: false,
       data: {},
-      state: {}
+      state: {},
+      calls: {}
     }
     ssrContext.config = {
       public: config.public,
