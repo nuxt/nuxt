@@ -19,14 +19,13 @@ export async function once <T> (...args: any): Promise<T> {
     throw new Error('[nuxt] [once] fn must be a function: ' + fn)
   }
   const nuxt = useNuxtApp()
-  const calls = nuxt.payload.calls = nuxt.payload.calls || {}
   if (import.meta.server) {
     const res = await fn()
-    calls[_key] = [res]
+    nuxt.payload.calls[_key] = [res]
     return res
   }
-  if (nuxt.isHydrating && calls[_key]) {
-    return calls[_key][0]
+  if (nuxt.isHydrating && nuxt.payload.calls[_key]) {
+    return nuxt.payload.calls[_key][0]
   }
   return await fn()
 }

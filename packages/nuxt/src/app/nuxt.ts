@@ -225,6 +225,7 @@ export function createNuxtApp (options: CreateOptions) {
     payload: reactive({
       data: {},
       state: {},
+      calls: {},
       _errors: {},
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
