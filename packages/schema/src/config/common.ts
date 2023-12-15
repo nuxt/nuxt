@@ -313,14 +313,14 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val, get) => {
-      const [srcDir, rootDir, dirAssets, dirPublic] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')])
+      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')])
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [dirAssets]: join(srcDir, dirAssets),
-        [dirPublic]: join(srcDir, dirPublic),
+        [assetsDir]: join(srcDir, assetsDir),
+        [publicDir]: join(srcDir, publicDir),
         ...val
       }
     }
