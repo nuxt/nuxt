@@ -1,12 +1,12 @@
 <script setup>
-const state = useState('once', () => 0)
+const counter = useState('once', () => 0)
 
-once(() =>  state.value++)
+once(() => counter.value++)
 </script>
 
 <template>
   <div>
     <div>once.vue</div>
-    <div>once: {{ state.value }}</div>
+    <div>once: {{ counter }}</div>
   </div>
 </template>
