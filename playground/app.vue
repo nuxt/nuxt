@@ -1,11 +1,13 @@
+<script setup lang="ts">
+</script>
+
 <template>
-  <ul>
-    <NuxtLink to="/">
-      Home
-    </NuxtLink>
-    <NuxtLink to="/about">
-      About
-    </NuxtLink>
-  </ul>
-  <NuxtPage />
+  <!-- Edit this file to play around with Nuxt but never commit changes! -->
+  <div>
+    Nuxt 3 Playground
+  </div>
 </template>
+
+<style scoped>
+
+</style>

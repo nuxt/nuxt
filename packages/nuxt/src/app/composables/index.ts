@@ -15,7 +15,7 @@ export {
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
 export type { AsyncDataOptions, AsyncData } from './asyncData'
-export { $, useHydration } from './hydrate'
+export { once, useHydration } from './hydrate'
 export { useState, clearNuxtState } from './state'
 export { clearError, createError, isNuxtError, showError, useError } from './error'
 export type { NuxtError } from './error'
