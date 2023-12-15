@@ -353,14 +353,14 @@ export default defineUntypedSchema({
    */
   ignore: {
     $resolve: async (val, get) => {
-      const [rootDir, ignorePrefix] = await Promise.all([get('rootDir'), get('ignorePrefix')])
+      const [rootDir, ignorePrefix, analyzeDir, buildDir] = await Promise.all([get('rootDir'), get('ignorePrefix'), get('analyzeDir'), get('buildDir')])
       return [
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
         '**/*.d.{cts,mts,ts}', // ignore type declarations
         '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
-        relative(rootDir, await get('analyzeDir')),
-        relative(rootDir, await get('buildDir')),
+        relative(rootDir, analyzeDir),
+        relative(rootDir, buildDir),
         ignorePrefix && `**/${ignorePrefix}*.*`
       ].concat(val).filter(Boolean)
     }
