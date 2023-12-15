@@ -17,7 +17,7 @@ let shouldEnablePreviewMode: ShouldEnableFunc = () => {
   return route.query[previewQueryName] === 'true'
 }
 
-let unregisterRefreshHook: () => any
+let unregisterRefreshHook: (() => any) | undefined
 const _previewEnabled = ref(false)
 const previewEnabled = computed({
   get () { return _previewEnabled.value },
@@ -32,6 +32,8 @@ const previewEnabled = computed({
       unregisterRefreshHook = useRouter().afterEach(() => { refreshNuxtData() })
     } else if (!value && unregisterRefreshHook) {
       unregisterRefreshHook()
+
+      unregisterRefreshHook = undefined
     }
   }
 })
