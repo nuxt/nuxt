@@ -1,4 +1,4 @@
-import type { CallExpression, Property, SpreadElement } from 'estree'
+import type { CallExpression, Literal, Property, SpreadElement } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import { transform } from 'esbuild'
@@ -87,7 +87,8 @@ type PluginMetaKey = keyof PluginMeta
 const keys: Record<PluginMetaKey, string> = {
   name: 'name',
   order: 'order',
-  enforce: 'enforce'
+  enforce: 'enforce',
+  dependsOn: 'dependsOn'
 }
 function isMetadataKey (key: string): key is PluginMetaKey {
   return key in keys
@@ -106,6 +107,12 @@ function extractMetaFromObject (properties: Array<Property | SpreadElement>) {
     }
     if (property.value.type === 'UnaryExpression' && property.value.argument.type === 'Literal') {
       meta[propertyKey] = JSON.parse(property.value.operator + property.value.argument.raw!)
+    }
+    if (propertyKey === 'dependsOn' && property.value.type === 'ArrayExpression') {
+      if (property.value.elements.some(e => !e || e.type !== 'Literal' || typeof e.value !== 'string')) {
+        throw new Error('dependsOn must take an array of string literals')
+      }
+      meta[propertyKey] = property.value.elements.map(e => (e as Literal)!.value as string)
     }
   }
   return meta

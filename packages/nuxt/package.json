@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.0.5",
+    "@nuxt/devtools": "^1.0.6",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.5.3",
@@ -120,7 +120,7 @@
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "4.5.2",
     "unbuild": "latest",
-    "vite": "5.0.8",
+    "vite": "5.0.9",
     "vitest": "1.0.4"
   },
   "peerDependencies": {
