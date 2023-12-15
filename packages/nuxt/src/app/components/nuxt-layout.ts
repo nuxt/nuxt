@@ -56,8 +56,8 @@ export default defineComponent({
 
     const layout = computed(() => {
       let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
-      if (layout && !(layout in layouts) && layout !== 'default') {
-        if (import.meta.dev) {
+      if (layout && !(layout in layouts)) {
+        if (import.meta.dev && layout !== 'default') {
           console.warn(`Invalid layout \`${layout}\` selected.`)
         }
         if (props.fallback) {
