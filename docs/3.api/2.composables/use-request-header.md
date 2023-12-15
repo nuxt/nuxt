@@ -25,7 +25,7 @@ We can use `useRequestHeader` to easily figure out if a user is authorized or no
 
 The example below reads the `authorization` request header to an isomorphic `$fetch` call.
 
-```vue [middleware/authorized-only.ts]
+```ts [middleware/authorized-only.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
   if(!useRequestHeader('authorization')){
     return navigateTo('/not-authorized')
