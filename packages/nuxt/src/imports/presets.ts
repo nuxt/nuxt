@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/config'
   },
   {
-    imports: ['defineComponent', 'defineNuxtComponent'],
+    imports: ['defineNuxtComponent'],
     from: '#app/composables/component'
   },
   {
@@ -156,6 +156,7 @@ const vuePreset = defineUnimportPreset({
     'onScopeDispose',
 
     // Component
+    'defineComponent',
     'defineAsyncComponent',
     'resolveComponent',
     'getCurrentInstance',
