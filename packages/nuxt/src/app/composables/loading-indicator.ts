@@ -108,7 +108,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 /**
  * composable to handle the loading state of the page
  */
-export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
+export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}): Omit<LoadingIndicator, '_cleanup'> {
   const nuxtApp = useNuxtApp()
 
   // Initialise global loading indicator if it doesn't exist already
@@ -125,11 +125,5 @@ export function useLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     })
   }
 
-  return {
-    progress: indicator.progress,
-    isLoading: indicator.isLoading,
-    start: indicator.start,
-    finish: indicator.finish,
-    clear: indicator.clear
-  }
+  return indicator
 }
