@@ -94,14 +94,14 @@ export default defineUntypedSchema({
         allow: {
           $resolve: async (val, get) => {
             const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')])
-            return  [
-                buildDir,
-                srcDir,
-                rootDir,
-                workspaceDir,
-                ...(modulesDir),
-                ...val ?? []
-              ]
+            return [
+              buildDir,
+              srcDir,
+              rootDir,
+              workspaceDir,
+              ...(modulesDir),
+              ...val ?? []
+            ]
           }
         }
       }
