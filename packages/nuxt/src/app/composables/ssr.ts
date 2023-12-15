@@ -18,7 +18,7 @@ export function useRequestHeaders (include?: any[]) {
 }
 
 export function useRequestHeader(include: string) {
-  if (import.meta.client) { return {} }
+  if (import.meta.client) { return '' }
   const event = useRequestEvent()
   const header = event ? getRequestHeader(event, include) : ''
   return header
