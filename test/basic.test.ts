@@ -916,6 +916,12 @@ describe('middlewares', () => {
     expect(html.headers.get('location')).toEqual('/')
     expect(html.status).toEqual(307)
   })
+  it('should run code once', async () => {
+    const html = await $fetch('/once')
+
+    expect(html).toContain('once.vue')
+    expect(html).toContain('once: 1')
+  })
 })
 
 describe('plugins', () => {
