@@ -18,10 +18,9 @@ export function useRequestHeaders (include?: any[]) {
 }
 
 export function useRequestHeader(include: string) {
-  if (import.meta.client) { return '' }
+  if (import.meta.client) { return undefined }
   const event = useRequestEvent()
-  const header = event ? getRequestHeader(event, include) : ''
-  return header
+  return event ? getRequestHeader(event, include) : undefined
 }
 
 export function useRequestFetch (): typeof global.$fetch {
