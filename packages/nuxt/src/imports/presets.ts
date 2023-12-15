@@ -38,7 +38,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/asyncData'
   },
   {
-    imports: ['useHydration'],
+    imports: ['$', 'useHydration'],
     from: '#app/composables/hydrate'
   },
   {

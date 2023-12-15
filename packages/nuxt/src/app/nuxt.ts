@@ -74,6 +74,7 @@ export interface NuxtPayload {
   prerenderedAt?: number
   data: Record<string, any>
   state: Record<string, any>
+  $: Record<string, any[]>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: Error | {
     url: string
