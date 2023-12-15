@@ -39,7 +39,7 @@ export default defineUntypedSchema({
         if (val) {
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
-        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+        return val ?? await Promise.all([get('srcDir'), get('dir')]).then(([srcDir, dir]) => resolve(srcDir, dir.public))
       }
     },
     vue: {
@@ -92,14 +92,17 @@ export default defineUntypedSchema({
     server: {
       fs: {
         allow: {
-          $resolve: async (val, get) => [
-            await get('buildDir'),
-            await get('srcDir'),
-            await get('rootDir'),
-            await get('workspaceDir'),
-            ...(await get('modulesDir')),
-            ...val ?? []
-          ]
+          $resolve: async (val, get) => {
+            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')])
+            return [
+              buildDir,
+              srcDir,
+              rootDir,
+              workspaceDir,
+              ...(modulesDir),
+              ...val ?? []
+            ]
+          }
         }
       }
     }
