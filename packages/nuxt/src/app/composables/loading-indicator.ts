@@ -27,6 +27,7 @@ export type LoadingIndicator = {
   progress: Ref<number>
   isLoading: Ref<boolean>
   start: () => void
+  set: (value: number) => void
   finish: () => void
   clear: () => void
 }
@@ -41,12 +42,15 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let _timer: any = null
   let _throttle: any = null
 
-  function start () {
+  const start = () => set(0)
+
+  function set (at = 0) {
     if (nuxtApp.isHydrating) {
       return
     }
+    if (at >= 100) { return finish() }
     clear()
-    progress.value = 0
+    progress.value = at < 0 ? 0 : at
     if (throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
@@ -97,9 +101,10 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   return {
     _cleanup,
-    progress,
+    progress: computed(() => progress.value),
     isLoading: computed(() => isLoading.value),
     start,
+    set,
     finish,
     clear
   }
