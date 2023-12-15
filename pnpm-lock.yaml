@@ -774,8 +774,8 @@ importers:
         specifier: ^0.6.1
         version: 0.6.1
       webpackbar:
-        specifier: ^5.0.2
-        version: 5.0.2(webpack@5.89.0)
+        specifier: ^6.0.0
+        version: 6.0.0(webpack@5.89.0)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -4294,10 +4294,6 @@ packages:
       proto-list: 1.2.4
     dev: true
 
-  /consola@2.15.3:
-    resolution: {integrity: sha512-9vAdYbHj6x2fLKC4+oPH0kFzY/orMZyG2Aj+kNylHxKGJ/Ed4dpNyAQYwJOdqO4zdM7XpVHmyejQDcQHrnuXbw==}
-    dev: false
-
   /consola@3.2.3:
     resolution: {integrity: sha512-I5qxpzLv+sJhTVEoLYNcTW+bThDCPsit0vLNKShZx6rLtpilNpmmeTPaeqJb9ZE9dV3DGaeby6Vuhrw38WjeyQ==}
     engines: {node: ^14.18.0 || >=16.10.0}
@@ -5373,6 +5369,13 @@ packages:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
     dependencies:
       reusify: 1.0.4
+
+  /figures@3.2.0:
+    resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}
+    engines: {node: '>=8'}
+    dependencies:
+      escape-string-regexp: 1.0.5
+    dev: false
 
   /file-entry-cache@6.0.1:
     resolution: {integrity: sha512-7Gps/XWymbLk2QLYK4NzpMOrYjMhdIxXuIvy2QBsLE6ljuodKvdkWs/cpyJJ3CVIVpH0Oi1Hvg1ovbMzLdFBBg==}
@@ -6739,6 +6742,12 @@ packages:
       mdurl: 1.0.1
       uc.micro: 1.0.6
     dev: true
+
+  /markdown-table@2.0.0:
+    resolution: {integrity: sha512-Ezda85ToJUBhM6WGaG6veasyym+Tbs3cMAw/ZhOPqXiYsr0jgocBV3j3nx+4lk47plLlIqjwuTm/ywVI+zjJ/A==}
+    dependencies:
+      repeat-string: 1.6.1
+    dev: false
 
   /markdownlint-cli@0.38.0:
     resolution: {integrity: sha512-qkZRKJ4LVq6CJIkRIuJsEHvhWhm+FP0E7yhHvOMrrgdykgFWNYD4wuhZTjvigbJLTKPooP79yPiUDDZBCBI5JA==}
@@ -8376,6 +8385,11 @@ packages:
     dependencies:
       jsesc: 0.5.0
     dev: true
+
+  /repeat-string@1.6.1:
+    resolution: {integrity: sha512-PV0dzCYDNfRi1jCDbJzpW7jNNDRuCOG/jI5ctQcGKt/clZD+YcPS3yIlWuTJMmESC8aevCFmWJy5wjAFgNqN6w==}
+    engines: {node: '>=0.10'}
+    dev: false
 
   /require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
@@ -10136,17 +10150,21 @@ packages:
       - esbuild
       - uglify-js
 
-  /webpackbar@5.0.2(webpack@5.89.0):
-    resolution: {integrity: sha512-BmFJo7veBDgQzfWXl/wwYXr/VFus0614qZ8i9znqcl9fnEdiVkdbi0TedLQ6xAK92HZHDJ0QmyQ0fmuZPAgCYQ==}
-    engines: {node: '>=12'}
+  /webpackbar@6.0.0(webpack@5.89.0):
+    resolution: {integrity: sha512-RdB0RskzOaix1VFMnBXSkKMbUgvZliRqgoNp0gCnG6iUe9RS9sf018AJ/1h5NAeh+ttwXkXjXKC6NdjE/OOcaA==}
+    engines: {node: '>=14.21.3'}
     peerDependencies:
       webpack: 3 || 4 || 5
     dependencies:
+      ansi-escapes: 4.3.2
       chalk: 4.1.2
-      consola: 2.15.3
+      consola: 3.2.3
+      figures: 3.2.0
+      markdown-table: 2.0.0
       pretty-time: 1.1.0
       std-env: 3.6.0
       webpack: 5.89.0
+      wrap-ansi: 7.0.0
     dev: false
 
   /whatwg-encoding@2.0.0:
