@@ -23,7 +23,7 @@ In the browser, `useRequestHeader` will return an empty string.
 
 We can use `useRequestHeader` to easily figure out if a user is authorized or not.
 
-The example below reads the `authorization` request header to an isomorphic `$fetch` call.
+The example below reads the `authorization` request header to find out if a person can access a restricted resource.
 
 ```ts [middleware/authorized-only.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
