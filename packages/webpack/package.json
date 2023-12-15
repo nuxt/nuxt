@@ -57,7 +57,7 @@
     "webpack-dev-middleware": "^5.0.0",
     "webpack-hot-middleware": "^2.25.4",
     "webpack-node-externals": "^3.0.0",
-    "webpackbar": "^5.0.2"
+    "webpackbar": "^6.0.0"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
