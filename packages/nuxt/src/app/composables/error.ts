@@ -1,44 +1,65 @@
 import type { H3Error } from 'h3'
-import { createError as _createError } from 'h3'
+import { createError as createH3Error } from 'h3'
 import { toRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from './router'
 
+export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
+
 export const useError = () => toRef(useNuxtApp().payload, 'error')
 
-export interface NuxtError extends H3Error {}
+export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
 
-export const showError = (_err: string | Error | Partial<NuxtError>) => {
-  const err = createError(_err)
+export const showError = <DataT = unknown>(
+    error: string | Error | Partial<NuxtError<DataT>>
+) => {
+  const nuxtError = createError<DataT>(error)
 
   try {
     const nuxtApp = useNuxtApp()
     const error = useError()
+
     if (import.meta.client) {
-      nuxtApp.hooks.callHook('app:error', err)
+      nuxtApp.hooks.callHook('app:error', nuxtError)
     }
-    error.value = error.value || err
+
+    error.value = error.value || nuxtError
   } catch {
-    throw err
+    throw nuxtError
   }
 
-  return err
+  return nuxtError
 }
 
 export const clearError = async (options: { redirect?: string } = {}) => {
   const nuxtApp = useNuxtApp()
   const error = useError()
+
   nuxtApp.callHook('app:error:cleared', options)
+
   if (options.redirect) {
     await useRouter().replace(options.redirect)
   }
+
   error.value = null
 }
 
-export const isNuxtError = (err?: string | object): err is NuxtError => !!(err && typeof err === 'object' && ('__nuxt_error' in err))
+export const isNuxtError = <DataT = unknown>(
+    error?: string | object
+): error is NuxtError<DataT> => (
+  !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
+)
 
-export const createError = (err: string | Partial<NuxtError>): NuxtError => {
-  const _err: NuxtError = _createError(err)
-  ;(_err as any).__nuxt_error = true
-  return _err
+export const createError = <DataT = unknown>(
+    error: string | Partial<NuxtError<DataT>>
+) => {
+  const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
+
+  Object.defineProperty(nuxtError, NUXT_ERROR_SIGNATURE, {
+    value: true,
+    configurable: false,
+    writable: false
+  })
+
+  return nuxtError
 }
