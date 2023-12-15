@@ -142,7 +142,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
-      nuxtApp.callHook('page:loading:start')
+      await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
@@ -194,20 +194,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
-    router.onError(() => {
-      nuxtApp.callHook('page:loading:end')
+    router.onError(async () => {
       delete nuxtApp._processingMiddleware
+      await nuxtApp.callHook('page:loading:end')
     })
 
     router.afterEach(async (to, _from, failure) => {
-      if (failure) {
-        nuxtApp.callHook('page:loading:end')
-      }
       delete nuxtApp._processingMiddleware
 
       if (import.meta.client && !nuxtApp.isHydrating && error.value) {
         // Clear any existing errors
         await nuxtApp.runWithContext(clearError)
+      }
+      if (failure) {
+        await nuxtApp.callHook('page:loading:end')
       }
       if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
