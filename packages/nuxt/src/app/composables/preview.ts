@@ -1,7 +1,9 @@
 import { computed, reactive, ref } from 'vue'
 import { defu } from 'defu'
 
-import { refreshNuxtData, useRoute, useRouter, useState } from '#app'
+import { useState } from './state'
+import { refreshNuxtData } from './asyncData'
+import { useRoute, useRouter } from './router'
 
 interface Preview {
   state: Record<any, unknown>
