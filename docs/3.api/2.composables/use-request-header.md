@@ -11,8 +11,8 @@ links:
 You can use the built-in [`useRequestHeader`](/docs/api/composables/use-request-header) composable to access any incoming request header within your pages, components, and plugins.
 
 ```ts
-// Get the cookie request header
-const cookie = useRequestHeader('cookie')
+// Get the authorization request header
+const authorization = useRequestHeader('authorization')
 ```
 
 ::callout
@@ -27,7 +27,7 @@ The example below reads the `authorization` request header to find out if a pers
 
 ```ts [middleware/authorized-only.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  if(!useRequestHeader('authorization')){
+  if (!useRequestHeader('authorization')) {
     return navigateTo('/not-authorized')
   }
 })
