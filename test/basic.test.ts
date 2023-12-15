@@ -4,8 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils'
-// @ts-expect-error subpath export needs to be fixed upstream
+import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
@@ -63,6 +62,11 @@ describe('route rules', () => {
       expect(attrs['data-ssr']).toEqual('false')
     }
     await expectNoClientErrors('/route-rules/spa')
+  })
+
+  it('should not render loading template in spa mode if it is not enabled', async () => {
+    const html = await $fetch('/route-rules/spa')
+    expect(html).toContain('<div id="__nuxt"></div>')
   })
 
   it('should allow defining route rules inline', async () => {
@@ -156,6 +160,7 @@ describe('pages', () => {
 
     await page.getByText('should throw a 404 error').click()
     expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
+    expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /forbidden"')
 
     await gotoPath(page, '/navigate-to-forbidden')
     await page.getByText('should be caught by catchall').click()
@@ -782,7 +787,7 @@ describe('navigate', () => {
     const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
     expect(res.headers.get('location')).toEqual('/navigate-some-path')
     expect(res.status).toEqual(307)
-    expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv=\\"refresh\\" content=\\"0; url=/navigate-some-path\\"></head></html>"')
+    expect(await res.text()).toMatchInlineSnapshot(`"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"`)
   })
 
   it('should not overwrite headers', async () => {
@@ -864,17 +869,17 @@ describe('errors', () => {
         "url": "/__nuxt_error",
       }
     `)
+  })
 
-    it('should not recursively throw an error when there is an error rendering the error page', async () => {
-      const res = await $fetch('/', {
-        headers: {
-          'x-test-recurse-error': 'true',
-          accept: 'text/html'
-        }
-      })
-      expect(typeof res).toBe('string')
-      expect(res).toContain('Hello Nuxt 3!')
+  it('should not recursively throw an error when there is an error rendering the error page', async () => {
+    const res = await $fetch('/', {
+      headers: {
+        'x-test-recurse-error': 'true',
+        accept: 'text/html'
+      }
     })
+    expect(typeof res).toBe('string')
+    expect(res).toContain('Hello Nuxt 3!')
   })
 
   // TODO: need to create test for webpack
@@ -1468,7 +1473,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     const html: string = await $fetch('/styles')
     expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel=\\"stylesheet\\" href=\\"/_nuxt/entry.css\\">",
+        "<link rel="stylesheet" href="/_nuxt/entry.css">",
       ]
     `)
   })
@@ -1525,7 +1530,7 @@ describe('server components/islands', () => {
     await page.getByText('Go to page with lazy server component').click()
 
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"> Loading server component </section><section id=\\"no-fallback\\"><div></div></section>"')
+    expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"> Loading server component </section><section id="no-fallback"><div></div></section>"`)
     expect(text).not.toContain('async component that was very long')
     expect(text).toContain('Loading server component')
 
@@ -1544,7 +1549,7 @@ describe('server components/islands', () => {
     await page.getByText('Go to page without lazy server component').click()
 
     const text = await page.innerText('pre')
-    expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id=\\"fallback\\"><div nuxt-ssr-component-uid=\\"2\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section><section id=\\"no-fallback\\"><div nuxt-ssr-component-uid=\\"3\\"> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">42</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div></section>"')
+    expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div nuxt-ssr-component-uid="2"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div style="display:contents;" nuxt-ssr-slot-name="default"></div></div></section><section id="no-fallback"><div nuxt-ssr-component-uid="3"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div style="display:contents;" nuxt-ssr-slot-name="default"></div></div></section>"`)
     expect(text).toContain('async component that was very long')
 
     // Wait for all pending micro ticks to be cleared
@@ -1787,7 +1792,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div> that was very long ... <div id=\\"long-async-component-count\\">3</div>  <div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"test\\" nuxt-ssr-slot-data=\\"[{&quot;count&quot;:3}]\\"></div><p>hello world !!!</p><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"hello\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]\\"><div nuxt-slot-fallback-start=\\"hello\\"></div><!--[--><div style=\\"display:contents;\\"><div> fallback slot -- index: 0</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 1</div></div><div style=\\"display:contents;\\"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"fallback\\" nuxt-ssr-slot-data=\\"[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]\\"><div nuxt-slot-fallback-start=\\"fallback\\"></div><!--[--><div style=\\"display:contents;\\"><div>fall slot -- index: 0</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><div style=\\"display:contents;\\"><div>back slot -- index: 1</div><div class=\\"fallback-slot-content\\"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
+        "html": "<div nuxt-ssr-component-uid><div> count is above 2 </div><div style="display:contents;" nuxt-ssr-slot-name="default"></div> that was very long ... <div id="long-async-component-count">3</div>  <div style="display:contents;" nuxt-ssr-slot-name="test" nuxt-ssr-slot-data="[{&quot;count&quot;:3}]"></div><p>hello world !!!</p><div style="display:contents;" nuxt-ssr-slot-name="hello" nuxt-ssr-slot-data="[{&quot;t&quot;:0},{&quot;t&quot;:1},{&quot;t&quot;:2}]"><div nuxt-slot-fallback-start="hello"></div><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><div nuxt-slot-fallback-end></div></div><div style="display:contents;" nuxt-ssr-slot-name="fallback" nuxt-ssr-slot-data="[{&quot;t&quot;:&quot;fall&quot;},{&quot;t&quot;:&quot;back&quot;}]"><div nuxt-slot-fallback-start="fallback"></div><!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><div nuxt-slot-fallback-end></div></div></div>",
         "state": {},
       }
     `)
@@ -1808,7 +1813,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id=\\"async-server-component-count\\">2</div><div style=\\"display:contents;\\" nuxt-ssr-slot-name=\\"default\\"></div></div>",
+        "html": "<div nuxt-ssr-component-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div style="display:contents;" nuxt-ssr-slot-name="default"></div></div>",
         "state": {},
       }
     `)
@@ -1996,9 +2001,13 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   })
 })
 
-describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
-  it('should be available', async () => {
+describe('Async context', () => {
+  it.skipIf(process.env.TEST_CONTEXT !== 'async')('should be available', async () => {
     expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
+  })
+  it('should transform `setup` within defineComponent', async () => {
+    const html = await $fetch('/async-transform-component')
+    expect(html).toContain('using automatic `setup` async transform')
   })
 })
 
