@@ -86,6 +86,7 @@ describe('composables', () => {
       'useHydration',
       'getRouteRules',
       'onNuxtReady',
+      'once',
       'setResponseStatus',
       'prerenderRoutes',
       'useRequestEvent',
