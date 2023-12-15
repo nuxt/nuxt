@@ -17,10 +17,10 @@ export function useRequestHeaders (include?: any[]) {
   return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
 }
 
-export function useRequestHeader(header: string) {
+export function useRequestHeader(include: string) {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const header = event ? getRequestHeader(event, header) : ''
+  const header = event ? getRequestHeader(event, include) : ''
   return header
 }
 
