@@ -1,5 +1,5 @@
 <script setup>
-const { enabled, state } = usePreviewMode({ controls: true })
+const { enabled, state } = usePreviewMode()
 
 const { data } = await useFetch('/api/preview', {
   query: {

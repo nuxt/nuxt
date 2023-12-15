@@ -1,5 +1,5 @@
 <script setup>
-const { enabled: isPreview } = usePreviewMode({ controls: true })
+const { enabled: isPreview } = usePreviewMode()
 
 const { data } = await useAsyncData(async () => {
   await new Promise(resolve => setTimeout(resolve, 200))

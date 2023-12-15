@@ -1,7 +1,7 @@
 <script setup>
 const route = useRoute()
 
-const enabled = usePreviewMode({
+const { enabled } = usePreviewMode({
   shouldEnable: () => {
     return !!route.query.customPreview
   }
