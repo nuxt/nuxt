@@ -4,7 +4,7 @@ description: "Add a Nuxt module to your Nuxt application."
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/add.ts
+    to: https://github.com/nuxt/cli/blob/main/src/commands/module/add.ts
     size: xs
 ---
 
