@@ -390,6 +390,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+   await nuxt.callHook('modules:done')
   // register the app manifest middleware now to allow user modules to disable it
   // otherwise the app will crash (#24672)
   if (nuxt.options.experimental.appManifest) {
