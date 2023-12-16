@@ -400,7 +400,6 @@ async function initNuxt (nuxt: Nuxt) {
 
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
   }
-  await nuxt.callHook('modules:done')
 
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
