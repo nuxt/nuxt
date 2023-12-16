@@ -390,6 +390,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   await nuxt.callHook('modules:done')
+
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
       name: 'manifest-route-rule',
