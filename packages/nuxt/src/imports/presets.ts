@@ -30,7 +30,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/config'
   },
   {
-    imports: ['defineNuxtComponent'],
+    imports: ['defineComponent', 'defineNuxtComponent'],
     from: '#app/composables/component'
   },
   {
@@ -58,7 +58,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie'
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr'
   },
   {
@@ -156,7 +156,6 @@ const vuePreset = defineUnimportPreset({
     'onScopeDispose',
 
     // Component
-    'defineComponent',
     'defineAsyncComponent',
     'resolveComponent',
     'getCurrentInstance',

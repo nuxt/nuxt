@@ -239,6 +239,33 @@ describe('useAsyncData', () => {
     const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
   })
+
+  it('should execute the promise function once when dedupe option is "defer" for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+  })
+
+  it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('useFetch', () => {

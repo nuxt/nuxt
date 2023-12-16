@@ -42,6 +42,10 @@ export default defineComponent({
     name: {
       type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'],
       default: null
+    },
+    fallback: {
+      type: [String, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string> : PageMeta['layout'],
+      default: null
     }
   },
   setup (props, context) {
@@ -50,7 +54,18 @@ export default defineComponent({
     const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
-    const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+    const layout = computed(() => {
+      let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
+      if (layout && !(layout in layouts)) {
+        if (import.meta.dev && layout !== 'default') {
+          console.warn(`Invalid layout \`${layout}\` selected.`)
+        }
+        if (props.fallback) {
+          layout = unref(props.fallback)
+        }
+      }
+      return layout
+    })
 
     const layoutRef = ref()
     context.expose({ layoutRef })
@@ -63,10 +78,6 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {
-        console.warn(`Invalid layout \`${layout.value}\` selected.`)
-      }
-
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
