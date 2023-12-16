@@ -6,12 +6,12 @@ import type { NuxtPayload } from '../nuxt'
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
  * @param fn a function to call
  */
-export function once <T> (key?: string, fn?: (() => T | Promise<T>)): Promise<T>
-export function once <T> (fn?: (() => T | Promise<T>)): Promise<T>
-export async function once <T> (...args: any): Promise<T> {
+export function once (key?: string, fn?: (() => any | Promise<any>)): Promise<void>
+export function once (fn?: (() => any | Promise<any>)): Promise<void>
+export async function once (...args: any): Promise<void> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
-  const [_key, fn] = args as [string, (() => T | Promise<T>)]
+  const [_key, fn] = args as [string, (() => any | Promise<any>)]
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [once] key must be a string: ' + _key)
   }
@@ -20,14 +20,14 @@ export async function once <T> (...args: any): Promise<T> {
   }
   const nuxt = useNuxtApp()
   if (import.meta.server) {
-    const res = await fn()
-    nuxt.payload.calls[_key] = [res]
-    return res
+    await fn()
+    // Store it no error is thrown
+    nuxt.payload.once[_key] = true
   }
-  if (nuxt.isHydrating && nuxt.payload.calls[_key]) {
-    return nuxt.payload.calls[_key][0]
+  if (nuxt.isHydrating && nuxt.payload.once[_key]) {
+    return
   }
-  return await fn()
+  await fn()
 }
 
 /**

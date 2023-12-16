@@ -35,25 +35,16 @@ await once(async () => {
 
 :read-more{to="/docs/getting-started/state-management"}
 
-You can also get the returned value of the function:
-
-```vue [pages/stats.vue]
-<script setup>
-const stats = await once(() => $fetch('https://example.com/api/stats'))
-</script>
-```
-
-::callout
-Note that `stats` won't be reactive in this case and if an error happen you will [have to handle it](/docs/getting-started/error-handling#error-page), if you want to do data fetching and have it be reactive, you should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch).
+::callout{color="info" icon="i-ph-warning-duotone"}
+Note that `once` won't return anything, you should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data-fetching during SSR.
 ::
 
 ## Type
 
 ```ts
-once<T>(fn?: () => T | Promise<T>): Promise<T>
-once<T>(key: string, fn?: () => T | Promise<T>): Promise<T>
+once(fn?: () => any | Promise<any>): Promise<void>
+once(key: string, fn?: () => any | Promise<any>): Promise<void>
 ```
 
 - `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `once` will be generated for you.
 - `fn`: The function code to run once. This function can also return a `Promise` and a value.
-- `T`: (typescript only) Specify the type of returned value

@@ -74,7 +74,7 @@ export interface NuxtPayload {
   prerenderedAt?: number
   data: Record<string, any>
   state: Record<string, any>
-  calls: Record<string, any[]>
+  once: Record<string, boolean>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: Error | {
     url: string
@@ -225,7 +225,7 @@ export function createNuxtApp (options: CreateOptions) {
     payload: reactive({
       data: {},
       state: {},
-      calls: {},
+      once: {},
       _errors: {},
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
