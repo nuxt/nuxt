@@ -39,6 +39,10 @@ await once(async () => {
 Note that `once` won't return anything, you should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data-fetching during SSR.
 ::
 
+::callout
+`once` is a composable meant to be called directly in a setup function, plugin, or route middleware, because it needs to add data to the Nuxt payload to avoid re-calling the function on the client when the page hydrates.
+::
+
 ## Type
 
 ```ts
