@@ -391,7 +391,6 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
    await nuxt.callHook('modules:done')
-  // otherwise the app will crash (#24672)
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
       name: 'manifest-route-rule',
