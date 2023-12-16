@@ -17,6 +17,7 @@ Option        | Default          | Description
 `NAME` | - | The name of the module to install.
 
 ## Example usage
+
 Installing the [`Pinia`](/modules/pinia) module
 ```bash [Terminal]
 npx nuxi module add pinia 
