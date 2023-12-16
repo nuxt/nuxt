@@ -58,7 +58,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie'
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr'
   },
   {
