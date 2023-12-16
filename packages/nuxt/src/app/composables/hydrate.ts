@@ -23,6 +23,7 @@ export async function once (...args: any): Promise<void> {
     await fn()
     // Store it no error is thrown
     nuxt.payload.once[_key] = true
+    return
   }
   if (nuxt.isHydrating && nuxt.payload.once[_key]) {
     return
