@@ -94,7 +94,6 @@ async function initNuxt (nuxt: Nuxt) {
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
 
-
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
 
