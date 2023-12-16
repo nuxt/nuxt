@@ -26,10 +26,12 @@ export async function build (nuxt: Nuxt) {
       const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
       const restartPath = relativePaths.find(relativePath => /^(app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(relativePath))
       if (restartPath) {
-        if (restartPath.startsWith('app')) {
+        // Equivalent to restartPath.startsWith('app'), more performant
+        if (restartPath[0] === 'a' && restartPath[1] === 'p' && restartPath[2] == 'p') {
           app.mainComponent = undefined
         }
-        if (restartPath.startsWith('error')) {
+        // Equivalent to restartPath.startsWith('error'), more performant
+        if (restartPath[0] === 'e' && restartPath[1] === 'r' && restartPath[2] == 'r' && restartPath[3] === 'o' && restartPath[4] === 'r') {
           app.errorComponent = undefined
         }
         await generateApp()
