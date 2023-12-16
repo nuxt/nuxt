@@ -23,3 +23,11 @@ Installing the [`Pinia`](/modules/pinia) module
 ```bash [Terminal]
 npx nuxi module add pinia 
 ```
+
+Your `nuxt.config` should now look like this:
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+  modules: ['@pinia/nuxt']
+})
