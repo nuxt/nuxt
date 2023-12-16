@@ -77,7 +77,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext
         },
         build: {
           copyPublicDir: false,

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { h } from 'vue'
+import { h, nextTick } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
@@ -64,5 +64,36 @@ describe('runtime server component', () => {
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hello world from another server</div>"')
 
     await server.close()
+  })
+
+  it('force refresh', async () => {
+    let count = 0
+    const stubFetch = vi.fn(() => {
+      count++
+      return {
+        id: '123',
+        html: `<div>${count}</div>`,
+        state: {},
+        head: {
+          link: [],
+          style: []
+        },
+        json() {
+          return this
+        }
+      }
+    })
+    vi.stubGlobal('fetch', stubFetch)
+
+    const component = await mountSuspended(createServerComponent('dummyName'))
+    expect(fetch).toHaveBeenCalledOnce()
+
+    expect(component.html()).toBe('<div>1</div>')
+
+    await component.vm.$.exposed!.refresh()
+    expect(fetch).toHaveBeenCalledTimes(2)
+    await nextTick()
+    expect(component.html()).toBe('<div>2</div>')
+    vi.mocked(fetch).mockRestore()
   })
 })
