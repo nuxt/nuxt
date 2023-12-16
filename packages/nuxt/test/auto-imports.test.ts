@@ -81,8 +81,6 @@ describe('imports:nuxt', () => {
 })
 
 const excludedVueHelpers = [
-  // Nuxt stub for this helper
-  'defineComponent',
   // Already globally registered
   'defineEmits',
   'defineExpose',
