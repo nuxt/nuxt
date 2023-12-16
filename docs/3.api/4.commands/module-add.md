@@ -11,7 +11,7 @@ links:
 ```bash [Terminal]
 npx nuxi module add <NAME>
 ```
-The `module add` command allows you to install [Nuxt modules](/modules) directly to your application with minimal manual work. It automatically updates your `nuxt.config.{.js,.ts}` file with each module you add.
+The `module add` command allows you to install [Nuxt modules](/modules) directly to your application with minimal manual work. It automatically updates your [`nuxt.config`](/docs/guide/directory-structure/nuxt-config) file with each module you add.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
