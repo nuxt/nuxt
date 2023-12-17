@@ -21,6 +21,17 @@ export default defineUntypedSchema({
         return val ?? true
       }
     },
+
+    /**
+     * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
+     */
+    noScripts: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        return val ?? await get('experimental.noScripts')
+      }
+    },
   },
   experimental: {
     /**
@@ -92,12 +103,6 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     restoreState: false,
-
-    /**
-     * Turn off rendering of Nuxt scripts and JS resource hints.
-     * You can also disable scripts more granularly within `routeRules`.
-     */
-    noScripts: false,
 
     /** Render JSON payloads with support for revivifying complex types. */
     renderJsonPayloads: true,

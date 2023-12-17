@@ -164,7 +164,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
-  if (nuxt.options.experimental.noScripts && !nuxt.options.dev) {
+  if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
