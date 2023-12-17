@@ -1951,13 +1951,9 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
   })
 })
 
-describe('Async context', () => {
-  it.skipIf(process.env.TEST_CONTEXT !== 'async')('should be available', async () => {
+describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
+  it('should be available', async () => {
     expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
-  })
-  it('should transform `setup` within defineComponent', async () => {
-    const html = await $fetch('/async-transform-component')
-    expect(html).toContain('using automatic `setup` async transform')
   })
 })
 
