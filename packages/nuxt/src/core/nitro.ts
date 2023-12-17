@@ -207,7 +207,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
       'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
-      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
+      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,

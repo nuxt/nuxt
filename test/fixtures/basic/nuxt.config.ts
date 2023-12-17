@@ -191,13 +191,15 @@ export default defineNuxtConfig({
       }
     }
   },
+  features: {
+    inlineStyles: id => !!id && !id.includes('assets.vue'),
+  },
   experimental: {
     typedPages: true,
     polyfillVueUseHead: true,
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
-    inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
     componentIslands: {
       selectiveClient: true
     },
