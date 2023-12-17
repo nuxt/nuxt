@@ -1,6 +1,6 @@
 ---
 title: "once"
-description: "Run a given function or block of code once SSR or CSR."
+description: "Run a given function or block of code once during SSR or CSR."
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -10,11 +10,11 @@ links:
 
 ## Purpose
 
-The `once` function is designed to execute a given function or block of code only a single time in a specific scenario:
-- During server-side rendering but not during hydration
-- On client-side navigation
+The `once` function is designed to execute a given function or block of code only once during:
+- server-side rendering but not hydration
+- client-side navigation
 
-This is useful for code that should only be executed once, such as logging an event or setting up a global state.
+This is useful for code that should be executed only once, such as logging an event or setting up a global state.
 
 ## Usage
 
@@ -36,7 +36,7 @@ await once(async () => {
 :read-more{to="/docs/getting-started/state-management"}
 
 ::callout{color="info" icon="i-ph-warning-duotone"}
-Note that `once` won't return anything, you should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data-fetching during SSR.
+Note that `once` doesn't return anything. You should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data fetching during SSR.
 ::
 
 ::callout
@@ -51,4 +51,4 @@ once(key: string, fn?: () => any | Promise<any>): Promise<void>
 ```
 
 - `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `once` will be generated for you.
-- `fn`: The function code to run once. This function can also return a `Promise` and a value.
+- `fn`: The function to run once. This function can also return a `Promise` and a value.

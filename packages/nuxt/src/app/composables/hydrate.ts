@@ -2,7 +2,7 @@ import { useNuxtApp } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 
 /**
- * A SSR-friendly utility to call a method once
+ * An SSR-friendly utility to call a method once
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
  * @param fn a function to call
  * @see https://nuxt.com/docs/api/utils/once
