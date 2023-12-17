@@ -28,7 +28,7 @@ Installing the [`Pinia`](/modules/pinia) module
 npx nuxi module add pinia 
 ```
 
-Your `nuxt.config` should now look like this:
+Your `nuxt.config` will be modified to:
 
 ```ts [nuxt.config.ts]
 export default defineNuxtConfig({
