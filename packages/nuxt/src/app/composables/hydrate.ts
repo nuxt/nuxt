@@ -22,7 +22,6 @@ export async function once (...args: any): Promise<void> {
   const nuxt = useNuxtApp()
   if (import.meta.server) {
     await fn()
-    // Store it no error is thrown
     nuxt.payload.once[_key] = true
     return
   }
