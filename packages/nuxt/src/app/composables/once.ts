@@ -19,17 +19,10 @@ export async function once (...args: any): Promise<void> {
     throw new Error('[nuxt] [once] fn must be a function: ' + fn)
   }
   const nuxt = useNuxtApp()
-  if (import.meta.server) {
-    // If key already ran
-    if (nuxt.payload.once.has(_key)) {
-      return
-    }
-    await fn()
-    nuxt.payload.once.add(_key)
-    return
-  }
-  if (nuxt.isHydrating && nuxt.payload.once.has(_key)) {
+  // If key already ran
+  if (nuxt.payload.once.has(_key)) {
     return
   }
   await fn()
+  nuxt.payload.once.add(_key)
 }
