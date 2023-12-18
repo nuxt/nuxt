@@ -21,7 +21,7 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `NAME` | - | The name of the module to install.
 
-### Example usage
+### Example
 
 Installing the [`Pinia`](/modules/pinia) module
 ```bash [Terminal]
@@ -48,7 +48,7 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `QUERY` | - | The name of the module to search for.
 
-### Example usage
+### Example
 
 ```base [Terminal]
 npx nuxi module search pinia
