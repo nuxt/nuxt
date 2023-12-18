@@ -66,7 +66,7 @@
     "webpack-dev-middleware": "^6.1.1",
     "webpack-hot-middleware": "^2.25.4",
     "webpack-virtual-modules": "^0.6.1",
-    "webpackbar": "^5.0.2"
+    "webpackbar": "^6.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
