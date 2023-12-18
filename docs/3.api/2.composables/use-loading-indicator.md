@@ -22,7 +22,7 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 
 ### `progress`
 
-- **type**: `number`
+- **type**: `Ref<number>`
 - **description**: The progress state. From `0` to `100`.
 
 ## Methods
