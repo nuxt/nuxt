@@ -14,6 +14,7 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { callOnce } from '#app/composables/once'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -562,4 +563,21 @@ describe('defineNuxtComponent', () => {
   })
   it.todo('should support Options API asyncData')
   it.todo('should support Options API head')
+})
+
+describe('callOnce', () => {
+  it('should only call composable once', async () => {
+    const fn = vi.fn()
+    const execute = () => callOnce(fn)
+    await execute()
+    await execute()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should only call composable once when called in parallel', async () => {
+    const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+    const execute = () => callOnce(fn)
+    await Promise.all([execute(), execute(), execute()])
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
 })
