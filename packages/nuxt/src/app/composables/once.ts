@@ -18,11 +18,14 @@ export async function callOnce (...args: any): Promise<void> {
   if (fn !== undefined && typeof fn !== 'function') {
     throw new Error('[nuxt] [callOnce] fn must be a function: ' + fn)
   }
-  const nuxt = useNuxtApp()
+  const nuxtApp = useNuxtApp()
   // If key already ran
-  if (nuxt.payload.once.has(_key)) {
+  if (nuxtApp.payload.once.has(_key)) {
     return
   }
-  await fn()
-  nuxt.payload.once.add(_key)
+  nuxtApp._once = nuxtApp._once || {}
+  nuxtApp._once[_key] = nuxtApp._once[_key] || fn()
+  await nuxtApp._once[_key]
+  nuxtApp.payload.once.add(_key)
+  delete nuxtApp._once[_key]
 }

@@ -120,6 +120,11 @@ interface _NuxtApp {
   }
 
   /** @internal */
+  _once: {
+    [key: string]: Promise<any>
+  }
+
+  /** @internal */
   _observer?: { observe: (element: Element, callback: () => void) => () => void }
   /** @internal */
   _payloadCache?: Record<string, Promise<Record<string, any>> | Record<string, any> | null>
