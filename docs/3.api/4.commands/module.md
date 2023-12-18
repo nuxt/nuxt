@@ -44,7 +44,7 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `QUERY` | - | The name of the module to search for.
 
-The command searchs for Nuxt modules matching your query, compatible with your current Nuxt version installed.
+The command searches for Nuxt modules matching your query that are compatible with your Nuxt version.
 
 **Example:**
 
