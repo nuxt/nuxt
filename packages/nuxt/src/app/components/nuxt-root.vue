@@ -7,7 +7,6 @@
     <IslandRenderer
       v-else-if="islandContext"
       :context="islandContext"
-      :components="islandComponents"
     />
     <component
       :is="SingleRenderer"
@@ -25,7 +24,6 @@ import { useRoute } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
-import { islandComponents } from '#build/components.islands.mjs'
 
 const IslandRenderer = import.meta.server
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))

@@ -3,19 +3,18 @@ import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
 import { createError } from '../composables/error'
 
+// @ts-expect-error virtual file
+import { islandComponents } from '#build/components.islands.mjs'
+
 export default defineComponent({
   props: {
     context: {
       type: Object as () => { name: string, props?: Record<string, any> },
       required: true
-    },
-    components: {
-      type: Object as () => Record<string, ReturnType<typeof defineAsyncComponent>>,
-      required: true
     }
   },
   setup (props) {
-    const component = props.components[props.context.name] as ReturnType<typeof defineAsyncComponent>
+    const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
 
     if (!component) {
       throw createError({

@@ -40,7 +40,9 @@ export const appComponentTemplate: NuxtTemplate<TemplateContext> = {
 // TODO: Use an alias
 export const rootComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'root-component.mjs',
-  getContents: ctx => genExport(ctx.app.rootComponent!, ['default'])
+  // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
+  // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
+  getContents: ctx => (ctx.nuxt.options.dev ? "import '#build/components.islands.mjs';\n" : '') + genExport(ctx.app.rootComponent!, ['default'])
 }
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
