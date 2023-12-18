@@ -1,0 +1,35 @@
+import { useNuxtApp } from '../nuxt'
+
+/**
+ * An SSR-friendly utility to call a method once
+ * @param key a unique key ensuring the function can be properly de-duplicated across requests
+ * @param fn a function to call
+ * @see https://nuxt.com/docs/api/utils/once
+ */
+export function once (key?: string, fn?: (() => any | Promise<any>)): Promise<void>
+export function once (fn?: (() => any | Promise<any>)): Promise<void>
+export async function once (...args: any): Promise<void> {
+  const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
+  if (typeof args[0] !== 'string') { args.unshift(autoKey) }
+  const [_key, fn] = args as [string, (() => any | Promise<any>)]
+  if (!_key || typeof _key !== 'string') {
+    throw new TypeError('[nuxt] [once] key must be a string: ' + _key)
+  }
+  if (fn !== undefined && typeof fn !== 'function') {
+    throw new Error('[nuxt] [once] fn must be a function: ' + fn)
+  }
+  const nuxt = useNuxtApp()
+  if (import.meta.server) {
+    // If key already ran
+    if (nuxt.payload.once.has(_key)) {
+      return
+    }
+    await fn()
+    nuxt.payload.once.add(_key)
+    return
+  }
+  if (nuxt.isHydrating && nuxt.payload.once.has(_key)) {
+    return
+  }
+  await fn()
+}

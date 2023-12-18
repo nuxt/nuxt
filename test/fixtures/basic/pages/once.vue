@@ -1,7 +1,9 @@
 <script setup>
 const counter = useState('once', () => 0)
 
-once(() => counter.value++)
+await once(() => counter.value++)
+await once('same-key', () => counter.value++)
+await once('same-key', () => counter.value++)
 </script>
 
 <template>

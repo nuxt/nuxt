@@ -920,7 +920,7 @@ describe('middlewares', () => {
     const html = await $fetch('/once')
 
     expect(html).toContain('once.vue')
-    expect(html).toContain('once: 1')
+    expect(html).toContain('once: 2')
   })
 })
 

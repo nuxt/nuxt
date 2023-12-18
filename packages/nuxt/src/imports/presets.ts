@@ -38,8 +38,12 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/asyncData'
   },
   {
-    imports: ['once', 'useHydration'],
+    imports: ['useHydration'],
     from: '#app/composables/hydrate'
+  },
+  {
+    imports: ['once', 'useHydration'],
+    from: '#app/composables/once'
   },
   {
     imports: ['useState', 'clearNuxtState'],
