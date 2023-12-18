@@ -1,6 +1,6 @@
 ---
 title: "nuxi module"
-description: "Module utilities for your Nuxt application"
+description: "Search and add modules to your Nuxt application with the command line."
 links:
   - label: Source
     icon: i-simple-icons-github
