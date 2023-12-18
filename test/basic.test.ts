@@ -863,6 +863,18 @@ describe('navigate external', () => {
   })
 })
 
+describe('composables', () => {
+  it('should run code once', async () => {
+    const html = await $fetch('/once')
+
+    expect(html).toContain('once.vue')
+    expect(html).toContain('once: 2')
+
+    const { page } = await renderPage('/once')
+    expect(page.getByText('once:')).toContain('once: 2')
+  })
+})
+
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
     const html = await $fetch('/redirect/')
@@ -915,12 +927,6 @@ describe('middlewares', () => {
     const html = await fetch('/navigate-to-redirect', { redirect: 'manual' })
     expect(html.headers.get('location')).toEqual('/')
     expect(html.status).toEqual(307)
-  })
-  it('should run code once', async () => {
-    const html = await $fetch('/once')
-
-    expect(html).toContain('once.vue')
-    expect(html).toContain('once: 2')
   })
 })
 
