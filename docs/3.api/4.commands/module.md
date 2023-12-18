@@ -15,26 +15,23 @@ Nuxi provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
 ```bash [Terminal]
 npx nuxi module add <NAME>
 ```
-The `module add` command allows you to install [Nuxt modules](/modules) directly to your application with minimal manual work. It automatically updates your [`nuxt.config`](/docs/guide/directory-structure/nuxt-config) file with each module you add.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
 `NAME` | - | The name of the module to install.
 
-### Example
+The command lets you install [Nuxt modules](/modules) to your application with no manual work.
+
+When running the command, it will:
+- install the module as dependency using your package manager
+- add it to your [package.json](/docs/guide/directory-structure/package)
+- update your [`nuxt.config`](/docs/guide/directory-structure/nuxt-config) file with each module you add.
+
+**Example:**
 
 Installing the [`Pinia`](/modules/pinia) module
 ```bash [Terminal]
 npx nuxi module add pinia 
-```
-
-Your `nuxt.config` will be modified to:
-
-```ts [nuxt.config.ts]
-export default defineNuxtConfig({
-  devtools: { enabled: true },
-  modules: ['@pinia/nuxt']
-})
 ```
 
 ## nuxi module search
@@ -42,13 +39,14 @@ export default defineNuxtConfig({
 ```bash [Terminal]
 npx nuxi module search <QUERY>
 ```
-The `module search` command allows you to search for a Nuxt module directly from your application.
 
 Option        | Default          | Description
 -------------------------|-----------------|------------------
 `QUERY` | - | The name of the module to search for.
 
-### Example
+The command searchs for Nuxt modules matching your query, compatible with your current Nuxt version installed.
+
+**Example:**
 
 ```base [Terminal]
 npx nuxi module search pinia
