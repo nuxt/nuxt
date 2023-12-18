@@ -20,7 +20,7 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `NAME` | - | The name of the module to install.
 
-The command lets you install [Nuxt modules](/modules) to your application with no manual work.
+The command lets you install [Nuxt modules](/modules) in your application with no manual work.
 
 When running the command, it will:
 - install the module as a dependency using your package manager
