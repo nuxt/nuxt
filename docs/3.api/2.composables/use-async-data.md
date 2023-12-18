@@ -25,7 +25,9 @@ const { data, pending, error, refresh } = await useAsyncData(
 </script>
 ```
 
-::callout `data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data. ::
+::callout
+`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+::
 
 ### Watch Params
 
