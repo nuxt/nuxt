@@ -42,7 +42,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/hydrate'
   },
   {
-    imports: ['once', 'useHydration'],
+    imports: ['callOnce'],
     from: '#app/composables/once'
   },
   {

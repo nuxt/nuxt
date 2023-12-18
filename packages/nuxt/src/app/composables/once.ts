@@ -6,17 +6,17 @@ import { useNuxtApp } from '../nuxt'
  * @param fn a function to call
  * @see https://nuxt.com/docs/api/utils/once
  */
-export function once (key?: string, fn?: (() => any | Promise<any>)): Promise<void>
-export function once (fn?: (() => any | Promise<any>)): Promise<void>
-export async function once (...args: any): Promise<void> {
+export function callOnce (key?: string, fn?: (() => any | Promise<any>)): Promise<void>
+export function callOnce (fn?: (() => any | Promise<any>)): Promise<void>
+export async function callOnce (...args: any): Promise<void> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, fn] = args as [string, (() => any | Promise<any>)]
   if (!_key || typeof _key !== 'string') {
-    throw new TypeError('[nuxt] [once] key must be a string: ' + _key)
+    throw new TypeError('[nuxt] [callOnce] key must be a string: ' + _key)
   }
   if (fn !== undefined && typeof fn !== 'function') {
-    throw new Error('[nuxt] [once] fn must be a function: ' + fn)
+    throw new Error('[nuxt] [callOnce] fn must be a function: ' + fn)
   }
   const nuxt = useNuxtApp()
   // If key already ran
