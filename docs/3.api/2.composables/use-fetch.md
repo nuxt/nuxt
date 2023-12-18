@@ -27,6 +27,10 @@ const { data, pending, error, refresh } = await useFetch(`https://api.nuxtjs.dev
 </script>
 ```
 
+::callout
+`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+::
+
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts
