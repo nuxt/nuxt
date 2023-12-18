@@ -580,4 +580,13 @@ describe('callOnce', () => {
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
   })
+
+  it('should use key to dedupe', async () => {
+    const fn = vi.fn()
+    const execute = (key?: string) => callOnce(key, fn)
+    await execute('first')
+    await execute('first')
+    await execute('second')
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
 })
