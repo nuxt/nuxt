@@ -871,7 +871,7 @@ describe('composables', () => {
     expect(html).toContain('once: 2')
 
     const { page } = await renderPage('/once')
-    expect(page.getByText('once:')).toContain('once: 2')
+    expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
 })
 
