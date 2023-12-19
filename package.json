@@ -33,7 +33,6 @@
   "resolutions": {
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/test-utils": "3.9.0-alpha.3",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "rollup": "^4.9.1",
@@ -44,7 +43,7 @@
   },
   "devDependencies": {
     "@nuxt/eslint-config": "0.2.0",
-    "@nuxt/test-utils": "3.9.0-alpha.3",
+    "@nuxt/test-utils": "3.9.0",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.10.5",
@@ -79,7 +78,7 @@
     "typescript": "5.3.3",
     "ufo": "1.3.2",
     "vitest": "1.0.4",
-    "vitest-environment-nuxt": "1.0.0-alpha.1",
+    "vitest-environment-nuxt": "1.0.0",
     "vue": "3.3.13",
     "vue-eslint-parser": "9.3.2",
     "vue-router": "4.2.5",
