@@ -863,6 +863,18 @@ describe('navigate external', () => {
   })
 })
 
+describe('composables', () => {
+  it('should run code once', async () => {
+    const html = await $fetch('/once')
+
+    expect(html).toContain('once.vue')
+    expect(html).toContain('once: 2')
+
+    const { page } = await renderPage('/once')
+    expect(await page.getByText('once:').textContent()).toContain('once: 2')
+  })
+})
+
 describe('middlewares', () => {
   it('should redirect to index with global middleware', async () => {
     const html = await $fetch('/redirect/')

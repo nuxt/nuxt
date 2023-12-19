@@ -42,6 +42,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/hydrate'
   },
   {
+    imports: ['callOnce'],
+    from: '#app/composables/once'
+  },
+  {
     imports: ['useState', 'clearNuxtState'],
     from: '#app/composables/state'
   },
