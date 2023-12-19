@@ -89,9 +89,10 @@ if (import.meta.client) {
     return vueApp
   }
 
-  vueAppPromise = entry()
-
-  vueAppPromise.catch((error: unknown) => console.error('Error while mounting app:', error))
+  vueAppPromise = entry().catch((error: unknown) => {
+    console.error('Error while mounting app:', error)
+    throw error
+  })
 }
 
 export default (ssrContext?: CreateOptions['ssrContext']) => entry(ssrContext)
