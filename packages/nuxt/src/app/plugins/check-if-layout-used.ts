@@ -17,5 +17,8 @@ export default defineNuxtPlugin({
     } else {
       onNuxtReady(checkIfLayoutUsed)
     }
+  },
+  env: {
+    islands: false
   }
 })

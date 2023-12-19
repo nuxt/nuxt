@@ -126,16 +126,25 @@ Nuxt exposes the following properties through `ssrContext`:
 
   It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
-  You can also add your own types, with a special plugin helper:
+  Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own serializer/deserializer for types that are not supported by Nuxt.
 
-  ```ts [plugins/custom-payload.ts]
-    /**
-     * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
-     * You will not have access to the router or other Nuxt-injected properties.
-     */
+  In the example below, we define a serializer for the [Luxon](https://moment.github.io/luxon/#/) DateTime class.
+
+  ```ts [plugins/date-time-payload.ts]
+  /**
+   * This kind of plugin runs very early in the Nuxt lifecycle, before we revive the payload.
+   * You will not have access to the router or other Nuxt-injected properties.
+   *
+   * Note that the "DateTime" string is the type identifier and must
+   * be the same on both the reducer and the reviver.
+   */
   export default definePayloadPlugin((nuxtApp) => {
-    definePayloadReducer('BlinkingText', data => data === '<blink>' && '_')
-    definePayloadReviver('BlinkingText', () => '<blink>')
+    definePayloadReducer('DateTime', (value) => {
+      return value instanceof DateTime && value.toJSON()
+    })
+    definePayloadReviver('DateTime', (value) => {
+      return DateTime.fromISO(value)
+    })
   })
   ```
 

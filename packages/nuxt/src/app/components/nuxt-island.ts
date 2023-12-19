@@ -77,7 +77,7 @@ export default defineComponent({
       default: false
     }
   },
-  async setup (props, { slots }) {
+  async setup (props, { slots, expose }) {
     const key = ref(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
@@ -222,6 +222,10 @@ export default defineComponent({
         error.value = e
       }
     }
+
+    expose({
+      refresh: () => fetchComponent(true)
+    })
 
     if (import.meta.hot) {
       import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {

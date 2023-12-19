@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    '~/modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {

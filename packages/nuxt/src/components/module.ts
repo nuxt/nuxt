@@ -124,7 +124,7 @@ export default defineNuxtModule<ComponentsOptions>({
     if (nuxt.options.experimental.componentIslands) {
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
     } else {
-      addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export default {}' })
+      addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
     }
 
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')

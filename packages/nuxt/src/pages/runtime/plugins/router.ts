@@ -135,8 +135,14 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
+      // We're in an island context, and don't need to handle middleware or redirections
+      return { provide: { router } }
+    }
+
     const initialLayout = nuxtApp.payload.state._layout
     router.beforeEach(async (to, from) => {
+      await nuxtApp.callHook('page:loading:start')
       to.meta = reactive(to.meta)
       if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
         to.meta.layout = initialLayout as Exclude<PageMeta['layout'], Ref | false>
@@ -188,7 +194,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
-    router.onError(() => { delete nuxtApp._processingMiddleware })
+    router.onError(async () => {
+      delete nuxtApp._processingMiddleware
+      await nuxtApp.callHook('page:loading:end')
+    })
 
     router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
@@ -197,14 +206,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         // Clear any existing errors
         await nuxtApp.runWithContext(clearError)
       }
+      if (failure) {
+        await nuxtApp.callHook('page:loading:end')
+      }
       if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
         return
       }
-      if (to.matched.length === 0 && (!import.meta.server || !nuxtApp.ssrContext?.islandContext)) {
+      if (to.matched.length === 0) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
           fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`
+          statusMessage: `Page not found: ${to.fullPath}`,
+          data: {
+            path: to.fullPath
+          }
         })))
       } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
