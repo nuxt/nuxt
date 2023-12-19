@@ -43,7 +43,7 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }

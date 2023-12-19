@@ -1,13 +1,17 @@
-export default defineNuxtPlugin(async (/* nuxtApp */) => {
-  const config1 = useRuntimeConfig()
-  await new Promise(resolve => setTimeout(resolve, 100))
-  const { data } = useFetch('/api/hey', { key: 'hey' })
-  const config2 = useRuntimeConfig()
-  return {
-    provide: {
-      asyncPlugin: () => config1 && config1 === config2
-        ? 'Async plugin works! ' + config1.public.testConfig + (data.value?.baz ? 'useFetch works!' : 'useFetch does not work')
-        : 'Async plugin failed!'
+export default defineNuxtPlugin({
+  name: 'async-plugin',
+  async setup (/* nuxtApp */) {
+    const config1 = useRuntimeConfig()
+    await new Promise(resolve => setTimeout(resolve, 100))
+    const { data } = useFetch('/api/hey', { key: 'hey' })
+    const config2 = useRuntimeConfig()
+    return {
+      provide: {
+        asyncPlugin: () => config1 && config1 === config2
+          ? 'Async plugin works! ' + config1.public.testConfig + (data.value?.baz ? 'useFetch works!' : 'useFetch does not work')
+          : 'Async plugin failed!'
+      }
     }
-  }
+  },
+  parallel: true
 })

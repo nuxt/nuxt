@@ -5,7 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger } from '@nuxt/kit'
+import { logger, tryUseNuxt } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -47,7 +47,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install) {
+          if (component._internal_install && tryUseNuxt()?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
