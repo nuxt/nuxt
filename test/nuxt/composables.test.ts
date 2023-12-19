@@ -15,6 +15,7 @@ import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { callOnce } from '#app/composables/once'
+import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -437,6 +438,21 @@ describe('url', () => {
     expect(url.hostname).toMatchInlineSnapshot('"localhost"')
     expect(url.port).toMatchInlineSnapshot('"3000"')
     expect(url.protocol).toMatchInlineSnapshot('"http:"')
+  })
+})
+
+describe('loading state', () => {
+  it('expect loading state to be changed by hooks', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+
+    await nuxtApp.callHook('page:loading:end')
+    expect(isLoading.value).toBeFalsy()
+    vi.mocked(setTimeout).mockRestore()
   })
 })
 
