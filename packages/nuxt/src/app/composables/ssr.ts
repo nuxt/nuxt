@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeaders } from 'h3'
+import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 
@@ -15,6 +15,12 @@ export function useRequestHeaders (include?: any[]) {
   const headers = event ? getRequestHeaders(event) : {}
   if (!include) { return headers }
   return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
+}
+
+export function useRequestHeader(header: string) {
+  if (import.meta.client) { return undefined }
+  const event = useRequestEvent()
+  return event ? getRequestHeader(event, header) : undefined
 }
 
 export function useRequestFetch (): typeof global.$fetch {
