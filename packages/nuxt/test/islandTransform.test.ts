@@ -202,11 +202,11 @@ describe('islandTransform - server and island components', () => {
                     <!-- should not be wrapped by NuxtTeleportSsrClient -->
                     <HelloWorld />
                     <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
-                    <NuxtTeleportSsrClient to=\\"HelloWorld-PIVollAJCe\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                    <NuxtTeleportSsrClient to="HelloWorld-PIVollAJCe" root-dir="/root" :nuxt-client="true"><HelloWorld /></NuxtTeleportSsrClient>
                   </div>
                 </template>
                 
-                <script setup lang=\\"ts\\">
+                <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
                 import HelloWorld from './HelloWorld.vue'
@@ -234,11 +234,11 @@ describe('islandTransform - server and island components', () => {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportSsrClient to=\\"HelloWorld-CyH3UXLuYA\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                    <NuxtTeleportSsrClient to="HelloWorld-CyH3UXLuYA"  :nuxt-client="true"><HelloWorld /></NuxtTeleportSsrClient>
                   </div>
                 </template>
                 
-                <script setup lang=\\"ts\\">
+                <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
                 import HelloWorld from './HelloWorld.vue'
@@ -269,11 +269,11 @@ describe('islandTransform - server and island components', () => {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportSsrClient to=\\"HelloWorld-eo0XycWCUV\\"  :nuxt-client=\\"nuxtClient\\"><HelloWorld :nuxt-client=\\"nuxtClient\\" /></NuxtTeleportSsrClient>
+                    <NuxtTeleportSsrClient to="HelloWorld-eo0XycWCUV"  :nuxt-client="nuxtClient"><HelloWorld :nuxt-client="nuxtClient" /></NuxtTeleportSsrClient>
                   </div>
                 </template>
                 
-                <script setup lang=\\"ts\\">
+                <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
                 import HelloWorld from './HelloWorld.vue'
@@ -303,11 +303,11 @@ describe('islandTransform - server and island components', () => {
           "<template>
                   <div>
                     <HelloWorld />
-                    <HelloWorld :nuxt-client=\\"nuxtClient\\" />
+                    <HelloWorld :nuxt-client="nuxtClient" />
                   </div>
                 </template>
                 
-                <script setup lang=\\"ts\\">
+                <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
                 import HelloWorld from './HelloWorld.vue'
@@ -349,7 +349,7 @@ describe('islandTransform - server and island components', () => {
                   </div>
                 </template>
                 
-                <script setup lang=\\"ts\\">
+                <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
                 import HelloWorld from './HelloWorld.vue'
