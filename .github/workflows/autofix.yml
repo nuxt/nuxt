@@ -24,7 +24,7 @@ jobs:
         run: pnpm install
 
       - name: Build (stub)
-        run: pnpm build:stub
+        run: pnpm dev:prepare
 
       - name: Lint (code)
         run: pnpm lint:fix
