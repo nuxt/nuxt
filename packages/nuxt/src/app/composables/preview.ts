@@ -1,86 +1,76 @@
-import { computed, reactive, ref } from 'vue'
-import { defu } from 'defu'
+import { toRef, watch } from 'vue'
 
 import { useState } from './state'
 import { refreshNuxtData } from './asyncData'
 import { useRoute, useRouter } from './router'
 
 interface Preview {
+  enabled: boolean
   state: Record<any, unknown>
 }
 
-type GetStateFunc = (currentState: Preview['state']) => Record<any, unknown> | null | undefined | void;
-type ShouldEnableFunc = (currentState: Preview['state']) => boolean | null | undefined | void;
+type EnteredState = Record<any, unknown> | null | undefined | void
 
-let shouldEnablePreviewMode: ShouldEnableFunc = () => {
+let unregisterRefreshHook: (() => any) | undefined
+
+export function usePreviewMode<S extends EnteredState>(options: {
+  shouldEnable?: (state: Preview['state']) => boolean,
+  getState?: (state: Preview['state']) => S,
+} = {}) {
+  const preview = useState('_preview-state', () => ({
+    enabled: false,
+    state: {}
+  }))
+
+  if (!preview.value.enabled) {
+    const shouldEnable = options.shouldEnable ?? defaultShouldEnable
+    const result = shouldEnable(preview.value.state)
+
+    if (typeof result === 'boolean') { preview.value.enabled = result }
+  }
+
+  watch(() => preview.value.enabled, (value) => {
+    if (value) {
+      const getState = options.getState ?? getDefaultState
+      const newState = getState(preview.value.state)
+
+      if (newState !== preview.value.state) {
+        Object.assign(preview.value.state, newState)
+      }
+
+      if (import.meta.client && !unregisterRefreshHook) {
+        refreshNuxtData()
+
+        unregisterRefreshHook = useRouter().afterEach((() => refreshNuxtData()))
+      }
+    } else if (!value && unregisterRefreshHook) {
+      unregisterRefreshHook()
+
+      unregisterRefreshHook = undefined
+    }
+  }, { immediate: true, flush: 'sync' })
+
+  return {
+    enabled: toRef(preview.value, 'enabled'),
+    state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
+  }
+}
+
+function defaultShouldEnable() {
   const route = useRoute()
   const previewQueryName = 'preview'
 
   return route.query[previewQueryName] === 'true'
 }
 
-let unregisterRefreshHook: (() => any) | undefined
-const _previewEnabled = ref(false)
-const previewEnabled = computed({
-  get () { return _previewEnabled.value },
-  set (value: boolean) {
-    if (value === _previewEnabled.value) { return }
-
-    _previewEnabled.value = value
-
-    if (value && !unregisterRefreshHook) {
-      refreshNuxtData()
-
-      unregisterRefreshHook = useRouter().afterEach(() => { refreshNuxtData() })
-    } else if (!value && unregisterRefreshHook) {
-      unregisterRefreshHook()
-
-      unregisterRefreshHook = undefined
-    }
-  }
-})
-
-export function usePreviewMode<GetPreviewState extends GetStateFunc = GetStateFunc> (options?: {
-  getState?: GetPreviewState
-  shouldEnable?: ShouldEnableFunc;
-}) {
-  const normalizedOptions = defu(options, {
-    getState: (state: Preview['state']) => {
-      const route = useRoute()
-      const token = state.token ??
-        (Array.isArray(route.query.token) ? route.query.token[0] : route.query.token)
-
-      return { token: token as string } as Preview['state']
-    }
-  })
-
-  const preview = useState('_preview-composable', () => reactive<Preview>({
-    state: {}
-  }))
-
-  // Because of how vue works we can not know ahead of time whether
-  // some components down the tree have `shouldEnable` function. So
-  // most upper call `usePreviewMode` with `shouldEnable` will be executed first.
-  if (normalizedOptions.shouldEnable) {
-    shouldEnablePreviewMode = normalizedOptions.shouldEnable
+function getDefaultState(state: Preview['state']) {
+  if (state.token !== undefined) {
+    return state
   }
 
-  if (!previewEnabled.value) {
-    const result = shouldEnablePreviewMode(preview.value.state)
+  const route = useRoute()
 
-    if (typeof result === 'boolean') { previewEnabled.value = result }
-  }
+  state.token = Array.isArray(route.query.token) ? route.query.token[0] : route.query.token
 
-  if (previewEnabled.value) {
-    const newState = normalizedOptions.getState(preview.value.state)
-
-    if (newState) {
-      Object.assign(preview.value.state, newState)
-    }
-  }
-
-  const enabled = previewEnabled
-  const state = preview.value.state as NonNullable<ReturnType<GetPreviewState>>
-
-  return { enabled, state }
+  return state
 }
