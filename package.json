@@ -27,7 +27,7 @@
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
     "test:runtime": "vitest -c vitest.nuxt.config.ts --coverage",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
-    "test:unit": "vitest run --dir packages --coverage",
+    "test:unit": "vitest run packages/ --coverage",
     "typecheck": "tsc --noEmit"
   },
   "resolutions": {
