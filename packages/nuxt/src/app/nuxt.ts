@@ -17,6 +17,7 @@ import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
+import type { LoadingIndicator } from '#app/composables/loading-indicator'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -44,6 +45,8 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'page:loading:start': () => HookResult
+  'page:loading:end': () => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
@@ -111,6 +114,11 @@ interface _NuxtApp {
     error: Ref<Error | null>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
+
+  /** @internal */
+  _loadingIndicator?: LoadingIndicator
+  /** @internal */
+  _loadingIndicatorDeps?: number
 
   /** @internal */
   _middleware: {

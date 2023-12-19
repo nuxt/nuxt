@@ -78,6 +78,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/payload'
   },
   {
+    imports: ['useLoadingIndicator'],
+    from: '#app/composables/loading-indicator'
+  },
+  {
     imports: ['getAppManifest', 'getRouteRules'],
     from: '#app/composables/manifest'
   },
