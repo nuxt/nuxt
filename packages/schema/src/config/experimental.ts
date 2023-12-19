@@ -132,13 +132,17 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | false}
+     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
-        if (typeof val === 'string') { return val }
-        if (val === true) { return 'local' }
-        return false
+        if (val === 'local+remote') {
+          return { remoteIsland: true }
+        }
+        if (val === 'local') {
+          return true
+        }
+        return val ?? false
       }
     },
 
@@ -154,7 +158,7 @@ export default defineUntypedSchema({
      *
      * It improves type support when using modern libraries with `exports`.
      *
-     * This is only not enabled by default because it could be a breaking change for some projects.
+     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
@@ -165,7 +169,7 @@ export default defineUntypedSchema({
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
-        return false
+        return true
       }
     },
 

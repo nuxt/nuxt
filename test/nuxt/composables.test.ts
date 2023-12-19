@@ -14,6 +14,8 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { callOnce } from '#app/composables/once'
+import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -86,6 +88,7 @@ describe('composables', () => {
       'useHydration',
       'getRouteRules',
       'onNuxtReady',
+      'callOnce',
       'setResponseStatus',
       'prerenderRoutes',
       'useRequestEvent',
@@ -439,6 +442,21 @@ describe('url', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect loading state to be changed by hooks', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+
+    await nuxtApp.callHook('page:loading:end')
+    expect(isLoading.value).toBeFalsy()
+    vi.mocked(setTimeout).mockRestore()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -562,4 +580,30 @@ describe('defineNuxtComponent', () => {
   })
   it.todo('should support Options API asyncData')
   it.todo('should support Options API head')
+})
+
+describe('callOnce', () => {
+  it('should only call composable once', async () => {
+    const fn = vi.fn()
+    const execute = () => callOnce(fn)
+    await execute()
+    await execute()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should only call composable once when called in parallel', async () => {
+    const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+    const execute = () => callOnce(fn)
+    await Promise.all([execute(), execute(), execute()])
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should use key to dedupe', async () => {
+    const fn = vi.fn()
+    const execute = (key?: string) => callOnce(key, fn)
+    await execute('first')
+    await execute('first')
+    await execute('second')
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
 })

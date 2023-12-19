@@ -136,6 +136,7 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: val => [
+        { name: 'callOnce', argumentLength: 2 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },

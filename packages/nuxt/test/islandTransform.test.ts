@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { Plugin } from 'vite'
 import type { Component } from '@nuxt/schema'
+import type { UnpluginOptions } from 'unplugin'
 import { islandsTransform } from '../src/components/islandsTransform'
 import { normalizeLineEndings } from './utils'
 
@@ -17,12 +18,25 @@ const getComponents = () => [{
   preload: false
 }] as Component[]
 
-const pluginVite = islandsTransform.raw({
-  getComponents
-}, { framework: 'vite' }) as Plugin
+const pluginWebpack = islandsTransform.raw({
+  getComponents,
+  selectiveClient: true
+}, { framework: 'webpack', webpack: { compiler: {} as any } })
 
-const viteTransform = async (source: string, id: string) => {
-  const result = await (pluginVite.transform! as Function)(source, id)
+const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
+  const vitePlugin = islandsTransform.raw({
+    getComponents,
+    rootDir: '/root',
+    isDev,
+    selectiveClient
+  }, { framework: 'vite' }) as Plugin
+
+  const result = await (vitePlugin.transform! as Function)(source, id)
+  return typeof result === 'string' ? result : result?.code
+}
+
+const webpackTransform = async (source: string, id: string) => {
+  const result = await ((pluginWebpack as UnpluginOptions).transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
@@ -57,6 +71,7 @@ describe('islandTransform - server and island components', () => {
               </template>
               <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
 
               </script>"
@@ -87,6 +102,7 @@ describe('islandTransform - server and island components', () => {
               </template>
               <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
               const someData = 'some data'
 
               </script>"
@@ -150,6 +166,7 @@ describe('islandTransform - server and island components', () => {
 
             <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
             export interface Props {
               count?: number;
             }
@@ -159,6 +176,191 @@ describe('islandTransform - server and island components', () => {
             </script>
             "
       `)
+    })
+  })
+
+  describe('nuxt-client', () => {
+    describe('vite', () => {
+      it('test transform with vite in dev', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <!-- should not be wrapped by NuxtTeleportSsrClient -->
+          <HelloWorld />
+          <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
+          <HelloWorld nuxt-client />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+      </script>
+      `, 'hello.server.vue', true, true)
+
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <!-- should not be wrapped by NuxtTeleportSsrClient -->
+                    <HelloWorld />
+                    <!-- should be wrapped by NuxtTeleportSsrClient with a rootDir attr -->
+                    <NuxtTeleportSsrClient to=\\"HelloWorld-PIVollAJCe\\" root-dir=\\"/root\\" :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+                </script>
+                "
+        `)
+        // root-dir prop should never be used in production
+        expect(result).toContain('root-dir="/root"')
+      })
+
+      it('test transform with vite in prod', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld />
+          <HelloWorld nuxt-client />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+      </script>
+      `, 'hello.server.vue', false, true)
+
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <HelloWorld />
+                    <NuxtTeleportSsrClient to=\\"HelloWorld-CyH3UXLuYA\\"  :nuxt-client=\\"true\\"><HelloWorld /></NuxtTeleportSsrClient>
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+                </script>
+                "
+        `)
+
+        // root-dir prop should never be used in production
+        expect(result).not.toContain('root-dir="')
+      })
+
+      it('test dynamic nuxt-client', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld />
+          <HelloWorld :nuxt-client="nuxtClient" />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+
+      const nuxtClient = false
+      </script>
+      `, 'hello.server.vue', false, true)
+
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <HelloWorld />
+                    <NuxtTeleportSsrClient to=\\"HelloWorld-eo0XycWCUV\\"  :nuxt-client=\\"nuxtClient\\"><HelloWorld :nuxt-client=\\"nuxtClient\\" /></NuxtTeleportSsrClient>
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+
+                const nuxtClient = false
+                </script>
+                "
+        `)
+      })
+
+      it('should not transform if disabled', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld />
+          <HelloWorld :nuxt-client="nuxtClient" />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+
+      const nuxtClient = false
+      </script>
+      `, 'hello.server.vue', false, false)
+
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <HelloWorld />
+                    <HelloWorld :nuxt-client=\\"nuxtClient\\" />
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+
+                const nuxtClient = false
+                </script>
+                "
+        `)
+      })
+    })
+
+    describe('webpack', () => {
+      it('test transform with webpack', async () => {
+        const spyOnWarn = vi.spyOn(console, 'warn')
+        const result = await webpackTransform(`<template>
+        <div>
+          <!-- should not be wrapped by NuxtTeleportSsrClient -->
+          <HelloWorld />
+      
+          <!-- should be not wrapped by NuxtTeleportSsrClient for now -->
+          <HelloWorld nuxt-client />
+        </div>
+      </template>
+      
+      <script setup lang="ts">
+      import HelloWorld from './HelloWorld.vue'
+      
+      const someData = 'some data'
+      </script>
+      `, 'hello.server.vue')
+        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+          "<template>
+                  <div>
+                    <!-- should not be wrapped by NuxtTeleportSsrClient -->
+                    <HelloWorld />
+                
+                    <!-- should be not wrapped by NuxtTeleportSsrClient for now -->
+                    <HelloWorld nuxt-client />
+                  </div>
+                </template>
+                
+                <script setup lang=\\"ts\\">
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+                import HelloWorld from './HelloWorld.vue'
+                
+                const someData = 'some data'
+                </script>
+                "
+        `)
+
+        expect(spyOnWarn).toHaveBeenCalledWith('nuxt-client attribute and client components within islands is only supported with Vite. file: hello.server.vue')
+      })
     })
   })
 })

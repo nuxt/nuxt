@@ -198,7 +198,9 @@ export default defineNuxtConfig({
     clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
-    componentIslands: true,
+    componentIslands: {
+      selectiveClient: true
+    },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',

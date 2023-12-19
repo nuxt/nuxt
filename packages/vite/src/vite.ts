@@ -103,7 +103,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             rootDir: nuxt.options.rootDir,
             composables: nuxt.options.optimization.keyedComposables
           }),
-          // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
             preventAssignment: true
@@ -152,7 +151,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:extendConfig', (config) => {
-    // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
     config.plugins!.push(replace({
       preventAssignment: true,
       ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.')))

@@ -18,7 +18,7 @@ const revivers: Record<string, (data: any) => any> = {
 }
 
 if (componentIslands) {
-  revivers.Island = ({ key, params }: any) => {
+  revivers.Island = ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
       nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}.json`, {
@@ -29,7 +29,15 @@ if (componentIslands) {
         return r
       })
     }
-    return null
+    return {
+      html: '',
+      state: {},
+      head: {
+        link: [],
+        style: []
+      },
+      ...result
+    }
   }
 }
 
