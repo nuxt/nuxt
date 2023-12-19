@@ -129,8 +129,8 @@ importers:
         specifier: 1.0.4
         version: 1.0.4(@types/node@20.10.5)(happy-dom@12.10.3)
       vitest-environment-nuxt:
-        specifier: 1.0.0-alpha.1
-        version: 1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.10)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.13)
+        specifier: 1.0.0
+        version: 1.0.0(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.10)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.13)
       vue:
         specifier: 3.3.13
         version: 3.3.13(typescript@5.3.3)
@@ -2166,6 +2166,7 @@ packages:
     dependencies:
       is-glob: 4.0.3
       micromatch: 4.0.5
+      napi-wasm: 1.1.0
     bundledDependencies:
       - napi-wasm
 
@@ -6769,6 +6770,9 @@ packages:
     engines: {node: ^14 || ^16 || >=18}
     hasBin: true
 
+  /napi-wasm@1.1.0:
+    resolution: {integrity: sha512-lHwIAJbmLSjF9VDRm9GoVOy9AGp3aIvkjv+Kvz9h16QR3uSVYH78PNQUnT2U4X53mhlnV2M7wrhibQ3GHicDmg==}
+
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
 
@@ -9441,6 +9445,26 @@ packages:
       rollup: 4.9.1
     optionalDependencies:
       fsevents: 2.3.3
+
+  /vitest-environment-nuxt@1.0.0(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.10)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.13):
+    resolution: {integrity: sha512-AWMO9h4HdbaFdPWZw34gALFI8gbBiOpvfbyeZwHIPfh4kWg/TwElYHvYMQ61WPUlCGaS5LebfHkaI0WPyb//Iw==}
+    dependencies:
+      '@nuxt/test-utils': 3.9.0-alpha.3(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.10)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.13)
+    transitivePeerDependencies:
+      - '@jest/globals'
+      - '@testing-library/vue'
+      - '@vitest/ui'
+      - '@vue/test-utils'
+      - h3
+      - happy-dom
+      - jsdom
+      - playwright-core
+      - supports-color
+      - vite
+      - vitest
+      - vue
+      - vue-router
+    dev: true
 
   /vitest-environment-nuxt@1.0.0-alpha.1(@vue/test-utils@2.4.3)(h3@1.9.0)(happy-dom@12.10.3)(playwright-core@1.40.1)(vite@5.0.10)(vitest@1.0.4)(vue-router@4.2.5)(vue@3.3.13):
     resolution: {integrity: sha512-0/gfNcZNNqFRjocmGZN/R4PlZ0p4MlmmsTkplKf9FwgBadGxN4eYtxOqk1ubhz+qf8ZvPRER3toydmOASovMcg==}
