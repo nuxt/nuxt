@@ -9,11 +9,19 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
 
+const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
+
 /** Installs a module on a Nuxt instance. */
 export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
-  const layerModuleDirs = nuxt.options._layers.map(l => resolve(l.config.srcDir || l.cwd, l.config?.dir?.modules || 'modules'))
+  const localLayerModuleDirs = new Set<string>()
+  for (const l of nuxt.options._layers) {
+    const srcDir = l.config.srcDir || l.cwd
+    if (!NODE_MODULES_RE.test(srcDir)) {
+      localLayerModuleDirs.add(resolve(srcDir, l.config?.dir?.modules || 'modules'))
+    }
+  }
 
   // Call module
   const res = (
@@ -29,7 +37,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
   if (typeof moduleToInstall === 'string') {
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
     const directory = getDirectory(moduleToInstall)
-    if (directory !== moduleToInstall && !layerModuleDirs.includes(directory)) {
+    if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
       nuxt.options.modulesDir.push(directory)
     }
   }
