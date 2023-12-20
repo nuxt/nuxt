@@ -17,26 +17,28 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ## Usage
 
-```vue [pages/index.vue]
+```vue [pages/modules.vue]
 <script setup>
-const route = useRoute()
-
-const { data, pending, error, refresh } = await useFetch(`https://api.nuxtjs.dev/mountains/${route.params.slug}`, {
+const { data, pending, error, refresh } = await useFetch('/api/modules', {
   pick: ['title']
 })
 </script>
 ```
 
+::callout
+`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+::
+
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts
 const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains', {
+const { data, pending, error, refresh } = await useFetch('/api/modules', {
   query: { param1, param2: 'value2' }
 })
 ```
 
-The above example results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`.
+The above example results in `https://api.nuxt.com/modules?param1=value1&param2=value2`.
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
