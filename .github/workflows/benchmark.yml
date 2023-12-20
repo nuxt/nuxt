@@ -1,0 +1,34 @@
+name: benchmark
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
+    branches:
+      - main
+      - "!v[0-9]*"
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+        with:
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@v2
+        with:
+          run: pnpm vitest bench
+          # token retrieved from the CodSpeed app at the previous step
+          token: ${{ secrets.CODSPEED_TOKEN }}
