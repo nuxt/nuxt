@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { bench, describe } from 'vitest'
-import type { Nuxt } from '@nuxt/schema'
+import { afterAll, bench, describe } from 'vitest'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { loadNuxt, writeTypes } from '../src'
@@ -9,10 +8,12 @@ describe('writeTypes', async () => {
   const relativeDir = join('../../..', 'test/fixtures/basic-types')
   const path = withoutTrailingSlash(normalize(fileURLToPath(new URL(relativeDir, import.meta.url))))
 
-  let nuxt: Nuxt
+  const nuxt = await loadNuxt({ cwd: path })
+  afterAll(async () => {
+    await nuxt.close()
+  })
 
-  bench('write types', async () => { await writeTypes(nuxt) }, {
-    async setup () { nuxt = await loadNuxt({ cwd: path }) },
-    async teardown() { await nuxt.close() }
+  bench('write types', async () => {
+    await writeTypes(nuxt)
   })
 })
