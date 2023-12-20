@@ -895,6 +895,7 @@ describe('composables', () => {
     expect(clientHtml).not.toContain('data-n-ids="6,7"')
     expect(clientHtml).toContain('id="n:6"')
     expect(clientHtml).toContain('id="n:7"')
+    await page.close()
   })
 })
 
