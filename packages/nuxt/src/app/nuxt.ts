@@ -17,6 +17,7 @@ import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
+import type { LoadingIndicator } from '#app/composables/loading-indicator'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -44,6 +45,8 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'page:loading:start': () => HookResult
+  'page:loading:end': () => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
@@ -74,6 +77,7 @@ export interface NuxtPayload {
   prerenderedAt?: number
   data: Record<string, any>
   state: Record<string, any>
+  once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: Error | {
     url: string
@@ -113,9 +117,19 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
+  _loadingIndicator?: LoadingIndicator
+  /** @internal */
+  _loadingIndicatorDeps?: number
+
+  /** @internal */
   _middleware: {
     global: RouteMiddleware[]
     named: Record<string, RouteMiddleware>
+  }
+
+  /** @internal */
+  _once: {
+    [key: string]: Promise<any>
   }
 
   /** @internal */
@@ -224,6 +238,7 @@ export function createNuxtApp (options: CreateOptions) {
     payload: reactive({
       data: {},
       state: {},
+      once: new Set<string>(),
       _errors: {},
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),

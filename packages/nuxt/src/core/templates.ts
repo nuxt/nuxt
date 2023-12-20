@@ -40,7 +40,9 @@ export const appComponentTemplate: NuxtTemplate<TemplateContext> = {
 // TODO: Use an alias
 export const rootComponentTemplate: NuxtTemplate<TemplateContext> = {
   filename: 'root-component.mjs',
-  getContents: ctx => genExport(ctx.app.rootComponent!, ['default'])
+  // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
+  // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
+  getContents: ctx => (ctx.nuxt.options.dev ? "import '#build/components.islands.mjs';\n" : '') + genExport(ctx.app.rootComponent!, ['default'])
 }
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
@@ -376,7 +378,8 @@ export const nuxtConfigTemplate = {
       `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
       `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
-      `export const remoteComponentIslands = ${ctx.nuxt.options.experimental.componentIslands === 'local+remote'}`,
+      `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,
+      `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.selectiveClient}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,

@@ -509,6 +509,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
+  // We register hooks layer-by-layer so any overrides need to be registered separately
+  if (opts.overrides?.hooks) {
+    nuxt.hooks.addHooks(opts.overrides.hooks)
+  }
+
   if (nuxt.options.debug) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })
   }
