@@ -1,6 +1,5 @@
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { server } from '../../../../webpack/src/configs'
 
 const ATTR_KEY = 'data-n-ids'
 

@@ -3,7 +3,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
-import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import * as composables from '#app/composables'
