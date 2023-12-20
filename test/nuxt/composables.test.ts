@@ -15,7 +15,7 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { getUniqueID } from '#app/composables/id'
+import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
@@ -100,7 +100,7 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'getUniqueID',
+      'useId',
       'useRoute',
       'navigateTo',
       'abortNavigation',
@@ -434,22 +434,22 @@ describe('clearNuxtState', () => {
   })
 })
 
-describe('getUniqueID', () => {
+describe('useId', () => {
   it('default', () => {
-    expect(getUniqueID()).not.toBe(getUniqueID())
-    expect(getUniqueID()).toBeTypeOf('string')
+    expect(useId()).not.toBe(useId())
+    expect(useId()).toBeTypeOf('string')
   })
 
   it('local', () => {
     const count = Number((Math.random() * 100).toFixed())
-    const collect = new Array(count).fill(undefined).map(() => getUniqueID())
+    const collect = new Array(count).fill(undefined).map(() => useId())
     expect(new Set(collect).size).toBe(count)
   })
 
   it('generates unique ids per-component', () => {
     const component = defineComponent({
       setup () {
-        const id = getUniqueID()
+        const id = useId()
         return () => h('div', id)
       }
     })

@@ -88,7 +88,7 @@ export interface NuxtPayload {
     data?: any
   } | null
   _errors: Record<string, NuxtError | null>
-  _ids: Record<string, number>
+  _id: number
   [key: string]: unknown
 }
 
@@ -241,7 +241,7 @@ export function createNuxtApp (options: CreateOptions) {
       state: {},
       once: new Set<string>(),
       _errors: {},
-      _ids: {},
+      _id: 0,
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {

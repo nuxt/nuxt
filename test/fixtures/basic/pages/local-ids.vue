@@ -2,7 +2,7 @@
 const state = useState('ids', () => new Set<string>())
 const idComponent = defineComponent({
   setup () {
-    const id = getUniqueID()
+    const id = useId()
     state.value.add(id)
     return () => h('div', id)
   }

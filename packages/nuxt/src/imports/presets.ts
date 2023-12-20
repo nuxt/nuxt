@@ -98,7 +98,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/url'
   },
   {
-    imports: ['getUniqueID'],
+    imports: ['useId'],
     from: '#app/composables/id'
   }
 ]

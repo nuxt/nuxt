@@ -139,7 +139,6 @@ export default defineUntypedSchema({
         { name: 'callOnce', argumentLength: 2 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
-        { name: 'getUniqueID', argumentLength: 1 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
