@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
+import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import * as composables from '#app/composables'
@@ -435,10 +436,22 @@ describe('getUniqueID', () => {
     expect(getUniqueID()).not.toBe(getUniqueID())
     expect(getUniqueID()).toBeTypeOf('string')
   })
+
   it('local', () => {
-    const count = Math.random()
+    const count = Number((Math.random() * 100).toFixed())
     const collect = new Array(count).fill(undefined).map(() => getUniqueID())
     expect(new Set(collect).size).toBe(count)
+  })
+
+  it('generates unique ids per-component', () => {
+    const component = defineComponent({
+      setup () {
+        const id = getUniqueID()
+        return () => h('div', id)
+      }
+    })
+
+    expect(mount(component).html()).not.toBe(mount(component).html())
   })
 })
 
