@@ -43,7 +43,7 @@ export function usePreviewMode<S extends EnteredState>(options: {
 
         unregisterRefreshHook = useRouter().afterEach((() => refreshNuxtData()))
       }
-    } else if (!value && unregisterRefreshHook) {
+    } else if (unregisterRefreshHook) {
       unregisterRefreshHook()
 
       unregisterRefreshHook = undefined
