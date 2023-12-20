@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute, join } from 'pathe'
+import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
@@ -9,9 +9,19 @@ import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
 
+const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
+
 /** Installs a module on a Nuxt instance. */
 export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
+
+  const localLayerModuleDirs = new Set<string>()
+  for (const l of nuxt.options._layers) {
+    const srcDir = l.config.srcDir || l.cwd
+    if (!NODE_MODULES_RE.test(srcDir)) {
+      localLayerModuleDirs.add(resolve(srcDir, l.config?.dir?.modules || 'modules'))
+    }
+  }
 
   // Call module
   const res = (
@@ -27,8 +37,8 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
   if (typeof moduleToInstall === 'string') {
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
     const directory = getDirectory(moduleToInstall)
-    if (directory !== moduleToInstall) {
-      nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
+    if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
+      nuxt.options.modulesDir.push(directory)
     }
   }
 
