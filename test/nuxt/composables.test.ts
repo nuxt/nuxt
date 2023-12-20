@@ -15,7 +15,6 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
@@ -431,30 +430,6 @@ describe('clearNuxtState', () => {
     clearNuxtState()
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
-  })
-})
-
-describe('useId', () => {
-  it('default', () => {
-    expect(useId()).not.toBe(useId())
-    expect(useId()).toBeTypeOf('string')
-  })
-
-  it('local', () => {
-    const count = Number((Math.random() * 100).toFixed())
-    const collect = new Array(count).fill(undefined).map(() => useId())
-    expect(new Set(collect).size).toBe(count)
-  })
-
-  it('generates unique ids per-component', () => {
-    const component = defineComponent({
-      setup () {
-        const id = useId()
-        return () => h('div', id)
-      }
-    })
-
-    expect(mount(component).html()).not.toBe(mount(component).html())
   })
 })
 

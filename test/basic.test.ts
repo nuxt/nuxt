@@ -874,6 +874,28 @@ describe('composables', () => {
     const { page } = await renderPage('/once')
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
+  it('should generate unique ids', async () => {
+    const html = await $fetch('/use-id')
+
+    expect(html).toContain('data-n-ids="1"')
+    expect(html).toContain('id="n:1"')
+    expect(html).toContain('data-n-ids="2,3"')
+    expect(html).toContain('id="n:2"')
+    expect(html).toContain('id="n:3"')
+    expect(html).toContain('data-n-ids="4,5"')
+    expect(html).toContain('id="n:4"')
+    expect(html).toContain('id="n:5"')
+    // Wrapped in <ClientOnly>
+    expect(html).not.toContain('data-n-ids="6,7"')
+    expect(html).not.toContain('id="n:6"')
+    expect(html).not.toContain('id="n:7"')
+
+    const { page } = await renderPage('/use-id')
+    const clientHtml = await page.content()
+    expect(clientHtml).not.toContain('data-n-ids="6,7"')
+    expect(clientHtml).toContain('id="n:6"')
+    expect(clientHtml).toContain('id="n:7"')
+  })
 })
 
 describe('middlewares', () => {

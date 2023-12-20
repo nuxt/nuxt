@@ -1,5 +1,6 @@
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { server } from '../../../../webpack/src/configs'
 
 const ATTR_KEY = 'data-n-ids'
 
@@ -15,12 +16,16 @@ export function useId (key: string = 'n'): string {
   let id
   if (nuxt.payload.serverRendered && nuxt.isHydrating) {
     instance._nuxtIdIndex = instance._nuxtIdIndex || 0
-    if (!instance.vnode.el?.getAttribute) {
-      console.error('[nuxt] useId() needs to be used with a component having on single root element.')
+    const serverIds = instance.vnode.el?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
+    if (serverIds.length) {
+      id = parseInt(serverIds[instance._nuxtIdIndex], 10) || 0
+      instance._nuxtIdIndex++
+    } else {
+      if (!instance.vnode.el?.getAttribute && (!instance.parent || instance.parent.type.name !== 'ClientOnly')) {
+        console.error('[nuxt] useId() needs to be used with a component having on single root element.')
+      }
+      id = ++nuxt.payload._id
     }
-    const dataIds = instance.vnode.el?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
-    id = parseInt(dataIds[instance._nuxtIdIndex], 10) || 0
-    instance._nuxtIdIndex++
   } else {
     id = ++nuxt.payload._id
     if (import.meta.server) {
