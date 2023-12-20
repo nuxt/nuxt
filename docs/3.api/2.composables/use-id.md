@@ -1,11 +1,11 @@
 ---
 title: "useId"
-description: Generate a ssr-friendly unique Id that can be passed to accessibility attributes.
+description: Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
 ---
 
-`useId` generates a ssr-friendly unique Id that can be passed to accessibility attributes.
+`useId` generates an SSR-friendly unique identifier that can be passed to accessibility attributes.
 
-Call `useId` at the top level of your component to generate a unique ID:
+Call `useId` at the top level of your component to generate a unique string identifier:
 
 ```vue [components/EmailField.vue]
 <script setup lang="ts">
@@ -26,4 +26,4 @@ const id = useId()
 
 ## Returns
 
-`useId` returns a unique ID string associated with this particulat `useId` call in this particular component.
+`useId` returns a unique string associated with this particular `useId` call in this particular component.
