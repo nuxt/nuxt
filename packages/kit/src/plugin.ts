@@ -35,7 +35,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   }
   if (!plugin.mode) {
     const [, mode = 'all'] = plugin.src.match(/\.(server|client)(\.\w+)*$/) || []
-    plugin.mode = mode as NuxtPlugin['mode']
+    plugin.mode = mode as 'all' | 'client' | 'server'
   }
 
   return plugin

@@ -1,5 +1,5 @@
 import { kebabCase, pascalCase } from 'scule'
-import type { Component, ComponentsDir, NuxtPlugin } from '@nuxt/schema'
+import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 import { logger } from './logger'
@@ -33,7 +33,7 @@ export async function addComponent (opts: AddComponentOptions) {
 
   if (!opts.mode) {
     const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
-    opts.mode = mode as NuxtPlugin['mode']
+    opts.mode = mode as 'all' | 'client' | 'server'
   }
 
   // Apply defaults
