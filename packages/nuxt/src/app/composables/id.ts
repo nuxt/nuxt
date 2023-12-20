@@ -7,9 +7,9 @@ export function getUniqueID (...args: any): string {
   }
 
   const nuxt = useNuxtApp()
-  const localId = (nuxt.payload?.localIds?.[key] ?? 0) + 1
-  nuxt.payload.localIds = nuxt.payload.localIds ?? {}
-  nuxt.payload.localIds[key] = localId
+  const localId = (nuxt.payload?._ids?.[key] ?? 0) + 1
+  nuxt.payload._ids = nuxt.payload._ids ?? {}
+  nuxt.payload._ids[key] = localId
 
   return key + ':' + localId.toString(32)
 }
