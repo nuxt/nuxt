@@ -162,6 +162,7 @@ const excludedVueHelpers = [
   'Transition',
   'TransitionGroup',
   'VueElement',
+  'ErrorTypeStrings',
   'createApp',
   'createSSRApp',
   'defineCustomElement',
