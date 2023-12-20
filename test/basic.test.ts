@@ -1370,6 +1370,12 @@ describe('automatically keyed composables', () => {
     expect(html).toContain('true')
     expect(html).not.toContain('false')
   })
+  it('should work with local ids', async () => {
+    const { page, pageErrors } = await renderPage('/local-ids')
+    expect(pageErrors).toEqual([])
+    expect(await page.getByText('Number of ids generated').textContent()).toContain('Number of ids generated: 2')
+    await page.close()
+  })
 })
 
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
