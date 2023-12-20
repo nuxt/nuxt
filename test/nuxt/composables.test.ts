@@ -14,6 +14,7 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { getUniqueID } from '#app/composables/id'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -95,7 +96,7 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'getUniqueID'
+      'getUniqueID',
       'useRoute',
       'navigateTo',
       'abortNavigation',
