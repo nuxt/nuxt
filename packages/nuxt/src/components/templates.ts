@@ -89,7 +89,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = {',
+      'export const islandComponents = import.meta.client ? {} : {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`

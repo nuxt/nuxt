@@ -9,7 +9,8 @@ vi.mock('#build/nuxt.config.mjs', async (original) => {
   return {
     // @ts-expect-error virtual file
     ...(await original()),
-    remoteComponentIslands: true
+    remoteComponentIslands: true,
+    selectiveClient: true
   }
 })
 
