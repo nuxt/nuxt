@@ -415,9 +415,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     htmlAttrs: [htmlAttrs],
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: [bodyAttrs],
-    bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
+    bodyPrepend: [bodyTagsOpen],
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceClientTeleport(ssrContext, replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)) : _rendered.html],
-    bodyAppend: [bodyTags]
+    bodyAppend: normalizeChunks([bodyTags, ssrContext.teleports?.body])
   }
 
   // Allow hooking into the rendered result
