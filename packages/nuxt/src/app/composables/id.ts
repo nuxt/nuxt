@@ -14,13 +14,13 @@ export function useId (key: string = 'n'): string {
   }
   let id
   if (nuxt.payload.serverRendered && nuxt.isHydrating) {
-    instance._idIndex = instance._idIndex || 0
+    instance._nuxtIdIndex = instance._nuxtIdIndex || 0
     if (!instance.vnode.el?.getAttribute) {
       console.error('[nuxt] useId() needs to be used with a component having on single root element.')
     }
     const dataIds = instance.vnode.el?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
-    id = parseInt(dataIds[instance._idIndex], 10) || 0
-    instance._idIndex++
+    id = parseInt(dataIds[instance._nuxtIdIndex], 10) || 0
+    instance._nuxtIdIndex++
   } else {
     id = ++nuxt.payload._id
     if (import.meta.server) {
