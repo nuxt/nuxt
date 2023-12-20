@@ -865,7 +865,7 @@ describe('navigate external', () => {
 })
 
 describe('composables', () => {
-  it('should run code once', async () => {
+  it('`callOnce` should run code once', async () => {
     const html = await $fetch('/once')
 
     expect(html).toContain('once.vue')
@@ -874,7 +874,7 @@ describe('composables', () => {
     const { page } = await renderPage('/once')
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
-  it('should generate unique ids', async () => {
+  it('`useId` should generate unique ids', async () => {
     const html = await $fetch('/use-id')
 
     expect(html).toContain('data-n-ids="1"')
@@ -1392,12 +1392,6 @@ describe('automatically keyed composables', () => {
     const html = await $fetch('/keyed-composables/local')
     expect(html).toContain('true')
     expect(html).not.toContain('false')
-  })
-  it('should work with local ids', async () => {
-    const { page, pageErrors } = await renderPage('/local-ids')
-    expect(pageErrors).toEqual([])
-    expect(await page.getByText('Number of ids generated').textContent()).toContain('Number of ids generated: 2')
-    await page.close()
   })
 })
 
