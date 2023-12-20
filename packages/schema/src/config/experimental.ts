@@ -158,7 +158,7 @@ export default defineUntypedSchema({
      *
      * It improves type support when using modern libraries with `exports`.
      *
-     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
+     * This is only not enabled by default because it could be a breaking change for some projects.
      *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
@@ -169,7 +169,7 @@ export default defineUntypedSchema({
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
-        return true
+        return false
       }
     },
 
