@@ -4,7 +4,7 @@ import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
-import * as islandComponents from '#build/components.islands.mjs'
+import { islandComponents } from '#build/components.islands.mjs'
 
 export default defineComponent({
   props: {

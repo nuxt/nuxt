@@ -17,9 +17,12 @@ import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
+import type { LoadingIndicator } from '#app/composables/loading-indicator'
 
-const nuxtAppCtx = /* #__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!process.env.NUXT_ASYNC_CONTEXT && process.server
+import type { NuxtAppLiterals } from '#app'
+
+const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
+  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
 })
 
 type HookResult = Promise<void> | void
@@ -42,6 +45,8 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'page:loading:start': () => HookResult
+  'page:loading:end': () => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }
@@ -72,6 +77,7 @@ export interface NuxtPayload {
   prerenderedAt?: number
   data: Record<string, any>
   state: Record<string, any>
+  once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: Error | {
     url: string
@@ -111,9 +117,19 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
+  _loadingIndicator?: LoadingIndicator
+  /** @internal */
+  _loadingIndicatorDeps?: number
+
+  /** @internal */
   _middleware: {
     global: RouteMiddleware[]
     named: Record<string, RouteMiddleware>
+  }
+
+  /** @internal */
+  _once: {
+    [key: string]: Promise<any>
   }
 
   /** @internal */
@@ -155,6 +171,10 @@ export interface PluginMeta {
   name?: string
   enforce?: 'pre' | 'default' | 'post'
   /**
+   * Await for other named plugins to finish before running this plugin.
+   */
+  dependsOn?: NuxtAppLiterals['pluginName'][]
+  /**
    * This allows more granular control over plugin order and should only be used by advanced users.
    * It overrides the value of `enforce` and is used to sort plugins.
    */
@@ -190,6 +210,10 @@ export interface ObjectPlugin<Injections extends Record<string, unknown> = Recor
    * @default false
    */
   parallel?: boolean
+  /**
+   * @internal
+   */
+  _name?: string
 }
 
 /** @deprecated Use `ObjectPlugin` */
@@ -214,6 +238,7 @@ export function createNuxtApp (options: CreateOptions) {
     payload: reactive({
       data: {},
       state: {},
+      once: new Set<string>(),
       _errors: {},
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
@@ -331,29 +356,64 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 }
 
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
+  const resolvedPlugins: string[] = []
+  const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
-  for (const plugin of plugins) {
-    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
-    const promise = applyPlugin(nuxtApp, plugin)
-    if (plugin.parallel) {
-      parallels.push(promise.catch(e => errors.push(e)))
+  let promiseDepth = 0
+
+  async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
+    if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
+      unresolvedPlugins.push([new Set(plugin.dependsOn), plugin])
     } else {
-      await promise
+      const promise = applyPlugin(nuxtApp, plugin).then(async () => {
+        if (plugin._name) {
+          resolvedPlugins.push(plugin._name)
+          await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
+            if (dependsOn.has(plugin._name!)) {
+              dependsOn.delete(plugin._name!)
+              if (dependsOn.size === 0) {
+                promiseDepth++
+                await executePlugin(unexecutedPlugin)
+              }
+            }
+          }))
+        }
+      })
+
+      if (plugin.parallel) {
+        parallels.push(promise.catch(e => errors.push(e)))
+      } else {
+        await promise
+      }
     }
   }
+
+  for (const plugin of plugins) {
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    await executePlugin(plugin)
+  }
+
   await Promise.all(parallels)
+  if (promiseDepth) {
+    for (let i = 0; i < promiseDepth; i++) {
+      await Promise.all(parallels)
+    }
+  }
+
   if (errors.length) { throw errors[0] }
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
   if (typeof plugin === 'function') { return plugin }
+
+  const _name = plugin._name || plugin.name
   delete plugin.name
-  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true } as const)
+  return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
@@ -376,7 +436,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
  */
@@ -399,7 +459,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export function useRuntimeConfig (): RuntimeConfig {
   return useNuxtApp().$config
 }
