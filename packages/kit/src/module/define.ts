@@ -143,10 +143,12 @@ function nuxt2Shims (nuxt: Nuxt) {
         templateVars: templates.templateVars
       }
     }
+    const promises: Promise<void>[] = [];
     for await (const template of virtualTemplates) {
       const contents = await compileTemplate({ ...template, src: '' }, context)
       await fsp.mkdir(dirname(template.dst), { recursive: true })
-      await fsp.writeFile(template.dst, contents)
+      promises.push(fsp.writeFile(template.dst, contents))
     }
+    await Promise.all(promises)
   })
 }

@@ -296,11 +296,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         }
 
         await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-        await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
-          id: buildId,
-          timestamp: buildTimestamp
-        }))
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+        await Promise.all([
+          fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
+            id: buildId,
+            timestamp: buildTimestamp
+          })),
+          fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest)),
+        ])
       })
     })
   }
