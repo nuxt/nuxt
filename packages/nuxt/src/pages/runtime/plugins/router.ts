@@ -24,6 +24,7 @@ import _routes from '#build/routes'
 import routerOptions from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
+import { toArray } from '../../../../../../utils'
 
 // https://github.com/vuejs/router/blob/4a0cc8b9c1e642cdf47cc007fa5bbebde70afc66/packages/router/src/history/html5.ts#L37
 function createCurrentLocation (
@@ -155,12 +156,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         for (const component of to.matched) {
           const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
           if (!componentMiddleware) { continue }
-          if (Array.isArray(componentMiddleware)) {
-            for (const entry of componentMiddleware) {
-              middlewareEntries.add(entry)
-            }
-          } else {
-            middlewareEntries.add(componentMiddleware)
+          for (const entry of toArray(componentMiddleware)) {
+            middlewareEntries.add(entry)
           }
         }
 

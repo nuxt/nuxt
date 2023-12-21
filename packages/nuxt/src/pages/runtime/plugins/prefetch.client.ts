@@ -5,6 +5,7 @@ import { useRouter } from '#app/composables/router'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
+import { toArray } from '../../../../../../utils'
 
 export default defineNuxtPlugin({
   name: 'nuxt:prefetch',
@@ -25,8 +26,8 @@ export default defineNuxtPlugin({
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
       if (!route) { return }
-      const layout = route?.meta?.layout
-      let middleware = Array.isArray(route?.meta?.middleware) ? route?.meta?.middleware : [route?.meta?.middleware]
+      const layout = route.meta.layout
+      let middleware = toArray(route.meta.middleware)
       middleware = middleware.filter(m => typeof m === 'string')
 
       for (const name of middleware) {

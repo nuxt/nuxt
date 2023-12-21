@@ -12,6 +12,7 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+import { toArray } from '../../../../../utils'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -127,14 +128,10 @@ export default defineComponent({
   }
 })
 
-function _toArray (val: any) {
-  return Array.isArray(val) ? val : (val ? [val] : [])
-}
-
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
-    onAfterLeave: _toArray(prop.onAfterLeave)
+    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
   }))
   return defu(..._props as [TransitionProps, TransitionProps])
 }

@@ -8,6 +8,7 @@ import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+import { toArray } from '../../../../../utils';
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -378,7 +379,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
 
   await new Promise<void>(resolve => onNuxtReady(resolve))
 
-  const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
+  const _keys = keys ? toArray(keys) : undefined
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
@@ -389,7 +390,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     ? _allKeys
     : typeof keys === 'function'
       ? _allKeys.filter(keys)
-      : Array.isArray(keys) ? keys : [keys]
+      : toArray(keys)
 
   for (const key of _keys) {
     if (key in nuxtApp.payload.data) {

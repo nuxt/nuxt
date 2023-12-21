@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from '#vue-router'
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from './router'
+import { toArray } from '../../../../../utils'
 
 /**
  * Preload a component or components that have been globally registered.
@@ -11,7 +12,7 @@ export const preloadComponents = async (components: string | string[]) => {
   if (import.meta.server) { return }
   const nuxtApp = useNuxtApp()
 
-  components = Array.isArray(components) ? components : [components]
+  components = toArray(components)
   await Promise.all(components.map(name => _loadAsyncComponent(nuxtApp.vueApp._context.components[name])))
 }
 
