@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -101,6 +101,35 @@ jobs:
         uses: github/codeql-action/analyze@b374143c1149a9115d881581d29b8390bbcbb59c # v3.22.11
         with:
           category: "/language:javascript"
+
+  benchmark:
+    runs-on: ubuntu-latest
+    permissions: {}
+    needs:
+     - build
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - run: corepack enable
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
+        with:
+          name: dist
+          path: packages
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@ad0378e48c3cb4c700f1cdc5e10943dbad3cc4ec # v2.0.2
+        with:
+          run: pnpm vitest bench
+          token: ${{ secrets.CODSPEED_TOKEN }}
 
   typecheck:
     runs-on: ${{ matrix.os }}
