@@ -5,10 +5,10 @@ import { useNuxtApp } from '../nuxt'
 import type { NuxtError} from './error';
 import { createError } from './error'
 import { onNuxtReady } from './ready'
+import { toArray } from '../../utils'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults } from '#build/nuxt.config.mjs'
-import { toArray } from '../../../../../utils';
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
