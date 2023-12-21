@@ -20,7 +20,7 @@ importers:
   .:
     devDependencies:
       '@codspeed/vitest-plugin':
-        specifier: ^2.3.1
+        specifier: 2.3.1
         version: 2.3.1(vite@5.0.10)(vitest@1.1.0)
       '@nuxt/eslint-config':
         specifier: 0.2.0
