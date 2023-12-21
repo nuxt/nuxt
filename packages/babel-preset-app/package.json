@@ -29,7 +29,7 @@
     "@vue/babel-preset-jsx": "^1.4.0",
     "core-js": "^3.34.0",
     "core-js-compat": "^3.34.0",
-    "regenerator-runtime": "^0.14.0"
+    "regenerator-runtime": "^0.14.1"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
