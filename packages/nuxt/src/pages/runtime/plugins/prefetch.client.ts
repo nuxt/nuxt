@@ -1,5 +1,5 @@
 import { hasProtocol } from 'ufo'
-import { toArray } from '../../../utils'
+import { toArray } from '../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
