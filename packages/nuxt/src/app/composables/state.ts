@@ -1,7 +1,7 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../../utils'
+import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
 /**

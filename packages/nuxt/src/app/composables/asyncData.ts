@@ -2,7 +2,7 @@ import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, 
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../../utils'
+import { toArray } from '../utils'
 import type { NuxtError} from './error';
 import { createError } from './error'
 import { onNuxtReady } from './ready'
