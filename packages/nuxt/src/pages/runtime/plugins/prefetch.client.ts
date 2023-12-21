@@ -1,11 +1,11 @@
 import { hasProtocol } from 'ufo'
+import { toArray } from '../../../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
-import { toArray } from '../../../utils'
 
 export default defineNuxtPlugin({
   name: 'nuxt:prefetch',
