@@ -23,7 +23,6 @@ env:
   # install playwright binary manually (because pnpm only runs install script once)
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
-
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
 permissions: {}
@@ -72,7 +71,7 @@ jobs:
       contents: read
       security-events: write
     needs:
-     - build
+      - build
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -102,35 +101,6 @@ jobs:
         with:
           category: "/language:javascript"
 
-  benchmark:
-    runs-on: ubuntu-latest
-    permissions: {}
-    needs:
-     - build
-
-    steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-      - run: corepack enable
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
-        with:
-          name: dist
-          path: packages
-
-      - name: Run benchmarks
-        uses: CodSpeedHQ/action@ad0378e48c3cb4c700f1cdc5e10943dbad3cc4ec # v2.0.2
-        with:
-          run: pnpm vitest bench
-          token: ${{ secrets.CODSPEED_TOKEN }}
-
   typecheck:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
@@ -140,7 +110,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        module: ['bundler', 'node']
+        module: ["bundler", "node"]
 
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -223,16 +193,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
-        env: ['dev', 'built']
-        builder: ['vite', 'webpack']
-        context: ['async', 'default']
-        manifest: ['manifest-on', 'manifest-off']
+        env: ["dev", "built"]
+        builder: ["vite", "webpack"]
+        context: ["async", "default"]
+        manifest: ["manifest-on", "manifest-off"]
         node: [18]
         exclude:
-          - env: 'dev'
-            builder: 'webpack'
-          - manifest: 'manifest-off'
-            builder: 'webpack'
+          - env: "dev"
+            builder: "webpack"
+          - manifest: "manifest-off"
+            builder: "webpack"
 
     timeout-minutes: 15
 
