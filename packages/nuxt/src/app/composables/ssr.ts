@@ -14,7 +14,10 @@ export function useRequestHeaders (include?: any[]) {
   const event = useRequestEvent()
   const headers = event ? getRequestHeaders(event) : {}
   if (!include) { return headers }
-  return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
+  return Object.fromEntries(include.map(key => {
+    const lowerKey = key.toLowerCase()
+    return [lowerKey, headers[lowerKey]]
+  }).filter([key, value] => value !== undefined))
 }
 
 export function useRequestHeader(header: string) {
