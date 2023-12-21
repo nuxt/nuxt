@@ -1,8 +1,8 @@
 import type { Component } from 'vue'
 import type { RouteLocationRaw, Router } from '#vue-router'
 import { useNuxtApp } from '../nuxt'
-import { useRouter } from './router'
 import { toArray } from '../../utils'
+import { useRouter } from './router'
 
 /**
  * Preload a component or components that have been globally registered.

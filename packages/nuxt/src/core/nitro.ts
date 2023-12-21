@@ -16,8 +16,8 @@ import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
-import { ImportProtectionPlugin } from './plugins/import-protection'
 import { toArray } from '../utils'
+import { ImportProtectionPlugin } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
