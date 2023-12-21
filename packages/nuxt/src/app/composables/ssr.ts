@@ -17,7 +17,7 @@ export function useRequestHeaders (include?: any[]) {
   return Object.fromEntries(include.map(key => {
     const lowerKey = key.toLowerCase()
     return [lowerKey, headers[lowerKey]]
-  }).filter([key, value] => value !== undefined))
+  }).filter(([key, value]) => value !== undefined))
 }
 
 export function useRequestHeader(header: string) {
