@@ -1,7 +1,7 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
-import { toArray } from '../../../utils'
+import { toArray } from './utils'
 
 export interface ExtendConfigOptions {
   /**

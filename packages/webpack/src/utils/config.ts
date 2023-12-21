@@ -2,7 +2,7 @@ import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 import { cloneDeep } from 'lodash-es'
-import { toArray } from '../../../../utils'
+import { toArray } from './index'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt

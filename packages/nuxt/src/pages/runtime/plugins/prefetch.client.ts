@@ -5,7 +5,7 @@ import { useRouter } from '#app/composables/router'
 import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { namedMiddleware } from '#build/middleware'
-import { toArray } from '../../../../../../utils'
+import { toArray } from '../../../utils'
 
 export default defineNuxtPlugin({
   name: 'nuxt:prefetch',

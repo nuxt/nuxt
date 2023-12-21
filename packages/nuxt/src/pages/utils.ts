@@ -12,7 +12,7 @@ import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Pr
 import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
-import { toArray } from '../../../../utils'
+import { toArray } from '../utils'
 
 enum SegmentParserState {
   initial,

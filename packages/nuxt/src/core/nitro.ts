@@ -17,7 +17,7 @@ import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templa
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { ImportProtectionPlugin } from './plugins/import-protection'
-import { toArray } from '../../../../utils'
+import { toArray } from '../utils'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config

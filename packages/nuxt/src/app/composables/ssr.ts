@@ -2,7 +2,7 @@ import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
-import { toArray } from '../../../../../utils'
+import { toArray } from '../../utils'
 
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): H3Event {
   return nuxtApp.ssrContext?.event as H3Event

@@ -12,7 +12,7 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
-import { toArray } from '../../../../../utils'
+import { toArray } from '../../utils'
 
 export default defineComponent({
   name: 'NuxtPage',

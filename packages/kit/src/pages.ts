@@ -4,7 +4,7 @@ import { defu } from 'defu'
 import { useNuxt } from './context'
 import { isNuxt2 } from './compatibility'
 import { logger } from './logger'
-import { toArray } from '../../../utils'
+import { toArray } from './utils'
 
 export function extendPages (cb: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()

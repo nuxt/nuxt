@@ -5,7 +5,7 @@ import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
-import { toArray } from '../../../../utils'
+import { toArray } from '../utils'
 
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4

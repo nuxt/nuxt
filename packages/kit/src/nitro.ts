@@ -2,7 +2,7 @@ import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'
-import { toArray } from '../../../utils'
+import { toArray } from './utils'
 
 /**
  * normalize handler object

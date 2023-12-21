@@ -6,7 +6,7 @@ import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
-import { toArray } from '../../../utils'
+import { toArray } from './utils'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
