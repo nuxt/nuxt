@@ -15,6 +15,7 @@ export function useRequestHeaders (include?: any[]) {
   const headers = event ? getRequestHeaders(event) : {}
   if (!include) { return headers }
   return Object.fromEntries(include.map(key => {
+   // Testing codspeed 
     const lowerKey = key.toLowerCase()
     return [lowerKey, headers[lowerKey]]
   }).filter(([_, value]) => value !== undefined))
