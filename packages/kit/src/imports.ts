@@ -18,10 +18,10 @@ export async function addImports (imports: Import | Import[]) {
 }
 
 /**
- * Add imports from a directory to the Nuxt application. It will automatically import all files from the directory and make them available in the Nuxt application without the need to import them manually.
+ * Add imports from a directory to the Nuxt application (one by one). It will automatically import all files from the directory and make them available in the Nuxt application without the need to import them manually.
  * @param directories - A string or an array of strings with the path to the directory to import from.
  * @param options - Options to pass to the import.
- * @param options.prepend - If set to `true`, the imports will be prepended to the list of imports.
+ * @param options.prepend - Whether to prepend directories instead of appending.
  * @see {@link https://nuxt.com/docs/api/kit/autoimports#addimportsdir documentation}
  */
 export async function addImportsDir (

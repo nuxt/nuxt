@@ -27,7 +27,7 @@ import { useNitroApp } from '#internal/nitro/app'
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
-import type { NuxtPayload, NuxtSSRContext } from '#app/nuxt'
+import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -58,6 +58,10 @@ export interface NuxtIslandContext {
   name: string
   props?: Record<string, any>
   url?: string
+  // chunks to load components
+  chunks: Record<string, string>
+  // props to be sent back
+  propsData: Record<string, any>
 }
 
 export interface NuxtIslandResponse {
@@ -68,6 +72,9 @@ export interface NuxtIslandResponse {
     link: (Record<string, string>)[]
     style: ({ innerHTML: string, key: string })[]
   }
+  chunks?: Record<string, string>
+  props?: Record<string, Record<string, any>>
+  teleports?: Record<string, string>
 }
 
 export interface NuxtRenderResponse {
@@ -149,7 +156,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
       _errors: {},
       serverRendered: false,
       data: {},
-      state: {}
+      state: {},
+      once: new Set<string>()
     }
     ssrContext.config = {
       public: config.public,
@@ -187,7 +195,10 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    uid: destr(context.uid) || undefined
+    uid: destr(context.uid) || undefined,
+    chunks: {},
+    propsData: {},
+    teleports: {}
   }
 
   return ctx
@@ -405,7 +416,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: [bodyAttrs],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceServerOnlyComponentsSlots(ssrContext, _rendered.html) : _rendered.html],
+    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceClientTeleport(ssrContext, replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)) : _rendered.html],
     bodyAppend: [bodyTags]
   }
 
@@ -430,7 +441,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       id: islandContext.id,
       head: islandHead,
       html: getServerComponentHTML(htmlContext.body),
-      state: ssrContext.payload.state
+      state: ssrContext.payload.state,
+      chunks: islandContext.chunks,
+      props: islandContext.propsData,
+      teleports: ssrContext.teleports || {}
     }
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
@@ -576,6 +590,7 @@ function getServerComponentHTML (body: string[]): string {
 }
 
 const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
+const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
 function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
   const { teleports, islandContext } = ssrContext
   if (islandContext || !teleports) { return html }
@@ -585,6 +600,24 @@ function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: str
     const [, uid, slot] = match
     if (!uid || !slot) { continue }
     html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
+      return full + teleports[key]
+    })
+  }
+  return html
+}
+
+// TODO merge with replaceServerOnlyComponentsSlots once slots are refactored
+function replaceClientTeleport (ssrContext: NuxtSSRContext, html: string) {
+  const { teleports, islandContext } = ssrContext
+
+  if (islandContext || !teleports) { return html }
+  for (const key in teleports) {
+    const match = key.match(SSR_CLIENT_TELEPORT_MARKER)
+    if (!match) { continue }
+    const [, uid, clientId] = match
+    if (!uid || !clientId) { continue }
+    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-client="${clientId}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-client="${clientId}"[^>]*>`), (full) => {
+
       return full + teleports[key]
     })
   }

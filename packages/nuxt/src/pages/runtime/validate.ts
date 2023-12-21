@@ -15,9 +15,13 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (import.meta.server) {
     return result
   }
+
   const error = createError({
     statusCode: 404,
-    statusMessage: `Page Not Found: ${to.fullPath}`
+    statusMessage: `Page Not Found: ${to.fullPath}`,
+    data: {
+      path: to.fullPath
+    }
   })
   const unsub = router.beforeResolve((final) => {
     unsub()

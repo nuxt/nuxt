@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
-import { dirname, isAbsolute, join } from 'pathe'
+import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
@@ -8,6 +8,8 @@ import { requireModule } from '../internal/cjs'
 import { importModule } from '../internal/esm'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
+
+const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
 /**
  * Install specified Nuxt module programmatically. This is helpful when your module depends on other modules. You can pass the module options as an object to `inlineOptions` and they will be passed to the module's `setup` function.
@@ -26,6 +28,18 @@ export async function installModule (
     moduleToInstall,
     nuxt
   )
+
+  const localLayerModuleDirs = new Set<string>()
+
+  for (const l of nuxt.options._layers) {
+    const srcDir = l.config.srcDir || l.cwd
+
+    if (!NODE_MODULES_RE.test(srcDir)) {
+      localLayerModuleDirs.add(
+        resolve(srcDir, l.config?.dir?.modules || 'modules')
+      )
+    }
+  }
 
   // Call module
   const result = (
@@ -49,8 +63,8 @@ export async function installModule (
 
     const directory = getDirectory(moduleToInstall)
 
-    if (directory !== moduleToInstall) {
-      nuxt.options.modulesDir.push(getDirectory(moduleToInstall))
+    if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
+      nuxt.options.modulesDir.push(directory)
     }
   }
 
@@ -90,27 +104,44 @@ export async function loadNuxtModuleInstance (
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const source = await resolvePath(nuxtModule)
-    try {
+    const paths = [
+      join(nuxtModule, 'nuxt'),
+      join(nuxtModule, 'module'),
+      nuxtModule
+    ]
+
+    let error: unknown
+
+    for (const path of paths) {
+      const src = await resolvePath(path)
+
       // Prefer ESM resolution if possible
-      // eslint-disable-next-line ts/no-unsafe-assignment
-      nuxtModule = await importModule(source, nuxt.options.modulesDir)
-        .catch(() => {})
-        ?? requireModule(source, { paths: nuxt.options.modulesDir })
-    } catch (error: unknown) {
-      // eslint-disable-next-line ts/restrict-template-expressions
+      try {
+        nuxtModule = await importModule(src, nuxt.options.modulesDir)
+          .catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
+
+        // nuxt-module-builder generates a module.json
+        // with metadata including the version
+        const moduleMetadataPath = join(dirname(src), 'module.json')
+
+        if (existsSync(moduleMetadataPath)) {
+          buildTimeModuleMeta = JSON.parse(
+            await fsp.readFile(moduleMetadataPath, 'utf-8')
+          )
+        }
+
+        break
+      } catch (_err: unknown) {
+        error = _err
+
+        continue
+      }
+    }
+
+    if (!nuxtModule && error) {
       logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
 
       throw error
-    }
-
-    // nuxt-module-builder generates a module.json
-    // with metadata including the version
-    if (existsSync(join(dirname(source), 'module.json'))) {
-      // eslint-disable-next-line ts/no-unsafe-assignment
-      buildTimeModuleMeta = JSON.parse(
-        await fsp.readFile(join(dirname(source), 'module.json'), 'utf8')
-      )
     }
   }
 

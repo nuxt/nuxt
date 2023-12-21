@@ -9,9 +9,11 @@ import { assertNuxtCompatibility } from './compatibility'
  *
  * **Note:** Requires Nuxt 2.13+
  * @param directory - An object with the {@link https://nuxt.com/docs/api/kit/components#dir following properties}.
+ * @param options - Options to 
+ * @param options.prepend - Whether to prepend the directory instead of appending.
  * @see {@link https://nuxt.com/docs/api/kit/components#addcomponentsdir documentation}
  */
-export async function addComponentsDir (directory: ComponentsDir) {
+export async function addComponentsDir (directory: ComponentsDir, options: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
 
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
@@ -21,7 +23,7 @@ export async function addComponentsDir (directory: ComponentsDir) {
   directory.priority ??= 0
 
   nuxt.hook('components:dirs', (directories) => {
-    directories.push(directory)
+    directories[options.prepend ? 'unshift' : 'push'](directory)
   })
 }
 
@@ -48,6 +50,12 @@ export async function addComponent (options: AddComponentOptions) {
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
 
   nuxt.options.components = nuxt.options.components || []
+
+  if (!options.mode) {
+    const [, mode = 'all'] = options.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+
+    options.mode = mode as 'all' | 'client' | 'server'
+  }
 
   // Apply defaults
   const component: Component = {

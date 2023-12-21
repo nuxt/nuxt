@@ -80,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    '~/modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -197,8 +198,9 @@ export default defineNuxtConfig({
     clientFallback: true,
     restoreState: true,
     inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
-    componentIslands: true,
-    reactivityTransform: true,
+    componentIslands: {
+      selectiveClient: true
+    },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',

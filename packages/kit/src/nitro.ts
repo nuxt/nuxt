@@ -121,10 +121,10 @@ export function addServerImports (imports: Import[]) {
 }
 
 /**
- * Add directories to be scanned for auto-imports by Nitro.
+ * Add directories to be scanned for auto-imports by Nitro (one by one).
  * @param directories - A directory or an array of directories to register to be scanned by Nitro.
  * @param options - Options to pass to the import.
- * @param options.prepend - If set to `true`, the directories will be prepended to the list.
+ * @param options.prepend - Whether to prepend the directories instead of appending.
  * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverimportsdir documentation}
  */
 export function addServerImportsDir (
@@ -139,5 +139,20 @@ export function addServerImportsDir (
     config.imports.dirs ||= []
 
     config.imports.dirs[options.prepend ? 'unshift' : 'push'](...toArray(directories))
+  })
+}
+
+/**
+ * Add directories to be scanned by Nitro. It will check for subdirectories,
+ * which will be registered just like the `~/server` folder is.
+ */
+export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+  const nuxt = useNuxt()
+  nuxt.hook('nitro:config', (config) => {
+    config.scanDirs = config.scanDirs || []
+
+    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
+      config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
+    }
   })
 }

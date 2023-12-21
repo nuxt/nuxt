@@ -181,9 +181,10 @@ export default defineUntypedSchema({
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
-   * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
+   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
+   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   *   default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    * @example ~/app/spa-loading-template.html
@@ -275,9 +276,9 @@ export default defineUntypedSchema({
    *   // Load a Node.js module directly (here it's a Sass file).
    *   'bulma',
    *   // CSS file in the project
-   *   '@/assets/css/main.css',
+   *   '~/assets/css/main.css',
    *   // SCSS file in the project
-   *   '@/assets/css/main.scss'
+   *   '~/assets/css/main.scss'
    * ]
    * ```
    * @type {string[]}

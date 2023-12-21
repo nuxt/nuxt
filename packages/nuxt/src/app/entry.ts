@@ -1,4 +1,5 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
+import type { App } from 'vue'
 
 // These files must be imported first as they have side effects:
 // 1. (we set __webpack_public_path via this import, if using webpack builder)
@@ -17,7 +18,7 @@ import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
 
-let entry: Function
+let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
@@ -46,7 +47,7 @@ if (import.meta.client) {
   }
 
   // eslint-disable-next-line
-  let vueAppPromise: Promise<any>
+  let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {
     if (vueAppPromise) { return vueAppPromise }
@@ -58,11 +59,17 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
+    async function handleVueError(err: any) {
+      await nuxt.callHook('app:error', err)
+      nuxt.payload.error = (nuxt.payload.error || err) as any
+    }
+
+    vueApp.config.errorHandler = handleVueError
+
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
 
     try {
@@ -72,16 +79,20 @@ if (import.meta.client) {
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
+
+    // If the errorHandler is not overridden by the user, we unset it
+    if (vueApp.config.errorHandler === handleVueError)
+      vueApp.config.errorHandler = undefined
 
     return vueApp
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
     console.error('Error while mounting app:', error)
+    throw error
   })
 }
 
-export default (ctx?: CreateOptions['ssrContext']) => entry(ctx)
+export default (ssrContext?: CreateOptions['ssrContext']) => entry(ssrContext)
