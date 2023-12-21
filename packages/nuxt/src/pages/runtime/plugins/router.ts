@@ -13,7 +13,7 @@ import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
-import { toArray } from '../../../utils'
+import { toArray } from '../utils'
 import type { Plugin, RouteMiddleware } from '#app'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
