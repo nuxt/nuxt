@@ -294,7 +294,16 @@ async function initNuxt (nuxt: Nuxt) {
     addComponent({
       name: 'NuxtIsland',
       priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island.server'),
+      mode: 'server',
+      _raw: true
+    })
+    addComponent({
+      name: 'NuxtIsland',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island.client'),
+      mode: 'client',
+      _raw: true
     })
 
     if (!nuxt.options.ssr) {

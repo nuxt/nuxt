@@ -47,7 +47,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     })
   }
 
-  return createUnplugin(() => ({
+  return createUnplugin(({bundle} : {bundle: 'server'|'client'}) => ({
     name: 'nuxt:components:imports',
     transformInclude (id) {
       id = normalize(id)
@@ -88,10 +88,16 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
           }
         } else if (mode === 'server' || mode === 'server,async') {
           const name = query.nuxt_component_name
+          console.log( [
+            `import NuxtIsland from "#app/components/nuxt-island.${bundle}"`,
+            `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
+            `export default createServerComponent(${JSON.stringify(name)}, NuxtIsland)`
+          ].join('\n'))
           return {
             code: [
+              `import NuxtIsland from "#app/components/nuxt-island.${bundle}"`,
               `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
-              `export default createServerComponent(${JSON.stringify(name)})`
+              `export default createServerComponent(${JSON.stringify(name)}, NuxtIsland)`
             ].join('\n'),
             map: null
           }

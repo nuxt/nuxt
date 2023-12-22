@@ -57,8 +57,9 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
+            imports.add(genImport(`#app/components/nuxt-island.${options.mode}`, 'NuxtIsland'))
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
-            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
+            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)}, NuxtIsland)`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }

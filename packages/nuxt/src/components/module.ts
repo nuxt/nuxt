@@ -130,11 +130,11 @@ export default defineNuxtModule<ComponentsOptions>({
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
     const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
-    addVitePlugin(() => unpluginServer.vite(), { server: true, client: false })
-    addVitePlugin(() => unpluginClient.vite(), { server: false, client: true })
+    addVitePlugin(() => unpluginServer.vite({ bundle: 'server'}), { server: true, client: false })
+    addVitePlugin(() => unpluginClient.vite({ bundle: 'client'}), { server: false, client: true })
 
-    addWebpackPlugin(() => unpluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(() => unpluginClient.webpack(), { server: false, client: true })
+    addWebpackPlugin(() => unpluginServer.webpack({ bundle: 'server'}), { server: true, client: false })
+    addWebpackPlugin(() => unpluginClient.webpack({ bundle: 'client'}), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {

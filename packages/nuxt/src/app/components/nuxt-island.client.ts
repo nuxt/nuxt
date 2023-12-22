@@ -12,7 +12,7 @@ import { join } from 'pathe'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
+import { useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML, getSlotProps } from './utils'
 
 // @ts-expect-error virtual file
@@ -25,9 +25,9 @@ const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
 let id = 0
-const getId = import.meta.client ? () => (id++).toString() : randomUUID
+const getId = () => (id++).toString()
 
-const components = import.meta.client ? new Map<string, Component>() : undefined
+const components = new Map<string, Component>()
 
 async function loadComponents (source = '/', paths: Record<string, string>) {
   const promises = []
@@ -86,10 +86,9 @@ export default defineComponent({
     const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
-    const event = useRequestEvent()
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
 
@@ -97,9 +96,7 @@ export default defineComponent({
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
-          ...(import.meta.server && import.meta.prerender)
-            ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+            params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } ,
           result: {
             chunks: result.chunks,
             props: result.props,
@@ -120,11 +117,7 @@ export default defineComponent({
       teleports: rawPayload.teleports
     }
 
-    const ssrHTML = ref<string>('')
-
-    if (import.meta.client) {
-      ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
-    }
+    const ssrHTML = ref<string>(getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || '')
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
@@ -134,7 +127,7 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-      if (import.meta.client && !canLoadClientComponent.value) {
+      if (!canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(nonReactivePayload.teleports || {})) {
           html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
             return full + value
@@ -165,24 +158,14 @@ export default defineComponent({
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
-      if (import.meta.server && import.meta.prerender) {
-        // Hint to Nitro to prerender the island component
-        nuxtApp.runWithContext(() => prerenderRoutes(url))
-      }
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
-      const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
+      const r = await eventFetch(withQuery((import.meta.dev || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
-      const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
-      // TODO: support passing on more headers
-      if (import.meta.server && import.meta.prerender) {
-        const hints = r.headers.get('x-nitro-prerender')
-        if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', hints)
-        }
-      }
+      const result = import.meta.dev ? (r as FetchResponse<NuxtIslandResponse>)._data : await r.json()
+
       setPayload(key, result)
       return result
     }
@@ -204,7 +187,7 @@ export default defineComponent({
         key.value++
         error.value = null
 
-        if (selectiveClient && import.meta.client) {
+        if (selectiveClient) {
           if (canLoadClientComponent.value && res.chunks) {
             await loadComponents(props.source, res.chunks)
           }
@@ -213,10 +196,9 @@ export default defineComponent({
         nonReactivePayload.teleports = res.teleports
         nonReactivePayload.chunks = res.chunks
 
-        if (import.meta.client) {
-          // must await next tick for Teleport to work correctly with static node re-rendering
-          await nextTick()
-        }
+        // must await next tick for Teleport to work correctly with static node re-rendering
+        await nextTick()
+       
         setUid()
       } catch (e) {
         error.value = e
@@ -233,13 +215,11 @@ export default defineComponent({
       })
     }
 
-    if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100))
-    }
-
-    if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
+    watch(props, debounce(() => fetchComponent(), 100))
+ 
+    if (!nuxtApp.isHydrating && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
+    } else if (!nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value && nonReactivePayload.chunks) {
       await loadComponents(props.source, nonReactivePayload.chunks)
@@ -253,22 +233,15 @@ export default defineComponent({
         key: key.value
       }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
 
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server) && html.value) {
+      if (uid.value && (mounted.value || nuxtApp.isHydrating) && html.value) {
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
-            nodes.push(createVNode(Teleport, { to: import.meta.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
+            nodes.push(createVNode(Teleport, { to:  `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` }, {
               default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
             }))
           }
         }
-        if (import.meta.server) {
-          for (const [id, html] of Object.entries(nonReactivePayload.teleports ?? {})) {
-            nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
-              default: () => [createStaticVNode(html, 1)]
-            }))
-          }
-        }
-        if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
+        if (selectiveClient && canLoadClientComponent.value) {
           for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
             const component = components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
