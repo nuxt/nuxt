@@ -13,7 +13,7 @@ export function useRequestHeaders (include?: any[]) {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
   const _headers = event ? getRequestHeaders(event) : {}
-  if (!include) { return headers }
+  if (!include) { return _headers }
   const headers = Object.create(null)
   for (const _key of include) {
     const key = _key.toLowerCase()
