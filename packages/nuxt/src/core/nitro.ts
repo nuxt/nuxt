@@ -16,6 +16,7 @@ import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
+import { toArray } from '../utils'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
@@ -333,7 +334,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
-  nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
+  nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
