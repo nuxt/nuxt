@@ -227,8 +227,7 @@ function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_
     if (!obj) { continue }
 
     const unwrapped: Record<string, string> = {}
-    const iterator = Array.isArray(obj) ? obj : Object.entries(obj)
-    for (const [key, value] of iterator) {
+    for (const [key, value] of Object.entries(obj)) {
       unwrapped[toValue(key)] = toValue(value)
     }
     segments.push(unwrapped)
