@@ -8,11 +8,12 @@ import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
-import { logger } from '@nuxt/kit'
-
+import { logger, updateTemplates as _updateTemplate } from '@nuxt/kit'
+import { } from "vite"
 export interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
+  updateTemplates: typeof _updateTemplate
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -26,7 +27,7 @@ const CODE_HMR = `
 // Vite
 if (import.meta.hot) {
   import.meta.hot.accept(mod => {
-    Object.assign(__nuxt_page_meta, mod)
+    import.meta.hot.invalidate()
   })
 }
 // webpack
@@ -40,15 +41,15 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
-    transformInclude (id) {
+    transformInclude(id) {
       return !!parseMacroQuery(id).macro
     },
-    transform (code, id) {
+    transform(code, id) {
       const query = parseMacroQuery(id)
       if (query.type && query.type !== 'script') { return }
 
       const s = new MagicString(code)
-      function result () {
+      function result() {
         if (s.hasChanged()) {
           return {
             code: s.toString(),
@@ -116,7 +117,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         sourceType: 'module',
         ecmaVersion: 'latest'
       }) as Node, {
-        enter (_node) {
+        enter(_node) {
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
           const node = _node as CallExpression & { start: number, end: number }
           const name = 'name' in node.callee && node.callee.name
@@ -126,7 +127,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
           let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
-          function addImport (name: string | false) {
+          function addImport(name: string | false) {
             if (name && importMap.has(name)) {
               const importValue = importMap.get(name)!.code
               if (!addedImports.has(importValue)) {
@@ -137,7 +138,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           }
 
           walk(meta, {
-            enter (_node) {
+            enter(_node) {
               if (_node.type === 'CallExpression') {
                 const node = _node as CallExpression & { start: number, end: number }
                 addImport('name' in node.callee && node.callee.name)
@@ -162,11 +163,22 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
     vite: {
       handleHotUpdate: {
         order: 'pre',
-        handler: ({ modules }) => {
+        handler: async (ctx) => {
+          const { modules } = ctx
           // Remove macro file from modules list to prevent HMR overrides
           const index = modules.findIndex(i => i.id?.includes('?macro=true'))
           if (index !== -1) {
-            modules.splice(index, 1)
+            const [macroFile] = modules.splice(index, 1)
+            if (macroFile) {
+              await console.log(await ctx.read())
+              debugger
+              ctx.server.moduleGraph.invalidateModule(macroFile) 
+              ctx.server.reloadModule(macroFile) 
+              
+              // update the macro file
+
+            }
+
           }
         }
       }
@@ -176,11 +188,11 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
-function rewriteQuery (id: string) {
+function rewriteQuery(id: string) {
   return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(/^\?/, '').replace(/&macro=true/, ''))
 }
 
-function parseMacroQuery (id: string) {
+function parseMacroQuery(id: string) {
   const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
   const query = parseQuery(search)
   if (id.includes('?macro=true')) {
@@ -189,6 +201,6 @@ function parseMacroQuery (id: string) {
   return query
 }
 
-function getQuotedSpecifier (id: string) {
+function getQuotedSpecifier(id: string) {
   return id.match(/(["']).*\1/)?.[0]
 }

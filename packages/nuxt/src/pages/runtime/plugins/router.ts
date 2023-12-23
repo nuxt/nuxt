@@ -91,6 +91,40 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       previousRoute.value = from
     })
 
+    
+    if(import.meta.hot) {  
+      console.log(import.meta.hot)
+      import.meta.hot.accept(   () => {
+        console.log('hot reload self accept')
+         
+      })
+      import.meta.hot.accept( '/pages/index.vue?macro=true', () => {
+        console.log('hot reload')
+         
+      })
+      import.meta.hot.accept( '/pages/index.vue', () => {
+        console.log('hot reload')
+         
+      })
+      import.meta.hot.accept( '/pages/index.vue?macro=true', () => {
+        console.log('hot reload')
+         
+      })
+      import.meta.hot.accept( '#build/routes', () => {
+        console.log('hot reload')
+         
+      })
+      import.meta.hot.accept( '/@id/virtual:nuxt:G:/repo/nuxt/playground/.nuxt/routes.mjs', () => {
+        console.log('hot reload')
+      })
+      import.meta.hot.accept( '/@id/virtual:nuxt:G:/repo/nuxt/playground/.nuxt/routes.mjs', () => {
+        console.log('hot reload')
+      })
+      import.meta.hot.accept("/_nuxt/@id/virtual:nuxt:G:/repo/nuxt/playground/.nuxt/routes.mjs", () => {
+        console.log('hot reload mod')
+      })
+    }
+
     Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
       get: () => previousRoute.value
     })

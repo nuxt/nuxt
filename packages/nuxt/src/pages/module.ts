@@ -8,7 +8,6 @@ import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
-
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
@@ -322,7 +321,8 @@ export default defineNuxtModule({
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      updateTemplates
     }
     nuxt.hook('modules:done', () => {
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
@@ -364,7 +364,18 @@ export default defineNuxtModule({
       filename: 'routes.mjs',
       getContents ({ app }) {
         const { routes, imports } = normalizeRoutes(app.pages)
-        return [...imports, `export default ${routes}`].join('\n')
+        return `
+        ${
+          [...imports, `const routes = ${routes}`, `export default routes`].join('\n')
+        } 
+
+        if (import.meta.hot) {
+          import.meta.hot.accept((mod) => {
+            console.log('up', mod.default)
+            Object.assign(routes, mod.default)
+          })
+        }
+        `
       }
     })
 

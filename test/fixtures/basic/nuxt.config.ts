@@ -188,8 +188,11 @@ export default defineNuxtConfig({
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
-      }
-    }
+      },
+      prefixIdentifiers: false,
+      
+    },
+    
   },
   experimental: {
     typedPages: true,
