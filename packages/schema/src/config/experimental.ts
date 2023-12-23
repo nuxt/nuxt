@@ -1,7 +1,28 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
-  future: {},
+  future: {
+    /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental.typescriptBundlerResolution')
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+  },
   features: {
     /**
      * Inline styles when rendering HTML (currently vite only).
@@ -160,27 +181,6 @@ export default defineUntypedSchema({
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
-
-    /**
-     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
-     * for frameworks like Nuxt and Vite.
-     *
-     * It improves type support when using modern libraries with `exports`.
-     *
-     * This is only not enabled by default because it could be a breaking change for some projects.
-     *
-     * See https://github.com/microsoft/TypeScript/pull/51669
-     */
-    typescriptBundlerResolution: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
-        if (setting) {
-          return setting.toLowerCase() === 'bundler'
-        }
-        return false
-      }
-    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
