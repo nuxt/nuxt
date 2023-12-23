@@ -54,7 +54,7 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental.noScripts')
+        return val ?? await get('experimental.noScripts') ?? false
       }
     },
   },
