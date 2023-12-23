@@ -25,7 +25,7 @@ export default defineUntypedSchema({
   },
   /**
    * `future` is for early opting-in to new features that will become default in a future
-   * (probably major) version of the framework. In future they will probably not be configurable.
+   * (possibly major) version of the framework.
    */
   features: {
     /**
