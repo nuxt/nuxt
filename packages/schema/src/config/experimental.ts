@@ -23,6 +23,10 @@ export default defineUntypedSchema({
       }
     },
   },
+  /**
+   * `future` is for early opting-in to new features that will become default in a future
+   * (probably major) version of the framework. In future they will probably not be configurable.
+   */
   features: {
     /**
      * Inline styles when rendering HTML (currently vite only).
