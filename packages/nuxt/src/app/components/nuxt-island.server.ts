@@ -9,15 +9,10 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getSlotProps } from './utils'
+import { SLOTNAME_RE, SSR_UID_RE, UID_ATTR, getSlotProps, pKey } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
-
-const pKey = '_islandPromises'
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
-const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
-const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 
 export default defineComponent({
     name: 'NuxtIsland',
@@ -51,7 +46,6 @@ export default defineComponent({
         const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
         const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
         const event = useRequestEvent()
-
 
         function setPayload(key: string, result: NuxtIslandResponse) {
             nuxtApp.payload.data[key] = {
@@ -117,7 +111,7 @@ export default defineComponent({
             return result
         }
 
-        async function fetchComponent(force = false) {
+        async function fetchComponent() {
             nuxtApp[pKey] = nuxtApp[pKey] || {}
             if (!nuxtApp[pKey][uid.value]) {
                 nuxtApp[pKey][uid.value] = _fetchComponent().finally(() => {

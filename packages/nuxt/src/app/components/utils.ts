@@ -185,3 +185,12 @@ export function getSlotProps (html: string) {
   }
   return data
 }
+
+/**
+ * key used to share island promises
+ */
+export const pKey = '_islandPromises'
+export const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
+export const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
+export const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
+export const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
