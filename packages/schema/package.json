@@ -53,7 +53,7 @@
     "vite": "5.0.10",
     "vue": "3.3.13",
     "vue-bundle-renderer": "2.0.0",
-    "vue-loader": "17.3.1",
+    "vue-loader": "17.4.0",
     "vue-router": "4.2.5",
     "webpack": "5.89.0",
     "webpack-dev-middleware": "6.1.1"
