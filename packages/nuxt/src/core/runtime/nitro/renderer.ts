@@ -498,15 +498,17 @@ function joinTags (tags: string[]) {
 }
 
 function joinAttrs (chunks: string[]) {
-  return chunks.join(' ')
+  return chunks.join(' ').trim()
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
-  return `<!DOCTYPE html>
-<html ${joinAttrs(html.htmlAttrs)}>
-<head>${joinTags(html.head)}</head>
-<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
-</html>`
+  return [
+    '<!DOCTYPE html>',
+    `<html ${joinAttrs(html.htmlAttrs)}`.trim() + '>',
+    `<head>${joinTags(html.head)}</head>`,
+    `<body ${joinAttrs(html.bodyAttrs)}`.trim() + `>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>`,
+    '</html>'
+  ].join('')
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
