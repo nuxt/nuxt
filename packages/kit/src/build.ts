@@ -1,6 +1,7 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
+import { toArray } from './utils'
 
 export interface ExtendConfigOptions {
   /**
@@ -108,11 +109,7 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 
@@ -125,11 +122,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 
