@@ -412,9 +412,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     island: Boolean(islandContext),
-    htmlAttrs: [htmlAttrs],
+    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
     head: normalizeChunks([headTags, ssrContext.styles]),
-    bodyAttrs: [bodyAttrs],
+    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceClientTeleport(ssrContext, replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)) : _rendered.html],
     bodyAppend: [bodyTags]
