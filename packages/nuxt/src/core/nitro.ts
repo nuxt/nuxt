@@ -162,10 +162,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...(nuxt.options.dev
           ? []
           : [
-            ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
-            '@nuxt/',
-            nuxt.options.buildDir
-          ]),
+              ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
+              '@nuxt/',
+              nuxt.options.buildDir
+            ]),
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
@@ -176,12 +176,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         // force include files used in generated code from the runtime-compiler
         ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
           ? [
-            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-              const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
-              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-              return targets
-            }, [])
-          ]
+              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+                return targets
+              }, [])
+            ]
           : []
       ]
     },
@@ -190,12 +190,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-          'estree-walker': 'unenv/runtime/mock/proxy',
-          '@babel/parser': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
-        },
+            'estree-walker': 'unenv/runtime/mock/proxy',
+            '@babel/parser': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
+          },
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
