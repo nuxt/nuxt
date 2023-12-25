@@ -85,10 +85,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
-        template: 'treemap',
-        projectRoot: nuxt.options.rootDir,
-        filename: join(nuxt.options.analyzeDir, '{name}.html')
-      }
+          template: 'treemap',
+          projectRoot: nuxt.options.rootDir,
+          filename: join(nuxt.options.analyzeDir, '{name}.html')
+        }
       : false,
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
@@ -142,10 +142,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nuxt.options.dev
         ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
         : {
-          dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-          maxAge: 31536000 /* 1 year */,
-          baseURL: nuxt.options.app.buildAssetsDir
-        },
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 31536000 /* 1 year */,
+            baseURL: nuxt.options.app.buildAssetsDir
+          },
       ...nuxt.options._layers
         .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
         .filter(dir => existsSync(dir))
