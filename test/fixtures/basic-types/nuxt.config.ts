@@ -4,6 +4,8 @@ export default defineNuxtConfig({
   experimental: {
     typedPages: true,
     appManifest: true,
+  },
+  future: {
     typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler'
   },
   buildDir: process.env.NITRO_BUILD_DIR,
