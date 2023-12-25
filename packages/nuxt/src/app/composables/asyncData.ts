@@ -2,6 +2,7 @@ import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, 
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
+import { toArray } from '../utils'
 import type { NuxtError} from './error';
 import { createError } from './error'
 import { onNuxtReady } from './ready'
@@ -378,7 +379,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
 
   await new Promise<void>(resolve => onNuxtReady(resolve))
 
-  const _keys = keys ? Array.isArray(keys) ? keys : [keys] : undefined
+  const _keys = keys ? toArray(keys) : undefined
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
@@ -389,7 +390,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     ? _allKeys
     : typeof keys === 'function'
       ? _allKeys.filter(keys)
-      : Array.isArray(keys) ? keys : [keys]
+      : toArray(keys)
 
   for (const key of _keys) {
     if (key in nuxtApp.payload.data) {
