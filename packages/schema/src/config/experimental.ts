@@ -13,7 +13,7 @@ export default defineUntypedSchema({
     typescriptBundlerResolution: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental.typescriptBundlerResolution')
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
         if (typeof val === 'boolean') { return val }
         const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
         if (setting) {
@@ -38,7 +38,7 @@ export default defineUntypedSchema({
     inlineStyles: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental.inlineSSRStyles')
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -54,7 +54,7 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental.noScripts') ?? false
+        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
       }
     },
   },
