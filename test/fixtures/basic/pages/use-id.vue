@@ -3,13 +3,13 @@ const id = useId()
 </script>
 
 <template>
-  <div>
+  <form>
     <h2 :id="id">
       id: {{ id }}
     </h2>
-    <ComponentWithIds />
-    <ComponentWithIds />
+    <LazyComponentWithIds />
     <ClientOnly><ComponentWithIds /></ClientOnly>
-  </div>
+    <ComponentWithIds />
+  </form>
 </template>
 

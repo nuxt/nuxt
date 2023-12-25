@@ -875,26 +875,25 @@ describe('composables', () => {
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
   it('`useId` should generate unique ids', async () => {
-    const html = await $fetch('/use-id')
+    const sanitiseHTML = (html: string) => html.replace(/ data-[^= ]+="[^"]+"/g, '').replace(/<!--[[\]]-->/, '')
 
-    expect(html).toContain('data-n-ids="1"')
-    expect(html).toContain('id="n:1"')
-    expect(html).toContain('data-n-ids="2,3"')
-    expect(html).toContain('id="n:2"')
-    expect(html).toContain('id="n:3"')
-    expect(html).toContain('data-n-ids="4,5"')
-    expect(html).toContain('id="n:4"')
-    expect(html).toContain('id="n:5"')
-    // Wrapped in <ClientOnly>
-    expect(html).not.toContain('data-n-ids="6,7"')
-    expect(html).not.toContain('id="n:6"')
-    expect(html).not.toContain('id="n:7"')
+    const serverHTML = await $fetch('/use-id').then(html => sanitiseHTML(html.match(/<form.*<\/form>/)![0]))
+    const ids = serverHTML.match(/id="[^"]*"/g)?.map(id => id.replace(/id="([^"]*)"/, '$1')) as string[]
+    const renderedForm = [
+      `<h2 id="${ids[0]}"> id: ${ids[0]}</h2><div><label for="${ids[1]}">Email</label><input id="${ids[1]}" name="email" type="email"><label for="${ids[2]}">Password</label><input id="${ids[2]}" name="password" type="password"></div>`,
+      `<div><label for="${ids[3]}">Email</label><input id="${ids[3]}" name="email" type="email"><label for="${ids[4]}">Password</label><input id="${ids[4]}" name="password" type="password"></div>`
+    ]
+    const clientOnlyServer = '<span></span>'
+    expect(serverHTML).toEqual(`<form>${renderedForm.join(clientOnlyServer)}</form>`)
 
-    const { page } = await renderPage('/use-id')
-    const clientHtml = await page.content()
-    expect(clientHtml).not.toContain('data-n-ids="6,7"')
-    expect(clientHtml).toContain('id="n:6"')
-    expect(clientHtml).toContain('id="n:7"')
+    const { page, pageErrors } = await renderPage('/use-id')
+    const clientHTML = await page.innerHTML('form')
+    const clientIds = clientHTML
+      .match(/id="[^"]*"/g)?.map(id => id.replace(/id="([^"]*)"/, '$1'))
+      .filter(i => !ids.includes(i)) as string[]
+    const clientOnlyClient = `<div><label for="${clientIds[0]}">Email</label><input id="${clientIds[0]}" name="email" type="email"><label for="${clientIds[1]}">Password</label><input id="${clientIds[1]}" name="password" type="password"></div>`
+    expect(sanitiseHTML(clientHTML)).toEqual(`${renderedForm.join(clientOnlyClient)}`)
+    expect(pageErrors).toEqual([])
     await page.close()
   })
 })
