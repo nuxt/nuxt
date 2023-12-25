@@ -498,7 +498,7 @@ function joinTags (tags: string[]) {
 }
 
 function joinAttrs (chunks: string[]) {
-  return chunks.join(' ').trim()
+  return chunks.join(' ')
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
