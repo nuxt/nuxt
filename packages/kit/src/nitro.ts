@@ -62,7 +62,7 @@ export function addPrerenderRoutes (routes: string | string[]) {
 
   routes = routes.filter(Boolean)
 
-  if (routes.length === 0) {
+  if (routes.length) {
     return
   }
 
@@ -148,7 +148,7 @@ export function addServerScanDir (dirs: string | string[], opts: { prepend?: boo
   nuxt.hook('nitro:config', (config) => {
     config.scanDirs = config.scanDirs || []
 
-    for (const dir of (Array.isArray(dirs) ? dirs : [dirs])) {
+    for (const dir of toArray(dirs)) {
       config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)
     }
   })

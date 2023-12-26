@@ -1,6 +1,63 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
+  future: {
+    /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+  },
+  /**
+   * `future` is for early opting-in to new features that will become default in a future
+   * (possibly major) version of the framework.
+   */
+  features: {
+    /**
+     * Inline styles when rendering HTML (currently vite only).
+     *
+     * You can also pass a function that receives the path of a Vue component
+     * and returns a boolean indicating whether to inline the styles for that component.
+     * @type {boolean | ((id?: string) => boolean)}
+     */
+    inlineStyles: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+          return false
+        }
+        // Enabled by default for vite prod with ssr
+        return val ?? true
+      }
+    },
+
+    /**
+     * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
+     */
+    noScripts: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+      }
+    },
+  },
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
@@ -72,29 +129,6 @@ export default defineUntypedSchema({
      */
     restoreState: false,
 
-    /**
-     * Inline styles when rendering HTML (currently vite only).
-     *
-     * You can also pass a function that receives the path of a Vue component
-     * and returns a boolean indicating whether to inline the styles for that component.
-     * @type {boolean | ((id?: string) => boolean)}
-     */
-    inlineSSRStyles: {
-      async $resolve (val, get) {
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
-          return false
-        }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
-      }
-    },
-
-    /**
-     * Turn off rendering of Nuxt scripts and JS resource hints.
-     * You can also disable scripts more granularly within `routeRules`.
-     */
-    noScripts: false,
-
     /** Render JSON payloads with support for revivifying complex types. */
     renderJsonPayloads: true,
 
@@ -151,27 +185,6 @@ export default defineUntypedSchema({
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
-
-    /**
-     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
-     * for frameworks like Nuxt and Vite.
-     *
-     * It improves type support when using modern libraries with `exports`.
-     *
-     * This is only not enabled by default because it could be a breaking change for some projects.
-     *
-     * See https://github.com/microsoft/TypeScript/pull/51669
-     */
-    typescriptBundlerResolution: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
-        if (setting) {
-          return setting.toLowerCase() === 'bundler'
-        }
-        return false
-      }
-    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old

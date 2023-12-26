@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.8.2",
+  "version": "3.9.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -54,13 +54,13 @@
     "postcss-loader": "^7.3.3",
     "postcss-url": "^10.1.3",
     "pug-plain-loader": "^1.1.0",
-    "std-env": "^3.6.0",
+    "std-env": "^3.7.0",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.3.2",
     "unplugin": "^1.5.1",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.0.0",
-    "vue-loader": "^17.3.1",
+    "vue-loader": "^17.4.0",
     "webpack": "^5.89.0",
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-dev-middleware": "^6.1.1",

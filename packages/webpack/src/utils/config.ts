@@ -2,6 +2,7 @@ import type { Configuration } from 'webpack'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
 import { cloneDeep } from 'lodash-es'
+import { toArray } from './index'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt
@@ -37,10 +38,7 @@ export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
 }
 
 export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
-  if (!Array.isArray(presets)) {
-    presets = [presets]
-  }
-  for (const preset of presets) {
+  for (const preset of toArray(presets)) {
     if (Array.isArray(preset)) {
       preset[0](ctx, preset[1])
     } else {

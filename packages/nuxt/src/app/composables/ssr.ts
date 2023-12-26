@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
+import { toArray } from '../utils'
 
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): H3Event {
   return nuxtApp.ssrContext?.event as H3Event
@@ -44,6 +45,6 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
 export function prerenderRoutes (path: string | string[]) {
   if (!import.meta.server || !import.meta.prerender) { return }
 
-  const paths = Array.isArray(path) ? path : [path]
+  const paths = toArray(path)
   appendHeader(useRequestEvent(), 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }

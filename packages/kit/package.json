@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "3.8.2",
+  "version": "3.9.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -42,7 +42,7 @@
     "semver": "^7.5.4",
     "ufo": "^1.3.2",
     "unctx": "^2.3.1",
-    "unimport": "^3.6.1",
+    "unimport": "^3.7.0",
     "untyped": "^1.4.0"
   },
   "devDependencies": {

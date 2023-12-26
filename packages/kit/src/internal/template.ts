@@ -6,6 +6,7 @@ import { genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 
 import type { NuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
+import { toArray } from '../utils'
 
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4
@@ -41,11 +42,7 @@ const serialize = (data: any) => JSON
 
 /** @deprecated */
 const importSources = (sources: string | string[], { lazy = false } = {}) => {
-  if (!Array.isArray(sources)) {
-    sources = [sources]
-  }
-
-  return sources.map((source) => {
+  return toArray(sources).map((source) => {
     if (lazy) {
       return `const ${genSafeVariableName(source)} = ${genDynamicImport(source, { comment: `webpackChunkName: ${JSON.stringify(source)}` })}`
     }

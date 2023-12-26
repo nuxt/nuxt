@@ -127,13 +127,12 @@ export function addWebpackPlugin (
   extendWebpackConfig((config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
-    const plugins = toArray(
-      typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
-    )
+    const plugin = typeof pluginOrGetter === 'function'
+      ? pluginOrGetter()
+      : pluginOrGetter
 
     config.plugins = config.plugins || []
-
-    config.plugins[method](...plugins)
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 
@@ -153,13 +152,12 @@ export function addVitePlugin (
   extendViteConfig((config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
-    const plugins = toArray(
-      typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
-    )
+    const plugin = typeof pluginOrGetter === 'function'
+      ? pluginOrGetter()
+      : pluginOrGetter
 
     config.plugins = config.plugins || []
-
-    config.plugins[method](...plugins)
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 

@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { configDefaults, defineConfig } from 'vitest/config'
+import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 import { isWindows } from 'std-env'
 import codspeedPlugin from '@codspeed/vitest-plugin'
 
@@ -16,6 +16,9 @@ export default defineConfig({
   test: {
     globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
+    coverage: {
+      exclude: [...coverageConfigDefaults.exclude, 'packages/nuxt/src/app', 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts']
+    },
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
     exclude: [...configDefaults.exclude, 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],
