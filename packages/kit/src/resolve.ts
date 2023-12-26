@@ -44,7 +44,7 @@ export async function resolvePath (
   const nuxt = tryUseNuxt()
   const cwd = options.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
   const extensions = options.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
-  const modulesDirectory = nuxt ? nuxt.options.modulesDir : []
+  const nodeModulesDirectories = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
   path = resolveAlias(path)
@@ -84,7 +84,7 @@ export async function resolvePath (
 
   // Try to resolve as module id
   const resolveModulePath = await _resolvePath(
-    _path, { url: [cwd, ...modulesDirectory] }
+    _path, { url: [cwd, ...nodeModulesDirectories] }
   ).catch(() => {})
 
   if (resolveModulePath) {
