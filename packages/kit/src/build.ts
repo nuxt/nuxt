@@ -50,22 +50,22 @@ export function extendWebpackConfig (
 ) {
   const nuxt = useNuxt()
 
-  if (
-    (options.dev === false && nuxt.options.dev)
-    || (options.build === false && !nuxt.options.dev)
-  ) {
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
     return
   }
 
   nuxt.hook('webpack:config', (configs: WebpackConfig[]) => {
     if (options.server !== false) {
-      const config = configs.find((index) => index.name === 'server')
+      const config = configs.find((config) => config.name === 'server')
 
       if (config) {
         callbackFunction(config)
       }
     } else if (options.client !== false) {
-      const config = configs.find((index) => index.name === 'client')
+      const config = configs.find((config) => config.name === 'client')
 
       if (config) {
         callbackFunction(config)
@@ -86,28 +86,26 @@ export function extendViteConfig (
 ) {
   const nuxt = useNuxt()
 
-  if (
-    (options.dev === false && nuxt.options.dev)
-    || (options.build === false && !nuxt.options.dev)
-  ) {
+  if (options.dev === false && nuxt.options.dev) {
+    return
+  }
+  if (options.build === false && nuxt.options.build) {
     return
   }
 
   if (options.server !== false && options.client !== false) {
     // Call callbackFunction() only once
-    nuxt.hook('vite:extend', ({ config }) => {
-      callbackFunction(config)
-    })
+    nuxt.hook('vite:extend', ({ config }) => callbackFunction(config))
 
     return
   }
 
   nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
-    if (
-      (options.server !== false && isServer)
-      || (options.client !== false && isClient)
-    ) {
-      callbackFunction(config)
+    if (options.server !== false && isServer) {
+      return callbackFunction(config)
+    }
+    if (options.client !== false && isClient) {
+      return callbackFunction(config)
     }
   })
 }
