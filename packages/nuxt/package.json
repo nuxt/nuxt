@@ -106,7 +106,7 @@
     "unctx": "^2.3.1",
     "unenv": "^1.8.0",
     "unimport": "^3.7.0",
-    "unplugin": "^1.5.1",
+    "unplugin": "^1.6.0",
     "unplugin-vue-router": "^0.7.0",
     "untyped": "^1.4.0",
     "vue": "^3.3.13",
