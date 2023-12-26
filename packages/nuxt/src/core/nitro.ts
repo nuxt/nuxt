@@ -51,7 +51,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     buildDir: nuxt.options.buildDir,
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
     framework: {
       name: 'nuxt',
@@ -117,7 +117,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         // TODO: address upstream issue with defu types...?
         ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any
       }
-    } ,
+    },
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, 'app.config')
@@ -207,8 +207,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
       'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
-      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
-      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
+      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.features.noScripts && !nuxt.options.dev,
+      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
