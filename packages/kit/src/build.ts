@@ -104,6 +104,7 @@ export function extendViteConfig (
     if (options.server !== false && isServer) {
       return callbackFunction(config)
     }
+
     if (options.client !== false && isClient) {
       return callbackFunction(config)
     }
