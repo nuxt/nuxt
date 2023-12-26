@@ -8,8 +8,7 @@ function resolveNuxtModuleEntryName (
   module: NuxtOptions['modules'][number]
 ): string | false {
   if (typeof module === 'object' && !Array.isArray(module)) {
-    // eslint-disable-next-line ts/no-explicit-any
-    return (module as any as NuxtModule).name
+      return (module as any as NuxtModule).name
   }
 
   if (Array.isArray(module)) {
@@ -32,7 +31,6 @@ export function hasNuxtModule (
   moduleName: string, nuxt: Nuxt = useNuxt()
 ): boolean {
   const hasInstalledModules = nuxt.options._installedModules.some(
-    // eslint-disable-next-line ts/no-unsafe-member-access
     (module) => module.meta.name === moduleName
   )
 
@@ -90,21 +88,16 @@ export async function getNuxtModuleVersion (
 
   // maybe the version got attached within the installed module instance?
   // @ts-expect-error _installedModules is not typed
-  // eslint-disable-next-line style/max-len
-  // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access, ts/no-unsafe-call
   const version = nuxt.options._installedModules
     .filter(
 
       // @ts-expect-error _installedModules is not typed
-      // eslint-disable-next-line ts/no-unsafe-member-access
       (module) => module.meta.name === moduleMeta.name
 
       // @ts-expect-error _installedModules is not typed
-    // eslint-disable-next-line ts/no-unsafe-member-access, ts/no-unsafe-return
     ).map((module) => module.meta.version)?.[0]
 
   if (version) {
-    // eslint-disable-next-line ts/no-unsafe-return
     return version
   }
 

@@ -120,7 +120,6 @@ export async function findPath (
     }
   }
 
-  // eslint-disable-next-line unicorn/no-null
   return null
 }
 

@@ -17,7 +17,6 @@ export function isIgnored (pathname: string): boolean {
   }
 
   if (!nuxt._ignore) {
-    // eslint-disable-next-line ts/no-unsafe-argument
     nuxt._ignore = ignore(nuxt.options.ignoreOptions)
 
     nuxt._ignore.add(resolveIgnorePatterns())

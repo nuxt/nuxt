@@ -92,15 +92,12 @@ export function addPrerenderRoutes (routes: string | string[]) {
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
 
-  // eslint-disable-next-line style/max-len
-  // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access, ts/no-explicit-any
   const nitro = (nuxt as any)._nitro
 
   if (!nitro) {
     throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
   }
 
-  // eslint-disable-next-line ts/no-unsafe-return
   return nitro
 }
 

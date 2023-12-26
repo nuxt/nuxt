@@ -14,7 +14,6 @@ import { addTemplate } from './template'
  * @see {@link https://nuxt.com/docs/api/kit/layout#addlayout documentation}
  */
 export function addLayout (
-  // eslint-disable-next-line ts/no-explicit-any
   this: any,
   template: NuxtTemplate | string,
   name?: string
@@ -25,8 +24,6 @@ export function addLayout (
 
   if (isNuxt2(nuxt)) {
     // Nuxt 2 adds layouts in options
-    // eslint-disable-next-line style/max-len
-    // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access, ts/no-explicit-any
     const layout = (nuxt.options as any).layouts[layoutName]
 
     if (layout) {
@@ -37,11 +34,9 @@ export function addLayout (
       return
     }
 
-    // eslint-disable-next-line ts/no-unsafe-member-access, ts/no-explicit-any
     (nuxt.options as any).layouts[layoutName] = `./${filename}`
 
     if (name === 'error') {
-      // eslint-disable-next-line ts/no-unsafe-call, ts/no-unsafe-member-access
       this.addErrorLayout(filename)
     }
 

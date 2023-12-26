@@ -26,14 +26,12 @@ export interface RequireModuleOptions extends ResolveModuleOptions {
   interopDefault?: boolean
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function isNodeModules (id: string) {
   // TODO: Follow symlinks
   return /[/\\]node_modules[/\\]/.test(id)
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function clearRequireCache (id: string) {
   if (isNodeModules(id)) {
@@ -43,7 +41,6 @@ function clearRequireCache (id: string) {
   const entry = getRequireCacheItem(id)
 
   if (!entry) {
-    // eslint-disable-next-line ts/no-dynamic-delete
     delete _require.cache[id]
 
     return
@@ -59,11 +56,9 @@ function clearRequireCache (id: string) {
     clearRequireCache(child.id)
   }
 
-  // eslint-disable-next-line ts/no-dynamic-delete
   delete _require.cache[id]
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 function getRequireCacheItem (id: string) {
   try {
@@ -82,7 +77,6 @@ export function getModulePaths (paths?: string[] | string) {
   ]
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, options: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
@@ -90,7 +84,6 @@ export function resolveModule (id: string, options: ResolveModuleOptions = {}) {
   }))
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function requireModule (id: string, options: RequireModuleOptions = {}) {
   // Resolve id
@@ -102,14 +95,11 @@ export function requireModule (id: string, options: RequireModuleOptions = {}) {
   }
 
   // Try to require
-  // eslint-disable-next-line ts/no-unsafe-assignment
   const requiredModule = _require(resolvedPath)
 
-  // eslint-disable-next-line ts/no-unsafe-return
   return requiredModule
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function importModule (id: string, options: RequireModuleOptions = {}) {
   const resolvedPath = resolveModule(id, options)
@@ -121,7 +111,6 @@ export function importModule (id: string, options: RequireModuleOptions = {}) {
   return import(pathToFileURL(resolvedPath).href)
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function tryImportModule (
   id: string,
@@ -134,14 +123,12 @@ export function tryImportModule (
   }
 }
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /** @deprecated Do not use CJS utils */
 export function tryRequireModule (
   id: string,
   options: RequireModuleOptions = {}
 ) {
   try {
-    // eslint-disable-next-line ts/no-unsafe-return
     return requireModule(id, options)
   } catch {
     // intentionally empty as this is a `try-` function

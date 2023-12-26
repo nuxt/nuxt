@@ -126,14 +126,12 @@ export function addWebpackPlugin (
   extendWebpackConfig((config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
 
-    // eslint-disable-next-line ts/no-unsafe-assignment
     const plugins = toArray(
       typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
     )
 
     config.plugins = config.plugins || []
 
-    // eslint-disable-next-line ts/no-unsafe-argument
     config.plugins[method](...plugins)
   }, options)
 }

@@ -1,7 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { interopDefault, resolvePath } from 'mlly'
 
-// eslint-disable-next-line jsdoc/require-param, jsdoc/require-returns
 /**
  * Resolve a module from a given root path using an algorithm patterned on
  * the upcoming `import.meta.resolve`. It returns a file URL

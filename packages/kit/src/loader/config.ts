@@ -11,8 +11,6 @@ export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 export async function loadNuxtConfig (
   options: LoadNuxtConfigOptions
 ): Promise<NuxtOptions> {
-  // eslint-disable-next-line style/max-len
-  // eslint-disable-next-line ts/no-unsafe-return, ts/no-explicit-any, ts/no-unsafe-member-access
   (globalThis as any).defineNuxtConfig = (config: any) => config
 
   const result = await loadConfig<NuxtConfig>({
@@ -25,11 +23,9 @@ export async function loadNuxtConfig (
     ...options
   })
 
-  // eslint-disable-next-line ts/no-unsafe-member-access, ts/no-explicit-any
   delete (globalThis as any).defineNuxtConfig
 
   const { configFile, layers = [], cwd, config } = result
-  // eslint-disable-next-line ts/no-non-null-assertion
   const nuxtConfig = config!
 
   // Fill config
@@ -45,14 +41,12 @@ export async function loadNuxtConfig (
 
     layer.config.rootDir = layer.config.rootDir ?? layer.cwd
 
-    // eslint-disable-next-line ts/no-non-null-assertion
     layer.config.srcDir = resolve(layer.config.rootDir!, layer.config.srcDir!)
   }
 
   // Filter layers
   const _layers = layers.filter((layer) => layer.configFile && !layer.configFile.endsWith('.nuxtrc'));
 
-  // eslint-disable-next-line ts/no-unsafe-member-access, ts/no-explicit-any
   (nuxtConfig as any)._layers = _layers
 
   // Ensure at least one layer remains (without nuxt.config)

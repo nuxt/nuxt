@@ -32,7 +32,6 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (
   // Resolves module options from inline options,
   // [configKey] in nuxt.config, defaults and schema
   async function getOptions (inlineOptions?: OptionsT, nuxt: Nuxt = useNuxt()) {
-    // eslint-disable-next-line ts/no-non-null-assertion
     const configKey = module.meta.configKey || module.meta.name!
 
     const _defaults = module.defaults instanceof Function
@@ -57,11 +56,9 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (
     inlineOptions: OptionsT,
     nuxt: Nuxt
   ) {
-    // eslint-disable-next-line ts/no-unnecessary-condition
     if (!nuxt) {
       // @ts-expect-error this is unknown
-      // eslint-disable-next-line ts/no-unsafe-assignment
-      nuxt = tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
+        nuxt = tryUseNuxt() || this.nuxt /* invoked by Nuxt 2 */
     }
 
     // Avoid duplicate installs
@@ -70,12 +67,10 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (
     if (uniqueKey) {
       nuxt.options._requiredModules ||= {}
 
-      // eslint-disable-next-line ts/no-unsafe-member-access
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }
 
-      // eslint-disable-next-line ts/no-unsafe-member-access
       nuxt.options._requiredModules[uniqueKey] = true
     }
 
@@ -107,8 +102,6 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (
     // Call setup
     const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10_000))}`
     const mark = performance.mark(key)
-    // eslint-disable-next-line style/max-len
-    // eslint-disable-next-line ts/no-unsafe-argument, unicorn/no-null, ts/no-explicit-any
     const result = await module.setup?.call(null as any, _options, nuxt) ?? {}
 
     // TODO: remove when Node 14 reaches EOL
@@ -117,7 +110,6 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (
     )
 
     // TODO: remove when Node 14 reaches EOL
-    // eslint-disable-next-line ts/no-unnecessary-condition
     const setupTime = perf
       ? Math.round((perf.duration * 100)) / 100
       : 0
@@ -179,12 +171,9 @@ function nuxt2Shims (nuxt: Nuxt) {
 
   // @ts-expect-error Nuxt 2 hook
   nuxt.hook('builder:prepared', (_builder, buildOptions) => {
-    // eslint-disable-next-line style/max-len
-    // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-call, ts/no-explicit-any, ts/no-unsafe-member-access, ts/no-unsafe-return
     virtualTemplates = buildOptions.templates.filter((t: any) => t.getContents)
 
     for (const template of virtualTemplates) {
-      // eslint-disable-next-line ts/no-unsafe-call, ts/no-unsafe-member-access
       buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
     }
   })
@@ -199,13 +188,9 @@ function nuxt2Shims (nuxt: Nuxt) {
         extensions: nuxt.options.extensions,
         plugins: nuxt.options.plugins,
         templates: [
-          // eslint-disable-next-line style/max-len
-          // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access
           ...templates.templatesFiles,
           ...virtualTemplates
         ],
-        // eslint-disable-next-line style/max-len
-        // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access
         templateVars: templates.templateVars
       }
     }

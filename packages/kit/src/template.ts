@@ -19,7 +19,6 @@ import { resolveNuxtModule } from './resolve'
  * @returns Nuxt template
  * @see {@link https://nuxt.com/docs/api/kit/templates#addtemplate documentation}
  */
-// eslint-disable-next-line ts/no-explicit-any
 export function addTemplate (template: NuxtTemplate<any> | string) {
   const nuxt = useNuxt()
 
@@ -45,7 +44,6 @@ export function addTemplate (template: NuxtTemplate<any> | string) {
  * @throws Will throw an error if template's filename does not end with '.d.ts'
  * @see {@link https://nuxt.com/docs/api/kit/templates#addtypetemplate documentation}
  */
-// eslint-disable-next-line ts/no-explicit-any
 export function addTypeTemplate (template: NuxtTypeTemplate<any>) {
   const nuxt = useNuxt()
 
@@ -64,9 +62,7 @@ export function addTypeTemplate (template: NuxtTypeTemplate<any>) {
 }
 
 export function normalizeTemplate (
-  // eslint-disable-next-line ts/no-explicit-any
   template: NuxtTemplate<any> | string
-// eslint-disable-next-line ts/no-explicit-any
 ): ResolvedNuxtTemplate<any> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
@@ -84,8 +80,6 @@ export function normalizeTemplate (
     if (!template.filename) {
       const sourcePath = parse(template.src)
 
-      // eslint-disable-next-line style/max-len
-      // eslint-disable-next-line ts/no-explicit-any, ts/no-unsafe-assignment, ts/no-unsafe-member-access
       template.filename = (template as any).fileName
         || `${basename(sourcePath.dir)}.${sourcePath.name}.${hash(template.src)}${sourcePath.ext}`
     }
@@ -111,7 +105,6 @@ export function normalizeTemplate (
     template.dst = resolve(nuxt.options.buildDir, template.filename)
   }
 
-  // eslint-disable-next-line ts/no-explicit-any
   return template as ResolvedNuxtTemplate<any>
 }
 
@@ -122,7 +115,6 @@ export function normalizeTemplate (
  * @see {@link https://nuxt.com/docs/api/kit/templates#updatetemplates documentation}
  */
 export async function updateTemplates (
-  // eslint-disable-next-line ts/no-explicit-any
   options?: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean }
 ) {
   await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
@@ -135,10 +127,7 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const modulePaths = await resolveNuxtModule(rootDirectoryWithSlash,
     nuxt.options._installedModules
-      // eslint-disable-next-line ts/no-unsafe-member-access
       .filter((m) => m.entryPath)
-      // eslint-disable-next-line style/max-len
-      // eslint-disable-next-line ts/no-unsafe-argument, ts/no-unsafe-member-access
       .map((m) => getDirectory(m.entryPath))
   )
 
@@ -205,9 +194,7 @@ export async function writeTypes (nuxt: Nuxt) {
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
-  // eslint-disable-next-line ts/no-non-null-assertion
   const basePath = tsConfig.compilerOptions!.baseUrl
-    // eslint-disable-next-line ts/no-unsafe-argument, ts/no-non-null-assertion
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
@@ -240,10 +227,8 @@ export async function writeTypes (nuxt: Nuxt) {
     const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
 
     if (stats?.isDirectory()) {
-      // eslint-disable-next-line ts/no-unsafe-member-access
       tsConfig.compilerOptions.paths[alias] = [relativePath]
 
-      // eslint-disable-next-line ts/no-unsafe-member-access
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
 
       if (!absolutePath.startsWith(rootDirectoryWithSlash)) {
@@ -258,7 +243,6 @@ export async function writeTypes (nuxt: Nuxt) {
         // non-existent file probably shouldn't be resolved
         : aliases[alias]
 
-      // eslint-disable-next-line ts/no-unsafe-member-access
       tsConfig.compilerOptions.paths[alias] = [path]
 
       if (!absolutePath.startsWith(rootDirectoryWithSlash)) {
@@ -269,7 +253,6 @@ export async function writeTypes (nuxt: Nuxt) {
 
   const references: TSReference[] = await Promise.all([
     ...nuxt.options.modules,
-    // eslint-disable-next-line ts/no-unsafe-assignment
     ...nuxt.options._modules
   ]
     .filter((f) => typeof f === 'string')
@@ -289,13 +272,9 @@ export async function writeTypes (nuxt: Nuxt) {
   await nuxt.callHook('prepare:types', { references, declarations, tsConfig })
 
   for (const alias in tsConfig.compilerOptions.paths) {
-    // eslint-disable-next-line style/max-len
-    // eslint-disable-next-line ts/no-unsafe-assignment, ts/no-unsafe-member-access
     const paths = tsConfig.compilerOptions.paths[alias]
 
-    // eslint-disable-next-line ts/no-unsafe-member-access
     tsConfig.compilerOptions.paths[alias] = await Promise.all(
-      // eslint-disable-next-line ts/no-unsafe-member-access, ts/no-unsafe-call
       paths.map(async (path: string) => {
         if (!isAbsolute(path)) {
           return path

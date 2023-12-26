@@ -20,7 +20,6 @@ const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
  */
 export async function installModule (
   moduleToInstall: string | NuxtModule,
-  // eslint-disable-next-line ts/no-explicit-any
   inlineOptions?: any,
   nuxt: Nuxt = useNuxt()
 ) {
@@ -43,12 +42,10 @@ export async function installModule (
 
   // Call module
   const result = (
-    // eslint-disable-next-line ts/no-unnecessary-condition
     isNuxt2()
 
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
-      // eslint-disable-next-line ts/no-unsafe-argument
-      ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
+        ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
       : await nuxtModule(inlineOptions, nuxt)
   ) ?? {}
 
@@ -68,7 +65,6 @@ export async function installModule (
     }
   }
 
-  // eslint-disable-next-line ts/no-unnecessary-condition
   nuxt.options._installedModules ||= []
 
   nuxt.options._installedModules.push({
@@ -153,6 +149,5 @@ export async function loadNuxtModuleInstance (
   return {
     nuxtModule,
     buildTimeModuleMeta
-  // eslint-disable-next-line ts/no-explicit-any
   } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
 }
