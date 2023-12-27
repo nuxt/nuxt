@@ -41,6 +41,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
+    let previousPageKey: string | undefined | false
 
     expose({ pageRef })
 
@@ -88,6 +89,10 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
+          if (!nuxtApp.isHydrating && previousPageKey === key) {
+            nuxtApp.callHook('page:loading:end')
+          }
+          previousPageKey = key
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([
