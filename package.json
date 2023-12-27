@@ -83,9 +83,9 @@
     "vue": "3.3.13",
     "vue-eslint-parser": "9.3.2",
     "vue-router": "4.2.5",
-    "vue-tsc": "1.8.26"
+    "vue-tsc": "1.8.27"
   },
-  "packageManager": "pnpm@8.12.1",
+  "packageManager": "pnpm@8.13.1",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
