@@ -26,7 +26,7 @@ export default defineNuxtModule({
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
-
+    const runtimeDir = resolve(distDir, 'pages/runtime')
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
     )
@@ -189,8 +189,6 @@ export default defineNuxtModule({
         }
       })
     }
-
-    const runtimeDir = resolve(distDir, 'pages/runtime')
 
     // Add $router types
     nuxt.hook('prepare:types', ({ references }) => {
