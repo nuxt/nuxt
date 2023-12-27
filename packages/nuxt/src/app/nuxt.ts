@@ -10,6 +10,7 @@ import type { H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import type { Storage } from 'unstorage'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
@@ -69,6 +70,8 @@ export interface NuxtSSRContext extends SSRContext {
   _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
+  /** @internal */
+  _sharedStorage?: Storage
 }
 
 export interface NuxtPayload {

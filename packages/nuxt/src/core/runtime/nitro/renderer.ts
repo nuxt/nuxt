@@ -172,7 +172,6 @@ const getSPARenderer = lazyCachedFunction(async () => {
   }
 })
 
-const sharedCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:shared') : null
 const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
@@ -281,11 +280,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     islandContext
   }
 
-  if (import.meta.prerender && process.env.NUXT_SHARED_DATA && !ssrError) {
-    ssrContext.payload.data = {}
-    for (const key of await sharedCache!.getKeys() || []) {
-      ssrContext.payload.data[key] = await sharedCache!.getItem(key)
-    }
+  if (import.meta.prerender && process.env.NUXT_SHARED_DATA) {
+    ssrContext._sharedStorage = useStorage('internal:nuxt:prerender:shared')
   }
 
   // Whether we are prerendering route
@@ -430,11 +426,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Allow hooking into the rendered result
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
-  if (import.meta.prerender && process.env.NUXT_SHARED_DATA) {
-    for (const key in ssrContext.payload.data) {
-      await sharedCache!.setItem(key, ssrContext.payload.data[key])
-    }
-  }
 
   // Response for component islands
   if (process.env.NUXT_COMPONENT_ISLANDS && islandContext) {

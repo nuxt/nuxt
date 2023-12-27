@@ -135,22 +135,32 @@ export function useAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
-  let [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let [key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [asyncData] key must be a string.')
   }
-  if (typeof handler !== 'function') {
+  if (typeof _handler !== 'function') {
     throw new TypeError('[nuxt] [asyncData] handler must be a function.')
   }
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
 
+  // When prerendering, share payload data automatically between requests
+  const handler = import.meta.client || !import.meta.prerender || !nuxt.ssrContext?._sharedStorage ? _handler : async () => {
+    const value = await nuxt.ssrContext!._sharedStorage!.getItem(key)
+    if (value) { return value as ResT }
+
+    const val = await _handler()
+    await nuxt.ssrContext!._sharedStorage!.setItem(key, val!)
+    return val
+  }
+
   // Used to get default values
   const getDefault = () => null
-  const getDefaultCachedData = () => import.meta.prerender || nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
+  const getDefaultCachedData = () => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]
 
   // Apply defaults
   options.server = options.server ?? true
