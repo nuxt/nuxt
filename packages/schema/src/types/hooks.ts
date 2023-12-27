@@ -179,7 +179,7 @@ export interface NuxtHooks {
    * @param context An object with `files` containing an array of router options files.
    * @returns Promise
    */
-  'pages:router-options': (context: { files: Array<{ path: string, optional?: boolean }> }) => HookResult
+  'pages:routerOptions': (context: { files: Array<{ path: string, optional?: boolean }> }) => HookResult
 
   /**
    * Called when the dev middleware is being registered on the Nitro dev server.

@@ -43,7 +43,7 @@ export default defineNuxtModule({
         if (path) { context.files.push({ path }) }
       }))
 
-      await nuxt.callHook('pages:router-options', context)
+      await nuxt.callHook('pages:routerOptions', context)
       return context.files
     }
 
