@@ -14,6 +14,7 @@ export function buildAssetsURL (...path: string[]): string {
 }
 
 export function publicAssetsURL (...path: string[]): string {
-  const publicBase = useRuntimeConfig().app.cdnURL as string || useRuntimeConfig().app.baseURL
+  const app = useRuntimeConfig().app
+  const publicBase = app.cdnURL as string || app.baseURL
   return path.length ? joinURL(publicBase, ...path) : publicBase
 }

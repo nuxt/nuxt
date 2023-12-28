@@ -12,6 +12,7 @@ import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Pr
 import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
+import { toArray } from '../utils'
 
 enum SegmentParserState {
   initial,
@@ -325,7 +326,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       let aliasCode = `${metaImportName}?.alias || []`
-      const alias = Array.isArray(page.alias) ? page.alias : [page.alias].filter(Boolean)
+      const alias = toArray(page.alias).filter(Boolean)
       if (alias.length) {
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }

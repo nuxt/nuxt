@@ -498,13 +498,15 @@ describe('rich payloads', () => {
     const html = await $fetch('/json-payload')
     for (const test of [
       'Date: true',
-      'Recursive objects: true',
+      'BigInt: true',
+      'Error: true',
       'Shallow reactive: true',
       'Shallow ref: true',
       'Undefined ref: true',
+      'BigInt ref:',
       'Reactive: true',
       'Ref: true',
-      'Error: true'
+      'Recursive objects: true',
     ]) {
       expect(html).toContain(test)
     }

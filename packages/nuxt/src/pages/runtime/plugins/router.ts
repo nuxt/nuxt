@@ -13,6 +13,7 @@ import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
+import { toArray } from '../utils'
 import type { Plugin, RouteMiddleware } from '#app'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
@@ -155,12 +156,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         for (const component of to.matched) {
           const componentMiddleware = component.meta.middleware as MiddlewareDef | MiddlewareDef[]
           if (!componentMiddleware) { continue }
-          if (Array.isArray(componentMiddleware)) {
-            for (const entry of componentMiddleware) {
-              middlewareEntries.add(entry)
-            }
-          } else {
-            middlewareEntries.add(componentMiddleware)
+          for (const entry of toArray(componentMiddleware)) {
+            middlewareEntries.add(entry)
           }
         }
 

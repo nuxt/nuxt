@@ -166,7 +166,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
-        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        shouldInline: ctx.nuxt.options.features.inlineStyles,
         components: ctx.nuxt.apps.default.components,
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',
