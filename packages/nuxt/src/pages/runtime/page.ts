@@ -4,6 +4,7 @@ import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
+import { toArray } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
@@ -127,14 +128,10 @@ export default defineComponent({
   }
 })
 
-function _toArray (val: any) {
-  return Array.isArray(val) ? val : (val ? [val] : [])
-}
-
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
-    onAfterLeave: _toArray(prop.onAfterLeave)
+    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
   }))
   return defu(..._props as [TransitionProps, TransitionProps])
 }

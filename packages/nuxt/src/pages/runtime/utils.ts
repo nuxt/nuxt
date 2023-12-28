@@ -21,3 +21,7 @@ export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: str
 export const wrapInKeepAlive = (props: any, children: any) => {
   return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }
+
+export function toArray<T> (value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}
