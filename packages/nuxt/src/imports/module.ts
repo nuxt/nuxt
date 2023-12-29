@@ -163,7 +163,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           return join(dir, name, subpath || '')
         }) ?? path
       }
-      if (isAbsolute(path)) {
+      else {
         path = relative(join(nuxt.options.buildDir, 'types'), path)
       }
 
