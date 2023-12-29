@@ -62,10 +62,15 @@ export default defineComponent({
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
           if(routeProps.route.meta.server) {
-            return h(NuxtIsland, {
+            return h(Suspense, {
+              suspensible: true,
+              onResolve: () => nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) 
+            }, {
+              default: () => h(NuxtIsland, {
                 props: attrs,
                 name: routeProps.route.name as string,
-              }) 
+              })
+            })
           }
           const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
           const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
