@@ -153,7 +153,11 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
         return
       }
       let path = resolveAlias(from)
-      if (!isAbsolute(path)) {
+      if (isAbsolute(path)) {
+        path = relative(join(nuxt.options.buildDir, 'types'), path)
+        
+      }
+      else {
         path = await tryResolveModule(from, nuxt.options.modulesDir).then(async (r) => {
           if (!r) { return r }
 
@@ -162,9 +166,6 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           const subpath = await lookupNodeModuleSubpath(r)
           return join(dir, name, subpath || '')
         }) ?? path
-      }
-      else {
-        path = relative(join(nuxt.options.buildDir, 'types'), path)
       }
 
       path = stripExtension(path)
