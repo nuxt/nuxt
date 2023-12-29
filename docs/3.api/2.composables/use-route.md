@@ -44,4 +44,8 @@ Apart from dynamic parameters and query parameters, `useRoute()` also provides t
 - `path`: encoded pathname section of the URL
 - `redirectedFrom`: route location that was attempted to access before ending up on the current route location
 
+::callout
+The router isn't able to detect if there is an anchor in the path server-side. Using the `fullPath` in the template can trigger hydration issues.
+::
+
 :read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouteLocationNormalizedLoaded.html"}
