@@ -1,6 +1,10 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
+  /**
+   * `future` is for early opting-in to new features that will become default in a future
+   * (possibly major) version of the framework.
+   */
   future: {
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
@@ -24,8 +28,7 @@ export default defineUntypedSchema({
     },
   },
   /**
-   * `future` is for early opting-in to new features that will become default in a future
-   * (possibly major) version of the framework.
+   * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
    */
   features: {
     /**

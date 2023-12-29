@@ -115,7 +115,8 @@ export async function hasNuxtCompatibility (
  * @see {@link https://nuxt.com/docs/api/kit/compatibility#isnuxt2 documentation}
  */
 export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
-  return getNuxtVersion(nuxt).startsWith('2.')
+  const version = getNuxtVersion(nuxt)
+  return version[0] === '2' && version[1] === '.'
 }
 
 /**
@@ -125,7 +126,8 @@ export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
  * @see {@link https://nuxt.com/docs/api/kit/compatibility#isnuxt3 documentation}
  */
 export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
-  return getNuxtVersion(nuxt).startsWith('3.')
+  const version = getNuxtVersion(nuxt)
+  return version[0] === '3' && version[1] === '.'
 }
 
 /**
