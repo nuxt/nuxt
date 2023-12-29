@@ -13,7 +13,6 @@ links:
 ```ts
 // Create a reactive state and set default value
 const count = useState('counter', () => Math.round(Math.random() * 100))
-
 ```
 
 :read-more{to="/docs/getting-started/state-management"}

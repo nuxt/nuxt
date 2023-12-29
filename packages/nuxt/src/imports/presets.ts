@@ -42,6 +42,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/hydrate'
   },
   {
+    imports: ['callOnce'],
+    from: '#app/composables/once'
+  },
+  {
     imports: ['useState', 'clearNuxtState'],
     from: '#app/composables/state'
   },
@@ -58,7 +62,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie'
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr'
   },
   {
@@ -76,6 +80,10 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['isPrerendered', 'loadPayload', 'preloadPayload', 'definePayloadReducer', 'definePayloadReviver'],
     from: '#app/composables/payload'
+  },
+  {
+    imports: ['useLoadingIndicator'],
+    from: '#app/composables/loading-indicator'
   },
   {
     imports: ['getAppManifest', 'getRouteRules'],

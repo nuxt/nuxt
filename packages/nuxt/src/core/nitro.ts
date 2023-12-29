@@ -6,7 +6,7 @@ import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -16,6 +16,7 @@ import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
+import { toArray } from '../utils'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
@@ -50,7 +51,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     buildDir: nuxt.options.buildDir,
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
-      typescriptBundlerResolution: nuxt.options.experimental.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
+      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler'
     },
     framework: {
       name: 'nuxt',
@@ -98,7 +99,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#spa-template': () => `export const template = ${JSON.stringify(spaLoadingTemplate(nuxt))}`
+      '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`
     },
     routeRules: {
       '/__nuxt_error': { cache: false }
@@ -116,7 +117,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         // TODO: address upstream issue with defu types...?
         ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any
       }
-    } ,
+    },
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, 'app.config')
@@ -206,8 +207,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
       'process.env.NUXT_EARLY_HINTS': nuxt.options.experimental.writeEarlyHints !== false,
-      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.experimental.noScripts && !nuxt.options.dev,
-      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.experimental.inlineSSRStyles,
+      'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.features.noScripts && !nuxt.options.dev,
+      'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
@@ -333,9 +334,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
-  nitroConfig.rollupConfig!.plugins = Array.isArray(nitroConfig.rollupConfig!.plugins) ? nitroConfig.rollupConfig!.plugins : [nitroConfig.rollupConfig!.plugins]
+  nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
   nitroConfig.rollupConfig!.plugins!.push(
-    // @ts-expect-error rollup 4 types
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
       patterns: [
@@ -377,8 +377,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const nitro = await createNitro(nitroConfig)
 
   // Trigger Nitro reload when SPA loading template changes
+  const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
   nuxt.hook('builder:watch', async (_event, path) => {
-    if (normalize(path) === spaLoadingTemplatePath(nuxt)) {
+    if (normalize(path) === spaLoadingTemplateFilePath) {
       await nitro.hooks.callHook('rollup:reload')
     }
   })
@@ -524,16 +525,20 @@ function relativeWithDot (from: string, to: string) {
   return relative(from, to).replace(/^([^.])/, './$1') || '.'
 }
 
-function spaLoadingTemplatePath (nuxt: Nuxt) {
-  return typeof nuxt.options.spaLoadingTemplate === 'string'
-    ? resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
-    : resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+async function spaLoadingTemplatePath (nuxt: Nuxt) {
+  if (typeof nuxt.options.spaLoadingTemplate === 'string') {
+    return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
+  }
+
+  const possiblePaths = nuxt.options._layers.map(layer => join(layer.config.srcDir, 'app/spa-loading-template.html'))
+
+  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
 }
 
-function spaLoadingTemplate (nuxt: Nuxt) {
+async function spaLoadingTemplate (nuxt: Nuxt) {
   if (nuxt.options.spaLoadingTemplate === false) { return '' }
 
-  const spaLoadingTemplate = spaLoadingTemplatePath(nuxt)
+  const spaLoadingTemplate = await spaLoadingTemplatePath(nuxt)
 
   try {
     if (existsSync(spaLoadingTemplate)) {

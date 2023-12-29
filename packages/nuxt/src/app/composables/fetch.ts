@@ -99,7 +99,7 @@ export function useFetch<
 
   const key = _key === autoKey ? '$f' + _key : _key
 
-  if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
+  if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
   }
 
@@ -155,7 +155,7 @@ export function useFetch<
 
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
-      const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/') && (!toValue(opts.baseURL) || toValue(opts.baseURL)!.startsWith('/'))
+      const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
       if (isLocalFetch) {
         _$fetch = useRequestFetch()
       }
@@ -227,8 +227,7 @@ function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_
     if (!obj) { continue }
 
     const unwrapped: Record<string, string> = {}
-    const iterator = Array.isArray(obj) ? obj : Object.entries(obj)
-    for (const [key, value] of iterator) {
+    for (const [key, value] of Object.entries(obj)) {
       unwrapped[toValue(key)] = toValue(value)
     }
     segments.push(unwrapped)

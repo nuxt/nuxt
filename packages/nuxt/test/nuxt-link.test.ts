@@ -263,10 +263,15 @@ describe('nuxt-link:propsOrAttributes', () => {
 
         expect(nuxtLink({ to: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
         expect(nuxtLink({ to: '/to/' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ to: '/to#abc' }, appendSlashOptions).props.to).toEqual('/to/#abc')
         expect(nuxtLink({ to: { name: 'to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
         expect(nuxtLink({ to: { path: '/to' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/')
+        expect(nuxtLink({ to: { path: '/to#abc' } }, appendSlashOptions).props.to).toHaveProperty('path', '/to/#abc')
         expect(nuxtLink({ href: '/to' }, appendSlashOptions).props.to).toEqual('/to/')
+        expect(nuxtLink({ href: '/to#abc' }, appendSlashOptions).props.to).toEqual('/to/#abc')
         expect(nuxtLink({ to: '/to?param=1' }, appendSlashOptions).props.to).toEqual('/to/?param=1')
+        expect(nuxtLink({ to: '/to?param=1#abc' }, appendSlashOptions).props.to).toEqual('/to/?param=1#abc')
+        expect(nuxtLink({ href: 'mailto:test@example.com' }, appendSlashOptions).props.href).toEqual('mailto:test@example.com')
       })
 
       it('remove slash', () => {
@@ -274,10 +279,14 @@ describe('nuxt-link:propsOrAttributes', () => {
 
         expect(nuxtLink({ to: '/to' }, removeSlashOptions).props.to).toEqual('/to')
         expect(nuxtLink({ to: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
+        expect(nuxtLink({ to: '/to/#abc' }, removeSlashOptions).props.to).toEqual('/to#abc')
         expect(nuxtLink({ to: { name: 'to' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
         expect(nuxtLink({ to: { path: '/to/' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to')
+        expect(nuxtLink({ to: { path: '/to/#abc' } }, removeSlashOptions).props.to).toHaveProperty('path', '/to#abc')
         expect(nuxtLink({ href: '/to/' }, removeSlashOptions).props.to).toEqual('/to')
         expect(nuxtLink({ to: '/to/?param=1' }, removeSlashOptions).props.to).toEqual('/to?param=1')
+        expect(nuxtLink({ to: '/to/?param=1#abc' }, removeSlashOptions).props.to).toEqual('/to?param=1#abc')
+        expect(nuxtLink({ href: 'mailto:test@example.com' }, removeSlashOptions).props.href).toEqual('mailto:test@example.com')
       })
     })
   })

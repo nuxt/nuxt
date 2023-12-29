@@ -211,7 +211,7 @@ export default defineUntypedSchema({
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+          filter: (url: string, _resourcePath: string) => url[0] !== '/'
         },
         esModule: false
       },
@@ -219,7 +219,7 @@ export default defineUntypedSchema({
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+          filter: (url: string, _resourcePath: string) => url[0] !== '/'
         },
         esModule: false,
         modules: {
