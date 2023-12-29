@@ -85,12 +85,6 @@ export default defineComponent({
     // If not hydrating, fetchComponent() will set it
     const rawPayload = nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? emptyPayload() : emptyPayload()
 
-    const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks'| 'props' | 'teleports'> = {
-      chunks: rawPayload.chunks,
-      props: rawPayload.props,
-      teleports: rawPayload.teleports
-    }
-
     const ssrHTML = ref<string>(getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || '')
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
@@ -103,8 +97,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (!canLoadClientComponent.value) {
-        // replace all client components with their static content
-        for (const [key, value] of Object.entries(nonReactivePayload.teleports || {})) {
+        for (const [key, value] of Object.entries(rawPayload.teleports || {})) {
           html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
             return full + value
           })
@@ -168,10 +161,10 @@ export default defineComponent({
           if (canLoadClientComponent.value && res.chunks) {
             await loadComponents(props.source, res.chunks)
           }
-          nonReactivePayload.props = res.props
+          rawPayload.props = res.props
         }
-        nonReactivePayload.teleports = res.teleports
-        nonReactivePayload.chunks = res.chunks
+        rawPayload.teleports = res.teleports
+        rawPayload.chunks = res.chunks
 
         // must await next tick for Teleport to work correctly so vue can teleport the content to the new static node
         // teleport update is based on uid
@@ -199,8 +192,8 @@ export default defineComponent({
       fetchComponent()
     } else if (!nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if (selectiveClient && canLoadClientComponent.value && nonReactivePayload.chunks) {
-      await loadComponents(props.source, nonReactivePayload.chunks)
+    } else if (selectiveClient && canLoadClientComponent.value && rawPayload.chunks) {
+      await loadComponents(props.source, rawPayload.chunks)
     }
 
     return () => {
@@ -213,6 +206,7 @@ export default defineComponent({
       }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
 
       if (uid.value && (mounted.value || nuxtApp.isHydrating) && html.value) {
+        // render slots
         for (const slot in slots) {
           if (availableSlots.value.includes(slot)) {
             nodes.push(createVNode(Teleport, { to:  `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` }, {
@@ -220,8 +214,10 @@ export default defineComponent({
             }))
           }
         }
+
+        // render components
         if (selectiveClient && canLoadClientComponent.value) {
-          for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
+          for (const [id, props] of Object.entries(rawPayload.props ?? {})) {
             const component = components!.get(id.split('-')[0])!
             const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
               default: () => {

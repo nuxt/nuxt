@@ -9,7 +9,7 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { SLOTNAME_RE, SSR_UID_RE, UID_ATTR, getSlotProps, nuxtIslandProps, pKey } from './utils'
+import { SLOTNAME_RE, SSR_UID_RE, UID_ATTR, getSlotProps, pKey, nuxtIslandProps } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
