@@ -303,11 +303,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const route = Object.fromEntries(
-        Object.entries(page)
-          .filter(([key, value]) => key !== 'file' && (Array.isArray(value) ? value.length : value))
-          .map(([key, value]) => [key, JSON.stringify(value)])
-      ) as Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string }
+      const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
+      for (const [key, value] of Object.entries(page)) {
+        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) { 
+          route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
+        }
+      }
 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports).routes
