@@ -2,9 +2,7 @@ import type { Component } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
-import { appendResponseHeader } from 'h3'
 import { useHead } from '@unhead/vue'
-import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
 import { join } from 'pathe'
@@ -12,16 +10,11 @@ import { join } from 'pathe'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { useRequestEvent } from '../composables/ssr'
-import { getFragmentHTML, getSlotProps } from './utils'
+import { SLOTNAME_RE, SSR_UID_RE, UID_ATTR, getFragmentHTML, getSlotProps, nuxtIslandProps, pKey } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
-const pKey = '_islandPromises'
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
-const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
-const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
 let id = 0
@@ -55,29 +48,10 @@ function emptyPayload () {
 export default defineComponent({
   name: 'NuxtIsland',
   props: {
-    name: {
-      type: String,
-      required: true
-    },
-    lazy: Boolean,
-    props: {
-      type: Object,
-      default: () => undefined
-    },
-    context: {
-      type: Object,
-      default: () => ({})
-    },
-    source: {
-      type: String,
-      default: () => undefined
-    },
-    dangerouslyLoadClientComponents: {
-      type: Boolean,
-      default: false
-    }
+    ...nuxtIslandProps
   },
   async setup (props, { slots, expose }) {
+    // used to force re-render the static content
     const key = ref(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
@@ -120,6 +94,7 @@ export default defineComponent({
     const ssrHTML = ref<string>(getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || '')
 
     const slotProps = computed(() => getSlotProps(ssrHTML.value))
+    // during hydration we directly retrieve the uid from the payload
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
 
@@ -128,6 +103,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (!canLoadClientComponent.value) {
+        // replace all client components with their static content
         for (const [key, value] of Object.entries(nonReactivePayload.teleports || {})) {
           html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
             return full + value
@@ -184,6 +160,7 @@ export default defineComponent({
         ssrHTML.value = res.html.replace(UID_ATTR, () => {
           return `nuxt-ssr-component-uid="${getId()}"`
         })
+        // force re-render the static content
         key.value++
         error.value = null
 
@@ -196,7 +173,8 @@ export default defineComponent({
         nonReactivePayload.teleports = res.teleports
         nonReactivePayload.chunks = res.chunks
 
-        // must await next tick for Teleport to work correctly with static node re-rendering
+        // must await next tick for Teleport to work correctly so vue can teleport the content to the new static node
+        // teleport update is based on uid
         await nextTick()
        
         setUid()
@@ -230,6 +208,7 @@ export default defineComponent({
         return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
       }
       const nodes = [createVNode(Fragment, {
+        // static nodes in build need to be keyed to force it to re-render
         key: key.value
       }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
 

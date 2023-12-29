@@ -9,40 +9,15 @@ import { joinURL, withQuery } from 'ufo'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getSlotProps } from './utils'
+import { SLOTNAME_RE, SSR_UID_RE, UID_ATTR, getSlotProps, nuxtIslandProps, pKey } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
-const pKey = '_islandPromises'
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
-const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
-const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
-
 export default defineComponent({
     name: 'NuxtIsland',
     props: {
-        name: {
-            type: String,
-            required: true
-        },
-        lazy: Boolean,
-        props: {
-            type: Object,
-            default: () => undefined
-        },
-        context: {
-            type: Object,
-            default: () => ({})
-        },
-        source: {
-            type: String,
-            default: () => undefined
-        },
-        dangerouslyLoadClientComponents: {
-            type: Boolean,
-            default: false
-        }
+        ...nuxtIslandProps
     },
     async setup(props, { slots }) {
         const error = ref<unknown>(null)
@@ -51,7 +26,6 @@ export default defineComponent({
         const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
         const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
         const event = useRequestEvent()
-
 
         function setPayload(key: string, result: NuxtIslandResponse) {
             nuxtApp.payload.data[key] = {
@@ -69,11 +43,7 @@ export default defineComponent({
                 ...result
             }
         }
-        const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks' | 'props' | 'teleports'> = {
-            chunks: {},
-            props: {},
-            teleports: {}
-        }
+        const teleports: NuxtIslandResponse['teleports'] = {}
 
         const ssrHTML = ref<string>('')
 
@@ -116,37 +86,33 @@ export default defineComponent({
             setPayload(key, result)
             return result
         }
-
-        async function fetchComponent(force = false) {
+ 
+        try {
             nuxtApp[pKey] = nuxtApp[pKey] || {}
             if (!nuxtApp[pKey][uid.value]) {
                 nuxtApp[pKey][uid.value] = _fetchComponent().finally(() => {
                     delete nuxtApp[pKey]![uid.value]
                 })
             }
-            try {
-                const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-                cHead.value.link = res.head.link
-                cHead.value.style = res.head.style
-                ssrHTML.value = res.html.replace(UID_ATTR, () => {
-                    return `nuxt-ssr-component-uid="${randomUUID()}"`
-                })
-                nonReactivePayload.teleports = res.teleports
-                nonReactivePayload.chunks = res.chunks
+            const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
+            cHead.value.link = res.head.link
+            cHead.value.style = res.head.style
+            ssrHTML.value = res.html.replace(UID_ATTR, () => {
+                return `nuxt-ssr-component-uid="${randomUUID()}"`
+            })
+            Object.assign(teleports, res.teleports)
 
-                setUid()
-            } catch (e) {
-                error.value = e
-            }
+            setUid()
+        } catch(e) {
+            error.value = e
         }
 
-        await fetchComponent()
-
+   
         return () => {
             if (!ssrHTML.value || error.value) {
                 return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
             }
-            const nodes = [createVNode(Fragment, {}, [h(createStaticVNode(ssrHTML.value || '<div></div>', 1))])]
+            const nodes = [createVNode(Fragment, null, [h(createStaticVNode(ssrHTML.value || '<div></div>', 1))])]
 
             // render slots and teleports
             if (uid.value && ssrHTML.value) {
@@ -157,7 +123,7 @@ export default defineComponent({
                         }))
                     }
                 }
-                for (const [id, html] of Object.entries(nonReactivePayload.teleports ?? {})) {
+                for (const [id, html] of Object.entries(teleports ?? {})) {
                     nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                         default: () => [createStaticVNode(html, 1)]
                     }))

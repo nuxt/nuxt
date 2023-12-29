@@ -185,3 +185,32 @@ export function getSlotProps (html: string) {
   }
   return data
 }
+
+export const pKey = '_islandPromises'
+export const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
+export const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
+export const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
+
+export const nuxtIslandProps = {
+  name: {
+    type: String,
+    required: true
+  },
+  lazy: Boolean,
+  props: {
+    type: Object,
+    default: () => undefined
+  },
+  context: {
+    type: Object,
+    default: () => ({})
+  },
+  source: {
+    type: String,
+    default: () => undefined
+  },
+  dangerouslyLoadClientComponents: {
+    type: Boolean,
+    default: false
+  }
+}
