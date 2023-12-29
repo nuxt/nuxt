@@ -12,7 +12,15 @@ import type {
   Target
 } from './types'
 
-const removeUndefinedProps = (props: Props) =>
+const removeUndefinedProps = (props: Props) => {
+  const finalProps = Object.create(null)
+  for (const key in props) {
+    const value = props[key]
+    if (value !== undefined) {
+      filteredProps[key] = value;
+    }
+  }
+
   Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined))
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
