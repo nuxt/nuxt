@@ -22,7 +22,7 @@ export function isIgnored (pathname: string): boolean {
   const cwds = nuxt.options._layers?.map(layer => layer.cwd).sort((a, b) => b.length - a.length)
   const layer = cwds?.find(cwd => pathname.startsWith(cwd))
   const relativePath = relative(layer ?? nuxt.options.rootDir, pathname)
-  if (relativePath.startsWith('..')) {
+  if (relativePath[0] === '.' && relativePath[1] === '.') {
     return false
   }
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
@@ -47,7 +47,8 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
   }
 
   if (relativePath) {
-    return nuxt._ignorePatterns.map(p => p.startsWith('*') || p.startsWith('!*') ? p : relative(relativePath, resolve(nuxt.options.rootDir, p)))
+    // Map ignore patterns based on if they start with * or !*
+    return nuxt._ignorePatterns.map(p => p[0] === '*' || (p[0] === '!' && p[1] === '*') ? p : relative(relativePath, resolve(nuxt.options.rootDir, p)))
   }
 
   return nuxt._ignorePatterns

@@ -279,7 +279,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
     }
 
     // Remove leading / if children route
-    if (parent && route.path.startsWith('/')) {
+    if (parent && route.path[0] === '/') {
       route.path = route.path.slice(1)
     }
 
