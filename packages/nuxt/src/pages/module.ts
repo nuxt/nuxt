@@ -50,12 +50,11 @@ export default defineNuxtModule({
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
     const userPreference = nuxt.options.pages
-    const routerOptionsFiles = await resolveRouterOptions()
     const isPagesEnabled = async () => {
       if (typeof userPreference === 'boolean') {
         return userPreference
       }
-
+      const routerOptionsFiles = await resolveRouterOptions()
       if (routerOptionsFiles.filter(p => !p.optional).length > 0) {
         return true
       }
@@ -403,7 +402,9 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'router.options.mjs',
       getContents: async () => {
-        // Register app/router.options files
+        // Scan and register app/router.options files
+        const routerOptionsFiles = await resolveRouterOptions()
+
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
 
