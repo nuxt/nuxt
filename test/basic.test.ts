@@ -1459,9 +1459,10 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 describe('server components/islands', () => {
   it('/islands', async () => {
     const { page } = await renderPage('/islands')
+    const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
-
+    await islandRequest
+    
     await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
     await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
@@ -1469,11 +1470,12 @@ describe('server components/islands', () => {
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
     expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
-    await page.locator('#update-server-components').click()
-    await Promise.all([
+    const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
-    ])
+    ]
+    await page.locator('#update-server-components').click()
+    await Promise.all(requests)
 
     await page.locator('#async-server-component-count').getByText('1').waitFor()
     await page.locator('#long-async-component-count').getByText('1').waitFor()
@@ -1958,11 +1960,12 @@ describe('component islands', () => {
 
     // test islands update
     expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
-    await page.locator('#update-server-components').click()
-    await Promise.all([
+    const islandRequests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
-    ])
+    ]
+    await page.locator('#update-server-components').click()
+    await Promise.all(islandRequests)
 
     await page.locator('#long-async-component-count').getByText('1').waitFor()
 
