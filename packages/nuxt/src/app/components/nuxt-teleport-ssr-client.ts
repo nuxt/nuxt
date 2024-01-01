@@ -31,7 +31,7 @@ export default defineComponent({
     rootDir: {
       type: String,
       default: null
-    }
+    },
   },
   setup (props, { slots }) {
     if (!props.nuxtClient) { return () => slots.default!() }
@@ -44,18 +44,15 @@ export default defineComponent({
       const slotType = (slot.type as ExtendedComponent)
       const name = (slotType.__name || slotType.name) as string
      
-      if (import.meta.dev) {
-        const path = '_nuxt/' +  paths[name]
-        islandContext.chunks[name] = path
-      } else {
-        islandContext.chunks[name] = paths[name]
+      islandContext.clients[props.to] = {
+        chunk: import.meta.dev ? '_nuxt/' +  paths[name] : paths[name],
+        props: slot.props || {}
       }
-
-      islandContext.propsData[props.to] = slot.props || {}
 
       return [h('div', {
         style: 'display: contents;',
-        'nuxt-ssr-client': props.to
+        'data-island-uid': islandContext.uid,
+        'data-island-client': props.to
       }, []), h(Teleport, { to: props.to }, slot)]
     }
   }

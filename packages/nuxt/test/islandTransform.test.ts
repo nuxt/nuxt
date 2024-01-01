@@ -63,10 +63,10 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style="display: contents;" nuxt-ssr-slot-name="default" />
+                <div style="display: contents;" data-island-slot="default" />
 
-                <div style="display: contents;" nuxt-ssr-slot-name="named" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
-                <div style="display: contents;" nuxt-ssr-slot-name="other" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
+                <div style="display: contents;" data-island-slot="named" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
+                <div style="display: contents;" data-island-slot="other" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
               </div>
               </template>
               <script setup lang="ts">
@@ -95,7 +95,7 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style="display: contents;" nuxt-ssr-slot-name="default" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"><div nuxt-slot-fallback-start="default"/><div  style="display: contents;">
+                <div style="display: contents;" data-island-slot="default" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"><div nuxt-slot-fallback-start="default"/><div  style="display: contents;">
                   <div>fallback</div>
                 </div><div nuxt-slot-fallback-end/></div>
               </div>
@@ -153,7 +153,7 @@ describe('islandTransform - server and island components', () => {
                     <p>message: {{ message }}</p>
                     <p>Below is the slot I want to be hydrated on the client</p>
                     <div>
-                      <div style="display: contents;" nuxt-ssr-slot-name="default" ><div nuxt-slot-fallback-start="default"/>
+                      <div style="display: contents;" data-island-slot="default" ><div nuxt-slot-fallback-start="default"/>
                         This is the default content of the slot, I should not see this after
                         the client loading has completed.
                       <div nuxt-slot-fallback-end/></div>

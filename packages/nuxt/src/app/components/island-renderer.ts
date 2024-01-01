@@ -5,6 +5,8 @@ import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
+import { useNuxtApp } from '#app/nuxt'
+import { randomUUID } from 'uncrypto'
 
 export default defineComponent({
   props: {
@@ -15,6 +17,8 @@ export default defineComponent({
   },
   setup (props) {
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
+    const nuxtApp = useNuxtApp()
+    const id = nuxtApp.ssrContext!.islandContext!.uid || randomUUID()
 
     if (!component) {
       throw createError({
@@ -27,6 +31,6 @@ export default defineComponent({
       console.log(e)
     })
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
+    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': id })
   }
 })
