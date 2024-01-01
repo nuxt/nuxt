@@ -23,7 +23,7 @@ const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
 
-let id = 0
+let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
@@ -242,7 +242,7 @@ export default defineComponent({
       }
       return [
         withMemo([key.value], () => {
-          return createVNode(Fragment, {}, [h(createStaticVNode(html.value || '<div></div>', 1))])
+          return createVNode(Fragment, { key: key.value }, [h(createStaticVNode(html.value || '<div></div>', 1))])
         }, _cache, 0),
 
         withMemo([teleportKey.value], () => {
