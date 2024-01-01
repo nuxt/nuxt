@@ -233,7 +233,7 @@ export default defineComponent({
       })
     }
 
-    if (import.meta.client) { 
+    if (import.meta.client) {
       watch(props, debounce(() => fetchComponent(), 100))
     }
 
