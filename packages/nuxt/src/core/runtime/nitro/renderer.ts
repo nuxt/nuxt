@@ -618,7 +618,6 @@ function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['
 function getClientIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['clients'] {
   if(!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['clients'] = {}
-  console.log(ssrContext.teleports)
   for(const clientUid in ssrContext.islandContext.clients) { 
     const html = ssrContext.teleports?.[clientUid]  || ''
     response[clientUid] = {

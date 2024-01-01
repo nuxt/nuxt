@@ -13,7 +13,7 @@ import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getFragmentHTML, getSlotProps } from './utils'
+import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
@@ -41,14 +41,6 @@ async function loadComponents(source = '/', paths: Record<string, string>) {
     }
   }
   await Promise.all(promises)
-}
-
-function emptyPayload() {
-  return {
-    chunks: {},
-    props: {},
-    teleports: {}
-  }
 }
 
 export default defineComponent({
@@ -245,6 +237,7 @@ export default defineComponent({
           return createVNode(Fragment, { key: key.value }, [h(createStaticVNode(html.value || '<div></div>', 1))])
         }, _cache, 0),
 
+        // should away be triggered ONE tick after re-rendering
         withMemo([teleportKey.value], () => {
           const teleports = []
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
