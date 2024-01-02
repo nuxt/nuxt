@@ -1,4 +1,4 @@
-import { createElementBlock, createElementVNode, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, ref } from 'vue'
+import { cloneVNode, createElementBlock, createElementVNode, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, ref } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions } from 'vue'
 import { getFragmentHTML } from './utils'
 
@@ -37,7 +37,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       if ($setup.mounted$ ?? ctx.mounted$) {
         const res = component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options)
         return (res.children === null || typeof res.children === 'string')
-          ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
+          ? cloneVNode(res)
           : h(res)
       } else {
         const fragment = getFragmentHTML(ctx._.vnode.el ?? null) ?? ['<div></div>']
@@ -79,7 +79,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           if (mounted$.value) {
             const res = setupState(...args)
             return (res.children === null || typeof res.children === 'string')
-              ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
+              ? cloneVNode(res)
               : h(res)
           } else {
             const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
