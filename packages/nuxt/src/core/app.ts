@@ -131,10 +131,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
-    app.middleware.push(...middlewareFiles.map((file) => {
+    for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
-      return { name, path: file, global: hasSuffix(file, '.global') }
-    }))
+      if (!name) {
+        // Ignore files like `~/middleware/index.vue` which end up not having a name at all
+        logger.warn(`No middleware name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        continue
+      }
+      app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+    }
   }
 
   // Resolve plugins, first extended layers and then base
