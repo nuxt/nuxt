@@ -90,7 +90,7 @@ export default defineNuxtModule({
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
-        getContents: () => 'export { useRoute } from \'#app\''
+        getContents: () => 'export { useRoute } from \'#app/composables/router\''
       })
       addComponent({
         name: 'NuxtPage',
