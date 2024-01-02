@@ -33,9 +33,9 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   if (clone.render) {
     // override the component render (non script setup component)
-    clone.render = (ctx: any, ...args: any[]) => {
-      if (ctx.mounted$) {
-        const res = component.render?.bind(ctx)(ctx, ...args)
+    clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => {
+      if ($setup.mounted$ ?? ctx.mounted$) {
+        const res = component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options)
         return (res.children === null || typeof res.children === 'string')
           ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
           : h(res)
@@ -70,19 +70,22 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
     return Promise.resolve(component.setup?.(props, ctx) || {})
       .then((setupState) => {
-        return typeof setupState !== 'function'
-          ? { ...setupState, mounted$ }
-          : (...args: any[]) => {
-              if (mounted$.value) {
-                const res = setupState(...args)
-                return (res.children === null || typeof res.children === 'string')
-                  ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
-                  : h(res)
-              } else {
-                const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
-                return import.meta.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.attrs)
-              }
-            }
+        if (typeof setupState !== 'function') {
+          setupState = setupState || {}
+          setupState.mounted$ = mounted$
+          return setupState
+        }
+        return (...args: any[]) => {
+          if (mounted$.value) {
+            const res = setupState(...args)
+            return (res.children === null || typeof res.children === 'string')
+              ? createElementVNode(res.type, res.props, res.children, res.patchFlag, res.dynamicProps, res.shapeFlag)
+              : h(res)
+          } else {
+            const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
+            return import.meta.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.attrs)
+          }
+        }
       })
   }
 
