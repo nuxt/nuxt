@@ -80,6 +80,21 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('resolves layouts correctly', async () => {
+    const app = await getResolvedApp([
+      'layouts/index.vue',
+      'layouts/default/index.vue',
+    ])
+    expect(app.layouts).toMatchInlineSnapshot(`
+      {
+        "default": {
+          "file": "<rootDir>/layouts/default/index.vue",
+          "name": "default",
+        },
+      }
+    `)
+  })
+
   it('resolves layer plugins in correct order', async () => {
     const app = await getResolvedApp([
       // layer 1
