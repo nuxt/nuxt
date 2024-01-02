@@ -73,14 +73,16 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
  * Check if current nuxt instance is version 2 legacy
  */
 export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
-  return getNuxtVersion(nuxt).startsWith('2.')
+  const version = getNuxtVersion(nuxt)
+  return version[0] === '2' && version[1] === '.'
 }
 
 /**
  * Check if current nuxt instance is version 3
  */
 export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
-  return getNuxtVersion(nuxt).startsWith('3.')
+  const version = getNuxtVersion(nuxt)
+  return version[0] === '3' && version[1] === '.'
 }
 
 /**
