@@ -4,7 +4,8 @@ import type { Component, RendererNode } from 'vue'
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
 import type { RouteLocationNormalized } from '#vue-router'
-import { START_LOCATION } from 'vue-router'
+// @ts-expect-error virtual file
+import { START_LOCATION } from '#build/pages'
 
 /**
  * Internal utility
