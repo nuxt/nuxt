@@ -477,13 +477,13 @@ describe('pages', () => {
     expect(response).not.toContain('"hasAccessToWindow": true')
     expect(response).not.toContain('"isServer": false')
 
-    const errors = []
+    const errors: string[] = []
     const { page: clientInitialPage } = await renderPage('/client-only-page')
 
     clientInitialPage.on('console', (message) => {
       const type = message.type()
       if (type === 'error' || type === 'warning') {
-        errors.push(message)
+        errors.push(message.text())
       }
     })
 
@@ -513,7 +513,7 @@ describe('pages', () => {
     normalInitialPage.on('console', (message) => {
       const type = message.type()
       if (type === 'error' || type === 'warning') {
-        errors.push(message)
+        errors.push(message.text())
       }
     })
 
