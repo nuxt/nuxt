@@ -13,14 +13,27 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
     {
       name: 'nuxt:analyze-minify',
       async generateBundle (_opts, outputBundle) {
-        for (const [_bundleId, bundle] of Object.entries(outputBundle)) {
+        for (const key in outputBundle) {
+          const finalModules: Promise<unknown>[] = []
+          const bundle = outputBundle[key]
           if (bundle.type !== 'chunk') { continue }
-          const originalEntries = Object.entries(bundle.modules)
-          const minifiedEntries = await Promise.all(originalEntries.map(async ([moduleId, module]) => {
+          const originalEntries = bundle.modules
+          for (const moduleId in originalEntries) {
+            const module = originalEntries[moduleId]
+            finalModules.push(
+              (async () => {
+                const { code } = await transform(module.code || '', { minify: true });
+                bundle.modules[moduleId]= { ...module, code }
+              })()
+            )
+          }
+          
+          /*const minifiedEntries = await Promise.all(originalEntries.map(async ([moduleId, module]) => {
             const { code } = await transform(module.code || '', { minify: true })
             return [moduleId, { ...module, code }]
           }))
-          bundle.modules = Object.fromEntries(minifiedEntries)
+          bundle.modules = Object.fromEntries(minifiedEntries)*/
+          await Promise.all(finalModules)
         }
       }
     },
