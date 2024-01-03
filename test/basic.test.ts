@@ -2237,7 +2237,7 @@ describe('keepalive', () => {
 })
 
 describe('Node.js in client-side', () => {
-  it('should not keepalive by default', async () => {
+  it('should work', async () => {
     const { page } = await renderPage('/node')
     const html = await page.innerHTML('body')
     expect(html).toContain('Nuxt is Awesome!')
