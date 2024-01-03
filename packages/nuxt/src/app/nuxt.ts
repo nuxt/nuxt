@@ -440,7 +440,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /**
  * Returns the current Nuxt instance.
  * 
- * Returns null if Nuxt instance is unavailable.
+ * Returns `null` if Nuxt instance is unavailable.
  */
 export function tryUseNuxtApp (): NuxtApp | null {
   let nuxtAppInstance

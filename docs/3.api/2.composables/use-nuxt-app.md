@@ -270,7 +270,7 @@ Example usage:
 
 ```ts [composable.ts]
 export function useStandType() {
-  //Always works on client side
+  // Always works on the client
   if (tryUseNuxtApp()) {
     return useRuntimeConfig().public.STAND_TYPE
   } else {
