@@ -61,7 +61,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
-        ..._env.alias
+        ..._env.alias,
+        ...ctx.config.resolve?.alias
       },
       dedupe: [
         'vue'
