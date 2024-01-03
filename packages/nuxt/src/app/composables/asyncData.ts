@@ -153,7 +153,7 @@ export function useAsyncData<
     const value = await nuxt.ssrContext!._sharedPrerenderCache!.get(key)
     if (value) { return value as ResT }
 
-    const promise = _handler()
+    const promise = nuxt.runWithContext(_handler)
     nuxt.ssrContext!._sharedPrerenderCache!.set(key, promise)
     return promise
   }
