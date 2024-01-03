@@ -450,9 +450,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
 
   nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
 
-  if (!nuxtAppInstance) return null
-
-  return nuxtAppInstance
+  return nuxtAppInstance || null
 }
 
 /*@__NO_SIDE_EFFECTS__*/
