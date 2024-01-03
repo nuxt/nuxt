@@ -6,6 +6,7 @@ import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
+import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
@@ -44,7 +45,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   const hasExpired = delay !== undefined && delay <= 0
-  const cookieValue = hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.()
+  const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
   const cookie = import.meta.client && delay && !hasExpired

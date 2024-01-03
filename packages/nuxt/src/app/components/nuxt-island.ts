@@ -234,7 +234,7 @@ export default defineComponent({
     }
 
     if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100))
+      watch(props, debounce(() => fetchComponent(), 100), { deep: true })
     }
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
