@@ -538,9 +538,6 @@ importers:
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
-      '@rollup/plugin-inject':
-        specifier: ^5.0.5
-        version: 5.0.5(rollup@4.9.2)
       '@rollup/plugin-replace':
         specifier: ^5.0.5
         version: 5.0.5(rollup@4.9.2)

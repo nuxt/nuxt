@@ -58,7 +58,7 @@ function clientUnenv(ctx: WebpackConfigContext) {
     ...ctx.config.resolve.fallback,
   }
   ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis', }))
-  ctx.config.plugins!.push(new webpack.ProvidePlugin({ ..._env.inject }))
+  // ctx.config.plugins!.push(new webpack.ProvidePlugin({ ..._env.inject })) // Buffer injection disabled for now
   // https://github.com/webpack/webpack/issues/13290#issuecomment-1188760779
   ctx.config.plugins!.unshift(new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
     resource.request = resource.request.replace(/^node:/, '');

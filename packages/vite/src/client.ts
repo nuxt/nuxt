@@ -11,7 +11,6 @@ import { defu } from 'defu'
 import { env, nodeless } from 'unenv'
 import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
-import inject from "@rollup/plugin-inject"
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
@@ -86,7 +85,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
       viteNodePlugin(ctx),
-      inject({ ..._env.inject })
+      // inject({ ..._env.inject }) // Buffer injection disabled for now
     ],
     appType: 'custom',
     server: {
