@@ -91,7 +91,6 @@ export async function buildClient (ctx: ViteBuildContext) {
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
       viteNodePlugin(ctx),
-      // inject({ ..._env.inject }) // Buffer injection disabled for now
     ],
     appType: 'custom',
     server: {
