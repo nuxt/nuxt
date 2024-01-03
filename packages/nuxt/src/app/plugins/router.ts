@@ -1,4 +1,5 @@
-import { defineComponent, h, isReadonly, reactive } from 'vue'
+import type { Ref } from 'vue'
+import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
@@ -71,7 +72,7 @@ interface RouterHooks {
 }
 
 interface Router {
-  currentRoute: Route
+  currentRoute: Ref<Route>
   isReady: () => Promise<void>
   options: {}
   install: () => Promise<void>
@@ -159,7 +160,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     }
 
     const router: Router = {
-      currentRoute: route,
+      currentRoute: computed(() => route),
       isReady: () => Promise.resolve(),
       // These options provide a similar API to vue-router but have no effect
       options: {},
