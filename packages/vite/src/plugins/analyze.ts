@@ -22,8 +22,8 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
             const module = originalEntries[moduleId]
             finalModules.push(
               (async () => {
-                const { code } = await transform(module.code || '', { minify: true });
-                bundle.modules[moduleId]= { ...module, code }
+                const { code } = await transform(module.code || '', { minify: true })
+                bundle.modules[moduleId] = { ...module, code }
               })()
             )
           }
