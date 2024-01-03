@@ -2236,17 +2236,12 @@ describe('keepalive', () => {
   })
 })
 
-describe('Node.js polyfills', () => {
-  it('should work with SSR', async () => {
-    const html = await $fetch('/node.server')
-    expect(html).toContain('Nuxt is Awesome!')
-    expect(html).toContain('CWD: works!')
-  })
-  it('should work in client-side', async () => {
-    const { page } = await renderPage('/node.client')
+describe('Node.js compatibility for client-side', () => {
+  it('should work', async () => {
+    const { page } = await renderPage('/node-compat')
     const html = await page.innerHTML('body')
     expect(html).toContain('Nuxt is Awesome!')
-    expect(html).toContain('CWD: works!')
+    expect(html).toContain('CWD: [available]')
     await page.close()
   })
 })

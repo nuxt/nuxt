@@ -22,7 +22,7 @@ export function client (ctx: WebpackConfigContext) {
     clientDevtool,
     clientPerformance,
     clientHMR,
-    clientUnenv,
+    clientNodeCompat,
   ])
 }
 
@@ -50,11 +50,13 @@ function clientPerformance (ctx: WebpackConfigContext) {
   }
 }
 
-function clientUnenv(ctx: WebpackConfigContext) {
-  const _env = ctx.nuxt.options.unenv !== false ? env(nodeless, ctx.nuxt.options.unenv) : { alias: {}, inject: {} }
+function clientNodeCompat(ctx: WebpackConfigContext) {
+  if (!ctx.nuxt.options.experimental.clientNodeCompat) {
+    return
+  }
   ctx.config.resolve = ctx.config.resolve || {}
   ctx.config.resolve.fallback = {
-    ..._env.alias,
+    ...env(nodeless).alias,
     ...ctx.config.resolve.fallback,
   }
   ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis', }))

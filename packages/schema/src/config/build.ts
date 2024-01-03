@@ -55,25 +55,6 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Node.js polyfills for the client build (Browser).
-   * @see https://github.com/unjs/unenv
-   *
-   * **Note:** For making globals such as `Buffer` and `process` to work in Browser, you need to manually inject them.
-   *
-   * **Example:** plugins/node.client.ts:
-   *
-   * ```ts
-   * import { Buffer } from 'node:buffer'
-   * import process from 'node:process'
-   *
-   * globalThis.Buffer = globalThis.Buffer || Buffer
-   * globalThis.process = globalThis.process || process
-   * ```
-   * @type {false | typeof import('unenv').Preset}
-   */
-  unenv: {},
-
-  /**
    * Shared build configuration.
    */
   build: {
