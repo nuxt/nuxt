@@ -159,8 +159,21 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
+    const currentRoute = computed(() => route)
+    // TODO: remove this in v3.10
+    for (const key in route) {
+      Object.defineProperty(currentRoute, key, {
+        get () {
+          if (import.meta.dev) {
+            console.warn(`'route.${key}' is deprecated. Use 'route.value.${key}' instead.`)
+          }
+          return route[key as keyof Route]
+        }
+      })
+    }
+
     const router: Router = {
-      currentRoute: computed(() => route),
+      currentRoute,
       isReady: () => Promise.resolve(),
       // These options provide a similar API to vue-router but have no effect
       options: {},
