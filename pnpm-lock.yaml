@@ -726,8 +726,8 @@ importers:
         specifier: ^8.4.32
         version: 8.4.32
       postcss-import:
-        specifier: ^15.1.0
-        version: 15.1.0(postcss@8.4.32)
+        specifier: ^16.0.0
+        version: 16.0.0(postcss@8.4.32)
       postcss-import-resolver:
         specifier: ^2.0.0
         version: 2.0.0
@@ -7522,9 +7522,9 @@ packages:
       enhanced-resolve: 4.5.0
     dev: false
 
-  /postcss-import@15.1.0(postcss@8.4.32):
-    resolution: {integrity: sha512-hpr+J05B2FVYUAXHeK1YyI267J/dDDhMU6B6civm8hSY1jYJnBXxzKDKDswzJmtLHryrjhnDjqqp/49t8FALew==}
-    engines: {node: '>=14.0.0'}
+  /postcss-import@16.0.0(postcss@8.4.32):
+    resolution: {integrity: sha512-e77lhVvrD1I2y7dYmBv0k9ULTdArgEYZt97T4w6sFIU5uxIHvDFQlKgUUyY7v7Barj0Yf/zm5A4OquZN7jKm5Q==}
+    engines: {node: '>=18.0.0'}
     peerDependencies:
       postcss: ^8.0.0
     dependencies:

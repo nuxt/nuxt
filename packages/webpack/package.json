@@ -49,7 +49,7 @@
     "pathe": "^1.1.1",
     "pify": "^6.1.0",
     "postcss": "^8.4.32",
-    "postcss-import": "^15.1.0",
+    "postcss-import": "^16.0.0",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^7.3.4",
     "postcss-url": "^10.1.3",
