@@ -20,7 +20,7 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const nodeCmpat = ctx.nuxt.options.experimental.clientNodeCompat ? {
+  const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat ? {
     alias: env(nodeless).alias,
     define: {
       global: 'globalThis',
@@ -57,14 +57,14 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.nitro': false,
       'import.meta.prerender': false,
       'module.hot': false,
-      ...nodeCmpat.define
+      ...nodeCompat.define
     },
     optimizeDeps: {
       entries: [ctx.entry]
     },
     resolve: {
       alias: {
-        ...nodeCmpat.alias,
+        ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
