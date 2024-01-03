@@ -165,7 +165,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       Object.defineProperty(currentRoute, key, {
         get () {
           if (import.meta.dev) {
-            console.warn(`'route.${key}' is deprecated. Use 'route.value.${key}' instead.`)
+            console.warn(`\`currentRoute.${key}\` is deprecated. Use \`currentRoute.value.${key}\` instead.`)
           }
           return route[key as keyof Route]
         }
