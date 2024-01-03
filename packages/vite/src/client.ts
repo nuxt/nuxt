@@ -8,8 +8,10 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
+import { env, nodeless } from 'unenv'
 import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
+import inject from "@rollup/plugin-inject"
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
@@ -19,6 +21,10 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
+  // Available: alias, inject, external, polyfill
+  // We currently ignore plolyfill and external for safety
+  const _env = env(nodeless, {} /* TODO: allow configuration */)
+
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -48,7 +54,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
-      'module.hot': false
+      'module.hot': false,
+      'global': 'globalThis'
     },
     optimizeDeps: {
       entries: [ctx.entry]
@@ -56,7 +63,8 @@ export async function buildClient (ctx: ViteBuildContext) {
     resolve: {
       alias: {
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        ..._env.alias
       },
       dedupe: [
         'vue'
@@ -79,7 +87,8 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx)
+      viteNodePlugin(ctx),
+      inject({ ..._env.inject })
     ],
     appType: 'custom',
     server: {

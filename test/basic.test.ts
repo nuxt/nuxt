@@ -2236,6 +2236,16 @@ describe('keepalive', () => {
   })
 })
 
+describe('Node.js in client-side', () => {
+  it('should not keepalive by default', async () => {
+    const { page } = await renderPage('/node')
+    const html = await page.innerHTML('body')
+    expect(html).toContain('Nuxt is Awesome!')
+    expect(html).toContain('CWD: /')
+    await page.close()
+  })
+})
+
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
