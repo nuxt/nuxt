@@ -69,6 +69,7 @@ export default defineUntypedSchema({
    * globalThis.Buffer = globalThis.Buffer || Buffer
    * globalThis.process = globalThis.process || process
    * ```
+   * @type {false | typeof import('unenv').Preset}
    */
   unenv: {},
 
