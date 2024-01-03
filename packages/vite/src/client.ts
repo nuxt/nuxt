@@ -90,7 +90,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx),
+      viteNodePlugin(ctx)
     ],
     appType: 'custom',
     server: {
