@@ -21,9 +21,7 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  // Available: alias, inject, external, polyfill
-  // We currently ignore plolyfill and external for safety
-  const _env = env(nodeless, {} /* TODO: allow configuration */)
+  const _env = ctx.nuxt.options.unenv !== false ? env(nodeless, ctx.nuxt.options.unenv) : { alias: {}, inject: {} }
 
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,

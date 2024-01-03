@@ -55,6 +55,15 @@ export default defineUntypedSchema({
   },
 
   /**
+   * Node.js emulation for the client build.
+   * @see https://github.com/unjs/unenv
+   *
+   * **Note:** For `process`, you need to directly import `node:process` in your code.
+   * @type {false | typeof import('unenv').Preset}
+   */
+  unenv: {},
+
+  /**
    * Shared build configuration.
    */
   build: {
