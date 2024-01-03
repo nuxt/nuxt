@@ -8,6 +8,7 @@ import { toArray } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
+import ClientOnly from '#app/components/client-only'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
@@ -90,6 +91,8 @@ export default defineComponent({
           const key = generateRouteKey(routeProps, props.pageKey)
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
+          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
+          const clientOnlyConfig = routeProps.route.meta.clientOnly;
           const transitionProps = hasTransition && _mergeTransitionProps([
             props.transition,
             routeProps.route.meta.pageTransition,
@@ -97,7 +100,6 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
@@ -107,7 +109,7 @@ export default defineComponent({
               default: () => {
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
-                  vnode: routeProps.Component,
+                  vnode: _wrapIf(ClientOnly, clientOnlyConfig, { default: () => routeProps.Component }).default(),
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
