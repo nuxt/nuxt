@@ -508,6 +508,9 @@ importers:
       unctx:
         specifier: 2.3.1
         version: 2.3.1
+      unenv:
+        specifier: ^1.8.0
+        version: 1.8.0
       vite:
         specifier: 5.0.10
         version: 5.0.10(@types/node@20.10.6)
