@@ -17,12 +17,12 @@ const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 
 export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
-  const aliases = Object.fromEntries(options.layers.map((l) => {
+  const aliases = options.layers.reduce((acc, l) => {
     const srcDir = l.config.srcDir || l.cwd
     const rootDir = l.config.rootDir || l.cwd
     const publicDir = join(srcDir, l.config?.dir?.public || 'public')
 
-    return [srcDir, {
+    acc[srcDir] = {
       aliases: {
         '~': l.config?.alias?.['~'] || srcDir,
         '@': l.config?.alias?.['@'] || srcDir,
@@ -31,8 +31,9 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
       },
       prefix: relative(options.root, publicDir),
       publicDir: !options.dev && existsSync(publicDir) && publicDir
-    }]
-  }))
+    }
+    return acc
+  }, Object.create(null))
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
   return {
