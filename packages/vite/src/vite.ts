@@ -51,6 +51,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const toReplace = Object.create(null)
+  for(const d of [';', '(', '{', '}', ' ', '\t', '\n']){
+    toReplace[`${d}global.`]=`${d}globalThis.`
+  }
+  
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -104,7 +109,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             composables: nuxt.options.optimization.keyedComposables
           }),
           replace({
-            ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
+            ...toReplace,
             preventAssignment: true
           }),
           virtual(nuxt.vfs)
