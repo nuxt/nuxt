@@ -260,7 +260,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         const _routeRules = nitro.options.routeRules
         for (const key in _routeRules) {
           if (key === '/__nuxt_error') { continue }
-          let rulesNum: Number = 0
+          let rulesNum = 0
           const filteredRules = Object.create(null)
           for (const routeKey in _routeRules[key]) {
             const value = _routeRules[key][routeKey]
