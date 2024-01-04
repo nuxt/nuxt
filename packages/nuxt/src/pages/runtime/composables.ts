@@ -38,7 +38,7 @@ export interface PageMeta {
   path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
-  /** Make this page run on client only */
+  /** Render this page on the client-side only */
   clientOnly?: boolean
 }
 
