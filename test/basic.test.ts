@@ -202,6 +202,20 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('expect no loading indicator on query or anchor route change', async () => {
+    const { page } = await renderPage('/query-anchor')
+
+    await page.locator('#query-anchor').click()
+    
+    expect(await page.url().endsWith('/query-anchor#a')).toBeTruthy()
+    await page.waitForTimeout(300)
+    expect(await page.locator('#indicator').first().evaluate((element) => getComputedStyle(element).opacity)).toBe('0')
+    await page.locator('#increase-query').click()
+    await page.waitForTimeout(300)
+    expect((await page.url()).endsWith('/query-anchor?count=1')).toBeTruthy()
+    expect(await page.locator('#indicator').first().evaluate((element) => getComputedStyle(element).opacity)).toBe('0')
+  })
+
   it('should render correctly when loaded on a different path', async () => {
     const { page, pageErrors } = await renderPage('/proxy')
 
