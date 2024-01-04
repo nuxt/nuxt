@@ -100,30 +100,28 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          vnode = _wrapIf(ClientOnly, clientOnlyConfig,
-            _wrapIf(Transition, hasTransition && transitionProps,
-              wrapInKeepAlive(keepaliveConfig, h(Suspense, {
-                suspensible: true,
-                onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-                onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) }
-              }, {
-                default: () => {
-                  const providerVNode = h(RouteProvider, {
-                    key: key || undefined,
-                    vnode: routeProps.Component,
-                    route: routeProps.route,
-                    renderKey: key || undefined,
-                    trackRootNodes: hasTransition,
-                    vnodeRef: pageRef
-                  })
-                  if (import.meta.client && keepaliveConfig) {
-                    (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
-                  }
-                  return providerVNode
+          vnode = _wrapIf(Transition, hasTransition && transitionProps,
+            wrapInKeepAlive(keepaliveConfig, h(Suspense, {
+              suspensible: true,
+              onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
+              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) }
+            }, {
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: _wrapIf(ClientOnly, clientOnlyConfig, { default: () => routeProps.Component }).default(),
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  trackRootNodes: hasTransition,
+                  vnodeRef: pageRef
+                })
+                if (import.meta.client && keepaliveConfig) {
+                  (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
-              })
-            ))
-          ).default()
+                return providerVNode
+              }
+            })
+            )).default()
 
           return vnode
         }
