@@ -89,7 +89,7 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
-          if (!nuxtApp.isHydrating && previousPageKey === key) {
+          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
             nuxtApp.callHook('page:loading:end')
           }
           previousPageKey = key
@@ -152,4 +152,11 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
     .some(
       (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
         (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
+}
+
+function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+  if (!fork) { return false }
+
+  const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  return index < newRoute.matched.length -1
 }
