@@ -52,8 +52,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
   const toReplace = Object.create(null)
-  for(const d of [';', '(', '{', '}', ' ', '\t', '\n']){
-    toReplace[`${d}global.`]=`${d}globalThis.`
+  for (const d of [';', '(', '{', '}', ' ', '\t', '\n']) {
+    toReplace[`${d}global.`] = `${d}globalThis.`
   }
   
   const ctx: ViteBuildContext = {
