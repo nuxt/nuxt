@@ -1,12 +1,23 @@
 <template>
-    <div>
-        <NuxtLoadingIndicator id="indicator" :throttle="0"  />
-        <a href="#a" id="query-anchor">Query anchor</a>
-        <div id="a">anchor #a</div>
-        <button id="increase-query" @click="increaseQuery">
-            increase query count
-        </button>
+  <div>
+    <NuxtLoadingIndicator
+      id="indicator"
+      :throttle="0"
+    />
+    <a
+      id="query-anchor"
+      href="#a"
+    >Query anchor</a>
+    <div id="a">
+      anchor #a
     </div>
+    <button
+      id="increase-query"
+      @click="increaseQuery"
+    >
+      increase query count
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
