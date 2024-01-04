@@ -263,7 +263,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           let rulesNum = 0
           const filteredRules = Object.create(null)
           for (const routeKey in _routeRules[key]) {
-            const value = _routeRules[key][routeKey]
+            const value = (_routeRules as any)[key][routeKey]
             if (['prerender', 'redirect'].includes(routeKey) && value) {
               filteredRules[routeKey] = routeKey === 'redirect' ? typeof value === 'string' ? value : value.to : value
               rulesNum++
