@@ -22,7 +22,10 @@ const NUXT_LIB_RE = /node_modules\/(nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
-  const composableMeta = Object.fromEntries(options.composables.map(({ name, ...meta }) => [name, meta]))
+  const composableMeta = options.composables.reduce((acc, { name, ...meta }) => {
+    acc[name] = meta
+    return acc
+  }, Object.create(null))
 
   const maxLength = Math.max(...options.composables.map(({ argumentLength }) => argumentLength))
   const keyedFunctions = new Set(options.composables.map(({ name }) => name))
