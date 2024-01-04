@@ -2236,6 +2236,14 @@ describe('keepalive', () => {
   })
 })
 
+describe('teleports', () => {
+  it('should append teleports to body', async () => {
+    const html = await $fetch('/teleport')
+    expect(html).toContain('<div>Teleport</div><!--teleport anchor--><div id="__nuxt">')
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div>')
+  })
+})
+
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
