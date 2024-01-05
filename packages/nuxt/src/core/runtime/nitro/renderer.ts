@@ -637,7 +637,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
     if(matchClientComp) {
       const [, uid, clientId] = matchClientComp 
       if (!uid || !clientId) { continue }
-      html = html.replace(new RegExp(`data-island-uid="${uid}" data-island-client="${clientId}">`), (full) => {
+      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-client="${clientId}"[^>]*>`), (full) => {
         return full + teleports[key]
       })
       continue
@@ -646,7 +646,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
     if(matchSlot) {
       const [, uid, slot] = matchSlot
       if (!uid || !slot) { continue }
-      html = html.replace(new RegExp(`data-island-uid="${uid}" data-island-slot="${slot}"[^>]*>`), (full) => {
+      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-slot="${slot}"[^>]*>`), (full) => {
         return full + teleports[key]
       })
     }
