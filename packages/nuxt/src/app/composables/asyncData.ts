@@ -42,16 +42,57 @@ export interface AsyncDataOptions<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
 > {
+  /**
+   * Whether to fetch on server side.
+   * @default true
+   */
   server?: boolean
+  /**
+   * Whether to resolve the async function after loading the route, instead of blocking client-side navigation
+   * @default false
+   */
   lazy?: boolean
+  /**
+   * a factory function to set the default value of the data, before the async function resolves - useful with the `lazy: true` or `immediate: false` options
+   */
   default?: () => DefaultT | Ref<DefaultT>
+  /**
+   * Provide a function which returns cached data.
+   * A `null` or `undefined` return value will trigger a fetch.
+   * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
+   */
   getCachedData?: (key: string) => DataT
+  /**
+   * A function that can be used to alter handler function result after resolving
+   */
   transform?: _Transform<ResT, DataT>
+  /**
+   * Only pick specified keys in this array from the handler function result
+   */
   pick?: PickKeys
+  /**
+   * Watch reactive sources to auto-refresh when changed
+   */
   watch?: MultiWatchSources
+  /**
+   * When set to false, will prevent the request from firing immediately
+   * @default true
+   */
   immediate?: boolean
+  /**
+   * Return data in a deep ref object (it is true by default). It can be set to false to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+   */
   deep?: boolean
+  /**
+   * Avoid fetching same key more than once at a time
+   * @default 'cancel'
+   */
   dedupe?: 'cancel' | 'defer'
+  /**
+   * Internally used by useFetch
+   * @private
+   */
+  _useFetch?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
@@ -82,6 +123,12 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
 // TODO: deprecate boolean option in future minor
 const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
+/**
+ * Provides access to data that resolves asynchronously in a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+ * @param options customize the behavior of useAsyncData
+ */
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -92,6 +139,12 @@ export function useAsyncData<
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+/**
+ * Provides access to data that resolves asynchronously in a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+ * @param options customize the behavior of useAsyncData
+ */
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -102,6 +155,13 @@ export function useAsyncData<
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+/**
+ * Provides access to data that resolves asynchronously in a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @param key a unique key to ensure that data fetching can be properly de-duplicated across requests.
+ * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+ * @param options customize the behavior of useAsyncData
+ */
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -113,6 +173,13 @@ export function useAsyncData<
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+/**
+ * Provides access to data that resolves asynchronously in a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @param key a unique key to ensure that data fetching can be properly de-duplicated across requests.
+ * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+ * @param options customize the behavior of useAsyncData
+ */
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -259,6 +326,9 @@ export function useAsyncData<
   if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
+    if (!instance || instance?.isMounted) {
+      console.warn(`[nuxt] [${options._useFetch ? 'useFetch' : 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
+    }
     if (instance && !instance._nuxtOnBeforeMountCbs) {
       instance._nuxtOnBeforeMountCbs = []
       const cbs = instance._nuxtOnBeforeMountCbs

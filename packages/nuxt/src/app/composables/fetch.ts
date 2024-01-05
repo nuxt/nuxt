@@ -39,6 +39,12 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
+/**
+ * Fetch data from an API endpoint with a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @param request The URL to fetch
+ * @param options extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -52,6 +58,12 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+/**
+ * Fetch data from an API endpoint with a SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @param request The URL to fetch
+ * @param options extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -131,7 +143,8 @@ export function useFetch<
     immediate,
     getCachedData,
     deep,
-    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
+    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
+    _useFetch: true
   }
 
   let controller: AbortController
