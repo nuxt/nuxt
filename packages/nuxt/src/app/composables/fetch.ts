@@ -43,7 +43,7 @@ export interface UseFetchOptions<
  * Fetch data from an API endpoint with a SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
  * @param request The URL to fetch
- * @param options extends $fetch options and useAsyncData options
+ * @param opts extends $fetch options and useAsyncData options
  */
 export function useFetch<
   ResT = void,
@@ -62,7 +62,7 @@ export function useFetch<
  * Fetch data from an API endpoint with a SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
  * @param request The URL to fetch
- * @param options extends $fetch options and useAsyncData options
+ * @param opts extends $fetch options and useAsyncData options
  */
 export function useFetch<
   ResT = void,
