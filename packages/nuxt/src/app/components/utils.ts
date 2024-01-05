@@ -4,6 +4,8 @@ import type { Component, RendererNode } from 'vue'
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
 import type { RouteLocationNormalized } from '#vue-router'
+// @ts-expect-error virtual file
+import { START_LOCATION } from '#build/pages'
 
 /**
  * Internal utility
@@ -29,7 +31,7 @@ function generateRouteKey (route: RouteLocationNormalized) {
  * return true if the route has been changed with a page change during navigation
  */
 export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized) {
-  if (to === from) { return false }
+  if (to === from || from === START_LOCATION) { return false }
 
   // If route keys are different then it will result in a rerender
   if (generateRouteKey(to) !== generateRouteKey(from)) { return true }
