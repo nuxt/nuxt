@@ -144,7 +144,7 @@ export function useFetch<
     getCachedData,
     deep,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
-    // @ts-expect-error private method
+    // @ts-expect-error private property
     _useFetch: true
   }
 

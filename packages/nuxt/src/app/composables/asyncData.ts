@@ -322,6 +322,7 @@ export function useAsyncData<
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
     if (import.meta.dev && !nuxt.isHydrating && (!instance || instance?.isMounted)) {
+      // @ts-expect-error private property
       console.warn(`[nuxt] [${options._useFetch ? 'useFetch' : 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
     }
     if (instance && !instance._nuxtOnBeforeMountCbs) {
