@@ -60,7 +60,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
+    You may define a [path matcher](#using-an-advanced-path-matcher), if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -182,6 +182,24 @@ definePageMeta({
 })
 </script>
 ```
+
+### Using an advanced path matcher
+
+A path matcher is a good way to resolve conflicts between overlapping routes, for instance:
+
+The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
+
+In order to make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
+
+```vue [pages/[postId]-[postSlug].vue]
+<script setup lang="ts">
+definePageMeta({
+  path: '/:postId(\\d+)-:postSlug' 
+})
+</script>
+```
+
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
 
 ### Defining Layout
 
