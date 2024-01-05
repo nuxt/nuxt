@@ -43,7 +43,7 @@ export interface AsyncDataOptions<
   DefaultT = null,
 > {
   /**
-   * Whether to fetch on server side.
+   * Whether to fetch on the server side.
    * @default true
    */
   server?: boolean
@@ -84,7 +84,7 @@ export interface AsyncDataOptions<
    */
   deep?: boolean
   /**
-   * Avoid fetching same key more than once at a time
+   * Avoid fetching the same key more than once at a time
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
@@ -153,7 +153,7 @@ export function useAsyncData<
 /**
  * Provides access to data that resolves asynchronously in a SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
- * @param key a unique key to ensure that data fetching can be properly de-duplicated across requests.
+ * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
  */
@@ -171,7 +171,7 @@ export function useAsyncData<
 /**
  * Provides access to data that resolves asynchronously in a SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
- * @param key a unique key to ensure that data fetching can be properly de-duplicated across requests.
+ * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
  */
