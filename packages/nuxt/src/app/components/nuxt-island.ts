@@ -125,7 +125,7 @@ export default defineComponent({
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloadClients || {})) {
-          html = html.replace(new RegExp(`<div [^>]*data-island-client="${key}"[^>]*>`), (full) => {
+          html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-client="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
         }
@@ -237,9 +237,10 @@ export default defineComponent({
           return createVNode(Fragment, { key: key.value }, [h(createStaticVNode(html.value || '<div></div>', 1))])
         }, _cache, 0),
 
-        // should away be triggered ONE tick after re-rendering
+        // should away be triggered ONE tick after re-rendering the static node
         withMemo([teleportKey.value], () => {
           const teleports = []
+          // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
  
           if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server) && html.value) {
