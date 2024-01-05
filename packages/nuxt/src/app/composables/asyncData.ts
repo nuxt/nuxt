@@ -88,11 +88,6 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
-  /**
-   * Internally used by useFetch
-   * @private
-   */
-  _useFetch?: boolean
 }
 
 export interface AsyncDataExecuteOptions {
