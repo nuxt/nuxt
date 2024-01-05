@@ -32,7 +32,7 @@ export const ImportProtectionPlugin = createUnplugin(function (options: ImportPr
     enforce: 'pre',
     resolveId (id, importer) {
       if (!importer) { return }
-      if (id.startsWith('.')) {
+      if (id[0] === '.') {
         id = join(importer, '..', id)
       }
       if (isAbsolute(id)) {

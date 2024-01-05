@@ -412,9 +412,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
     island: Boolean(islandContext),
-    htmlAttrs: [htmlAttrs],
+    htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
     head: normalizeChunks([headTags, ssrContext.styles]),
-    bodyAttrs: [bodyAttrs],
+    bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceClientTeleport(ssrContext, replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)) : _rendered.html],
     bodyAppend: [bodyTags]
@@ -502,11 +502,11 @@ function joinAttrs (chunks: string[]) {
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
-  return `<!DOCTYPE html>
-<html ${joinAttrs(html.htmlAttrs)}>
-<head>${joinTags(html.head)}</head>
-<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>
-</html>`
+  return '<!DOCTYPE html>'
+    + `<html${joinAttrs(html.htmlAttrs)}>`
+    + `<head>${joinTags(html.head)}</head>`
+    + `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>`
+    + '</html>'
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
