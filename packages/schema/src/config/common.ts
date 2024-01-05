@@ -1,6 +1,6 @@
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
-import { isDebug, isDevelopment } from 'std-env'
+import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import type { RuntimeConfig } from '../types/config'
@@ -11,9 +11,10 @@ export default defineUntypedSchema({
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
-   * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
-   *
-   * @type {string|string[]}
+   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
+   * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
+   * @see https://github.com/unjs/giget
+   * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
 
@@ -23,7 +24,6 @@ export default defineUntypedSchema({
    * Value should be a string pointing to source directory or config path relative to current config.
    *
    * You can use `github:`, `gitlab:`, `bitbucket:` or `https://` to extend from a remote git repository.
-   *
    * @type {string}
    */
   theme: null,
@@ -50,14 +50,16 @@ export default defineUntypedSchema({
    * It is normally not needed to configure this option.
    */
   workspaceDir: {
-    $resolve: async (val, get) => val ? resolve(await get('rootDir'), val) : await findWorkspaceDir(await get('rootDir')).catch(() => get('rootDir'))
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      return val ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+    }
   },
 
   /**
    * Define the source directory of your Nuxt application.
    *
    * If a relative path is specified, it will be relative to the `rootDir`.
-   *
    * @example
    * ```js
    * export default {
@@ -80,6 +82,9 @@ export default defineUntypedSchema({
    * ------| static/
    * ------| store/
    * ------| server/
+   * ------| app.config.ts
+   * ------| app.vue
+   * ------| error.vue
    * ```
    */
   srcDir: {
@@ -102,7 +107,6 @@ export default defineUntypedSchema({
    *
    * Many tools assume that `.nuxt` is a hidden directory (because it starts
    * with a `.`). If that is a problem, you can use this option to prevent that.
-   *
    * @example
    * ```js
    * export default {
@@ -121,7 +125,6 @@ export default defineUntypedSchema({
    * The configuration path is relative to `options.rootDir` (default is current working directory).
    *
    * Setting this field may be necessary if your project is organized as a yarn workspace-styled mono-repository.
-   *
    * @example
    * ```js
    * export default {
@@ -131,10 +134,13 @@ export default defineUntypedSchema({
    */
   modulesDir: {
     $default: ['node_modules'],
-    $resolve: async (val, get) => [
-      ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
-      resolve(process.cwd(), 'node_modules')
-    ]
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      return [
+        ...await Promise.all(val.map(async (dir: string) => resolve(rootDir, dir))),
+        resolve(process.cwd(), 'node_modules')
+      ]
+    }
   },
 
   /**
@@ -158,7 +164,7 @@ export default defineUntypedSchema({
   /**
    * Whether your app is being unit tested.
    */
-  test: Boolean(isDevelopment),
+  test: Boolean(isTest),
 
   /**
    * Set to `true` to enable debug mode.
@@ -187,7 +193,6 @@ export default defineUntypedSchema({
    *
    * Nuxt tries to resolve each item in the modules array using node require path
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
-   *
    * @note Modules are executed sequentially so the order is important.
    * @example
    * ```js
@@ -268,7 +273,6 @@ export default defineUntypedSchema({
   /**
    * You can improve your DX by defining additional aliases to access custom directories
    * within your JavaScript and CSS.
-   *
    * @note Within a webpack context (image sources, CSS - but not JavaScript) you _must_ access
    * your alias by prefixing it with `~`.
    * @note These aliases will be automatically added to the generated `.nuxt/tsconfig.json` so you can get full
@@ -307,20 +311,22 @@ export default defineUntypedSchema({
    * @type {Record<string, string>}
    */
   alias: {
-    $resolve: async (val, get) => ({
-      '~': await get('srcDir'),
-      '@': await get('srcDir'),
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
-      [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
-      [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
-      ...val
-    })
+    $resolve: async (val, get) => {
+      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')])
+      return {
+        '~': srcDir,
+        '@': srcDir,
+        '~~': rootDir,
+        '@@': rootDir,
+        [assetsDir]: join(srcDir, assetsDir),
+        [publicDir]: join(srcDir, publicDir),
+        ...val
+      }
+    }
   },
 
   /**
    * Pass options directly to `node-ignore` (which is used by Nuxt to ignore files).
-   *
    * @see [node-ignore](https://github.com/kaelzhang/node-ignore)
    * @example
    * ```js
@@ -328,6 +334,7 @@ export default defineUntypedSchema({
    *   ignorecase: false
    * }
    * ```
+   * @type {typeof import('ignore').Options}
    */
   ignoreOptions: undefined,
 
@@ -344,15 +351,18 @@ export default defineUntypedSchema({
    * inside the `ignore` array will be ignored in building.
    */
   ignore: {
-    $resolve: async (val, get) => [
-      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
-      '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{vercel,netlify,output,git,cache,data}',
-      relative(await get('rootDir'), await get('analyzeDir')),
-      relative(await get('rootDir'), await get('buildDir')),
-      await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
-    ].concat(val).filter(Boolean)
+    $resolve: async (val, get) => {
+      const [rootDir, ignorePrefix, analyzeDir, buildDir] = await Promise.all([get('rootDir'), get('ignorePrefix'), get('analyzeDir'), get('buildDir')])
+      return [
+        '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+        '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+        '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        relative(rootDir, analyzeDir),
+        relative(rootDir, buildDir),
+        ignorePrefix && `**/${ignorePrefix}*.*`
+      ].concat(val).filter(Boolean)
+    }
   },
 
   /**
@@ -361,7 +371,6 @@ export default defineUntypedSchema({
    * It is an array of strings or regular expressions. Strings should be either absolute paths or
    * relative to the `srcDir` (and the `srcDir` of any layers). Regular expressions will be matched
    * against the path relative to the project `srcDir` (and the `srcDir` of any layers).
-   *
    * @type {Array<string | RegExp>}
    */
   watch: {
@@ -376,7 +385,6 @@ export default defineUntypedSchema({
     rewatchOnRawEvents: undefined,
     /**
      * `watchOptions` to pass directly to webpack.
-     *
      * @see [webpack@4 watch options](https://v4.webpack.js.org/configuration/watch/#watchoptions).
      */
     webpack: {
@@ -384,7 +392,6 @@ export default defineUntypedSchema({
     },
     /**
      * Options to pass directly to `chokidar`.
-     *
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
      */
     chokidar: {
@@ -400,9 +407,8 @@ export default defineUntypedSchema({
    *
    * For ease of configuration, you can also structure them as an hierarchical
    * object in `nuxt.config` (as below).
-   *
    * @example
-   * ```js'node:fs'
+   * ```js
    * import fs from 'node:fs'
    * import path from 'node:path'
    * export default {
@@ -435,7 +441,6 @@ export default defineUntypedSchema({
    *
    * Values are automatically replaced by matching env variables at runtime, e.g. setting an environment
    * variable `NUXT_API_KEY=my-api-key NUXT_PUBLIC_BASE_URL=/foo/` would overwrite the two values in the example below.
-   *
    * @example
    * ```js
    * export default {
@@ -451,13 +456,14 @@ export default defineUntypedSchema({
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get) => {
+      const app = await get('app')
       provideFallbackValues(val)
       return defu(val, {
         public: {},
         app: {
-          baseURL: (await get('app')).baseURL,
-          buildAssetsDir: (await get('app')).buildAssetsDir,
-          cdnURL: (await get('app')).cdnURL
+          baseURL: app.baseURL,
+          buildAssetsDir: app.buildAssetsDir,
+          cdnURL: app.cdnURL
         }
       })
     }
@@ -468,10 +474,11 @@ export default defineUntypedSchema({
    *
    * For programmatic usage and type support, you can directly provide app config with this option.
    * It will be merged with `app.config` file as default value.
-   *
    * @type {typeof import('../src/types/config').AppConfig}
    */
-  appConfig: {},
+  appConfig: {
+    nuxt: {}
+  },
 
   $schema: {}
 })

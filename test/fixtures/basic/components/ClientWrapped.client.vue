@@ -4,10 +4,12 @@ function exposedFunc () {
 }
 
 defineExpose({ exposedFunc })
-
+const $hello = ref('hello')
 await new Promise(resolve => setTimeout(resolve, 300))
 
-onMounted(() => { console.log('mounted') })
+onMounted(() => {
+  console.log('mounted', $hello.value)
+})
 </script>
 
 <template>

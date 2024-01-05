@@ -44,7 +44,7 @@ describe('imports:transform', () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
       "import { computed } from 'bar';
-      // import { computed } from \\"foo\\"
+      // import { computed } from "foo"
       ;const a = computed(0)"
     `)
   })
@@ -68,12 +68,13 @@ describe('imports:nuxt', () => {
         continue
       }
       it(`should register ${name} globally`, () => {
-        expect(defaultPresets.flatMap(a => a.from === '#app' ? a.imports : [])).to.include(name)
+        expect(defaultPresets.flatMap(a => a.from.startsWith('#app/') ? a.imports : [])).to.include(name)
       })
     }
   } catch (e) {
     it('should import composables', () => {
-      console.log(e)
+      // eslint-disable-next-line no-console
+      console.error(e)
       expect(false).toBe(true)
     })
   }
@@ -161,6 +162,7 @@ const excludedVueHelpers = [
   'Transition',
   'TransitionGroup',
   'VueElement',
+  'ErrorTypeStrings',
   'createApp',
   'createSSRApp',
   'defineCustomElement',
@@ -175,7 +177,11 @@ const excludedVueHelpers = [
   'vModelSelect',
   'vModelText',
   'vShow',
-  'compile'
+  'compile',
+  'DeprecationTypes',
+  'ErrorCodes',
+  'TrackOpTypes',
+  'TriggerOpTypes'
 ]
 
 describe('imports:vue', () => {

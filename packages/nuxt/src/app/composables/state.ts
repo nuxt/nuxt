@@ -1,11 +1,11 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests
- *
  * @param key a unique key ensuring that data fetching can be properly de-duplicated across requests
  * @param init a function that provides initial value for the state when it's not initiated
  */
@@ -42,11 +42,13 @@ export function clearNuxtState (
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
+    .map(key => key.substring(useStateKeyPrefix.length))
+
   const _keys: string[] = !keys
     ? _allKeys
     : typeof keys === 'function'
       ? _allKeys.filter(keys)
-      : Array.isArray(keys) ? keys : [keys]
+      : toArray(keys)
 
   for (const _key of _keys) {
     const key = useStateKeyPrefix + _key

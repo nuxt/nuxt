@@ -1,10 +1,10 @@
-import { h, isReadonly, reactive } from 'vue'
+import type { Ref } from 'vue'
+import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
-import { useState } from '../composables/state'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
@@ -72,7 +72,7 @@ interface RouterHooks {
 }
 
 interface Router {
-  currentRoute: Route
+  currentRoute: Ref<Route>
   isReady: () => Promise<void>
   options: {}
   install: () => Promise<void>
@@ -159,8 +159,21 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
+    const currentRoute = computed(() => route)
+    // TODO: remove this in v3.10
+    for (const key in route) {
+      Object.defineProperty(currentRoute, key, {
+        get () {
+          if (import.meta.dev) {
+            console.warn(`\`currentRoute.${key}\` is deprecated. Use \`currentRoute.value.${key}\` instead.`)
+          }
+          return route[key as keyof Route]
+        }
+      })
+    }
+
     const router: Router = {
-      currentRoute: route,
+      currentRoute,
       isReady: () => Promise.resolve(),
       // These options provide a similar API to vue-router but have no effect
       options: {},
@@ -189,10 +202,13 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
-    nuxtApp.vueApp.component('RouterLink', {
+    nuxtApp.vueApp.component('RouterLink', defineComponent({
       functional: true,
       props: {
-        to: String,
+        to: {
+          type: String,
+          required: true
+        },
         custom: Boolean,
         replace: Boolean,
         // Not implemented
@@ -201,15 +217,15 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         ariaCurrentValue: String
       },
       setup: (props, { slots }) => {
-        const navigate = () => handleNavigation(props.to, props.replace)
+        const navigate = () => handleNavigation(props.to!, props.replace)
         return () => {
-          const route = router.resolve(props.to)
+          const route = router.resolve(props.to!)
           return props.custom
             ? slots.default?.({ href: props.to, navigate, route })
             : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
       }
-    })
+    }))
 
     if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
@@ -226,12 +242,12 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       named: {}
     }
 
-    const initialLayout = useState('_layout')
+    const initialLayout = nuxtApp.payload.state._layout
     nuxtApp.hooks.hookOnce('app:created', async () => {
       router.beforeEach(async (to, from) => {
         to.meta = reactive(to.meta || {})
-        if (nuxtApp.isHydrating && initialLayout.value && !isReadonly(to.meta.layout)) {
-          to.meta.layout = initialLayout.value
+        if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
+          to.meta.layout = initialLayout
         }
         nuxtApp._processingMiddleware = true
 
@@ -244,7 +260,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
               if (result === false || result instanceof Error) {
                 const error = result || createError({
                   statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                  data: {
+                    path: initialURL
+                  }
                 })
                 delete nuxtApp._processingMiddleware
                 return nuxtApp.runWithContext(() => showError(error))

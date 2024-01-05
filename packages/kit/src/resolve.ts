@@ -6,6 +6,7 @@ import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
+import { toArray } from './utils'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -84,10 +85,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
  * Try to resolve first existing file in paths
  */
 export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
-  if (!Array.isArray(paths)) {
-    paths = [paths]
-  }
-  for (const path of paths) {
+  for (const path of toArray(paths)) {
     const rPath = await resolvePath(path, opts)
     if (await existsSensitive(rPath)) {
       const _isDir = await isDirectory(rPath)
@@ -131,6 +129,22 @@ export function createResolver (base: string | URL): Resolver {
     resolve: (...path) => resolve(base as string, ...path),
     resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
   }
+}
+
+export async function resolveNuxtModule (base: string, paths: string[]) {
+  const resolved = []
+  const resolver = createResolver(base)
+
+  for (const path of paths) {
+    if (path.startsWith(base)) {
+      resolved.push(path.split('/index.ts')[0])
+    } else {
+      const resolvedPath = await resolver.resolvePath(path)
+      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+    }
+  }
+
+  return resolved
 }
 
 // --- Internal ---

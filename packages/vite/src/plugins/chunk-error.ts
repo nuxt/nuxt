@@ -1,11 +1,15 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 
+const vitePreloadHelperId = '\0vite/preload-helper'
+
+// TODO: remove this function when we upgrade to vite 5
 export function chunkErrorPlugin (options: { sourcemap?: boolean }): Plugin {
   return {
     name: 'nuxt:chunk-error',
     transform (code, id) {
-      if (id !== '\0vite/preload-helper' || code.includes('nuxt.preloadError')) { return }
+      // Vite 5 has an id with extension
+      if (!(id === vitePreloadHelperId || id === `${vitePreloadHelperId}.js`) || code.includes('nuxt.preloadError')) { return }
 
       const s = new MagicString(code)
       s.replace(/__vitePreload/g, '___vitePreload')

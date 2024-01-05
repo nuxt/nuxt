@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
-import { encodePath } from 'ufo'
-import { resolveFiles, useNuxt } from '@nuxt/kit'
+import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -12,6 +12,7 @@ import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Pr
 import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
+import { toArray } from '../utils'
 
 enum SegmentParserState {
   initial,
@@ -33,37 +34,42 @@ interface SegmentToken {
   value: string
 }
 
+interface ScannedFile {
+  relativePath: string
+  absolutePath: string
+}
+
 export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, layer.config.dir?.pages || 'pages')
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
   )
 
-  const allRoutes = (await Promise.all(
-    pagesDirs.map(async (dir) => {
-      const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
-      // Sort to make sure parent are listed first
-      files.sort()
-      return generateRoutesFromFiles(files, dir, nuxt.options.experimental.typedPages, nuxt.vfs)
-    })
-  )).flat()
+  const scannedFiles: ScannedFile[] = []
+  for (const dir of pagesDirs) {
+    const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
+    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+  }
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+
+  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: string[], pagesDir: string, shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
-    const segments = relative(pagesDir, file)
-      .replace(new RegExp(`${escapeRE(extname(file))}$`), '')
+    const segments = file.relativePath
+      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
       .split('/')
 
     const route: NuxtPage = {
       name: '',
       path: '',
-      file,
+      file: file.absolutePath,
       children: []
     }
 
@@ -80,7 +86,8 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const child = parent.find(parentRoute => parentRoute.name === route.name && !parentRoute.path.endsWith('(.*)*'))
+      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
+      const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
         parent = child.children
@@ -93,7 +100,7 @@ export async function generateRoutesFromFiles (files: string[], pagesDir: string
     }
 
     if (shouldExtractBuildMeta && vfs) {
-      const fileContent = file in vfs ? vfs[file] : fs.readFileSync(resolve(pagesDir, file), 'utf-8')
+      const fileContent = file.absolutePath in vfs ? vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
       const overrideRouteName = await getRouteName(fileContent)
       if (overrideRouteName) {
         route.name = overrideRouteName
@@ -220,7 +227,7 @@ function parseSegment (segment: string) {
         if (c === '[' && state === SegmentParserState.dynamic) {
           state = SegmentParserState.optional
         }
-        if (c === ']' && (state !== SegmentParserState.optional || buffer[buffer.length - 1] === ']')) {
+        if (c === ']' && (state !== SegmentParserState.optional || segment[i - 1] === ']')) {
           if (!buffer) {
             throw new Error('Empty param')
           } else {
@@ -267,12 +274,12 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
       if (names.has(route.name)) {
         const existingRoute = findRouteByName(route.name, routes)
         const extra = existingRoute?.name ? `is the same as \`${existingRoute.file}\`` : 'is a duplicate'
-        console.warn(`[nuxt] Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
+        logger.warn(`Route name generated for \`${route.file}\` ${extra}. You may wish to set a custom name using \`definePageMeta\` within the page file.`)
       }
     }
 
     // Remove leading / if children route
-    if (parent && route.path.startsWith('/')) {
+    if (parent && route.path[0] === '/') {
       route.path = route.path.slice(1)
     }
 
@@ -296,11 +303,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const route = Object.fromEntries(
-        Object.entries(page)
-          .filter(([key, value]) => key !== 'file' && (Array.isArray(value) ? value.length : value))
-          .map(([key, value]) => [key, JSON.stringify(value)])
-      ) as Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string }
+      const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
+      for (const [key, value] of Object.entries(page)) {
+        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) { 
+          route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
+        }
+      }
 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports).routes
@@ -319,7 +327,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       let aliasCode = `${metaImportName}?.alias || []`
-      const alias = Array.isArray(page.alias) ? page.alias : [page.alias].filter(Boolean)
+      const alias = toArray(page.alias).filter(Boolean)
       if (alias.length) {
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }

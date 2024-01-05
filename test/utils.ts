@@ -4,7 +4,7 @@ import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
-import { getBrowser, url, useTestContext } from '@nuxt/test-utils'
+import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
 
 export const isRenderingJson = true
 
@@ -30,7 +30,11 @@ export async function renderPage (path = '/') {
     pageErrors.push(err)
   })
   page.on('request', (req) => {
-    requests.push(req.url().replace(url('/'), '/'))
+    try {
+      requests.push(req.url().replace(url('/'), '/'))
+    } catch (err) {
+      // TODO
+    }
   })
 
   if (path) {

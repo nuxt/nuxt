@@ -1,6 +1,9 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
+// eslint-disable-next-line
+import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
+import { useNuxtApp } from '../nuxt'
 import { createBuffer } from './utils'
 
 const NuxtClientFallbackServer = defineComponent({
@@ -34,9 +37,10 @@ const NuxtClientFallbackServer = defineComponent({
       return true
     }
   },
-  setup (props, ctx) {
+  async setup (props, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
+    const nuxtApp = useNuxtApp()
 
     onErrorCaptured((err) => {
       useState(`${props.uid}`, () => true)
@@ -53,10 +57,15 @@ const NuxtClientFallbackServer = defineComponent({
         ssrRenderVNode(ssrVNodes.push, defaultSlot![i], vm!)
       }
 
+      const buffer = ssrVNodes.getBuffer()
+      if (buffer.hasAsync) {
+        await Promise.all(buffer.filter(isPromise))
+      }
+
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
       // catch in dev
-      useState(`${props.uid}`, () => true)
+      nuxtApp.runWithContext(() => useState(`${props.uid}`, () => true))
       ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }
     }

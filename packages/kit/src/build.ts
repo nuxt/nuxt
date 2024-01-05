@@ -1,34 +1,31 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
+import { toArray } from './utils'
 
 export interface ExtendConfigOptions {
   /**
    * Install plugin on dev
-   *
    * @default true
    */
   dev?: boolean
   /**
    * Install plugin on build
-   *
    * @default true
    */
   build?: boolean
   /**
    * Install plugin on server side
-   *
    * @default true
    */
   server?: boolean
   /**
    * Install plugin on client side
-   *
    * @default true
    */
   client?: boolean
   /**
-   * Prepends the plugin to the array with `unshit()` instead of `push()`.
+   * Prepends the plugin to the array with `unshift()` instead of `push()`.
    */
   prepend?: boolean
 }
@@ -112,11 +109,7 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 
@@ -129,11 +122,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 

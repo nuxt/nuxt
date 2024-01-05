@@ -1,6 +1,6 @@
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
-import type { NuxtHooks, NuxtLayout, NuxtMiddleware } from './hooks'
+import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
 
@@ -16,9 +16,17 @@ export interface NuxtPlugin {
    * Default Nuxt priorities can be seen at [here](https://github.com/nuxt/nuxt/blob/9904849bc87c53dfbd3ea3528140a5684c63c8d8/packages/nuxt/src/core/plugins/plugin-metadata.ts#L15-L34).
    */
   order?: number
+  /**
+   * @internal
+   */
+  name?: string
 }
 
-export interface NuxtTemplate<Options = Record<string, any>> {
+// Internal type for simpler NuxtTemplate interface extension
+
+type TemplateDefaultOptions = Record<string, any>
+
+export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** resolved output file path (generated) */
   dst?: string
   /** The target filename once the template is copied into the Nuxt buildDir */
@@ -33,13 +41,17 @@ export interface NuxtTemplate<Options = Record<string, any>> {
   write?: boolean
 }
 
-export interface ResolvedNuxtTemplate<Options = Record<string, any>> extends NuxtTemplate<Options> {
+export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string
 }
 
+export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write'> {
+  write?: true
+}
+
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
-export interface NuxtPluginTemplate<Options = Record<string, any>> extends _TemplatePlugin<Options> { }
+export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
 
 export interface NuxtApp {
   mainComponent?: string | null
@@ -53,6 +65,7 @@ export interface NuxtApp {
   middleware: NuxtMiddleware[]
   templates: NuxtTemplate[]
   configs: string[]
+  pages?: NuxtPage[]
 }
 
 export interface Nuxt {

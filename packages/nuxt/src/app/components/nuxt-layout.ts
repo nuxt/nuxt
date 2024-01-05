@@ -1,12 +1,15 @@
 import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
+
+// eslint-disable-next-line import/no-restricted-paths
+import type { PageMeta } from '../../pages/runtime/composables'
+
+import { useRoute } from '../composables/router'
+import { useNuxtApp } from '../nuxt'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
-import type { PageMeta } from '#app'
 
-import { useRoute } from '#app/composables/router'
-import { useNuxtApp } from '#app/nuxt'
 // @ts-expect-error virtual file
 import { useRoute as useVueRouterRoute } from '#build/pages'
 // @ts-expect-error virtual file
@@ -26,7 +29,6 @@ const LayoutLoader = defineComponent({
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
 
-    // eslint-disable-next-line vue/no-setup-props-destructure
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => h(LayoutComponent, props.layoutProps, context.slots)
@@ -40,6 +42,10 @@ export default defineComponent({
     name: {
       type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'],
       default: null
+    },
+    fallback: {
+      type: [String, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string> : PageMeta['layout'],
+      default: null
     }
   },
   setup (props, context) {
@@ -48,30 +54,40 @@ export default defineComponent({
     const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
-    const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+    const layout = computed(() => {
+      let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
+      if (layout && !(layout in layouts)) {
+        if (import.meta.dev && layout !== 'default') {
+          console.warn(`Invalid layout \`${layout}\` selected.`)
+        }
+        if (props.fallback) {
+          layout = unref(props.fallback)
+        }
+      }
+      return layout
+    })
 
     const layoutRef = ref()
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
 
+    if (import.meta.dev) {
+      nuxtApp._isNuxtLayoutUsed = true
+    }
+
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {
-        console.warn(`Invalid layout \`${layout.value}\` selected.`)
-      }
-
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
-            // @ts-expect-error seems to be an issue in vue types
             LayoutProvider,
             {
               layoutProps: mergeProps(context.attrs, { ref: layoutRef }),
-              key: layout.value,
+              key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
               hasTransition: !!transitionProps
@@ -89,7 +105,7 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean]
+      type: [String, Boolean] as unknown as () => string | false
     },
     layoutProps: {
       type: Object
@@ -103,7 +119,7 @@ const LayoutProvider = defineComponent({
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
-    // eslint-disable-next-line vue/no-setup-props-destructure
+
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
@@ -137,7 +153,6 @@ const LayoutProvider = defineComponent({
 
       if (import.meta.dev && import.meta.client && props.hasTransition) {
         vnode = h(
-          // @ts-expect-error seems to be an issue in vue types
           LayoutLoader,
           { key: name, layoutProps: props.layoutProps, name },
           context.slots
@@ -147,7 +162,6 @@ const LayoutProvider = defineComponent({
       }
 
       return h(
-        // @ts-expect-error seems to be an issue in vue types
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
         context.slots

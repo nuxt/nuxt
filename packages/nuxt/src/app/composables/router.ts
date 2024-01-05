@@ -1,16 +1,16 @@
-import { getCurrentInstance, hasInjectionContext, inject, onUnmounted } from 'vue'
+import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
+// eslint-disable-next-line import/no-restricted-paths
+import type { PageMeta } from '../../pages/runtime/composables'
+
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-import { useState } from './state'
-
-import type { PageMeta } from '#app'
-import { PageRouteSymbol } from '#app/components/injections'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -31,19 +31,19 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
     if (to === from) { return }
     return guard(to, from, next)
   })
-  onUnmounted(unsubscribe)
+  onScopeDispose(unsubscribe)
 }
 
 export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach(guard)
-  onUnmounted(unsubscribe)
+  onScopeDispose(unsubscribe)
 }
 
 export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -159,7 +159,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      async function redirect (response: any) {
+      const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
@@ -183,6 +183,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Client-side redirection using vue-router
   if (isExternal) {
+    // Run any cleanup steps for the current scope, like ending BroadcastChannel
+    nuxtApp._scope.stop()
     if (options?.replace) {
       location.replace(toPath)
     } else {
@@ -222,14 +224,14 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
 }
 
 export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
+  const nuxtApp = useNuxtApp()
   if (import.meta.server) {
-    if (import.meta.dev && getCurrentInstance() && useState('_layout').value !== layout) {
+    if (import.meta.dev && getCurrentInstance() && nuxtApp.payload.state._layout !== layout) {
       console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout on the server within a component as this will cause hydration errors.')
     }
-    useState('_layout').value = layout
+    nuxtApp.payload.state._layout = layout
   }
-  const nuxtApp = useNuxtApp()
-  if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && useState('_layout').value !== layout) {
+  if (import.meta.dev && nuxtApp.isHydrating && nuxtApp.payload.serverRendered && nuxtApp.payload.state._layout !== layout) {
     console.warn('[warn] [nuxt] `setPageLayout` should not be called to change the layout during hydration as this will cause hydration errors.')
   }
   const inMiddleware = isProcessingMiddleware()

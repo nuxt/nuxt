@@ -44,12 +44,13 @@ declare module 'vue-router' {
   interface RouteMeta extends UnwrapRef<PageMeta> {}
 }
 
-const warnRuntimeUsage = (method: string) =>
+const warnRuntimeUsage = (method: string) => {
   console.warn(
     `${method}() is a compiler-hint helper that is only usable inside ` +
     'the script block of a single file component which is also a page. Its arguments should be ' +
     'compiled away and passing it at runtime has no effect.'
   )
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
@@ -61,7 +62,9 @@ export const definePageMeta = (meta: PageMeta): void => {
         // don't warn if it's being used in a route component
         return
       }
-    } catch {}
+    } catch {
+      // ignore any errors with accessing current instance or route
+    }
     warnRuntimeUsage('definePageMeta')
   }
 }
@@ -75,5 +78,6 @@ export const definePageMeta = (meta: PageMeta): void => {
  * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
  * should set `routeRules` directly within your `nuxt.config`.
  */
+/*@__NO_SIDE_EFFECTS__*/
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const defineRouteRules = (rules: NitroRouteConfig): void => {}

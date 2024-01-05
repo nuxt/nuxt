@@ -33,7 +33,7 @@ export default defineNuxtPlugin({
 })
 `
 
-export const componentsPluginTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+export const componentsPluginTemplate: NuxtPluginTemplate = {
   filename: 'components.plugin.mjs',
   getContents ({ app }) {
     const lazyGlobalComponents = new Set<string>()
@@ -70,7 +70,7 @@ export default defineNuxtPlugin({
   }
 }
 
-export const componentNamesTemplate: NuxtPluginTemplate<ComponentsTemplateContext> = {
+export const componentNamesTemplate: NuxtTemplate<ComponentsTemplateContext> = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
     return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
@@ -86,13 +86,19 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
       // .server components without a corresponding .client component will need to be rendered as an island
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
-    return ['import { defineAsyncComponent } from \'vue\'', ...islands.map(
-      (c) => {
-        const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-        const comment = createImportMagicComments(c)
-        return `export const ${c.pascalName} = /* #__PURE__ */ defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
-      }
-    )].join('\n')
+
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+      'export const islandComponents = import.meta.client ? {} : {',
+      islands.map(
+        (c) => {
+          const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+          const comment = createImportMagicComments(c)
+          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+        }
+      ).join(',\n'),
+      '}'
+    ].join('\n')
   }
 }
 

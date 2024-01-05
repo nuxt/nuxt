@@ -1,5 +1,7 @@
 <script setup lang="ts">
-process.client && console.log('[sync]')
+if (import.meta.client) {
+  console.log('[sync]')
+}
 const route = useRoute('suspense-async-parent')
 </script>
 

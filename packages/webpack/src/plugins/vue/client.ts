@@ -6,7 +6,6 @@
 import { normalizeWebpackManifest } from 'vue-bundle-renderer'
 import { dirname } from 'pathe'
 import hash from 'hash-sum'
-import { uniq } from 'lodash-es'
 import fse from 'fs-extra'
 
 import type { Nuxt } from '@nuxt/schema'
@@ -16,6 +15,10 @@ import { isCSS, isHotUpdate, isJS } from './util'
 interface PluginOptions {
   filename: string
   nuxt: Nuxt
+}
+
+function uniq <T> (items: T[]) {
+  return [...new Set(items)]
 }
 
 export default class VueSSRClientPlugin {

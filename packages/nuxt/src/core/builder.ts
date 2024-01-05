@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import chokidar from 'chokidar'
-import { isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { interopDefault } from 'mlly'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
@@ -93,6 +93,7 @@ function createGranularWatcher () {
   const nuxt = useNuxt()
 
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
 
@@ -131,6 +132,7 @@ function createGranularWatcher () {
     watcher.on('ready', () => {
       pending--
       if (nuxt.options.debug && !pending) {
+        // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
@@ -140,37 +142,40 @@ function createGranularWatcher () {
 async function createParcelWatcher () {
   const nuxt = useNuxt()
   if (nuxt.options.debug) {
+    // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
   const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
-  if (watcherPath) {
-    const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
-    for (const layer of nuxt.options._layers) {
-      if (!layer.config.srcDir) { continue }
-      const watcher = subscribe(layer.config.srcDir, (err, events) => {
-        if (err) { return }
-        for (const event of events) {
-          if (isIgnored(event.path)) { continue }
-          // TODO: consider moving to emit absolute path in 3.8 or 4.0
-          nuxt.callHook('builder:watch', watchEvents[event.type], normalize(relative(nuxt.options.srcDir, event.path)))
-        }
-      }, {
-        ignore: [
-          ...nuxt.options.ignore,
-          'node_modules'
-        ]
-      })
-      watcher.then((subscription) => {
-        if (nuxt.options.debug) {
-          console.timeEnd('[nuxt] builder:parcel:watch')
-        }
-        nuxt.hook('close', () => subscription.unsubscribe())
-      })
-    }
-    return true
+  if (!watcherPath) {
+    logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+    return false
   }
-  console.warn('[nuxt] falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
-  return false
+
+  const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+  for (const layer of nuxt.options._layers) {
+    if (!layer.config.srcDir) { continue }
+    const watcher = subscribe(layer.config.srcDir, (err, events) => {
+      if (err) { return }
+      for (const event of events) {
+        if (isIgnored(event.path)) { continue }
+        // TODO: consider moving to emit absolute path in 3.8 or 4.0
+        nuxt.callHook('builder:watch', watchEvents[event.type], normalize(relative(nuxt.options.srcDir, event.path)))
+      }
+    }, {
+      ignore: [
+        ...nuxt.options.ignore,
+        'node_modules'
+      ]
+    })
+    watcher.then((subscription) => {
+      if (nuxt.options.debug) {
+        // eslint-disable-next-line no-console
+        console.timeEnd('[nuxt] builder:parcel:watch')
+      }
+      nuxt.hook('close', () => subscription.unsubscribe())
+    })
+  }
+  return true
 }
 
 async function bundle (nuxt: Nuxt) {
@@ -195,7 +200,7 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
 
   if (!builderPath) {
-    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/configuration/nuxt-config#builder\``)
+    throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
   return import(pathToFileURL(builderPath).href)
 }

@@ -5,7 +5,6 @@ export default defineUntypedSchema({
   devServer: {
     /**
      * Whether to enable HTTPS.
-     *
      * @example
      * ```
      * export default defineNuxtConfig({
@@ -25,7 +24,7 @@ export default defineUntypedSchema({
     port: process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000,
 
     /** Dev server listening host */
-    host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || '',
+    host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,
 
     /**
      * Listening dev server URL.
@@ -37,7 +36,6 @@ export default defineUntypedSchema({
 
     /**
      * Template to show a loading screen
-     *
      * @type {(data: { loading?: string }) => string}
      */
     loadingTemplate

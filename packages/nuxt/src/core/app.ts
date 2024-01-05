@@ -1,12 +1,14 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate, findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
+
+import type { PluginMeta } from '#app'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -43,7 +45,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
       const contents = await compileTemplate(template, templateContext).catch((e) => {
-        console.error(`[nuxt] Could not compile template \`${template.filename}\`.`)
+        logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
@@ -61,7 +63,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
 
       if (nuxt.options.debug || setupTime > 500) {
-        console.info(`[nuxt] compiled \`${template.filename}\` in ${setupTime}ms`)
+        logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
       if (template.write) {
@@ -79,7 +81,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
 }
 
-async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
+/** @internal */
+export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
@@ -106,48 +109,69 @@ async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Resolve layouts/ from all config layers
+  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
+  const reversedConfigs = layerConfigs.slice().reverse()
   app.layouts = {}
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const layoutFiles = await resolveFiles(config.srcDir, `${config.dir?.layouts || 'layouts'}/*{${nuxt.options.extensions.join(',')}}`)
+  for (const config of layerConfigs) {
+    const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
-      const name = getNameFromPath(file)
+      const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
+      if (!name) {
+        // Ignore files like `~/layouts/index.vue` which end up not having a name at all
+        logger.warn(`No layout name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        continue
+      }
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
 
-  // Resolve middleware/ from all config layers
+  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
-    const middlewareFiles = await resolveFiles(config.srcDir, `${config.dir?.middleware || 'middleware'}/*{${nuxt.options.extensions.join(',')}}`)
-    app.middleware.push(...middlewareFiles.map((file) => {
+  for (const config of reversedConfigs) {
+    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
+    for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
-      return { name, path: file, global: hasSuffix(file, '.global') }
-    }))
+      if (!name) {
+        // Ignore files like `~/middleware/index.vue` which end up not having a name at all
+        logger.warn(`No middleware name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        continue
+      }
+      app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+    }
   }
 
-  // Resolve plugins
-  app.plugins = [
-    ...nuxt.options.plugins.map(normalizePlugin)
-  ]
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  // Resolve plugins, first extended layers and then base
+  app.plugins = []
+  for (const config of reversedConfigs) {
+    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${config.dir?.plugins || 'plugins'}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${config.dir?.plugins || 'plugins'}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*.{ts,js,mjs,cjs,mts,cts}`,
+          `${pluginDir}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
 
+  // Add back plugins not specified in layers or user config
+  for (const p of [...nuxt.options.plugins].reverse()) {
+    const plugin = normalizePlugin(p)
+    if (!app.plugins.some(p => p.src === plugin.src)) {
+      app.plugins.unshift(plugin)
+    }
+  }
+
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
+  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
   app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
 
   // Resolve app.config
   app.configs = []
-  for (const config of nuxt.options._layers.map(layer => layer.config)) {
+  for (const config of layerConfigs) {
     const appConfigPath = await findPath(resolve(config.srcDir, 'app.config'))
     if (appConfigPath) {
       app.configs.push(appConfigPath)
@@ -173,7 +197,7 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 }
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: NuxtPlugin[] = []
+  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
@@ -182,10 +206,36 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         ...plugin
       })
     } catch (e) {
-      console.warn(`[nuxt] Could not resolve \`${plugin.src}\`.`)
+      logger.warn(`Could not resolve \`${plugin.src}\`.`)
       _plugins.push(plugin)
     }
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
+}
+
+export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>>) {
+  const deps: Record<string, string[]> = Object.create(null)
+  const pluginNames = _plugins.map(plugin => plugin.name)
+  for (const plugin of _plugins) {
+    // Make sure dependency plugins are registered
+    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    }
+    // Make graph to detect circular dependencies
+    if (plugin.name) {
+      deps[plugin.name] = plugin.dependsOn || []
+    }
+  }
+  const checkDeps = (name: string, visited: string[] = []): string[] => {
+    if (visited.includes(name)) {
+      console.error(`Circular dependency detected in plugins: ${visited.join(' -> ')} -> ${name}`)
+      return []
+    }
+    visited.push(name)
+    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
+  }
+  for (const name in deps) {
+    checkDeps(name)
+  }
 }

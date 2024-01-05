@@ -1,15 +1,17 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { Nuxt, NuxtTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'
+import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
+import { resolveNuxtModule } from './resolve'
 
 /**
  * Renders given template using lodash template during build into the project buildDir
@@ -34,7 +36,7 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
  * Renders given types using lodash template during build into the project buildDir
  * and register them as types.
  */
-export function addTypeTemplate (_template: NuxtTemplate<any>) {
+export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -109,21 +111,32 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 export async function writeTypes (nuxt: Nuxt) {
-  const modulePaths = getModulePaths(nuxt.options.modulesDir)
+  const nodeModulePaths = getModulePaths(nuxt.options.modulesDir)
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash,
+    nuxt.options._installedModules
+      .filter(m => m.entryPath)
+      .map(m => getDirectory(m.entryPath))
+  )
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
       jsx: 'preserve',
+      jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
+      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
       isolatedModules: true,
       useDefineForClassFields: true,
       strict: nuxt.options.typescript?.strict ?? true,
+      noImplicitThis: true,
+      esModuleInterop: true,
+      types: [],
+      verbatimModuleSyntax: true,
       allowJs: true,
       noEmit: true,
       resolveJsonModule: true,
@@ -137,10 +150,12 @@ export async function writeTypes (nuxt: Nuxt) {
       ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
-      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : []
+      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
@@ -201,11 +216,7 @@ export async function writeTypes (nuxt: Nuxt) {
     ...nuxt.options._modules
   ]
     .filter(f => typeof f === 'string')
-    .map(async id => ({ types: (await readPackageJSON(id, { url: modulePaths }).catch(() => null))?.name || id })))
-
-  if (nuxt.options.experimental?.reactivityTransform) {
-    references.push({ types: 'vue/macros-global' })
-  }
+    .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
 
   const declarations: string[] = []
 

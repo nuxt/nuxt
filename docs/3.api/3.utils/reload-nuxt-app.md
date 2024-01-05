@@ -1,13 +1,22 @@
 ---
-title: "reloadNuxtApp"
+title: 'reloadNuxtApp'
 description: reloadNuxtApp will perform a hard reload of the page.
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/chunk.ts
+    size: xs
 ---
 
-# `reloadNuxtApp`
-
+::callout
 `reloadNuxtApp` will perform a hard reload of your app, re-requesting a page and its dependencies from the server.
+::
 
-By default, it will also save the current `state` of your app (that is, any state you could access with `useState`). You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
+By default, it will also save the current `state` of your app (that is, any state you could access with `useState`).
+
+::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-ph-star-duotone"}
+You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
+::
 
 ## Type
 
