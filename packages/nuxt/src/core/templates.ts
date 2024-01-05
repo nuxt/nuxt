@@ -121,7 +121,8 @@ import type { Plugin } from '#app'
 
 type Decorate<T extends Record<string, any>> = { [K in keyof T as K extends string ? \`$\${K}\` : never]: T[K] }
 
-type InjectionType<A extends Plugin> = A extends Plugin<infer T> ? Decorate<T> : unknown
+type IsAny<T> = 0 extends 1 & T ? true : false
+type InjectionType<A extends Plugin> = IsAny<A> extends true ? unknown : A extends Plugin<infer T> ? Decorate<T> : unknown
 
 type NuxtAppInjections = \n  ${tsImports.map(p => `InjectionType<typeof ${genDynamicImport(p, { wrapper: false })}.default>`).join(' &\n  ')}
 
@@ -152,7 +153,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
 
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name.startsWith('.') ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
+    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
 
     return [
