@@ -158,8 +158,8 @@ importers:
         specifier: ^3.2.3
         version: 3.2.3
       defu:
-        specifier: ^6.1.3
-        version: 6.1.3
+        specifier: ^6.1.4
+        version: 6.1.4
       globby:
         specifier: ^14.0.0
         version: 14.0.0
@@ -282,8 +282,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       defu:
-        specifier: ^6.1.3
-        version: 6.1.3
+        specifier: ^6.1.4
+        version: 6.1.4
       destr:
         specifier: ^2.0.2
         version: 2.0.2
@@ -433,8 +433,8 @@ importers:
         specifier: ^3.2.3
         version: 3.2.3
       defu:
-        specifier: ^6.1.3
-        version: 6.1.3
+        specifier: ^6.1.4
+        version: 6.1.4
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -557,8 +557,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3(postcss@8.4.33)
       defu:
-        specifier: ^6.1.3
-        version: 6.1.3
+        specifier: ^6.1.4
+        version: 6.1.4
       esbuild:
         specifier: ^0.19.11
         version: 0.19.11
@@ -672,8 +672,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3(postcss@8.4.33)
       defu:
-        specifier: ^6.1.3
-        version: 6.1.3
+        specifier: ^6.1.4
+        version: 6.1.4
       esbuild-loader:
         specifier: ^4.0.2
         version: 4.0.2(webpack@5.89.0)
@@ -2017,7 +2017,7 @@ packages:
       ci-info: 4.0.0
       consola: 3.2.3
       create-require: 1.1.1
-      defu: 6.1.3
+      defu: 6.1.4
       destr: 2.0.2
       dotenv: 16.3.1
       git-url-parse: 13.1.1
@@ -2070,7 +2070,7 @@ packages:
       '@vue/test-utils': 2.4.3(vue@3.4.5)
       c12: 1.6.1
       consola: 3.2.3
-      defu: 6.1.3
+      defu: 6.1.4
       destr: 2.0.2
       estree-walker: 3.0.3
       execa: 8.0.1
@@ -3748,7 +3748,7 @@ packages:
     resolution: {integrity: sha512-fAZOi3INDvIbmjuwAVVggusyRTxwNdTAnwLay8IsXwhFzDwPPGzFxzrx6L55CPFGPulUSZI0eyFUvRDXveoE3g==}
     dependencies:
       chokidar: 3.5.3
-      defu: 6.1.3
+      defu: 6.1.4
       dotenv: 16.3.1
       giget: 1.2.1
       jiti: 1.21.0
@@ -4392,8 +4392,8 @@ packages:
       object-keys: 1.1.1
     dev: true
 
-  /defu@6.1.3:
-    resolution: {integrity: sha512-Vy2wmG3NTkmHNg/kzpuvHhkqeIx3ODWqasgCRbKtbXEN0G+HpEEv9BtJLp7ZG1CZloFaC41Ah3ZFbq7aqCqMeQ==}
+  /defu@6.1.4:
+    resolution: {integrity: sha512-mEQCMmwJu317oSz8CwdIOdwf3xMif1ttiM8LTufzc3g6kR+9Pe236twL8j3IYT1F7GfRgGcW6MWxzZjLIkuHIg==}
 
   /delegates@1.0.0:
     resolution: {integrity: sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==}
@@ -5364,7 +5364,7 @@ packages:
     dependencies:
       citty: 0.1.5
       consola: 3.2.3
-      defu: 6.1.3
+      defu: 6.1.4
       node-fetch-native: 1.6.1
       nypm: 0.3.4
       ohash: 1.1.3
@@ -5519,7 +5519,7 @@ packages:
     resolution: {integrity: sha512-Tw1kcIC+AeimwRmviiObaD5EB430Yt+lTgOxLJxNr96Vd/fGRu04EF7aKfOAcpwKCI+U2JlbxOLhycD86p3Ciw==}
     dependencies:
       cookie-es: 1.0.0
-      defu: 6.1.3
+      defu: 6.1.4
       destr: 2.0.2
       iron-webcrypto: 1.0.0
       radix3: 1.1.0
@@ -6279,7 +6279,7 @@ packages:
       citty: 0.1.5
       clipboardy: 3.0.0
       consola: 3.2.3
-      defu: 6.1.3
+      defu: 6.1.4
       get-port-please: 3.1.1
       h3: 1.10.0
       http-shutdown: 1.2.2
@@ -6750,7 +6750,7 @@ packages:
         optional: true
     dependencies:
       citty: 0.1.5
-      defu: 6.1.3
+      defu: 6.1.4
       esbuild: 0.18.20
       fs-extra: 11.2.0
       globby: 13.2.2
@@ -6841,7 +6841,7 @@ packages:
       citty: 0.1.5
       consola: 3.2.3
       cookie-es: 1.0.0
-      defu: 6.1.3
+      defu: 6.1.4
       destr: 2.0.2
       dot-prop: 8.0.2
       esbuild: 0.19.11
@@ -8039,7 +8039,7 @@ packages:
   /rc9@2.1.1:
     resolution: {integrity: sha512-lNeOl38Ws0eNxpO3+wD1I9rkHGQyj1NU1jlzv4go2CtEnEQEUfqnIvZG7W+bC/aXdJ27n5x/yUjb6RoT9tko+Q==}
     dependencies:
-      defu: 6.1.3
+      defu: 6.1.4
       destr: 2.0.2
       flat: 5.0.2
 
@@ -8385,7 +8385,7 @@ packages:
   /serve-placeholder@2.0.1:
     resolution: {integrity: sha512-rUzLlXk4uPFnbEaIz3SW8VISTxMuONas88nYWjAWaM2W9VDbt9tyFOr3lq8RhVOFrT3XISoBw8vni5una8qMnQ==}
     dependencies:
-      defu: 6.1.3
+      defu: 6.1.4
 
   /serve-static@1.15.0:
     resolution: {integrity: sha512-XGuRDNjXUijsUL0vl6nSD7cwURuzEgglbOaFuZM9g3kwDXOWVTck0jLzjPzGD+TazWbboZYu52/9/XPdUgne9g==}
@@ -9044,7 +9044,7 @@ packages:
       chalk: 5.3.0
       citty: 0.1.5
       consola: 3.2.3
-      defu: 6.1.3
+      defu: 6.1.4
       esbuild: 0.19.11
       globby: 13.2.2
       hookable: 5.5.3
@@ -9089,7 +9089,7 @@ packages:
     resolution: {integrity: sha512-QKnFNznRxmbOF1hDgzpqrlIf6NC5sbZ2OJ+5Wl3OX8uM+LUJXbj4TXvLJCtwbPTmbMHCLIz6JLKNinNsMShK9g==}
     dependencies:
       consola: 3.2.3
-      defu: 6.1.3
+      defu: 6.1.4
       mime: 3.0.0
       node-fetch-native: 1.6.1
       pathe: 1.1.1
@@ -9253,7 +9253,7 @@ packages:
       '@babel/core': 7.23.3
       '@babel/standalone': 7.23.2
       '@babel/types': 7.23.4
-      defu: 6.1.3
+      defu: 6.1.4
       jiti: 1.21.0
       mri: 1.2.0
       scule: 1.1.1
