@@ -82,9 +82,7 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
 // TODO: deprecate boolean option in future minor
 const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
-/**
- * @since 3.0.0
- */
+/** @since 3.0.0 */
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
@@ -305,9 +303,7 @@ export function useAsyncData<
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
-/**
- * @since 3.0.0
- */
+/** @since 3.0.0 */
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -364,9 +360,7 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
-/**
- * @since 3.0.0
- */
+/** @since 3.0.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
   const nuxt = useNuxtApp()
 
@@ -380,9 +374,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
   }
 }
 
-/**
- * @since 3.0.0
- */
+/** @since 3.0.0 */
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
   if (import.meta.server) {
     return Promise.resolve()
@@ -394,9 +386,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
-/**
- * @since 3.0.0
- */
+/** @since 3.0.0 */
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.data)
