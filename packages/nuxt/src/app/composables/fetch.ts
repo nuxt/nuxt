@@ -39,6 +39,7 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
+/** @since 3.0.0 */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -167,6 +168,7 @@ export function useFetch<
   return asyncData
 }
 
+/** @since 3.0.0 */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
