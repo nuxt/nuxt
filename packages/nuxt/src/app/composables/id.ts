@@ -15,7 +15,13 @@ export function useId (key: string = 'n'): string {
   let id
   if (nuxt.payload.serverRendered && nuxt.isHydrating) {
     instance._nuxtIdIndex = instance._nuxtIdIndex || 0
-    const serverIds = instance.vnode.el?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
+    let serverIds = [];
+    // If comment node and sibling is a div
+    if (instance.vnode.el?.nodeType === 8 && instance.vnode.el?.nextElementSibling?.getAttribute) {
+      serverIds = instance.vnode.el?.nextElementSibling?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
+    } else {
+      serverIds = instance.vnode.el?.getAttribute?.(ATTR_KEY)?.split?.(',') || []
+    }
     if (serverIds.length) {
       id = parseInt(serverIds[instance._nuxtIdIndex], 10) || 0
       instance._nuxtIdIndex++
