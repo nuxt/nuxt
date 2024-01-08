@@ -177,7 +177,11 @@ const excludedVueHelpers = [
   'vModelSelect',
   'vModelText',
   'vShow',
-  'compile'
+  'compile',
+  'DeprecationTypes',
+  'ErrorCodes',
+  'TrackOpTypes',
+  'TriggerOpTypes'
 ]
 
 describe('imports:vue', () => {

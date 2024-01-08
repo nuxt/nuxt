@@ -1,5 +1,5 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -117,6 +117,11 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
+      if (!name) {
+        // Ignore files like `~/layouts/index.vue` which end up not having a name at all
+        logger.warn(`No layout name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        continue
+      }
       app.layouts[name] = app.layouts[name] || { name, file }
     }
   }
@@ -126,10 +131,15 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
-    app.middleware.push(...middlewareFiles.map((file) => {
+    for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
-      return { name, path: file, global: hasSuffix(file, '.global') }
-    }))
+      if (!name) {
+        // Ignore files like `~/middleware/index.vue` which end up not having a name at all
+        logger.warn(`No middleware name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        continue
+      }
+      app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
+    }
   }
 
   // Resolve plugins, first extended layers and then base

@@ -128,7 +128,7 @@ export async function writeTypes (nuxt: Nuxt) {
       jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
+      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
       isolatedModules: true,
       useDefineForClassFields: true,
