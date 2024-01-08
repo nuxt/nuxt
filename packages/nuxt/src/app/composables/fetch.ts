@@ -143,9 +143,12 @@ export function useFetch<
     immediate,
     getCachedData,
     deep,
-    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
+    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
+  }
+
+  if (import.meta.dev && import.meta.client) {
     // @ts-expect-error private property
-    _useFetch: true
+    _asyncDataOptions._useFetch = true
   }
 
   let controller: AbortController
