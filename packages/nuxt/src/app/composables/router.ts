@@ -4,12 +4,13 @@ import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, Route
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
+// eslint-disable-next-line import/no-restricted-paths
+import type { PageMeta } from '../../pages/runtime/composables'
+
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
-
-import type { PageMeta } from '#app'
-import { PageRouteSymbol } from '#app/components/injections'
 
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
@@ -42,7 +43,7 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -175,7 +176,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      async function redirect (response: any) {
+      const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')

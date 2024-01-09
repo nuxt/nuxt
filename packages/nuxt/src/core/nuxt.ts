@@ -51,7 +51,11 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
-  nuxt.hooks.addHooks(nuxt.options.hooks)
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+    if (config.hooks) {
+      nuxt.hooks.addHooks(config.hooks)
+    }
+  }
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
@@ -89,16 +93,6 @@ async function initNuxt (nuxt: Nuxt) {
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
-
-  if (nuxt.options.experimental.appManifest) {
-    addRouteMiddleware({
-      name: 'manifest-route-rule',
-      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
-      global: true
-    })
-
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
-  }
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
@@ -159,13 +153,18 @@ async function initNuxt (nuxt: Nuxt) {
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
   }
 
+  if (nuxt.options.dev) {
+    // Add plugin to check if layouts are defined without NuxtLayout being instantiated
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+  }
+
   // Transform initial composable call within `<script setup>` to preserve context
   if (nuxt.options.experimental.asyncContext) {
     addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
-  if (nuxt.options.experimental.noScripts && !nuxt.options.dev) {
+  if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
@@ -392,6 +391,16 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
+  if (nuxt.options.experimental.appManifest) {
+    addRouteMiddleware({
+      name: 'manifest-route-rule',
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
+      global: true
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -499,6 +508,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   const nuxt = createNuxt(options)
+
+  // We register hooks layer-by-layer so any overrides need to be registered separately
+  if (opts.overrides?.hooks) {
+    nuxt.hooks.addHooks(opts.overrides.hooks)
+  }
 
   if (nuxt.options.debug) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })

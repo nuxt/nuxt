@@ -1,4 +1,4 @@
-import { join } from 'pathe'
+import { defu } from 'defu'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
@@ -13,20 +13,11 @@ export default defineUntypedSchema({
      *   analyzerMode: 'static'
      * }
      * ```
-     * @type {boolean | typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
+     * @type {boolean | { enabled?: boolean } & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
      */
     analyze: {
       $resolve: async (val, get) => {
-        if (val !== true) {
-          return val ?? false
-        }
-        const rootDir = await get('rootDir')
-        const analyzeDir = await get('analyzeDir')
-        return {
-          template: 'treemap',
-          projectRoot: rootDir,
-          filename: join(analyzeDir, '{name}.html')
-        }
+        return defu(val, await get('build.analyze'))
       }
     },
 
@@ -220,7 +211,7 @@ export default defineUntypedSchema({
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+          filter: (url: string, _resourcePath: string) => url[0] !== '/'
         },
         esModule: false
       },
@@ -228,7 +219,7 @@ export default defineUntypedSchema({
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => !url.startsWith('/')
+          filter: (url: string, _resourcePath: string) => url[0] !== '/'
         },
         esModule: false,
         modules: {

@@ -24,3 +24,7 @@ export function matchWithStringOrRegex (value: string, matcher: string | RegExp)
 
   return false
 }
+
+export function toArray<T> (value: T | T[]): T[] {
+  return Array.isArray(value) ? value : [value]
+}

@@ -9,12 +9,12 @@ import { logger } from './logger'
  *
  * Requires Nuxt 2.13+
  */
-export async function addComponentsDir (dir: ComponentsDir) {
+export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
   nuxt.options.components = nuxt.options.components || []
   dir.priority ||= 0
-  nuxt.hook('components:dirs', (dirs) => { dirs.push(dir) })
+  nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
 }
 
 export type AddComponentOptions = { name: string, filePath: string } & Partial<Exclude<Component,
@@ -30,6 +30,11 @@ export async function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
   nuxt.options.components = nuxt.options.components || []
+
+  if (!opts.mode) {
+    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+    opts.mode = mode as 'all' | 'client' | 'server'
+  }
 
   // Apply defaults
   const component: Component = {

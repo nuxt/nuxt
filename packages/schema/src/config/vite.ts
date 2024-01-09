@@ -20,13 +20,17 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
     define: {
-      $resolve: async (val, get) => ({
-        'process.dev': await get('dev'),
-        'import.meta.dev': await get('dev'),
-        'process.test': isTest,
-        'import.meta.test': isTest,
-        ...val || {}
-      })
+      $resolve: async (val, get) => {
+        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
+        return {
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: isDebug,
+          'process.dev': isDev,
+          'import.meta.dev': isDev,
+          'process.test': isTest,
+          'import.meta.test': isTest,
+          ...val
+        }
+      }
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
@@ -36,7 +40,7 @@ export default defineUntypedSchema({
         if (val) {
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
-        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+        return val ?? await Promise.all([get('srcDir'), get('dir')]).then(([srcDir, dir]) => resolve(srcDir, dir.public))
       }
     },
     vue: {
@@ -61,7 +65,7 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => {
         return {
           isCustomElement: (await get('vue')).compilerOptions?.isCustomElement,
-          ...(val || {})
+          ...val
         }
       }
     },
@@ -89,14 +93,17 @@ export default defineUntypedSchema({
     server: {
       fs: {
         allow: {
-          $resolve: async (val, get) => [
-            await get('buildDir'),
-            await get('srcDir'),
-            await get('rootDir'),
-            await get('workspaceDir'),
-            ...(await get('modulesDir')),
-            ...val ?? []
-          ]
+          $resolve: async (val, get) => {
+            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')])
+            return [
+              buildDir,
+              srcDir,
+              rootDir,
+              workspaceDir,
+              ...(modulesDir),
+              ...val ?? []
+            ]
+          }
         }
       }
     }

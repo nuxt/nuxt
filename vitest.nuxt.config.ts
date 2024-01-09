@@ -1,12 +1,11 @@
-import { defineVitestConfig } from 'nuxt-vitest/config'
+import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
-  // TODO: investigate
-  define: {
-    'import.meta.test': true
-  },
   test: {
     dir: './test/nuxt',
+    coverage: {
+      include: ['packages/nuxt/src/app']
+    },
     environment: 'nuxt',
     environmentOptions: {
       nuxt: {

@@ -10,10 +10,18 @@ useCookie('browser-accessed-with-default-value', () => 'default')
 useCookie('browser-set').value = 'set'
 useCookie('browser-set-to-null').value = null
 useCookie('browser-set-to-null-with-default', () => 'default').value = null
+
+const objectCookie = useCookie('browser-object-default', {
+  default: () => ({ foo: 'bar' })
+})
 </script>
 
 <template>
   <div>
     <div>cookies testing page</div>
+    <pre>{{ objectCookie }}</pre>
+    <button @click="objectCookie.foo = 'baz'">
+      Change cookie
+    </button>
   </div>
 </template>

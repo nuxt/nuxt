@@ -17,26 +17,28 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ## Usage
 
-```vue [pages/index.vue]
+```vue [pages/modules.vue]
 <script setup>
-const route = useRoute()
-
-const { data, pending, error, refresh } = await useFetch(`https://api.nuxtjs.dev/mountains/${route.params.slug}`, {
+const { data, pending, error, refresh } = await useFetch('/api/modules', {
   pick: ['title']
 })
 </script>
 ```
 
+::callout
+`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+::
+
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts
 const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('https://api.nuxtjs.dev/mountains', {
+const { data, pending, error, refresh } = await useFetch('/api/modules', {
   query: { param1, param2: 'value2' }
 })
 ```
 
-Results in `https://api.nuxtjs.dev/mountains?param1=value1&param2=value2`
+The above example results in `https://api.nuxt.com/modules?param1=value1&param2=value2`.
 
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
@@ -80,24 +82,33 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `body`: Request body - automatically stringified (if an object is passed).
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
+  - `timeout`: Milliseconds to automatically abort request
 
 ::callout
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
 ::
 
 - `Options` (from [`useAsyncData`](/docs/api/composables/use-async-data)):
-  - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be generated based on the static code location where `useAsyncData` is used.
+  - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests, if not provided, it will be automatically generated based on URL and fetch options
   - `server`: whether to fetch the data on the server (defaults to `true`)
   - `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
+  - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
   - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+  - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
+    - `cancel` - cancels existing requests when a new one is made
+    - `defer` - does not make new requests at all if there is a pending request
 
 ::callout
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
+::
+
+::callout{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
+Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
 ::
 
 ## Return Values
@@ -135,6 +146,7 @@ type UseFetchOptions<DataT> = {
   immediate?: boolean
   getCachedData?: (key: string) => DataT
   deep?: boolean
+  dedupe?: 'cancel' | 'defer'
   default?: () => DataT
   transform?: (input: DataT) => DataT
   pick?: string[]
@@ -151,7 +163,7 @@ type AsyncData<DataT, ErrorT> = {
 }
 
 interface AsyncDataExecuteOptions {
-  dedupe?: boolean
+  dedupe?: 'cancel' | 'defer'
 }
 
 type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
