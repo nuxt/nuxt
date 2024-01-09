@@ -40,7 +40,7 @@ export interface UseFetchOptions<
 }
 
 /**
- * Fetch data from an API endpoint with a SSR-friendly composable.
+ * Fetch data from an API endpoint with an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
  * @param request The URL to fetch
  * @param opts extends $fetch options and useAsyncData options
@@ -59,7 +59,7 @@ export function useFetch<
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
 /**
- * Fetch data from an API endpoint with a SSR-friendly composable.
+ * Fetch data from an API endpoint with an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
  * @param request The URL to fetch
  * @param opts extends $fetch options and useAsyncData options
