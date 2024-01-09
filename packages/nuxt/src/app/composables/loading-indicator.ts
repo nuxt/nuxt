@@ -47,6 +47,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const progress = ref(0)
   const isLoading = ref(false)
   const done = ref(false)
+  const rafId = ref(0)
 
   let _throttle: any = null
 
@@ -79,6 +80,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   
   function clear () {
     clearTimeout(_throttle)
+    cancelAnimationFrame(rafId.value)
     _throttle = null
   }
 
@@ -96,12 +98,12 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
           ? progressTimingFunction(duration, elapsed) 
           :_defaultProgressTimingFunction(duration, elapsed)
         _setProgressValue(progress, value)
-        requestAnimationFrame(step)
+        rafId.value = requestAnimationFrame(step)
       }
     }
 
     if (import.meta.client) {
-      requestAnimationFrame(step)
+      rafId.value = requestAnimationFrame(step)
     }
   }
 
