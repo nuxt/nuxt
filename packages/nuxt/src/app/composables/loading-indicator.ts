@@ -2,15 +2,18 @@ import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
+export type ProgressTimingFunction = (duration: number, elapsed: number) => number
+
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
   duration: number
   /** @default 200 */
   throttle: number
+  progressTimingFunction?: ProgressTimingFunction
 }
 
-function _increase (progress: Ref<number>, num: number) {
-  progress.value = Math.min(100, progress.value + num)
+function _setProgressValue (progress: Ref<number>, value: number) {
+  progress.value = Math.min(100, value)
 }
 
 function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
@@ -32,14 +35,19 @@ export type LoadingIndicator = {
   clear: () => void
 }
 
+function _defaultProgressTimingFunction (duration: number, elapsed: number):number {
+  const completionPercentage = elapsed / duration * 100
+  const steepFactor = 50 // the value of x where the function's value reaches 50, as less as steeper
+  return (2/Math.PI * 100) * Math.atan(completionPercentage / steepFactor)
+}
+
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
-  const { duration = 2000, throttle = 200 } = opts
+  const { duration = 2000, throttle = 200, progressTimingFunction } = opts
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
-  const step = computed(() => 10000 / duration)
+  const done = ref(false)
 
-  let _timer: any = null
   let _throttle: any = null
 
   const start = () => set(0)
@@ -54,30 +62,46 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     if (throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
-        _startTimer()
+        _startAnimation()
       }, throttle)
     } else {
       isLoading.value = true
-      _startTimer()
+      _startAnimation()
     }
   }
 
   function finish () {
     progress.value = 100
+    done.value = true
     clear()
     _hide(isLoading, progress)
   }
-
+  
   function clear () {
-    clearInterval(_timer)
     clearTimeout(_throttle)
-    _timer = null
     _throttle = null
   }
 
-  function _startTimer () {
+  function _startAnimation () {
+    done.value = false
+    let startTimeStamp: number
+
+    function step(timeStamp: number): void {
+      if (startTimeStamp === undefined) {
+        startTimeStamp = timeStamp
+      }
+      if (!done.value) {
+        const elapsed = timeStamp - startTimeStamp
+        const value = typeof progressTimingFunction === 'function'
+          ? progressTimingFunction(duration, elapsed) 
+          :_defaultProgressTimingFunction(duration, elapsed)
+        _setProgressValue(progress, value)
+        requestAnimationFrame(step)
+      }
+    }
+
     if (import.meta.client) {
-      _timer = setInterval(() => { _increase(progress, step.value) }, 100)
+      requestAnimationFrame(step)
     }
   }
 
