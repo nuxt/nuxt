@@ -37,7 +37,7 @@ export type LoadingIndicator = {
 
 function _defaultProgressTimingFunction (duration: number, elapsed: number):number {
   const completionPercentage = elapsed / duration * 100
-  const steepFactor = 50 // the value of x where the function's value reaches 50, as less as steeper
+  const steepFactor = 50 // controls the progress curve's steepness: lower values make the curve steeper, higher values make it more gradual.
   return (2/Math.PI * 100) * Math.atan(completionPercentage / steepFactor)
 }
 

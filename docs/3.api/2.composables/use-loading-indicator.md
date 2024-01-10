@@ -13,6 +13,13 @@ links:
 A composable which returns the loading state of the page. Used by [`<NuxtLoadingIndicator>`](/docs/api/components/nuxt-loading-indicator) and controllable.
 It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime) and [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to change its state.
 
+## Params
+
+- `duration`: Duration of the loading bar, in milliseconds (default `2000`).
+- `throttle`: Throttle the appearing and hiding, in milliseconds (default `200`).
+- `progressTimingFunction`: A function to calculate the progress value based on duration and elapsed time.   (default [function](https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/loading-indicator.ts#L38))
+
+
 ## Properties
 
 ### `isLoading`
@@ -38,3 +45,15 @@ Set the `progress` value to `100`, stop all timers and intervals then reset the 
 ### `clear()`
 
 Used by `finish()`. Clear all timers and intervals used by the composable.
+
+## Example
+
+```ts
+<script setup lang="ts">
+  const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
+    duration: 2000,
+    throttle: 200,
+    progressTimingFunction: (duration, elapsed) => elapsed / duration * 100
+  })
+</script>
+```
