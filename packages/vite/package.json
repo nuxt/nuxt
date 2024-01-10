@@ -46,7 +46,7 @@
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
     "fs-extra": "^11.2.0",
-    "get-port-please": "^3.1.1",
+    "get-port-please": "^3.1.2",
     "h3": "^1.10.0",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.5",
