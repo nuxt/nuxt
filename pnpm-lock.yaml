@@ -412,8 +412,8 @@ importers:
         specifier: 11.0.4
         version: 11.0.4
       '@vitejs/plugin-vue':
-        specifier: 5.0.2
-        version: 5.0.2(vite@5.0.11)(vue@3.4.7)
+        specifier: 5.0.3
+        version: 5.0.3(vite@5.0.11)(vue@3.4.7)
       unbuild:
         specifier: latest
         version: 2.0.0(typescript@5.3.3)
@@ -476,8 +476,8 @@ importers:
         specifier: 1.8.9
         version: 1.8.9
       '@vitejs/plugin-vue':
-        specifier: 5.0.2
-        version: 5.0.2(vite@5.0.11)(vue@3.4.7)
+        specifier: 5.0.3
+        version: 5.0.3(vite@5.0.11)(vue@3.4.7)
       '@vitejs/plugin-vue-jsx':
         specifier: 3.1.0
         version: 3.1.0(vite@5.0.11)(vue@3.4.7)
@@ -539,8 +539,8 @@ importers:
         specifier: ^5.0.5
         version: 5.0.5(rollup@4.9.4)
       '@vitejs/plugin-vue':
-        specifier: ^5.0.2
-        version: 5.0.2(vite@5.0.11)(vue@3.4.7)
+        specifier: ^5.0.3
+        version: 5.0.3(vite@5.0.11)(vue@3.4.7)
       '@vitejs/plugin-vue-jsx':
         specifier: ^3.1.0
         version: 3.1.0(vite@5.0.11)(vue@3.4.7)
@@ -2944,8 +2944,8 @@ packages:
     transitivePeerDependencies:
       - supports-color
 
-  /@vitejs/plugin-vue@5.0.2(vite@5.0.11)(vue@3.4.7):
-    resolution: {integrity: sha512-kEjJHrLb5ePBvjD0SPZwJlw1QTRcjjCA9sB5VyfonoXVBxTS7TMnqL6EkLt1Eu61RDeiuZ/WN9Hf6PxXhPI2uA==}
+  /@vitejs/plugin-vue@5.0.3(vite@5.0.11)(vue@3.4.7):
+    resolution: {integrity: sha512-b8S5dVS40rgHdDrw+DQi/xOM9ed+kSRZzfm1T74bMmBDCd8XO87NKlFYInzCtwvtWwXZvo1QxE2OSspTATWrbA==}
     engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       vite: 5.0.11
