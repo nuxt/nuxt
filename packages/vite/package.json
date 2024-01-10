@@ -34,7 +34,7 @@
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^5.0.5",
-    "@vitejs/plugin-vue": "^5.0.2",
+    "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
     "autoprefixer": "^10.4.16",
     "clear": "^0.1.0",
@@ -46,7 +46,7 @@
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
     "fs-extra": "^11.2.0",
-    "get-port-please": "^3.1.1",
+    "get-port-please": "^3.1.2",
     "h3": "^1.10.0",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.5",
