@@ -121,7 +121,8 @@ import type { Plugin } from '#app'
 
 type Decorate<T extends Record<string, any>> = { [K in keyof T as K extends string ? \`$\${K}\` : never]: T[K] }
 
-type InjectionType<A extends Plugin> = A extends Plugin<infer T> ? Decorate<T> : unknown
+type IsAny<T> = 0 extends 1 & T ? true : false
+type InjectionType<A extends Plugin> = IsAny<A> extends true ? unknown : A extends Plugin<infer T> ? Decorate<T> : unknown
 
 type NuxtAppInjections = \n  ${tsImports.map(p => `InjectionType<typeof ${genDynamicImport(p, { wrapper: false })}.default>`).join(' &\n  ')}
 
@@ -154,7 +155,12 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
-
+    const privateRuntimeConfig = Object.create(null)
+    for (const key in nuxt.options.runtimeConfig) {
+      if (key !== 'public') {
+        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+      }
+    }
     return [
       "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
@@ -164,7 +170,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
       ),
       modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
       '  }',
-      generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public')) as Record<string, JSValue>),
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,

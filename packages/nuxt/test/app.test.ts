@@ -80,6 +80,39 @@ describe('resolveApp', () => {
     `)
   })
 
+  it('resolves layouts and middleware correctly', async () => {
+    const app = await getResolvedApp([
+      'middleware/index.ts',
+      'middleware/auth/index.ts',
+      'middleware/other.ts',
+      'layouts/index.vue',
+      'layouts/default/index.vue',
+      'layouts/other.vue',
+    ])
+    // Middleware are not resolved in a nested manner
+    expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
+      [
+        {
+          "global": false,
+          "name": "other",
+          "path": "<rootDir>/middleware/other.ts",
+        },
+      ]
+    `)
+    expect(app.layouts).toMatchInlineSnapshot(`
+      {
+        "default": {
+          "file": "<rootDir>/layouts/default/index.vue",
+          "name": "default",
+        },
+        "other": {
+          "file": "<rootDir>/layouts/other.vue",
+          "name": "other",
+        },
+      }
+    `)
+  })
+
   it('resolves layer plugins in correct order', async () => {
     const app = await getResolvedApp([
       // layer 1

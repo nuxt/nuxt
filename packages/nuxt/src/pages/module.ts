@@ -90,7 +90,10 @@ export default defineNuxtModule({
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
-        getContents: () => 'export { useRoute } from \'#app\''
+        getContents: () => [
+          'export { useRoute } from \'#app/composables/router\'',
+          'export const START_LOCATION = Symbol(\'router:start-location\')'
+        ].join('\n')
       })
       addComponent({
         name: 'NuxtPage',
@@ -371,7 +374,7 @@ export default defineNuxtModule({
     // Add vue-router import for `<NuxtLayout>` integration
     addTemplate({
       filename: 'pages.mjs',
-      getContents: () => 'export { useRoute } from \'vue-router\''
+      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\''
     })
 
     // Optimize vue-router to ensure we share the same injection symbol
