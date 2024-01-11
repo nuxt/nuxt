@@ -1,6 +1,6 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { ImportProtectionPlugin, vueAppPatterns } from '../src/core/plugins/import-protection'
+import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],
@@ -39,7 +39,7 @@ describe('import protection', () => {
 const transformWithImportProtection = (id: string, importer: string) => {
   const plugin = ImportProtectionPlugin.rollup({
     rootDir: '/root',
-    patterns: vueAppPatterns({
+    patterns: nuxtImportProtections({
       options: {
         modules: ['some-nuxt-module'],
         srcDir: 'src/',
