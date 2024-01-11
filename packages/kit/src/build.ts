@@ -9,39 +9,43 @@ export interface ExtendConfigOptions {
    * @default true
    */
   dev?: boolean
+
   /**
    * Install plugin on build
    * @default true
    */
   build?: boolean
+
   /**
    * Install plugin on server side
    * @default true
    */
   server?: boolean
+
   /**
    * Install plugin on client side
    * @default true
    */
   client?: boolean
+
   /**
    * Prepends the plugin to the array with `unshift()` instead of `push()`.
    */
   prepend?: boolean
 }
 
-export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
+export interface ExtendWebpackConfigOptions extends ExtendConfigOptions { }
 
-export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
+export interface ExtendViteConfigOptions extends ExtendConfigOptions { }
 
 /**
- * Extend webpack config
- *
- * The fallback function might be called multiple times
- * when applying to both client and server builds.
+ * Extends the webpack configuration. Callback function can be called multiple times, when applying to both client and server builds.
+ * @param callbackFunction - A callback function that will be called with the webpack configuration object.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#extendwebpackconfig documentation}
  */
 export function extendWebpackConfig (
-  fn: ((config: WebpackConfig) => void),
+  callbackFunction: ((config: WebpackConfig) => void),
   options: ExtendWebpackConfigOptions = {}
 ) {
   const nuxt = useNuxt()
@@ -55,25 +59,29 @@ export function extendWebpackConfig (
 
   nuxt.hook('webpack:config', (configs: WebpackConfig[]) => {
     if (options.server !== false) {
-      const config = configs.find(i => i.name === 'server')
+      const config = configs.find((config) => config.name === 'server')
+
       if (config) {
-        fn(config)
+        callbackFunction(config)
       }
-    }
-    if (options.client !== false) {
-      const config = configs.find(i => i.name === 'client')
+    } else if (options.client !== false) {
+      const config = configs.find((config) => config.name === 'client')
+
       if (config) {
-        fn(config)
+        callbackFunction(config)
       }
     }
   })
 }
 
 /**
- * Extend Vite config
+ * Extends the Vite configuration. Callback function can be called multiple times, when applying to both client and server builds.
+ * @param callbackFunction - A callback function that will be called with the Vite configuration object.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-1 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#extendviteconfig documentation}
  */
 export function extendViteConfig (
-  fn: ((config: ViteConfig) => void),
+  callbackFunction: ((config: ViteConfig) => void),
   options: ExtendViteConfigOptions = {}
 ) {
   const nuxt = useNuxt()
@@ -86,27 +94,42 @@ export function extendViteConfig (
   }
 
   if (options.server !== false && options.client !== false) {
-    // Call fn() only once
-    return nuxt.hook('vite:extend', ({ config }) => fn(config))
+    // Call callbackFunction() only once
+    nuxt.hook('vite:extend', ({ config }) => callbackFunction(config))
+
+    return
   }
 
   nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
     if (options.server !== false && isServer) {
-      return fn(config)
+      return callbackFunction(config)
     }
+
     if (options.client !== false && isClient) {
-      return fn(config)
+      return callbackFunction(config)
     }
   })
 }
 
 /**
  * Append webpack plugin to the config.
+ * @param pluginOrGetter - A webpack plugin instance or an array of webpack plugin instances. If a function is provided, it must return a webpack plugin instance or an array of webpack plugin instances.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-2 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addwebpackplugin documentation}
  */
-export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | WebpackPluginInstance[] | (() => WebpackPluginInstance | WebpackPluginInstance[]), options?: ExtendWebpackConfigOptions) {
+export function addWebpackPlugin (
+  pluginOrGetter:
+  | WebpackPluginInstance
+  | WebpackPluginInstance[]
+  | (() => WebpackPluginInstance | WebpackPluginInstance[]),
+  options?: ExtendWebpackConfigOptions
+) {
   extendWebpackConfig((config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+
+    const plugin = typeof pluginOrGetter === 'function'
+      ? pluginOrGetter()
+      : pluginOrGetter
 
     config.plugins = config.plugins || []
     config.plugins[method](...toArray(plugin))
@@ -115,11 +138,23 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
 
 /**
  * Append Vite plugin to the config.
+ * @param pluginOrGetter - A Vite plugin instance or an array of Vite plugin instances. If a function is provided, it must return a Vite plugin instance or an array of Vite plugin instances.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-3 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addviteplugin documentation}
  */
-export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() => VitePlugin | VitePlugin[]), options?: ExtendViteConfigOptions) {
+export function addVitePlugin (
+  pluginOrGetter:
+  | VitePlugin
+  | VitePlugin[]
+  | (() => VitePlugin | VitePlugin[]),
+  options?: ExtendViteConfigOptions
+) {
   extendViteConfig((config) => {
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
-    const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
+
+    const plugin = typeof pluginOrGetter === 'function'
+      ? pluginOrGetter()
+      : pluginOrGetter
 
     config.plugins = config.plugins || []
     config.plugins[method](...toArray(plugin))
@@ -131,7 +166,16 @@ interface AddBuildPluginFactory {
   webpack?: () => WebpackPluginInstance | WebpackPluginInstance[]
 }
 
-export function addBuildPlugin (pluginFactory: AddBuildPluginFactory, options?: ExtendConfigOptions) {
+/**
+ * Builder-agnostic version of `addWebpackPlugin` and `addVitePlugin`. It will add the plugin to both webpack and Vite configurations if they are present.
+ * @param pluginFactory - A factory function that returns an object with `vite` and/or `webpack` properties. These properties must be functions that return a Vite plugin instance or an array of Vite plugin instances and/or a webpack plugin instance or an array of webpack plugin instances.
+ * @param options - Options to pass to the callback function. See {@link https://nuxt.com/docs/api/kit/builder#options-4 available options}.
+ * @see {@link https://nuxt.com/docs/api/kit/builder#addbuildplugin documentation}
+ */
+export function addBuildPlugin (
+  pluginFactory: AddBuildPluginFactory,
+  options?: ExtendConfigOptions
+) {
   if (pluginFactory.vite) {
     addVitePlugin(pluginFactory.vite, options)
   }

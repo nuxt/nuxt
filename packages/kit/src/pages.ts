@@ -6,13 +6,14 @@ import { isNuxt2 } from './compatibility'
 import { logger } from './logger'
 import { toArray } from './utils'
 
-export function extendPages (cb: NuxtHooks['pages:extend']) {
+export function extendPages (callback: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()
+
   if (isNuxt2(nuxt)) {
     // @ts-expect-error TODO: Nuxt 2 hook
-    nuxt.hook('build:extendRoutes', cb)
+    nuxt.hook('build:extendRoutes', callback)
   } else {
-    nuxt.hook('pages:extend', cb)
+    nuxt.hook('pages:extend', callback)
   }
 }
 
@@ -24,15 +25,21 @@ export interface ExtendRouteRulesOptions {
   override?: boolean
 }
 
-export function extendRouteRules (route: string, rule: NitroRouteConfig, options: ExtendRouteRulesOptions = {}) {
+export function extendRouteRules (
+  route: string,
+  rule: NitroRouteConfig,
+  options: ExtendRouteRulesOptions = {}
+) {
   const nuxt = useNuxt()
-  for (const opts of [nuxt.options, nuxt.options.nitro]) {
-    if (!opts.routeRules) {
-      opts.routeRules = {}
+
+  for (const _options of [nuxt.options, nuxt.options.nitro]) {
+    if (!_options.routeRules) {
+      _options.routeRules = {}
     }
-    opts.routeRules[route] = options.override
-      ? defu(rule, opts.routeRules[route])
-      : defu(opts.routeRules[route], rule)
+
+    _options.routeRules[route] = options.override
+      ? defu(rule, _options.routeRules[route])
+      : defu(_options.routeRules[route], rule)
   }
 }
 
@@ -44,12 +51,19 @@ export interface AddRouteMiddlewareOptions {
   override?: boolean
 }
 
-export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
+export function addRouteMiddleware (
+  input: NuxtMiddleware | NuxtMiddleware[],
+  options: AddRouteMiddlewareOptions = {}
+) {
   const nuxt = useNuxt()
   const middlewares = toArray(input)
+
   nuxt.hook('app:resolve', (app) => {
     for (const middleware of middlewares) {
-      const find = app.middleware.findIndex(item => item.name === middleware.name)
+      const find = app.middleware.findIndex(
+        (item) => item.name === middleware.name
+      )
+
       if (find >= 0) {
         if (options.override === true) {
           app.middleware[find] = middleware

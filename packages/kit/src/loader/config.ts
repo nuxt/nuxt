@@ -8,8 +8,11 @@ import { NuxtConfigSchema } from '@nuxt/schema'
 
 export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 
-export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
-  (globalThis as any).defineNuxtConfig = (c: any) => c
+export async function loadNuxtConfig (
+  options: LoadNuxtConfigOptions
+): Promise<NuxtOptions> {
+  (globalThis as any).defineNuxtConfig = (config: any) => config
+
   const result = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
@@ -17,30 +20,37 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', 'extends'] },
     dotenv: true,
     globalRc: true,
-    ...opts
+    ...options
   })
+
   delete (globalThis as any).defineNuxtConfig
-  const { configFile, layers = [], cwd } = result
-  const nuxtConfig = result.config!
+
+  const { configFile, layers = [], cwd, config } = result
+  const nuxtConfig = config!
 
   // Fill config
   nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
+
   nuxtConfig._nuxtConfigFile = configFile
+
   nuxtConfig._nuxtConfigFiles = [configFile]
 
   // Resolve `rootDir` & `srcDir` of layers
   for (const layer of layers) {
     layer.config = layer.config || {}
+
     layer.config.rootDir = layer.config.rootDir ?? layer.cwd
+
     layer.config.srcDir = resolve(layer.config.rootDir!, layer.config.srcDir!)
   }
 
   // Filter layers
-  const _layers = layers.filter(layer => layer.configFile && !layer.configFile.endsWith('.nuxtrc'))
-  ;(nuxtConfig as any)._layers = _layers
+  const _layers = layers.filter((layer) => layer.configFile && !layer.configFile.endsWith('.nuxtrc'));
+
+  (nuxtConfig as any)._layers = _layers
 
   // Ensure at least one layer remains (without nuxt.config)
-  if (!_layers.length) {
+  if (_layers.length === 0) {
     _layers.push({
       cwd,
       config: {
@@ -51,5 +61,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   // Resolve and apply defaults
-  return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+  return await applyDefaults(
+    NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>
+  ) as unknown as NuxtOptions
 }

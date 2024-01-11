@@ -1,70 +1,101 @@
 import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
-import { assertNuxtCompatibility } from './compatibility'
 import { logger } from './logger'
+import { assertNuxtCompatibility } from './compatibility'
 
 /**
- * Register a directory to be scanned for components and imported only when used.
+ * Register a directory to be scanned for components and imported only when used. Keep in mind, that this does not register components globally, until you specify `global: true` option.
  *
- * Requires Nuxt 2.13+
+ * **Note:** Requires Nuxt 2.13+
+ * @param directory - An object with the {@link https://nuxt.com/docs/api/kit/components#dir following properties}.
+ * @param options - Options to 
+ * @param options.prepend - Whether to prepend the directory instead of appending.
+ * @see {@link https://nuxt.com/docs/api/kit/components#addcomponentsdir documentation}
  */
-export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export async function addComponentsDir (directory: ComponentsDir, options: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
+
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
+
   nuxt.options.components = nuxt.options.components || []
-  dir.priority ||= 0
-  nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
+
+  directory.priority ??= 0
+
+  nuxt.hook('components:dirs', (directories) => {
+    directories[options.prepend ? 'unshift' : 'push'](directory)
+  })
 }
 
-export type AddComponentOptions = { name: string, filePath: string } & Partial<Exclude<Component,
-'shortPath' | 'async' | 'level' | 'import' | 'asyncImport'
->>
+export type AddComponentOptions = {
+  name: string
+  filePath: string
+} & Partial<
+  Exclude<
+    Component,
+    'shortPath' | 'async' | 'level' | 'import' | 'asyncImport'
+  >
+>
 
 /**
- * Register a component by its name and filePath.
+ * Register a component to be automatically imported.
  *
- * Requires Nuxt 2.13+
+ * **Note:** Requires Nuxt 2.13+
+ * @param options - An object with the {@link https://nuxt.com/docs/api/kit/components#options following properties}.
+ * @see {@link https://nuxt.com/docs/api/kit/components#addcomponent documentation}
  */
-export async function addComponent (opts: AddComponentOptions) {
+export async function addComponent (options: AddComponentOptions) {
   const nuxt = useNuxt()
+
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
+
   nuxt.options.components = nuxt.options.components || []
 
-  if (!opts.mode) {
-    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
-    opts.mode = mode as 'all' | 'client' | 'server'
+  if (!options.mode) {
+    const [, mode = 'all'] = options.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+
+    options.mode = mode as 'all' | 'client' | 'server'
   }
 
   // Apply defaults
   const component: Component = {
-    export: opts.export || 'default',
-    chunkName: 'components/' + kebabCase(opts.name),
-    global: opts.global ?? false,
-    kebabName: kebabCase(opts.name || ''),
-    pascalName: pascalCase(opts.name || ''),
+    export: options.export || 'default',
+    chunkName: 'components/' + kebabCase(options.name),
+    global: options.global ?? false,
+    kebabName: kebabCase(options.name || ''),
+    pascalName: pascalCase(options.name || ''),
     prefetch: false,
     preload: false,
     mode: 'all',
-    shortPath: opts.filePath,
+    shortPath: options.filePath,
     priority: 0,
-    ...opts
+    ...options
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {
-    const existingComponent = components.find(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
+    const existingComponent = components.find(
+      (c) => (
+        c.pascalName === component.pascalName
+        || c.kebabName === component.kebabName
+      ) && c.mode === component.mode
+    )
+
     if (existingComponent) {
       const existingPriority = existingComponent.priority ?? 0
       const newPriority = component.priority ?? 0
 
-      if (newPriority < existingPriority) { return }
+      if (newPriority < existingPriority) {
+        return
+      }
 
       // We override where new component priority is equal or higher
       // but we warn if they are equal.
       if (newPriority === existingPriority) {
         const name = existingComponent.pascalName || existingComponent.kebabName
+
         logger.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
       }
+
       Object.assign(existingComponent, component)
     } else {
       components.push(component)

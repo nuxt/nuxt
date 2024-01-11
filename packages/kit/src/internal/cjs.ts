@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { normalize } from 'pathe'
 import { interopDefault } from 'mlly'
 import jiti from 'jiti'
+import { toArray } from '../utils'
 
 // TODO: use create-require for jest environment
 const _require = jiti(process.cwd(), { interopDefault: true, esmResolve: true })
@@ -15,7 +16,10 @@ export interface ResolveModuleOptions {
 export interface RequireModuleOptions extends ResolveModuleOptions {
   // TODO: use create-require for jest environment
   // native?: boolean
-  /** Clear the require cache (force fresh require) but only if not within `node_modules` */
+  /**
+   * Clear the require cache (force fresh require)
+   * but only if not within `node_modules`
+   */
   clearCache?: boolean
 
   /** Automatically de-default the result of requiring the module. */
@@ -38,11 +42,14 @@ function clearRequireCache (id: string) {
 
   if (!entry) {
     delete _require.cache[id]
+
     return
   }
 
   if (entry.parent) {
-    entry.parent.children = entry.parent.children.filter(e => e.id !== id)
+    entry.parent.children = entry.parent.children.filter(
+      (module) => module.id !== id
+    )
   }
 
   for (const child of entry.children) {
@@ -56,34 +63,34 @@ function clearRequireCache (id: string) {
 function getRequireCacheItem (id: string) {
   try {
     return _require.cache[id]
-  } catch (e) {
+  } catch {
     // ignore issues accessing require.cache
   }
 }
 
 export function getModulePaths (paths?: string[] | string) {
-  return ([] as Array<string | undefined>).concat(
-    global.__NUXT_PREPATHS__,
-    paths || [],
+  return [
+    ...toArray((global.__NUXT_PREPATHS__ || [])),
+    ...toArray((paths || [])),
     process.cwd(),
-    global.__NUXT_PATHS__
-  ).filter(Boolean) as string[]
+    ...toArray((global.__NUXT_PATHS__ || []))
+  ]
 }
 
 /** @deprecated Do not use CJS utils */
-export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
+export function resolveModule (id: string, options: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: getModulePaths(opts.paths)
+    paths: getModulePaths(options.paths)
   }))
 }
 
 /** @deprecated Do not use CJS utils */
-export function requireModule (id: string, opts: RequireModuleOptions = {}) {
+export function requireModule (id: string, options: RequireModuleOptions = {}) {
   // Resolve id
-  const resolvedPath = resolveModule(id, opts)
+  const resolvedPath = resolveModule(id, options)
 
   // Clear require cache if necessary
-  if (opts.clearCache && !isNodeModules(id)) {
+  if (options.clearCache && !isNodeModules(id)) {
     clearRequireCache(resolvedPath)
   }
 
@@ -94,27 +101,35 @@ export function requireModule (id: string, opts: RequireModuleOptions = {}) {
 }
 
 /** @deprecated Do not use CJS utils */
-export function importModule (id: string, opts: RequireModuleOptions = {}) {
-  const resolvedPath = resolveModule(id, opts)
-  if (opts.interopDefault !== false) {
+export function importModule (id: string, options: RequireModuleOptions = {}) {
+  const resolvedPath = resolveModule(id, options)
+
+  if (options.interopDefault !== false) {
     return import(pathToFileURL(resolvedPath).href).then(interopDefault)
   }
+
   return import(pathToFileURL(resolvedPath).href)
 }
 
 /** @deprecated Do not use CJS utils */
-export function tryImportModule (id: string, opts: RequireModuleOptions = {}) {
+export function tryImportModule (
+  id: string,
+  options: RequireModuleOptions = {}
+) {
   try {
-    return importModule(id, opts).catch(() => undefined)
+    return importModule(id, options).catch(() => {})
   } catch {
     // intentionally empty as this is a `try-` function
   }
 }
 
 /** @deprecated Do not use CJS utils */
-export function tryRequireModule (id: string, opts: RequireModuleOptions = {}) {
+export function tryRequireModule (
+  id: string,
+  options: RequireModuleOptions = {}
+) {
   try {
-    return requireModule(id, opts)
+    return requireModule(id, options)
   } catch {
     // intentionally empty as this is a `try-` function
   }

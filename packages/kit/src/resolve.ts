@@ -20,13 +20,19 @@ export interface ResolvePathOptions {
 }
 
 /**
- * Resolve full path to a file or directory respecting Nuxt alias and extensions options
- *
- * If path could not be resolved, normalized input path will be returned
+ * Resolves full path to a file or directory respecting Nuxt alias and extensions options. If path could not be resolved, normalized input path will be returned.
+ * @param path - Path to resolve.
+ * @param options - Options to pass to the resolver. This object can have the {@link https://nuxt.com/docs/api/kit/resolving#options following properties}.
+ * @returns Resolved path
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvepath documentation}
  */
-export async function resolvePath (path: string, opts: ResolvePathOptions = {}): Promise<string> {
+export async function resolvePath (
+  path: string,
+  options: ResolvePathOptions = {}
+): Promise<string> {
   // Always normalize input
   const _path = path
+
   path = normalize(path)
 
   // Fast return if the path exists
@@ -36,9 +42,9 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
 
   // Use current nuxt options
   const nuxt = tryUseNuxt()
-  const cwd = opts.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
-  const extensions = opts.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
-  const modulesDir = nuxt ? nuxt.options.modulesDir : []
+  const cwd = options.cwd || (nuxt ? nuxt.options.rootDir : process.cwd())
+  const extensions = options.extensions || (nuxt ? nuxt.options.extensions : ['.ts', '.mjs', '.cjs', '.json'])
+  const nodeModulesDirectories = nuxt ? nuxt.options.modulesDir : []
 
   // Resolve aliases
   path = resolveAlias(path)
@@ -49,30 +55,38 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Check if resolvedPath is a file
-  let _isDir = false
+  let _isDirectory = false
+
   if (existsSync(path)) {
-    _isDir = await isDirectory(path)
-    if (!_isDir) {
+    _isDirectory = await isDirectory(path)
+
+    if (!_isDirectory) {
       return path
     }
   }
 
   // Check possible extensions
-  for (const ext of extensions) {
+  for (const extension of extensions) {
     // path.[ext]
-    const pathWithExt = path + ext
-    if (existsSync(pathWithExt)) {
-      return pathWithExt
+    const pathWithExtension = path + extension
+
+    if (existsSync(pathWithExtension)) {
+      return pathWithExtension
     }
+
     // path/index.[ext]
-    const pathWithIndex = join(path, 'index' + ext)
-    if (_isDir && existsSync(pathWithIndex)) {
+    const pathWithIndex = join(path, 'index' + extension)
+
+    if (_isDirectory && existsSync(pathWithIndex)) {
       return pathWithIndex
     }
   }
 
   // Try to resolve as module id
-  const resolveModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
+  const resolveModulePath = await _resolvePath(
+    _path, { url: [cwd, ...nodeModulesDirectories] }
+  ).catch(() => {})
+
   if (resolveModulePath) {
     return resolveModulePath
   }
@@ -82,65 +96,95 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
 }
 
 /**
- * Try to resolve first existing file in paths
+ * Try to resolve first existing file in given paths.
+ * @param paths - A path or an array of paths to resolve.
+ * @param options - Options to pass to the resolver. This object can have the {@link https://nuxt.com/docs/api/kit/resolving#options-1 following properties}.
+ * @param pathType - Type of path to resolve. If set to `'file'`, the function will try to resolve a file. If set to `'dir'`, the function will try to resolve a directory.
+ * @returns Path to first existing file if found, `null` otherwise
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#findpath documentation}
  */
-export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
+export async function findPath (
+  paths: string | string[],
+  options?: ResolvePathOptions,
+  pathType: 'file' | 'dir' = 'file'
+): Promise<string | null> {
   for (const path of toArray(paths)) {
-    const rPath = await resolvePath(path, opts)
+    const rPath = await resolvePath(path, options)
+
     if (await existsSensitive(rPath)) {
-      const _isDir = await isDirectory(rPath)
-      if (!pathType || (pathType === 'file' && !_isDir) || (pathType === 'dir' && _isDir)) {
+      const _isDirectory = await isDirectory(rPath)
+
+      if ((pathType === 'file' && !_isDirectory) || (pathType === 'dir' && _isDirectory)) {
         return rPath
       }
     }
   }
+
   return null
 }
 
 /**
- * Resolve path aliases respecting Nuxt alias options
+ * Resolves path aliases respecting Nuxt alias options.
+ * @param path - Path to resolve.
+ * @param alias - Alias map. If not provided, it will be read from `nuxt.options.alias`.
+ * @returns Resolved path alias
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#resolvealias documentation}
  */
-export function resolveAlias (path: string, alias?: Record<string, string>): string {
+export function resolveAlias (
+  path: string,
+  alias?: Record<string, string>
+): string {
   if (!alias) {
     alias = tryUseNuxt()?.options.alias || {}
   }
+
   return _resolveAlias(path, alias)
 }
 
 export interface Resolver {
-  resolve (...path: string[]): string
-  resolvePath (path: string, opts?: ResolvePathOptions): Promise<string>
+  resolve(...path: string[]): string
+  resolvePath(path: string, options?: ResolvePathOptions): Promise<string>
 }
 
 /**
- * Create a relative resolver
+ * Creates resolver relative to base path.
+ * @param basePath - Base path to resolve from.
+ * @returns Resolver
+ * @throws Will throw an error if `basePath` argument is missing.
+ * @see {@link https://nuxt.com/docs/api/kit/resolving#createresolver documentation}
  */
-export function createResolver (base: string | URL): Resolver {
-  if (!base) {
-    throw new Error('`base` argument is missing for createResolver(base)!')
+export function createResolver (basePath: string | URL): Resolver {
+  if (!basePath) {
+    throw new Error('`basePath` argument is missing for createResolver(basePath)!')
   }
 
-  base = base.toString()
-  if (base.startsWith('file://')) {
-    base = dirname(fileURLToPath(base))
+  basePath = basePath.toString()
+
+  if (basePath.startsWith('file://')) {
+    basePath = dirname(fileURLToPath(basePath))
   }
 
   return {
-    resolve: (...path) => resolve(base as string, ...path),
-    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
+    resolve: (...path) => resolve(basePath as string, ...path),
+    resolvePath: (path, options) => resolvePath(
+      path, { cwd: basePath as string, ...options }
+    )
   }
 }
 
-export async function resolveNuxtModule (base: string, paths: string[]) {
+export async function resolveNuxtModule (basePath: string, paths: string[]) {
   const resolved = []
-  const resolver = createResolver(base)
+  const resolver = createResolver(basePath)
 
   for (const path of paths) {
-    if (path.startsWith(base)) {
+    if (path.startsWith(basePath)) {
       resolved.push(path.split('/index.ts')[0])
     } else {
       const resolvedPath = await resolver.resolvePath(path)
-      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+
+      resolved.push(
+        resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length)
+      )
     }
   }
 
@@ -150,17 +194,35 @@ export async function resolveNuxtModule (base: string, paths: string[]) {
 // --- Internal ---
 
 async function existsSensitive (path: string) {
-  if (!existsSync(path)) { return false }
-  const dirFiles = await fsp.readdir(dirname(path))
-  return dirFiles.includes(basename(path))
+  if (!existsSync(path)) {
+    return false
+  }
+
+  const directoryFiles = await fsp.readdir(dirname(path))
+
+  return directoryFiles.includes(basename(path))
 }
 
 // Usage note: We assume path existence is already ensured
 async function isDirectory (path: string) {
-  return (await fsp.lstat(path)).isDirectory()
+  const pathStats = await fsp.lstat(path)
+
+  return pathStats.isDirectory()
 }
 
-export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
-  const files = await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })
-  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p)).sort()
+export async function resolveFiles (
+  path: string,
+  pattern: string | string[],
+  options: { followSymbolicLinks?: boolean } = {}
+) {
+  const files = await globby(
+    pattern,
+    { cwd: path, followSymbolicLinks: options.followSymbolicLinks ?? true }
+  )
+
+  return files.map(
+    (p) => resolve(path, p)
+  ).filter(
+    (p) => !isIgnored(p)
+  ).sort()
 }

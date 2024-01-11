@@ -4,13 +4,12 @@ import { normalize } from 'pathe'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 
-/**
- * normalize handler object
- *
- */
 function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
-  const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
+  const [, method] = handler.handler.match(
+    /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
+  ) || []
+
   return {
     method,
     ...handler,
@@ -19,43 +18,57 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
 }
 
 /**
- * Adds a nitro server handler
- *
+ * Adds a Nitro server handler. Use it if you want to create server middleware or custom route.
+ * @param handler - A handler object with the {@link https://nuxt.com/docs/api/kit/nitro#handler following properties}.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverhandler documentation}
  */
 export function addServerHandler (handler: NitroEventHandler) {
   useNuxt().options.serverHandlers.push(normalizeHandlerMethod(handler))
 }
 
 /**
- * Adds a nitro server handler for development-only
- *
+ * Adds a Nitro server handler to be used only in development mode. This handler will be excluded from production build.
+ * @param handler - A handler object with the {@link https://nuxt.com/docs/api/kit/nitro#handler-1 following properties}.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#adddevserverhandler documentation}
  */
 export function addDevServerHandler (handler: NitroDevEventHandler) {
   useNuxt().options.devServerHandlers.push(handler)
 }
 
 /**
- * Adds a Nitro plugin
+ * Add plugin to extend Nitro's runtime behavior.
+ * @param plugin - Path to the plugin. The plugin must export a function that accepts Nitro instance as an argument.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverplugin documentation}
  */
 export function addServerPlugin (plugin: string) {
   const nuxt = useNuxt()
+
   nuxt.options.nitro.plugins = nuxt.options.nitro.plugins || []
+
   nuxt.options.nitro.plugins.push(normalize(plugin))
 }
 
 /**
- * Adds routes to be prerendered
+ * Add routes to be prerendered to Nitro.
+ * @param routes - A route or an array of routes to prerender.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#addprerenderroutes documentation}
  */
 export function addPrerenderRoutes (routes: string | string[]) {
   const nuxt = useNuxt()
 
-  routes = toArray(routes).filter(Boolean)
-  if (!routes.length) {
+  if (!Array.isArray(routes)) {
+    routes = [routes]
+  }
+
+  routes = routes.filter(Boolean)
+
+  if (routes.length) {
     return
   }
-  nuxt.hook('prerender:routes', (ctx) => {
+
+  nuxt.hook('prerender:routes', (context) => {
     for (const route of routes) {
-      ctx.routes.add(route)
+      context.routes.add(route)
     }
   })
 }
@@ -66,8 +79,10 @@ export function addPrerenderRoutes (routes: string | string[]) {
  * **Note:** You can call `useNitro()` only after `ready` hook.
  *
  * **Note:** Changes to the Nitro instance configuration are not applied.
+ * @returns Nitro instance
+ * @throws Will throw an error if Nitro is not initialized yet.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#usenitro documentation}
  * @example
- *
  * ```ts
  * nuxt.hook('ready', () => {
  *   console.log(useNitro())
@@ -76,34 +91,51 @@ export function addPrerenderRoutes (routes: string | string[]) {
  */
 export function useNitro (): Nitro {
   const nuxt = useNuxt()
-  if (!(nuxt as any)._nitro) {
+
+  const nitro = (nuxt as any)._nitro
+
+  if (!nitro) {
     throw new Error('Nitro is not initialized yet. You can call `useNitro()` only after `ready` hook.')
   }
-  return (nuxt as any)._nitro
+
+  return nitro
 }
 
 /**
- * Add server imports to be auto-imported by Nitro
+ * Add server imports to be auto-imported by Nitro.
+ * @param imports - An array of imports to be added.
  */
 export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
+
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    config.imports.imports = config.imports.imports || []
+    config.imports ||= {}
+
+    config.imports.imports ||= []
+
     config.imports.imports.push(...imports)
   })
 }
 
 /**
- * Add directories to be scanned for auto-imports by Nitro
+ * Add directories to be scanned for auto-imports by Nitro (one by one).
+ * @param directories - A directory or an array of directories to register to be scanned by Nitro.
+ * @param options - Options to pass to the import.
+ * @param options.prepend - Whether to prepend the directories instead of appending.
+ * @see {@link https://nuxt.com/docs/api/kit/nitro#addserverimportsdir documentation}
  */
-export function addServerImportsDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
+export function addServerImportsDir (
+  directories: string | string[],
+  options: { prepend?: boolean } = {}
+) {
   const nuxt = useNuxt()
-  const _dirs = toArray(dirs)
+
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    config.imports.dirs = config.imports.dirs || []
-    config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
+    config.imports ||= {}
+
+    config.imports.dirs ||= []
+
+    config.imports.dirs[options.prepend ? 'unshift' : 'push'](...toArray(directories))
   })
 }
 
