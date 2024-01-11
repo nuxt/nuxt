@@ -19,7 +19,6 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 - `throttle`: Throttle the appearing and hiding, in milliseconds (default `200`).
 - `progressionRate`: The steepness of the non-linear function used in calculating progress. A lower value results in a steeper curve, meaning faster initial progress that slows down more sharply towards the end. (default `50`);
 
-
 ## Properties
 
 ### `isLoading`
