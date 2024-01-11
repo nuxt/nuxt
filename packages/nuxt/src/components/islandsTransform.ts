@@ -58,7 +58,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const startingIndex = template.index || 0
       const s = new MagicString(code)
 
-      if(!code.match(SCRIPT_RE)) {
+      if (!code.match(SCRIPT_RE)) {
         s.prepend('<script setup>' + IMPORT_CODE + '</script>')
       } else {
         s.replace(SCRIPT_RE, (full) => {
