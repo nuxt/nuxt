@@ -17,7 +17,7 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 
 - `duration`: Duration of the loading bar, in milliseconds (default `2000`).
 - `throttle`: Throttle the appearing and hiding, in milliseconds (default `200`).
-- `progressTimingFunction`: A function that will calculate the progress value based on duration and elapsed time. (default [function](https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/loading-indicator.ts#L38))
+- `progressionRate`: The steepness of the non-linear function used in calculating progress. A lower value results in a steeper curve, meaning faster initial progress that slows down more sharply towards the end. (default `50`);
 
 
 ## Properties
