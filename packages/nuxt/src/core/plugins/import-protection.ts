@@ -13,16 +13,46 @@ interface ImportProtectionOptions {
   exclude?: Array<RegExp | string>
 }
 
-export const vueAppPatterns = (nuxt: Nuxt) => [
-  [/^(nuxt|nuxt3|nuxt-nightly)$/, '`nuxt`/`nuxt3`/`nuxt-nightly` cannot be imported directly. Instead, import runtime Nuxt composables from `#app` or `#imports`.'],
-  [/^((|~|~~|@|@@)\/)?nuxt\.config(\.|$)/, 'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.'],
-  [/(^|node_modules\/)@vue\/composition-api/],
-  ...nuxt.options.modules.filter(m => typeof m === 'string').map((m: any) =>
-    [new RegExp(`^${escapeRE(m as string)}$`), 'Importing directly from module entry points is not allowed.']),
-  ...[/(^|node_modules\/)@nuxt\/kit/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, /^nitropack/]
-    .map(i => [i, 'This module cannot be imported in the Vue part of your app.']),
-  [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'), 'Importing from server is not allowed in the Vue part of your app.']
-] as ImportProtectionOptions['patterns']
+export const nuxtImportProtections = (nuxt: Nuxt, isNitro?: boolean) => {
+  const patterns: ImportProtectionOptions['patterns'] = []
+
+  patterns.push([
+    /^(nuxt|nuxt3|nuxt-nightly)$/,
+    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.')
+  ])
+
+  patterns.push([
+    /^((|~|~~|@|@@)\/)?nuxt\.config(\.|$)/,
+    'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.'
+  ])
+
+  patterns.push([/(^|node_modules\/)@vue\/composition-api/])
+
+  for(const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
+    patterns.push([
+      new RegExp(`^${escapeRE(mod as string)}$`),
+      'Importing directly from module entry-points is not allowed.'
+    ])
+  }
+
+  for (const i of [/(^|node_modules\/)@nuxt\/kit/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, 'nitropack']) {
+    patterns.push([i, 'This module cannot be imported' + (isNitro ? 'in server runtime' : ' in the Vue part of your app.')])
+  }
+
+  if (isNitro) {
+    for (const i of ['#app', /^#build(\/|$)/]) {
+      patterns.push([i, 'Vue app aliases are not allowed in server runtime.'])
+    }
+  }
+
+  patterns.push(
+    [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'),
+    'Importing from server is not allowed in the Vue part of your app.'
+  ])
+
+  return patterns
+
+}
 
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
   const cache: Record<string, Map<string | RegExp, boolean>> = {}
