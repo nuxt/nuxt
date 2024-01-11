@@ -53,7 +53,7 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
   const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
     duration: 2000,
     throttle: 200,
-    progressTimingFunction: (duration, elapsed) => elapsed / duration * 100
+    progressionRate: 50
   })
 </script>
 ```
