@@ -218,13 +218,16 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   const deps: Record<string, string[]> = Object.create(null)
   const pluginNames = _plugins.map(plugin => plugin.name)
   for (const plugin of _plugins) {
+    const dependsOn = typeof plugin.dependsOn === 'function'
+      ? plugin.dependsOn()
+      : plugin.dependsOn
     // Make sure dependency plugins are registered
-    if (plugin.dependsOn && plugin.dependsOn.some(name => !pluginNames.includes(name))) {
-      console.error(`Plugin \`${plugin.name}\` depends on \`${plugin.dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
+    if (dependsOn && dependsOn.some(name => !pluginNames.includes(name))) {
+      console.error(`Plugin \`${plugin.name}\` depends on \`${dependsOn.filter(name => !pluginNames.includes(name)).join(', ')}\` but they are not registered.`)
     }
     // Make graph to detect circular dependencies
     if (plugin.name) {
-      deps[plugin.name] = plugin.dependsOn || []
+      deps[plugin.name] = dependsOn || []
     }
   }
   const checkDeps = (name: string, visited: string[] = []): string[] => {

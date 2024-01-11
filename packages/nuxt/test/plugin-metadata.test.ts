@@ -111,4 +111,29 @@ describe('plugin sanity checking', () => {
     expect(console.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
     vi.restoreAllMocks()
   })
+
+  it('circular dependencies are warned (callback)', () => {
+    vi.spyOn(console, 'error')
+    checkForCircularDependencies([
+      {
+        name: 'A',
+        dependsOn: () => ['B'],
+        src: ''
+      },
+      {
+        name: 'B',
+        dependsOn: () => ['C'],
+        src: ''
+      },
+      {
+        name: 'C',
+        dependsOn: () => ['A'],
+        src: ''
+      }
+    ])
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')
+    expect(console.error).toBeCalledWith('Circular dependency detected in plugins: C -> A -> B -> C')
+    vi.restoreAllMocks()
+  })
 })

@@ -173,7 +173,7 @@ export interface PluginMeta {
   /**
    * Await for other named plugins to finish before running this plugin.
    */
-  dependsOn?: NuxtAppLiterals['pluginName'][]
+  dependsOn?: NuxtAppLiterals['pluginName'][] | (() => NuxtAppLiterals['pluginName'][])
   /**
    * This allows more granular control over plugin order and should only be used by advanced users.
    * It overrides the value of `enforce` and is used to sort plugins.
@@ -362,9 +362,15 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   const errors: Error[] = []
   let promiseDepth = 0
 
+  function resolveDependsOn (plugin: Plugin & ObjectPlugin<any>) {
+    const dependsOn = plugin.dependsOn
+    return typeof dependsOn === 'function' ? dependsOn() : dependsOn
+  }
+
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
-      unresolvedPlugins.push([new Set(plugin.dependsOn), plugin])
+    const dependsOn = resolveDependsOn(plugin)
+    if (dependsOn && !dependsOn.every(name => resolvedPlugins.includes(name))) {
+      unresolvedPlugins.push([new Set(dependsOn), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {

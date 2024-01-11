@@ -251,6 +251,13 @@ describe('plugins', () => {
     defineNuxtPlugin({
       dependsOn: ['nuxt:router']
     })
+    defineNuxtPlugin({
+      // @ts-expect-error invalid plugin name
+      dependsOn: () => ['something']
+    })
+    defineNuxtPlugin({
+      dependsOn: () => ['nuxt:router']
+    })
   })
 })
 
