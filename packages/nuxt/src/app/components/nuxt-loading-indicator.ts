@@ -1,7 +1,5 @@
 import { defineComponent, h } from 'vue'
-import type { PropType } from 'vue'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
-import type { ProgressTimingFunction } from '#app/composables/loading-indicator'
 
 export default defineComponent({
   name: 'NuxtLoadingIndicator',
@@ -22,15 +20,16 @@ export default defineComponent({
       type: [String, Boolean],
       default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)'
     },
-    progressTimingFunction: {
-      type: Function as PropType<ProgressTimingFunction>
-    }
+    progressionRate: {
+      type: Number,
+      default: 50
+    },
   },
   setup (props, { slots, expose }) {
     const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
-      progressTimingFunction: props.progressTimingFunction
+      progressionRate: props.progressionRate,
     })
 
     expose({
