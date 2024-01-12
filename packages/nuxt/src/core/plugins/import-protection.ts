@@ -13,12 +13,12 @@ interface ImportProtectionOptions {
   exclude?: Array<RegExp | string>
 }
 
-export const nuxtImportProtections = (nuxt: Nuxt, isNitro?: boolean) => {
+export const nuxtImportProtections = (nuxt: Nuxt, options: { isNitro?: boolean } = {}) => {
   const patterns: ImportProtectionOptions['patterns'] = []
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
-    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.')
+    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.')
   ])
 
   patterns.push([
@@ -28,7 +28,7 @@ export const nuxtImportProtections = (nuxt: Nuxt, isNitro?: boolean) => {
 
   patterns.push([/(^|node_modules\/)@vue\/composition-api/])
 
-  for(const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
+  for (const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
     patterns.push([
       new RegExp(`^${escapeRE(mod as string)}$`),
       'Importing directly from module entry-points is not allowed.'
@@ -36,10 +36,10 @@ export const nuxtImportProtections = (nuxt: Nuxt, isNitro?: boolean) => {
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/kit/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, 'nitropack']) {
-    patterns.push([i, 'This module cannot be imported' + (isNitro ? 'in server runtime' : ' in the Vue part of your app.')])
+    patterns.push([i, 'This module cannot be imported' + (options.isNitro ? 'in server runtime' : ' in the Vue part of your app.')])
   }
 
-  if (isNitro) {
+  if (options.isNitro) {
     for (const i of ['#app', /^#build(\/|$)/]) {
       patterns.push([i, 'Vue app aliases are not allowed in server runtime.'])
     }
@@ -47,8 +47,8 @@ export const nuxtImportProtections = (nuxt: Nuxt, isNitro?: boolean) => {
 
   patterns.push(
     [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'),
-    'Importing from server is not allowed in the Vue part of your app.'
-  ])
+      'Importing from server is not allowed in the Vue part of your app.'
+    ])
 
   return patterns
 

@@ -339,7 +339,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
-      patterns: nuxtImportProtections(nuxt, true /* isNitro */),
+      patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/]
     })
   )
