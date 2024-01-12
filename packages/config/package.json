@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/config",
   "version": "2.17.3",
-  "repository": "nuxt/nuxt.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/config.js",
   "typings": "index.d.ts",
