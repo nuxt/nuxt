@@ -43,8 +43,8 @@ const transformWithImportProtection = (id: string, importer: string) => {
     patterns: nuxtImportProtections({
       options: {
         modules: ['some-nuxt-module'],
-        srcDir: 'src/',
-        serverDir: 'server'
+        srcDir: '/root/src/',
+        serverDir: '/root/src/server'
       } satisfies Partial<NuxtOptions> as NuxtOptions
     })
   })

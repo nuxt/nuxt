@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module'
 import { createUnplugin } from 'unplugin'
 import { logger } from '@nuxt/kit'
-import { isAbsolute, join, relative } from 'pathe'
+import { isAbsolute, join, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
@@ -46,7 +46,7 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   }
 
   patterns.push(
-    [new RegExp(escapeRE(join(nuxt.options.srcDir, nuxt.options.serverDir || 'server')) + '\\/(api|routes|middleware|plugins)\\/'),
+    [new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
       'Importing from server is not allowed in the Vue part of your app.'
     ])
 
