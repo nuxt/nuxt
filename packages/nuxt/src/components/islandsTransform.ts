@@ -34,6 +34,10 @@ const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 
+function wrapWithVForDiv(code: string, vfor: string): string {
+  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
+
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
   const { isDev, rootDir } = options
@@ -70,12 +74,21 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         if (node.type === ELEMENT_NODE) {
           if (node.name === 'slot') {
             const { attributes, children, loc } = node
+            
+            // pass slot fallback to NuxtTeleportSsrSlot fallback
+            if (children.length) {
+              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" `: value).join(' ')
+              const slice = code.slice(startingIndex + loc[0].end,startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes["v-for"] ? wrapWithVForDiv(slice, attributes['v-for']) : slice }</template>`)
+            }
+
             const slotName = attributes.name ?? 'default'
             let vfor: [string, string] | undefined
             if (attributes['v-for']) {
               vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
-              delete attributes['v-for']
             }
+            delete attributes['v-for']
+
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
               attributes._bind = attributes['v-bind']
@@ -83,12 +96,6 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             }
             const bindings = getPropsToString(attributes, vfor)
 
-            // pass slot as fallback to be handled by NuxtTeleportSsrSlot
-            // TODO handle fallback
-            if (children.length) {
-              // s.appendRight(startingIndex + loc[0].end, `<template #fallback>`)
-              // s.appendLeft(startingIndex + loc[1].start, '</template>')
-            }
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot name="${slotName}" :props="${bindings}">`)
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')

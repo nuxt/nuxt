@@ -51,7 +51,7 @@ export default defineComponent({
 
       return [h('div', {
         style: 'display: contents;',
-        'data-island-uid': islandContext.uid,
+        'data-island-uid': '',
         'data-island-client': props.to
       }, []), h(Teleport, { to: props.to }, slot)]
     }

@@ -1,4 +1,4 @@
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, Teleport } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
@@ -24,16 +24,22 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
+    islandContext.slots[props.name] = {
+      props: (props.props ||  []) as unknown[]
+    }
+
     return () => {
-      islandContext.slots[props.name] = {
-        props: (props.props ||  []) as unknown[]
+      const vnodes = [h('div', {
+        style: 'display: contents;',
+        'data-island-uid': '',
+        'data-island-slot': props.name,
+      })]
+
+      if (slots.fallback) {
+        vnodes.push(h(Teleport, { to: `island-fallback=${islandContext.uid};${props.name}`}, slots.fallback()))
       }
 
-      return [h('div', {
-        style: 'display: contents;',
-        'data-island-uid': islandContext.uid,
-        'data-island-slot': props.name,
-      }, [])]
+      return vnodes
     }
   }
 })

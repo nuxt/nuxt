@@ -64,7 +64,6 @@ export interface NuxtIslandContext {
 }
 
 export interface NuxtIslandSlotResponse {
-  html: string
   props: Array<unknown>
   fallback: string
 }
@@ -605,11 +604,9 @@ function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['
   if(!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['slots'] = {}
   for(const slot in ssrContext.islandContext.slots) {
-    const html = ssrContext.teleports?.[`uid=${ssrContext.islandContext.uid};slot=${slot}`]  || ''
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      html,
-      fallback: ''
+      fallback: ssrContext.teleports?.[`island-fallback=${ssrContext.islandContext.uid};${slot}`] || ''
     }
   }
   return response
