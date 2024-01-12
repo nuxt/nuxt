@@ -24,7 +24,7 @@
     "ignore": "^5.3.0",
     "lodash": "^4.17.21",
     "pify": "^5.0.0",
-    "serialize-javascript": "^6.0.1",
+    "serialize-javascript": "^6.0.2",
     "upath": "^2.0.1"
   },
   "engines": {
