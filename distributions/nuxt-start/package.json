@@ -39,7 +39,7 @@
     "@nuxt/utils": "2.17.2",
     "@nuxt/vue-renderer": "2.17.2",
     "node-fetch-native": "^1.6.1",
-    "vue": "^2.7.10",
+    "vue": "^2.7.16",
     "vue-client-only": "^2.1.0",
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
