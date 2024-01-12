@@ -36,7 +36,7 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/kit/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, 'nitropack']) {
-    patterns.push([i, 'This module cannot be imported' + (options.isNitro ? 'in server runtime' : ' in the Vue part of your app.')])
+    patterns.push([i, 'This module cannot be imported' + (options.isNitro ? 'in server runtime.' : ' in the Vue part of your app.')])
   }
 
   if (options.isNitro) {
@@ -51,7 +51,6 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
     ])
 
   return patterns
-
 }
 
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
