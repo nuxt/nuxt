@@ -46,7 +46,7 @@ export const nuxtImportProtections = (nuxt: Nuxt, options: { isNitro?: boolean }
   }
 
   patterns.push(
-    [new RegExp(escapeRE(join(nuxt.options.srcDir, (nuxt.options.dir as any).server || 'server')) + '\\/(api|routes|middleware|plugins)\\/'),
+    [new RegExp(escapeRE(join(nuxt.options.srcDir, nuxt.options.serverDir || 'server')) + '\\/(api|routes|middleware|plugins)\\/'),
       'Importing from server is not allowed in the Vue part of your app.'
     ])
 
