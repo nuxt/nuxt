@@ -59,7 +59,7 @@
     "esbuild": "0.19.11",
     "eslint": "8.56.0",
     "eslint-multiplexer": "2.0.0",
-    "eslint-plugin-jest": "27.6.2",
+    "eslint-plugin-jest": "27.6.3",
     "execa": "^5.1.1",
     "express": "4.18.2",
     "finalhandler": "1.2.0",
