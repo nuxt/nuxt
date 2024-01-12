@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/generator",
-  "version": "2.17.2",
+  "version": "2.17.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js.git"
@@ -11,7 +11,7 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.17.2",
+    "@nuxt/utils": "2.17.3",
     "chalk": "^4.1.2",
     "consola": "^3.2.3",
     "defu": "^6.1.4",

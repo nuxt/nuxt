@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/builder",
-  "version": "2.17.2",
+  "version": "2.17.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js.git"
@@ -12,9 +12,9 @@
   ],
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/utils": "2.17.2",
-    "@nuxt/vue-app": "2.17.2",
-    "@nuxt/webpack": "2.17.2",
+    "@nuxt/utils": "2.17.3",
+    "@nuxt/vue-app": "2.17.3",
+    "@nuxt/webpack": "2.17.3",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
     "consola": "^3.2.3",

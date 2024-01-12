@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/server",
-  "version": "2.17.2",
+  "version": "2.17.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js.git"
@@ -11,8 +11,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.17.2",
-    "@nuxt/vue-renderer": "2.17.2",
+    "@nuxt/utils": "2.17.3",
+    "@nuxt/vue-renderer": "2.17.3",
     "@nuxtjs/youch": "^4.2.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",

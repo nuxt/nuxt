@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vue-renderer",
-  "version": "2.17.2",
+  "version": "2.17.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.js.git"
@@ -12,7 +12,7 @@
   ],
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/utils": "2.17.2",
+    "@nuxt/utils": "2.17.3",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "fs-extra": "^10.1.0",
