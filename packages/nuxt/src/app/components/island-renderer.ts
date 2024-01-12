@@ -17,8 +17,6 @@ export default defineComponent({
   },
   setup (props) {
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
-    const nuxtApp = useNuxtApp()
-    const id = nuxtApp.ssrContext!.islandContext!.uid || randomUUID()
 
     if (!component) {
       throw createError({
@@ -31,6 +29,6 @@ export default defineComponent({
       console.log(e)
     })
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': id })
+    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   }
 })
