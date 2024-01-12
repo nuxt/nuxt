@@ -3,7 +3,7 @@ import { createUnplugin } from 'unplugin'
 import { logger } from '@nuxt/kit'
 import { isAbsolute, join, relative } from 'pathe'
 import escapeRE from 'escape-string-regexp'
-import type { Nuxt } from 'nuxt/schema'
+import type { NuxtOptions } from 'nuxt/schema'
 
 const _require = createRequire(import.meta.url)
 
@@ -13,7 +13,7 @@ interface ImportProtectionOptions {
   exclude?: Array<RegExp | string>
 }
 
-export const nuxtImportProtections = (nuxt: Nuxt, options: { isNitro?: boolean } = {}) => {
+export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: { isNitro?: boolean } = {}) => {
   const patterns: ImportProtectionOptions['patterns'] = []
 
   patterns.push([

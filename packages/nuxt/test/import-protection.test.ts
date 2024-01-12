@@ -1,6 +1,7 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
+import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],
@@ -43,9 +44,9 @@ const transformWithImportProtection = (id: string, importer: string) => {
       options: {
         modules: ['some-nuxt-module'],
         srcDir: 'src/',
-        dir: { server: 'server' }
-      }
-    } as any)
+        serverDir: 'server'
+      } satisfies Partial<NuxtOptions> as NuxtOptions
+    })
   })
 
   return (plugin as any).resolveId(id, importer)
