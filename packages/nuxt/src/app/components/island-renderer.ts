@@ -5,8 +5,6 @@ import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
 import { islandComponents } from '#build/components.islands.mjs'
-import { useNuxtApp } from '#app/nuxt'
-import { randomUUID } from 'uncrypto'
 
 export default defineComponent({
   props: {

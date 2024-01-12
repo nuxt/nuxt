@@ -2,7 +2,6 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import destr from 'destr'
 import type { RouteLocationNormalized } from '#vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'

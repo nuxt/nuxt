@@ -119,7 +119,6 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       }
 
       if (s.hasChanged()) {
-        debugger
         return {
           code: s.toString(),
           map: s.generateMap({ source: id, includeContent: true })

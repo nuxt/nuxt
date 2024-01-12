@@ -1,7 +1,5 @@
-import { defineComponent, h, Teleport } from 'vue'
+import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '../nuxt'
-// @ts-expect-error virtual file
-import { paths } from '#build/components-chunk'
  
 /**
  * component only used within islands for slot teleport
