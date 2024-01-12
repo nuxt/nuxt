@@ -44,7 +44,7 @@ jobs:
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -69,7 +69,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -98,7 +98,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -130,7 +130,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -160,7 +160,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -199,7 +199,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -234,7 +234,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -244,7 +244,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
+        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -270,7 +270,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -280,7 +280,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
+        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -306,7 +306,7 @@ jobs:
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules
@@ -316,7 +316,7 @@ jobs:
           key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@f44cd7b40bfd40b6aa1cc1b9b5b7bf03d3c67110 # v4.1.0
+        uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935 # v4.1.1
         with:
           name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
@@ -344,7 +344,7 @@ jobs:
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
 
       - name: restore workspace cache
-        uses: actions/cache@704facf57e6136b1bc63b828d79edcd491f0ee84 # v3.3.2
+        uses: actions/cache@e12d46a63a90f2fae62d114769bbf2a179198b5c # v3.3.3
         with:
           path: |
             node_modules

@@ -16,7 +16,7 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "node-fetch-native": "^1.4.1",
+    "node-fetch-native": "^1.6.1",
     "ufo": "^1.3.2",
     "unfetch": "^5.0.0",
     "vue": "^2.7.10",
@@ -24,7 +24,7 @@
     "vue-meta": "^2.4.0",
     "vue-no-ssr": "^1.1.1",
     "vue-router": "^3.6.5",
-    "vue-template-compiler": "^2.7.15",
+    "vue-template-compiler": "^2.7.16",
     "vuex": "^3.6.2"
   },
   "engines": {

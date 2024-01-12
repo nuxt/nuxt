@@ -38,7 +38,7 @@
     "@nuxt/telemetry": "^1.5.0",
     "@nuxt/utils": "2.17.2",
     "@nuxt/vue-renderer": "2.17.2",
-    "node-fetch-native": "^1.4.1",
+    "node-fetch-native": "^1.6.1",
     "vue": "^2.7.10",
     "vue-client-only": "^2.1.0",
     "vue-meta": "^2.4.0",
