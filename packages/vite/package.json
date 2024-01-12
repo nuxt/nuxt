@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.7"
+    "vue": "3.4.10"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -50,9 +50,9 @@
     "h3": "^1.10.0",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.5",
-    "mlly": "^1.4.2",
+    "mlly": "^1.5.0",
     "ohash": "^1.1.3",
-    "pathe": "^1.1.1",
+    "pathe": "^1.1.2",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.0.3",
     "postcss": "^8.4.33",
