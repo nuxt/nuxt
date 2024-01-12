@@ -69,6 +69,7 @@ export default defineComponent({
     }
   },
   async setup(props, { slots, expose }) {
+    let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
@@ -197,8 +198,10 @@ export default defineComponent({
 
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
-          await nextTick()
-          teleportKey.value++
+          nextTick(() => {
+            canTeleport = true
+            teleportKey.value++
+          })
         }
       } catch (e) {
         error.value = e
@@ -220,13 +223,12 @@ export default defineComponent({
     }
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
-      fetchComponent()
+      fetchComponent() 
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
-      await fetchComponent()
+      await fetchComponent() 
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source,  Object.fromEntries(Object.entries(payloadClients).map(([id, v]) => [id, v.chunk])))
     }
-    console.log(uid.value)
 
     return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {
@@ -243,7 +245,7 @@ export default defineComponent({
           // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
  
-          if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server) && html.value) {
+          if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : mounted.value || nuxtApp.isHydrating)) {
             for (const slot in slots) {
               if (availableSlots.value.includes(slot)) {
                 teleports.push(createVNode(Teleport,
@@ -261,7 +263,6 @@ export default defineComponent({
                 }))
               }
             }
-
             if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
               for (const [id, info] of Object.entries(payloadClients ?? {})) {
                 const { props } = info
