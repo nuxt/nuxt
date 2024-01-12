@@ -1474,7 +1474,7 @@ describe('server components/islands', () => {
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
     await islandRequest
-
+    
     await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
     await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
@@ -1558,12 +1558,12 @@ describe('server components/islands', () => {
     await page.waitForLoadState('networkidle')
     await page.getByText('Go to page without lazy server component').click()
 
-    const text = (await page.innerText('pre')).replace(/data-island-client="([^"]*)"/g, (_, content) => `data-island-client="${content.split('-')[0]}"`)
+    const text = (await page.innerText('pre')).replaceAll(/ (data-island-uid|data-island-client)="([^"]*)"/g, '').replace(/nuxt-ssr-client="([^"]*)"/g, (_, content) => `nuxt-ssr-client="${content.split('-')[0]}"`)
 
     if (isWebpack) {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div data-island-uid="4"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style="display:contents;" data-island-slot="default"></div></div></section><section id="no-fallback"><div data-island-uid="5"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style="display:contents;" data-island-slot="default"></div></div></section><div data-island-uid="3"> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
+      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div data-island-uid="4"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style="display:contents;" nuxt-ssr-slot-name="default"></div></div></section><section id="no-fallback"><div data-island-uid="5"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div style="display:contents;" nuxt-ssr-slot-name="default"></div></div></section><div data-island-uid="3"> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
     } else {
-      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div data-island-uid="1"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid="1" data-island-slot="default"></div><!--]--></div></section><section id="no-fallback"><div data-island-uid="2"> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid="2" data-island-slot="default"></div><!--]--></div></section><div data-island-uid="3"> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid="3" data-island-client="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>"`)
+      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;"></div><!--teleport start--><!--teleport end--><!--]--></div></div>"`)
     }
     expect(text).toContain('async component that was very long')
 
@@ -1787,7 +1787,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<pre>    Route: /foo
+        "html": "<pre data-island-uid>    Route: /foo
         </pre>",
         "slots": {},
         "state": {},
@@ -1804,6 +1804,7 @@ describe('component islands', () => {
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
+    result.html = result.html.replaceAll(/ (data-island-uid|data-island-client)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "clients": {},
@@ -1811,16 +1812,14 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div data-island-uid="4eef731a-a82a-4801-8570-ad5a2dcfcfc4"><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-slot="test"></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-slot="hello"></div><!--]--><!--[--><div style="display: contents;" data-island-slot="fallback"></div><!--]--></div>",
+        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
             "fallback": "",
-            "html": "",
             "props": [],
           },
           "fallback": {
-            "fallback": "",
-            "html": "",
+            "fallback": "<!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
                 "t": "fall",
@@ -1831,8 +1830,7 @@ describe('component islands', () => {
             ],
           },
           "hello": {
-            "fallback": "",
-            "html": "",
+            "fallback": "<!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
                 "t": 0,
@@ -1847,7 +1845,6 @@ describe('component islands', () => {
           },
           "test": {
             "fallback": "",
-            "html": "",
             "props": [
               {
                 "count": 3,
@@ -1872,7 +1869,7 @@ describe('component islands', () => {
     result.props = {}
     result.clients = {}
     result.slots = {}
-    result.html = result.html.replaceAll(/(data-island-uid|data-island-client)="[^"]*"/g, '')
+    result.html = result.html.replaceAll(/ (data-island-uid|data-island-client)="([^"]*)"/g, '')
 
     expect(result).toMatchInlineSnapshot(`
       {
@@ -1881,7 +1878,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div > This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div>",
+        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"></div><!--]--></div>",
         "props": {},
         "slots": {},
         "state": {},
@@ -1895,13 +1892,12 @@ describe('component islands', () => {
       if (isDev()) {
         result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
       }
-      const { slots, clients } = result
+      const {  clients } = result
       result.clients = {}
       result.slots = {}
-      result.html = result.html.replaceAll(/(data-island-uid|data-island-client)="[^"]*"/g, '')
- 
-      const slotEntries = Object.entries(slots || {})
-      const clientEntries = Object.entries(clients || {})
+      result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
+
+      const teleportsEntries = Object.entries(clients || {})
 
       expect(result).toMatchInlineSnapshot(`
         {
@@ -1910,35 +1906,19 @@ describe('component islands', () => {
             "link": [],
             "style": [],
           },
-          "html": "<div > ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" ></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
+          "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-client="Counter-mRZhuD1ftL"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
           "state": {},
         }
       `)
-      expect(clientEntries).toHaveLength(1)
-      expect(clientEntries[0][0].startsWith('Counter-')).toBeTruthy()
-      expect(slotEntries[0][0].startsWith('Counter-')).toBeTruthy()
-      expect(clientEntries[0][1].props).toMatchInlineSnapshot(`
-        {
-          "clients": {
-            "Counter-mRZhuD1ftL": {
-              "chunk": "_nuxt/Counter.5vgfMfPE.js",
-              "html": "<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->",
-              "props": {
-                "multiplier": 1,
-              },
-            },
-          },
-          "head": {
-            "link": [],
-            "style": [],
-          },
-          "html": "<div data-island-uid="a4b184a6-2f35-4a60-9840-5ecb8f88e85e"> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;"'data-island-client="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
-          "slots": {},
-          "state": {},
-        }
-      `)
-      expect(slotEntries[0][1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
+      expect(teleportsEntries).toHaveLength(1)
+      expect(teleportsEntries[0][0].startsWith('Counter-')).toBeTruthy()
+      expect(teleportsEntries[0][1].props).toMatchInlineSnapshot(`
+      {
+        "multiplier": 1,
+      }
+    `)
+      expect(teleportsEntries[0][1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
     })
   }
 
@@ -1951,7 +1931,7 @@ describe('component islands', () => {
         obj: { foo: 42, bar: false, me: 'hi' }
       })
     }))
-    result.html = result.html.replaceAll(/(data-island-uid|data-island-client)="[^"]*"/g, '')
+    result.html = result.html.replace(/ data-island-uid="([^"]*)"/g, '')
 
     if (isDev()) {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
@@ -1990,8 +1970,8 @@ describe('component islands', () => {
       `)
     }
 
-    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '')).toMatchInlineSnapshot(`
-      "<div  > Was router enabled: true <br > Props: <pre >{
+    expect(result.html.replace(/data-v-\w+|"|<!--.*-->/g, '').replace(/data-island-uid="[^"]"/g, '')).toMatchInlineSnapshot(`
+      "<div data-island-uid > Was router enabled: true <br > Props: <pre >{
         number: 3487,
         str: something,
         obj: {
