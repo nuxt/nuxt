@@ -20,7 +20,11 @@ export default defineComponent({
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
-    const islandContext = nuxtApp.ssrContext!.islandContext!
+    const islandContext = nuxtApp.ssrContext?.islandContext
+
+    if(!islandContext) {
+      return () => slots.default?.()
+    }
 
     islandContext.slots[props.name] = {
       props: (props.props ||  []) as unknown[]

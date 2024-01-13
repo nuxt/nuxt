@@ -34,10 +34,11 @@ export default defineComponent({
     },
   },
   setup (props, { slots }) {
-    if (!props.nuxtClient) { return () => slots.default!() }
+    const nuxtApp = useNuxtApp()
 
-    const app = useNuxtApp()
-    const islandContext = app.ssrContext!.islandContext!
+    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient) { return () => slots.default!() }
+
+    const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
       const slot = slots.default!()[0]
