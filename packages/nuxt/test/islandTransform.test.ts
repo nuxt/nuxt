@@ -63,15 +63,19 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style="display: contents;" data-island-slot="default" />
+                <NuxtTeleportSsrSlot name="default" :props="undefined"><slot /></NuxtTeleportSsrSlot>
 
-                <div style="display: contents;" data-island-slot="named" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
-                <div style="display: contents;" data-island-slot="other" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"/>
+                <NuxtTeleportSsrSlot name="named" :props="[{ some-data: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
+                <NuxtTeleportSsrSlot name="other" :props="[{ some-data: someData }]"><slot
+                  name="other"
+                  :some-data="someData"
+                /></NuxtTeleportSsrSlot>
               </div>
               </template>
               <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
 
               </script>"
@@ -95,14 +99,15 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <div style="display: contents;" data-island-slot="default" :nuxt-ssr-slot-data="JSON.stringify([{ some-data: someData }])"><div nuxt-slot-fallback-start="default"/><div  style="display: contents;">
+                <NuxtTeleportSsrSlot name="default" :props="[{ some-data: someData }]"><slot :some-data="someData"  /><template #fallback>
                   <div>fallback</div>
-                </div><div nuxt-slot-fallback-end/></div>
+                </template></NuxtTeleportSsrSlot>
               </div>
               </template>
               <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
 
               </script>"
@@ -153,10 +158,10 @@ describe('islandTransform - server and island components', () => {
                     <p>message: {{ message }}</p>
                     <p>Below is the slot I want to be hydrated on the client</p>
                     <div>
-                      <div style="display: contents;" data-island-slot="default" ><div nuxt-slot-fallback-start="default"/>
+                      <NuxtTeleportSsrSlot name="default" :props="undefined"><slot  /><template #fallback>
                         This is the default content of the slot, I should not see this after
                         the client loading has completed.
-                      <div nuxt-slot-fallback-end/></div>
+                      </template></NuxtTeleportSsrSlot>
                     </div>
                     <p>Above is the slot I want to be hydrated on the client</p>
                   </template>
@@ -167,6 +172,7 @@ describe('islandTransform - server and island components', () => {
             <script setup lang="ts">
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
             export interface Props {
               count?: number;
             }
@@ -209,6 +215,7 @@ describe('islandTransform - server and island components', () => {
                 <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
                 </script>
                 "
@@ -241,6 +248,7 @@ describe('islandTransform - server and island components', () => {
                 <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
                 </script>
                 "
@@ -276,6 +284,7 @@ describe('islandTransform - server and island components', () => {
                 <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
 
                 const nuxtClient = false
@@ -310,6 +319,7 @@ describe('islandTransform - server and island components', () => {
                 <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
 
                 const nuxtClient = false
@@ -331,7 +341,8 @@ describe('islandTransform - server and island components', () => {
       expect(result).toMatchInlineSnapshot(`
         "<script setup>
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'</script><template>
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                 <div>
                   <HelloWorld />
                   <NuxtTeleportSsrClient to="HelloWorld-CyH3UXLuYA"  :nuxt-client="true"><HelloWorld /></NuxtTeleportSsrClient>
@@ -377,6 +388,7 @@ describe('islandTransform - server and island components', () => {
                 <script setup lang="ts">
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
                 
                 const someData = 'some data'
