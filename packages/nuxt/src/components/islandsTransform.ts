@@ -33,6 +33,7 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
+const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportSsrClient from \'#app/components/nuxt-teleport-ssr-client\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 
 function wrapWithVForDiv(code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
@@ -61,11 +62,13 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const startingIndex = template.index || 0
       const s = new MagicString(code)
 
-      s.replace(SCRIPT_RE, (full) => {
-        return full + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\''
-          + '\nimport NuxtTeleportSsrClient from \'#app/components/nuxt-teleport-ssr-client\''
-          + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
-      })
+      if (!code.match(SCRIPT_RE)) {
+        s.prepend('<script setup>' + IMPORT_CODE + '</script>')
+      } else {
+        s.replace(SCRIPT_RE, (full) => {
+          return full + IMPORT_CODE 
+        })
+      }
 
       let hasNuxtClient = false
 
