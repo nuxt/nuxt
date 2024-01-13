@@ -132,7 +132,6 @@ export default defineComponent({
       }
 
       return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
-        // todo move to server side replace
         if (!currentSlots.includes(slotName)) {
           return full + payloadSlots[slotName]?.fallback ?? ''
         }
