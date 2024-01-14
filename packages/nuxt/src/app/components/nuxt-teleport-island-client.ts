@@ -14,7 +14,7 @@ type ExtendedComponent = Component & {
  * this teleport the component in SSR only if it needs to be hydrated on client
  */
 export default defineComponent({
-  name: 'NuxtTeleportSsrClient',
+  name: 'NuxtTeleportIslandClient',
   props: {
     to: {
       type: String,
