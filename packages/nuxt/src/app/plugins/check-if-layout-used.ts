@@ -1,4 +1,4 @@
-import { nextTick } from "vue"
+import { nextTick } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
 import { useError } from '../composables/error'
@@ -17,10 +17,10 @@ export default defineNuxtPlugin({
       }
     }
     if (import.meta.server) {
-      nuxtApp.hook("app:rendered", async () => {
+      nuxtApp.hook('app:rendered', async () => {
         await nextTick()
         checkIfLayoutUsed()
-      });
+      })
     } else {
       onNuxtReady(checkIfLayoutUsed)
     }
