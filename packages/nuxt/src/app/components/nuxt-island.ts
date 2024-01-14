@@ -29,13 +29,13 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents(source = '/', paths: Record<string, string>) {
+async function loadComponents(source = '/', paths: NuxtIslandResponse['clients']) {
   const promises = []
 
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source, paths[component])
+        const chunkSource = join(source, paths[component].chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
@@ -192,7 +192,7 @@ export default defineComponent({
 
         if (selectiveClient && import.meta.client) {
           if (canLoadClientComponent.value && res.clients) {
-            await loadComponents(props.source, Object.fromEntries(Object.entries(res.clients).map(([id, v]) => [id, v.chunk])))
+            await loadComponents(props.source, res.clients)
           }
         }
 
@@ -227,7 +227,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent() 
     } else if (selectiveClient && canLoadClientComponent.value) {
-      await loadComponents(props.source,  Object.fromEntries(Object.entries(payloadClients).map(([id, v]) => [id, v.chunk])))
+      await loadComponents(props.source, payloadClients)
     }
 
     return (_ctx: any, _cache: any) => {
