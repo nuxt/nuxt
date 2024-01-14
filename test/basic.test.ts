@@ -1895,7 +1895,7 @@ describe('component islands', () => {
       const {  clients } = result
       result.clients = {}
       result.slots = {}
-      result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`)
+      result.html = result.html.replace(/ nuxt-ssr-client="([^"]*)"/g, (_, content) => `'nuxt-ssr-client="${content.split('-')[0]}"`).replaceAll(/\r?\n/g, '\n')
 
       const teleportsEntries = Object.entries(clients || {})
 
