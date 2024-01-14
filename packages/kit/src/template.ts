@@ -16,7 +16,7 @@ import { resolveNuxtModule } from './resolve'
 /**
  * Renders given template using lodash template during build into the project buildDir
  */
-export function addTemplate (_template: NuxtTemplate<any> | string) {
+export function addTemplate <T>(_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
 
   // Normalize template
@@ -36,7 +36,7 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
  * Renders given types using lodash template during build into the project buildDir
  * and register them as types.
  */
-export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
+export function addTypeTemplate <T>(_template: NuxtTypeTemplate<T>) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -56,7 +56,7 @@ export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate (template: NuxtTemplate<any> | string): ResolvedNuxtTemplate<any> {
+export function normalizeTemplate <T>(template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -99,7 +99,7 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
     template.dst = resolve(nuxt.options.buildDir, template.filename)
   }
 
-  return template as ResolvedNuxtTemplate<any>
+  return template as ResolvedNuxtTemplate<T>
 }
 
 /**
