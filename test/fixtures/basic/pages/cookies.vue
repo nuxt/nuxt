@@ -14,14 +14,19 @@ useCookie('browser-set-to-null-with-default', () => 'default').value = null
 const objectCookie = useCookie('browser-object-default', {
   default: () => ({ foo: 'bar' })
 })
+
+const refreshed = useCookie('browser-refreshed')
 </script>
 
 <template>
   <div>
     <div>cookies testing page</div>
-    <pre>{{ objectCookie }}</pre>
+    <pre>{{ refreshed }}</pre>
     <button @click="objectCookie.foo = 'baz'">
       Change cookie
+    </button>
+    <button @click="refreshCookie('browser-refreshed')">
+      Refresh cookie
     </button>
   </div>
 </template>

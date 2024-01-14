@@ -61,7 +61,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const callback = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(opts.encode(cookie.value as T))
+      channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
     let watchPaused = false
@@ -75,9 +75,10 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (channel) {
-      channel.onmessage = (event) => {
+      channel.onmessage = ({ data }) => {
+        const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
         watchPaused = true
-        cookies[name] = cookie.value = opts.decode(event.data)
+        cookies[name] = cookie.value = value
         nextTick(() => { watchPaused = false })
       }
     }
@@ -105,6 +106,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   return cookie as CookieRef<T>
+}
+
+export function refreshCookie(name: string) {
+  if (typeof BroadcastChannel === 'undefined') return
+  
+  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
 }
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {

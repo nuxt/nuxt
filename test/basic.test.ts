@@ -499,8 +499,12 @@ describe('nuxt composables', () => {
       return JSON.parse(decodeURIComponent(raw))
     }
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.getByRole('button').click()
+    await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
+    await page.evaluate(() => document.cookie = 'browser-refreshed=foobar')
+    await page.getByText('Refresh cookie').click()
+    const text = await page.innerText('pre')
+    expect(text).toContain('foobar')
     await page.close()
   })
 })
