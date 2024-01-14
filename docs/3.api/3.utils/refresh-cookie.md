@@ -1,6 +1,6 @@
 ---
 title: "refreshCookie"
-description: "Refresh cookie value returned by `useCookie`"
+description: "Refresh useCookie() ref values"
 navigation:
   badge: New
 links:
@@ -18,26 +18,26 @@ This utility is available since [Nuxt v3.9.2](/blog/v3-9-2).
 
 The `refreshCookie` function is designed to refresh cookie value returned by `useCookie`.
 
-This is useful to update the `useCookie` ref when we know the new cookie value has been set.
+This is useful for updating the `useCookie` ref when we know the new cookie value has been set in the browser.
 
 ## Usage
 
 ```vue [app.vue]
-<script setup>
+<script setup lang="ts">
 const tokenCookie = useCookie('token')
 
 const login = async (username: string, password: string) => {
-  // Sets `token` cookie on response
-  const token = await $fetch('/api/token', { ... })
-
-  // Refresh `tokenCookie` value
+  const token = await $fetch('/api/token', { ... }) // Sets `token` cookie on response
   refreshCookie('token')
-})
+}
 
-// Cookie dependent computeds
 const loggedIn = computed(() => !!tokenCookie.value)
 </script>
 ```
+
+::callout{to="/docs/guide/going-further/experimental-features#refreshcookie"}
+You can enable experimental `listenCookieChanges` option to automatically refresh `useCookie` value when cookie changes in browser.
+::
 
 ## Type
 
