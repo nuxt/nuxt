@@ -501,7 +501,7 @@ describe('nuxt composables', () => {
     expect(await extractCookie()).toEqual({ foo: 'bar' })
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
-    await page.evaluate(() => document.cookie = 'browser-refreshed=foobar')
+    await page.evaluate(() => document.cookie = 'updated=foobar')
     await page.getByText('Refresh cookie').click()
     const text = await page.innerText('pre')
     expect(text).toContain('foobar')

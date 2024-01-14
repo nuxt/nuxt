@@ -4,6 +4,8 @@ useCookie('accessed-with-default-value', () => 'default')
 useCookie('set').value = 'set'
 useCookie('set-to-null').value = null
 useCookie('set-to-null-with-default', () => 'default').value = null
+
+const updated = useCookie('updated')
 // the next set are all sent by browser
 useCookie('browser-accessed-but-not-used')
 useCookie('browser-accessed-with-default-value', () => 'default')
@@ -14,18 +16,16 @@ useCookie('browser-set-to-null-with-default', () => 'default').value = null
 const objectCookie = useCookie('browser-object-default', {
   default: () => ({ foo: 'bar' })
 })
-
-const refreshed = useCookie('browser-refreshed')
 </script>
 
 <template>
   <div>
     <div>cookies testing page</div>
-    <pre>{{ refreshed }}</pre>
+    <pre>{{ updated }}</pre>
     <button @click="objectCookie.foo = 'baz'">
       Change cookie
     </button>
-    <button @click="refreshCookie('browser-refreshed')">
+    <button @click="refreshCookie('updated')">
       Refresh cookie
     </button>
   </div>
