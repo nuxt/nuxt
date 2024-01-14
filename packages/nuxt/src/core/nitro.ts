@@ -17,7 +17,7 @@ import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templa
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
-import { ImportProtectionPlugin } from './plugins/import-protection'
+import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -339,10 +339,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
-      patterns: [
-        ...['#app', /^#build(\/|$)/]
-          .map(p => [p, 'Vue app aliases are not allowed in server routes.']) as [RegExp | string, string][]
-      ],
+      patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/]
     })
   )

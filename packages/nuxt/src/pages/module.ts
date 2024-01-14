@@ -366,6 +366,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
+        if (!app.pages) return 'export default []'
         const { routes, imports } = normalizeRoutes(app.pages)
         return [...imports, `export default ${routes}`].join('\n')
       }

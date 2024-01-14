@@ -317,6 +317,31 @@ describe('islandTransform - server and island components', () => {
                 "
         `)
       })
+
+      it('should add import if there is no scripts in the SFC', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld />
+          <HelloWorld nuxt-client />
+        </div>
+      </template>
+      
+      `, 'hello.server.vue', false, true)
+
+      expect(result).toMatchInlineSnapshot(`
+        "<script setup>
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'</script><template>
+                <div>
+                  <HelloWorld />
+                  <NuxtTeleportSsrClient to="HelloWorld-CyH3UXLuYA"  :nuxt-client="true"><HelloWorld /></NuxtTeleportSsrClient>
+                </div>
+              </template>
+              
+              "
+      `)
+      expect(result).toContain(`import NuxtTeleportSsrClient from '#app/components/nuxt-teleport-ssr-client'`)
+      })
     })
 
     describe('webpack', () => {
