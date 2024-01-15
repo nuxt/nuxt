@@ -356,7 +356,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set()): { imports: Set<string>, routes: string } {
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -368,7 +368,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports).routes
+        route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
@@ -388,8 +388,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (alias.length) {
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }
-      route.name = page.name !== undefined ? JSON.stringify(page.name) : `${metaImportName}?.name`
-      route.path = page.path !== undefined ? JSON.stringify(page.path) : `${metaImportName}?.path`
+      if (overrideMeta) {
+        route.name = page.name !== undefined ? JSON.stringify(page.name) : `${metaImportName}?.name`
+        route.path = page.path !== undefined ? JSON.stringify(page.path) : `${metaImportName}?.path`
+      } else {
+        route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
+        route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
+      }
       route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
       route.alias = aliasCode
       route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
