@@ -388,9 +388,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (alias.length) {
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }
-
-      route.name = page.name ? JSON.stringify(page.name) : `${metaImportName}?.name`
-      route.path = page.path ? JSON.stringify(page.path) : `${metaImportName}?.path`
+      route.name = page.name !== undefined ? JSON.stringify(page.name) : `${metaImportName}?.name`
+      route.path = page.path !== undefined ? JSON.stringify(page.path) : `${metaImportName}?.path`
       route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
       route.alias = aliasCode
       route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
