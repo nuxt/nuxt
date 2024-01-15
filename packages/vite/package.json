@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.13"
+    "vue": "3.4.14"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
