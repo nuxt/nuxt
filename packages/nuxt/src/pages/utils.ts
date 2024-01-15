@@ -373,9 +373,6 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
       if (!page.file) {
-        for (const key of ['name', 'path', 'meta', 'alias', 'redirect'] as const) {
-          if (page[key]) { route[key] = JSON.stringify(page[key]) }
-        }
         return route
       }
 
