@@ -430,8 +430,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       style: []
     }
     for (const tag of await head.resolveTags()) {
-      if (tag.tag === 'link' && tag.props.rel === 'stylesheet' && tag.props.href.includes('scoped') && !tag.props.href.includes('pages/')) {
+      if (import.meta.dev && tag.tag === 'link' && tag.props.rel === 'stylesheet' && tag.props.href.includes('scoped') && !tag.props.href.includes('pages/')) {
         islandHead.link.push({ ...tag.props, key: 'island-link-' + hash(tag.props.href) })
+      }
+      // Render preload/prefetch links
+      if (tag.tag === 'link' && ['preload', 'prefetch'].includes(tag.props.rel)) {
+        islandHead.link.push(tag.props)
       }
       if (tag.tag === 'style' && tag.innerHTML) {
         islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
