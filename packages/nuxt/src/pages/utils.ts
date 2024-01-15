@@ -57,7 +57,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
-    shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta,
+    shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
     vfs: nuxt.vfs
   })
 

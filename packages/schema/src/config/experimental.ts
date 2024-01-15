@@ -265,11 +265,7 @@ export default defineUntypedSchema({
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
-    scanPageMeta: {
-      $resolve: async (val, get) => {
-        return val ?? await get('experimental.typedPages') ?? false
-      }
-    },
+    scanPageMeta: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
