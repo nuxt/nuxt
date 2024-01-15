@@ -377,25 +377,25 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
-      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+      const metaVariable = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaVariable }]))
 
-      let aliasCode = `${metaImportName}?.alias || []`
-      const alias = toArray(page.alias).filter(Boolean)
-      if (alias.length) {
-        aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
-      }
-      if (overrideMeta) {
-        route.name = page.name !== undefined ? JSON.stringify(page.name) : `${metaImportName}?.name`
-        route.path = page.path !== undefined ? JSON.stringify(page.path) : `${metaImportName}?.path`
-      } else {
-        route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
-        route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
-      }
-      route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
-      route.alias = aliasCode
-      route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
+      route.name = overrideMeta ? route.name ?? `${metaVariable}?.name` : `${metaVariable}?.name ?? ${route.name ?? 'undefined'}`
+      route.path = overrideMeta ? route.path ?? `${metaVariable}?.path` : `${metaVariable}?.path ?? ${route.path ?? '""'}`
+      route.meta = `${metaVariable} || {}`
+      route.alias = `${metaVariable}?.alias || []`
       route.component = genDynamicImport(file, { interopDefault: true })
+      route.redirect = page.redirect ? route.redirect : `${metaVariable}?.redirect || undefined`
+      
+      const metaFiltered = Object.values(page.meta || {}).filter(value => value !== undefined)
+      if (metaFiltered.length) {
+        route.meta = `{ ...(${route.meta}), ...${JSON.stringify(page.meta)} }`
+      }
+      
+      const aliasFiltered = toArray(page.alias).filter(Boolean)
+      if (aliasFiltered.length) {
+        route.alias = `${JSON.stringify(aliasFiltered)}.concat(${route.alias})`
+      }
 
       return route
     }))
