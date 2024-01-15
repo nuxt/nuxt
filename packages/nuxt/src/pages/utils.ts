@@ -1,3 +1,4 @@
+import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
@@ -55,12 +56,20 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   // sort scanned files using en-US locale to make the result consistent across different system locales
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
-  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
+  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
+    shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta,
+    vfs: nuxt.vfs
+  })
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+type GenerateRoutesFromFilesOptions = {
+  shouldExtractBuildMeta?: boolean
+  vfs?: Record<string, string>
+}
+
+export async function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -101,12 +110,9 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
       }
     }
 
-    if (shouldExtractBuildMeta && vfs) {
-      const fileContent = file.absolutePath in vfs ? vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
-      const overrideRouteName = await getRouteName(fileContent)
-      if (overrideRouteName) {
-        route.name = overrideRouteName
-      }
+    if (options.shouldExtractBuildMeta && options.vfs) {
+      const fileContent = file.absolutePath in options.vfs ? options.vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
+      Object.assign(route, await getRouteMeta(fileContent, file.absolutePath))
     }
 
     parent.push(route)
@@ -128,25 +134,74 @@ export function extractScriptContent (html: string) {
 
 const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
 
-async function getRouteName (file: string) {
-  const script = extractScriptContent(file)
-  if (!script) { return null }
+const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
+async function getRouteMeta (contents: string, absolutePath?: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+  if (contents in metaCache) { return metaCache[contents] }
 
-  if (!PAGE_META_RE.test(script)) { return null }
+  const script = extractScriptContent(contents)
+  if (!script) {
+    metaCache[contents] = {}
+    return {}
+  }
+
+  if (!PAGE_META_RE.test(script)) {
+    metaCache[contents] = {}
+    return {}
+  }
 
   const js = await transform(script, { loader: 'ts' })
   const ast = parse(js.code, {
     sourceType: 'module',
-    ecmaVersion: 'latest'
+    ecmaVersion: 'latest',
+    ranges: true
   }) as unknown as Program
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
-  if (!pageMetaAST) { return null }
+  if (!pageMetaAST) {
+    metaCache[contents] = {}
+    return {}
+  }
 
   const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
-  const nameProperty = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === 'name') as Property
-  if (!nameProperty || nameProperty.value.type !== 'Literal' || typeof nameProperty.value.value !== 'string') { return null }
+  const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
+  for (const key of ['name', 'path', 'alias', 'redirect'] as const) {
+    const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
+    if (!property) { continue }
 
-  return nameProperty.value.value
+    if (property.value.type === 'ObjectExpression') {
+      const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+      try {
+        extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
+      } catch {
+        console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+        continue
+      }
+    }
+
+    if (property.value.type === 'ArrayExpression') {
+      const values = []
+      for (const element of property.value.elements) {
+        if (!element) {
+          continue
+        }
+        if (element.type !== 'Literal' || typeof element.value !== 'string') {
+          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+          continue
+        }
+        values.push(element.value)
+      }
+      extractedMeta[key] = values
+      continue
+    }
+
+    if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
+      console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+      continue
+    }
+    extractedMeta[key] = property.value.value
+  }
+
+  metaCache[contents] = extractedMeta
+  return extractedMeta
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
@@ -307,7 +362,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     routes: genArrayFromRaw(routes.map((page) => {
       const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
       for (const [key, value] of Object.entries(page)) {
-        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) { 
+        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) {
           route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
         }
       }
@@ -334,8 +389,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }
 
-      route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
-      route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
+      route.name = page.name ? JSON.stringify(page.name) : `${metaImportName}?.name`
+      route.path = page.path ? JSON.stringify(page.path) : `${metaImportName}?.path`
       route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
       route.alias = aliasCode
       route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`

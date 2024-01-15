@@ -259,6 +259,19 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     *
+     * This only work with static or strings/arrays rather than variables or conditional assignment.
+     *
+     * https://github.com/nuxt/nuxt/issues/24770
+     */
+    scanPageMeta: {
+      $resolve: async (val, get) => {
+        return val ?? await get('experimental.typedPages') ?? false
+      }
+    },
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the

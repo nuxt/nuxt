@@ -201,11 +201,17 @@ export default defineNuxtModule({
       ]
     })
 
+    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+      if (!pages) { return false }
+      return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
+    }
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      const shouldAlwaysRegenerate = nuxt.options.experimental.scanPageMeta && isPage(path)
+
+      if (event === 'change' && !shouldAlwaysRegenerate) { return }
+
+      if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
