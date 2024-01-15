@@ -38,7 +38,7 @@ export default defineComponent({
       })]
 
       if (slots.fallback) {
-        vnodes.push(h(Teleport, { to: `island-fallback=${islandContext.uid};${props.name}`}, slots.fallback()))
+        vnodes.push(h(Teleport, { to: `island-fallback=${props.name}`}, slots.fallback()))
       }
 
       return vnodes

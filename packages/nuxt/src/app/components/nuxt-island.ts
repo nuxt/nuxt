@@ -22,7 +22,7 @@ const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /data-island-uid/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
-const SLOT_FALLBACK_RE = /data-island-uid="[^"]*" data-island-slot="([^"]*)"[^>]*>/g
+const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -158,8 +158,7 @@ export default defineComponent({
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined,
-        uid: uid.value
+        props: props.props ? JSON.stringify(props.props) : undefined
       }))
       const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers

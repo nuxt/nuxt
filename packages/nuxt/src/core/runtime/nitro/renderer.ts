@@ -60,7 +60,6 @@ export interface NuxtIslandContext {
   url?: string
   slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
   clients: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
-  uid: string
 }
 
 export interface NuxtIslandSlotResponse {
@@ -204,7 +203,6 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    uid: destr(context.uid) || undefined,
     slots: {},
     clients: {},
   }
@@ -606,7 +604,7 @@ function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['
   for(const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${ssrContext.islandContext.uid};${slot}`] || ''
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
     }
   }
   return response
@@ -634,7 +632,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
     if(matchClientComp) {
       const [, uid, clientId] = matchClientComp 
       if (!uid || !clientId) { continue }
-      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-client="${clientId}"[^>]*>`), (full) => {
+      html = html.replace(new RegExp(` data-island-client="${clientId}"[^>]*>`), (full) => {
         return full + teleports[key]
       })
       continue
