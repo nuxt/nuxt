@@ -19,7 +19,7 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { ImportProtectionPlugin } from './plugins/import-protection'
 
-export const logLevelMapReverse: Record<NuxtOptions['logLevel'], NitroConfig['logLevel']> = {
+const logLevelMapReverse: Record<NuxtOptions['logLevel'], NitroConfig['logLevel']> = {
   silent: 0,
   info: 3,
   verbose: 3
