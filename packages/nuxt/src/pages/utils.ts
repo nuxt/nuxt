@@ -383,25 +383,27 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const metaVariable = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
-      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaVariable }]))
+      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
-      route.name = overrideMeta ? route.name ?? `${metaVariable}?.name` : `${metaVariable}?.name ?? ${route.name ?? 'undefined'}`
-      route.path = overrideMeta ? route.path ?? `${metaVariable}?.path` : `${metaVariable}?.path ?? ${route.path ?? '""'}`
-      route.meta = `${metaVariable} || {}`
-      route.alias = `${metaVariable}?.alias || []`
-      route.component = genDynamicImport(file, { interopDefault: true })
-      route.redirect = page.redirect ? route.redirect : `${metaVariable}?.redirect || undefined`
-      
+      if (overrideMeta) {
+        route.name = route.name ?? `${metaImportName}?.name ?? undefined`
+        route.path = route.path ?? `${metaImportName}?.path ?? ''`
+      } else {
+        route.name = `${metaImportName}?.name ?? ${page.name ? route.name : 'undefined'}`
+        route.path = `${metaImportName}?.path ?? ${route.path}`
+      }
+
+      const metaCode = `${metaImportName} || {}`
       const metaFiltered = Object.values(page.meta || {}).filter(value => value !== undefined)
-      if (metaFiltered.length) {
-        route.meta = `{ ...(${route.meta}), ...${JSON.stringify(page.meta)} }`
-      }
-      
+      route.meta = metaFiltered.length ? `{ ...(${metaCode}), ...${route.meta} }` : metaCode
+
+      const aliasCode = `${metaImportName}?.alias || []`
       const aliasFiltered = toArray(page.alias).filter(Boolean)
-      if (aliasFiltered.length) {
-        route.alias = `${JSON.stringify(aliasFiltered)}.concat(${route.alias})`
-      }
+      route.alias = aliasFiltered.length ? `${JSON.stringify(aliasFiltered)}.concat(${aliasCode})` : aliasCode
+
+      route.component = genDynamicImport(file, { interopDefault: true })
+      route.redirect = page.redirect ? route.redirect : `${metaImportName}?.redirect || undefined`
 
       return route
     }))
