@@ -371,7 +371,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       for (const [key, value] of Object.entries(page)) {
         if (['file', 'children'].includes(key)) continue
         if (skipSerializeValue(value)) continue
-        route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
+        route[key as Exclude<keyof NuxtPage, 'file' | 'children'>] = JSON.stringify(value)
       }
 
       if (page.children?.length) {
