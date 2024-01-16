@@ -60,7 +60,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [custom regular expression](#using-a-custom-regular-expression), if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -189,7 +189,7 @@ A custom regular expression is a good way to resolve conflicts between overlappi
 
 The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
 
-In order to make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
+To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
 
 ```vue [pages/[postId]-[postSlug].vue]
 <script setup lang="ts">
