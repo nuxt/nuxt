@@ -47,7 +47,7 @@
     "@nuxt/test-utils": "3.9.0",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.11.2",
+    "@types/node": "20.11.4",
     "@types/semver": "7.5.6",
     "@vitest/coverage-v8": "1.1.1",
     "@vue/test-utils": "2.4.3",

@@ -115,7 +115,7 @@
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
-    "@parcel/watcher": "2.3.0",
+    "@parcel/watcher": "2.4.0",
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "5.0.3",
