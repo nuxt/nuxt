@@ -60,7 +60,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a [path matcher](#using-an-advanced-path-matcher), if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](#using-a-custom-regular-expression), if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -183,9 +183,9 @@ definePageMeta({
 </script>
 ```
 
-### Using an advanced path matcher
+### Using a Custom Regular Expression
 
-A path matcher is a good way to resolve conflicts between overlapping routes, for instance:
+A custom regular expression is a good way to resolve conflicts between overlapping routes, for instance:
 
 The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
 
