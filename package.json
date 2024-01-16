@@ -72,7 +72,7 @@
     "nuxt": "workspace:*",
     "ofetch": "1.3.3",
     "pathe": "1.1.2",
-    "playwright-core": "1.40.1",
+    "playwright-core": "1.41.0",
     "rimraf": "5.0.5",
     "semver": "7.5.4",
     "std-env": "3.7.0",
