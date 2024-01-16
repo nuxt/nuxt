@@ -13,7 +13,7 @@ import { isVue } from '../core/utils'
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
   /**
-   * passed down to `NuxtTeleportIslandClient`
+   * passed down to `NuxtTeleportIslandComponent`
    * should be done only in dev mode as we use build:manifest result in production
    */
   rootDir?: string
@@ -33,7 +33,7 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandClient from \'#app/components/nuxt-teleport-island-client\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
@@ -110,7 +110,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportIslandClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportIslandClient>`)
+              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportIslandComponent to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportIslandComponent>`)
             }
           }
         }

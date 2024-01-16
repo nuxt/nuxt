@@ -126,7 +126,7 @@ export default defineComponent({
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloadComponents || {})) {
-          html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-client="${key}"[^>]*>`), (full) => {
+          html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
         }
@@ -267,7 +267,7 @@ export default defineComponent({
                 const { props } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport
-                const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-client="${id}"]` }, {
+                const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                   default: () => {
                     return [h(component, props)]
                   }
