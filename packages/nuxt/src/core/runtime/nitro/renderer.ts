@@ -395,7 +395,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 5. Scripts
-  if (!routeOptions.experimentalNoScripts) {
+  if (!routeOptions.experimentalNoScripts && !islandContext) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
