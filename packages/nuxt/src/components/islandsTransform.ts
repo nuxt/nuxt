@@ -33,7 +33,7 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandClient from \'#app/components/nuxt-teleport-island-client\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandClient from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`

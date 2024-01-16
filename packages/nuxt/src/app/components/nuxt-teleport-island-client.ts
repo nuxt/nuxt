@@ -53,7 +53,7 @@ export default defineComponent({
       return [h('div', {
         style: 'display: contents;',
         'data-island-uid': '',
-        'data-island-client': props.to
+        'data-island-component': props.to
       }, []), h(Teleport, { to: props.to }, slot)]
     }
   }

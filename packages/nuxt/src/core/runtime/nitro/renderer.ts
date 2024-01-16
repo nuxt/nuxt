@@ -635,7 +635,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
     if (matchClientComp) {
       const [, uid, clientId] = matchClientComp
       if (!uid || !clientId) { continue }
-      html = html.replace(new RegExp(` data-island-client="${clientId}"[^>]*>`), (full) => {
+      html = html.replace(new RegExp(` data-island-component="${clientId}"[^>]*>`), (full) => {
         return full + teleports[key]
       })
       continue
