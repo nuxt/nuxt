@@ -9,7 +9,7 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi init|create [--verbose|-v] [--template,-t] [dir]
+npx nuxi init [--verbose|-v] [--template,-t] [dir]
 ```
 
 The `init` command initializes a fresh Nuxt project using [unjs/giget](https://github.com/unjs/giget).
