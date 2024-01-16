@@ -208,7 +208,7 @@ describe('islandTransform - server and island components', () => {
                     <!-- should not be wrapped by NuxtTeleportIslandComponent -->
                     <HelloWorld />
                     <!-- should be wrapped by NuxtTeleportIslandComponent with a rootDir attr -->
-                    <NuxtTeleportIslandComponent to="HelloWorld-u9V1gHwUZN" root-dir="/root" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent to="HelloWorld-ZsRS8qEyqK" root-dir="/root" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
