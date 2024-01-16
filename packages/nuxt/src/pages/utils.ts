@@ -356,15 +356,22 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
+const skipSerializeValue = (val: unknown | unknown[]) => {
+  if (val === undefined) return true
+  if (Array.isArray(val)) return val.length === 0
+  return typeof val !== 'string' && !!val
+}
+
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
       const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
+
       for (const [key, value] of Object.entries(page)) {
-        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) {
-          route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
-        }
+        if (['file', 'children'].includes(key)) continue
+        if (skipSerializeValue(value)) continue
+        route[key as Exclude<keyof NuxtPage, 'file' | 'children'>] = JSON.stringify(value)
       }
 
       if (page.children?.length) {
@@ -373,9 +380,6 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
       if (!page.file) {
-        for (const key of ['name', 'path', 'meta', 'alias', 'redirect'] as const) {
-          if (page[key]) { route[key] = JSON.stringify(page[key]) }
-        }
         return route
       }
 
@@ -383,22 +387,24 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
-      let aliasCode = `${metaImportName}?.alias || []`
-      const alias = toArray(page.alias).filter(Boolean)
-      if (alias.length) {
-        aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
-      }
       if (overrideMeta) {
-        route.name = page.name !== undefined ? JSON.stringify(page.name) : `${metaImportName}?.name`
-        route.path = page.path !== undefined ? JSON.stringify(page.path) : `${metaImportName}?.path`
+        route.name = route.name ?? `${metaImportName}?.name`
+        route.path = route.path ?? `${metaImportName}?.path ?? ''`
       } else {
-        route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
-        route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
+        route.name = `${metaImportName}?.name ?? ${page.name ? route.name : 'undefined'}`
+        route.path = `${metaImportName}?.path ?? ${route.path}`
       }
-      route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
-      route.alias = aliasCode
-      route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
+
+      const metaCode = `${metaImportName} || {}`
+      const metaFiltered = Object.values(page.meta || {}).filter(value => value !== undefined)
+      route.meta = metaFiltered.length ? `{ ...(${metaCode}), ...${route.meta} }` : metaCode
+
+      const aliasCode = `${metaImportName}?.alias || []`
+      const aliasFiltered = toArray(page.alias).filter(Boolean)
+      route.alias = aliasFiltered.length ? `${JSON.stringify(aliasFiltered)}.concat(${aliasCode})` : aliasCode
+
       route.component = genDynamicImport(file, { interopDefault: true })
+      route.redirect = page.redirect ? route.redirect : `${metaImportName}?.redirect`
 
       return route
     }))
