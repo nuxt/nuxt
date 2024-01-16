@@ -1474,7 +1474,7 @@ describe('server components/islands', () => {
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
     await islandRequest
-    
+
     await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
     await page.locator('#test-slot').getByText('Slot with name test').waitFor()
 
@@ -1782,7 +1782,7 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "clients": {},
+        "components": {},
         "head": {
           "link": [],
           "style": [],
@@ -1807,7 +1807,7 @@ describe('component islands', () => {
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-client)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
-        "clients": {},
+        "components": {},
         "head": {
           "link": [],
           "style": [],
@@ -1867,13 +1867,13 @@ describe('component islands', () => {
       result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
     result.props = {}
-    result.clients = {}
+    result.components = {}
     result.slots = {}
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-client)="([^"]*)"/g, '')
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "clients": {},
+        "components": {},
         "head": {
           "link": [],
           "style": [],
@@ -1892,16 +1892,16 @@ describe('component islands', () => {
       if (isDev()) {
         result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
       }
-      const {  clients } = result
-      result.clients = {}
+      const { components } = result
+      result.components = {}
       result.slots = {}
       result.html = result.html.replace(/ data-island-client="([^"]*)"/g, (_, content) => ` data-island-client="${content.split('-')[0]}"`)
 
-      const teleportsEntries = Object.entries(clients || {})
+      const teleportsEntries = Object.entries(components || {})
 
       expect(result).toMatchInlineSnapshot(`
         {
-          "clients": {},
+          "components": {},
           "head": {
             "link": [],
             "style": [],

@@ -45,7 +45,7 @@ export default defineComponent({
       const slotType = (slot.type as ExtendedComponent)
       const name = (slotType.__name || slotType.name) as string
 
-      islandContext.clients[props.to] = {
+      islandContext.components[props.to] = {
         chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
         props: slot.props || {}
       }

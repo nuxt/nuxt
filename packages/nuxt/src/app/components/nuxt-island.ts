@@ -29,7 +29,7 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (source = '/', paths: NuxtIslandResponse['clients']) {
+async function loadComponents (source = '/', paths: NuxtIslandResponse['components']) {
   const promises = []
 
   for (const component in paths) {
@@ -97,7 +97,7 @@ export default defineComponent({
           result: {
             props: result.props,
             slots: result.slots,
-            clients: result.clients
+            components: result.components
           }
         },
         ...result
@@ -105,11 +105,11 @@ export default defineComponent({
     }
 
     const payloadSlots: NonNullable<NuxtIslandResponse['slots']> = {}
-    const payloadClients: NonNullable<NuxtIslandResponse['clients']> = {}
+    const payloadComponents: NonNullable<NuxtIslandResponse['components']> = {}
 
     if (nuxtApp.isHydrating) {
       Object.assign(payloadSlots, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {})
-      Object.assign(payloadClients, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.clients ?? {})
+      Object.assign(payloadComponents, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {})
     }
 
     const ssrHTML = ref<string>('')
@@ -125,7 +125,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(payloadClients || {})) {
+        for (const [key, value] of Object.entries(payloadComponents || {})) {
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-client="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
@@ -187,11 +187,11 @@ export default defineComponent({
         key.value++
         error.value = null
         Object.assign(payloadSlots, res.slots || {})
-        Object.assign(payloadClients, res.clients || {})
+        Object.assign(payloadComponents, res.components || {})
 
         if (selectiveClient && import.meta.client) {
-          if (canLoadClientComponent.value && res.clients) {
-            await loadComponents(props.source, res.clients)
+          if (canLoadClientComponent.value && res.components) {
+            await loadComponents(props.source, res.components)
           }
         }
 
@@ -226,7 +226,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
-      await loadComponents(props.source, payloadClients)
+      await loadComponents(props.source, payloadComponents)
     }
 
     return (_ctx: any, _cache: any) => {
@@ -255,7 +255,7 @@ export default defineComponent({
               }
             }
             if (import.meta.server) {
-              for (const [id, info] of Object.entries(payloadClients ?? {})) {
+              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
                 const { html } = info
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                   default: () => [createStaticVNode(html, 1)]
@@ -263,7 +263,7 @@ export default defineComponent({
               }
             }
             if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
-              for (const [id, info] of Object.entries(payloadClients ?? {})) {
+              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
                 const { props } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport

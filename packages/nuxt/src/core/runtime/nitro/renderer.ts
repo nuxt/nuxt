@@ -59,7 +59,7 @@ export interface NuxtIslandContext {
   props?: Record<string, any>
   url?: string
   slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
-  clients: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
+  components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
 }
 
 export interface NuxtIslandSlotResponse {
@@ -81,7 +81,7 @@ export interface NuxtIslandResponse {
     style: ({ innerHTML: string, key: string })[]
   }
   props?: Record<string, Record<string, any>>
-  clients?: Record<string, NuxtIslandClientResponse>
+  components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
 }
 
@@ -204,7 +204,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     name: componentName,
     props: destr(context.props) || {},
     slots: {},
-    clients: {},
+    components: {},
   }
 
   return ctx
@@ -452,7 +452,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       head: islandHead,
       html: getServerComponentHTML(htmlContext.body),
       state: ssrContext.payload.state,
-      clients: getClientIslandResponse(ssrContext),
+      components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext)
     }
 
@@ -613,13 +613,13 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   return response
 }
 
-function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['clients'] {
+function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext) { return {} }
-  const response: NuxtIslandResponse['clients'] = {}
-  for (const clientUid in ssrContext.islandContext.clients) {
+  const response: NuxtIslandResponse['components'] = {}
+  for (const clientUid in ssrContext.islandContext.components) {
     const html = ssrContext.teleports?.[clientUid] || ''
     response[clientUid] = {
-      ...ssrContext.islandContext.clients[clientUid],
+      ...ssrContext.islandContext.components[clientUid],
       html,
     }
   }
