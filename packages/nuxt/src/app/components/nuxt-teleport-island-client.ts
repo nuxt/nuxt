@@ -1,4 +1,4 @@
-import type { Component,   } from 'vue'
+import type { Component } from 'vue'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
@@ -31,7 +31,7 @@ export default defineComponent({
     rootDir: {
       type: String,
       default: null
-    },
+    }
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
@@ -44,9 +44,9 @@ export default defineComponent({
       const slot = slots.default!()[0]
       const slotType = (slot.type as ExtendedComponent)
       const name = (slotType.__name || slotType.name) as string
-     
+
       islandContext.clients[props.to] = {
-        chunk: import.meta.dev ? '_nuxt/' +  paths[name] : paths[name],
+        chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
         props: slot.props || {}
       }
 
