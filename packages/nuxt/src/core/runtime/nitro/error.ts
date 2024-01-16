@@ -19,7 +19,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     stack: import.meta.dev && statusCode !== 404
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : '',
-    data: error.data
+    // TODO: check and validate error.data for serialisation into query
+    data: error.data as any
   }
 
   // Console output
@@ -45,14 +46,20 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     return send(event, JSON.stringify(errorObject))
   }
 
+  // Access request headers
+  const reqHeaders = getRequestHeaders(event)
+
+  // Detect to avoid recursion in SSR rendering of errors
+  const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
+
   // HTML response (via SSR)
-  const isErrorPage = event.path.startsWith('/__nuxt_error')
-  const res = !isErrorPage
-    ? await useNitroApp().localFetch(withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject), {
-      headers: getRequestHeaders(event) as Record<string, string>,
+  const res = isRenderingError ? null : await useNitroApp().localFetch(
+    withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
+    {
+      headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
       redirect: 'manual'
-    }).catch(() => null)
-    : null
+    }
+  ).catch(() => null)
 
   // Fallback to static rendered error page
   if (!res) {

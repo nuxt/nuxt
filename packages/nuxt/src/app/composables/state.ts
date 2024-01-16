@@ -1,6 +1,7 @@
 import { isRef, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
 /**
@@ -47,7 +48,7 @@ export function clearNuxtState (
     ? _allKeys
     : typeof keys === 'function'
       ? _allKeys.filter(keys)
-      : Array.isArray(keys) ? keys : [keys]
+      : toArray(keys)
 
   for (const _key of _keys) {
     const key = useStateKeyPrefix + _key

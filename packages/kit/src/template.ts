@@ -8,6 +8,7 @@ import type { TSConfig } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'
+import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { getModulePaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
@@ -15,7 +16,7 @@ import { resolveNuxtModule } from './resolve'
 /**
  * Renders given template using lodash template during build into the project buildDir
  */
-export function addTemplate (_template: NuxtTemplate<any> | string) {
+export function addTemplate <T>(_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
 
   // Normalize template
@@ -35,7 +36,7 @@ export function addTemplate (_template: NuxtTemplate<any> | string) {
  * Renders given types using lodash template during build into the project buildDir
  * and register them as types.
  */
-export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
+export function addTypeTemplate <T>(_template: NuxtTypeTemplate<T>) {
   const nuxt = useNuxt()
 
   const template = addTemplate(_template)
@@ -55,7 +56,7 @@ export function addTypeTemplate (_template: NuxtTypeTemplate<any>) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate (template: NuxtTemplate<any> | string): ResolvedNuxtTemplate<any> {
+export function normalizeTemplate <T>(template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -98,7 +99,7 @@ export function normalizeTemplate (template: NuxtTemplate<any> | string): Resolv
     template.dst = resolve(nuxt.options.buildDir, template.filename)
   }
 
-  return template as ResolvedNuxtTemplate<any>
+  return template as ResolvedNuxtTemplate<T>
 }
 
 /**
@@ -110,14 +111,14 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 export async function writeTypes (nuxt: Nuxt) {
-  const modulePaths = getModulePaths(nuxt.options.modulesDir)
+  const nodeModulePaths = getModulePaths(nuxt.options.modulesDir)
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modules = await resolveNuxtModule(rootDirWithSlash,
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash,
     nuxt.options._installedModules
       .filter(m => m.entryPath)
-      .map(m => m.entryPath)
+      .map(m => getDirectory(m.entryPath))
   )
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
@@ -127,7 +128,7 @@ export async function writeTypes (nuxt: Nuxt) {
       jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
-      moduleResolution: nuxt.options.experimental?.typescriptBundlerResolution ? 'Bundler' : 'Node',
+      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
       isolatedModules: true,
       useDefineForClassFields: true,
@@ -150,11 +151,11 @@ export async function writeTypes (nuxt: Nuxt) {
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-      ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
     ]
@@ -215,11 +216,7 @@ export async function writeTypes (nuxt: Nuxt) {
     ...nuxt.options._modules
   ]
     .filter(f => typeof f === 'string')
-    .map(async id => ({ types: (await readPackageJSON(id, { url: modulePaths }).catch(() => null))?.name || id })))
-
-  if (nuxt.options.experimental?.reactivityTransform) {
-    references.push({ types: 'vue/macros-global' })
-  }
+    .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
 
   const declarations: string[] = []
 

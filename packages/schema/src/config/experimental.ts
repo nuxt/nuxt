@@ -1,6 +1,66 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
+  /**
+   * `future` is for early opting-in to new features that will become default in a future
+   * (possibly major) version of the framework.
+   */
+  future: {
+    /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+  },
+  /**
+   * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
+   */
+  features: {
+    /**
+     * Inline styles when rendering HTML (currently vite only).
+     *
+     * You can also pass a function that receives the path of a Vue component
+     * and returns a boolean indicating whether to inline the styles for that component.
+     * @type {boolean | ((id?: string) => boolean)}
+     */
+    inlineStyles: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+          return false
+        }
+        // Enabled by default for vite prod with ssr
+        return val ?? true
+      }
+    },
+
+    /**
+     * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
+     */
+    noScripts: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+      }
+    },
+  },
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
@@ -9,27 +69,17 @@ export default defineUntypedSchema({
       $resolve: val => val ?? false
     },
 
-    /**
-     * Enable Vue's reactivity transform
-     * @see https://vuejs.org/guide/extras/reactivity-transform.html
-     *
-     * Warning: Reactivity transform feature has been marked as deprecated in Vue 3.3 and is planned to be
-     * removed from core in Vue 3.4.
-     * @see https://github.com/vuejs/rfcs/discussions/369#discussioncomment-5059028
-     */
-    reactivityTransform: false,
-
     // TODO: Remove when nitro has support for mocking traced dependencies
     // https://github.com/unjs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
-     * @see https://github.com/nuxt/nuxt/issues/13632
+     * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
      */
     externalVue: true,
 
     /**
      * Tree shakes contents of client-only components from server bundle.
-     * @see https://github.com/nuxt/framework/pull/5750
+     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
      */
     treeshakeClientOnly: true,
 
@@ -42,7 +92,7 @@ export default defineUntypedSchema({
      *
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
-     * @see https://github.com/nuxt/nuxt/pull/19038
+     * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
      * @type {false | 'manual' | 'automatic'}
      */
     emitRouteChunkError: {
@@ -82,29 +132,6 @@ export default defineUntypedSchema({
      */
     restoreState: false,
 
-    /**
-     * Inline styles when rendering HTML (currently vite only).
-     *
-     * You can also pass a function that receives the path of a Vue component
-     * and returns a boolean indicating whether to inline the styles for that component.
-     * @type {boolean | ((id?: string) => boolean)}
-     */
-    inlineSSRStyles: {
-      async $resolve (val, get) {
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
-          return false
-        }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
-      }
-    },
-
-    /**
-     * Turn off rendering of Nuxt scripts and JS resource hints.
-     * You can also disable scripts more granularly within `routeRules`.
-     */
-    noScripts: false,
-
     /** Render JSON payloads with support for revivifying complex types. */
     renderJsonPayloads: true,
 
@@ -130,7 +157,7 @@ export default defineUntypedSchema({
 
     /**
      * Enable View Transition API integration with client-side router.
-     * @see https://developer.chrome.com/docs/web-platform/view-transitions
+     * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
      */
     viewTransition: false,
 
@@ -142,42 +169,25 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | false}
+     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
-        if (typeof val === 'string') { return val }
-        if (val === true) { return 'local' }
-        return false
+        if (val === 'local+remote') {
+          return { remoteIsland: true }
+        }
+        if (val === 'local') {
+          return true
+        }
+        return val ?? false
       }
     },
 
     /**
      * Config schema support
-     * @see https://github.com/nuxt/nuxt/issues/15592
+     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
-
-    /**
-     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
-     * for frameworks like Nuxt and Vite.
-     *
-     * It improves type support when using modern libraries with `exports`.
-     *
-     * This is only not enabled by default because it could be a breaking change for some projects.
-     *
-     * See https://github.com/microsoft/TypeScript/pull/51669
-     */
-    typescriptBundlerResolution: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
-        if (setting) {
-          return setting.toLowerCase() === 'bundler'
-        }
-        return false
-      }
-    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
@@ -216,15 +226,15 @@ export default defineUntypedSchema({
      * performance in large projects or on Windows platforms.
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
-     * @see https://github.com/paulmillr/chokidar
-     * @see https://github.com/parcel-bundler/watcher
+     * @see [chokidar](https://github.com/paulmillr/chokidar)
+     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: 'chokidar-granular',
 
     /**
      * Enable native async context to be accessible for nested composables
-     * @see https://github.com/nuxt/nuxt/pull/20918
+     * @see [Nuxt PR #20918](https://github.com/nuxt/nuxt/pull/20918)
      */
     asyncContext: false,
 
@@ -232,7 +242,7 @@ export default defineUntypedSchema({
      * Use new experimental head optimisations:
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
-     * @see https://github.com/nuxt/nuxt/discussions/22632
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
     headNext: false,
 
@@ -246,6 +256,27 @@ export default defineUntypedSchema({
      * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
      * should set `routeRules` directly within your `nuxt.config`.
      */
-    inlineRouteRules: false
+    inlineRouteRules: false,
+
+    /**
+     * This allows specifying the default options for core Nuxt components and composables.
+     *
+     * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
+     * `app/` directory.
+     */
+    defaults: {
+      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      nuxtLink: {
+        componentName: 'NuxtLink'
+      },
+      /**
+       * Options that apply to `useAsyncData` (and also therefore `useFetch`)
+       */
+      useAsyncData: {
+        deep: true
+      },
+      /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
+      useFetch: {}
+    }
   }
 })

@@ -1,21 +1,25 @@
 ---
-description: You can use this function to create an error object with additional metadata.
+title: 'createError'
+description: Create an error object with additional metadata.
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/error.ts
+    size: xs
 ---
-
-# `createError`
 
 You can use this function to create an error object with additional metadata. It is usable in both the Vue and Nitro portions of your app, and is meant to be thrown.
 
-**Parameters:**
+## Parameters
 
-* err: { cause, data, message, name, stack, statusCode, statusMessage, fatal }
+- `err`: `{ cause, data, message, name, stack, statusCode, statusMessage, fatal }`
 
-## Throwing Errors in Your Vue App
+## In Vue App
 
 If you throw an error created with `createError`:
 
-* on server-side, it will trigger a full-screen error page which you can clear with `clearError`.
-* on client-side, it will throw a non-fatal error for you to handle. If you need to trigger a full-screen error page, then you can do this by setting `fatal: true`.
+- on server-side, it will trigger a full-screen error page which you can clear with `clearError`.
+- on client-side, it will throw a non-fatal error for you to handle. If you need to trigger a full-screen error page, then you can do this by setting `fatal: true`.
 
 ### Example
 
@@ -29,7 +33,7 @@ if (!data.value) {
 </script>
 ```
 
-## Throwing Errors in API Routes
+## In API Routes
 
 Use `createError` to trigger error handling in server API routes.
 
@@ -44,5 +48,4 @@ export default eventHandler(() => {
 })
 ```
 
-::ReadMore{link="/docs/getting-started/error-handling"}
-::
+:read-more{to="/docs/getting-started/error-handling"}

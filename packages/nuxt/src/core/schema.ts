@@ -41,7 +41,6 @@ export default defineNuxtModule({
 
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
-      ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
         await writeSchema(schema)
@@ -76,7 +75,7 @@ export default defineNuxtModule({
           }
           return
         }
-        logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
+        logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
@@ -104,7 +103,8 @@ export default defineNuxtModule({
         if (filePath && existsSync(filePath)) {
           let loadedConfig: SchemaDefinition
           try {
-            loadedConfig = _resolveSchema(filePath)
+            // TODO: fix type for second argument of `import`
+            loadedConfig = await _resolveSchema.import(filePath, {}) as SchemaDefinition
           } catch (err) {
             logger.warn(
               'Unable to load schema from',

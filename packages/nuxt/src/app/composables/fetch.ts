@@ -1,11 +1,15 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
 import type { MaybeRef, Ref } from 'vue'
-import { computed, reactive, unref } from 'vue'
+import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
+
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
+
+// @ts-expect-error virtual file
+import { fetchDefaults } from '#build/nuxt.config.mjs'
 
 // support uppercase methods, detail: https://github.com/nuxt/nuxt/issues/22313
 type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod<R> | Uppercase<_AvailableRouterMethod<R>>
@@ -82,10 +86,10 @@ export function useFetch<
     if (typeof r === 'function') {
       r = r()
     }
-    return unref(r)
+    return toValue(r)
   })
 
-  const _key = opts.key || hash([autoKey, unref(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET', unref(opts.baseURL), typeof _request.value === 'string' ? _request.value : '', unref(opts.params || opts.query), unref(opts.headers)])
+  const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [useFetch] key must be a string: ' + _key)
   }
@@ -95,7 +99,7 @@ export function useFetch<
 
   const key = _key === autoKey ? '$f' + _key : _key
 
-  if (!opts.baseURL && typeof _request.value === 'string' && _request.value.startsWith('//')) {
+  if (!opts.baseURL && typeof _request.value === 'string' && (_request.value[0] === '/' && _request.value[1] === '/')) {
     throw new Error('[nuxt] [useFetch] the request URL must not start with "//".')
   }
 
@@ -113,6 +117,7 @@ export function useFetch<
   } = opts
 
   const _fetchOptions = reactive({
+    ...fetchDefaults,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
@@ -135,11 +140,25 @@ export function useFetch<
     controller?.abort?.()
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
-    const isLocalFetch = typeof _request.value === 'string' && _request.value.startsWith('/')
+    /**
+     * Workaround for `timeout` not working due to custom abort controller
+     * TODO: remove this when upstream issue is resolved
+     * @see https://github.com/unjs/ofetch/issues/326
+     * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
+     */
+    const timeoutLength = toValue(opts.timeout)
+    if (timeoutLength) {
+      setTimeout(() => controller.abort(), timeoutLength)
+    }
+
     let _$fetch = opts.$fetch || globalThis.$fetch
+
     // Use fetch with request context and headers for server direct API calls
-    if (import.meta.server && !opts.$fetch && isLocalFetch) {
-      _$fetch = useRequestFetch()
+    if (import.meta.server && !opts.$fetch) {
+      const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
+      if (isLocalFetch) {
+        _$fetch = useRequestFetch()
+      }
     }
 
     return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
@@ -196,4 +215,22 @@ export function useLazyFetch<
   },
   // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)
+}
+
+function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+  const segments: Array<string | undefined | Record<string, string>> = [
+    toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
+    toValue(opts.baseURL),
+  ]
+  for (const _obj of [opts.params || opts.query]) {
+    const obj = toValue(_obj)
+    if (!obj) { continue }
+
+    const unwrapped: Record<string, string> = {}
+    for (const [key, value] of Object.entries(obj)) {
+      unwrapped[toValue(key)] = toValue(value)
+    }
+    segments.push(unwrapped)
+  }
+  return segments
 }

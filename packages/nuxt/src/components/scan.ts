@@ -1,14 +1,12 @@
 import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
-import { pascalCase, splitByCase } from 'scule'
+import { kebabCase, pascalCase, splitByCase } from 'scule'
 import { isIgnored, logger, useNuxt } from '@nuxt/kit'
-// eslint-disable-next-line vue/prefer-import-from-vue
-import { hyphenate } from '@vue/shared'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentName } from '../core/utils'
+import { resolveComponentNameSegments } from '../core/utils'
 
 /**
  * Scan the components inside different components folders
@@ -92,16 +90,16 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const componentName = resolveComponentName(fileName, prefixParts)
+      const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
+      const pascalName = pascalCase(componentNameSegments)
 
-      if (resolvedNames.has(componentName + suffix) || resolvedNames.has(componentName)) {
-        warnAboutDuplicateComponent(componentName, filePath, resolvedNames.get(componentName) || resolvedNames.get(componentName + suffix)!)
+      if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
+        warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
       }
-      resolvedNames.set(componentName + suffix, filePath)
+      resolvedNames.set(pascalName + suffix, filePath)
 
-      const pascalName = pascalCase(componentName).replace(/["']/g, '')
-      const kebabName = hyphenate(componentName)
+      const kebabName = kebabCase(componentNameSegments)
       const shortPath = relative(srcDir, filePath)
       const chunkName = 'components/' + kebabName + suffix
 
@@ -128,7 +126,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       }
 
       // Ignore files like `~/components/index.vue` which end up not having a name at all
-      if (!componentName) {
+      if (!pascalName) {
         logger.warn(`Component did not resolve to a file name in \`~/${relative(srcDir, filePath)}\`.`)
         continue
       }
@@ -145,7 +143,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         }
         // Warn if a user-defined (or prioritized) component conflicts with a previously scanned component
         if (newPriority > 0 && newPriority === existingPriority) {
-          warnAboutDuplicateComponent(componentName, filePath, existingComponent.filePath)
+          warnAboutDuplicateComponent(pascalName, filePath, existingComponent.filePath)
         }
 
         continue
