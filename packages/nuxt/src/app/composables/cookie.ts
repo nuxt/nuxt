@@ -10,6 +10,9 @@ import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
+// @ts-expect-error virtual import
+import { listenCookieChanges } from '#build/nuxt.config.mjs'
+
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
@@ -28,6 +31,8 @@ const CookieDefaults = {
   decode: val => destr(decodeURIComponent(val)),
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
+
+const store = import.meta.client && listenCookieChanges ? window.cookieStore : undefined
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
@@ -57,11 +62,17 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.client) {
-    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    const channel = store || typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
       channel?.postMessage({ value: opts.encode(cookie.value as T) })
+    }
+    const handleChange = (data: { value?: any, refresh?: boolean }) => {
+      const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
+      watchPaused = true
+      cookies[name] = cookie.value = value
+      nextTick(() => { watchPaused = false })
     }
 
     let watchPaused = false
@@ -74,13 +85,13 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       })
     }
 
-    if (channel) {
-      channel.onmessage = ({ data }) => {
-        const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
-        watchPaused = true
-        cookies[name] = cookie.value = value
-        nextTick(() => { watchPaused = false })
+    if (store) {
+      store.onchange = (event) => {
+        const cookie = event.changed.find((c: any) => c.name === name)
+        if (cookie) handleChange({ value: cookie.value })
       }
+    } else if (channel) {
+      channel.onmessage = ({ data }) => handleChange(data)
     }
 
     if (opts.watch) {
@@ -109,7 +120,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 }
 
 export function refreshCookie(name: string) {
-  if (typeof BroadcastChannel === 'undefined') return
+  if (store || typeof BroadcastChannel === 'undefined') return
   
   new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
 }

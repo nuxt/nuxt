@@ -348,11 +348,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add experimental automatic view transition api support
-  if (nuxt.options.experimental.listenCookieChanges) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/cookie.client'))
-  }
-
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
