@@ -372,7 +372,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const link = []
     for (const style in styles) {
       const resource = styles[style]
-      if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
+      if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
     }
