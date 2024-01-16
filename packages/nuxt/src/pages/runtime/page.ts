@@ -3,7 +3,6 @@ import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
-import { toArray } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
