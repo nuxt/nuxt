@@ -451,7 +451,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       clients: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext)
     }
-    
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
 
@@ -598,10 +597,10 @@ function getServerComponentHTML (body: string[]): string {
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
 
-function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
-  if(!ssrContext.islandContext) { return {} }
+function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
+  if (!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['slots'] = {}
-  for(const slot in ssrContext.islandContext.slots) {
+  for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
       fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
@@ -610,14 +609,14 @@ function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['
   return response
 }
 
-function getClientIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['clients'] {
-  if(!ssrContext.islandContext) { return {} }
+function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['clients'] {
+  if (!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['clients'] = {}
-  for(const clientUid in ssrContext.islandContext.clients) { 
-    const html = ssrContext.teleports?.[clientUid]  || ''
+  for (const clientUid in ssrContext.islandContext.clients) {
+    const html = ssrContext.teleports?.[clientUid] || ''
     response[clientUid] = {
       ...ssrContext.islandContext.clients[clientUid],
-      html, 
+      html,
     }
   }
   return response
@@ -629,8 +628,8 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
   if (islandContext || !teleports) { return html }
   for (const key in teleports) {
     const matchClientComp = key.match(SSR_CLIENT_TELEPORT_MARKER)
-    if(matchClientComp) {
-      const [, uid, clientId] = matchClientComp 
+    if (matchClientComp) {
+      const [, uid, clientId] = matchClientComp
       if (!uid || !clientId) { continue }
       html = html.replace(new RegExp(` data-island-client="${clientId}"[^>]*>`), (full) => {
         return full + teleports[key]
@@ -638,7 +637,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
       continue
     }
     const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
-    if(matchSlot) {
+    if (matchSlot) {
       const [, uid, slot] = matchSlot
       if (!uid || !slot) { continue }
       html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-slot="${slot}"[^>]*>`), (full) => {

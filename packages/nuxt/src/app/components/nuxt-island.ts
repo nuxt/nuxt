@@ -29,7 +29,7 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents(source = '/', paths: NuxtIslandResponse['clients']) {
+async function loadComponents (source = '/', paths: NuxtIslandResponse['clients']) {
   const promises = []
 
   for (const component in paths) {
@@ -69,7 +69,7 @@ export default defineComponent({
       default: false
     }
   },
-  async setup(props, { slots, expose }) {
+  async setup (props, { slots, expose }) {
     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
@@ -87,7 +87,7 @@ export default defineComponent({
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
 
-    function setPayload(key: string, result: NuxtIslandResponse) {
+    function setPayload (key: string, result: NuxtIslandResponse) {
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -103,7 +103,7 @@ export default defineComponent({
         ...result
       }
     }
-    
+
     const payloadSlots: NonNullable<NuxtIslandResponse['slots']> = {}
     const payloadClients: NonNullable<NuxtIslandResponse['clients']> = {}
 
@@ -143,7 +143,7 @@ export default defineComponent({
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
 
-    async function _fetchComponent(force = false) {
+    async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
       if (nuxtApp.payload.data[key]?.html && !force) { return nuxtApp.payload.data[key] }
@@ -172,7 +172,7 @@ export default defineComponent({
       return result
     }
 
-    async function fetchComponent(force = false) {
+    async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
         nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
@@ -186,8 +186,8 @@ export default defineComponent({
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
-        Object.assign(payloadSlots, res.slots || {}) 
-        Object.assign(payloadClients, res.clients || {}) 
+        Object.assign(payloadSlots, res.slots || {})
+        Object.assign(payloadClients, res.clients || {})
 
         if (selectiveClient && import.meta.client) {
           if (canLoadClientComponent.value && res.clients) {
@@ -222,9 +222,9 @@ export default defineComponent({
     }
 
     if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
-      fetchComponent() 
+      fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
-      await fetchComponent() 
+      await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloadClients)
     }
@@ -243,14 +243,14 @@ export default defineComponent({
           const teleports = []
           // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
- 
+
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : mounted.value || nuxtApp.isHydrating)) {
             for (const slot in slots) {
               if (availableSlots.value.includes(slot)) {
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloadSlots[slot].props?.length ? payloadSlots[slot].props : [{}]).map((data: any) => slots[slot]?.(data))})
+                  { default: () => (payloadSlots[slot].props?.length ? payloadSlots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
                 )
               }
             }

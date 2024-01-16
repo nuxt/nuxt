@@ -35,7 +35,7 @@ const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
 const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandClient from \'#app/components/nuxt-teleport-island-client\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 
-function wrapWithVForDiv(code: string, vfor: string): string {
+function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
@@ -45,7 +45,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
-    transformInclude(id) {
+    transformInclude (id) {
       if (!isVue(id)) { return false }
       const components = options.getComponents()
 
@@ -55,7 +55,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname)
     },
-    async transform(code, id) {
+    async transform (code, id) {
       if (!HAS_SLOT_OR_CLIENT_RE.test(code)) { return }
       const template = code.match(TEMPLATE_RE)
       if (!template) { return }
@@ -66,7 +66,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         s.prepend('<script setup>' + IMPORT_CODE + '</script>')
       } else {
         s.replace(SCRIPT_RE, (full) => {
-          return full + IMPORT_CODE 
+          return full + IMPORT_CODE
         })
       }
 
@@ -77,12 +77,12 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         if (node.type === ELEMENT_NODE) {
           if (node.name === 'slot') {
             const { attributes, children, loc } = node
-            
+
             // pass slot fallback to NuxtTeleportSsrSlot fallback
             if (children.length) {
-              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" `: value).join(' ')
-              const slice = code.slice(startingIndex + loc[0].end,startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes["v-for"] ? wrapWithVForDiv(slice, attributes['v-for']) : slice }</template>`)
+              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" ` : value).join(' ')
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes["v-for"] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             }
 
             const slotName = attributes.name ?? 'default'
@@ -131,11 +131,11 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
   }
 })
 
-function isBinding(attr: string): boolean {
+function isBinding (attr: string): boolean {
   return attr.startsWith(':')
 }
 
-function getPropsToString(bindings: Record<string, string>, vfor?: [string, string]): string {
+function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
   if (Object.keys(bindings).length === 0) { return 'undefined' }
   const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
@@ -151,7 +151,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
   return {
     name: 'componentsChunkPlugin',
     vite: {
-      async config(config) {
+      async config (config) {
         const components = options.getComponents()
         config.build = config.build || {}
         config.build.rollupOptions = config.build.rollupOptions || {}
@@ -166,7 +166,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         }
       },
 
-      async generateBundle(_opts, bundle) {
+      async generateBundle (_opts, bundle) {
         const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
         const pathAssociation: Record<string, string> = {}
         for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
