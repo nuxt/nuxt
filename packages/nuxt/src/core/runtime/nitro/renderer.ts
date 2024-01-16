@@ -362,10 +362,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 2. Styles
   head.push({ style: inlinedStyles })
-  if (!isRenderingIsland) {
-    head.push({
-      link: Object.values(styles).map(resource => ({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) }))
-    }, headEntryOptions)
+  if (!isRenderingIsland || import.meta.dev) {
+    const link = []
+    for (const style in styles) {
+      const resource = styles[style]
+      if (!import.meta.dev || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
+      }
+    }
+    head.push({ link }, headEntryOptions)
   }
 
   if (!NO_SCRIPTS && !isRenderingIsland) {
@@ -431,7 +436,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
     for (const tag of await head.resolveTags()) {
       if (tag.tag === 'link') {
-        islandHead.link.push(tag.props)
+        islandHead.link.push({ key: 'island-link-' + hash(tag.props), ...tag.props })
       } else if (tag.tag === 'style' && tag.innerHTML) {
         islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
       }
