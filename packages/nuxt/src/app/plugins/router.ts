@@ -1,4 +1,5 @@
-import { defineComponent, h, isReadonly, reactive } from 'vue'
+import type { Ref } from 'vue'
+import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
@@ -71,7 +72,7 @@ interface RouterHooks {
 }
 
 interface Router {
-  currentRoute: Route
+  currentRoute: Ref<Route>
   isReady: () => Promise<void>
   options: {}
   install: () => Promise<void>
@@ -158,8 +159,21 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
+    const currentRoute = computed(() => route)
+    // TODO: remove this in v3.10
+    for (const key in route) {
+      Object.defineProperty(currentRoute, key, {
+        get () {
+          if (import.meta.dev) {
+            console.warn(`\`currentRoute.${key}\` is deprecated. Use \`currentRoute.value.${key}\` instead.`)
+          }
+          return route[key as keyof Route]
+        }
+      })
+    }
+
     const router: Router = {
-      currentRoute: route,
+      currentRoute,
       isReady: () => Promise.resolve(),
       // These options provide a similar API to vue-router but have no effect
       options: {},
@@ -246,7 +260,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
               if (result === false || result instanceof Error) {
                 const error = result || createError({
                   statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                  data: {
+                    path: initialURL
+                  }
                 })
                 delete nuxtApp._processingMiddleware
                 return nuxtApp.runWithContext(() => showError(error))

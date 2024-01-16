@@ -4,6 +4,7 @@ import { defu } from 'defu'
 import { useNuxt } from './context'
 import { isNuxt2 } from './compatibility'
 import { logger } from './logger'
+import { toArray } from './utils'
 
 export function extendPages (cb: NuxtHooks['pages:extend']) {
   const nuxt = useNuxt()
@@ -45,7 +46,7 @@ export interface AddRouteMiddlewareOptions {
 
 export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
   const nuxt = useNuxt()
-  const middlewares = Array.isArray(input) ? input : [input]
+  const middlewares = toArray(input)
   nuxt.hook('app:resolve', (app) => {
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)

@@ -110,8 +110,7 @@ export default defineUntypedSchema({
      */
     analyze: {
       $resolve: async (val, get) => {
-        const rootDir = await get('rootDir')
-        const analyzeDir = await get('analyzeDir')
+        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')])
         return defu(typeof val === 'boolean' ? { enabled: val } : val, {
           template: 'treemap',
           projectRoot: rootDir,
@@ -137,6 +136,7 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: val => [
+        { name: 'callOnce', argumentLength: 2 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
