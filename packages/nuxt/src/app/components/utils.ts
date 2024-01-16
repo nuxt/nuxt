@@ -5,6 +5,7 @@ import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import destr from 'destr'
 import { defu } from 'defu'
 import type { RouteLocationNormalized } from '#vue-router'
+import { toArray } from '#app/utils'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -189,14 +190,10 @@ export function getSlotProps (html: string) {
   return data
 }
 
-function _toArray (val: any) {
-  return Array.isArray(val) ? val : (val ? [val] : [])
-}
-
 export function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
-    onAfterLeave: _toArray(prop.onAfterLeave)
+    onAfterLeave: toArray(prop.onAfterLeave)
   }))
   return defu(..._props as [TransitionProps, TransitionProps])
 }
