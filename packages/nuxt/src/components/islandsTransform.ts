@@ -11,17 +11,17 @@ import { resolvePath } from '@nuxt/kit'
 import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
-    getComponents: () => Component[]
-    /**
-     * passed down to `NuxtTeleportSsrClient`
-     * should be done only in dev mode as we use build:manifest result in production
-     */
-    rootDir?: string
-    isDev?: boolean
-    /**
-     * allow using `nuxt-client` attribute on components
-     */
-    selectiveClient?: boolean
+  getComponents: () => Component[]
+  /**
+   * passed down to `NuxtTeleportIslandClient`
+   * should be done only in dev mode as we use build:manifest result in production
+   */
+  rootDir?: string
+  isDev?: boolean
+  /**
+   * allow using `nuxt-client` attribute on components
+   */
+  selectiveClient?: boolean
 }
 
 interface ComponentChunkOptions {
@@ -33,7 +33,11 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\snuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportSsrClient from \'#app/components/nuxt-teleport-ssr-client\''
+const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandClient from \'#app/components/nuxt-teleport-island-client\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+
+function wrapWithVForDiv (code: string, vfor: string): string {
+  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
@@ -62,10 +66,9 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
         s.prepend('<script setup>' + IMPORT_CODE + '</script>')
       } else {
         s.replace(SCRIPT_RE, (full) => {
-          return full + IMPORT_CODE 
+          return full + IMPORT_CODE
         })
       }
-
 
       let hasNuxtClient = false
 
@@ -73,42 +76,32 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       await walk(ast, (node) => {
         if (node.type === ELEMENT_NODE) {
           if (node.name === 'slot') {
-            const { attributes, children, loc, isSelfClosingTag } = node
+            const { attributes, children, loc } = node
+
+            // pass slot fallback to NuxtTeleportSsrSlot fallback
+            if (children.length) {
+              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" ` : value).join(' ')
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes["v-for"] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+            }
+
             const slotName = attributes.name ?? 'default'
             let vfor: [string, string] | undefined
             if (attributes['v-for']) {
               vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
-              delete attributes['v-for']
             }
+            delete attributes['v-for']
+
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
               attributes._bind = attributes['v-bind']
               delete attributes['v-bind']
             }
-            const bindings = getBindings(attributes, vfor)
+            const bindings = getPropsToString(attributes, vfor)
 
-            if (isSelfClosingTag) {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}/>`)
-            } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<div style="display: contents;" nuxt-ssr-slot-name="${slotName}" ${bindings}>`)
-              s.overwrite(startingIndex + loc[1].start, startingIndex + loc[1].end, '</div>')
-
-              if (children.length > 1) {
-                // need to wrap instead of applying v-for on each child
-                const wrapperTag = `<div ${vfor ? `v-for="${vfor[0]} in ${vfor[1]}"` : ''} style="display: contents;">`
-                s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>${wrapperTag}`)
-                s.appendLeft(startingIndex + loc[1].start, '</div><div nuxt-slot-fallback-end/>')
-              } else if (children.length === 1) {
-                if (vfor && children[0].type === ELEMENT_NODE) {
-                  const { loc, name, attributes, isSelfClosingTag } = children[0]
-                  const attrs = Object.entries(attributes).map(([attr, val]) => `${attr}="${val}"`).join(' ')
-                  s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, `<${name} v-for="${vfor[0]} in ${vfor[1]}" ${attrs} ${isSelfClosingTag ? '/' : ''}>`)
-                }
-
-                s.appendRight(startingIndex + loc[0].end, `<div nuxt-slot-fallback-start="${slotName}"/>`)
-                s.appendLeft(startingIndex + loc[1].start, '<div nuxt-slot-fallback-end/>')
-              }
-            }
+            // add the wrapper
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot name="${slotName}" :props="${bindings}">`)
+            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
             const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
@@ -117,7 +110,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
 
-              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportSsrClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportSsrClient>`)
+              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportIslandClient to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportIslandClient>`)
             }
           }
         }
@@ -142,14 +135,14 @@ function isBinding (attr: string): boolean {
   return attr.startsWith(':')
 }
 
-function getBindings (bindings: Record<string, string>, vfor?: [string, string]): string {
-  if (Object.keys(bindings).length === 0) { return '' }
+function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
+  if (Object.keys(bindings).length === 0) { return 'undefined' }
   const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
-    return `:nuxt-ssr-slot-data="JSON.stringify([${data}])"`
+    return `[${data}]`
   } else {
-    return `:nuxt-ssr-slot-data="JSON.stringify(__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data})))"`
+    return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
   }
 }
 
@@ -158,7 +151,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
   return {
     name: 'componentsChunkPlugin',
     vite: {
-      async  config (config) {
+      async config (config) {
         const components = options.getComponents()
         config.build = config.build || {}
         config.build.rollupOptions = config.build.rollupOptions || {}

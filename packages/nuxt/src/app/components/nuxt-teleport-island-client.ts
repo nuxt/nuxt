@@ -1,4 +1,4 @@
-import type { Component,   } from 'vue'
+import type { Component } from 'vue'
 import { Teleport, defineComponent, h } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
@@ -14,7 +14,7 @@ type ExtendedComponent = Component & {
  * this teleport the component in SSR only if it needs to be hydrated on client
  */
 export default defineComponent({
-  name: 'NuxtTeleportSsrClient',
+  name: 'NuxtTeleportIslandClient',
   props: {
     to: {
       type: String,
@@ -34,28 +34,26 @@ export default defineComponent({
     }
   },
   setup (props, { slots }) {
-    if (!props.nuxtClient) { return () => slots.default!() }
+    const nuxtApp = useNuxtApp()
 
-    const app = useNuxtApp()
-    const islandContext = app.ssrContext!.islandContext!
+    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient) { return () => slots.default!() }
+
+    const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
       const slot = slots.default!()[0]
       const slotType = (slot.type as ExtendedComponent)
       const name = (slotType.__name || slotType.name) as string
-     
-      if (import.meta.dev) {
-        const path = '_nuxt/' +  paths[name]
-        islandContext.chunks[name] = path
-      } else {
-        islandContext.chunks[name] = paths[name]
-      }
 
-      islandContext.propsData[props.to] = slot.props || {}
+      islandContext.components[props.to] = {
+        chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
+        props: slot.props || {}
+      }
 
       return [h('div', {
         style: 'display: contents;',
-        'nuxt-ssr-client': props.to
+        'data-island-uid': '',
+        'data-island-client': props.to
       }, []), h(Teleport, { to: props.to }, slot)]
     }
   }

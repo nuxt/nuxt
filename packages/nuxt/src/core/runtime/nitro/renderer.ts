@@ -58,10 +58,18 @@ export interface NuxtIslandContext {
   name: string
   props?: Record<string, any>
   url?: string
-  // chunks to load components
-  chunks: Record<string, string>
-  // props to be sent back
-  propsData: Record<string, any>
+  slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
+  components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
+}
+
+export interface NuxtIslandSlotResponse {
+  props: Array<unknown>
+  fallback: string
+}
+export interface NuxtIslandClientResponse {
+  html: string
+  props: unknown
+  chunk: string
 }
 
 export interface NuxtIslandResponse {
@@ -72,9 +80,9 @@ export interface NuxtIslandResponse {
     link: (Record<string, string>)[]
     style: ({ innerHTML: string, key: string })[]
   }
-  chunks?: Record<string, string>
   props?: Record<string, Record<string, any>>
-  teleports?: Record<string, string>
+  components?: Record<string, NuxtIslandClientResponse>
+  slots?: Record<string, NuxtIslandSlotResponse>
 }
 
 export interface NuxtRenderResponse {
@@ -195,10 +203,8 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     id: hashId,
     name: componentName,
     props: destr(context.props) || {},
-    uid: destr(context.uid) || undefined,
-    chunks: {},
-    propsData: {},
-    teleports: {}
+    slots: {},
+    components: {},
   }
 
   return ctx
@@ -421,7 +427,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceClientTeleport(ssrContext, replaceServerOnlyComponentsSlots(ssrContext, _rendered.html)) : _rendered.html],
+    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
     bodyAppend: [bodyTags]
   }
 
@@ -446,9 +452,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       head: islandHead,
       html: getServerComponentHTML(htmlContext.body),
       state: ssrContext.payload.state,
-      chunks: islandContext.chunks,
-      props: islandContext.propsData,
-      teleports: ssrContext.teleports || {}
+      components: getClientIslandResponse(ssrContext),
+      slots: getSlotIslandResponse(ssrContext)
     }
 
     await nitroApp.hooks.callHook('render:island', islandResponse, { event, islandContext })
@@ -593,37 +598,56 @@ function getServerComponentHTML (body: string[]): string {
   return match ? match[1] : body[0]
 }
 
-const SSR_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
+const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
-function replaceServerOnlyComponentsSlots (ssrContext: NuxtSSRContext, html: string): string {
-  const { teleports, islandContext } = ssrContext
-  if (islandContext || !teleports) { return html }
-  for (const key in teleports) {
-    const match = key.match(SSR_TELEPORT_MARKER)
-    if (!match) { continue }
-    const [, uid, slot] = match
-    if (!uid || !slot) { continue }
-    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-slot-name="${slot}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-slot-name="${slot}"[^>]*>`), (full) => {
-      return full + teleports[key]
-    })
+
+function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
+  if (!ssrContext.islandContext) { return {} }
+  const response: NuxtIslandResponse['slots'] = {}
+  for (const slot in ssrContext.islandContext.slots) {
+    response[slot] = {
+      ...ssrContext.islandContext.slots[slot],
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
+    }
   }
-  return html
+  return response
 }
 
-// TODO merge with replaceServerOnlyComponentsSlots once slots are refactored
-function replaceClientTeleport (ssrContext: NuxtSSRContext, html: string) {
+function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
+  if (!ssrContext.islandContext) { return {} }
+  const response: NuxtIslandResponse['components'] = {}
+  for (const clientUid in ssrContext.islandContext.components) {
+    const html = ssrContext.teleports?.[clientUid] || ''
+    response[clientUid] = {
+      ...ssrContext.islandContext.components[clientUid],
+      html,
+    }
+  }
+  return response
+}
+
+function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
   const { teleports, islandContext } = ssrContext
 
   if (islandContext || !teleports) { return html }
   for (const key in teleports) {
-    const match = key.match(SSR_CLIENT_TELEPORT_MARKER)
-    if (!match) { continue }
-    const [, uid, clientId] = match
-    if (!uid || !clientId) { continue }
-    html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-component-uid="${uid}"[^>]*>((?!nuxt-ssr-client="${clientId}"|nuxt-ssr-component-uid)[\\s\\S])*<div [^>]*nuxt-ssr-client="${clientId}"[^>]*>`), (full) => {
-
-      return full + teleports[key]
-    })
+    const matchClientComp = key.match(SSR_CLIENT_TELEPORT_MARKER)
+    if (matchClientComp) {
+      const [, uid, clientId] = matchClientComp
+      if (!uid || !clientId) { continue }
+      html = html.replace(new RegExp(` data-island-client="${clientId}"[^>]*>`), (full) => {
+        return full + teleports[key]
+      })
+      continue
+    }
+    const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
+    if (matchSlot) {
+      const [, uid, slot] = matchSlot
+      if (!uid || !slot) { continue }
+      html = html.replace(new RegExp(` data-island-uid="${uid}" data-island-slot="${slot}"[^>]*>`), (full) => {
+        return full + teleports[key]
+      })
+    }
   }
   return html
 }

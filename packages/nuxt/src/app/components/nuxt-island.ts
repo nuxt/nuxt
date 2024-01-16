@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
@@ -13,43 +13,35 @@ import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getFragmentHTML, getSlotProps } from './utils'
+import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
-const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
-const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
-const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
+const SSR_UID_RE = /data-island-uid="([^"]*)"/
+const DATA_ISLAND_UID_RE = /data-island-uid/g
+const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
+const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 
-let id = 0
+let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (source = '/', paths: Record<string, string>) {
+async function loadComponents (source = '/', paths: NuxtIslandResponse['components']) {
   const promises = []
 
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source, paths[component])
+        const chunkSource = join(source, paths[component].chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
     }
   }
   await Promise.all(promises)
-}
-
-function emptyPayload () {
-  return {
-    chunks: {},
-    props: {},
-    teleports: {}
-  }
 }
 
 export default defineComponent({
@@ -78,6 +70,8 @@ export default defineComponent({
     }
   },
   async setup (props, { slots, expose }) {
+    let canTeleport = import.meta.server
+    const teleportKey = ref(0)
     const key = ref(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
@@ -91,7 +85,7 @@ export default defineComponent({
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
-    onMounted(() => { mounted.value = true })
+    onMounted(() => { mounted.value = true; teleportKey.value++ })
 
     function setPayload (key: string, result: NuxtIslandResponse) {
       nuxtApp.payload.data[key] = {
@@ -101,59 +95,50 @@ export default defineComponent({
             ? {}
             : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
           result: {
-            chunks: result.chunks,
             props: result.props,
-            teleports: result.teleports
+            slots: result.slots,
+            components: result.components
           }
         },
         ...result
       }
     }
-    // needs to be non-reactive because we don't want to trigger re-renders
-    // at hydration, we only retrieve props/chunks/teleports from payload. See the reviver at nuxt\src\app\plugins\revive-payload.client.ts
-    // If not hydrating, fetchComponent() will set it
-    const rawPayload = nuxtApp.isHydrating ? toRaw(nuxtApp.payload.data)?.[`${props.name}_${hashId.value}`] ?? emptyPayload() : emptyPayload()
 
-    const nonReactivePayload: Pick<NuxtIslandResponse, 'chunks'| 'props' | 'teleports'> = {
-      chunks: rawPayload.chunks,
-      props: rawPayload.props,
-      teleports: rawPayload.teleports
+    const payloadSlots: NonNullable<NuxtIslandResponse['slots']> = {}
+    const payloadComponents: NonNullable<NuxtIslandResponse['components']> = {}
+
+    if (nuxtApp.isHydrating) {
+      Object.assign(payloadSlots, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {})
+      Object.assign(payloadComponents, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {})
     }
 
     const ssrHTML = ref<string>('')
 
-    if (import.meta.client) {
+    if (import.meta.client && nuxtApp.isHydrating) {
       ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
     }
 
-    const slotProps = computed(() => getSlotProps(ssrHTML.value))
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
-
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
       if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(nonReactivePayload.teleports || {})) {
-          html = html.replace(new RegExp(`<div [^>]*nuxt-ssr-client="${key}"[^>]*>`), (full) => {
-            return full + value
+        for (const [key, value] of Object.entries(payloadComponents || {})) {
+          html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-client="${key}"[^>]*>`), (full) => {
+            return full + value.html
           })
         }
       }
 
-      return html.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
-        // remove fallback to insert slots
-        if (currentSlots.includes(slotName)) {
-          return ''
+      return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
+        if (!currentSlots.includes(slotName)) {
+          return full + payloadSlots[slotName]?.fallback ?? ''
         }
-        return content
+        return full
       })
     })
-
-    function setUid () {
-      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
-    }
 
     const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
     useHead(cHead)
@@ -198,26 +183,25 @@ export default defineComponent({
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
         cHead.value.link = res.head.link
         cHead.value.style = res.head.style
-        ssrHTML.value = res.html.replace(UID_ATTR, () => {
-          return `nuxt-ssr-component-uid="${getId()}"`
-        })
+        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
+        Object.assign(payloadSlots, res.slots || {})
+        Object.assign(payloadComponents, res.components || {})
 
         if (selectiveClient && import.meta.client) {
-          if (canLoadClientComponent.value && res.chunks) {
-            await loadComponents(props.source, res.chunks)
+          if (canLoadClientComponent.value && res.components) {
+            await loadComponents(props.source, res.components)
           }
-          nonReactivePayload.props = res.props
         }
-        nonReactivePayload.teleports = res.teleports
-        nonReactivePayload.chunks = res.chunks
 
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
-          await nextTick()
+          nextTick(() => {
+            canTeleport = true
+            teleportKey.value++
+          })
         }
-        setUid()
       } catch (e) {
         error.value = e
       }
@@ -241,46 +225,61 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if (selectiveClient && canLoadClientComponent.value && nonReactivePayload.chunks) {
-      await loadComponents(props.source, nonReactivePayload.chunks)
+    } else if (selectiveClient && canLoadClientComponent.value) {
+      await loadComponents(props.source, payloadComponents)
     }
 
-    return () => {
+    return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {
         return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
       }
-      const nodes = [createVNode(Fragment, {
-        key: key.value
-      }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
+      return [
+        withMemo([key.value], () => {
+          return createVNode(Fragment, { key: key.value }, [h(createStaticVNode(html.value || '<div></div>', 1))])
+        }, _cache, 0),
 
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server) && html.value) {
-        for (const slot in slots) {
-          if (availableSlots.value.includes(slot)) {
-            nodes.push(createVNode(Teleport, { to: import.meta.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
-              default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
-            }))
-          }
-        }
-        if (import.meta.server) {
-          for (const [id, html] of Object.entries(nonReactivePayload.teleports ?? {})) {
-            nodes.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
-              default: () => [createStaticVNode(html, 1)]
-            }))
-          }
-        }
-        if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
-          for (const [id, props] of Object.entries(nonReactivePayload.props ?? {})) {
-            const component = components!.get(id.split('-')[0])!
-            const vnode = createVNode(Teleport, { to: `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-client="${id}"]` }, {
-              default: () => {
-                return [h(component, props)]
+        // should away be triggered ONE tick after re-rendering the static node
+        withMemo([teleportKey.value], () => {
+          const teleports = []
+          // this is used to force trigger Teleport when vue makes the diff between old and new node
+          const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
+
+          if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : mounted.value || nuxtApp.isHydrating)) {
+            for (const slot in slots) {
+              if (availableSlots.value.includes(slot)) {
+                teleports.push(createVNode(Teleport,
+                  // use different selectors for even and odd teleportKey to force trigger the teleport
+                  { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
+                  { default: () => (payloadSlots[slot].props?.length ? payloadSlots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
+                )
               }
-            })
-            nodes.push(vnode)
+            }
+            if (import.meta.server) {
+              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
+                const { html } = info
+                teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
+                  default: () => [createStaticVNode(html, 1)]
+                }))
+              }
+            }
+            if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
+              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
+                const { props } = info
+                const component = components!.get(id)!
+                // use different selectors for even and odd teleportKey to force trigger the teleport
+                const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-client="${id}"]` }, {
+                  default: () => {
+                    return [h(component, props)]
+                  }
+                })
+                teleports.push(vnode)
+              }
+            }
           }
-        }
-      }
-      return nodes
+
+          return h(Fragment, teleports)
+        }, _cache, 1)
+      ]
     }
   }
 })
