@@ -229,9 +229,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Check for island component rendering
-  const islandContext = (process.env.NUXT_COMPONENT_ISLANDS && event.path.startsWith('/__nuxt_island'))
-    ? await getIslandContext(event)
-    : undefined
+  const isRenderingIsland = (process.env.NUXT_COMPONENT_ISLANDS as unknown as boolean && event.path.startsWith('/__nuxt_island'))
+  const islandContext = isRenderingIsland ? await getIslandContext(event) : undefined
 
   if (import.meta.prerender && islandContext && event.path && await islandCache!.hasItem(event.path)) {
     return islandCache!.getItem(event.path) as Promise<Partial<RenderResponse>>
@@ -241,7 +240,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   let url = ssrError?.url as string || islandContext?.url || event.path
 
   // Whether we are rendering payload route
-  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !islandContext
+  const isRenderingPayload = PAYLOAD_URL_RE.test(url) && !isRenderingIsland
   if (isRenderingPayload) {
     url = url.substring(0, url.lastIndexOf('/')) || '/'
 
@@ -270,7 +269,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
       event.context.nuxt?.noSSR ||
-      (routeOptions.ssr === false && !islandContext) ||
+      (routeOptions.ssr === false && !isRenderingIsland) ||
       (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
     head,
     error: !!ssrError,
@@ -281,7 +280,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Whether we are prerendering route
-  const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !islandContext
+  const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
   const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
@@ -330,7 +329,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
-  if (process.env.NUXT_INLINE_STYLES && !islandContext) {
+  if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
     const source = ssrContext.modules ?? ssrContext._registeredComponents
     if (source) {
       for (const id of await getEntryIds()) {
@@ -340,7 +339,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Render inline styles
-  const inlinedStyles = (process.env.NUXT_INLINE_STYLES || Boolean(islandContext))
+  const inlinedStyles = (process.env.NUXT_INLINE_STYLES || isRenderingIsland)
     ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
     : []
 
@@ -368,7 +367,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       )
   }, headEntryOptions)
 
-  if (!NO_SCRIPTS && !islandContext) {
+  if (!NO_SCRIPTS && !isRenderingIsland) {
     // 3. Resource Hints
     // TODO: add priorities based on Capo
     head.push({
@@ -395,7 +394,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 5. Scripts
-  if (!routeOptions.experimentalNoScripts && !islandContext) {
+  if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
     head.push({
       script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
@@ -411,7 +410,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
-    island: Boolean(islandContext),
+    island: isRenderingIsland,
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
@@ -424,7 +423,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   await nitroApp.hooks.callHook('render:html', htmlContext, { event })
 
   // Response for component islands
-  if (process.env.NUXT_COMPONENT_ISLANDS && islandContext) {
+  if (isRenderingIsland && islandContext) {
     const islandHead: NuxtIslandResponse['head'] = {
       link: [],
       style: []
