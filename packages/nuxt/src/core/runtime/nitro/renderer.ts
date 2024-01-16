@@ -368,7 +368,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       )
   }, headEntryOptions)
 
-  if (!NO_SCRIPTS) {
+  if (!NO_SCRIPTS && !islandContext) {
     // 3. Resource Hints
     // TODO: add priorities based on Capo
     head.push({
