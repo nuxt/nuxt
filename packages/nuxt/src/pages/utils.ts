@@ -388,7 +388,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       if (overrideMeta) {
-        route.name = route.name ?? `${metaImportName}?.name ?? undefined`
+        route.name = route.name ?? `${metaImportName}?.name`
         route.path = route.path ?? `${metaImportName}?.path ?? ''`
       } else {
         route.name = `${metaImportName}?.name ?? ${page.name ? route.name : 'undefined'}`
@@ -404,7 +404,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       route.alias = aliasFiltered.length ? `${JSON.stringify(aliasFiltered)}.concat(${aliasCode})` : aliasCode
 
       route.component = genDynamicImport(file, { interopDefault: true })
-      route.redirect = page.redirect ? route.redirect : `${metaImportName}?.redirect || undefined`
+      route.redirect = page.redirect ? route.redirect : `${metaImportName}?.redirect`
 
       return route
     }))
