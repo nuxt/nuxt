@@ -501,6 +501,8 @@ describe('nuxt composables', () => {
     expect(await extractCookie()).toEqual({ foo: 'bar' })
     await page.getByRole('button').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
+    await page.getByRole('button').click()
+    expect(await extractCookie()).toEqual({ foo: 'bar' })
     await page.close()
   })
 })
