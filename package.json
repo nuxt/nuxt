@@ -66,7 +66,7 @@
     "fs-extra": "10.1.0",
     "get-port": "7.0.0",
     "glob": "8.1.0",
-    "got": "13.0.0",
+    "got": "14.0.0",
     "improved-yarn-audit": "3.0.0",
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
