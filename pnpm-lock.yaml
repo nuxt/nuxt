@@ -885,8 +885,8 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
       vue:
-        specifier: 3.4.5
-        version: 3.4.5(typescript@5.3.3)
+        specifier: 3.4.14
+        version: 3.4.14(typescript@5.3.3)
     devDependencies:
       typescript:
         specifier: latest
