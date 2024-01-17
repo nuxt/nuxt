@@ -56,3 +56,10 @@ export function prerenderRoutes (path: string | string[]) {
   const paths = toArray(path)
   appendHeader(useRequestEvent(), 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }
+
+export const setInterval = import.meta.client ? window.setInterval : () => {
+  throw createError({
+    statusCode: 500,
+    message: 'setInterval should not be used on server side, please wrap it with `onBeforeMount` or `onMounted` Vue Lifecycle hooks.'
+  })
+}
