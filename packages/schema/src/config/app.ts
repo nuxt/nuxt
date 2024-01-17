@@ -156,7 +156,6 @@ export default defineUntypedSchema({
      * Default values for view transitions.
      *
      * This can be overridden with `definePageMeta` on an individual page.
-     * Only booleans are allowed.
      * @see https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
