@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import fg from 'fast-glob'
+import { globby } from 'globby'
 import fs from 'fs-extra'
 import { execa } from 'execa'
 
 async function initTesting () {
-  const dirs = await fg('*', {
+  const dirs = await globby('*', {
     onlyDirectories: true,
     cwd: fileURLToPath(new URL('./fixtures', import.meta.url)),
     absolute: true
