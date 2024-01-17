@@ -117,6 +117,7 @@ describe('composables', () => {
       'preloadPayload',
       'preloadRouteComponents',
       'reloadNuxtApp',
+      'setInterval',
       'useCookie',
       'useFetch',
       'useHead',
