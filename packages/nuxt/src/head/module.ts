@@ -62,7 +62,7 @@ export default defineNuxtModule({
           return 'export default []'
         }
         return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
-export default process.server ? [CapoPlugin({ track: true })] : [];`
+export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
       }
     })
 

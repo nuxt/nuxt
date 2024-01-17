@@ -3,9 +3,10 @@ import type { Ref } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
-import type { AppConfig, RuntimeValue } from 'nuxt/schema'
+import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
+import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
 import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
 import { useRouter } from '#imports'
@@ -38,8 +39,11 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | null>>()
 
-    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | null>>()
-    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | null>>()
+    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | null>>()
+    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | null>>()
+    // backwards compatibility
+    expectTypeOf(useAsyncData<any, Error>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | null>>()
+    expectTypeOf(useAsyncData<any, NuxtError<string>>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | null>>()
 
     expectTypeOf(useLazyAsyncData('lazy-api-hello', () => $fetch('/api/hello')).data).toEqualTypeOf<Ref<string | null>>()
     expectTypeOf(useLazyAsyncData('lazy-api-hey', () => $fetch('/api/hey')).data).toEqualTypeOf<Ref<{ foo: string, baz: string } | null>>()
@@ -238,6 +242,18 @@ describe('nuxtApp', () => {
   })
 })
 
+describe('plugins', () => {
+  it('dependsOn is strongly typed', () => {
+    defineNuxtPlugin({
+      // @ts-expect-error invalid plugin name
+      dependsOn: ['something']
+    })
+    defineNuxtPlugin({
+      dependsOn: ['nuxt:router']
+    })
+  })
+})
+
 describe('runtimeConfig', () => {
   it('generated runtimeConfig types', () => {
     const runtimeConfig = useRuntimeConfig()
@@ -270,6 +286,21 @@ describe('runtimeConfig', () => {
     expectTypeOf(val.runtimeConfig!.baseAPIToken).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_BASE_API_TOKEN'>>()
     expectTypeOf(val.runtimeConfig!.public!.ids).toEqualTypeOf<undefined | RuntimeValue<Array<number>, 'You can override this value at runtime with NUXT_PUBLIC_IDS'>>()
     expectTypeOf(val.runtimeConfig!.unknown).toEqualTypeOf<unknown>()
+  })
+
+  it('correctly converts different kinds of names to snake case', () => {
+    expectTypeOf<UpperSnakeCase<'testAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TEST_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_app_NAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAppNAME'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testApp123NAME'>>().toEqualTypeOf<'TEST_APP123NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPPName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'testAPP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'test_APP_Name'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'TESTAppName'>>().toEqualTypeOf<'TEST_APP_NAME'>()
+    expectTypeOf<UpperSnakeCase<'t'>>().toEqualTypeOf<'T'>()
+    expectTypeOf<UpperSnakeCase<'T'>>().toEqualTypeOf<'T'>()
   })
 })
 
@@ -329,6 +360,11 @@ describe('composables', () => {
 
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
+  })
+
+  it('enforces readonly cookies', () => {
+    // @ts-expect-error readonly cookie
+    useCookie('test', { readonly: true }).value = 'thing'
   })
 
   it('correct types when using ResT type-assertion with default function', () => {

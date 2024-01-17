@@ -33,4 +33,5 @@ Please carefully read the contribution docs before creating a pull request
 <!-- If you're unsure about any of these, don't hesitate to ask. We're here to help! -->
 
 - [ ] I have linked an issue or discussion.
+- [ ] I have added tests (if possible).
 - [ ] I have updated the documentation accordingly.

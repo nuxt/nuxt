@@ -3,6 +3,12 @@
     <div>
       <h1>{{ error?.message }}</h1>
       This is the error page 😱
+      <div
+        v-if="error?.data?.path"
+        data-testid="path"
+      >
+        Path: {{ error.data.path }}
+      </div>
     </div>
   </div>
 </template>

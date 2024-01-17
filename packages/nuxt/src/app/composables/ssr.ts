@@ -1,7 +1,8 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeaders } from 'h3'
+import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders } from 'h3'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
+import { toArray } from '../utils'
 
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): H3Event {
   return nuxtApp.ssrContext?.event as H3Event
@@ -12,9 +13,23 @@ export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
   if (import.meta.client) { return {} }
   const event = useRequestEvent()
-  const headers = event ? getRequestHeaders(event) : {}
-  if (!include) { return headers }
-  return Object.fromEntries(include.map(key => key.toLowerCase()).filter(key => headers[key]).map(key => [key, headers[key]]))
+  const _headers = event ? getRequestHeaders(event) : {}
+  if (!include || !event) { return _headers }
+  const headers = Object.create(null)
+  for (const _key of include) {
+    const key = _key.toLowerCase()
+    const header = _headers[key]
+    if (header) {
+      headers[key] = header
+    }
+  }
+  return headers
+}
+
+export function useRequestHeader(header: string) {
+  if (import.meta.client) { return undefined }
+  const event = useRequestEvent()
+  return event ? getRequestHeader(event, header) : undefined
 }
 
 export function useRequestFetch (): typeof global.$fetch {
@@ -36,8 +51,8 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
 }
 
 export function prerenderRoutes (path: string | string[]) {
-  if (!process.server || !process.env.prerender) { return }
+  if (!import.meta.server || !import.meta.prerender) { return }
 
-  const paths = Array.isArray(path) ? path : [path]
+  const paths = toArray(path)
   appendHeader(useRequestEvent(), 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
 }

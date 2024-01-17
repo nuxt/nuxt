@@ -44,7 +44,7 @@ describe('imports:transform', () => {
     const result = await transform('// import { computed } from "foo"\n;const a = computed(0)')
     expect(result).toMatchInlineSnapshot(`
       "import { computed } from 'bar';
-      // import { computed } from \\"foo\\"
+      // import { computed } from "foo"
       ;const a = computed(0)"
     `)
   })
@@ -162,6 +162,7 @@ const excludedVueHelpers = [
   'Transition',
   'TransitionGroup',
   'VueElement',
+  'ErrorTypeStrings',
   'createApp',
   'createSSRApp',
   'defineCustomElement',
@@ -176,7 +177,11 @@ const excludedVueHelpers = [
   'vModelSelect',
   'vModelText',
   'vShow',
-  'compile'
+  'compile',
+  'DeprecationTypes',
+  'ErrorCodes',
+  'TrackOpTypes',
+  'TriggerOpTypes'
 ]
 
 describe('imports:vue', () => {

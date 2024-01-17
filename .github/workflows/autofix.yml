@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       - run: corepack enable
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
         with:
           node-version: 20
           cache: "pnpm"
@@ -24,13 +24,16 @@ jobs:
         run: pnpm install
 
       - name: Build (stub)
-        run: pnpm build:stub
+        run: pnpm dev:prepare
 
       - name: Lint (code)
         run: pnpm lint:fix
 
       - name: Test (unit)
         run: pnpm test:unit -u
+
+      - name: Test (runtime unit)
+        run: pnpm test:runtime -u
 
       - name: Run build
         run: pnpm build
@@ -49,4 +52,4 @@ jobs:
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
 
-      - uses: autofix-ci/action@d3e591514b99d0fca6779455ff8338516663f7cc
+      - uses: autofix-ci/action@ea32e3a12414e6d3183163c3424a7d7a8631ad84

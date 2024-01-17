@@ -77,7 +77,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext
         },
         build: {
           copyPublicDir: false,
@@ -110,7 +110,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           virtual(nuxt.vfs)
         ],
         vue: {
-          reactivityTransform: nuxt.options.experimental.reactivityTransform,
           template: {
             transformAssetUrls: {
               video: ['src', 'poster'],
@@ -140,7 +139,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }
 
   // Add type-checking
-  if (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev)) {
+  if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
@@ -167,7 +166,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
-        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        shouldInline: ctx.nuxt.options.features.inlineStyles,
         components: ctx.nuxt.apps.default.components,
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',

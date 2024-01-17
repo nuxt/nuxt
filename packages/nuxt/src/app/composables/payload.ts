@@ -1,4 +1,4 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
@@ -79,6 +79,7 @@ async function _importPayload (payloadURL: string) {
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  url = withoutTrailingSlash(url)
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
@@ -101,7 +102,7 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const inlineData = parsePayload(el.textContent || '')
+  const inlineData = await parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
@@ -114,8 +115,8 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export function parsePayload (payload: string) {
-  return parse(payload, useNuxtApp()._payloadRevivers)
+export async function parsePayload (payload: string) {
+  return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
 /**
