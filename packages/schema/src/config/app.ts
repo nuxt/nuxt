@@ -159,7 +159,9 @@ export default defineUntypedSchema({
      * @see https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
-    viewTransition: false,
+    viewTransition: {
+      $resolve: async (val, get) => val ?? await get('experimental.viewTransition') ?? false
+    },
 
     /**
      * Default values for KeepAlive configuration between pages.
