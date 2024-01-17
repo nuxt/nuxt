@@ -20,7 +20,7 @@ import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
-const DATA_ISLAND_UID_RE = /data-island-uid(="[^"]*")?/g
+const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 
@@ -183,14 +183,7 @@ export default defineComponent({
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
         cHead.value.link = res.head.link
         cHead.value.style = res.head.style
-        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, (full, match) => {
-          if (match) {
-            // avoid replacing uid that are already set. This can happen with nested islands
-            return full
-          }
-          return `data-island-uid="${uid.value}"`
-        })
-
+        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
         Object.assign(payloadSlots, res.slots || {})
