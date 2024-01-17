@@ -5,10 +5,7 @@ import { defineNuxtPlugin } from '../nuxt'
 import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  if (prefersReducedMotion || !document.startViewTransition) {
-    return
-  }
+  if (!document.startViewTransition) { return }
 
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
