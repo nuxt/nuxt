@@ -66,8 +66,11 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const callback = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage({ value: opts.encode(cookie.value as T) })
+
+      cookies[name] = klona(cookie.value)
+      channel?.postMessage(opts.encode(cookie.value as T))
     }
+
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
       watchPaused = true
@@ -125,7 +128,7 @@ export function refreshCookie(name: string) {
   new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
 }
 
-function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
+function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
     return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
   } else if (import.meta.client) {

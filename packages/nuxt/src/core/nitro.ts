@@ -11,13 +11,19 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+
+const logLevelMapReverse = {
+  silent: 0,
+  info: 3,
+  verbose: 3
+} satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -218,7 +224,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     rollupConfig: {
       output: {},
       plugins: []
-    }
+    },
+    logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
   // Resolve user-provided paths
