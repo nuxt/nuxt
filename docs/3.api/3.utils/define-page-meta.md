@@ -33,6 +33,7 @@ interface PageMeta {
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
+  viewTransition?: boolean
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -103,6 +104,13 @@ interface PageMeta {
   - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
+
+  **`viewTransition`**
+
+  - **Type**: `boolean`
+
+    **Experimental feature, only available when [enabled in the nuxt.config.ts](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    Enable/disable viewTransition for the for current page
 
   **`redirect`**
 
