@@ -90,7 +90,10 @@ export default defineNuxtModule({
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
-        getContents: () => 'export { useRoute } from \'#app\''
+        getContents: () => [
+          'export { useRoute } from \'#app/composables/router\'',
+          'export const START_LOCATION = Symbol(\'router:start-location\')'
+        ].join('\n')
       })
       addComponent({
         name: 'NuxtPage',
@@ -222,7 +225,7 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:init', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static) { return }
+      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
       // Prerender all non-dynamic page routes when generating app
       const prerenderRoutes = new Set<string>()
       nuxt.hook('pages:extend', (pages) => {
@@ -363,6 +366,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
+        if (!app.pages) return 'export default []'
         const { routes, imports } = normalizeRoutes(app.pages)
         return [...imports, `export default ${routes}`].join('\n')
       }
@@ -371,7 +375,7 @@ export default defineNuxtModule({
     // Add vue-router import for `<NuxtLayout>` integration
     addTemplate({
       filename: 'pages.mjs',
-      getContents: () => 'export { useRoute } from \'vue-router\''
+      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\''
     })
 
     // Optimize vue-router to ensure we share the same injection symbol

@@ -9,7 +9,7 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi clean|cleanup [rootDir]
+npx nuxi cleanup [rootDir]
 ```
 
 The `cleanup` command removes common generated Nuxt files and caches, including:

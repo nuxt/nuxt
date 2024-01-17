@@ -50,7 +50,10 @@ export default defineUntypedSchema({
    * It is normally not needed to configure this option.
    */
   workspaceDir: {
-    $resolve: async (val, get) => val ? resolve(await get('rootDir'), val) : await findWorkspaceDir(await get('rootDir')).catch(() => get('rootDir'))
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      return val ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+    }
   },
 
   /**
@@ -131,10 +134,13 @@ export default defineUntypedSchema({
    */
   modulesDir: {
     $default: ['node_modules'],
-    $resolve: async (val, get) => [
-      ...await Promise.all(val.map(async (dir: string) => resolve(await get('rootDir'), dir))),
-      resolve(process.cwd(), 'node_modules')
-    ]
+    $resolve: async (val, get) => {
+      const rootDir = await get('rootDir')
+      return [
+        ...await Promise.all(val.map(async (dir: string) => resolve(rootDir, dir))),
+        resolve(process.cwd(), 'node_modules')
+      ]
+    }
   },
 
   /**
@@ -305,15 +311,18 @@ export default defineUntypedSchema({
    * @type {Record<string, string>}
    */
   alias: {
-    $resolve: async (val, get) => ({
-      '~': await get('srcDir'),
-      '@': await get('srcDir'),
-      '~~': await get('rootDir'),
-      '@@': await get('rootDir'),
-      [await get('dir.assets')]: join(await get('srcDir'), await get('dir.assets')),
-      [await get('dir.public')]: join(await get('srcDir'), await get('dir.public')),
-      ...val
-    })
+    $resolve: async (val, get) => {
+      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')])
+      return {
+        '~': srcDir,
+        '@': srcDir,
+        '~~': rootDir,
+        '@@': rootDir,
+        [assetsDir]: join(srcDir, assetsDir),
+        [publicDir]: join(srcDir, publicDir),
+        ...val
+      }
+    }
   },
 
   /**
@@ -325,6 +334,7 @@ export default defineUntypedSchema({
    *   ignorecase: false
    * }
    * ```
+   * @type {typeof import('ignore').Options}
    */
   ignoreOptions: undefined,
 
@@ -341,15 +351,18 @@ export default defineUntypedSchema({
    * inside the `ignore` array will be ignored in building.
    */
   ignore: {
-    $resolve: async (val, get) => [
-      '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
-      '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
-      '**/*.d.{cts,mts,ts}', // ignore type declarations
-      '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
-      relative(await get('rootDir'), await get('analyzeDir')),
-      relative(await get('rootDir'), await get('buildDir')),
-      await get('ignorePrefix') && `**/${await get('ignorePrefix')}*.*`
-    ].concat(val).filter(Boolean)
+    $resolve: async (val, get) => {
+      const [rootDir, ignorePrefix, analyzeDir, buildDir] = await Promise.all([get('rootDir'), get('ignorePrefix'), get('analyzeDir'), get('buildDir')])
+      return [
+        '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
+        '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
+        '**/*.d.{cts,mts,ts}', // ignore type declarations
+        '**/.{pnpm-store,vercel,netlify,output,git,cache,data}',
+        relative(rootDir, analyzeDir),
+        relative(rootDir, buildDir),
+        ignorePrefix && `**/${ignorePrefix}*.*`
+      ].concat(val).filter(Boolean)
+    }
   },
 
   /**
@@ -443,13 +456,14 @@ export default defineUntypedSchema({
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get) => {
+      const app = await get('app')
       provideFallbackValues(val)
       return defu(val, {
         public: {},
         app: {
-          baseURL: (await get('app')).baseURL,
-          buildAssetsDir: (await get('app')).buildAssetsDir,
-          cdnURL: (await get('app')).cdnURL
+          baseURL: app.baseURL,
+          buildAssetsDir: app.buildAssetsDir,
+          cdnURL: app.cdnURL
         }
       })
     }

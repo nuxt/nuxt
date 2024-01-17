@@ -11,7 +11,7 @@ export default defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
     // TODO: Support dev
-    if (process.dev) { return }
+    if (import.meta.dev) { return }
 
     // Load payload after middleware & once final route is resolved
     useRouter().beforeResolve(async (to, from) => {

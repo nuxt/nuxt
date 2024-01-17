@@ -1,10 +1,10 @@
 import type { defineAsyncComponent } from 'vue'
-import { createVNode, defineComponent } from 'vue'
+import { createVNode, defineComponent, onErrorCaptured } from 'vue'
 
 import { createError } from '../composables/error'
 
 // @ts-expect-error virtual file
-import * as islandComponents from '#build/components.islands.mjs'
+import { islandComponents } from '#build/components.islands.mjs'
 
 export default defineComponent({
   props: {
@@ -23,6 +23,10 @@ export default defineComponent({
       })
     }
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
+    onErrorCaptured((e) => {
+      console.log(e)
+    })
+
+    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   }
 })
