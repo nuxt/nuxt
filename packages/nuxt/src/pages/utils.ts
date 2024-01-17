@@ -385,7 +385,6 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       const metaRoute = {
-        children: route.children,
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
         meta: `${metaImportName} || {}`,
@@ -397,7 +396,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (overrideMeta) {
         metaRoute.name = route.name ?? `${metaImportName}?.name`
         metaRoute.path = route.path ?? `${metaImportName}?.path ?? ''`
-      } 
+      }
+
+      if(route.children != null) {
+        metaRoute.children = route.children
+      }
 
       if (route.meta != null) {
         metaRoute.meta = `{ ...(${metaImportName}) || {}), ...${route.meta} }`

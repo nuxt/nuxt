@@ -517,8 +517,8 @@ describe('pages:generateRoutesFromFiles', () => {
       }
       if (result) {
         expect(result).toEqual(test.output)
-        expect(normalizeRoutes(result, new Set()).routes).toEqual(test.output?.map(route => formatNormalized(route)))
-        expect(normalizeRoutes(result, new Set(), true).routes).toEqual(test.output?.map(route => formatNormalized(route, true)))
+        expect(normalizeRoutes(result, new Set()).routes).toStrictEqual(test.output?.map(route => formatNormalized(route)))
+        expect(normalizeRoutes(result, new Set(), true).routes).toStrictEqual(test.output?.map(route => formatNormalized(route, true)))
       }
     })
   }
