@@ -1,15 +1,27 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
-import { generateRoutesFromFiles, pathToNitroGlob } from '../src/pages/utils'
+import { generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
   const layerDir = 'layer/pages'
+
+  vi.mock('knitwork', async (original) => {
+    return {
+      ...(await original<typeof import('knitwork')>()),
+      'genArrayFromRaw': (val: any) => val,
+      'genSafeVariableName': (..._args: string[]) => {
+        return 'mock'
+      },
+    }
+  })
+  
   const tests: Array<{
     description: string
     files: Array<{ path: string; template?: string; }>
     output?: NuxtPage[]
+    normalized?: Record<string, any>[]
     error?: string
   }> = [
     {
@@ -462,6 +474,32 @@ describe('pages:generateRoutesFromFiles', () => {
     }
   ]
 
+  type NormalizedRoute = Record<Exclude<keyof NuxtPage, 'file' | 'children'>, string> & { component?: string; children?: NormalizedRoute[] }
+  function formatNormalized(route: NuxtPage | undefined, extract = false) { 
+    const serializedName = JSON.stringify(route?.name)
+    const serializedPath = JSON.stringify(route?.path)
+
+    const res: NormalizedRoute = {
+      name: `mockMeta?.name ?? ${serializedName}`,
+      path: `mockMeta?.path ?? ${serializedPath}`,
+      meta: 'mockMeta || {}',
+      alias: route?.alias ? `${JSON.stringify(route.alias)}.concat(mockMeta?.alias || [])` : 'mockMeta?.alias || []',
+      component: `() => import("${route?.file}").then(m => m.default || m)`,
+      redirect: 'mockMeta?.redirect',
+    }
+
+    if (extract) {
+      res.name = route?.name != null ? serializedName : "mockMeta?.name"
+      res.path = route?.path != null ? serializedPath : "mockMeta?.path"
+    }
+
+    if (route?.children?.length) {
+      res.children = route?.children?.map(x => formatNormalized(x, extract)) ?? []
+    }
+
+    return res
+  }
+
   for (const test of tests) {
     it(test.description, async () => {
       const vfs = Object.fromEntries(
@@ -479,9 +517,12 @@ describe('pages:generateRoutesFromFiles', () => {
       }
       if (result) {
         expect(result).toEqual(test.output)
+        expect(normalizeRoutes(result, new Set()).routes).toEqual(test.output?.map(route => formatNormalized(route)))
+        expect(normalizeRoutes(result, new Set(), true).routes).toEqual(test.output?.map(route => formatNormalized(route, true)))
       }
     })
   }
+
 })
 
 describe('pages:generateRouteKey', () => {
