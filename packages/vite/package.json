@@ -36,7 +36,7 @@
     "@rollup/plugin-replace": "^5.0.5",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
-    "autoprefixer": "^10.4.16",
+    "autoprefixer": "^10.4.17",
     "clear": "^0.1.0",
     "consola": "^3.2.3",
     "cssnano": "^6.0.3",
