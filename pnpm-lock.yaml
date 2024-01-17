@@ -879,6 +879,19 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/suspense:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+      vue:
+        specifier: 3.4.14
+        version: 3.4.14(typescript@5.3.3)
+    devDependencies:
+      typescript:
+        specifier: latest
+        version: 5.3.3
+
 packages:
 
   /@aashutoshrathi/word-wrap@1.2.6:
