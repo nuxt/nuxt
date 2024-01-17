@@ -14,7 +14,7 @@ type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode'
 
 export interface CookieOptions<T = any> extends _CookieOptions {
   decode?(value: string): T
-  encode?(value: string): string
+  encode?(value: T): string
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
@@ -26,7 +26,7 @@ const CookieDefaults = {
   path: '/',
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
-  encode: val => encodeURIComponent(val)
+  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
@@ -62,9 +62,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
-      const rawCookie = typeof cookie.value === "string" ? cookie.value : JSON.stringify(cookie.value)
-      cookies[name] = destr(rawCookie)
-      channel?.postMessage(opts.encode(rawCookie))
+      cookies[name] = klona(cookie.value)
+      channel?.postMessage(opts.encode(cookie.value as T))
     }
 
     let watchPaused = false
