@@ -17,7 +17,7 @@
   },
   "exports": {
     ".": {
-      "types": "./types.d.ts",
+      "types": "./types.d.mts",
       "import": "./dist/index.mjs"
     },
     "./config": {
@@ -49,6 +49,7 @@
     "app.d.ts",
     "bin",
     "types.d.ts",
+    "types.d.mts",
     "dist",
     "config.*",
     "kit.*",
