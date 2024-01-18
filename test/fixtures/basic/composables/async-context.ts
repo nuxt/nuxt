@@ -12,7 +12,7 @@ async function fn1 () {
 
 async function fn2 () {
   await delay()
-  const app = useNuxtApp()
+  const app = tryUseNuxtApp()
   return {
     hasApp: !!app
   }

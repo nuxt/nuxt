@@ -33,7 +33,7 @@ interface PageMeta {
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
-  viewTransition?: boolean
+  viewTransition?: boolean | 'always'
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -107,10 +107,11 @@ interface PageMeta {
 
   **`viewTransition`**
 
-  - **Type**: `boolean`
+  - **Type**: `boolean | 'always'`
 
     **Experimental feature, only available when [enabled in the nuxt.config.ts](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
-    Enable/disable viewTransition for the for current page
+    Enable/disable viewTransition for the for current page.
+    If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
 
   **`redirect`**
 
