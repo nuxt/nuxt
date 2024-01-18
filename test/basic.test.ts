@@ -2285,6 +2285,16 @@ describe('keepalive', () => {
   })
 })
 
+describe('Node.js compatibility for client-side', () => {
+  it('should work', async () => {
+    const { page } = await renderPage('/node-compat')
+    const html = await page.innerHTML('body')
+    expect(html).toContain('Nuxt is Awesome!')
+    expect(html).toContain('CWD: [available]')
+    await page.close()
+  })
+})
+
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
