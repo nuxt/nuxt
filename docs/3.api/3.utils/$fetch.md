@@ -35,7 +35,7 @@ const { data } = await useFetch('/api/item')
 
 :read-more{to="/docs/getting-started/data-fetching"}
 
-You can use `$fetch` for any method that are executed only on client-side.
+You can use `$fetch` in any methods that are executed only on client-side.
 
 ```vue [pages/contact.vue]
 <script setup lang="ts">

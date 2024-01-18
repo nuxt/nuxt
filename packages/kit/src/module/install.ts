@@ -90,7 +90,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         continue
       }
     }
-    if (!nuxtModule && error) {
+    if (typeof nuxtModule !== 'function' && error) {
       logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
       throw error
     }

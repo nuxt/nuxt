@@ -44,4 +44,8 @@ Apart from dynamic parameters and query parameters, `useRoute()` also provides t
 - `path`: encoded pathname section of the URL
 - `redirectedFrom`: route location that was attempted to access before ending up on the current route location
 
+::callout
+Browsers don't send [URL fragments](https://url.spec.whatwg.org/#concept-url-fragment) (for example `#foo`) when making requests. So using `route.fullPath` in your template can trigger hydration issues because this will include the fragment on client but not the server.
+::
+
 :read-more{icon="i-simple-icons-vuedotjs" to="https://router.vuejs.org/api/interfaces/RouteLocationNormalizedLoaded.html"}

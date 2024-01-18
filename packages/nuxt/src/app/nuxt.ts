@@ -439,14 +439,28 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
+ * 
+ * Returns `null` if Nuxt instance is unavailable.
  */
-export function useNuxtApp (): NuxtApp {
+export function tryUseNuxtApp (): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
   nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
+
+  return nuxtAppInstance || null
+}
+
+/*@__NO_SIDE_EFFECTS__*/
+/**
+ * Returns the current Nuxt instance.
+ * 
+ * Throws an error if Nuxt instance is unavailable.
+ */
+export function useNuxtApp (): NuxtApp {
+  const nuxtAppInstance = tryUseNuxtApp()
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
