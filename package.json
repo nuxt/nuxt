@@ -45,7 +45,7 @@
   "devDependencies": {
     "@codspeed/vitest-plugin": "2.3.1",
     "@nuxt/eslint-config": "0.2.0",
-    "@nuxt/test-utils": "3.9.0",
+    "@nuxt/test-utils": "3.10.0",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.11.5",
