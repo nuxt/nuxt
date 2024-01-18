@@ -14,7 +14,7 @@ export default defineVitestConfig({
             nuxt: {
               buildId: 'override'
             }
-          },
+          }
         }
       }
     }
