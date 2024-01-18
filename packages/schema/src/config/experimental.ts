@@ -310,10 +310,10 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Node.js import polyfills for the client-side.
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
      * @see https://github.com/unjs/unenv
      *
-     * **Note:** For making globals such as `Buffer` to work in Browser, you need to manually inject them.
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *
      * ```ts
      * import { Buffer } from 'node:buffer'
