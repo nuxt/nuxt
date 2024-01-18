@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.14"
+    "vue": "3.4.15"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -60,7 +60,7 @@
     "std-env": "^3.7.0",
     "strip-literal": "^2.0.0",
     "ufo": "^1.3.2",
-    "unenv": "^1.8.0",
+    "unenv": "^1.9.0",
     "unplugin": "^1.6.0",
     "vite": "5.0.11",
     "vite-node": "^1.1.1",
