@@ -1,13 +1,12 @@
-<script setup lang="ts">
+<script setup>
+const index = ref(0);
+
+const next = () => (index.value += 1);
 </script>
 
 <template>
-  <!-- Edit this file to play around with Nuxt but never commit changes! -->
   <div>
-    Nuxt 3 Playground
+    <button @click="next">Click</button>
+    <ServerComponent :index="index" />
   </div>
 </template>
-
-<style scoped>
-
-</style>
