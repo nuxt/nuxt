@@ -102,7 +102,7 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const inlineData = parsePayload(el.textContent || '')
+  const inlineData = await parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
@@ -115,8 +115,8 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export function parsePayload (payload: string) {
-  return parse(payload, useNuxtApp()._payloadRevivers)
+export async function parsePayload (payload: string) {
+  return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
 /**
