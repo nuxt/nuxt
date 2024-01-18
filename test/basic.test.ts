@@ -1682,9 +1682,12 @@ describe.skipIf(isDev())('dynamic paths', () => {
   })
 
   it('should allow setting base URL and build assets directory', async () => {
-    process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_other/'
-    process.env.NUXT_APP_BASE_URL = '/foo/'
-    await startServer()
+    await startServer({
+      env: {
+        NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
+        NUXT_APP_BASE_URL: '/foo/',
+      }
+    })
 
     const html = await $fetch('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -1699,9 +1702,11 @@ describe.skipIf(isDev())('dynamic paths', () => {
   })
 
   it('should allow setting relative baseURL', async () => {
-    delete process.env.NUXT_APP_BUILD_ASSETS_DIR
-    process.env.NUXT_APP_BASE_URL = './'
-    await startServer()
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: './'
+      }
+    })
 
     const html = await $fetch('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -1717,19 +1722,25 @@ describe.skipIf(isDev())('dynamic paths', () => {
   })
 
   it('should use baseURL when redirecting', async () => {
-    process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_other/'
-    process.env.NUXT_APP_BASE_URL = '/foo/'
-    await startServer()
+    await startServer({
+      env: {
+        NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
+        NUXT_APP_BASE_URL: '/foo/',
+      }
+    })
     const { headers } = await fetch('/foo/navigate-to/', { redirect: 'manual' })
 
     expect(headers.get('location')).toEqual('/foo/')
   })
 
   it('should allow setting CDN URL', async () => {
-    process.env.NUXT_APP_BASE_URL = '/foo/'
-    process.env.NUXT_APP_CDN_URL = 'https://example.com/'
-    process.env.NUXT_APP_BUILD_ASSETS_DIR = '/_cdn/'
-    await startServer()
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/',
+        NUXT_APP_CDN_URL: 'https://example.com/',
+        NUXT_APP_BUILD_ASSETS_DIR: '/_cdn/'
+      }
+    })
 
     const html = await $fetch('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
@@ -1744,9 +1755,6 @@ describe.skipIf(isDev())('dynamic paths', () => {
   })
 
   it('restore server', async () => {
-    process.env.NUXT_APP_BASE_URL = undefined
-    process.env.NUXT_APP_CDN_URL = undefined
-    process.env.NUXT_APP_BUILD_ASSETS_DIR = undefined
     await startServer()
   })
 })
@@ -2033,13 +2041,15 @@ describe('component islands', () => {
   })
 
   it.skipIf(isDev())('should not render an error when having a baseURL', async () => {
-    process.env.NUXT_APP_BASE_URL = '/foo/'
-    await startServer()
+    await startServer({
+      env: {
+        NUXT_APP_BASE_URL: '/foo/'
+      }
+    })
 
     const result = await fetch('/foo/islands')
     expect(result.status).toBe(200)
 
-    process.env.NUXT_APP_BASE_URL = undefined
     await startServer()
   })
 })
@@ -2121,6 +2131,12 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
   it('should be available', async () => {
     expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: true')
+  })
+})
+
+describe.skipIf(process.env.TEST_CONTEXT === 'async')('Async context', () => {
+  it('should be unavailable', async () => {
+    expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: false')
   })
 })
 
@@ -2269,6 +2285,16 @@ describe('keepalive', () => {
       'not-keepalive: onUnmounted'
     ])
 
+    await page.close()
+  })
+})
+
+describe('Node.js compatibility for client-side', () => {
+  it('should work', async () => {
+    const { page } = await renderPage('/node-compat')
+    const html = await page.innerHTML('body')
+    expect(html).toContain('Nuxt is Awesome!')
+    expect(html).toContain('CWD: [available]')
     await page.close()
   })
 })
