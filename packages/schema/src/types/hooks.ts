@@ -171,6 +171,17 @@ export interface NuxtHooks {
   'pages:extend': (pages: NuxtPage[]) => HookResult
 
   /**
+   * Called when resolving `app/router.options` files. It allows modifying the detected router options files
+   * and adding new ones.
+   *
+   * Adding a router options file will switch on page-based routing, unless `optional` is set, in which case
+   * it will only apply when page-based routing is already enabled.
+   * @param context An object with `files` containing an array of router options files.
+   * @returns Promise
+   */
+  'pages:routerOptions': (context: { files: Array<{ path: string, optional?: boolean }> }) => HookResult
+
+  /**
    * Called when the dev middleware is being registered on the Nitro dev server.
    * @param handler the Vite or Webpack event handler
    * @returns Promise
@@ -335,11 +346,11 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'webpack:config': (webpackConfigs: Configuration[]) => HookResult
-   /**
-    * Allows to read the resolved webpack config
-    * @param webpackConfigs Configs objects to be pushed to the compiler
-    * @returns Promise
-    */
+  /**
+   * Allows to read the resolved webpack config
+   * @param webpackConfigs Configs objects to be pushed to the compiler
+   * @returns Promise
+   */
   'webpack:configResolved': (webpackConfigs: Readonly<Configuration>[]) => HookResult
   /**
    * Called right before compilation.
