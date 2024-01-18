@@ -2130,6 +2130,12 @@ describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
   })
 })
 
+describe.skipIf(process.env.TEST_CONTEXT === 'async')('Async context', () => {
+  it('should be unavailable', async () => {
+    expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: false')
+  })
+})
+
 describe.skipIf(isWindows)('useAsyncData', () => {
   it('works after useNuxtData call', async () => {
     const page = await createPage('/useAsyncData/nuxt-data')
