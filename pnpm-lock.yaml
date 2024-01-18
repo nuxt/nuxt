@@ -509,7 +509,7 @@ importers:
         specifier: 2.3.1
         version: 2.3.1
       unenv:
-        specifier: ^1.9.0
+        specifier: 1.9.0
         version: 1.9.0
       vite:
         specifier: 5.0.11
