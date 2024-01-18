@@ -2,7 +2,6 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import destr from 'destr'
 import type { RouteLocationNormalized } from '#vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
@@ -143,7 +142,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     if (withoutSlots) {
       const clone = element.cloneNode(true)
-      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
       return [clone.outerHTML]
     }
     return [element.outerHTML]
@@ -158,7 +157,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -174,16 +173,4 @@ function isStartFragment (element: RendererNode) {
 
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
-}
-const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
-
-export function getSlotProps (html: string) {
-  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
-  const data: Record<string, any> = {}
-  for (const slot of slotsDivs) {
-    const [_, slotName, json] = slot
-    const slotData = destr(decodeHtmlEntities(json))
-    data[slotName] = slotData
-  }
-  return data
 }
