@@ -31,6 +31,11 @@ export async function addComponent (opts: AddComponentOptions) {
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
   nuxt.options.components = nuxt.options.components || []
 
+  if (!opts.mode) {
+    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+    opts.mode = mode as 'all' | 'client' | 'server'
+  }
+
   // Apply defaults
   const component: Component = {
     export: opts.export || 'default',

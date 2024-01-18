@@ -12,6 +12,7 @@ import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Pr
 import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
+import { toArray } from '../utils'
 
 enum SegmentParserState {
   initial,
@@ -50,7 +51,9 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
     scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
   }
-  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+
+  // sort scanned files using en-US locale to make the result consistent across different system locales
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
 
@@ -278,7 +281,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
     }
 
     // Remove leading / if children route
-    if (parent && route.path.startsWith('/')) {
+    if (parent && route.path[0] === '/') {
       route.path = route.path.slice(1)
     }
 
@@ -302,11 +305,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const route = Object.fromEntries(
-        Object.entries(page)
-          .filter(([key, value]) => key !== 'file' && (Array.isArray(value) ? value.length : value))
-          .map(([key, value]) => [key, JSON.stringify(value)])
-      ) as Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string }
+      const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
+      for (const [key, value] of Object.entries(page)) {
+        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) { 
+          route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
+        }
+      }
 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports).routes
@@ -325,7 +329,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
       let aliasCode = `${metaImportName}?.alias || []`
-      const alias = Array.isArray(page.alias) ? page.alias : [page.alias].filter(Boolean)
+      const alias = toArray(page.alias).filter(Boolean)
       if (alias.length) {
         aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
       }

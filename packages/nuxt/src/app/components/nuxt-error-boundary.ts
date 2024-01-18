@@ -12,7 +12,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
 
     onErrorCaptured((err, target, info) => {
-      if (import.meta.client && !nuxtApp.isHydrating) {
+      if (import.meta.client && (!nuxtApp.isHydrating || !nuxtApp.payload.serverRendered)) {
         emit('error', err)
         nuxtApp.hooks.callHook('vue:error', err, target, info)
         error.value = err

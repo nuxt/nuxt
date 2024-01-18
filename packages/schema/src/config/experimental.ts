@@ -1,6 +1,66 @@
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
+  /**
+   * `future` is for early opting-in to new features that will become default in a future
+   * (possibly major) version of the framework.
+   */
+  future: {
+    /**
+     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
+     * for frameworks like Nuxt and Vite.
+     *
+     * It improves type support when using modern libraries with `exports`.
+     *
+     * See https://github.com/microsoft/TypeScript/pull/51669
+     */
+    typescriptBundlerResolution: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        if (typeof val === 'boolean') { return val }
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        if (setting) {
+          return setting.toLowerCase() === 'bundler'
+        }
+        return false
+      }
+    },
+  },
+  /**
+   * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
+   */
+  features: {
+    /**
+     * Inline styles when rendering HTML (currently vite only).
+     *
+     * You can also pass a function that receives the path of a Vue component
+     * and returns a boolean indicating whether to inline the styles for that component.
+     * @type {boolean | ((id?: string) => boolean)}
+     */
+    inlineStyles: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+          return false
+        }
+        // Enabled by default for vite prod with ssr
+        return val ?? true
+      }
+    },
+
+    /**
+     * Turn off rendering of Nuxt scripts and JS resource hints.
+     * You can also disable scripts more granularly within `routeRules`.
+     */
+    noScripts: {
+      async $resolve (val, get) {
+        // TODO: remove in v3.10
+        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+      }
+    },
+  },
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
@@ -72,29 +132,6 @@ export default defineUntypedSchema({
      */
     restoreState: false,
 
-    /**
-     * Inline styles when rendering HTML (currently vite only).
-     *
-     * You can also pass a function that receives the path of a Vue component
-     * and returns a boolean indicating whether to inline the styles for that component.
-     * @type {boolean | ((id?: string) => boolean)}
-     */
-    inlineSSRStyles: {
-      async $resolve (val, get) {
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
-          return false
-        }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
-      }
-    },
-
-    /**
-     * Turn off rendering of Nuxt scripts and JS resource hints.
-     * You can also disable scripts more granularly within `routeRules`.
-     */
-    noScripts: false,
-
     /** Render JSON payloads with support for revivifying complex types. */
     renderJsonPayloads: true,
 
@@ -121,6 +158,7 @@ export default defineUntypedSchema({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {boolean | 'always'}
      */
     viewTransition: false,
 
@@ -151,27 +189,6 @@ export default defineUntypedSchema({
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
     configSchema: true,
-
-    /**
-     * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
-     * for frameworks like Nuxt and Vite.
-     *
-     * It improves type support when using modern libraries with `exports`.
-     *
-     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
-     *
-     * See https://github.com/microsoft/TypeScript/pull/51669
-     */
-    typescriptBundlerResolution: {
-      async $resolve (val, get) {
-        if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
-        if (setting) {
-          return setting.toLowerCase() === 'bundler'
-        }
-        return true
-      }
-    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
@@ -241,6 +258,33 @@ export default defineUntypedSchema({
      * should set `routeRules` directly within your `nuxt.config`.
      */
     inlineRouteRules: false,
+
+    /**
+     * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
+     * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
+     * data in different pages.
+     *
+     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
+     * not be fetched more than once.
+     *
+     * It is particularly important when enabling this feature to make sure that any unique key of your data
+     * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
+     * data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch`
+     * should do this automatically for you.)
+     * @example
+     * ```ts
+     * // This would be unsafe in a dynamic page (e.g. `[slug].vue`) because the route slug makes a difference
+     * // to the data fetched, but Nuxt can't know that because it's not reflected in the key.
+     * const route = useRoute()
+     * const { data } = await useAsyncData(async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     * // Instead, you should use a key that uniquely identifies the data fetched.
+     * const { data } = await useAsyncData(route.params.slug, async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     */
+    sharedPrerenderData: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
