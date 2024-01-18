@@ -562,7 +562,7 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null);
 }
 
-/** @since 3.0.0 */
+/** @since 3.1.0 */
 export function useNuxtData<DataT = any>(
   key: string
 ): { data: Ref<DataT | null> } {
