@@ -307,6 +307,21 @@ export default defineUntypedSchema({
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {}
-    }
+    },
+
+    /**
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
+     * @see https://github.com/unjs/unenv
+     *
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
+     *
+     * ```ts
+     * import { Buffer } from 'node:buffer'
+     *
+     * globalThis.Buffer = globalThis.Buffer || Buffer
+     * ```
+     * @type {boolean}
+     */
+    clientNodeCompat: false,
   }
 })
