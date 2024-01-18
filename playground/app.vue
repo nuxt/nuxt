@@ -6,7 +6,9 @@ const next = () => (index.value += 1);
 
 <template>
   <div>
-    <button @click="next">Click</button>
+    <button @click="next">
+      Click
+    </button>
     <ServerComponent :index="index" />
   </div>
 </template>
