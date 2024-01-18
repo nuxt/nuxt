@@ -356,6 +356,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
+type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
@@ -363,7 +364,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaFiltered = Object.values(page.meta || {}).filter(value => value !== undefined)
       const aliasFiltered = toArray(page.alias).filter(Boolean)
       
-      const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create({
+      const route: NormalizedRoute = Object.create({
         path: page.path !== undefined ? JSON.stringify(page.path) : undefined,
         name: page.name !== undefined ? JSON.stringify(page.name) : undefined,
         meta: metaFiltered.length ? JSON.stringify(metaFiltered) : undefined,
@@ -384,7 +385,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
-      const metaRoute = {
+      const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
         meta: `${metaImportName} || {}`,
