@@ -140,7 +140,7 @@ export default defineComponent({
 
       return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
         if (!currentSlots.includes(slotName)) {
-          return full + payloads.slots[slotName]?.fallback ?? ''
+          return full + (payloads.slots[slotName]?.fallback || '')
         }
         return full
       })
