@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/vite-builder",
-  "version": "3.9.1",
+  "version": "3.9.3",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -29,14 +29,14 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.10"
+    "vue": "3.4.14"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^5.0.5",
     "@vitejs/plugin-vue": "^5.0.3",
     "@vitejs/plugin-vue-jsx": "^3.1.0",
-    "autoprefixer": "^10.4.16",
+    "autoprefixer": "^10.4.17",
     "clear": "^0.1.0",
     "consola": "^3.2.3",
     "cssnano": "^6.0.3",

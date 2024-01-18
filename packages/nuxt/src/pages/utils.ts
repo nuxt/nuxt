@@ -51,7 +51,9 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
     scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
   }
-  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
+
+  // sort scanned files using en-US locale to make the result consistent across different system locales
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
 

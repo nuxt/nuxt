@@ -20,7 +20,7 @@ const objectCookie = useCookie('browser-object-default', {
   <div>
     <div>cookies testing page</div>
     <pre>{{ objectCookie }}</pre>
-    <button @click="objectCookie.foo = 'baz'">
+    <button @click="objectCookie.foo === 'baz' ? objectCookie.foo = 'bar' : objectCookie.foo = 'baz'">
       Change cookie
     </button>
   </div>

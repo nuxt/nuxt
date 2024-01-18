@@ -3,7 +3,7 @@ import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
-import type { NuxtError} from './error';
+import type { NuxtError } from './error'
 import { createError } from './error'
 import { onNuxtReady } from './ready'
 
@@ -17,18 +17,18 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
-    ? keyof T extends K[number]
-      ? T // Exact same keys as the target, skip Pick
-      : K[number] extends never
-        ? T
-        : Pick<T, K[number]>
-    : T
+  ? keyof T extends K[number]
+  ? T // Exact same keys as the target, skip Pick
+  : K[number] extends never
+  ? T
+  : Pick<T, K[number]>
+  : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
   ? keyof T extends string
-    ? keyof T
-    : never
+  ? keyof T
+  : never
   : never
 >
 
@@ -135,18 +135,28 @@ export function useAsyncData<
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
   // eslint-disable-next-line prefer-const
-  let [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  let [key, _handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
 
   // Validate arguments
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [asyncData] key must be a string.')
   }
-  if (typeof handler !== 'function') {
+  if (typeof _handler !== 'function') {
     throw new TypeError('[nuxt] [asyncData] handler must be a function.')
   }
 
   // Setup nuxt instance payload
   const nuxt = useNuxtApp()
+
+  // When prerendering, share payload data automatically between requests
+  const handler = import.meta.client || !import.meta.prerender || !nuxt.ssrContext?._sharedPrerenderCache ? _handler : async () => {
+    const value = await nuxt.ssrContext!._sharedPrerenderCache!.get(key)
+    if (value) { return value as ResT }
+
+    const promise = nuxt.runWithContext(_handler)
+    nuxt.ssrContext!._sharedPrerenderCache!.set(key, promise)
+    return promise
+  }
 
   // Used to get default values
   const getDefault = () => null
