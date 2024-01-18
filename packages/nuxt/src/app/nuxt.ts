@@ -69,6 +69,11 @@ export interface NuxtSSRContext extends SSRContext {
   _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
+  /** @internal */
+  _sharedPrerenderCache?: {
+    get<T = unknown> (key: string): Promise<T>
+    set<T> (key: string, value: Promise<T>): Promise<void>
+  }
 }
 
 export interface NuxtPayload {

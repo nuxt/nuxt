@@ -260,6 +260,33 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
+     * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
+     * data in different pages.
+     *
+     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
+     * not be fetched more than once.
+     *
+     * It is particularly important when enabling this feature to make sure that any unique key of your data
+     * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
+     * data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch`
+     * should do this automatically for you.)
+     * @example
+     * ```ts
+     * // This would be unsafe in a dynamic page (e.g. `[slug].vue`) because the route slug makes a difference
+     * // to the data fetched, but Nuxt can't know that because it's not reflected in the key.
+     * const route = useRoute()
+     * const { data } = await useAsyncData(async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     * // Instead, you should use a key that uniquely identifies the data fetched.
+     * const { data } = await useAsyncData(route.params.slug, async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     */
+    sharedPrerenderData: false,
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
