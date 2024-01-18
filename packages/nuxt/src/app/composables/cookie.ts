@@ -11,7 +11,7 @@ import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
 // @ts-expect-error virtual import
-import { listenCookieChanges } from '#build/nuxt.config.mjs'
+import { cookieStore } from '#build/nuxt.config.mjs'
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
@@ -32,7 +32,7 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
-const store = import.meta.client && listenCookieChanges ? window.cookieStore : undefined
+const store = import.meta.client && cookieStore ? window.cookieStore : undefined
 
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>

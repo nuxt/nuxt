@@ -259,9 +259,10 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
-     * Enables listening for cookie updates (if supported by the browser) and refreshing `useCookie` ref values.
+     * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
+     * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
-    listenCookieChanges: false,
+    cookieStore: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.

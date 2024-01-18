@@ -36,7 +36,7 @@ const loggedIn = computed(() => !!tokenCookie.value)
 ```
 
 ::callout{to="/docs/guide/going-further/experimental-features#refreshcookie"}
-You can enable experimental `listenCookieChanges` option to automatically refresh `useCookie` value when cookie changes in the browser.
+You can enable experimental `cookieStore` option to automatically refresh `useCookie` value when cookie changes in the browser.
 ::
 
 ## Type
