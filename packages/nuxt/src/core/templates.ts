@@ -7,13 +7,8 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { Nuxt, NuxtApp, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtTemplate } from 'nuxt/schema'
 import { annotatePlugins, checkForCircularDependencies } from './app'
-
-interface TemplateContext {
-  nuxt: Nuxt
-  app: NuxtApp
-}
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -33,34 +28,34 @@ export const vueShim: NuxtTemplate = {
 }
 
 // TODO: Use an alias
-export const appComponentTemplate: NuxtTemplate<TemplateContext> = {
+export const appComponentTemplate: NuxtTemplate = {
   filename: 'app-component.mjs',
   getContents: ctx => genExport(ctx.app.mainComponent!, ['default'])
 }
 // TODO: Use an alias
-export const rootComponentTemplate: NuxtTemplate<TemplateContext> = {
+export const rootComponentTemplate: NuxtTemplate = {
   filename: 'root-component.mjs',
   // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
   // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
   getContents: ctx => (ctx.nuxt.options.dev ? "import '#build/components.islands.mjs';\n" : '') + genExport(ctx.app.rootComponent!, ['default'])
 }
 // TODO: Use an alias
-export const errorComponentTemplate: NuxtTemplate<TemplateContext> = {
+export const errorComponentTemplate: NuxtTemplate = {
   filename: 'error-component.mjs',
   getContents: ctx => genExport(ctx.app.errorComponent!, ['default'])
 }
 // TODO: Use an alias
-export const testComponentWrapperTemplate = {
+export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
-  getContents: (ctx: TemplateContext) => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+  getContents: (ctx) => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
 }
 
-export const cssTemplate: NuxtTemplate<TemplateContext> = {
+export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
 }
 
-export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
+export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins/client.mjs',
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
@@ -80,7 +75,7 @@ export const clientPluginTemplate: NuxtTemplate<TemplateContext> = {
   }
 }
 
-export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
+export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins/server.mjs',
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
@@ -100,7 +95,7 @@ export const serverPluginTemplate: NuxtTemplate<TemplateContext> = {
   }
 }
 
-export const pluginsDeclaration: NuxtTemplate<TemplateContext> = {
+export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async (ctx) => {
     const EXTENSION_RE = new RegExp(`(?<=\\w)(${ctx.nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
@@ -121,7 +116,8 @@ import type { Plugin } from '#app'
 
 type Decorate<T extends Record<string, any>> = { [K in keyof T as K extends string ? \`$\${K}\` : never]: T[K] }
 
-type InjectionType<A extends Plugin> = A extends Plugin<infer T> ? Decorate<T> : unknown
+type IsAny<T> = 0 extends 1 & T ? true : false
+type InjectionType<A extends Plugin> = IsAny<A> extends true ? unknown : A extends Plugin<infer T> ? Decorate<T> : unknown
 
 type NuxtAppInjections = \n  ${tsImports.map(p => `InjectionType<typeof ${genDynamicImport(p, { wrapper: false })}.default>`).join(' &\n  ')}
 
@@ -143,7 +139,7 @@ export { }
 }
 
 const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
-export const schemaTemplate: NuxtTemplate<TemplateContext> = {
+export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
     const moduleInfo = nuxt.options._installedModules.map(m => ({
@@ -154,7 +150,12 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
-
+    const privateRuntimeConfig = Object.create(null)
+    for (const key in nuxt.options.runtimeConfig) {
+      if (key !== 'public') {
+        privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
+      }
+    }
     return [
       "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
@@ -164,7 +165,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
       ),
       modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
       '  }',
-      generateTypes(await resolveSchema(Object.fromEntries(Object.entries(nuxt.options.runtimeConfig).filter(([key]) => key !== 'public')) as Record<string, JSValue>),
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,
@@ -191,7 +192,7 @@ export const schemaTemplate: NuxtTemplate<TemplateContext> = {
 }
 
 // Add layouts template
-export const layoutTemplate: NuxtTemplate<TemplateContext> = {
+export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
@@ -204,7 +205,7 @@ export const layoutTemplate: NuxtTemplate<TemplateContext> = {
 }
 
 // Add middleware template
-export const middlewareTemplate: NuxtTemplate<TemplateContext> = {
+export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
   getContents ({ app }) {
     const globalMiddleware = app.middleware.filter(mw => mw.global)
@@ -364,9 +365,9 @@ export const dollarFetchTemplate: NuxtTemplate = {
 }
 
 // Allow direct access to specific exposed nuxt.config
-export const nuxtConfigTemplate = {
+export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
-  getContents: (ctx: TemplateContext) => {
+  getContents: (ctx) => {
     const fetchDefaults = {
       ...ctx.nuxt.options.experimental.defaults.useFetch,
       baseURL: undefined,
