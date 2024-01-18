@@ -148,7 +148,7 @@ export function useFetch<
 
   if (import.meta.dev && import.meta.client) {
     // @ts-expect-error private property
-    _asyncDataOptions._useFetch = true
+    _asyncDataOptions._functionName = opts._functionName || 'useFetch'
   }
 
   let controller: AbortController
@@ -224,7 +224,12 @@ export function useLazyFetch<
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
   arg2?: string
 ) {
-  const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    opts._functionName ||= 'useLazyFetch'
+  }
 
   return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,

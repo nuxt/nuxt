@@ -333,7 +333,7 @@ export function useAsyncData<
     const instance = getCurrentInstance()
     if (import.meta.dev && !nuxt.isHydrating && (!instance || instance?.isMounted)) {
       // @ts-expect-error private property
-      console.warn(`[nuxt] [${options._useFetch ? 'useFetch' : 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
+      console.warn(`[nuxt] [${options._functionName || 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
     }
     if (instance && !instance._nuxtOnBeforeMountCbs) {
       instance._nuxtOnBeforeMountCbs = []
@@ -430,7 +430,13 @@ export function useLazyAsyncData<
 > (...args: any[]): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
-  const [key, handler, options] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+  const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
+
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    options._functionName ||= 'useLazyAsyncData'
+  }
+
   // @ts-expect-error we pass an extra argument to prevent a key being injected
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
