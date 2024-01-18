@@ -39,6 +39,12 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -52,6 +58,12 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -134,6 +146,11 @@ export function useFetch<
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
   }
 
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    _asyncDataOptions._functionName = opts._functionName || 'useFetch'
+  }
+
   let controller: AbortController
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
@@ -207,7 +224,12 @@ export function useLazyFetch<
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
   arg2?: string
 ) {
-  const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    opts._functionName ||= 'useLazyFetch'
+  }
 
   return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
