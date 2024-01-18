@@ -264,7 +264,7 @@ export default defineUntypedSchema({
     /**
      * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
      *
-     * This only work with static or strings/arrays rather than variables or conditional assignment.
+     * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
