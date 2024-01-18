@@ -116,7 +116,7 @@ describe('runtime server component', () => {
 
 describe('client components', () => {
 
-  it('expect swapping nuxt-client should not trigger errors', async () => {
+  it('expect swapping nuxt-client should not trigger errors #25289', async () => {
     const mockPath = '/nuxt-client.js'
     const componentId = 'Client-12345'
 
