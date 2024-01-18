@@ -398,7 +398,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaRoute.path = route.path ?? `${metaImportName}?.path ?? ''`
       }
 
-      if(route.children != null) {
+      if (route.children != null) {
         metaRoute.children = route.children
       }
 
