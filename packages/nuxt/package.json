@@ -109,7 +109,7 @@
     "unimport": "^3.7.1",
     "unplugin": "^1.6.0",
     "unplugin-vue-router": "^0.7.0",
-    "untyped": "^1.4.0",
+    "untyped": "^1.4.1",
     "vue": "^3.4.15",
     "vue-bundle-renderer": "^2.0.0",
     "vue-devtools-stub": "^0.1.0",
