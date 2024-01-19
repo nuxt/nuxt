@@ -235,7 +235,7 @@ export function useAsyncData<
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
 
-  if(import.meta.dev && typeof options.dedupe === 'boolean') {
+  if (import.meta.dev && typeof options.dedupe === 'boolean') {
     console.warn('`boolean` values are deprecated for the `dedupe` option of useAsyncData and will be removed in the future. Use "cancel" or "defer" instead.')
   }
 
