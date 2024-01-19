@@ -104,10 +104,7 @@ export default defineComponent({
       }
     }
 
-    const payloads: {
-     slots: NonNullable<NuxtIslandResponse['slots']>
-     components:  NonNullable<NuxtIslandResponse['components']>
-    } = {
+    const payloads: Required<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {
       slots: {},
       components: {}
     }
