@@ -1825,7 +1825,6 @@ describe('component islands', () => {
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
-            "fallback": "",
             "props": [],
           },
           "fallback": {
@@ -1854,7 +1853,6 @@ describe('component islands', () => {
             ],
           },
           "test": {
-            "fallback": "",
             "props": [
               {
                 "count": 3,
@@ -2130,6 +2128,12 @@ describe.skipIf(process.env.TEST_CONTEXT !== 'async')('Async context', () => {
   })
 })
 
+describe.skipIf(process.env.TEST_CONTEXT === 'async')('Async context', () => {
+  it('should be unavailable', async () => {
+    expect(await $fetch('/async-context')).toContain('&quot;hasApp&quot;: false')
+  })
+})
+
 describe.skipIf(isWindows)('useAsyncData', () => {
   it('works after useNuxtData call', async () => {
     const page = await createPage('/useAsyncData/nuxt-data')
@@ -2279,6 +2283,16 @@ describe('keepalive', () => {
   })
 })
 
+describe('Node.js compatibility for client-side', () => {
+  it('should work', async () => {
+    const { page } = await renderPage('/node-compat')
+    const html = await page.innerHTML('body')
+    expect(html).toContain('Nuxt is Awesome!')
+    expect(html).toContain('CWD: [available]')
+    await page.close()
+  })
+})
+
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
@@ -2322,5 +2336,25 @@ describe('import components', () => {
 
   it('load named component with mode server', () => {
     expect(html).toContain('named-comp-server')
+  })
+})
+
+describe('lazy import components', () => {
+  let html = ''
+
+  it.sequential('fetch lazy-import-components page', async () => {
+    html = await $fetch('/lazy-import-components')
+  })
+
+  it('lazy load named component with mode all', () => {
+    expect(html).toContain('lazy-named-comp-all')
+  })
+
+  it('lazy load named component with mode client', () => {
+    expect(html).toContain('lazy-named-comp-client')
+  })
+
+  it('lazy load named component with mode server', () => {
+    expect(html).toContain('lazy-named-comp-server')
   })
 })

@@ -50,6 +50,7 @@ export default defineBuildConfig({
     'pug',
     'sass-loader',
     'c12',
+    'unenv',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',
