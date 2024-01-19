@@ -29,7 +29,7 @@ export function useRequestHeaders (include?: any[]) {
 }
 
 /** @since 3.9.0 */
-export function useRequestHeader(header: string) {
+export function useRequestHeader (header: string) {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
   return event ? getRequestHeader(event, header) : undefined
