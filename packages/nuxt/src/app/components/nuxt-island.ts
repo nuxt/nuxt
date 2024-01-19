@@ -114,8 +114,8 @@ export default defineComponent({
 
 
     if (nuxtApp.isHydrating) {
-      payloads.slots =  toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {}
-      payloads.components =  toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {}
+      payloads.slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {}
+      payloads.components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {}
     }
 
     const ssrHTML = ref<string>('')
