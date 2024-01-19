@@ -121,6 +121,7 @@ const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' ||
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @since 3.0.0
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
  */
@@ -378,6 +379,7 @@ export function useAsyncData<
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
+/** @since 3.0.0 */
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -441,6 +443,7 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
+/** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
   const nuxt = useNuxtApp()
 
@@ -454,6 +457,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
   }
 }
 
+/** @since 3.0.0 */
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
   if (import.meta.server) {
     return Promise.resolve()
@@ -465,6 +469,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
+/** @since 3.0.0 */
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.data)
