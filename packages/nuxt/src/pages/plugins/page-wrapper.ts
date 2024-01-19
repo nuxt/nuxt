@@ -1,45 +1,41 @@
 import { createUnplugin } from "unplugin";
-import { genImport } from 'knitwork';
+import { genExport } from 'knitwork';
 
-const cache = new Map<string, string>()
+const clientOnlyRE = /\bdefinePageMeta\({(?:.|\n)+clientOnly:\s?true/
 
-const clientOnlyRE = /definePageMeta\({(?:.|\n)+clientOnly:\s?true/
-const pageComponentVar = 'PageComponent';
-const createClientOnlyVar = 'createClientOnly'
-const createClientOnlyImport = genImport('#app/components/client-only', [createClientOnlyVar])
+const clientOnlyExportName = 'ClientOnly'
+const clientOnlyExport = genExport('#app/components/client-only', [{ name: 'default', as: clientOnlyExportName }]);
+const emptyClientOnlyExport = `export const ${clientOnlyExportName} = undefined`
 
-export const PageWrapper = createUnplugin((_options) => {
+const virtualPageWrapperModuleId = 'virtual:pages-wrapper'
+const resolvedVirtualPageWrapperModuleId = '\0' + virtualPageWrapperModuleId
+
+export const PageWrapper = createUnplugin(() => {
+  let hasClientOnlyPage: boolean | undefined;
+
   return {
     name: 'nuxt:page-wrapper',
+
     transformInclude(id) {
-      return id.includes('?page-component=true')
+      return id.includes('page-component=true')
     },
 
-    transform(code, id) {
-      if (cache.has(id)) {
-        return cache.get(id);
-      }
+    transform(code) {
+      hasClientOnlyPage = clientOnlyRE.test(code)
 
-      const reexport = [
-        genImport(stripQuery(id), pageComponentVar)
-      ]
-
-      if (clientOnlyRE.test(code)) {
-        reexport.push(createClientOnlyImport);
-        reexport.push(`export default ${createClientOnlyVar}(${pageComponentVar})`)
-      } else {
-        reexport.push(`export default ${pageComponentVar}`)
-      }
-
-      const reexportCode = reexport.join('\n');
-
-      cache.set(id, reexportCode)
-
-      return reexportCode
+      return code
     },
+
+    resolveId(id) {
+      if (id === virtualPageWrapperModuleId) {
+        return resolvedVirtualPageWrapperModuleId
+      }
+    },
+
+    load(id) {
+      if (id !== resolvedVirtualPageWrapperModuleId) { return }
+
+      return hasClientOnlyPage ? clientOnlyExport : emptyClientOnlyExport
+    }
   }
 })
-
-function stripQuery(id: string) {
-  return id.split('?')[0]
-}

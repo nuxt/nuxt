@@ -4,11 +4,13 @@ import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
+// @ts-expect-error virtual file
+import { ClientOnly } from 'virtual:pages-wrapper'
+
 import { toArray } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
-import ClientOnly from '#app/components/client-only'
 import { useNuxtApp } from '#app/nuxt'
 import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
@@ -105,7 +107,7 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          vnode = _wrapIf(ClientOnly, clientOnlyConfig,
+          vnode = _wrapIf(ClientOnly, ClientOnly && clientOnlyConfig,
             _wrapIf(Transition, hasTransition && transitionProps,
               wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                 suspensible: true,
