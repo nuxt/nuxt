@@ -1,6 +1,6 @@
 ---
 title: "refreshCookie"
-description: "Refresh useCookie() ref values"
+description: "Refresh useCookie values manually when a cookie has changed"
 navigation:
   badge: New
 links:
