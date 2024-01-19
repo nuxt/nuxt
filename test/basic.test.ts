@@ -2292,3 +2292,35 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     }
   }
 }
+
+describe('import components', () => {
+  let html = ''
+
+  it.sequential('fetch import-components page', async () => {
+    html = await $fetch('/import-components')
+  })
+
+  it('load default component with mode all', () => {
+    expect(html).toContain('<h1>default-comp-all</h1>')
+  })
+
+  it('load default component with mode client', () => {
+    expect(html).toContain('<h1>default-comp-client</h1>')
+  })
+
+  it('load default component with mode server', () => {
+    expect(html).toContain('<h1>default-comp-server</h1>')
+  })
+
+  it('load named component with mode all', () => {
+    expect(html).toContain('<h1>named-comp-all</h1>')
+  })
+
+  it('load named component with mode client', () => {
+    expect(html).toContain('<h1>named-comp-client</h1>')
+  })
+
+  it('load named component with mode server', () => {
+    expect(html).toContain('<h1>named-comp-server</h1>')
+  })
+})
