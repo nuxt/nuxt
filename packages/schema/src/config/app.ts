@@ -28,13 +28,6 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     propsDestructure: false,
-
-    /**
-     * Vue Experimental: Enable macro `defineModel`
-     * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
-     * @type {boolean}
-     */
-    defineModel: false
   },
 
   /**

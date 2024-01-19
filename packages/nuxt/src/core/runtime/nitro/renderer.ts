@@ -64,7 +64,7 @@ export interface NuxtIslandContext {
 
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
-  fallback: string
+  fallback?: string
 }
 export interface NuxtIslandClientResponse {
   html: string
@@ -626,7 +626,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
     }
   }
   return response
