@@ -36,6 +36,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
+    "jiti": "1.20.0",
     "rollup": "^4.9.5",
     "nuxt": "workspace:*",
     "vite": "5.0.11",

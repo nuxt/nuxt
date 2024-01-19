@@ -25,6 +25,7 @@
         "main"
       ],
       "ignoreDeps": [
+        "jiti",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
