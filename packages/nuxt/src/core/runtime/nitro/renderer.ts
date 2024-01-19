@@ -64,7 +64,7 @@ export interface NuxtIslandContext {
 
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
-  fallback: string
+  fallback?: string
 }
 export interface NuxtIslandClientResponse {
   html: string
@@ -183,6 +183,21 @@ const getSPARenderer = lazyCachedFunction(async () => {
 const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
+const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
+const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
+  get <T = unknown>(key: string): Promise<T> {
+    if (sharedPrerenderPromises!.has(key)) {
+      return sharedPrerenderPromises!.get(key)!
+    }
+    return useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+  },
+  async set <T>(key: string, value: Promise<T>) {
+    sharedPrerenderPromises!.set(key, value)
+    return useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+      // free up memory after the promise is resolved
+      .finally(() => sharedPrerenderPromises!.delete(key))
+  },
+} : null
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
@@ -285,6 +300,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     islandContext
+  }
+
+  if (import.meta.prerender && process.env.NUXT_SHARED_DATA) {
+    ssrContext._sharedPrerenderCache = sharedPrerenderCache!
   }
 
   // Whether we are prerendering route
@@ -607,7 +626,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
     }
   }
   return response
