@@ -1,9 +1,11 @@
 import { isChangingPage } from '../components/utils'
 import { useRouter } from '../composables/router'
 import { defineNuxtPlugin } from '../nuxt'
+// @ts-expect-error virtual file
+import { viewTransition } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!document.startViewTransition) { return }
+  if (!document.startViewTransition || (viewTransition !== 'always' && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) { return }
 
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)

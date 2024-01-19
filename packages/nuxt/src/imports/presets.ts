@@ -18,7 +18,7 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['defineNuxtLink']
   },
   {
-    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    imports: ['useNuxtApp', 'tryUseNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
     from: '#app/nuxt'
   },
   {
