@@ -92,7 +92,7 @@ export interface AsyncDataOptions<
 
 export interface AsyncDataExecuteOptions {
   _initial?: boolean
-  // TODO: deprecate boolean option in future minor
+  // TODO: remove boolean option in Nuxt 4
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
@@ -115,7 +115,7 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-// TODO: deprecate boolean option in future minor
+// TODO: remove boolean option in Nuxt 4
 const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 /**
@@ -234,6 +234,10 @@ export function useAsyncData<
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
+
+  if (import.meta.dev && typeof options.dedupe === 'boolean') {
+    console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
+  }
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
