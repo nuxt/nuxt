@@ -236,7 +236,7 @@ export function useAsyncData<
   options.dedupe = options.dedupe ?? 'cancel'
 
   if (import.meta.dev && typeof options.dedupe === 'boolean') {
-    console.warn('`boolean` values are deprecated for the `dedupe` option of useAsyncData and will be removed in the future. Use "cancel" or "defer" instead.')
+    console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use 'cancel' or 'defer' instead.')
   }
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
