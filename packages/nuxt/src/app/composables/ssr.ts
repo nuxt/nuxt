@@ -4,10 +4,12 @@ import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
+/** @since 3.0.0 */
 export function useRequestEvent (nuxtApp: NuxtApp = useNuxtApp()): H3Event {
   return nuxtApp.ssrContext?.event as H3Event
 }
 
+/** @since 3.0.0 */
 export function useRequestHeaders<K extends string = string> (include: K[]): { [key in Lowercase<K>]?: string }
 export function useRequestHeaders (): Readonly<Record<string, string>>
 export function useRequestHeaders (include?: any[]) {
@@ -26,12 +28,14 @@ export function useRequestHeaders (include?: any[]) {
   return headers
 }
 
+/** @since 3.9.0 */
 export function useRequestHeader(header: string) {
   if (import.meta.client) { return undefined }
   const event = useRequestEvent()
   return event ? getRequestHeader(event, header) : undefined
 }
 
+/** @since 3.2.0 */
 export function useRequestFetch (): typeof global.$fetch {
   if (import.meta.client) {
     return globalThis.$fetch
@@ -39,6 +43,7 @@ export function useRequestFetch (): typeof global.$fetch {
   return useRequestEvent()?.$fetch as typeof globalThis.$fetch || globalThis.$fetch
 }
 
+/** @since 3.0.0 */
 export function setResponseStatus (event: H3Event, code?: number, message?: string): void
 /** @deprecated Pass `event` as first option. */
 export function setResponseStatus (code: number, message?: string): void
@@ -50,6 +55,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   return _setResponseStatus(useRequestEvent(), arg1, arg2 as string | undefined)
 }
 
+/** @since 3.8.0 */
 export function prerenderRoutes (path: string | string[]) {
   if (!import.meta.server || !import.meta.prerender) { return }
 
