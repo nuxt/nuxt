@@ -17,7 +17,7 @@ export const PageWrapper = createUnplugin(() => {
     name: 'nuxt:page-wrapper',
 
     transformInclude(id) {
-      return id.includes('page-component=true')
+      return id.includes('?page-component=true')
     },
 
     transform(code) {
@@ -33,9 +33,9 @@ export const PageWrapper = createUnplugin(() => {
     },
 
     load(id) {
-      if (id !== resolvedVirtualPageWrapperModuleId) { return }
-
-      return hasClientOnlyPage ? clientOnlyExport : emptyClientOnlyExport
+      if (id === resolvedVirtualPageWrapperModuleId) {
+        return hasClientOnlyPage ? clientOnlyExport : emptyClientOnlyExport
+      }
     }
   }
 })
