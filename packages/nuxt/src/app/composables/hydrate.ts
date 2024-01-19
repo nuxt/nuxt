@@ -6,6 +6,7 @@ import type { NuxtPayload } from '../nuxt'
  * @param key a unique key to identify the data in the Nuxt payload
  * @param get a function that returns the value to set the initial data
  * @param set a function that will receive the data on the client-side
+ * @since 3.0.0
  */
 export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (key: K, get: () => T, set: (value: T) => void) => {
   const nuxt = useNuxtApp()
