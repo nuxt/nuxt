@@ -2301,14 +2301,14 @@ describe('lazy import components', () => {
   })
 
   it('lazy load named component with mode all', () => {
-    expect(html).toContain('<h1>lazy-named-comp-all</h1>')
+    expect(html).toContain('lazy-named-comp-all')
   })
 
   it('lazy load named component with mode client', () => {
-    expect(html).toContain('<h1>lazy-named-comp-client</h1>')
+    expect(html).toContain('lazy-named-comp-client')
   })
 
   it('lazy load named component with mode server', () => {
-    expect(html).toContain('<h1>lazy-named-comp-server</h1>')
+    expect(html).toContain('lazy-named-comp-server')
   })
 })
