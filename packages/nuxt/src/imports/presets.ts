@@ -26,6 +26,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/compat/idle-callback'
   },
   {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
+  },
+  {
     imports: ['useAppConfig', 'updateAppConfig'],
     from: '#app/config'
   },
@@ -62,7 +66,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie'
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus', 'setInterval'],
+    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr'
   },
   {
