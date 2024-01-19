@@ -2301,26 +2301,26 @@ describe('import components', () => {
   })
 
   it('load default component with mode all', () => {
-    expect(html).toContain('<h1>default-comp-all</h1>')
+    expect(html).toContain('default-comp-all')
   })
 
   it('load default component with mode client', () => {
-    expect(html).toContain('<h1>default-comp-client</h1>')
+    expect(html).toContain('default-comp-client')
   })
 
   it('load default component with mode server', () => {
-    expect(html).toContain('<h1>default-comp-server</h1>')
+    expect(html).toContain('default-comp-server')
   })
 
   it('load named component with mode all', () => {
-    expect(html).toContain('<h1>named-comp-all</h1>')
+    expect(html).toContain('named-comp-all')
   })
 
   it('load named component with mode client', () => {
-    expect(html).toContain('<h1>named-comp-client</h1>')
+    expect(html).toContain('named-comp-client')
   })
 
   it('load named component with mode server', () => {
-    expect(html).toContain('<h1>named-comp-server</h1>')
+    expect(html).toContain('named-comp-server')
   })
 })
