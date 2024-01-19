@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import { Teleport, defineComponent, h } from 'vue'
+import { Teleport, defineComponent, h, inject, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
@@ -8,6 +8,8 @@ type ExtendedComponent = Component & {
   __file: string,
   __name: string
 }
+
+const InjectionSymbol = Symbol('NuxtTeleportIslandComponent')
 
 /**
  * component only used with componentsIsland
@@ -36,8 +38,10 @@ export default defineComponent({
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
 
-    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient) { return () => slots.default!() }
+    // if there's already a teleport parent, we don't need to teleport or to render the wrapped component client side
+    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient || inject(InjectionSymbol, false)) { return () => slots.default!() }
 
+    provide(InjectionSymbol, true)
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
