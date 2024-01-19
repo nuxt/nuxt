@@ -244,4 +244,24 @@ describe('plugin dependsOn', () => {
       'end B'
     ])
   })
+
+  it('expect B to execute after A, C when B depends on A and C', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('A', undefined, sequence),
+      pluginFactory('B', ['A', 'C'], sequence),
+      pluginFactory('C', undefined, sequence)
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start C',
+      'end A',
+      'end C',
+      'start B',
+      'end B'
+    ])
+  })
 })
