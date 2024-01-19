@@ -8,6 +8,7 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
+import { env, nodeless } from 'unenv'
 import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import { chunkErrorPlugin } from './plugins/chunk-error'
@@ -19,6 +20,13 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
+  const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat ? {
+    alias: env(nodeless).alias,
+    define: {
+      global: 'globalThis',
+    }
+  } : { alias: {}, define: {} }
+
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -48,15 +56,18 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
-      'module.hot': false
+      'module.hot': false,
+      ...nodeCompat.define
     },
     optimizeDeps: {
       entries: [ctx.entry]
     },
     resolve: {
       alias: {
+        ...nodeCompat.alias,
+        ...ctx.config.resolve?.alias,
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
       },
       dedupe: [
         'vue'

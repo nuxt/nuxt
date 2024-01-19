@@ -12,6 +12,8 @@ export default defineUntypedSchema({
      *
      * It improves type support when using modern libraries with `exports`.
      *
+     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
+     *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
     typescriptBundlerResolution: {
@@ -23,7 +25,7 @@ export default defineUntypedSchema({
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
-        return false
+        return true
       }
     },
   },
@@ -158,6 +160,7 @@ export default defineUntypedSchema({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {boolean | 'always'}
      */
     viewTransition: false,
 
@@ -259,6 +262,33 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
+     * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
+     * data in different pages.
+     *
+     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
+     * not be fetched more than once.
+     *
+     * It is particularly important when enabling this feature to make sure that any unique key of your data
+     * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
+     * data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch`
+     * should do this automatically for you.)
+     * @example
+     * ```ts
+     * // This would be unsafe in a dynamic page (e.g. `[slug].vue`) because the route slug makes a difference
+     * // to the data fetched, but Nuxt can't know that because it's not reflected in the key.
+     * const route = useRoute()
+     * const { data } = await useAsyncData(async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     * // Instead, you should use a key that uniquely identifies the data fetched.
+     * const { data } = await useAsyncData(route.params.slug, async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     */
+    sharedPrerenderData: false,
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
@@ -277,6 +307,21 @@ export default defineUntypedSchema({
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {}
-    }
+    },
+
+    /**
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
+     * @see https://github.com/unjs/unenv
+     *
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
+     *
+     * ```ts
+     * import { Buffer } from 'node:buffer'
+     *
+     * globalThis.Buffer = globalThis.Buffer || Buffer
+     * ```
+     * @type {boolean}
+     */
+    clientNodeCompat: false,
   }
 })
