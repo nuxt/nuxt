@@ -249,19 +249,19 @@ describe('plugin dependsOn', () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
     const plugins = [
-      pluginFactory('A', undefined, sequence),
-      pluginFactory('B', ['A', 'C'], sequence),
-      pluginFactory('C', undefined, sequence)
+      pluginFactory('A', undefined, sequence, false),
+      pluginFactory('B', ['A', 'C'], sequence, false),
+      pluginFactory('C', undefined, sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
     expect(sequence).toMatchObject([
       'start A',
-      'start C',
       'end A',
+      'start C',
       'end C',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 })
