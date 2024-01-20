@@ -1,5 +1,5 @@
 import { createUnplugin } from "unplugin";
-import { genExport, genImport } from 'knitwork';
+import { genExport } from 'knitwork';
 
 const clientOnlyRE = /\bdefinePageMeta\({(?:.|\n)+clientOnly:\s?true/
 
@@ -17,21 +17,15 @@ export const PageWrapper = createUnplugin(() => {
     name: 'nuxt:page-wrapper',
 
     transformInclude(id) {
-      return id.includes('?page-component=true')
+      return id.includes('?macro=true')
     },
 
-    transform(source, id) {
-      if (!source) {
-        return 'const Page = undefined;export default Page'
-      }
-      
+    transform(source) {
       if (!hasClientOnlyPage) {
         hasClientOnlyPage = clientOnlyRE.test(source)
       }
 
-      const idWithoutQuery = id.split('?')[0];
-
-      return `${genImport(idWithoutQuery, 'Page')}\nexport default Page`
+      return undefined
     },
 
     resolveId(id) {
