@@ -25,7 +25,9 @@ export const PageWrapper = createUnplugin(() => {
         return 'const Page = undefined;export default Page'
       }
       
-      hasClientOnlyPage = clientOnlyRE.test(source)
+      if (!hasClientOnlyPage) {
+        hasClientOnlyPage = clientOnlyRE.test(source)
+      }
 
       const idWithoutQuery = id.split('?')[0];
 
