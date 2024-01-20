@@ -499,7 +499,7 @@ describe('pages', () => {
 
     // Then go to non client only page
     await clientInitialPage.click('a')
-    await new Promise((r) => setTimeout(r, 20)) // little delay to finish transition
+    await new Promise((r) => setTimeout(r, 50)) // little delay to finish transition
 
     // that page should be client rendered
     expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot(`"false"`)
