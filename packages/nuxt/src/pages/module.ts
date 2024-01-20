@@ -428,10 +428,12 @@ export default defineNuxtModule({
     })
 
     // stub for webpack, we still handle loading of this file if PageWrapper plugin
-    addTemplate({
-      filename: "pages-wrapper.mjs",
-      getContents: () => 'export const ClientOnly = undefined'
-    })
+    if (nuxt.options.builder === '@nuxt/webpack-builder') {
+      addTemplate({
+        filename: "pages-wrapper.mjs",
+        getContents: () => 'export const ClientOnly = undefined'
+      })
+    }
     
     addTemplate({
       filename: 'types/middleware.d.ts',
