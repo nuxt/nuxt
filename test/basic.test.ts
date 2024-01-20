@@ -498,15 +498,16 @@ describe('pages', () => {
     expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot(`"false"`)
 
     // Then go to non client only page
-    await clientInitialPage.click('a');
+    await clientInitialPage.click('a')
+    await new Promise((r) => setTimeout(r, 20)) // little delay to finish transition
 
     // that page should be client rendered
     expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot(`"false"`)
     // and not contain any errors or warnings
-    expect(errors.length).toBe(0);
+    expect(errors.length).toBe(0)
 
-    await clientInitialPage.close();
-    errors.length = 0;
+    await clientInitialPage.close()
+    errors.length = 0
 
     const { page: normalInitialPage } = await renderPage('/client-only-page/normal')
 
