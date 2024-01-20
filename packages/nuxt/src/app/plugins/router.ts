@@ -160,17 +160,6 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     }
 
     const currentRoute = computed(() => route)
-    // TODO: remove this in v3.10
-    for (const key in route) {
-      Object.defineProperty(currentRoute, key, {
-        get () {
-          if (import.meta.dev) {
-            console.warn(`\`currentRoute.${key}\` is deprecated. Use \`currentRoute.value.${key}\` instead.`)
-          }
-          return route[key as keyof Route]
-        }
-      })
-    }
 
     const router: Router = {
       currentRoute,

@@ -2306,3 +2306,23 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     }
   }
 }
+
+describe('lazy import components', () => {
+  let html = ''
+
+  it.sequential('fetch lazy-import-components page', async () => {
+    html = await $fetch('/lazy-import-components')
+  })
+
+  it('lazy load named component with mode all', () => {
+    expect(html).toContain('lazy-named-comp-all')
+  })
+
+  it('lazy load named component with mode client', () => {
+    expect(html).toContain('lazy-named-comp-client')
+  })
+
+  it('lazy load named component with mode server', () => {
+    expect(html).toContain('lazy-named-comp-server')
+  })
+})
