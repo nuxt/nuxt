@@ -4,9 +4,6 @@ import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
-// @ts-expect-error virtual file
-import { ClientOnly } from 'virtual:pages-wrapper'
-
 import { toArray } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
@@ -16,6 +13,8 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
+import { ClientOnly } from '#build/pages-wrapper.mjs'
 
 export default defineComponent({
   name: 'NuxtPage',

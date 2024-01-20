@@ -29,7 +29,7 @@ export const PageWrapper = createUnplugin(() => {
     },
 
     resolveId(id) {
-      if (id === virtualPageWrapperModuleId) {
+      if (id.endsWith('pages-wrapper.mjs')) {
         return resolvedVirtualPageWrapperModuleId
       }
     },
