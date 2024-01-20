@@ -1502,6 +1502,10 @@ describe('server components/islands', () => {
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
+    // test nested client components
+    await page.locator('.server-with-nested-client button').click()
+    expect(await page.locator('.server-with-nested-client .sugar-counter').innerHTML()).toContain('Sugar Counter 13 x 1 = 13')
+
     if (!isWebpack) {
       // test client component interactivity
       expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 12')
