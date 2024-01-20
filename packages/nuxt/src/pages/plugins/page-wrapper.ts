@@ -1,5 +1,5 @@
 import { createUnplugin } from "unplugin";
-import { genExport } from 'knitwork';
+import { genExport, genImport } from 'knitwork';
 
 const clientOnlyRE = /\bdefinePageMeta\({(?:.|\n)+clientOnly:\s?true/
 
@@ -20,10 +20,12 @@ export const PageWrapper = createUnplugin(() => {
       return id.includes('?page-component=true')
     },
 
-    transform(code) {
-      hasClientOnlyPage = clientOnlyRE.test(code)
+    transform(source, id) {
+      hasClientOnlyPage = clientOnlyRE.test(source)
 
-      return code
+      const idWithoutQuery = id.split('?')[0];
+
+      return `${genImport(idWithoutQuery, 'Page')}\nexport default Page`
     },
 
     resolveId(id) {
