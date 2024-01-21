@@ -92,7 +92,7 @@ export interface AsyncDataOptions<
 
 export interface AsyncDataExecuteOptions {
   _initial?: boolean
-  // TODO: deprecate boolean option in future minor
+  // TODO: remove boolean option in Nuxt 4
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
@@ -115,12 +115,13 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-// TODO: deprecate boolean option in future minor
+// TODO: remove boolean option in Nuxt 4
 const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
+ * @since 3.0.0
  * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
  */
@@ -233,6 +234,10 @@ export function useAsyncData<
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
+
+  if (import.meta.dev && typeof options.dedupe === 'boolean') {
+    console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
+  }
 
   const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
 
@@ -378,6 +383,7 @@ export function useAsyncData<
 
   return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
+/** @since 3.0.0 */
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -441,6 +447,7 @@ export function useLazyAsyncData<
   return useAsyncData(key, handler, { ...options, lazy: true }, null)
 }
 
+/** @since 3.1.0 */
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
   const nuxt = useNuxtApp()
 
@@ -454,6 +461,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
   }
 }
 
+/** @since 3.0.0 */
 export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
   if (import.meta.server) {
     return Promise.resolve()
@@ -465,6 +473,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
 }
 
+/** @since 3.0.0 */
 export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.data)

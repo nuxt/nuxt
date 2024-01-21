@@ -104,12 +104,15 @@ export default defineComponent({
       }
     }
 
-    const payloadSlots: NonNullable<NuxtIslandResponse['slots']> = {}
-    const payloadComponents: NonNullable<NuxtIslandResponse['components']> = {}
+    const payloads: Required<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {
+      slots: {},
+      components: {}
+    }
+
 
     if (nuxtApp.isHydrating) {
-      Object.assign(payloadSlots, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {})
-      Object.assign(payloadComponents, toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {})
+      payloads.slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {}
+      payloads.components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {}
     }
 
     const ssrHTML = ref<string>('')
@@ -125,7 +128,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(payloadComponents || {})) {
+        for (const [key, value] of Object.entries(payloads.components || {})) {
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
@@ -134,7 +137,7 @@ export default defineComponent({
 
       return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
         if (!currentSlots.includes(slotName)) {
-          return full + (payloadSlots[slotName]?.fallback || '')
+          return full + (payloads.slots[slotName]?.fallback || '')
         }
         return full
       })
@@ -186,8 +189,8 @@ export default defineComponent({
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
-        Object.assign(payloadSlots, res.slots || {})
-        Object.assign(payloadComponents, res.components || {})
+        payloads.slots = res.slots || {}
+        payloads.components = res.components || {}
 
         if (selectiveClient && import.meta.client) {
           if (canLoadClientComponent.value && res.components) {
@@ -226,7 +229,7 @@ export default defineComponent({
     } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
-      await loadComponents(props.source, payloadComponents)
+      await loadComponents(props.source, payloads.components)
     }
 
     return (_ctx: any, _cache: any) => {
@@ -250,12 +253,12 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloadSlots[slot].props?.length ? payloadSlots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
+                  { default: () => (payloads.slots[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
                 )
               }
             }
             if (import.meta.server) {
-              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
+              for (const [id, info] of Object.entries(payloads.components ?? {})) {
                 const { html } = info
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                   default: () => [createStaticVNode(html, 1)]
@@ -263,7 +266,7 @@ export default defineComponent({
               }
             }
             if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
-              for (const [id, info] of Object.entries(payloadComponents ?? {})) {
+              for (const [id, info] of Object.entries(payloads.components ?? {})) {
                 const { props } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport
