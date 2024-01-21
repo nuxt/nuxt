@@ -22,6 +22,7 @@ export const wrapInKeepAlive = (props: any, children: any) => {
   return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }
 
+/** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
