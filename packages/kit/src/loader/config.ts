@@ -17,6 +17,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', 'extends'] },
     dotenv: true,
     globalRc: true,
+    jitiOptions: {
+      alias: useLoadConfigAlias()
+    },
     ...opts
   })
   delete (globalThis as any).defineNuxtConfig
@@ -52,4 +55,16 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+
+  function useLoadConfigAlias() {
+    const cwd = opts.cwd ?? process.cwd()
+    return {
+      "~": cwd,
+      "@": cwd,
+      "~~": cwd,
+      "@@": cwd,
+      "assets": resolve(cwd, 'assets'),
+      "public": resolve(cwd, 'public')
+    }
+  }
 }
