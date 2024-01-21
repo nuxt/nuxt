@@ -26,6 +26,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/compat/idle-callback'
   },
   {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
+  },
+  {
     imports: ['useAppConfig', 'updateAppConfig'],
     from: '#app/config'
   },

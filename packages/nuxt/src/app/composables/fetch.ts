@@ -42,6 +42,7 @@ export interface UseFetchOptions<
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @since 3.0.0
  * @param request The URL to fetch
  * @param opts extends $fetch options and useAsyncData options
  */
@@ -184,6 +185,7 @@ export function useFetch<
   return asyncData
 }
 
+/** @since 3.0.0 */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,

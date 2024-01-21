@@ -51,7 +51,7 @@
     "unbuild": "latest",
     "unctx": "2.3.1",
     "unenv": "1.9.0",
-    "vite": "5.0.11",
+    "vite": "5.0.12",
     "vue": "3.4.15",
     "vue-bundle-renderer": "2.0.0",
     "vue-loader": "17.4.2",
