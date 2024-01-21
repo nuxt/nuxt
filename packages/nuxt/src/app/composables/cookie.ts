@@ -121,7 +121,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   return cookie as CookieRef<T>
 }
-
+/** @since 3.10.0 */
 export function refreshCookie(name: string) {
   if (store || typeof BroadcastChannel === 'undefined') return
   
