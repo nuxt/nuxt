@@ -12,10 +12,12 @@ import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 
+/** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
   return useNuxtApp()?.$router as Router
 }
 
+/** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && isProcessingMiddleware()) {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
@@ -26,6 +28,7 @@ export const useRoute: typeof _useRoute = () => {
   return useNuxtApp()._route
 }
 
+/** @since 3.0.0 */
 export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach((to, from, next) => {
     if (to === from) { return }
@@ -34,6 +37,7 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   onScopeDispose(unsubscribe)
 }
 
+/** @since 3.0.0 */
 export const onBeforeRouteUpdate = (guard: NavigationGuard) => {
   const unsubscribe = useRouter().beforeEach(guard)
   onScopeDispose(unsubscribe)
@@ -43,6 +47,7 @@ export interface RouteMiddleware {
   (to: RouteLocationNormalized, from: RouteLocationNormalized): ReturnType<NavigationGuard>
 }
 
+/** @since 3.0.0 */
 /*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
@@ -57,6 +62,7 @@ interface AddRouteMiddleware {
   (middleware: RouteMiddleware): void
 }
 
+/** @since 3.0.0 */
 export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
   const nuxtApp = useNuxtApp()
   const global = options.global || typeof name !== 'string'
@@ -72,6 +78,7 @@ export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddl
   }
 }
 
+/** @since 3.0.0 */
 const isProcessingMiddleware = () => {
   try {
     if (useNuxtApp()._processingMiddleware) {
@@ -109,6 +116,7 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
+/** @since 3.0.0 */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
@@ -206,7 +214,10 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
-/** This will abort navigation within a Nuxt route middleware handler. */
+/** 
+ * This will abort navigation within a Nuxt route middleware handler. 
+ * @since 3.0.0
+ */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   if (import.meta.dev && !isProcessingMiddleware()) {
     throw new Error('abortNavigation() is only usable inside a route middleware handler.')
@@ -223,6 +234,7 @@ export const abortNavigation = (err?: string | Partial<NuxtError>) => {
   throw err
 }
 
+/** @since 3.0.0 */
 export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? string : PageMeta['layout']) => {
   const nuxtApp = useNuxtApp()
   if (import.meta.server) {
