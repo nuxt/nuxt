@@ -19,7 +19,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     stack: import.meta.dev && statusCode !== 404
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : '',
-    data: error.data
+    // TODO: check and validate error.data for serialisation into query
+    data: error.data as any
   }
 
   // Console output

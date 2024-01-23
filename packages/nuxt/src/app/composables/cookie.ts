@@ -29,6 +29,7 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
+/** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
@@ -61,6 +62,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const callback = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+
+      cookies[name] = klona(cookie.value)
       channel?.postMessage(opts.encode(cookie.value as T))
     }
 
@@ -107,7 +110,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   return cookie as CookieRef<T>
 }
 
-function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
+function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
     return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
   } else if (import.meta.client) {

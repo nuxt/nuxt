@@ -36,7 +36,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Compile templates into vfs
   // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ResolvedNuxtTemplate<any>>)
     .filter(template => !options.filter || options.filter(template))
 
   const writes: Array<() => void> = []

@@ -18,12 +18,16 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['defineNuxtLink']
   },
   {
-    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    imports: ['useNuxtApp', 'tryUseNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
     from: '#app/nuxt'
   },
   {
     imports: ['requestIdleCallback', 'cancelIdleCallback'],
     from: '#app/compat/idle-callback'
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
   },
   {
     imports: ['useAppConfig', 'updateAppConfig'],

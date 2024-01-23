@@ -5,6 +5,7 @@ import { useNuxtApp } from '../nuxt'
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
  * @param fn a function to call
  * @see https://nuxt.com/docs/api/utils/call-once
+ * @since 3.9.0
  */
 export function callOnce (key?: string, fn?: (() => any | Promise<any>)): Promise<void>
 export function callOnce (fn?: (() => any | Promise<any>)): Promise<void>
