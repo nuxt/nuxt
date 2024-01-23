@@ -21,7 +21,7 @@ type ComputedOptions<T extends Record<string, any>> = {
 }
 
 interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>> extends FetchOptions {
-  method?: M;
+  method?: M
 }
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
@@ -130,7 +130,7 @@ export function useFetch<
   } = opts
 
   const _fetchOptions = reactive({
-    ...fetchDefaults,
+    ...fetchDefaults as typeof fetchOptions,
     ...fetchOptions,
     cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
   })
@@ -170,16 +170,28 @@ export function useFetch<
     }
 
     let _$fetch = opts.$fetch || globalThis.$fetch
+    const headers = Object.create(null)
 
     // Use fetch with request context and headers for server direct API calls
     if (import.meta.server && !opts.$fetch) {
       const isLocalFetch = typeof _request.value === 'string' && _request.value[0] === '/' && (!toValue(opts.baseURL) || toValue(opts.baseURL)![0] === '/')
       if (isLocalFetch) {
         _$fetch = useRequestFetch()
+        // Set default `accept` value to avoid it defaulting to `text/html` (from initial browser request)
+        headers.accept = 'application/json'
       }
     }
 
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
+    // Flatten computed/reactive headers
+    const computedHeaders = toValue(_fetchOptions.headers)
+    const normalisedHeaders = Array.isArray(computedHeaders) ? computedHeaders : Object.entries(computedHeaders || {})
+    for (const entry of normalisedHeaders) {
+      const [header, value] = toValue(entry)
+      headers[toValue(header).toLowerCase()] = toValue(value)
+    }
+
+    // TODO: flatten more options explicitly (or adjust type above)
+    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions, headers } as any) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
@@ -237,11 +249,11 @@ export function useLazyFetch<
     ...opts,
     lazy: true
   },
-  // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
-  autoKey)
+    // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
+    autoKey)
 }
 
-function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
