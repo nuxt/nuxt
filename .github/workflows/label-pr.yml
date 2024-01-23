@@ -48,7 +48,7 @@ jobs:
             // Select label based on the type in PR title
             const eligibleTypesToLabelsNamesMap = {
               chore: 'chore',
-              // ci: '',
+              ci: 'chore',
               docs: 'documentation',
               feat: 'enhancement',
               fix: 'bug',
