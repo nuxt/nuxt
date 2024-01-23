@@ -10,6 +10,8 @@ import '#build/fetch.mjs'
 import { applyPlugins, createNuxtApp } from './nuxt'
 import type { CreateOptions } from './nuxt'
 
+import { createError } from './composables/error'
+
 import '#build/css'
 // @ts-expect-error virtual file
 import plugins from '#build/plugins'
@@ -17,7 +19,6 @@ import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
-import { createError } from '#app'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
