@@ -38,10 +38,10 @@ export default defineNuxtModule({
       // Add default options
       context.files.push({ path: resolve(runtimeDir, 'router.options'), optional: true })
 
-      await Promise.all(nuxt.options._layers.map(async layer => {
+      for (const layer of nuxt.options._layers) {
         const path = await findPath(resolve(layer.config.srcDir, 'app/router.options'))
         if (path) { context.files.push({ path }) }
-      }))
+      }
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
