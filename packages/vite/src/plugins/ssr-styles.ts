@@ -163,8 +163,6 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
       const { pathname, search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
 
-      if (!(id in options.clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
-
       const query = parseQuery(search)
       if (query.macro || query.nuxt_component) { return }
 
