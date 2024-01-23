@@ -17,6 +17,8 @@ jobs:
     if: github.repository == 'nuxt/nuxt'
     steps:
       - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
         with:
           script: |
             const labelsToAdd = []
@@ -24,7 +26,7 @@ jobs:
             const pullRequest = {
               baseLabel: ${{ github.event.pull_request.base.label }},
               number: ${{ github.event.pull_request.number }},
-              title: ${{ github.event.pull_request.title }},
+              title: process.env.PULL_REQUEST_TITLE,
               labelsNames: ${{ github.event.pull_request.labels }}.map(
                 (label) => label.name
               )
