@@ -5,7 +5,7 @@ import type { RouteLocationNormalizedLoaded } from 'vue-router'
 // eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
-import { useRoute } from '../composables/router'
+import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
@@ -71,6 +71,10 @@ export default defineComponent({
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
+    if (import.meta.client && nuxtApp.isHydrating) {
+      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+      useRouter().beforeEach(removeErrorHook)
+    }
 
     if (import.meta.dev) {
       nuxtApp._isNuxtLayoutUsed = true
@@ -97,7 +101,7 @@ export default defineComponent({
     }
   }
 }) as unknown as DefineComponent<{
-  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined;
+  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined
 }>
 
 const LayoutProvider = defineComponent({
