@@ -193,15 +193,6 @@ describe('pages', () => {
     await expectNoClientErrors('/not-found')
   })
 
-  it('expect no loading indicator on middleware abortNavigation', async () => {
-    const { page } = await renderPage('/')
-    await page.locator('#middleware-abort-non-fatal').click()
-    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
-    await page.locator('#middleware-abort-non-fatal-error').click()
-    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
-    await page.close()
-  })
-
   it('should render correctly when loaded on a different path', async () => {
     const { page, pageErrors } = await renderPage('/proxy')
 
@@ -2306,3 +2297,55 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     }
   }
 }
+
+describe('import components', () => {
+  let html = ''
+
+  it.sequential('fetch import-components page', async () => {
+    html = await $fetch('/import-components')
+  })
+
+  it('load default component with mode all', () => {
+    expect(html).toContain('default-comp-all')
+  })
+
+  it('load default component with mode client', () => {
+    expect(html).toContain('default-comp-client')
+  })
+
+  it('load default component with mode server', () => {
+    expect(html).toContain('default-comp-server')
+  })
+
+  it('load named component with mode all', () => {
+    expect(html).toContain('named-comp-all')
+  })
+
+  it('load named component with mode client', () => {
+    expect(html).toContain('named-comp-client')
+  })
+
+  it('load named component with mode server', () => {
+    expect(html).toContain('named-comp-server')
+  })
+})
+
+describe('lazy import components', () => {
+  let html = ''
+
+  it.sequential('fetch lazy-import-components page', async () => {
+    html = await $fetch('/lazy-import-components')
+  })
+
+  it('lazy load named component with mode all', () => {
+    expect(html).toContain('lazy-named-comp-all')
+  })
+
+  it('lazy load named component with mode client', () => {
+    expect(html).toContain('lazy-named-comp-client')
+  })
+
+  it('lazy load named component with mode server', () => {
+    expect(html).toContain('lazy-named-comp-server')
+  })
+})
