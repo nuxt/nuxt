@@ -17,6 +17,7 @@ import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { createError } from '#app'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -29,9 +30,9 @@ if (import.meta.server) {
     try {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
-    } catch (err) {
-      await nuxt.hooks.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+    } catch (error) {
+      await nuxt.hooks.callHook('app:error', error)
+      nuxt.payload.error = nuxt.payload.error || createError(error as any)
     }
     if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
@@ -59,9 +60,9 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
-    async function handleVueError(err: any) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+    async function handleVueError(error: any) {
+      await nuxt.callHook('app:error', error)
+      nuxt.payload.error = nuxt.payload.error || createError(error as any)
     }
 
     vueApp.config.errorHandler = handleVueError
