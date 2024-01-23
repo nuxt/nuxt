@@ -21,6 +21,7 @@ useGoogleAnalytics(options: ThirdPartyScriptOptions<GoogleAnalyticsOptions, Goog
 ```
 
 ## Params
+
 An object containing the following options:
 
 | name | type   | description                     |
@@ -48,6 +49,7 @@ useGoogleAnalytics({ id: 'GA-123456789-1' })
 
 </script>
 ```
+
 ## Example with custom event
 
 ```JavaScript
