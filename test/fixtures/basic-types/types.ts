@@ -329,6 +329,25 @@ describe('head', () => {
       }
     })
   })
+  it('types head for defineNuxtComponent', () => {
+    defineNuxtComponent({
+      head(nuxtApp) {
+        expectTypeOf(nuxtApp).not.toBeAny()
+        return {
+          title: 'Site Title'
+        }
+      }
+    })
+
+    defineNuxtComponent({
+      // @ts-expect-error wrong return type for head function
+      head() {
+        return {
+          'test': true
+        }
+      }
+    })
+  })
 })
 
 describe('components', () => {

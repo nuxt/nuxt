@@ -1,3 +1,4 @@
+import type { UseHeadInput } from "@unhead/vue";
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 interface NuxtStaticBuildFlags {
@@ -31,5 +32,8 @@ declare module 'vue' {
   }
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Function[]
+  }
+  interface ComponentCustomOptions {
+    head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
