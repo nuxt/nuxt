@@ -24,9 +24,9 @@ export async function callOnce (...args: any): Promise<void> {
   if (nuxtApp.payload.once.has(_key)) {
     return
   }
+  nuxtApp.payload.once.add(_key)
   nuxtApp._once = nuxtApp._once || {}
   nuxtApp._once[_key] = nuxtApp._once[_key] || fn()
   await nuxtApp._once[_key]
-  nuxtApp.payload.once.add(_key)
   delete nuxtApp._once[_key]
 }
