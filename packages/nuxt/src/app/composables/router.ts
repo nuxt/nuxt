@@ -43,7 +43,7 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
   onScopeDispose(unsubscribe)
 }
 
-export const createPathResolver = (options: {
+export const createRouteResolver = (options: {
     trailingSlash?: NuxtAppConfig['trailingSlash'],
 } = {}): RouteLocationRaw | RouteLocation => {
   options.trailingSlash = options.trailingSlash || appTrailingSlash
@@ -155,7 +155,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   // normalise to a RouteLocationNamedRaw
   const route: RouteLocationPathRaw = typeof to === 'string' ? { path: to } : to
   const isExternal = options?.external || hasProtocol(route.path, { acceptRelative: true })
-  const resolvePath = createPathResolver({
+  const resolvePath = createRouteResolver({
     external: isExternal,
   })
   const resolvedPath = resolvePath(route)

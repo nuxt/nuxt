@@ -5,7 +5,7 @@ import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provi
 import { hasProtocol, joinURL, parseQuery, parseURL } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { createPathResolver, navigateTo, useRouter } from '../composables/router'
+import { createRouteResolver, navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
@@ -150,7 +150,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const router = useRouter()
       const config = useRuntimeConfig()
 
-      const resolvePath = createPathResolver( { trailingSlash: options?.trailingSlash })
+      const resolvePath = createRouteResolver( { trailingSlash: options?.trailingSlash })
 
       // Resolving `to` value from `to` and `href` props
       const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
