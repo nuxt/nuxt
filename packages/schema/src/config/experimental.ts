@@ -298,13 +298,11 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         $resolve: async (val, get) => {
-          const resolved = {
-            componentName: 'NuxtLink',
-          }
+          val.componentName = val.componentName || 'NuxtLink'
           const { trailingSlash } = await get('app')
-          if (trailingSlash)
-            resolved.trailingSlash = trailingSlash
-          return resolved
+          if (trailingSlash && !val.trailingSlash)
+            val.trailingSlash = trailingSlash
+          return val
         }
       },
       /**

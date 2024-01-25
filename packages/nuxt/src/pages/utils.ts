@@ -9,7 +9,7 @@ import { hash } from 'ohash'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtPage, NuxtAppConfig } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
@@ -64,7 +64,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: ScannedFile[], options?: { trailingSlash?: boolean, shouldExtractBuildMeta?: boolean, vfs?: Record<string, string> }): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: ScannedFile[], options: { trailingSlash?: NuxtAppConfig['trailingSlash'], shouldExtractBuildMeta?: boolean, vfs?: Record<string, string> }): Promise<NuxtPage[]> {
   const { trailingSlash, shouldExtractBuildMeta, vfs } = options
   const routes: NuxtPage[] = []
 

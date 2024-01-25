@@ -1,6 +1,6 @@
 import type { ComputedRef, DefineComponent, InjectionKey, PropType } from 'vue'
 import type { RouteLocationRaw } from '#vue-router'
-import type { NuxtAppConfig } from "@nuxt/schema"
+import type { NuxtAppConfig } from 'nuxt/schema'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import { hasProtocol, joinURL, parseQuery, parseURL } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
