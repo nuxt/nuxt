@@ -126,6 +126,18 @@ export default defineUntypedSchema({
     },
 
     /**
+     * How the trailing slash on paths should be resolved.
+     *
+     * This will modify the default behavior of NuxtLink, navigateTo and
+     * vue-router paths to use the configured behavior.
+     * @example
+     * - `append` paths will look like `/foo/`
+     * - `remove` paths will look like `/foo`
+     * @type {typeof import('../src/types/config').NuxtAppConfig['trailingSlash']}
+     */
+    trailingSlash: undefined,
+
+    /**
      * Default values for layout transitions.
      *
      * This can be overridden with `definePageMeta` on an individual page.

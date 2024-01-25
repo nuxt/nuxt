@@ -141,6 +141,7 @@ export interface AppConfigInput extends CustomAppConfig {
 }
 
 export interface NuxtAppConfig {
+  trailingSlash?: 'append' | 'remove'
   head: AppHeadMetaObject
   layoutTransition: boolean | TransitionProps
   pageTransition: boolean | TransitionProps

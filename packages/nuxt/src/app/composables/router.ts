@@ -1,8 +1,11 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { RouteLocation } from 'vue-router'
+import type { NuxtAppConfig } from "@nuxt/schema"
+
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 // eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
@@ -11,6 +14,9 @@ import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { PageRouteSymbol } from '../components/injections'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
+
+// @ts-expect-error virtual file
+import { appTrailingSlash } from '#build/nuxt.config.mjs'
 
 /** @since 3.0.0 */
 export const useRouter: typeof _useRouter = () => {
@@ -35,6 +41,34 @@ export const onBeforeRouteLeave = (guard: NavigationGuard) => {
     return guard(to, from, next)
   })
   onScopeDispose(unsubscribe)
+}
+
+export const createPathResolver = (options: {
+    trailingSlash?: NuxtAppConfig['trailingSlash'],
+} = {}): RouteLocationRaw | RouteLocation => {
+  options.trailingSlash = options.trailingSlash || appTrailingSlash
+  const router = useRouter()
+  let normalizeSlashesFn = (input: string) => input
+  if (options.trailingSlash === 'append')
+    normalizeSlashesFn = withTrailingSlash
+  else if (options.trailingSlash === 'remove')
+    normalizeSlashesFn = withoutTrailingSlash
+  return (to: RouteLocationRaw, options?: { external?: boolean }) => {
+    const path = typeof to === 'object' && 'path' in to ? to.path : router.resolve(to).fullPath
+
+    const isFile = withoutTrailingSlash(path.split('/').pop())?.includes('.')
+    // Until https://github.com/unjs/ufo/issues/189 is resolved
+    const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
+    if (isFile || hasProtocolDifferentFromHttp  || options.external) {
+      return to
+    }
+
+    return {
+      ...(typeof to === 'string' ? {} : to),
+      name: undefined, // named routes would otherwise always override trailing slash behavior
+      path: joinURL(useRuntimeConfig().app.baseURL, normalizeSlashesFn(path, true)),
+    }
+  }
 }
 
 /** @since 3.0.0 */
@@ -118,11 +152,13 @@ export interface NavigateToOptions {
 
 /** @since 3.0.0 */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
-  if (!to) {
-    to = '/'
-  }
-
-  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+  // normalise to a RouteLocationNamedRaw
+  const route: RouteLocationPathRaw = typeof to === 'string' ? { path: to } : to
+  const isExternal = options?.external || hasProtocol(route.path, { acceptRelative: true })
+  const resolvePath = createPathResolver({
+    external: isExternal,
+  })
+  const resolvedPath = resolvePath(route)
 
   // Early open handler
   if (options?.open) {
@@ -134,28 +170,28 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
         .join(', ')
 
-      open(toPath, target, features)
+      open(resolvedPath, target, features)
     }
 
     return Promise.resolve()
   }
 
-  const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
   if (isExternal) {
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const protocol = parseURL(resolvedPath).protocol
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
   }
 
+
   const inMiddleware = isProcessingMiddleware()
 
   // Early redirect on client-side
   if (import.meta.client && !isExternal && inMiddleware) {
-    return to
+    return resolvedPath
   }
 
   const router = useRouter()
@@ -164,17 +200,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   if (import.meta.server) {
     if (nuxtApp.ssrContext) {
-      const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
-      const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
-
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(/"/g, '%22')
+        const encodedLoc = resolvedPath.replace(/"/g, '%22')
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location }
+          headers: { location: resolvedPath }
         }
         return response
       }
@@ -194,9 +227,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     // Run any cleanup steps for the current scope, like ending BroadcastChannel
     nuxtApp._scope.stop()
     if (options?.replace) {
-      location.replace(toPath)
+      location.replace(resolvedPath)
     } else {
-      location.href = toPath
+      location.href = resolvedPath
     }
     // Within in a Nuxt route middleware handler
     if (inMiddleware) {
@@ -211,11 +244,11 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  return options?.replace ? router.replace(to) : router.push(to)
+  return options?.replace ? router.replace(resolvedPath) : router.push(resolvedPath)
 }
 
-/** 
- * This will abort navigation within a Nuxt route middleware handler. 
+/**
+ * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
