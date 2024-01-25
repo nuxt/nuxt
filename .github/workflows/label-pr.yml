@@ -24,7 +24,7 @@ jobs:
             const labelsToAdd = []
 
             const pullRequest = {
-              baseLabel: ${{ github.event.pull_request.base.label }},
+              baseLabel: '${{ github.event.pull_request.base.label }}',
               number: ${{ github.event.pull_request.number }},
               title: process.env.PULL_REQUEST_TITLE,
               labelsNames: ${{ github.event.pull_request.labels }}.map(
