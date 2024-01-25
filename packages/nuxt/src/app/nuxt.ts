@@ -368,8 +368,9 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
-      unresolvedPlugins.push([new Set(plugin.dependsOn), plugin])
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => !resolvedPlugins.includes(name)) ?? []
+    if (unresolvedPluginsForThisPlugin.length > 0) {
+      unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {
