@@ -15,6 +15,7 @@ interface LoadPayloadOptions {
   hash?: string
 }
 
+/** @since 3.0.0 */
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = _getPayloadURL(url, opts)
@@ -37,7 +38,7 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   })
   return cache[payloadURL]
 }
-
+/** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
   const payloadURL = _getPayloadURL(url, opts)
   useHead({
@@ -75,7 +76,7 @@ async function _importPayload (payloadURL: string) {
   }
   return null
 }
-
+/** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
@@ -89,6 +90,7 @@ export async function isPrerendered (url = useRoute().path) {
 }
 
 let payloadCache: any = null
+/** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
     return
@@ -121,6 +123,7 @@ export async function parsePayload (payload: string) {
 
 /**
  * This is an experimental function for configuring passing rich data from server -> client.
+ * @since 3.4.0
  */
 export function definePayloadReducer (
   name: string,
@@ -135,6 +138,7 @@ export function definePayloadReducer (
  * This is an experimental function for configuring passing rich data from server -> client.
  *
  * This function _must_ be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.
+ * @since 3.4.0
  */
 export function definePayloadReviver (
   name: string,

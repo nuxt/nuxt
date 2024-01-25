@@ -12,6 +12,8 @@ export default defineUntypedSchema({
      *
      * It improves type support when using modern libraries with `exports`.
      *
+     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
+     *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
     typescriptBundlerResolution: {
@@ -23,7 +25,7 @@ export default defineUntypedSchema({
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
-        return false
+        return true
       }
     },
   },
@@ -305,6 +307,21 @@ export default defineUntypedSchema({
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {}
-    }
+    },
+
+    /**
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
+     * @see https://github.com/unjs/unenv
+     *
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
+     *
+     * ```ts
+     * import { Buffer } from 'node:buffer'
+     *
+     * globalThis.Buffer = globalThis.Buffer || Buffer
+     * ```
+     * @type {boolean}
+     */
+    clientNodeCompat: false,
   }
 })
