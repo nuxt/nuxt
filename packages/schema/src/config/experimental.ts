@@ -1,5 +1,4 @@
 import { defineUntypedSchema } from 'untyped'
-import {defu} from "defu";
 
 export default defineUntypedSchema({
   /**
