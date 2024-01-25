@@ -1,4 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
+import {defu} from "defu";
 
 export default defineUntypedSchema({
   /**
@@ -298,6 +299,7 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         $resolve: async (val, get) => {
+          val = val || {}
           val.componentName = val.componentName || 'NuxtLink'
           const { trailingSlash } = await get('app')
           if (trailingSlash && !val.trailingSlash)
