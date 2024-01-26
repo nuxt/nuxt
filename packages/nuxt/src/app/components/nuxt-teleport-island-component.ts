@@ -9,7 +9,7 @@ type ExtendedComponent = Component & {
   __name: string
 }
 
-const InjectionSymbol = Symbol('NuxtTeleportIslandComponent')
+export const InjectionSymbol = Symbol('NuxtTeleportIslandComponent')
 
 /**
  * component only used with componentsIsland
@@ -39,9 +39,9 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
 
     // if there's already a teleport parent, we don't need to teleport or to render the wrapped component client side
-    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient || inject(InjectionSymbol, false)) { return () => slots.default!() }
+    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient || inject(InjectionSymbol, false)) { return () => slots.default?.() }
 
-    provide(InjectionSymbol, true)
+    provide(InjectionSymbol, props.to)
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {

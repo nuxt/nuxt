@@ -1,5 +1,6 @@
-import { Teleport, defineComponent, h } from 'vue'
+import { Teleport, VNode, createVNode, defineComponent, h, inject } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import { InjectionSymbol } from './nuxt-teleport-island-component'
  
 /**
  * component only used within islands for slot teleport
@@ -21,21 +22,34 @@ export default defineComponent({
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
     const islandContext = nuxtApp.ssrContext?.islandContext
-
-    if(!islandContext) {
-      return () => slots.default?.()
+    if (!islandContext) {
+      return () => slots.default?.()[0]
     }
 
+    const componentName = inject(InjectionSymbol, false)
     islandContext.slots[props.name] = {
       props: (props.props ||  []) as unknown[]
     }
 
     return () => {
-      const vnodes = [h('div', {
-        style: 'display: contents;',
-        'data-island-uid': '',
-        'data-island-slot': props.name,
-      })]
+      const vnodes: VNode[] = []
+      
+      if (nuxtApp.ssrContext?.islandContext && slots.default) {
+        vnodes.push(h('div', {
+          style: 'display: contents;',
+          'data-island-uid': '',
+          'data-island-slot': props.name,
+        }, {
+          // Teleport in slot to not be hydrated client-side with the staticVNode
+          default: () => [createVNode(Teleport, { to: `island-slot=${componentName};${props.name}`}, slots.default?.()[0])]
+        })) 
+      } else {
+        vnodes.push(h('div', {
+          style: 'display: contents;',
+          'data-island-uid': '',
+          'data-island-slot': props.name,
+        }))
+      }
 
       if (slots.fallback) {
         vnodes.push(h(Teleport, { to: `island-fallback=${props.name}`}, slots.fallback()))
