@@ -107,29 +107,27 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       })
     },
     renderChunk (_code, chunk) {
-      if (!chunk.facadeModuleId) { return null }
+      for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
+        // 'Teleport' CSS chunks that made it into the bundle on the client side
+        // to be inlined on server rendering
+        if (options.mode === 'client') {
+          options.clientCSSMap[moduleId] ||= new Set()
+          if (isCSS(moduleId)) {
+            options.clientCSSMap[moduleId].add(moduleId)
+          }
+          return
+        }
 
-      // 'Teleport' CSS chunks that made it into the bundle on the client side
-      // to be inlined on server rendering
-      if (options.mode === 'client') {
-        options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
-        for (const id of chunk.moduleIds) {
-          if (isCSS(id)) {
-            options.clientCSSMap[chunk.facadeModuleId].add(id)
+        const id = relativeToSrcDir(moduleId)
+        for (const file in chunk.modules) {
+          const relativePath = relativeToSrcDir(file)
+          if (relativePath in cssMap) {
+            cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? !!id
           }
         }
-        return
-      }
 
-      const id = relativeToSrcDir(chunk.facadeModuleId)
-      for (const file in chunk.modules) {
-        const relativePath = relativeToSrcDir(file)
-        if (relativePath in cssMap) {
-          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? !!id
-        }
+        return null
       }
-
-      return null
     },
     async transform (code, id) {
       if (options.mode === 'client') {
