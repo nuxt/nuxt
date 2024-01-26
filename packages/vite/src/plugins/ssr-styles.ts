@@ -107,6 +107,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       })
     },
     renderChunk (_code, chunk) {
+      if (chunk.facadeModuleId) {
+        options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
+      }
       for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
         // 'Teleport' CSS chunks that made it into the bundle on the client side
         // to be inlined on server rendering
@@ -114,8 +117,11 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           options.clientCSSMap[moduleId] ||= new Set()
           if (isCSS(moduleId)) {
             options.clientCSSMap[moduleId].add(moduleId)
+            if (chunk.facadeModuleId) {
+              options.clientCSSMap[chunk.facadeModuleId].add(moduleId)
+            }
           }
-          return
+          continue
         }
 
         const id = relativeToSrcDir(moduleId)
@@ -125,9 +131,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
             cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? !!id
           }
         }
-
-        return null
       }
+
+      return null
     },
     async transform (code, id) {
       if (options.mode === 'client') {
