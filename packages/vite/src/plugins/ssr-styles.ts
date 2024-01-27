@@ -8,7 +8,7 @@ import type { Component } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { findStaticImports } from 'mlly'
 
-import { isCSS } from '../utils'
+import { isCSS, isVue } from '../utils'
 
 interface SSRStylePluginOptions {
   srcDir: string
@@ -110,13 +110,18 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (chunk.facadeModuleId) {
         options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
       }
+      const facadeIdInSourceDir = chunk.facadeModuleId && !!relativeToSrcDir(chunk.facadeModuleId)
       for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
         // 'Teleport' CSS chunks that made it into the bundle on the client side
         // to be inlined on server rendering
         if (options.mode === 'client') {
           options.clientCSSMap[moduleId] ||= new Set()
           if (isCSS(moduleId)) {
-            options.clientCSSMap[moduleId].add(moduleId)
+            // Vue files can (also) be their own entrypoints as they are tracked separately
+            if (isVue(moduleId)) {
+              options.clientCSSMap[moduleId].add(moduleId)
+            }
+            // This is required to track CSS in entry chunk
             if (chunk.facadeModuleId) {
               options.clientCSSMap[chunk.facadeModuleId].add(moduleId)
             }
@@ -124,12 +129,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           continue
         }
 
-        const id = relativeToSrcDir(moduleId)
-        for (const file in chunk.modules) {
-          const relativePath = relativeToSrcDir(file)
-          if (relativePath in cssMap) {
-            cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? !!id
-          }
+        const relativePath = relativeToSrcDir(moduleId)
+        if (relativePath in cssMap) {
+          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? ((isVue(moduleId) && relativeToSrcDir(moduleId)) || !!facadeIdInSourceDir)
         }
       }
 
