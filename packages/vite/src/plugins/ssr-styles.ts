@@ -107,10 +107,10 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       })
     },
     renderChunk (_code, chunk) {
-      if (chunk.facadeModuleId) {
-        options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
+      const isEntry = chunk.facadeModuleId === options.entry
+      if (isEntry) {
+        options.clientCSSMap[chunk.facadeModuleId!] ||= new Set()
       }
-      const facadeIdInSourceDir = chunk.facadeModuleId && !!relativeToSrcDir(chunk.facadeModuleId)
       for (const moduleId of [chunk.facadeModuleId, ...chunk.moduleIds].filter(Boolean) as string[]) {
         // 'Teleport' CSS chunks that made it into the bundle on the client side
         // to be inlined on server rendering
@@ -122,8 +122,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
               options.clientCSSMap[moduleId].add(moduleId)
             }
             // This is required to track CSS in entry chunk
-            if (chunk.facadeModuleId) {
-              options.clientCSSMap[chunk.facadeModuleId].add(moduleId)
+            if (isEntry) {
+              options.clientCSSMap[chunk.facadeModuleId!].add(moduleId)
             }
           }
           continue
@@ -131,7 +131,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
         const relativePath = relativeToSrcDir(moduleId)
         if (relativePath in cssMap) {
-          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? ((isVue(moduleId) && relativeToSrcDir(moduleId)) || !!facadeIdInSourceDir)
+          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? ((isVue(moduleId) && relativeToSrcDir(moduleId)) || isEntry)
         }
       }
 
