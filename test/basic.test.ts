@@ -1394,7 +1394,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of inlinedCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1405,7 +1405,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     ]
     const html = await $fetch('/route-rules/spa')
     for (const style of globalCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
