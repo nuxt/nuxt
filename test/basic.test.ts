@@ -112,7 +112,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -1382,6 +1382,8 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
+    '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+    '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
@@ -1392,7 +1394,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of inlinedCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1403,7 +1405,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     ]
     const html = await $fetch('/route-rules/spa')
     for (const style of globalCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1414,7 +1416,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
-  it('should not include inlined CSS in generated CSS file', async () => {
+  it('should not include inlined CSS in generated CSS file', async ()  => {
     const html: string = await $fetch('/styles')
     const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
     let css = ''
@@ -1950,6 +1952,11 @@ describe('component islands', () => {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
+            {
+              "href": "/_nuxt/components/SharedComponent.vue?vue&type=style&index=0&scoped=3ee84738&lang.css",
+              "key": "island-link",
+              "rel": "stylesheet",
+            },
             {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",
