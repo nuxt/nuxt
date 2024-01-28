@@ -6,6 +6,7 @@ import { generateRouteKey } from '../src/pages/runtime/utils'
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
   const layerDir = 'layer/pages'
+  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
   vi.mock('knitwork', async (original) => {
     return {
@@ -470,12 +471,68 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'index',
           path: '/'
         }
+      ],
+    },
+    {
+      description: 'should use fallbacks when normalized with `overrideMeta: true`',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            const routeName = ref('home')
+            const routeAliases = ref(['sweet-home'])
+            definePageMeta({
+              name: routeName.value,
+              alias: routeAliases.value,
+              test: routeAliases.value,
+              redirect: () => '/'
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          meta: { [DYNAMIC_META_KEY]: new Set(['name', 'alias', 'redirect', 'meta']) },
+          children: []
+        }
       ]
-    }
+    },
+    {
+      description: 'should extract serializable values and override fallback when normalized with `overrideMeta: true`',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              name: 'home',
+              alias: ['sweet-home'],
+              redirect: '/',
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'home',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          alias: ['sweet-home'],
+          redirect: '/',
+          children: []
+        }
+      ]
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}
-  const normalizedOverridMetaResults: Record<string, any> = {}
+  const normalizedOverrideMetaResults: Record<string, any> = {}
 
   for (const test of tests) {
     it(test.description, async () => {
@@ -495,7 +552,7 @@ describe('pages:generateRoutesFromFiles', () => {
       if (result) {
         expect(result).toEqual(test.output)
         normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
-        normalizedOverridMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
+        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
       }
     })
   }
@@ -505,7 +562,7 @@ describe('pages:generateRoutesFromFiles', () => {
   })
 
   it('should consistently normalize routes when overriding meta', async () => {
-    await expect(normalizedOverridMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta.test.ts.snap')
+    await expect(normalizedOverrideMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta.test.ts.snap')
   })
 })
 

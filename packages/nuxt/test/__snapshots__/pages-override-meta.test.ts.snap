@@ -54,6 +54,15 @@
       "path": ""/wrapper-expose/other"",
     },
   ],
+  "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
+    {
+      "alias": "["sweet-home"]",
+      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "name": ""home"",
+      "path": ""/"",
+      "redirect": ""/"",
+    },
+  ],
   "should generate correct catch-all route": [
     {
       "component": "() => import("pages/[...slug].vue").then(m => m.default || m)",
@@ -269,6 +278,16 @@
       "component": "() => import("pages/index.vue").then(m => m.default || m)",
       "name": ""home"",
       "path": ""/"",
+    },
+  ],
+  "should use fallbacks when normalized with `overrideMeta: true`": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name",
+      "path": ""/"",
+      "redirect": "mockMeta?.redirect",
     },
   ],
 }

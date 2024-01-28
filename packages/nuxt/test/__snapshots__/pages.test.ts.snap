@@ -81,6 +81,16 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
+    {
+      "alias": "["sweet-home"].concat(mockMeta?.alias || [])",
+      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "home"",
+      "path": "mockMeta?.path ?? "/"",
+      "redirect": ""/"",
+    },
+  ],
   "should generate correct catch-all route": [
     {
       "alias": "mockMeta?.alias || []",
@@ -405,6 +415,16 @@
       "component": "() => import("pages/index.vue").then(m => m.default || m)",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "home"",
+      "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
+  "should use fallbacks when normalized with `overrideMeta: true`": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
       "redirect": "mockMeta?.redirect",
     },
