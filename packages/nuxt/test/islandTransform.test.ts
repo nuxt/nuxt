@@ -277,7 +277,7 @@ describe('islandTransform - server and island components', () => {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV"  :nuxt-client="nuxtClient"><HelloWorld :nuxt-client="nuxtClient" /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV"  :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
