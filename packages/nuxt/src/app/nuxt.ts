@@ -480,7 +480,7 @@ export function useNuxtApp (): NuxtApp {
 }
 
 /*@__NO_SIDE_EFFECTS__*/
-export function useRuntimeConfig (event?: H3Event<EventHandlerRequest>): RuntimeConfig {
+export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
 }
 
