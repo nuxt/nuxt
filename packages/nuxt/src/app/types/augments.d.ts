@@ -34,6 +34,10 @@ declare module 'vue' {
     _nuxtOnBeforeMountCbs: Function[]
   }
   interface ComponentCustomOptions {
+    /**
+     * Available exclusively for `defineNuxtComponent`.
+     * It will not be executed when using `defineComponent`.
+     */
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
