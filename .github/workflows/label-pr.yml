@@ -24,10 +24,12 @@ jobs:
             const labelsToAdd = []
 
             const pullRequest = {
-              baseLabel: '${{ github.event.pull_request.base.label }}',
+              baseLabel: ${{ github.event.pull_request.base.label }},
               number: ${{ github.event.pull_request.number }},
               title: process.env.PULL_REQUEST_TITLE,
-              labelsNames: ${{ toJson(github.event.pull_request.labels.*.name) }}
+              labelsNames: ${{ github.event.pull_request.labels }}.map(
+                (label) => label.name
+              )
             }
 
             // Select label based on the branch name
@@ -79,26 +81,3 @@ jobs:
                 labels: labelsToAdd
               })
             }
-
-            for (const [eligibleType, labelName] of Object.entries(
-              eligibleTypesToLabelsNamesMap
-            )) {
-              if (
-                pullRequest.title.startsWith(eligibleType) &&
-                !pullRequest.labelsNames.includes(
-                  eligibleTypesToLabelsNamesMap[eligibleType]
-                )
-              ) {
-                labelsToAdd.push(labelName)
-
-                break
-              }
-            }
-
-            // Add selected labels
-            github.rest.issues.addLabels({
-              issue_number: pullRequest.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: labelsToAdd
-            })
