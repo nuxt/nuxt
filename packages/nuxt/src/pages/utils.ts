@@ -397,6 +397,11 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (overrideMeta) {
         metaRoute.name = route.name ?? `${metaImportName}?.name`
         metaRoute.path = route.path ?? `${metaImportName}?.path ?? ''`
+
+        // We can remove empty optional properties
+        if (route.meta == null) delete metaRoute.meta
+        if (route.alias == null) delete metaRoute.alias
+        if (route.redirect == null) delete metaRoute.redirect
       }
 
       if (route.children != null) {
