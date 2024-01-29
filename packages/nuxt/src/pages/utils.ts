@@ -166,7 +166,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
   const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
   const dynamicProperties = new Set<keyof NuxtPage>()
-  
+
   for (const key of extractionKeys) {
     const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
     if (!property) { continue }
@@ -216,7 +216,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
     dynamicProperties.add('meta')
   }
 
-  if(dynamicProperties.size){
+  if (dynamicProperties.size) {
     extractedMeta.meta ??= {}
     extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
@@ -377,9 +377,8 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
-function serializeRouteValue (value: any, filtered?: any[]) {
-  if (filtered?.length === 0) return undefined
-  if (value === undefined) return undefined
+function serializeRouteValue (value: any, skipSerialisation = false) {
+  if (skipSerialisation || value === undefined) return undefined
   return JSON.stringify(value)
 }
 
@@ -390,16 +389,21 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
       const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
-      const metaFiltered = Object.entries(page.meta || {})
-        .filter(([key, value]) => key !== DYNAMIC_META_KEY && value !== undefined)
-        .map(([_, value]) => value)
-      const aliasFiltered = toArray(page.alias).filter(Boolean)
+      const metaFiltered: Record<string, any> = {}
+      let skipMeta = true
+      for (const key in page.meta || {}) {
+        if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
+          skipMeta = false
+          metaFiltered[key] = page.meta![key]
+        }
+      }
+      const skipAlias = toArray(page.alias).every(val => !val)
 
       const route: NormalizedRoute = {
         path: serializeRouteValue(page.path),
         name: serializeRouteValue(page.name),
-        meta: serializeRouteValue(page.meta, metaFiltered),
-        alias: serializeRouteValue(page.alias, aliasFiltered),
+        meta: serializeRouteValue(metaFiltered, skipMeta),
+        alias: serializeRouteValue(page.alias, skipAlias),
         redirect: serializeRouteValue(page.redirect),
       }
 
