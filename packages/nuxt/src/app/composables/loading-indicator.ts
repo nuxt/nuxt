@@ -11,10 +11,6 @@ export type LoadingIndicatorOpts = {
   progressionRate: number
 }
 
-function _setProgressValue (progress: Ref<number>, value: number) {
-  progress.value = Math.min(100, value)
-}
-
 function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
   if (import.meta.client) {
     setTimeout(() => {
@@ -34,20 +30,20 @@ export type LoadingIndicator = {
   clear: () => void
 }
 
-function _progressTimingFunction (duration: number, elapsed: number, progressionRate: number = 50):number {
+function _progressTimingFunction (duration: number, elapsed: number, progressionRate: number = 50): number {
   const completionPercentage = elapsed / duration * 100
-  return (2/Math.PI * 100) * Math.atan(completionPercentage / progressionRate)
+  return (2 / Math.PI * 100) * Math.atan(completionPercentage / progressionRate)
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200 } = opts
   const progressionRate = opts.progressionRate && Number.isInteger(opts.progressionRate) ? opts.progressionRate : 50
-  const normalizededProgressionRate = Math.max(0, Math.min(100, progressionRate)) / 2 + 25; // from 25 to 75
+  const normalizedProgressionRate = Math.max(0, Math.min(100, progressionRate)) / 2 + 25 // from 25 to 75
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
-  const done = ref(false)
-  const rafId = ref(0)
+  let done = false
+  let rafId: number
 
   let _throttle: any = null
 
@@ -73,35 +69,33 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   function finish () {
     progress.value = 100
-    done.value = true
+    done = true
     clear()
     _hide(isLoading, progress)
   }
-  
+
   function clear () {
     clearTimeout(_throttle)
-    cancelAnimationFrame(rafId.value)
+    cancelAnimationFrame(rafId)
     _throttle = null
   }
 
   function _startProgress () {
-    done.value = false
+    done = false
     let startTimeStamp: number
 
-    function step(timeStamp: number): void {
-      if (startTimeStamp === undefined) {
-        startTimeStamp = timeStamp
-      }
-      if (!done.value) {
-        const elapsed = timeStamp - startTimeStamp
-        const value = _progressTimingFunction(duration, elapsed, normalizededProgressionRate);
-        _setProgressValue(progress, value)
-        rafId.value = requestAnimationFrame(step)
-      }
+    function step (timeStamp: number): void {
+      if (done) { return }
+
+      startTimeStamp ??= timeStamp
+      const elapsed = timeStamp - startTimeStamp
+      const value = _progressTimingFunction(duration, elapsed, normalizedProgressionRate)
+      progress.value = Math.min(100, value)
+      rafId = requestAnimationFrame(step)
     }
 
     if (import.meta.client) {
-      rafId.value = requestAnimationFrame(step)
+      rafId = requestAnimationFrame(step)
     }
   }
 
