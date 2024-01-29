@@ -262,6 +262,15 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     *
+     * This only works with static or strings/arrays rather than variables or conditional assignment.
+     *
+     * https://github.com/nuxt/nuxt/issues/24770
+     */
+    scanPageMeta: false,
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
      * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
      * data in different pages.
