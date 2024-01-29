@@ -558,11 +558,11 @@ describe('pages:generateRoutesFromFiles', () => {
   }
 
   it('should consistently normalize routes', async () => {
-    await expect(normalizedResults).toMatchFileSnapshot('./__snapshots__/pages.test.ts.snap')
+    await expect(normalizedResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-disabled.test.ts.snap')
   })
 
   it('should consistently normalize routes when overriding meta', async () => {
-    await expect(normalizedOverrideMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta.test.ts.snap')
+    await expect(normalizedOverrideMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-enabled.test.ts.snap')
   })
 })
 
