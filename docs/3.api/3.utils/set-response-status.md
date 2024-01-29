@@ -15,11 +15,14 @@ Nuxt provides composables and utilities for first-class server-side-rendering su
 ```js
 const event = useRequestEvent()
 
-// Set the status code to 404 for a custom 404 page
-setResponseStatus(event, 404)
+// event will be undefined in the browser
+if (event) {
+  // Set the status code to 404 for a custom 404 page
+  setResponseStatus(event, 404)
 
-// Set the status message as well
-setResponseStatus(event, 404, 'Page Not Found')
+  // Set the status message as well
+  setResponseStatus(event, 404, 'Page Not Found')
+}
 ```
 
 ::callout

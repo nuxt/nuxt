@@ -146,6 +146,20 @@ export default defineUntypedSchema({
     pageTransition: false,
 
     /**
+     * Default values for view transitions.
+     *
+     * This only has an effect when **experimental** support for View Transitions is
+     * [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * @see https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental
+     * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
+     */
+    viewTransition: {
+      $resolve: async (val, get) => val ?? await get('experimental.viewTransition') ?? false
+    },
+
+    /**
      * Default values for KeepAlive configuration between pages.
      *
      * This can be overridden with `definePageMeta` on an individual page.
