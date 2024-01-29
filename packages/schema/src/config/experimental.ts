@@ -303,7 +303,14 @@ export default defineUntypedSchema({
     defaults: {
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
-        componentName: 'NuxtLink'
+        $resolve: async (val, get) => {
+          val = val || {}
+          val.componentName = val.componentName || 'NuxtLink'
+          const { trailingSlash } = await get('app')
+          if (trailingSlash && !val.trailingSlash)
+            val.trailingSlash = trailingSlash
+          return val
+        }
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)

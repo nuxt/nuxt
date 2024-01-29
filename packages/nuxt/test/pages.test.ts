@@ -473,7 +473,7 @@ describe('pages:generateRoutesFromFiles', () => {
         result = await generateRoutesFromFiles(test.files.map(file => ({
           absolutePath: file.path,
           relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
-        })), true, vfs)
+        })), { shouldExtractBuildMeta: true, vfs })
       } catch (error: any) {
         expect(error.message).toEqual(test.error)
       }

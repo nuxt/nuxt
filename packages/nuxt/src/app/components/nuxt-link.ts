@@ -1,11 +1,11 @@
 import type { ComputedRef, DefineComponent, InjectionKey, PropType } from 'vue'
+import type { RouteLocationRaw } from '#vue-router'
+import type { NuxtAppConfig } from 'nuxt/schema'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-
+import { hasProtocol, joinURL, parseQuery, parseURL } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, useRouter } from '../composables/router'
+import { createRouteResolver, navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
@@ -23,7 +23,7 @@ export type NuxtLinkOptions = {
   activeClass?: string
   exactActiveClass?: string
   prefetchedClass?: string
-  trailingSlash?: 'append' | 'remove'
+  trailingSlash?: NuxtAppConfig['trailingSlash']
 }
 
 export type NuxtLinkProps = {
@@ -59,27 +59,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       console.warn(`[${componentName}] \`${main}\` and \`${sub}\` cannot be used together. \`${sub}\` will be ignored.`)
     }
   }
-  const resolveTrailingSlashBehavior = (
-    to: RouteLocationRaw,
-    resolve: (to: RouteLocationRaw) => RouteLocation & { href?: string }
-  ): RouteLocationRaw | RouteLocation => {
-    if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
-      return to
-    }
-
-    if (typeof to === 'string') {
-      return applyTrailingSlashBehavior(to, options.trailingSlash)
-    }
-
-    const path = 'path' in to ? to.path : resolve(to).path
-
-    return {
-      ...to,
-      name: undefined, // named routes would otherwise always override trailing slash behavior
-      path: applyTrailingSlashBehavior(path, options.trailingSlash)
-    }
-  }
-
   return defineComponent({
     name: componentName,
     props: {
@@ -171,19 +150,23 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const router = useRouter()
       const config = useRuntimeConfig()
 
+      const resolvePath = createRouteResolver( { trailingSlash: options?.trailingSlash })
+
       // Resolving `to` value from `to` and `href` props
       const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
         checkPropConflicts(props, 'to', 'href')
 
         const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
 
-        return resolveTrailingSlashBehavior(path, router.resolve)
+        // TODO isExternal is currently returning true for internal links that open in a new tab
+        return resolvePath(path, { external: isExternal.value })
       })
 
       // Lazily check whether to.value has a protocol
       const isProtocolURL = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
 
       // Resolving link type
+      // TODO separate logic of "should be router-link" and "is external link" for consistent behavior with navigateTo
       const isExternal = computed<boolean>(() => {
         // External prop is explicitly set
         if (props.external) {
@@ -286,7 +269,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const href = typeof to.value === 'object'
           ? router.resolve(to.value)?.href ?? null
           : (to.value && !props.external && !isProtocolURL.value)
-              ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
+              ? resolvePath(joinURL(config.app.baseURL, to.value)) as string
               : to.value || null
 
         // Resolves `target` value
@@ -343,17 +326,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)
-
-// -- NuxtLink utils --
-function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions['trailingSlash']): string {
-  const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
-  // Until https://github.com/unjs/ufo/issues/189 is resolved
-  const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
-  if (hasProtocolDifferentFromHttp) {
-    return to
-  }
-  return normalizeFn(to, true)
-}
 
 // --- Prefetching utils ---
 type CallbackFn = () => void

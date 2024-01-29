@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { encodePath, joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -9,7 +9,7 @@ import { hash } from 'ohash'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
-import type { NuxtPage } from 'nuxt/schema'
+import type { NuxtPage, NuxtAppConfig } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
@@ -55,12 +55,17 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   // sort scanned files using en-US locale to make the result consistent across different system locales
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
-  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
+  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
+    shouldExtractBuildMeta: nuxt.options.experimental.typedPages,
+    vfs: nuxt.vfs,
+    trailingSlash: nuxt.options.app.trailingSlash
+  })
 
   return uniqueBy(allRoutes, 'path')
 }
 
-export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+export async function generateRoutesFromFiles (files: ScannedFile[], options: { trailingSlash?: NuxtAppConfig['trailingSlash'], shouldExtractBuildMeta?: boolean, vfs?: Record<string, string> }): Promise<NuxtPage[]> {
+  const { trailingSlash, shouldExtractBuildMeta, vfs } = options
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -99,6 +104,10 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
       } else if (segmentName !== 'index') {
         route.path += getRoutePath(tokens)
       }
+    }
+    // by default routes will not have a trailing slash
+    if (trailingSlash === 'append') {
+      route.path = withTrailingSlash(route.path, true)
     }
 
     if (shouldExtractBuildMeta && vfs) {
@@ -307,7 +316,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
     routes: genArrayFromRaw(routes.map((page) => {
       const route: Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string } = Object.create(null)
       for (const [key, value] of Object.entries(page)) {
-        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) { 
+        if (key !== 'file' && (Array.isArray(value) ? value.length : value)) {
           route[key as Exclude<keyof NuxtPage, 'file'>] = JSON.stringify(value)
         }
       }
