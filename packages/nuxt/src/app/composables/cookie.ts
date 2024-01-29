@@ -98,7 +98,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
-      writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, cookie.value, opts as CookieOptions<any>)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -112,7 +112,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
 function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
+    return parse(getRequestHeader(useRequestEvent()!, 'cookie') || '', opts)
   } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
