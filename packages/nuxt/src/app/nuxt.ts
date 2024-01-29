@@ -6,7 +6,7 @@ import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Event } from 'h3'
+import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
@@ -84,14 +84,7 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: Error | {
-    url: string
-    statusCode: number
-    statusMessage: string
-    message: string
-    description: string
-    data?: any
-  } | null
+  error?: NuxtError | null
   _errors: Record<string, NuxtError | null>
   [key: string]: unknown
 }
@@ -368,7 +361,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => !resolvedPlugins.includes(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.includes(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
@@ -480,7 +473,7 @@ export function useNuxtApp (): NuxtApp {
 }
 
 /*@__NO_SIDE_EFFECTS__*/
-export function useRuntimeConfig (): RuntimeConfig {
+export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
 }
 

@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -342,6 +342,22 @@ export default defineNuxtModule({
       })
     }
 
+    if (nuxt.options.experimental.appManifest) {
+      // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
+      // when the app manifest is enabled.
+      nuxt.hook('pages:extend', routes => {
+        const nitro = useNitro()
+        for (const path in nitro.options.routeRules) {
+          const rule = nitro.options.routeRules[path]
+          if (!rule.redirect) { continue }
+          routes.push({
+            path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
+            file: resolve(runtimeDir, 'component-stub'),
+          })
+        }
+      })
+    }
+
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
@@ -461,6 +477,26 @@ export default defineNuxtModule({
         ].join('\n')
       }
     })
+
+
+    // add page meta types if enabled
+    if (nuxt.options.experimental.viewTransition) {
+      addTypeTemplate({
+        filename: 'types/view-transitions.d.ts',
+        getContents: ({ nuxt }) => {
+          const runtimeDir = resolve(distDir, 'pages/runtime')
+          const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+          return [
+            'import { ComputedRef, MaybeRef } from \'vue\'',
+            `declare module ${genString(composablesFile)} {`,
+            '  interface PageMeta {',
+            `    viewTransition?: boolean | 'always'`,
+            '  }',
+            '}',
+          ].join('\n')
+        }
+      })
+    }
 
     // Add <NuxtPage>
     addComponent({
