@@ -26,6 +26,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/compat/idle-callback'
   },
   {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
+  },
+  {
     imports: ['useAppConfig', 'updateAppConfig'],
     from: '#app/config'
   },
@@ -58,7 +62,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/fetch'
   },
   {
-    imports: ['useCookie'],
+    imports: ['useCookie', 'refreshCookie'],
     from: '#app/composables/cookie'
   },
   {

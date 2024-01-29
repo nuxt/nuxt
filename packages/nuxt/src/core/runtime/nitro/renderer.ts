@@ -64,7 +64,7 @@ export interface NuxtIslandContext {
 
 export interface NuxtIslandSlotResponse {
   props: Array<unknown>
-  fallback: string
+  fallback?: string
 }
 export interface NuxtIslandClientResponse {
   html: string
@@ -235,7 +235,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we're rendering an error page
   const ssrError = event.path.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
+    ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
     : null
 
   if (ssrError && ssrError.statusCode) {
@@ -626,7 +626,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`] || ''
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
     }
   }
   return response
