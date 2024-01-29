@@ -7,7 +7,11 @@ export type LoadingIndicatorOpts = {
   duration: number
   /** @default 200 */
   throttle: number
-  /** Provide a custom progression rate function that returns a value from 0 to 100 */
+  /**
+   * You can provide a custom function to customize the progress estimation,
+   * which is a function that receives the duration of the loading bar (above)
+   * and the elapsed time. It should return a value between 0 and 100.
+   */
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 

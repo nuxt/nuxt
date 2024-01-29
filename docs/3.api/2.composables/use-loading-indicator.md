@@ -17,7 +17,7 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 
 - `duration`: Duration of the loading bar, in milliseconds (default `2000`).
 - `throttle`: Throttle the appearing and hiding, in milliseconds (default `200`).
-- `progressionRate`: The steepness of the non-linear function used in calculating progress. A lower value results in a steeper curve, meaning faster initial progress that slows down more sharply towards the end. (default `50`);
+- `estimatedProgress`: By default Nuxt will back off as it approaches 100%. You can provide a custom function to customize the progress estimation, which is a function that receives the duration of the loading bar (above) and the elapsed time. It should return a value between 0 and 100.
 
 ## Properties
 
@@ -52,7 +52,8 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
   const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
     duration: 2000,
     throttle: 200,
-    progressionRate: 50
+    // This is how progress is calculated by default
+    estimatedProgress: (duration, elapsed) => (2 / Math.PI * 100) * Math.atan(elapsed / duration * 100 / 50)
   })
 </script>
 ```
