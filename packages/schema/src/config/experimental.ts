@@ -19,9 +19,9 @@ export default defineUntypedSchema({
     typescriptBundlerResolution: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then(e => e?.typescriptBundlerResolution)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution') as string | undefined
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
@@ -43,7 +43,7 @@ export default defineUntypedSchema({
     inlineStyles: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -59,7 +59,7 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+        return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
     },
   },
@@ -296,7 +296,7 @@ export default defineUntypedSchema({
      * })
      */
     sharedPrerenderData: false,
-      
+
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
