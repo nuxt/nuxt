@@ -160,11 +160,9 @@ export default defineUntypedSchema({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
-     * @type {boolean}
+     * @type {boolean | 'always'}
      */
-    viewTransition: {
-      $resolve: value => value ?? false
-    },
+    viewTransition: false,
 
     /**
      * Write early hints when using node server.
@@ -289,6 +287,12 @@ export default defineUntypedSchema({
      * })
      */
     sharedPrerenderData: false,
+      
+    /**
+     * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
+     * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
+     */
+    cookieStore: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
@@ -309,6 +313,21 @@ export default defineUntypedSchema({
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {}
-    }
+    },
+
+    /**
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
+     * @see https://github.com/unjs/unenv
+     *
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
+     *
+     * ```ts
+     * import { Buffer } from 'node:buffer'
+     *
+     * globalThis.Buffer = globalThis.Buffer || Buffer
+     * ```
+     * @type {boolean}
+     */
+    clientNodeCompat: false,
   }
 })
