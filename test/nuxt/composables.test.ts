@@ -595,6 +595,11 @@ describe('callOnce', () => {
     const execute = () => callOnce(fn)
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
+    
+    const fnSync = vi.fn().mockImplementation(() => { })
+    const executeSync = () => callOnce(fnSync)
+    await Promise.all([executeSync(), executeSync(), executeSync()])
+    expect(fnSync).toHaveBeenCalledTimes(1)
   })
 
   it('should use key to dedupe', async () => {

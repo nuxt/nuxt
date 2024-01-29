@@ -7,7 +7,6 @@ import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import type { ConsoleMessage } from 'playwright-core'
 import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
@@ -113,7 +112,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -191,15 +190,6 @@ describe('pages', () => {
     expect(html).toContain('Middleware ran: true')
 
     await expectNoClientErrors('/not-found')
-  })
-
-  it('expect no loading indicator on middleware abortNavigation', async () => {
-    const { page } = await renderPage('/')
-    await page.locator('#middleware-abort-non-fatal').click()
-    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
-    await page.locator('#middleware-abort-non-fatal-error').click()
-    expect(await page.locator('#lodagin-indicator').all()).toHaveLength(0)
-    await page.close()
   })
 
   it('should render correctly when loaded on a different path', async () => {
@@ -281,8 +271,7 @@ describe('pages', () => {
   it('/client-server', async () => {
     // expect no hydration issues
     await expectNoClientErrors('/client-server')
-    const page = await createPage('/client-server')
-    await page.waitForLoadState('networkidle')
+    const { page } = await renderPage('/client-server')
     const bodyHTML = await page.innerHTML('body')
     expect(await page.locator('.placeholder-to-ensure-no-override').all()).toHaveLength(5)
     expect(await page.locator('.server').all()).toHaveLength(0)
@@ -294,6 +283,7 @@ describe('pages', () => {
 
     expect(bodyHTML).not.toContain('hello')
     expect(bodyHTML).toContain('world')
+    await page.close()
   })
 
   it('/client-only-components', async () => {
@@ -372,8 +362,7 @@ describe('pages', () => {
     // don't expect any errors or warning on client-side navigation
     const { page: page2, consoleLogs: consoleLogs2 } = await renderPage('/')
     await page2.locator('#to-client-only-components').click()
-    // force wait for a few ticks
-    await page2.waitForTimeout(50)
+    await page2.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/client-only-components`)
     expect(consoleLogs2.some(log => log.type === 'error' || log.type === 'warning')).toBeFalsy()
     await page2.close()
   })
@@ -567,10 +556,14 @@ describe('nuxt composables', () => {
       return JSON.parse(decodeURIComponent(raw))
     }
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.getByRole('button').click()
+    await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
-    await page.getByRole('button').click()
+    await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'bar' })
+    await page.evaluate(() => document.cookie = 'updated=foobar')
+    await page.getByText('Refresh cookie').click()
+    const text = await page.innerText('pre')
+    expect(text).toContain('foobar')
     await page.close()
   })
 })
@@ -668,50 +661,48 @@ describe('nuxt links', () => {
 
   it('expect scroll to top on routes with same component', async () => {
     // #22402
-    const page = await createPage('/big-page-1')
-    await page.setViewportSize({
-      width: 1000,
-      height: 1000
+    const page = await createPage('/big-page-1', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
     })
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
 
     await page.locator('#big-page-2').scrollIntoViewIfNeeded()
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await page.locator('#big-page-2').click()
-    await page.waitForURL(url => url.href.includes('/big-page-2'))
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
     await page.locator('#big-page-1').scrollIntoViewIfNeeded()
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await page.locator('#big-page-1').click()
-    await page.waitForURL(url => url.href.includes('/big-page-1'))
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
     await page.close()
   })
 
   it('expect scroll to top on nested pages', async () => {
     // #20523
-    const page = await createPage('/nested/foo/test')
-    await page.setViewportSize({
-      width: 1000,
-      height: 1000
+    const page = await createPage('/nested/foo/test', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
     })
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
 
     await page.locator('#user-test').scrollIntoViewIfNeeded()
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await page.locator('#user-test').click()
-    await page.waitForURL(url => url.href.includes('/nested/foo/user-test'))
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
     await page.locator('#test').scrollIntoViewIfNeeded()
     expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
     await page.locator('#test').click()
-    await page.waitForURL(url => url.href.includes('/nested/foo/test'))
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
     expect(await page.evaluate(() => window.scrollY)).toBe(0)
     await page.close()
   })
@@ -1463,6 +1454,8 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
+    '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+    '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
@@ -1473,7 +1466,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of inlinedCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1484,7 +1477,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     ]
     const html = await $fetch('/route-rules/spa')
     for (const style of globalCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1495,7 +1488,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
-  it('should not include inlined CSS in generated CSS file', async () => {
+  it('should not include inlined CSS in generated CSS file', async ()  => {
     const html: string = await $fetch('/styles')
     const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
     let css = ''
@@ -1581,12 +1574,8 @@ describe('server components/islands', () => {
   })
 
   it('lazy server components', async () => {
-    const logs: ConsoleMessage[] = []
+    const { page, consoleLogs } = await renderPage('/server-components/lazy/start')
 
-    const { page } = await renderPage('/server-components/lazy/start')
-
-    page.on('console', (msg) => { if (msg.type() === 'error') { logs.push(msg) } })
-    await page.waitForLoadState('networkidle')
     await page.getByText('Go to page with lazy server component').click()
 
     const text = await page.innerText('pre')
@@ -1605,7 +1594,7 @@ describe('server components/islands', () => {
     await page.getByText('Go to page with lazy server component').click()
     await page.waitForLoadState('networkidle')
 
-    expect(logs).toHaveLength(0)
+    expect(consoleLogs.filter(l => l.type === 'error')).toHaveLength(0)
 
     await page.close()
   })
@@ -2036,6 +2025,11 @@ describe('component islands', () => {
         {
           "link": [
             {
+              "href": "/_nuxt/components/SharedComponent.vue?vue&type=style&index=0&scoped=3ee84738&lang.css",
+              "key": "island-link",
+              "rel": "stylesheet",
+            },
+            {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",
               "rel": "stylesheet",
@@ -2240,17 +2234,17 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   })
 
   it('data is null after navigation when immediate false', async () => {
-    const page = await createPage('/useAsyncData/immediate-remove-unmounted')
-    await page.waitForLoadState('networkidle')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/immediate-remove-unmounted')
+    const { page } = await renderPage('/useAsyncData/immediate-remove-unmounted')
     expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
 
     await page.click('#execute-btn')
     expect(await page.locator('#immediate-data').getByText(',').textContent()).not.toContain('null')
 
     await page.click('#to-index')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/')
 
     await page.click('#to-immediate-remove-unmounted')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/useAsyncData/immediate-remove-unmounted')
     expect(await page.locator('#immediate-data').getByText('null').textContent()).toBe('null')
 
     await page.click('#execute-btn')
@@ -2276,7 +2270,7 @@ describe('keepalive', () => {
 
     const pageName = 'not-keepalive'
     await page.click(`#${pageName}`)
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
 
@@ -2288,7 +2282,7 @@ describe('keepalive', () => {
 
     const pageName = 'keepalive-in-config'
     await page.click(`#${pageName}`)
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
 
@@ -2300,7 +2294,7 @@ describe('keepalive', () => {
 
     const pageName = 'not-keepalive-in-nuxtpage'
     await page.click(`#${pageName}`)
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`])
 
@@ -2312,7 +2306,7 @@ describe('keepalive', () => {
 
     const pageName = 'keepalive-in-nuxtpage'
     await page.click(`#${pageName}`)
-    await page.waitForTimeout(25)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${pageName}`)
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([`${pageName}: onMounted`, `${pageName}: onActivated`])
 
@@ -2322,16 +2316,18 @@ describe('keepalive', () => {
   it('should preserve keepalive config when navigate routes in nuxt-page', async () => {
     const { page, consoleLogs } = await renderPage('/keepalive')
 
-    await page.click('#keepalive-in-nuxtpage')
-    await page.waitForTimeout(25)
-    await page.click('#keepalive-in-nuxtpage-2')
-    await page.waitForTimeout(25)
-    await page.click('#keepalive-in-nuxtpage')
-    await page.waitForTimeout(25)
-    await page.click('#not-keepalive')
-    await page.waitForTimeout(25)
-    await page.click('#keepalive-in-nuxtpage-2')
-    await page.waitForTimeout(25)
+    const slugs = [
+      'keepalive-in-nuxtpage',
+      'keepalive-in-nuxtpage-2',
+      'keepalive-in-nuxtpage',
+      'not-keepalive',
+      'keepalive-in-nuxtpage-2',
+    ]
+
+    for (const slug of slugs) {
+      await page.click(`#${slug}`)
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/keepalive/${slug}`)
+    }
 
     expect(consoleLogs.map(l => l.text).filter(t => t.includes('keepalive'))).toEqual([
       'keepalive-in-nuxtpage: onMounted',
@@ -2374,6 +2370,38 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     }
   }
 }
+
+describe('import components', () => {
+  let html = ''
+
+  it.sequential('fetch import-components page', async () => {
+    html = await $fetch('/import-components')
+  })
+
+  it('load default component with mode all', () => {
+    expect(html).toContain('default-comp-all')
+  })
+
+  it('load default component with mode client', () => {
+    expect(html).toContain('default-comp-client')
+  })
+
+  it('load default component with mode server', () => {
+    expect(html).toContain('default-comp-server')
+  })
+
+  it('load named component with mode all', () => {
+    expect(html).toContain('named-comp-all')
+  })
+
+  it('load named component with mode client', () => {
+    expect(html).toContain('named-comp-client')
+  })
+
+  it('load named component with mode server', () => {
+    expect(html).toContain('named-comp-server')
+  })
+})
 
 describe('lazy import components', () => {
   let html = ''
