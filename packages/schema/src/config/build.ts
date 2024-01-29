@@ -10,7 +10,7 @@ export default defineUntypedSchema({
    * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val, get) => {
+    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
@@ -27,7 +27,7 @@ export default defineUntypedSchema({
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
-    $resolve: async (val, get) => {
+    $resolve: async (val: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' } | undefined, get) => {
       if (typeof val === 'boolean') {
         return { server: val, client: val }
       }
@@ -46,7 +46,7 @@ export default defineUntypedSchema({
    * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
-    $resolve: (val) => {
+    $resolve: (val: string | undefined) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
         consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
@@ -71,7 +71,7 @@ export default defineUntypedSchema({
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
-      $resolve: val => [].concat(val).filter(Boolean)
+      $resolve: (val: Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)> | undefined) => (val || []).filter(Boolean)
     },
 
     /**
@@ -109,8 +109,8 @@ export default defineUntypedSchema({
      * @type {boolean | { enabled?: boolean } & ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
-      $resolve: async (val, get) => {
-        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')])
+      $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
+        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')]) as [string, string]
         return defu(typeof val === 'boolean' ? { enabled: val } : val, {
           template: 'treemap',
           projectRoot: rootDir,
@@ -135,15 +135,16 @@ export default defineUntypedSchema({
      * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: val => [
+      $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
         { name: 'callOnce', argumentLength: 2 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 }
-      ].concat(val).filter(Boolean)
+        { name: 'useLazyFetch', argumentLength: 3 },
+        ...val || []
+      ].filter(Boolean)
     },
 
     /**

@@ -200,6 +200,7 @@ export default defineNuxtConfig({
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
+    clientNodeCompat: true,
     componentIslands: {
       selectiveClient: true
     },

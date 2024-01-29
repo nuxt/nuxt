@@ -3,6 +3,7 @@
     <ClientOnlyScript />
     <FunctionalComponent />
     <ServerOnlyComponent />
+    <SharedComponent />
   </div>
 </template>
 

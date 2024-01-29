@@ -55,15 +55,18 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   clone.setup = (props, ctx) => {
     const instance = getCurrentInstance()!
 
-    const attrs = instance.attrs
+    const attrs = { ...instance.attrs }
+
     // remove existing directives during hydration
     const directives = extractDirectives(instance)
     // prevent attrs inheritance since a staticVNode is rendered before hydration
-    instance.attrs = {}
+    for(const key in attrs) {
+      delete instance.attrs[key]
+    }
     const mounted$ = ref(false)
 
     onMounted(() => {
-      instance.attrs = attrs
+      Object.assign(instance.attrs, attrs)
       instance.vnode.dirs = directives
       mounted$.value = true
     })

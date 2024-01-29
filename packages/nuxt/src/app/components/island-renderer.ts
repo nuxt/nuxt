@@ -27,6 +27,6 @@ export default defineComponent({
       console.log(e)
     })
 
-    return () => createVNode(component || 'span', { ...props.context.props, 'nuxt-ssr-component-uid': '' })
+    return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
   }
 })

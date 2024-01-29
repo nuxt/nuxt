@@ -11,13 +11,19 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
-import type { Nuxt, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
-import { ImportProtectionPlugin } from './plugins/import-protection'
+import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+
+const logLevelMapReverse = {
+  silent: 0,
+  info: 3,
+  verbose: 3
+} satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
@@ -212,13 +218,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
+      'process.env.NUXT_SHARED_DATA': !!nuxt.options.experimental.sharedPrerenderData,
       'process.dev': nuxt.options.dev,
       __VUE_PROD_DEVTOOLS__: false
     },
     rollupConfig: {
       output: {},
       plugins: []
-    }
+    },
+    logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
 
   // Resolve user-provided paths
@@ -339,10 +347,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
-      patterns: [
-        ...['#app', /^#build(\/|$)/]
-          .map(p => [p, 'Vue app aliases are not allowed in server routes.']) as [RegExp | string, string][]
-      ],
+      patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/]
     })
   )
