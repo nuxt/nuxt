@@ -70,7 +70,7 @@ export default defineNuxtModule({
     }
     nuxt.options.pages = await isPagesEnabled()
 
-    if (nuxt.options.dev) {
+    if (nuxt.options.dev && nuxt.options.pages) {
       // Add plugin to check if pages are enabled without NuxtPage being instantiated
       addPlugin(resolve(runtimeDir, 'plugins/check-if-page-unused'))
     }
