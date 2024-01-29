@@ -177,7 +177,6 @@ export default defineUntypedSchema({
       $resolve: val => val || 'div'
     },
 
-
     /**
      * Customize Nuxt root element tag.
      */

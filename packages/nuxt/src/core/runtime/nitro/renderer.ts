@@ -50,7 +50,7 @@ export interface NuxtRenderHTMLContext {
   bodyAttrs: string[]
   bodyPrepend: string[]
   body: string[]
-  bodyAppend: string[],
+  bodyAppend: string[]
   appTeleports: string[]
 }
 
@@ -96,7 +96,6 @@ const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r =>
   // @ts-expect-error internal key set by CSS inlining configuration
   r._globalCSS
 ).map(r => r.src!))
-
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
