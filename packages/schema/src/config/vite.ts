@@ -55,9 +55,6 @@ export default defineUntypedSchema({
       script: {
         propsDestructure: {
           $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure)
-        },
-        defineModel: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel)
         }
       }
     },
