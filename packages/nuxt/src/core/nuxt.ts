@@ -16,7 +16,7 @@ import importsModule from '../imports/module'
 /* eslint-enable */
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
-import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
+import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
@@ -89,7 +89,7 @@ async function initNuxt (nuxt: Nuxt) {
     rootDir: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.rootDir, 'index.html')],
-    patterns: vueAppPatterns(nuxt)
+    patterns: nuxtImportProtections(nuxt)
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))

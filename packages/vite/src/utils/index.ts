@@ -1,5 +1,7 @@
 import { hash } from 'ohash'
 
+export { isVue } from '../../../nuxt/src/core/utils/plugins'
+
 export function uniq<T> (arr: T[]): T[] {
   return Array.from(new Set(arr))
 }

@@ -15,7 +15,7 @@ Within your pages, components, and plugins you can use `useRequestEvent` to acce
 const event = useRequestEvent()
 
 // Get the URL
-const url = event.path
+const url = event?.path
 ```
 
 ::callout
