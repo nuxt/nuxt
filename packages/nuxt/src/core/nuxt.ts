@@ -156,9 +156,6 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
-
-    // Add plugin to check if pages are enabled without NuxtPage being instantiated
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-page-unused'))
   }
 
   // Transform initial composable call within `<script setup>` to preserve context

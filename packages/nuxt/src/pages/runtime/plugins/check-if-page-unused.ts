@@ -1,16 +1,15 @@
 import { nextTick } from 'vue'
-import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
-import { onNuxtReady } from '../composables/ready'
-import { useError } from '../composables/error'
+import { defineNuxtPlugin } from '#app/nuxt'
+import { onNuxtReady } from '#app/composables/ready'
+import { useError } from '#app/composables/error'
 
 export default defineNuxtPlugin({
   name: 'nuxt:checkIfPageUnused',
   setup (nuxtApp) {
     const error = useError()
-    const config = useRuntimeConfig()
 
     function checkIfPageUnused () {
-      if (!error.value && config.public._pages && !nuxtApp._isNuxtPageUsed) {
+      if (!error.value && !nuxtApp._isNuxtPageUsed) {
         console.warn(
           '[nuxt] Your project has pages but the `<NuxtPage />` component has not been used.'
           + ' You might be using the `<RouterView />` component instead,'
