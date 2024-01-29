@@ -86,7 +86,6 @@ export interface NuxtPayload {
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: NuxtError | null
   _errors: Record<string, NuxtError | null>
-  _id: number
   [key: string]: unknown
 }
 
@@ -103,6 +102,8 @@ interface _NuxtApp {
 
   [key: string]: unknown
 
+  /** @internal */
+  _id?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
@@ -239,7 +240,6 @@ export function createNuxtApp (options: CreateOptions) {
       state: {},
       once: new Set<string>(),
       _errors: {},
-      _id: 0,
       ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
     }),
     static: {
@@ -440,7 +440,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Returns `null` if Nuxt instance is unavailable.
  */
 export function tryUseNuxtApp (): NuxtApp | null {
@@ -457,7 +457,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Throws an error if Nuxt instance is unavailable.
  */
 export function useNuxtApp (): NuxtApp {

@@ -882,6 +882,9 @@ describe('composables', () => {
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
   it('`useId` should generate unique ids', async () => {
+    // TODO: work around interesting Vue bug where async components are loaded in a different order on first import
+    await $fetch('/use-id')
+
     const sanitiseHTML = (html: string) => html.replace(/ data-[^= ]+="[^"]+"/g, '').replace(/<!--[[\]]-->/, '')
 
     const serverHTML = await $fetch('/use-id').then(html => sanitiseHTML(html.match(/<form.*<\/form>/)![0]))
@@ -1442,7 +1445,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
-  it('should not include inlined CSS in generated CSS file', async ()  => {
+  it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch('/styles')
     const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
     let css = ''

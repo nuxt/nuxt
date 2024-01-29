@@ -31,6 +31,6 @@ declare module 'vue' {
   }
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Function[]
-    _nuxtIdIndex: number
+    _nuxtIdIndex?: Record<string, number>
   }
 }
