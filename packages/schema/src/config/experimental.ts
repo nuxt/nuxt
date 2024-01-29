@@ -275,9 +275,6 @@ export default defineUntypedSchema({
      * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
      * data in different pages.
      *
-     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
-     * not be fetched more than once.
-     *
      * It is particularly important when enabling this feature to make sure that any unique key of your data
      * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
      * data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch`
