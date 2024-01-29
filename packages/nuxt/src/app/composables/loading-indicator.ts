@@ -7,8 +7,8 @@ export type LoadingIndicatorOpts = {
   duration: number
   /** @default 200 */
   throttle: number
-  /** @default 50 */
-  progressionRate: number
+  /** Provide a custom progression rate function that returns a value from 0 to 100 */
+  estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
 function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
@@ -30,15 +30,14 @@ export type LoadingIndicator = {
   clear: () => void
 }
 
-function _progressTimingFunction (duration: number, elapsed: number, progressionRate: number = 50): number {
+function defaultEstimatedProgress (duration: number, elapsed: number): number {
   const completionPercentage = elapsed / duration * 100
-  return (2 / Math.PI * 100) * Math.atan(completionPercentage / progressionRate)
+  return (2 / Math.PI * 100) * Math.atan(completionPercentage / 50)
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200 } = opts
-  const progressionRate = opts.progressionRate && Number.isInteger(opts.progressionRate) ? opts.progressionRate : 50
-  const normalizedProgressionRate = Math.max(0, Math.min(100, progressionRate)) / 2 + 25 // from 25 to 75
+  const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
@@ -89,8 +88,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
       startTimeStamp ??= timeStamp
       const elapsed = timeStamp - startTimeStamp
-      const value = _progressTimingFunction(duration, elapsed, normalizedProgressionRate)
-      progress.value = Math.min(100, value)
+      progress.value = Math.max(0, Math.min(100, getProgress(duration, elapsed)))
       rafId = requestAnimationFrame(step)
     }
 
