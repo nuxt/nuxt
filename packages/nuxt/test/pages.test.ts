@@ -6,6 +6,7 @@ import { generateRouteKey } from '../src/pages/runtime/utils'
 describe('pages:generateRoutesFromFiles', () => {
   const pagesDir = 'pages'
   const layerDir = 'layer/pages'
+  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
   vi.mock('knitwork', async (original) => {
     return {
@@ -470,35 +471,68 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'index',
           path: '/'
         }
+      ],
+    },
+    {
+      description: 'should use fallbacks when normalized with `overrideMeta: true`',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            const routeName = ref('home')
+            const routeAliases = ref(['sweet-home'])
+            definePageMeta({
+              name: routeName.value,
+              alias: routeAliases.value,
+              test: routeAliases.value,
+              redirect: () => '/'
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          meta: { [DYNAMIC_META_KEY]: new Set(['name', 'alias', 'redirect', 'meta']) },
+          children: []
+        }
       ]
-    }
+    },
+    {
+      description: 'should extract serializable values and override fallback when normalized with `overrideMeta: true`',
+      files: [
+        {
+          path: `${pagesDir}/index.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              name: 'home',
+              alias: ['sweet-home'],
+              redirect: '/',
+            })
+            </script>
+          `
+        }
+      ],
+      output: [
+        {
+          name: 'home',
+          path: '/',
+          file: `${pagesDir}/index.vue`,
+          alias: ['sweet-home'],
+          redirect: '/',
+          children: []
+        }
+      ]
+    },
   ]
 
-  type NormalizedRoute = Record<Exclude<keyof NuxtPage, 'file' | 'children'>, string> & { component?: string; children?: NormalizedRoute[] }
-  function formatNormalized(route: NuxtPage | undefined, extract = false) { 
-    const serializedName = JSON.stringify(route?.name)
-    const serializedPath = JSON.stringify(route?.path)
-
-    const res: NormalizedRoute = {
-      name: `mockMeta?.name ?? ${serializedName}`,
-      path: `mockMeta?.path ?? ${serializedPath}`,
-      meta: 'mockMeta || {}',
-      alias: route?.alias ? `${JSON.stringify(route.alias)}.concat(mockMeta?.alias || [])` : 'mockMeta?.alias || []',
-      component: `() => import("${route?.file}").then(m => m.default || m)`,
-      redirect: 'mockMeta?.redirect',
-    }
-
-    if (extract) {
-      res.name = route?.name != null ? serializedName : "mockMeta?.name"
-      res.path = route?.path != null ? serializedPath : "mockMeta?.path"
-    }
-
-    if (route?.children?.length) {
-      res.children = route?.children?.map(x => formatNormalized(x, extract)) ?? []
-    }
-
-    return res
-  }
+  const normalizedResults: Record<string, any> = {}
+  const normalizedOverrideMetaResults: Record<string, any> = {}
 
   for (const test of tests) {
     it(test.description, async () => {
@@ -517,12 +551,19 @@ describe('pages:generateRoutesFromFiles', () => {
       }
       if (result) {
         expect(result).toEqual(test.output)
-        expect(normalizeRoutes(result, new Set()).routes).toStrictEqual(test.output?.map(route => formatNormalized(route)))
-        expect(normalizeRoutes(result, new Set(), true).routes).toStrictEqual(test.output?.map(route => formatNormalized(route, true)))
+        normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
+        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
       }
     })
   }
 
+  it('should consistently normalize routes', async () => {
+    await expect(normalizedResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-disabled.test.ts.snap')
+  })
+
+  it('should consistently normalize routes when overriding meta', async () => {
+    await expect(normalizedOverrideMetaResults).toMatchFileSnapshot('./__snapshots__/pages-override-meta-enabled.test.ts.snap')
+  })
 })
 
 describe('pages:generateRouteKey', () => {

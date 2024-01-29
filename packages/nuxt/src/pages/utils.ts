@@ -133,6 +133,7 @@ export function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
+const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 async function getRouteMeta (contents: string, absolutePath?: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
@@ -163,7 +164,10 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
 
   const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
-  for (const key of ['name', 'path', 'alias', 'redirect'] as const) {
+  const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
+  const dynamicProperties = new Set<keyof NuxtPage>()
+  
+  for (const key of extractionKeys) {
     const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
     if (!property) { continue }
 
@@ -173,6 +177,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
         extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
       } catch {
         console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+        dynamicProperties.add(key)
         continue
       }
     }
@@ -185,6 +190,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
         }
         if (element.type !== 'Literal' || typeof element.value !== 'string') {
           console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+          dynamicProperties.add(key)
           continue
         }
         values.push(element.value)
@@ -195,9 +201,24 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
 
     if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
       console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+      dynamicProperties.add(key)
       continue
     }
     extractedMeta[key] = property.value.value
+  }
+
+  const extraneousMetaKeys = pageMetaArgument.properties
+    .filter(property => property.type === 'Property' && property.key.type === 'Identifier' && !(extractionKeys as unknown as string[]).includes(property.key.name))
+    // @ts-expect-error inferred types have been filtered out
+    .map(property => property.key.name)
+
+  if (extraneousMetaKeys.length) {
+    dynamicProperties.add('meta')
+  }
+
+  if(dynamicProperties.size){
+    extractedMeta.meta ??= {}
+    extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
 
   metaCache[contents] = extractedMeta
@@ -357,11 +378,15 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
 }
 
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
+type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const metaFiltered = Object.values(page.meta || {}).filter(value => value !== undefined)
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const metaFiltered = Object.entries(page.meta || {})
+        .filter(([key, value]) => key !== DYNAMIC_META_KEY && value !== undefined)
+        .map(([_, value]) => value)
       const aliasFiltered = toArray(page.alias).filter(Boolean)
       
       const route: NormalizedRoute = Object.create({
@@ -394,25 +419,44 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         component: genDynamicImport(file, { interopDefault: true })
       }
 
-      if (overrideMeta) {
-        metaRoute.name = route.name ?? `${metaImportName}?.name`
-        metaRoute.path = route.path ?? `${metaImportName}?.path ?? ''`
-      }
-
       if (route.children != null) {
         metaRoute.children = route.children
       }
 
-      if (route.meta != null) {
-        metaRoute.meta = `{ ...(${metaImportName}) || {}), ...${route.meta} }`
-      }
+      if (overrideMeta) {
+        metaRoute.name = `${metaImportName}?.name`
+        metaRoute.path = `${metaImportName}?.path ?? ''`
 
-      if (route.alias != null) {
-        metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
-      }
+        // skip and retain fallback if marked dynamic
+        // set to extracted value or fallback if none extracted
+        for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) continue
+          metaRoute[key] = route[key] ?? metaRoute[key]
+        }
 
-      if (route.redirect != null) {
-        metaRoute.redirect = route.redirect
+        // set to extracted value or delete if none extracted
+        for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) continue
+
+          if (route[key] == null) {
+            delete metaRoute[key]
+            continue
+          }
+
+          metaRoute[key] = route[key]
+        }
+      } else {
+        if (route.meta != null) {
+          metaRoute.meta = `{ ...(${metaImportName}) || {}), ...${route.meta} }`
+        }
+
+        if (route.alias != null) {
+          metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
+        }
+
+        if (route.redirect != null) {
+          metaRoute.redirect = route.redirect
+        }
       }
 
       return metaRoute
