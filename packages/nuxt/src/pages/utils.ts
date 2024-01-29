@@ -377,6 +377,12 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
+function serializeRouteValue (value: any, filtered?: any[]) {
+  if (filtered?.length === 0) return undefined
+  if (value === undefined) return undefined
+  return JSON.stringify(value)
+}
+
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
@@ -388,14 +394,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         .filter(([key, value]) => key !== DYNAMIC_META_KEY && value !== undefined)
         .map(([_, value]) => value)
       const aliasFiltered = toArray(page.alias).filter(Boolean)
-      
-      const route: NormalizedRoute = Object.create({
-        path: page.path !== undefined ? JSON.stringify(page.path) : undefined,
-        name: page.name !== undefined ? JSON.stringify(page.name) : undefined,
-        meta: metaFiltered.length ? JSON.stringify(metaFiltered) : undefined,
-        alias: aliasFiltered.length ? JSON.stringify(aliasFiltered) : undefined,
-        redirect: page.redirect ? JSON.stringify(page.redirect) : undefined,
-      })
+
+      const route: NormalizedRoute = {
+        path: serializeRouteValue(page.path),
+        name: serializeRouteValue(page.name),
+        meta: serializeRouteValue(page.meta, metaFiltered),
+        alias: serializeRouteValue(page.alias, aliasFiltered),
+        redirect: serializeRouteValue(page.redirect),
+      }
 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes

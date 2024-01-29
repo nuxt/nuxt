@@ -1,4 +1,13 @@
 {
+  "route without file": [
+    {
+      "alias": "["sweet-home"]",
+      "meta": "{"hello":"world"}",
+      "name": ""home"",
+      "path": ""/"",
+      "redirect": undefined,
+    },
+  ],
   "should allow pages with `:` in their path": [
     {
       "alias": "mockMeta?.alias || []",

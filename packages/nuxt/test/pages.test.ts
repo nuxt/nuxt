@@ -20,7 +20,7 @@ describe('pages:generateRoutesFromFiles', () => {
   
   const tests: Array<{
     description: string
-    files: Array<{ path: string; template?: string; }>
+    files?: Array<{ path: string; template?: string; }>
     output?: NuxtPage[]
     normalized?: Record<string, any>[]
     error?: string
@@ -485,7 +485,7 @@ describe('pages:generateRoutesFromFiles', () => {
             definePageMeta({
               name: routeName.value,
               alias: routeAliases.value,
-              test: routeAliases.value,
+              hello: 'world',
               redirect: () => '/'
             })
             </script>
@@ -513,6 +513,7 @@ describe('pages:generateRoutesFromFiles', () => {
               name: 'home',
               alias: ['sweet-home'],
               redirect: '/',
+              hello: 'world'
             })
             </script>
           `
@@ -525,7 +526,19 @@ describe('pages:generateRoutesFromFiles', () => {
           file: `${pagesDir}/index.vue`,
           alias: ['sweet-home'],
           redirect: '/',
-          children: []
+          children: [],
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+        }
+      ]
+    },
+    {
+      description: 'route without file',
+      output: [
+        {
+          name: 'home',
+          path: '/',
+          alias: ['sweet-home'],
+          meta: { hello: 'world' },
         }
       ]
     },
@@ -536,19 +549,25 @@ describe('pages:generateRoutesFromFiles', () => {
 
   for (const test of tests) {
     it(test.description, async () => {
-      const vfs = Object.fromEntries(
-        test.files.map(file => [file.path, 'template' in file ? file.template : ''])
-      ) as Record<string, string>
 
       let result
-      try {
-        result = await generateRoutesFromFiles(test.files.map(file => ({
-          absolutePath: file.path,
-          relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
-        })), { shouldExtractBuildMeta: true, vfs })
-      } catch (error: any) {
-        expect(error.message).toEqual(test.error)
+      if (test.files) {
+        const vfs = Object.fromEntries(
+          test.files.map(file => [file.path, 'template' in file ? file.template : ''])
+        ) as Record<string, string>
+
+        try {
+          result = await generateRoutesFromFiles(test.files.map(file => ({
+            absolutePath: file.path,
+            relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
+          })), { shouldExtractBuildMeta: true, vfs })
+        } catch (error: any) {
+          expect(error.message).toEqual(test.error)
+        }
+      } else {
+        result = test.output ?? []
       }
+
       if (result) {
         expect(result).toEqual(test.output)
         normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
