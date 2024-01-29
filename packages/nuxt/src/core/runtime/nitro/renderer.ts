@@ -186,13 +186,13 @@ const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
-  get <T = unknown>(key: string): Promise<T> {
+  get<T = unknown> (key: string): Promise<T> {
     if (sharedPrerenderPromises!.has(key)) {
       return sharedPrerenderPromises!.get(key)!
     }
     return useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
   },
-  async set <T>(key: string, value: Promise<T>) {
+  async set<T> (key: string, value: Promise<T>) {
     sharedPrerenderPromises!.set(key, value)
     return useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
       // free up memory after the promise is resolved
@@ -538,7 +538,7 @@ function joinAttrs (chunks: string[]) {
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   let bodyTags = joinTags(html.body)
-  if(html.appTeleports.length) {
+  if (html.appTeleports.length) {
     const appTeleportOpenTag = `<${appTeleportTag} id="${appTeleportId}">`
     bodyTags = bodyTags.replace(appTeleportOpenTag, appTeleportOpenTag + joinTags(html.appTeleports))
   }

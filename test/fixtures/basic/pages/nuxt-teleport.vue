@@ -2,7 +2,7 @@
   <div>
     <teleport to="#nuxt-teleport">
       <div>Nuxt Teleport</div>
-    </teleport>    
+    </teleport>
     <h1>Normal content</h1>
   </div>
 </template>
