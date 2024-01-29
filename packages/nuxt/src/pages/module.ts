@@ -70,6 +70,10 @@ export default defineNuxtModule({
     }
     nuxt.options.pages = await isPagesEnabled()
 
+    if (nuxt.options.dev) {
+      nuxt.options.runtimeConfig.public._pages = nuxt.options.pages
+    }
+
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', app.pages)
