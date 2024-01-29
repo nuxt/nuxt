@@ -403,7 +403,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         path: serializeRouteValue(page.path),
         name: serializeRouteValue(page.name),
         meta: serializeRouteValue(metaFiltered, skipMeta),
-        alias: serializeRouteValue(page.alias, skipAlias),
+        alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
       }
 
