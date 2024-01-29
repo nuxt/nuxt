@@ -17,7 +17,7 @@ import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
-import type { LoadingIndicator } from '#app/composables/loading-indicator'
+import type { LoadingIndicator } from '../app/composables/loading-indicator'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -69,6 +69,11 @@ export interface NuxtSSRContext extends SSRContext {
   _renderResponse?: Partial<RenderResponse>
   /** @internal */
   _payloadReducers: Record<string, (data: any) => any>
+  /** @internal */
+  _sharedPrerenderCache?: {
+    get<T = unknown> (key: string): Promise<T>
+    set<T> (key: string, value: Promise<T>): Promise<void>
+  }
 }
 
 export interface NuxtPayload {
@@ -79,14 +84,7 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: Error | {
-    url: string
-    statusCode: number
-    statusMessage: string
-    message: string
-    description: string
-    data?: any
-  } | null
+  error?: NuxtError | null
   _errors: Record<string, NuxtError | null>
   [key: string]: unknown
 }
@@ -363,8 +361,9 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    if (plugin.dependsOn && !plugin.dependsOn.every(name => resolvedPlugins.includes(name))) {
-      unresolvedPlugins.push([new Set(plugin.dependsOn), plugin])
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.includes(name)) ?? []
+    if (unresolvedPluginsForThisPlugin.length > 0) {
+      unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {
@@ -439,14 +438,28 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
+ * 
+ * Returns `null` if Nuxt instance is unavailable.
  */
-export function useNuxtApp (): NuxtApp {
+export function tryUseNuxtApp (): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
   nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
+
+  return nuxtAppInstance || null
+}
+
+/*@__NO_SIDE_EFFECTS__*/
+/**
+ * Returns the current Nuxt instance.
+ * 
+ * Throws an error if Nuxt instance is unavailable.
+ */
+export function useNuxtApp (): NuxtApp {
+  const nuxtAppInstance = tryUseNuxtApp()
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
