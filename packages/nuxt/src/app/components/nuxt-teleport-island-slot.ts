@@ -41,7 +41,7 @@ export default defineComponent({
           'data-island-slot': props.name,
         }, {
           // Teleport in slot to not be hydrated client-side with the staticVNode
-          default: () => [createVNode(Teleport, { to: `island-slot=${componentName};${props.name}`}, slots.default?.()[0])]
+          default: () => [createVNode(Teleport, { to: `island-slot=${componentName};${props.name}`}, slots.default?.())]
         })) 
       } else {
         vnodes.push(h('div', {

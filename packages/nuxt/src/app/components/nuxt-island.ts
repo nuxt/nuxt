@@ -275,13 +275,7 @@ export default defineComponent({
                 // use different selectors for even and odd teleportKey to force trigger the teleport
                 const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                   default: () => { 
-                    return [h(component, props, Object.fromEntries(Object.entries(slots ||{}).map(([k, v]) => ([k, () => h('div', {
-                      style: 'display: contents;',
-                      'data-island-uid': '',
-                      'data-island-slot': k,
-                    }, {
-                      default: () => h(createStaticVNode(v, 1)) 
-                    })   
+                    return [h(component, props, Object.fromEntries(Object.entries(slots ||{}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1)
                   ]))))]
                   }
                 })
