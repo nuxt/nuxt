@@ -6,7 +6,7 @@ import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
-import type { H3Event } from 'h3'
+import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
@@ -102,6 +102,8 @@ interface _NuxtApp {
 
   [key: string]: unknown
 
+  /** @internal */
+  _id?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
@@ -438,7 +440,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Returns `null` if Nuxt instance is unavailable.
  */
 export function tryUseNuxtApp (): NuxtApp | null {
@@ -455,7 +457,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Throws an error if Nuxt instance is unavailable.
  */
 export function useNuxtApp (): NuxtApp {
@@ -473,7 +475,7 @@ export function useNuxtApp (): NuxtApp {
 }
 
 /*@__NO_SIDE_EFFECTS__*/
-export function useRuntimeConfig (): RuntimeConfig {
+export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
 }
 

@@ -1,6 +1,8 @@
-import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, ref } from 'vue'
-import type { ComponentInternalInstance, ComponentOptions } from 'vue'
+import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
 import { getFragmentHTML } from './utils'
+
+export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -10,6 +12,7 @@ export default defineComponent({
   setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
+    provide(clientOnlySymbol, true)
     return (props: any) => {
       if (mounted.value) { return slots.default?.() }
       const slot = slots.fallback || slots.placeholder
