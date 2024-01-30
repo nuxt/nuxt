@@ -238,4 +238,68 @@ describe('client components', () => {
     vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
   })
+
+  
+  it('pass a slot to a client components within islands', async () => {
+    const mockPath = '/nuxt-client-with-slot.js'
+    const componentId = 'ClientWithSlot-12345'
+
+    vi.doMock(mockPath, () => ({
+      default: {
+        name: 'ClientWithSlot',
+        setup(_, { slots }) {
+          return () => h('div', { class: "client-component"},  slots.default())
+        }
+      }
+    }))
+
+    const stubFetch = vi.fn(() => {
+      return {
+        id: '123',
+        html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
+        state: {},
+        head: {
+          link: [],
+          style: []
+        },
+        components: {
+          [componentId]: {
+            html: '<div>fallback</div>',
+            props: {},
+            chunk: mockPath,
+            slots: {
+              default: '<div>slot in client component</div>'
+            }
+          }
+        },
+        json() {
+          return this
+        }
+      }
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'NuxtClientWithSlot',
+      },
+      attachTo: 'body'
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.html()).toMatchInlineSnapshot(  `
+      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="ClientWithSlot-12345">
+          <div class="client-component">
+            <div style="display: contents" data-island-uid="" data-island-slot="default">
+              <div>slot in client component</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--teleport start-->
+      <!--teleport end-->"
+    `) 
+
+ 
+    expectNoConsoleIssue()
+  })
 })
