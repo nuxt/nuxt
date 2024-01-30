@@ -1,8 +1,8 @@
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import destr from 'destr'
-import { definePayloadReviver, getNuxtClientPayload } from '#app/composables/payload'
-import { createError } from '#app/composables/error'
-import { defineNuxtPlugin, useNuxtApp } from '#app/nuxt'
+import { definePayloadReviver, getNuxtClientPayload } from '../composables/payload'
+import { createError } from '../composables/error'
+import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
@@ -18,10 +18,10 @@ const revivers: Record<string, (data: any) => any> = {
 }
 
 if (componentIslands) {
-  revivers.Island = ({ key, params }: any) => {
+  revivers.Island = ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
-      nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}`, {
+      nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}.json`, {
         responseType: 'json',
         ...params ? { params } : {}
       }).then((r) => {
@@ -29,7 +29,15 @@ if (componentIslands) {
         return r
       })
     }
-    return null
+    return {
+      html: '',
+      state: {},
+      head: {
+        link: [],
+        style: []
+      },
+      ...result
+    }
   }
 }
 

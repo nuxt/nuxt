@@ -1,8 +1,18 @@
-# `updateAppConfig`
+---
+title: 'updateAppConfig'
+description: 'Update the App Config at runtime.'
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/config.ts
+    size: xs
+---
 
-Updates [app config](/docs/guide/directory-structure/app-config) using deep assignment. Existing (nested) properties will be preserved.
+::callout
+Updates the [`app.config`](/docs/guide/directory-structure/app-config) using deep assignment. Existing (nested) properties will be preserved.
+::
 
-**Usage:**
+## Usage
 
 ```js
 const appConfig = useAppConfig() // { foo: 'bar' }
@@ -14,4 +24,4 @@ updateAppConfig(newAppConfig)
 console.log(appConfig) // { foo: 'baz' }
 ```
 
-::ReadMore{link="/docs/guide/directory-structure/app-config"}
+:read-more{to="/docs/guide/directory-structure/app-config"}

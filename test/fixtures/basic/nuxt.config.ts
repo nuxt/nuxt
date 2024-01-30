@@ -22,6 +22,9 @@ export default defineNuxtConfig({
         { charset: 'utf-8' },
         { name: 'description', content: 'Nuxt Fixture' }
       ]
+    },
+    keepalive: {
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage']
     }
   },
   buildDir: process.env.NITRO_BUILD_DIR,
@@ -77,6 +80,7 @@ export default defineNuxtConfig({
     }
   },
   modules: [
+    '~/modules/subpath',
     './modules/test',
     '~/modules/example',
     function (_, nuxt) {
@@ -103,7 +107,7 @@ export default defineNuxtConfig({
         name: 'internal-' + page.name,
         path: withoutLeadingSlash(page.path),
         meta: {
-          ...page.meta || {},
+          ...page.meta,
           layout: undefined,
           _layout: page.meta?.layout
         }
@@ -123,7 +127,10 @@ export default defineNuxtConfig({
     undefined
   ],
   vite: {
-    logLevel: 'silent'
+    logLevel: 'silent',
+    build: {
+      assetsInlineLimit: 100 // keep SVG as assets URL
+    }
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
@@ -184,15 +191,18 @@ export default defineNuxtConfig({
       }
     }
   },
+  features: {
+    inlineStyles: id => !!id && !id.includes('assets.vue'),
+  },
   experimental: {
     typedPages: true,
     polyfillVueUseHead: true,
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
-    inlineSSRStyles: id => !!id && !id.includes('assets.vue'),
-    componentIslands: true,
-    reactivityTransform: true,
+    componentIslands: {
+      selectiveClient: true
+    },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',

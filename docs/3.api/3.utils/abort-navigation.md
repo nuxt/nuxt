@@ -1,12 +1,14 @@
 ---
-title: "abortNavigation"
+title: 'abortNavigation'
+description: 'abortNavigation is a helper function that prevents navigation from taking place and throws an error if one is set as a parameter.'
+links:
+  - label: Source
+    icon: i-simple-icons-github
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/router.ts
+    size: xs
 ---
 
-# `abortNavigation`
-
-`abortNavigation` is a helper function that prevents navigation from taking place and throws an error if one is set as a parameter.
-
-::alert{type="warning"}
+::callout{color="amber" icon="i-ph-warning-duotone"}
 `abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
 ::
 
