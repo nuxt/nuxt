@@ -542,6 +542,18 @@ describe('pages:generateRoutesFromFiles', () => {
         }
       ]
     },
+    {
+      description: 'pushed route, skips generation from file',
+      output: [
+        {
+          name: 'pushed-route',
+          path: '/',
+          alias: ['pushed-route-alias'],
+          meta: { someMetaData: true },
+          file: `${pagesDir}/route-file.vue`,
+        }
+      ]
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}
