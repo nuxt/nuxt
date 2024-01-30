@@ -10,7 +10,7 @@ links:
 
 Within your pages, components, and plugins you can use useAsyncData to get access to data that resolves asynchronously.
 
-::alert{type=warning}
+::callout
 [`useAsyncData`](/docs/api/composables/use-async-data) is a composable meant to be called directly in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context). It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
