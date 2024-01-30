@@ -18,7 +18,7 @@ const cookie = useCookie(name, options)
 `useCookie` only works in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
-::alert{icon=😌}
+::callout
 `useCookie` ref will automatically serialize and deserialize cookie value to JSON.
 ::
 
