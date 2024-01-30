@@ -35,13 +35,14 @@ export default defineNuxtModule({
       const context = {
         files: [] as Array<{ path: string, optional?: boolean }>
       }
-      // Add default options
-      context.files.push({ path: resolve(runtimeDir, 'router.options'), optional: true })
 
       for (const layer of nuxt.options._layers) {
         const path = await findPath(resolve(layer.config.srcDir, 'app/router.options'))
-        if (path) { context.files.push({ path }) }
+        if (path) { context.files.unshift({ path }) }
       }
+
+      // Add default options at beginning
+      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -444,8 +445,7 @@ export default defineNuxtModule({
           `const configRouterOptions = ${configRouterOptions}`,
           'export default {',
           '...configRouterOptions,',
-          // We need to reverse spreading order to respect layers priority
-          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`).reverse(),
+          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
           '}'
         ].join('\n')
       }
