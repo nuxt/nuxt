@@ -18,10 +18,16 @@ const changeQuery = () => {
 
 <template>
   <div>
-    <div id="pageWithSharedAsyncData__execute" @click="() => execute()">
+    <div
+      id="pageWithSharedAsyncData__execute"
+      @click="() => execute()"
+    >
       execute
     </div>
-    <div id="pageWithSharedAsyncData__changeQuery" @click="changeQuery">
+    <div
+      id="pageWithSharedAsyncData__changeQuery"
+      @click="changeQuery"
+    >
       changeQuery
     </div>
 
