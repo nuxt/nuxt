@@ -36,7 +36,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Compile templates into vfs
   // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  const filteredTemplates = (app.templates as Array<ReturnType<typeof normalizeTemplate>>)
+  const filteredTemplates = (app.templates as Array<ResolvedNuxtTemplate<any>>)
     .filter(template => !options.filter || options.filter(template))
 
   const writes: Array<() => void> = []
@@ -119,7 +119,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        logger.warn(`No layout name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
       app.layouts[name] = app.layouts[name] || { name, file }
@@ -135,7 +135,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        logger.warn(`No middleware name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        logger.warn(`No middleware name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
         continue
       }
       app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })

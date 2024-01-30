@@ -15,7 +15,7 @@ Within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) y
 const event = useRequestEvent()
 
 // Get the URL
-const url = event.path
+const url = event?.path
 ```
 
 ::callout

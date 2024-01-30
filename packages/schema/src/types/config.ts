@@ -144,6 +144,7 @@ export interface NuxtAppConfig {
   head: AppHeadMetaObject
   layoutTransition: boolean | TransitionProps
   pageTransition: boolean | TransitionProps
+  viewTransition?: boolean | 'always'
   keepalive: boolean | KeepAliveProps
 }
 

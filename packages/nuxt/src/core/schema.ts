@@ -12,7 +12,6 @@ import {
   resolveSchema as resolveUntypedSchema
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-// @ts-expect-error TODO: add upstream type
 import untypedPlugin from 'untyped/babel-plugin'
 import jiti from 'jiti'
 
@@ -41,7 +40,6 @@ export default defineNuxtModule({
 
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
-      ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
         await writeSchema(schema)

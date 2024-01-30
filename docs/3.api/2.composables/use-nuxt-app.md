@@ -16,6 +16,8 @@ const nuxtApp = useNuxtApp()
 </script>
 ```
 
+If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+
 ## Methods
 
 ### `provide (name, value)`
@@ -257,3 +259,22 @@ Native async context support works currently in Bun and Node.
 ::
 
 :read-more{to="/docs/guide/going-further/experimental-features#asynccontext"}
+
+## tryUseNuxtApp
+
+This function works exactly the same as `useNuxtApp`, but returns `null` if context is unavailable instead of throwing an exception.
+
+You can use it for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+
+Example usage:
+
+```ts [composable.ts]
+export function useStandType() {
+  // Always works on the client
+  if (tryUseNuxtApp()) {
+    return useRuntimeConfig().public.STAND_TYPE
+  } else {
+    return process.env.STAND_TYPE
+  }
+}
+```

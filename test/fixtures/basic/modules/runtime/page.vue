@@ -8,7 +8,7 @@ definePageMeta({
 })
 
 if (import.meta.server) {
-  setResponseHeader(useRequestEvent(), 'x-extend', useRoute().meta.value as string)
+  setResponseHeader(useRequestEvent()!, 'x-extend', useRoute().meta.value as string)
 }
 </script>
 

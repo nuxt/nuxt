@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -26,10 +26,27 @@ export default defineNuxtModule({
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
-
+    const runtimeDir = resolve(distDir, 'pages/runtime')
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
     )
+
+    async function resolveRouterOptions () {
+      const context = {
+        files: [] as Array<{ path: string, optional?: boolean }>
+      }
+
+      for (const layer of nuxt.options._layers) {
+        const path = await findPath(resolve(layer.config.srcDir, 'app/router.options'))
+        if (path) { context.files.unshift({ path }) }
+      }
+
+      // Add default options at beginning
+      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+
+      await nuxt.callHook('pages:routerOptions', context)
+      return context.files
+    }
 
     // Disable module (and use universal router) if pages dir do not exists or user has disabled it
     const isNonEmptyDir = (dir: string) => existsSync(dir) && readdirSync(dir).length
@@ -38,7 +55,8 @@ export default defineNuxtModule({
       if (typeof userPreference === 'boolean') {
         return userPreference
       }
-      if (nuxt.options._layers.some(layer => existsSync(resolve(layer.config.srcDir, 'app/router.options.ts')))) {
+      const routerOptionsFiles = await resolveRouterOptions()
+      if (routerOptionsFiles.filter(p => !p.optional).length > 0) {
         return true
       }
       if (pagesDirs.some(dir => isNonEmptyDir(dir))) {
@@ -52,6 +70,11 @@ export default defineNuxtModule({
       return false
     }
     nuxt.options.pages = await isPagesEnabled()
+
+    if (nuxt.options.dev && nuxt.options.pages) {
+      // Add plugin to check if pages are enabled without NuxtPage being instantiated
+      addPlugin(resolve(runtimeDir, 'plugins/check-if-page-unused'))
+    }
 
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
@@ -176,8 +199,6 @@ export default defineNuxtModule({
       })
     }
 
-    const runtimeDir = resolve(distDir, 'pages/runtime')
-
     // Add $router types
     nuxt.hook('prepare:types', ({ references }) => {
       references.push({ types: useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router' })
@@ -201,11 +222,17 @@ export default defineNuxtModule({
       ]
     })
 
+    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+      if (!pages) { return false }
+      return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
+    }
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      const shouldAlwaysRegenerate = nuxt.options.experimental.scanPageMeta && isPage(path)
+
+      if (event === 'change' && !shouldAlwaysRegenerate) { return }
+
+      if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -322,6 +349,22 @@ export default defineNuxtModule({
       })
     }
 
+    if (nuxt.options.experimental.appManifest) {
+      // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
+      // when the app manifest is enabled.
+      nuxt.hook('pages:extend', routes => {
+        const nitro = useNitro()
+        for (const path in nitro.options.routeRules) {
+          const rule = nitro.options.routeRules[path]
+          if (!rule.redirect) { continue }
+          routes.push({
+            path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
+            file: resolve(runtimeDir, 'component-stub'),
+          })
+        }
+      })
+    }
+
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
@@ -366,7 +409,8 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        const { routes, imports } = normalizeRoutes(app.pages)
+        if (!app.pages) return 'export default []'
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
         return [...imports, `export default ${routes}`].join('\n')
       }
     })
@@ -391,23 +435,17 @@ export default defineNuxtModule({
       filename: 'router.options.mjs',
       getContents: async () => {
         // Scan and register app/router.options files
-        const routerOptionsFiles = (await Promise.all(nuxt.options._layers.map(
-          async layer => await findPath(resolve(layer.config.srcDir, 'app/router.options'))
-        ))).filter(Boolean) as string[]
-
-        // Add default options
-        routerOptionsFiles.push(resolve(runtimeDir, 'router.options'))
+        const routerOptionsFiles = await resolveRouterOptions()
 
         const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
           .map(([key, value]) => [key, genString(value as string)]))
 
         return [
-          ...routerOptionsFiles.map((file, index) => genImport(file, `routerOptions${index}`)),
+          ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
           `const configRouterOptions = ${configRouterOptions}`,
           'export default {',
           '...configRouterOptions,',
-          // We need to reverse spreading order to respect layers priority
-          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`).reverse(),
+          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
           '}'
         ].join('\n')
       }
@@ -445,6 +483,26 @@ export default defineNuxtModule({
         ].join('\n')
       }
     })
+
+
+    // add page meta types if enabled
+    if (nuxt.options.experimental.viewTransition) {
+      addTypeTemplate({
+        filename: 'types/view-transitions.d.ts',
+        getContents: ({ nuxt }) => {
+          const runtimeDir = resolve(distDir, 'pages/runtime')
+          const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+          return [
+            'import { ComputedRef, MaybeRef } from \'vue\'',
+            `declare module ${genString(composablesFile)} {`,
+            '  interface PageMeta {',
+            `    viewTransition?: boolean | 'always'`,
+            '  }',
+            '}',
+          ].join('\n')
+        }
+      })
+    }
 
     // Add <NuxtPage>
     addComponent({
