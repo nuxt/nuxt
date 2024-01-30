@@ -6,10 +6,10 @@ export const useSleep = () => useAsyncData('sleep', async () => {
 
 export const useCounter = () => useFetch('/api/useAsyncData/count')
 
-export const useSharedAsyncData = () => {
+export const useSharedAsyncData = async () => {
   const route = useRoute()
 
-  const { data, execute, pending } = useAsyncData(
+  const { data, execute, pending } = await useAsyncData(
     'sharedAsyncData',
     () => Promise.resolve('some data'),
     {

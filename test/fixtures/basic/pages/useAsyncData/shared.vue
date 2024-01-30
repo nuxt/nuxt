@@ -2,7 +2,7 @@
 import { useSharedAsyncData } from '../../composables/asyncDataTests'
 import ComponentWithSharedUseAsyncData from '../../components/ComponentWithSharedUseAsyncData.vue'
 
-const { data, pending, execute } = useSharedAsyncData()
+const { data, pending, execute } = await useSharedAsyncData()
 const router = useRouter()
 
 const page = ref(1)

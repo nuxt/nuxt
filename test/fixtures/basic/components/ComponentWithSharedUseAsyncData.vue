@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useSharedAsyncData } from '../composables/asyncDataTests'
-const { data, pending } = useSharedAsyncData()
+const { data, pending } = await useSharedAsyncData()
 </script>
 
 <template>
