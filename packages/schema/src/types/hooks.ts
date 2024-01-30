@@ -174,6 +174,8 @@ export interface NuxtHooks {
    * Called when resolving `app/router.options` files. It allows modifying the detected router options files
    * and adding new ones.
    *
+   * Later items in the array override earlier ones.
+   *
    * Adding a router options file will switch on page-based routing, unless `optional` is set, in which case
    * it will only apply when page-based routing is already enabled.
    * @param context An object with `files` containing an array of router options files.
