@@ -27,7 +27,8 @@ async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<str
   }
 }
 
-/*! @__NO_SIDE_EFFECTS__ */
+/** @since 3.0.0 */
+/*@__NO_SIDE_EFFECTS__*/
 export const defineNuxtComponent: typeof defineComponent =
   function defineNuxtComponent (...args: any[]): any {
     const [options, key] = args

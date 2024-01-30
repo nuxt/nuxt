@@ -1,7 +1,7 @@
 import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport } from 'radix3'
 import { defu } from 'defu'
-import { useAppConfig } from '#app'
+import { useAppConfig } from '../config'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -33,6 +33,7 @@ function fetchManifest () {
   return manifest
 }
 
+/** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
@@ -40,6 +41,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   return manifest || fetchManifest()
 }
 
+/** @since 3.7.4 */
 export async function getRouteRules (url: string) {
   await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())

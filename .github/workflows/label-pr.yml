@@ -1,0 +1,81 @@
+name: Label PR
+
+on:
+  pull_request_target:
+    types:
+      - opened
+    branches:
+      - main
+      - 2.x
+
+jobs:
+  add-pr-labels:
+    name: Add PR labels
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
+        with:
+          script: |
+            const labelsToAdd = []
+
+            const pullRequest = {
+              baseLabel: '${{ github.event.pull_request.base.label }}',
+              number: ${{ github.event.pull_request.number }},
+              title: process.env.PULL_REQUEST_TITLE,
+              labelsNames: ${{ toJson(github.event.pull_request.labels.*.name) }}
+            }
+
+            // Select label based on the branch name
+            const branchNameBasedLabelName = {
+              'nuxt:main': '3.x',
+              'nuxt:2.x': '2.x'
+            }[pullRequest.baseLabel]
+
+            if (
+              branchNameBasedLabelName &&
+              !pullRequest.labelsNames.includes(branchNameBasedLabelName)
+            ) {
+              labelsToAdd.push(branchNameBasedLabelName)
+            }
+
+            // Select label based on the type in PR title
+            const eligibleTypesToLabelsNamesMap = {
+              chore: 'chore',
+              ci: 'chore',
+              docs: 'documentation',
+              feat: 'enhancement',
+              fix: 'bug',
+              perf: 'performance',
+              refactor: 'refactor',
+              test: 'test'
+            }
+
+            for (const [eligibleType, labelName] of Object.entries(
+              eligibleTypesToLabelsNamesMap
+            )) {
+              if (
+                pullRequest.title.startsWith(eligibleType) &&
+                !pullRequest.labelsNames.includes(
+                  eligibleTypesToLabelsNamesMap[eligibleType]
+                )
+              ) {
+                labelsToAdd.push(labelName)
+
+                break
+              }
+            }
+
+            // Add selected labels
+            if (labelsToAdd.length > 0) {
+              github.rest.issues.addLabels({
+                issue_number: pullRequest.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: labelsToAdd
+              })
+            }

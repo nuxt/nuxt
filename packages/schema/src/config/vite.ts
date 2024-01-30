@@ -20,13 +20,17 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
     },
     define: {
-      $resolve: async (val, get) => ({
-        'process.dev': await get('dev'),
-        'import.meta.dev': await get('dev'),
-        'process.test': isTest,
-        'import.meta.test': isTest,
-        ...val || {}
-      })
+      $resolve: async (val: Record<string, any> | undefined, get) => {
+        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')]) as [boolean, boolean]
+        return {
+          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: isDebug,
+          'process.dev': isDev,
+          'import.meta.dev': isDev,
+          'process.test': isTest,
+          'import.meta.test': isTest,
+          ...val
+        }
+      }
     },
     resolve: {
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
@@ -36,7 +40,7 @@ export default defineUntypedSchema({
         if (val) {
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
-        return val ?? resolve((await get('srcDir')), (await get('dir')).public)
+        return val ?? await Promise.all([get('srcDir') as Promise<string>, get('dir') as Promise<Record<string, string>>]).then(([srcDir, dir]) => resolve(srcDir, dir.public))
       }
     },
     vue: {
@@ -45,31 +49,28 @@ export default defineUntypedSchema({
       },
       template: {
         compilerOptions: {
-          $resolve: async (val, get) => val ?? (await get('vue')).compilerOptions
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions
         }
       },
       script: {
         propsDestructure: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue')).propsDestructure)
-        },
-        defineModel: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue')).defineModel)
+          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure)
         }
       }
     },
     vueJsx: {
-      $resolve: async (val, get) => {
+      $resolve: async (val: Record<string, any>, get) => {
         return {
-          isCustomElement: (await get('vue')).compilerOptions?.isCustomElement,
-          ...(val || {})
+          isCustomElement: (await get('vue') as Record<string, any>).compilerOptions?.isCustomElement,
+          ...val
         }
       }
     },
     optimizeDeps: {
       exclude: {
-        $resolve: async (val, get) => [
+        $resolve: async (val: string[] | undefined, get) => [
           ...val || [],
-          ...(await get('build.transpile')).filter((i: string) => typeof i === 'string'),
+          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>).filter((i) => typeof i === 'string'),
           'vue-demi'
         ]
       }
@@ -82,21 +83,24 @@ export default defineUntypedSchema({
     clearScreen: true,
     build: {
       assetsDir: {
-        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app')).buildAssetsDir)
+        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app') as Record<string, string>).buildAssetsDir)
       },
       emptyOutDir: false
     },
     server: {
       fs: {
         allow: {
-          $resolve: async (val, get) => [
-            await get('buildDir'),
-            await get('srcDir'),
-            await get('rootDir'),
-            await get('workspaceDir'),
-            ...(await get('modulesDir')),
-            ...val ?? []
-          ]
+          $resolve: async (val: string[] | undefined, get) => {
+            const [buildDir, srcDir, rootDir, workspaceDir, modulesDir] = await Promise.all([get('buildDir'), get('srcDir'), get('rootDir'), get('workspaceDir'), get('modulesDir')]) as [string, string, string, string, string]
+            return [
+              buildDir,
+              srcDir,
+              rootDir,
+              workspaceDir,
+              ...(modulesDir),
+              ...val ?? []
+            ]
+          }
         }
       }
     }

@@ -1,4 +1,4 @@
-import { defineNuxtPlugin } from '#app/nuxt'
+import { defineNuxtPlugin } from '../nuxt'
 
 export default defineNuxtPlugin({
   name: 'nuxt:webpack-preload',

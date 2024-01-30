@@ -8,7 +8,6 @@ import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
-import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
 
@@ -45,11 +44,11 @@ export async function buildServer (ctx: ViteBuildContext) {
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
-      'typeof window': '"undefined"',
-      'typeof document': '"undefined"',
-      'typeof navigator': '"undefined"',
-      'typeof location': '"undefined"',
-      'typeof XMLHttpRequest': '"undefined"'
+      'window': 'undefined',
+      'document': 'undefined',
+      'navigator': 'undefined',
+      'location': 'undefined',
+      'XMLHttpRequest': 'undefined'
     },
     optimizeDeps: {
       entries: ctx.nuxt.options.ssr ? [ctx.entry] : []
@@ -75,7 +74,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
-      sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
+      sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.server : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
@@ -101,12 +100,6 @@ export async function buildServer (ctx: ViteBuildContext) {
       preTransformRequests: false,
       hmr: false
     },
-    plugins: [
-      pureAnnotationsPlugin.vite({
-        sourcemap: !!ctx.nuxt.options.sourcemap.server,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
-      })
-    ]
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {

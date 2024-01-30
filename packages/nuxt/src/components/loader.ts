@@ -5,7 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger } from '@nuxt/kit'
+import { logger, tryUseNuxt } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -47,7 +47,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install) {
+          if (component._internal_install && tryUseNuxt()?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
@@ -74,12 +74,12 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             identifier += '_lazy'
-            imports.add(`const ${identifier} = /*#__PURE__*/ __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: true })}${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
           } else {
-            imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
+            imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
             if (isClientOnly) {
-              imports.add(`const ${identifier}_wrapped = /*#__PURE__*/ createClientOnly(${identifier})`)
+              imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
               identifier += '_wrapped'
             }
           }

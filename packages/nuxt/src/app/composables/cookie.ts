@@ -6,8 +6,12 @@ import { deleteCookie, getCookie, getRequestHeader, setCookie } from 'h3'
 import type { H3Event } from 'h3'
 import destr from 'destr'
 import { isEqual } from 'ohash'
+import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
+
+// @ts-expect-error virtual import
+import { cookieStore } from '#build/nuxt.config.mjs'
 
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
@@ -16,6 +20,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   encode?(value: T): string
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
+  readonly?: boolean
 }
 
 export interface CookieRef<T> extends Ref<T> {}
@@ -27,27 +32,51 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
+const store = import.meta.client && cookieStore ? window.cookieStore : undefined
+
+/** @since 3.0.0 */
+export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
+export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
   const cookies = readRawCookies(opts) || {}
 
   let delay: number | undefined
-  if (opts.maxAge) {
+
+  if (opts.maxAge !== undefined) {
     delay = opts.maxAge * 1000 // convert to ms for setTimeout
   } else if (opts.expires) {
-    // getTime() already return time in ms
+    // getTime() already returns time in ms
     delay = opts.expires.getTime() - Date.now()
   }
-  // use customRef if on client side otherwise use basic ref
-  const cookie = import.meta.client && delay
-    ? cookieRef<T | undefined>((cookies[name] as any) ?? opts.default?.(), delay)
-    : ref<T | undefined>((cookies[name] as any) ?? opts.default?.())
+
+  const hasExpired = delay !== undefined && delay <= 0
+  const cookieValue = klona(hasExpired ? undefined : (cookies[name] as any) ?? opts.default?.())
+
+  // use a custom ref to expire the cookie on client side otherwise use basic ref
+  const cookie = import.meta.client && delay && !hasExpired
+    ? cookieRef<T | undefined>(cookieValue, delay)
+    : ref<T | undefined>(cookieValue)
+
+  if (import.meta.dev && hasExpired) {
+    console.warn(`[nuxt] not setting cookie \`${name}\` as it has already expired.`)
+  }
 
   if (import.meta.client) {
-    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    const channel = store || typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
+
+      cookies[name] = klona(cookie.value)
       channel?.postMessage(opts.encode(cookie.value as T))
+    }
+
+    const handleChange = (data: { value?: any, refresh?: boolean }) => {
+      const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
+      watchPaused = true
+      cookies[name] = cookie.value = value
+      nextTick(() => { watchPaused = false })
     }
 
     let watchPaused = false
@@ -60,12 +89,13 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       })
     }
 
-    if (channel) {
-      channel.onmessage = (event) => {
-        watchPaused = true
-        cookie.value = opts.decode(event.data)
-        nextTick(() => { watchPaused = false })
+    if (store) {
+      store.onchange = (event) => {
+        const cookie = event.changed.find((c: any) => c.name === name)
+        if (cookie) handleChange({ value: cookie.value })
       }
+    } else if (channel) {
+      channel.onmessage = ({ data }) => handleChange(data)
     }
 
     if (opts.watch) {
@@ -80,9 +110,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   } else if (import.meta.server) {
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
-      if (!isEqual(cookie.value, cookies[name])) {
-        writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
-      }
+      if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, cookie.value, opts as CookieOptions<any>)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -93,10 +122,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   return cookie as CookieRef<T>
 }
+/** @since 3.10.0 */
+export function refreshCookie(name: string) {
+  if (store || typeof BroadcastChannel === 'undefined') return
+  
+  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
+}
 
-function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
+function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
+    return parse(getRequestHeader(useRequestEvent()!, 'cookie') || '', opts)
   } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
@@ -131,22 +166,43 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
   }
 }
 
-// custom ref that will update the value to undefined if the cookie expire
+/**
+ * The maximum value allowed on a timeout delay.
+ *
+ * Reference: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
+ */
+const MAX_TIMEOUT_DELAY = 2_147_483_647
+
+// custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
-  onScopeDispose(() => { clearTimeout(timeout) })
+  let elapsed = 0
+  if (getCurrentScope()) {
+    onScopeDispose(() => { clearTimeout(timeout) })
+  }
+
   return customRef((track, trigger) => {
+    function createExpirationTimeout () {
+      clearTimeout(timeout)
+      const timeRemaining = delay - elapsed
+      const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY
+      timeout = setTimeout(() => {
+        elapsed += timeoutLength
+        if (elapsed < delay) { return createExpirationTimeout() }
+
+        value = undefined
+        trigger()
+      }, timeoutLength)
+    }
+
     return {
       get () {
         track()
         return value
       },
       set (newValue) {
-        clearTimeout(timeout)
-        timeout = setTimeout(() => {
-          value = undefined
-          trigger()
-        }, delay)
+        createExpirationTimeout()
+
         value = newValue
         trigger()
       }

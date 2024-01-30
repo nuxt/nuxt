@@ -1,3 +1,5 @@
+<!-- eslint-disable vue/multi-word-component-names -->
+
 <script setup lang="ts">
 import { setResponseHeader } from 'h3'
 
@@ -6,7 +8,7 @@ definePageMeta({
 })
 
 if (import.meta.server) {
-  setResponseHeader(useRequestEvent(), 'x-extend', useRoute().meta.value as string)
+  setResponseHeader(useRequestEvent()!, 'x-extend', useRoute().meta.value as string)
 }
 </script>
 

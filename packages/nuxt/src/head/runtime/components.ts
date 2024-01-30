@@ -1,3 +1,4 @@
+/* eslint-disable vue/multi-word-component-names */
 import { defineComponent } from 'vue'
 import type { PropType, SetupContext } from 'vue'
 import { useHead } from '@unhead/vue'
@@ -11,8 +12,16 @@ import type {
   Target
 } from './types'
 
-const removeUndefinedProps = (props: Props) =>
-  Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined))
+const removeUndefinedProps = (props: Props) => {
+  const filteredProps = Object.create(null)
+  for (const key in props) {
+    const value = props[key]
+    if (value !== undefined) {
+      filteredProps[key] = value;
+    }
+  }
+  return filteredProps
+}
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
   useHead(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))

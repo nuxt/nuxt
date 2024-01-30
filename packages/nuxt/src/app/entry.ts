@@ -1,12 +1,16 @@
-// We set __webpack_public_path via this import with webpack builder
 import { createApp, createSSRApp, nextTick } from 'vue'
+import type { App } from 'vue'
 
-// These files must be imported first as they have side effects
+// These files must be imported first as they have side effects:
+// 1. (we set __webpack_public_path via this import, if using webpack builder)
 import '#build/paths.mjs'
+// 2. we set globalThis.$fetch via this import
 import '#build/fetch.mjs'
 
-import type { CreateOptions } from '#app'
-import { applyPlugins, createNuxtApp } from '#app/nuxt'
+import { applyPlugins, createNuxtApp } from './nuxt'
+import type { CreateOptions } from './nuxt'
+
+import { createError } from './composables/error'
 
 import '#build/css'
 // @ts-expect-error virtual file
@@ -16,7 +20,7 @@ import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
 import { vueAppRootContainer } from '#build/nuxt.config.mjs'
 
-let entry: Function
+let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
@@ -27,9 +31,9 @@ if (import.meta.server) {
     try {
       await applyPlugins(nuxt, plugins)
       await nuxt.hooks.callHook('app:created', vueApp)
-    } catch (err) {
-      await nuxt.hooks.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+    } catch (error) {
+      await nuxt.hooks.callHook('app:error', error)
+      nuxt.payload.error = nuxt.payload.error || createError(error as any)
     }
     if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
@@ -45,7 +49,7 @@ if (import.meta.client) {
   }
 
   // eslint-disable-next-line
-  let vueAppPromise: Promise<any>
+  let vueAppPromise: Promise<App<Element>>
 
   entry = async function initApp () {
     if (vueAppPromise) { return vueAppPromise }
@@ -57,11 +61,17 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
+    async function handleVueError(error: any) {
+      await nuxt.callHook('app:error', error)
+      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+    }
+
+    vueApp.config.errorHandler = handleVueError
+
     try {
       await applyPlugins(nuxt, plugins)
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
 
     try {
@@ -71,16 +81,20 @@ if (import.meta.client) {
       await nuxt.hooks.callHook('app:mounted', vueApp)
       await nextTick()
     } catch (err) {
-      await nuxt.callHook('app:error', err)
-      nuxt.payload.error = (nuxt.payload.error || err) as any
+      handleVueError(err)
     }
+
+    // If the errorHandler is not overridden by the user, we unset it
+    if (vueApp.config.errorHandler === handleVueError)
+      vueApp.config.errorHandler = undefined
 
     return vueApp
   }
 
   vueAppPromise = entry().catch((error: unknown) => {
     console.error('Error while mounting app:', error)
+    throw error
   })
 }
 
-export default (ctx?: CreateOptions['ssrContext']) => entry(ctx)
+export default (ssrContext?: CreateOptions['ssrContext']) => entry(ssrContext)

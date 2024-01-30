@@ -8,18 +8,25 @@ import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
-import { defineEventHandler } from 'h3'
+import { env, nodeless } from 'unenv'
+import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
 import { typeCheckPlugin } from './plugins/type-check'
-import { pureAnnotationsPlugin } from './plugins/pure-annotations'
 import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
+  const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat ? {
+    alias: env(nodeless).alias,
+    define: {
+      global: 'globalThis',
+    }
+  } : { alias: {}, define: {} }
+
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -49,15 +56,18 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
-      'module.hot': false
+      'module.hot': false,
+      ...nodeCompat.define
     },
     optimizeDeps: {
       entries: [ctx.entry]
     },
     resolve: {
       alias: {
+        ...nodeCompat.alias,
+        ...ctx.config.resolve?.alias,
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
       },
       dedupe: [
         'vue'
@@ -65,7 +75,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
-      sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? true : false,
+      sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
       rollupOptions: {
@@ -80,11 +90,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client
       }),
-      viteNodePlugin(ctx),
-      pureAnnotationsPlugin.vite({
-        sourcemap: !!ctx.nuxt.options.sourcemap.client,
-        functions: ['defineComponent', 'defineAsyncComponent', 'defineNuxtLink', 'createClientOnly', 'defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'defineNuxtComponent', 'useRuntimeConfig', 'defineRouteRules']
-      })
+      viteNodePlugin(ctx)
     ],
     appType: 'custom',
     server: {
@@ -103,6 +109,12 @@ export async function buildClient (ctx: ViteBuildContext) {
   // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
   if (ctx.nuxt.options.experimental.emitRouteChunkError) {
     clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+  }
+
+  // Inject an h3-based CORS handler in preference to vite's
+  const useViteCors = clientConfig.server?.cors !== undefined
+  if (!useViteCors) {
+    clientConfig.server!.cors = false
   }
 
   // We want to respect users' own rollup output options
@@ -129,12 +141,12 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // Add analyze plugin if needed
-  if (ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
+  if (!ctx.nuxt.options.test && ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
   // Add type checking client panel
-  if (ctx.nuxt.options.typescript.typeCheck && ctx.nuxt.options.dev) {
+  if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
     clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
@@ -167,6 +179,12 @@ export async function buildClient (ctx: ViteBuildContext) {
       if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
+      } else if (!useViteCors) {
+        if (event.method === 'OPTIONS') {
+          appendCorsPreflightHeaders(event, {})
+          return null
+        }
+        appendCorsHeaders(event, {})
       }
 
       // Workaround: vite devmiddleware modifies req.url

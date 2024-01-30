@@ -1,9 +1,13 @@
-import { isChangingPage } from '#app/components/utils'
-import { useRouter } from '#app/composables/router'
-import { defineNuxtPlugin } from '#app/nuxt'
+import { isChangingPage } from '../components/utils'
+import { useRouter } from '../composables/router'
+import { defineNuxtPlugin } from '../nuxt'
+// @ts-expect-error virtual file
+import { appViewTransition as defaultViewTransition } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!document.startViewTransition) { return }
+  if (!document.startViewTransition) {
+    return
+  }
 
   let finishTransition: undefined | (() => void)
   let abortTransition: undefined | (() => void)
@@ -11,9 +15,14 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter()
 
   router.beforeResolve((to, from) => {
-    if (!isChangingPage(to, from)) {
+    const viewTransitionMode = to.meta.viewTransition ?? defaultViewTransition
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
+
+    if (viewTransitionMode === false || prefersNoTransition || !isChangingPage(to, from)) {
       return
     }
+
     const promise = new Promise<void>((resolve, reject) => {
       finishTransition = resolve
       abortTransition = reject
