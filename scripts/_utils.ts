@@ -1,5 +1,6 @@
 import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
+import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
 import { globby } from 'globby'
 import { execaSync } from 'execa'
