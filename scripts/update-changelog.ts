@@ -3,7 +3,7 @@ import { $fetch } from 'ofetch'
 import { inc } from 'semver'
 import { generateMarkDown, getCurrentGitBranch, loadChangelogConfig } from 'changelogen'
 import { consola } from 'consola'
-import { determineBumpType, getLatestCommits, loadWorkspace } from './_utils'
+import { determineBumpType, getContributors, getLatestCommits, loadWorkspace } from './_utils'
 
 async function main () {
   const releaseBranch = await getCurrentGitBranch()
@@ -36,11 +36,17 @@ async function main () {
 
   // Get the current PR for this release, if it exists
   const [currentPR] = await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls?head=nuxt:v${newVersion}`)
+  const contributors = await getContributors()
 
   const releaseNotes = [
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
     '## 👉 Changelog',
-    changelog.replace(/^## v.*?\n/, '').replace(`...${releaseBranch}`, `...v${newVersion}`)
+    changelog
+      .replace(/^## v.*?\n/, '')
+      .replace(`...${releaseBranch}`, `...v${newVersion}`)
+      .replace(/### ❤️ Contributors[\s\S]*$/, ''),
+    `### ❤️ Contributors`,
+    contributors.map(c => `- ${c.name} (@${c.username})`).join('\n')
   ].join('\n')
 
   // Create a PR with release notes if none exists

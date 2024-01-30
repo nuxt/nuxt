@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { resolve } from 'pathe'
 import { globby } from 'globby'
@@ -111,4 +112,26 @@ export async function getLatestCommits () {
   const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
 
   return parseCommits(await getGitDiff(latestTag), config)
+}
+
+export async function getContributors () {
+  const contributors = [] as Array<{ name: string, username: string }>
+  const emails = new Set<string>()
+  const latestTag = execSync('git describe --tags --abbrev=0').toString().trim()
+  const rawCommits = await getGitDiff(latestTag)
+  for (const commit of rawCommits) {
+    if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
+    const { author } = await $fetch<{ author: { login: string, email: string }}>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
+      headers: {
+        'User-Agent': 'nuxt/nuxt',
+        Accept: 'application/vnd.github.v3+json',
+        Authorization: `token ${process.env.GITHUB_TOKEN}`
+      }
+    })
+    if (!contributors.some(c => c.username === author.login)) {
+      contributors.push({ name: commit.author.name, username: author.login })
+    }
+    emails.add(author.email)
+  }
+  return contributors
 }
