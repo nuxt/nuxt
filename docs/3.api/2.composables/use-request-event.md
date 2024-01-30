@@ -8,8 +8,6 @@ links:
     size: xs
 ---
 
-## `useRequestEvent`
-
 Within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context) you can use `useRequestEvent` to access the incoming request.
 
 ```ts
