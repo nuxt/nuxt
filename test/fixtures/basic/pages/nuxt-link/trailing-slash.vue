@@ -13,7 +13,8 @@ const links = [
   '/nuxt-link/trailing-slash/?test=true&thing=other/thing#thing-other',
   { name: 'nuxt-link-trailing-slash' },
   { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
-  { query: { 'without-state': 'true' } }
+  { query: { 'without-state': 'true' } },
+  'https://example.com/page.html'
 ] as const
 
 const route = useRoute()
@@ -28,11 +29,13 @@ const windowState = computed(() => {
 
 <template>
   <div>
+    <h2>window state</h2>
     <div data-testid="window-state">
       <ClientOnly>
         {{ windowState }}
       </ClientOnly>
     </div>
+    <h2>Links With Trailing Slash</h2>
     <ul>
       <li
         v-for="(link, index) in links"
@@ -53,6 +56,7 @@ const windowState = computed(() => {
       </li>
     </ul>
     <hr>
+    <h2>Links Without Trailing Slash</h2>
     <ul>
       <li
         v-for="(link, index) in links"
@@ -73,6 +77,7 @@ const windowState = computed(() => {
       </li>
     </ul>
     <hr>
+    <h2>Nuxt Link</h2>
     <ul>
       <li
         v-for="(link, index) in links"
@@ -93,6 +98,7 @@ const windowState = computed(() => {
       </li>
     </ul>
     <hr>
+    <h2>Router Link</h2>
     <ul>
       <li
         v-for="(link, index) in links"

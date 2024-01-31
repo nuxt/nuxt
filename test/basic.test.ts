@@ -541,6 +541,7 @@ describe('nuxt links', () => {
           "/nuxt-link/trailing-slash/",
           "/nuxt-link/trailing-slash/?with-state=true",
           "/nuxt-link/trailing-slash/?without-state=true",
+          "https://example.com/page.html",
         ],
         "link-without-trailing-slash": [
           "/",
@@ -551,6 +552,7 @@ describe('nuxt links', () => {
           "/nuxt-link/trailing-slash",
           "/nuxt-link/trailing-slash?with-state=true",
           "/nuxt-link/trailing-slash?without-state=true",
+          "https://example.com/page.html",
         ],
         "nuxt-link": [
           "/",
@@ -561,6 +563,7 @@ describe('nuxt links', () => {
           "/nuxt-link/trailing-slash",
           "/nuxt-link/trailing-slash?with-state=true",
           "/nuxt-link/trailing-slash?without-state=true",
+          "https://example.com/page.html",
         ],
         "router-link": [
           "/",
@@ -571,6 +574,7 @@ describe('nuxt links', () => {
           "/nuxt-link/trailing-slash",
           "/nuxt-link/trailing-slash?with-state=true",
           "/nuxt-link/trailing-slash?without-state=true",
+          "/nuxt-link/https://example.com/page.html",
         ],
       }
     `)
