@@ -67,7 +67,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  // TODO migrate to TypeScript props
   return defineComponent({
     name: componentName,
     props: {
@@ -161,7 +160,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       const prefetched = ref(false)
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
-      const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
+      const elRef = import.meta.server ? undefined : (ref: any) => {
+        el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el
+      }
 
       const link = computed(() => {
         checkPropConflicts(props, 'to', 'href')
@@ -170,7 +171,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const href = computed(() => {
         return typeof link.value === 'string' ? link.value : router.resolve(link.value).path
       })
-      const isAbsoluteLink = computed(() => hasProtocol(href.value, { acceptRelative: true }))
+      const isAbsoluteLink = computed(() => hasProtocol(href.value, {acceptRelative: true}))
       const as = computed(() => {
         const forceAnchorTag = props.external
         if (forceAnchorTag || isAbsoluteLink.value) {
@@ -209,7 +210,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       })
 
       const anchorProps = computed(() => {
-        const to = link.value
+        const to = href.value
         // Resolves `target` value
         const target = props.target || null
 
@@ -241,8 +242,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                     unobserve = null
 
                     await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', href.value).catch(() => {}),
-                      as.value === 'RouterLink' && preloadRouteComponents(link.value, router).catch(() => {})
+                      nuxtApp.hooks.callHook('link:prefetch', href.value).catch(() => {
+                      }),
+                      as.value === 'RouterLink' && preloadRouteComponents(link.value, router).catch(() => {
+                      })
                     ])
                     prefetched.value = true
                   })
@@ -251,7 +254,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             })
           })
           onBeforeUnmount(() => {
-            if (idleId) { cancelIdleCallback(idleId) }
+            if (idleId) {
+              cancelIdleCallback(idleId)
+            }
             unobserve?.()
             unobserve = null
           })
@@ -261,7 +266,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       if (import.meta.dev && import.meta.server && !props.custom) {
         const isNuxtLinkChild = inject(NuxtLinkDevKeySymbol, false)
         if (isNuxtLinkChild) {
-          console.log('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
+          console.warn('[nuxt] [NuxtLink] You can\'t nest one <a> inside another <a>. This will cause a hydration error on client-side. You can pass the `custom` prop to take full control of the markup.')
         } else {
           provide(NuxtLinkDevKeySymbol, true)
         }
@@ -277,14 +282,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           )
         }
 
-        if (typeof link.value === 'object') {
-          import.meta.dev && console.log('[nuxt] [NuxtLink] Providing `to` as a vue-router route is not supported with external links.', link.value)
-          return null
+        if (import.meta.dev && typeof link.value === 'object') {
+          console.warn('[nuxt] [NuxtLink] Providing `to` as a vue-router route is not supported with external links.', href.value)
         }
 
         const navigate = () => {
           if (isAbsoluteLink.value) {
-            import.meta.dev && console.log('[nuxt] [NuxtLink] Navigating to an absolute link using `navigate()` isn\'t supported', anchorProps.value.href)
+            import.meta.dev && console.warn('[nuxt] [NuxtLink] Navigating to an absolute link using `navigate()` isn\'t supported.', href.value)
             return
           }
           return navigateTo(anchorProps.value.href, {

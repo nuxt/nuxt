@@ -526,55 +526,164 @@ describe('nuxt links', () => {
     const data: Record<string, string[]> = {}
     for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
       data[selector] = []
-      for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
-        data[selector].push(match[1])
+      // extract all anchor tags
+      for (const match of html.matchAll(new RegExp(`<a[^>]+class="[^"]*${selector}[^"]*"[^>]*>`, 'g'))) {
+        data[selector].push(match)
       }
     }
     expect(data).toMatchInlineSnapshot(`
       {
         "link-with-trailing-slash": [
-          "/",
-          "/nuxt-link/trailing-slash/",
-          "/nuxt-link/trailing-slash/",
-          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash/",
-          "/nuxt-link/trailing-slash/?with-state=true",
-          "/nuxt-link/trailing-slash/?without-state=true",
-          "https://example.com/page.html",
+          [
+            "<a href="/" class="link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?with-state=true" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?without-state=true" class="foo-active-class bar-exact-active-class link-with-trailing-slash">",
+          ],
+          [
+            "<a href="https://example.com/page.html" rel="noopener noreferrer" class="link-with-trailing-slash">",
+          ],
+          [
+            "<a href="/nuxt-link/https://example.com/page.html" rel="noopener noreferrer" class="link-with-trailing-slash">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="link-with-trailing-slash">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="link-with-trailing-slash">",
+          ],
         ],
         "link-without-trailing-slash": [
-          "/",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash?with-state=true",
-          "/nuxt-link/trailing-slash?without-state=true",
-          "https://example.com/page.html",
+          [
+            "<a href="/" class="link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?with-state=true" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?without-state=true" class="foo-active-class bar-exact-active-class link-without-trailing-slash">",
+          ],
+          [
+            "<a href="https://example.com/page.html" rel="noopener noreferrer" class="link-without-trailing-slash">",
+          ],
+          [
+            "<a href="/nuxt-link/https://example.com/page.html" rel="noopener noreferrer" class="link-without-trailing-slash">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="link-without-trailing-slash">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="link-without-trailing-slash">",
+          ],
         ],
         "nuxt-link": [
-          "/",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash/",
-          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash?with-state=true",
-          "/nuxt-link/trailing-slash?without-state=true",
-          "https://example.com/page.html",
+          [
+            "<a href="/" class="nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?with-state=true" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?without-state=true" class="foo-active-class bar-exact-active-class nuxt-link">",
+          ],
+          [
+            "<a href="https://example.com/page.html" rel="noopener noreferrer" class="nuxt-link">",
+          ],
+          [
+            "<a href="/nuxt-link/https://example.com/page.html" rel="noopener noreferrer" class="nuxt-link">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="nuxt-link">",
+          ],
+          [
+            "<a href="/foo" rel="noopener noreferrer" class="nuxt-link">",
+          ],
         ],
         "router-link": [
-          "/",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash/",
-          "/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other",
-          "/nuxt-link/trailing-slash",
-          "/nuxt-link/trailing-slash?with-state=true",
-          "/nuxt-link/trailing-slash?without-state=true",
-          "/nuxt-link/https://example.com/page.html",
+          [
+            "<a href="/" class="router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash/?test=true&amp;thing=other/thing#thing-other" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?with-state=true" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a aria-current="page" href="/nuxt-link/trailing-slash?without-state=true" class="foo-active-class bar-exact-active-class router-link">",
+          ],
+          [
+            "<a href="/nuxt-link/https://example.com/page.html" class="router-link">",
+          ],
+          [
+            "<a href="/nuxt-link/https://example.com/page.html" class="router-link" external="true">",
+          ],
+          [
+            "<a href="/foo" class="router-link" external="true">",
+          ],
+          [
+            "<a href="/foo" class="router-link" external="true">",
+          ],
         ],
       }
     `)
