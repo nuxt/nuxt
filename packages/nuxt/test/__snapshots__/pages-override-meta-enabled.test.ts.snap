@@ -1,4 +1,13 @@
 {
+  "pushed route, skips generation from file": [
+    {
+      "alias": "["pushed-route-alias"]",
+      "component": "() => import("pages/route-file.vue").then(m => m.default || m)",
+      "meta": "{"someMetaData":true}",
+      "name": ""pushed-route"",
+      "path": ""/"",
+    },
+  ],
   "route without file": [
     {
       "alias": "["sweet-home"]",
