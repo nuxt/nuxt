@@ -170,9 +170,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const href = computed(() => {
         return typeof link.value === 'string' ? link.value : router.resolve(link.value).path
       })
+      const isAbsoluteLink = computed(() => hasProtocol(href.value, { acceptRelative: true }))
       const as = computed(() => {
         const forceAnchorTag = props.external
-        if (forceAnchorTag || hasProtocol(href.value, { acceptRelative: true })) {
+        if (forceAnchorTag || isAbsoluteLink.value) {
           return 'a'
         }
         return 'RouterLink'
@@ -223,7 +224,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       })
 
       // we can only prefetch valid vue-router links
-      if (import.meta.client && as.value === 'RouterLink') {
+      if (import.meta.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
         const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
         if (shouldPrefetch) {
@@ -241,7 +242,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
                     await Promise.all([
                       nuxtApp.hooks.callHook('link:prefetch', href.value).catch(() => {}),
-                      preloadRouteComponents(link.value, router).catch(() => {})
+                      as.value === 'RouterLink' && preloadRouteComponents(link.value, router).catch(() => {})
                     ])
                     prefetched.value = true
                   })
@@ -277,14 +278,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         if (typeof link.value === 'object') {
-          console.log('[nuxt] [NuxtLink] Providing `to` as a vue-router route is not supported with external links.', link.value)
+          import.meta.dev && console.log('[nuxt] [NuxtLink] Providing `to` as a vue-router route is not supported with external links.', link.value)
           return null
         }
 
-        const navigate = () => navigateTo(anchorProps.value.href, {
-          replace: props.replace,
-          external: props.external, // must explicitly opt-in
-        })
+        const navigate = () => {
+          if (isAbsoluteLink.value) {
+            import.meta.dev && console.log('[nuxt] [NuxtLink] Navigating to an absolute link using `navigate()` isn\'t supported', anchorProps.value.href)
+            return
+          }
+          return navigateTo(anchorProps.value.href, {
+            replace: props.replace,
+          })
+        }
 
         // https://router.vuejs.org/api/#custom
         if (props.custom) {
