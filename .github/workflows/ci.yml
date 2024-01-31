@@ -222,14 +222,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
-          PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright | jq --raw-output '.[0].unsavedDependencies["playwright"].version')"
+          PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright-core | jq --raw-output '.[0].devDependencies["playwright-core"].version')"
           echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
 
       - name: (windows) Set Playwright path and Get playwright version
         if: runner.os == 'Windows'
         run: |
           echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
-          $env:PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright | jq --raw-output '.[0].unsavedDependencies[\"playwright\"].version')"
+          $env:PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright-core | jq --raw-output '.[0].devDependencies["playwright-core"].version')"
           echo "PLAYWRIGHT_VERSION=$env:PLAYWRIGHT_VERSION" >> $env:GITHUB_ENV
 
       - name: Cache Playwright's binary
