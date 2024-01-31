@@ -136,7 +136,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         required: false
       },
       ariaCurrentValue: {
-        type: String as PropType<string>,
+        type: String as PropType<RouterLinkProps['ariaCurrentValue']>,
         default: undefined,
         required: false
       },
@@ -171,9 +171,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         return typeof link.value === 'string' ? link.value : router.resolve(link.value).path
       })
       const as = computed(() => {
-        const isExternalLink = hasProtocol(href.value, { acceptRelative: true })
         const forceAnchorTag = props.external
-        return !forceAnchorTag && !isExternalLink ? 'RouterLink' : 'a'
+        if (forceAnchorTag || hasProtocol(href.value, { acceptRelative: true })) {
+          return 'a'
+        }
+        return 'RouterLink'
       })
 
       const routerLinkProps = computed(() => {
@@ -328,17 +330,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 export default defineNuxtLink(nuxtLinkDefaults)
 
 // -- NuxtLink utils --
-function applyTrailingSlashBehavior (to: string, trailingSlash?: NuxtLinkOptions['trailingSlash']): string {
-  if (!trailingSlash || !to) {
-    return to
+function applyTrailingSlashBehavior (path: string, trailingSlash?: NuxtLinkOptions['trailingSlash']): string {
+  // path should always be relative here
+  if (!trailingSlash || !path) {
+    return path
   }
   const normalizeFn = trailingSlash === 'append' ? withTrailingSlash : withoutTrailingSlash
-  // Until https://github.com/unjs/ufo/issues/189 is resolved
-  const hasProtocolDifferentFromHttp = hasProtocol(to) && !to.startsWith('http')
-  if (hasProtocolDifferentFromHttp) {
-    return to
-  }
-  return normalizeFn(to, true)
+  return normalizeFn(path, true)
 }
 
 // --- Prefetching utils ---
