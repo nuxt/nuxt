@@ -619,29 +619,33 @@ describe('nuxt links', () => {
     { retry: isWebpack && isWindows ? 10 : 0 }
   )
 
-  it('expect scroll to top on nested pages', async () => {
-    // #20523
-    const page = await createPage('/nested/foo/test', {
-      viewport: {
-        width: 1000,
-        height: 1000
-      }
-    })
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
+  it('expect scroll to top on nested pages', 
+    async () => {
+      // #20523
+      const page = await createPage('/nested/foo/test', {
+        viewport: {
+          width: 1000,
+          height: 1000
+        }
+      })
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
 
-    await page.locator('#user-test').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#user-test').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.locator('#user-test').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#user-test').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
-    await page.locator('#test').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#test').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
-    await page.close()
-  })
+      await page.locator('#test').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#test').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.close()
+    },
+    // Flaky when run on windows + webpack
+    { retry: isWebpack && isWindows ? 10 : 0 }
+  )
 })
 
 describe('head tags', () => {
