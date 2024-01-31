@@ -591,29 +591,33 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component', async () => {
-    // #22402
-    const page = await createPage('/big-page-1', {
-      viewport: {
-        width: 1000,
-        height: 1000
-      }
-    })
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
+  it('expect scroll to top on routes with same component', 
+    async () => {
+      // #22402
+      const page = await createPage('/big-page-1', {
+        viewport: {
+          width: 1000,
+          height: 1000
+        }
+      })
+      await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
 
-    await page.locator('#big-page-2').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#big-page-2').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.locator('#big-page-2').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#big-page-2').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
-    await page.locator('#big-page-1').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#big-page-1').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
-    await page.close()
-  })
+      await page.locator('#big-page-1').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#big-page-1').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.close()
+    }, 
+    // Flaky when run on windows + webpack
+    { retry: isWebpack && isWindows ? 10 : 0 }
+  )
 
   it('expect scroll to top on nested pages', async () => {
     // #20523
