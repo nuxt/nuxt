@@ -9,7 +9,7 @@ links:
 ---
 
 ::callout
-`setPageLayout` relies on access to the Nuxt context and can only be called within components' setup functions, plugins, and route middleware.
+`setPageLayout` allows you to dynamically change the layout of a page. It relies on access to the Nuxt context and therefore can only be called within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
 ```ts [middleware/custom-layout.ts]
