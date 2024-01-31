@@ -109,7 +109,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [macos-14, ubuntu-latest, windows-latest]
         module: ["bundler", "node"]
 
     steps:
@@ -192,7 +192,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [macos-14, ubuntu-latest, windows-latest]
         env: ["dev", "built"]
         builder: ["vite", "webpack"]
         context: ["async", "default"]
