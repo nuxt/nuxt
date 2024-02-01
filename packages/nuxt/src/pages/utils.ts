@@ -60,19 +60,31 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   return uniqueBy(allRoutes, 'path')
 }
 
+const CLIENT_PAGE_EXT_RE = /\.client/;
 export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
     const segments = file.relativePath
-      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
-      .split('/')
+    .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
+    .split('/')
 
     const route: NuxtPage = {
       name: '',
       path: '',
       file: file.absolutePath,
-      children: []
+      children: [],
+    }
+    
+
+    if (CLIENT_PAGE_EXT_RE.test(segments.at(-1)!)) {
+      const segmentWithoutClientExt = segments.at(-1)?.replace(CLIENT_PAGE_EXT_RE, '')
+
+      if (segmentWithoutClientExt) {
+        segments[segments.length - 1] = segmentWithoutClientExt;
+
+        route.meta = { mode: 'client' }
+      }
     }
 
     // Array where routes should be added, useful when adding child routes
@@ -336,7 +348,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
       route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
-      route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
+      route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...${metaImportName}, ${JSON.stringify(page.meta).slice(1, -1)}}` : `${metaImportName} || {}`
       route.alias = aliasCode
       route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
       route.component = genDynamicImport(file, { interopDefault: true })
