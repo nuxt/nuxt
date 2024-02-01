@@ -24,7 +24,7 @@ export type NuxtPage = {
   name?: string
   path: string
   file?: string
-  meta?: Record<string, any>
+  meta?: Record<string, any> & { mode?: 'client' | 'server' | 'all' }
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
