@@ -643,7 +643,7 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
     response[clientUid] = {
       ...ssrContext.islandContext.components[clientUid],
       html,
-      slots: getComponentSlotTeleport(ssrContext.teleports ?? {}, clientUid)
+      slots: getComponentSlotTeleport(ssrContext.teleports ?? {})
     }
   }
   return response
