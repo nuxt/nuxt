@@ -7,10 +7,12 @@ export type LoadingIndicatorOpts = {
   duration: number
   /** @default 200 */
   throttle: number
-}
-
-function _increase (progress: Ref<number>, num: number) {
-  progress.value = Math.min(100, progress.value + num)
+  /**
+   * You can provide a custom function to customize the progress estimation,
+   * which is a function that receives the duration of the loading bar (above)
+   * and the elapsed time. It should return a value between 0 and 100.
+   */
+  estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
 function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
@@ -32,14 +34,20 @@ export type LoadingIndicator = {
   clear: () => void
 }
 
+function defaultEstimatedProgress (duration: number, elapsed: number): number {
+  const completionPercentage = elapsed / duration * 100
+  return (2 / Math.PI * 100) * Math.atan(completionPercentage / 50)
+}
+
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const { duration = 2000, throttle = 200 } = opts
+  const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
-  const step = computed(() => 10000 / duration)
+  let done = false
+  let rafId: number
 
-  let _timer: any = null
   let _throttle: any = null
 
   const start = () => set(0)
@@ -54,30 +62,42 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     if (throttle && import.meta.client) {
       _throttle = setTimeout(() => {
         isLoading.value = true
-        _startTimer()
+        _startProgress()
       }, throttle)
     } else {
       isLoading.value = true
-      _startTimer()
+      _startProgress()
     }
   }
 
   function finish () {
     progress.value = 100
+    done = true
     clear()
     _hide(isLoading, progress)
   }
 
   function clear () {
-    clearInterval(_timer)
     clearTimeout(_throttle)
-    _timer = null
+    cancelAnimationFrame(rafId)
     _throttle = null
   }
 
-  function _startTimer () {
+  function _startProgress () {
+    done = false
+    let startTimeStamp: number
+
+    function step (timeStamp: number): void {
+      if (done) { return }
+
+      startTimeStamp ??= timeStamp
+      const elapsed = timeStamp - startTimeStamp
+      progress.value = Math.max(0, Math.min(100, getProgress(duration, elapsed)))
+      rafId = requestAnimationFrame(step)
+    }
+
     if (import.meta.client) {
-      _timer = setInterval(() => { _increase(progress, step.value) }, 100)
+      rafId = requestAnimationFrame(step)
     }
   }
 

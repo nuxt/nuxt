@@ -49,6 +49,6 @@ defineProps<{
 }>()
 
 const evt = useRequestEvent()
-const headers = getResponseHeaders(evt)
+const headers = evt ? getResponseHeaders(evt) : {}
 const { data } = await useFetch('/api/very-long-request')
 </script>
