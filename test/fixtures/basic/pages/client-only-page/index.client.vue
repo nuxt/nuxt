@@ -1,6 +1,4 @@
 <script setup lang="ts">
-definePageMeta({ clientOnly: true })
-
 const state = useState('test', () => {
   let hasAccessToWindow = null as null | boolean;
 
