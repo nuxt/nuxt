@@ -103,7 +103,7 @@ export default defineComponent({
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          const clientOnlyConfig = routeProps.route.meta.clientOnly;
+          const isClientOnly  = routeProps.route.meta.mode === 'client';
           const transitionProps = hasTransition && _mergeTransitionProps([
             props.transition,
             routeProps.route.meta.pageTransition,
@@ -111,7 +111,7 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          vnode = _wrapIf(ClientOnly, ClientOnly && clientOnlyConfig,
+          vnode = _wrapIf(ClientOnly, ClientOnly && isClientOnly,
             _wrapIf(Transition, hasTransition && transitionProps,
               wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                 suspensible: true,
