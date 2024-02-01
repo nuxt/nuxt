@@ -17,6 +17,7 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
+import type { PageWrapperOptions } from './plugins/page-wrapper';
 import { PageWrapper } from './plugins/page-wrapper'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
@@ -338,6 +339,7 @@ export default defineNuxtModule({
       })
     }
 
+    const wrappersOptions: PageWrapperOptions = { pages: [] };
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
@@ -347,8 +349,11 @@ export default defineNuxtModule({
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
       addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
 
-      addBuildPlugin(PageWrapper)
+      addVitePlugin(() => PageWrapper.vite(wrappersOptions))
+      addWebpackPlugin(() => PageWrapper.webpack(wrappersOptions))
     })
+
+    nuxt.hook('pages:extend', (pages) => { wrappersOptions.pages = pages });
 
     // Add prefetching support for middleware & layouts
     addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))

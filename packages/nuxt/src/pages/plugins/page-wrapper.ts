@@ -1,7 +1,7 @@
 import { createUnplugin } from "unplugin";
 import { genExport } from 'knitwork';
 
-const clientOnlyRE = /\bdefinePageMeta\({(?:.|\n)+clientOnly:\s?true/
+import type { NuxtPage } from "nuxt/schema";
 
 const clientOnlyExportName = 'ClientOnly'
 const clientOnlyExport = genExport('#app/components/client-only', [{ name: 'default', as: clientOnlyExportName }]);
@@ -10,23 +10,15 @@ const emptyClientOnlyExport = `export const ${clientOnlyExportName} = undefined`
 const virtualPageWrapperModuleId = 'virtual:pages-wrapper'
 const resolvedVirtualPageWrapperModuleId = '\0' + virtualPageWrapperModuleId
 
-export const PageWrapper = createUnplugin(() => {
-  let hasClientOnlyPage: boolean | undefined;
+export interface PageWrapperOptions {
+  pages: NuxtPage[]
+}
+
+export const PageWrapper = createUnplugin<PageWrapperOptions>((options) => {
+  const hasClientOnlyPage = options.pages.some(page => page.meta?.mode === 'client');
 
   return {
     name: 'nuxt:page-wrapper',
-
-    transformInclude(id) {
-      return id.includes('?macro=true')
-    },
-
-    transform(source) {
-      if (!hasClientOnlyPage) {
-        hasClientOnlyPage = clientOnlyRE.test(source)
-      }
-
-      return undefined
-    },
 
     resolveId(id) {
       if (id.endsWith('pages-wrapper.mjs')) {
