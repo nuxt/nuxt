@@ -1,4 +1,5 @@
-import { Teleport, VNode, createVNode, defineComponent, h, inject } from 'vue'
+import type { VNode} from 'vue';
+import { Teleport, createVNode, defineComponent, h, inject } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { InjectionSymbol } from './nuxt-teleport-island-component'
  
