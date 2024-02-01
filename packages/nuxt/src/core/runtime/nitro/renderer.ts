@@ -649,7 +649,7 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   return response
 }
 
-function getComponentSlotTeleport(teleports: Record<string, string>, id: string) {
+function getComponentSlotTeleport(teleports: Record<string, string>) {
   const entries = Object.entries(teleports)
   const slots: Record<string, string>=  {}
 
