@@ -10,11 +10,11 @@ const emptyClientOnlyExport = `export const ${clientOnlyExportName} = undefined`
 const virtualPageWrapperModuleId = 'virtual:pages-wrapper'
 const resolvedVirtualPageWrapperModuleId = '\0' + virtualPageWrapperModuleId
 
-export interface PageWrapperOptions {
+export interface PageWrapperPluginOptions {
   pages: NuxtPage[]
 }
 
-export const PageWrapper = createUnplugin<PageWrapperOptions>((options) => {
+export const PageWrapperPlugin = createUnplugin((options: PageWrapperPluginOptions) => {
   const hasClientOnlyPage = options.pages.some(page => page.meta?.mode === 'client');
 
   return {

@@ -17,8 +17,8 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
-import type { PageWrapperOptions } from './plugins/page-wrapper';
-import { PageWrapper } from './plugins/page-wrapper'
+import type { PageWrapperPluginOptions } from './plugins/page-wrapper'
+import { PageWrapperPlugin } from './plugins/page-wrapper'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
@@ -339,7 +339,7 @@ export default defineNuxtModule({
       })
     }
 
-    const wrappersOptions: PageWrapperOptions = { pages: [] };
+    const wrappersOptions: PageWrapperPluginOptions = { pages: [] };
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
@@ -349,8 +349,8 @@ export default defineNuxtModule({
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
       addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
 
-      addVitePlugin(() => PageWrapper.vite(wrappersOptions))
-      addWebpackPlugin(() => PageWrapper.webpack(wrappersOptions))
+      addVitePlugin(() => PageWrapperPlugin.vite(wrappersOptions))
+      addWebpackPlugin(() => PageWrapperPlugin.webpack(wrappersOptions))
     })
 
     nuxt.hook('pages:extend', (pages) => { wrappersOptions.pages = pages });
@@ -432,7 +432,7 @@ export default defineNuxtModule({
       }
     })
 
-    // stub for webpack, we still handle loading of this file if PageWrapper plugin
+    // stub for webpack, we still handle loading of this file in PageWrapperPlugin
     if (nuxt.options.builder === '@nuxt/webpack-builder') {
       addTemplate({
         filename: "pages-wrapper.mjs",
