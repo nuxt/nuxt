@@ -40,7 +40,7 @@
     "nuxt": "workspace:*",
     "vite": "5.0.12",
     "vue": "3.4.15",
-    "magic-string": "^0.30.5"
+    "magic-string": "^0.30.6"
   },
   "devDependencies": {
     "@codspeed/vitest-plugin": "3.1.0",
@@ -48,7 +48,7 @@
     "@nuxt/test-utils": "3.11.0",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.11.13",
+    "@types/node": "20.11.15",
     "@types/semver": "7.5.6",
     "@vitest/coverage-v8": "1.2.2",
     "@vue/test-utils": "2.4.4",

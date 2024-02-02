@@ -79,7 +79,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   function clear () {
     clearTimeout(_throttle)
-    cancelAnimationFrame(rafId)
+    if (import.meta.client) {
+      cancelAnimationFrame(rafId)
+    }
     _throttle = null
   }
 
@@ -93,7 +95,9 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
       startTimeStamp ??= timeStamp
       const elapsed = timeStamp - startTimeStamp
       progress.value = Math.max(0, Math.min(100, getProgress(duration, elapsed)))
-      rafId = requestAnimationFrame(step)
+      if (import.meta.client) {
+        rafId = requestAnimationFrame(step)
+      }
     }
 
     if (import.meta.client) {

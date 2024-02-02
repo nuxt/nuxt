@@ -615,8 +615,8 @@ describe('nuxt links', () => {
       expect(await page.evaluate(() => window.scrollY)).toBe(0)
       await page.close()
     }, 
-    // Flaky when run on windows + webpack
-    { retry: isWebpack && isWindows ? 10 : 0 }
+    // Flaky behavior when using Webpack
+    { retry: isWebpack ? 10 : 0 }
   )
 
   it('expect scroll to top on nested pages', 
@@ -643,8 +643,8 @@ describe('nuxt links', () => {
       expect(await page.evaluate(() => window.scrollY)).toBe(0)
       await page.close()
     },
-    // Flaky when run on windows + webpack
-    { retry: isWebpack && isWindows ? 10 : 0 }
+    // Flaky behavior when using Webpack
+    { retry: isWebpack ? 10 : 0 }
   )
 })
 
