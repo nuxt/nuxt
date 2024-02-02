@@ -40,7 +40,7 @@ Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script
 
 ## Minimal example
 
-```JavaScript
+```vue
 <script setup>
 
 import { useGoogleAnalytics } from '#imports'
