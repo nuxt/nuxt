@@ -42,11 +42,7 @@ Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script
 
 ```vue
 <script setup>
-
-import { useGoogleAnalytics } from '#imports'
-
 useGoogleAnalytics({ id: 'GA-123456789-1' })
-
 </script>
 ```
 
