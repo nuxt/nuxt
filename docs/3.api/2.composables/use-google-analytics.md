@@ -54,9 +54,6 @@ useGoogleAnalytics({ id: 'GA-123456789-1' })
 
 ```vue
 <script setup>
-
-import { useGoogleAnalytics } from '#imports'
-
 const { $script } = useGoogleAnalytics({
   id: 'GA-123456789-1',
 })
