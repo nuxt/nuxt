@@ -457,7 +457,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         }
       } else {
         if (route.meta != null) {
-          metaRoute.meta = `{ ...(${metaImportName}) || {}), ...${route.meta} }`
+          metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
         }
 
         if (route.alias != null) {

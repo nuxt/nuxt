@@ -107,8 +107,8 @@ export interface AsyncDataExecuteOptions {
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
   pending: Ref<boolean>
-  refresh: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
-  execute: (opts?: AsyncDataExecuteOptions) => Promise<DataT>
+  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
 }

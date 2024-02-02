@@ -1,4 +1,14 @@
 {
+  "pushed route, skips generation from file": [
+    {
+      "alias": "["pushed-route-alias"].concat(mockMeta?.alias || [])",
+      "component": "() => import("pages/route-file.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"someMetaData":true} }",
+      "name": "mockMeta?.name ?? "pushed-route"",
+      "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "route without file": [
     {
       "alias": "["sweet-home"]",
