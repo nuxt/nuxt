@@ -57,6 +57,5 @@ const { $script } = useGoogleAnalytics({
 $script.waitForLoad().then(({ gtag }) => {
   gtag('event', 'some_custom_event', { time: new Date() })
 })
-
 </script>
 ```
