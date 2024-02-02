@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-The useGoogleAnalytics composable function allows you to include [Google Analytics 4](https://developers.google.com/analytics/devguides/collection/ga4) in your Nuxt application.
+The `useGoogleAnalytics` composable function allows you to include [Google Analytics 4](https://developers.google.com/analytics/devguides/collection/ga4) in your Nuxt application.
 
 ::callout
 If Google Tag Manager is already included in your application, you can configure Google Analytics directly using it, rather than including Google Analytics as a separate component. Refer to the [documentation](https://developers.google.com/analytics/devguides/collection/ga4/tag-options#what-is-gtm) to learn more about the differences between Tag Manager and gtag.js.
