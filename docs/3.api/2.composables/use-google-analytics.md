@@ -14,6 +14,28 @@ The `useGoogleAnalytics` composable function allows you to include [Google Analy
 If Google Tag Manager is already included in your application, you can configure Google Analytics directly using it, rather than including Google Analytics as a separate component. Refer to the [documentation](https://developers.google.com/analytics/devguides/collection/ga4/tag-options#what-is-gtm) to learn more about the differences between Tag Manager and gtag.js.
 ::
 
+## Minimal example
+
+```vue
+<script setup>
+useGoogleAnalytics({ id: 'GA-123456789-1' })
+</script>
+```
+
+## Example with custom event
+
+```vue
+<script setup>
+const { $script } = useGoogleAnalytics({
+  id: 'GA-123456789-1',
+})
+
+$script.waitForLoad().then(({ gtag }) => {
+  gtag('event', 'some_custom_event', { time: new Date() })
+})
+</script>
+```
+
 ## Type
 
 ```ts
@@ -37,25 +59,3 @@ An object that contains a special `$script` property that gives you access to th
 ::callout
 Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script).
 ::
-
-## Minimal example
-
-```vue
-<script setup>
-useGoogleAnalytics({ id: 'GA-123456789-1' })
-</script>
-```
-
-## Example with custom event
-
-```vue
-<script setup>
-const { $script } = useGoogleAnalytics({
-  id: 'GA-123456789-1',
-})
-
-$script.waitForLoad().then(({ gtag }) => {
-  gtag('event', 'some_custom_event', { time: new Date() })
-})
-</script>
-```

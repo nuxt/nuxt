@@ -10,30 +10,6 @@ links:
 
 The `useGoogleTagManager` composable function allows you to install [Google Tag Manager](https://developers.google.com/tag-platform/tag-manager/web) in your Nuxt application.
 
-## Type
-
-```ts
-useGoogleTagManager(options: ThirdPartyScriptOptions<GoogleTagManagerOptions, GoogleTagManagerApi>): ThirdPartyScriptApi<GoogleTagManagerApi>
-```
-
-## Params
-
-An object containing the following options:
-
-| name | type   | description                     |
-|:-----|:-------|:--------------------------------|
-| id   | string | Your GTM container ID. Usually starts with GTM-. (required) |
-
-## Return values
-
-An object that contains a special `$script` property that gives you access to the underlying script instance.
-
-- `$script.waitForLoad`: A promise that resolves when the script is ready to use. It exposes `google_tag_manager` and `dataLayer`, which lets you interact with the API.
-
-::callout
-Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script).
-::
-
 ## Minimal example
 
 ```vue
@@ -58,3 +34,27 @@ $script.waitForLoad().then(({ dataLayer }) => {
 })
 </script>
 ```
+
+## Type
+
+```ts
+useGoogleTagManager(options: ThirdPartyScriptOptions<GoogleTagManagerOptions, GoogleTagManagerApi>): ThirdPartyScriptApi<GoogleTagManagerApi>
+```
+
+## Params
+
+An object containing the following options:
+
+| name | type   | description                     |
+|:-----|:-------|:--------------------------------|
+| id   | string | Your GTM container ID. Usually starts with GTM-. (required) |
+
+## Return values
+
+An object that contains a special `$script` property that gives you access to the underlying script instance.
+
+- `$script.waitForLoad`: A promise that resolves when the script is ready to use. It exposes `google_tag_manager` and `dataLayer`, which lets you interact with the API.
+
+::callout
+Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script).
+::
