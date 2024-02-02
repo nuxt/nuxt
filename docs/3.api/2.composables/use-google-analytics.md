@@ -52,7 +52,7 @@ useGoogleAnalytics({ id: 'GA-123456789-1' })
 
 ## Example with custom event
 
-```JavaScript
+```vue
 <script setup>
 
 import { useGoogleAnalytics } from '#imports'
