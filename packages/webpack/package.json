@@ -17,7 +17,7 @@
     "@nuxt/utils": "2.17.3",
     "babel-loader": "^8.3.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001582",
+    "caniuse-lite": "^1.0.30001583",
     "consola": "^3.2.3",
     "css-loader": "^5.2.7",
     "cssnano": "^6.0.3",
@@ -55,7 +55,7 @@
     "webpack": "^4.47.0",
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-dev-middleware": "^5.0.0",
-    "webpack-hot-middleware": "^2.26.0",
+    "webpack-hot-middleware": "^2.26.1",
     "webpack-node-externals": "^3.0.0",
     "webpackbar": "^6.0.0"
   },
