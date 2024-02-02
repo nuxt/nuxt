@@ -46,9 +46,9 @@ useGoogleAnalytics(options: ThirdPartyScriptOptions<GoogleAnalyticsOptions, Goog
 
 An object containing the following options:
 
-| name | type   | description                     |
-|:-----|:-------|:--------------------------------|
-| id   | string | Google Analytics [measurement ID](https://support.google.com/analytics/answer/12270356). (required) |
+- `id`: Google Analytics [measurement ID](https://support.google.com/analytics/answer/12270356).
+  - **type**: `string`
+  - **required**
 
 ## Return values
 

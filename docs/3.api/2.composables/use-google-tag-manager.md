@@ -45,9 +45,9 @@ useGoogleTagManager(options: ThirdPartyScriptOptions<GoogleTagManagerOptions, Go
 
 An object containing the following options:
 
-| name | type   | description                     |
-|:-----|:-------|:--------------------------------|
-| id   | string | Your GTM container ID. Usually starts with GTM-. (required) |
+- `id`: Your GTM container ID. Usually starts with GTM-.
+  - **type**: `string`
+  - **required**
 
 ## Return values
 
