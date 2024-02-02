@@ -19,9 +19,9 @@ export default defineUntypedSchema({
     typescriptBundlerResolution: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then(e => e?.typescriptBundlerResolution)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution') as string | undefined
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
@@ -43,7 +43,7 @@ export default defineUntypedSchema({
     inlineStyles: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -59,7 +59,7 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+        return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
     },
   },
@@ -262,12 +262,18 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     *
+     * This only works with static or strings/arrays rather than variables or conditional assignment.
+     *
+     * https://github.com/nuxt/nuxt/issues/24770
+     */
+    scanPageMeta: false,
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
      * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
      * data in different pages.
-     *
-     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
-     * not be fetched more than once.
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data
      * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
@@ -287,6 +293,12 @@ export default defineUntypedSchema({
      * })
      */
     sharedPrerenderData: false,
+
+    /**
+     * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
+     * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
+     */
+    cookieStore: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.

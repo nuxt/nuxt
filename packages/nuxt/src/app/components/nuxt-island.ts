@@ -83,7 +83,7 @@ export default defineComponent({
     const event = useRequestEvent()
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
 
@@ -168,7 +168,7 @@ export default defineComponent({
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', hints)
+          appendResponseHeader(event!, 'x-nitro-prerender', hints)
         }
       }
       setPayload(key, result)

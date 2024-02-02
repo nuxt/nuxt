@@ -16,8 +16,9 @@ export default defineUntypedSchema({
      * @type {boolean | { enabled?: boolean } & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
      */
     analyze: {
-      $resolve: async (val, get) => {
-        return defu(val, await get('build.analyze'))
+      $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
+        const value = typeof val === 'boolean' ? { enabled: val } : val
+        return defu(value, await get('build.analyze') as { enabled?: boolean } | Record<string, unknown>)
       }
     },
 
@@ -137,17 +138,18 @@ export default defineUntypedSchema({
      */
     loaders: {
       $resolve: async (val, get) => {
+        const loaders: Record<string, any> = val && typeof val === 'object' ? val : {}
         const styleLoaders = [
           'css', 'cssModules', 'less',
           'sass', 'scss', 'stylus', 'vueStyle'
         ]
         for (const name of styleLoaders) {
-          const loader = val[name]
+          const loader = loaders[name]
           if (loader && loader.sourceMap === undefined) {
             loader.sourceMap = Boolean(await get('build.cssSourceMap'))
           }
         }
-        return val
+        return loaders
       },
 
       /**
