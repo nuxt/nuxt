@@ -10,7 +10,7 @@ links:
 
 The `useGoogleTagManager` composable allows you to install [Google Tag Manager](https://developers.google.com/tag-platform/tag-manager/web) in your Nuxt application.
 
-## Minimal example
+## Minimal Example
 
 ```vue
 <script setup>
