@@ -14,31 +14,7 @@ The `useGoogleAnalytics` composable function allows you to include [Google Analy
 If Google Tag Manager is already included in your application, you can configure Google Analytics directly using it, rather than including Google Analytics as a separate component. Refer to the [documentation](https://developers.google.com/analytics/devguides/collection/ga4/tag-options#what-is-gtm) to learn more about the differences between Tag Manager and gtag.js.
 ::
 
-## Type
-
-```ts
-useGoogleAnalytics(options: ThirdPartyScriptOptions<GoogleAnalyticsOptions, GoogleAnalyticsApi>): ThirdPartyScriptApi<GoogleAnalyticsApi>
-```
-
-## Params
-
-An object containing the following options:
-
-| name | type   | description                     |
-|:-----|:-------|:--------------------------------|
-| id   | string | Google Analytics [measurement ID](https://support.google.com/analytics/answer/12270356). (required) |
-
-## Return values
-
-An object that contains a special `$script` property that gives you access to the underlying script instance.
-
-- `$script.waitForLoad`: A promise that resolves when the script is ready to use. It exposes `gtag` and `dataLayer`, which lets you interact with the API.
-
-::callout
-Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script).
-::
-
-## Minimal example
+## Minimal Example
 
 ```vue
 <script setup>
@@ -59,3 +35,27 @@ $script.waitForLoad().then(({ gtag }) => {
 })
 </script>
 ```
+
+## Type
+
+```ts
+useGoogleAnalytics(options: ThirdPartyScriptOptions<GoogleAnalyticsOptions, GoogleAnalyticsApi>): ThirdPartyScriptApi<GoogleAnalyticsApi>
+```
+
+## Params
+
+An object containing the following options:
+
+- `id`: Google Analytics [measurement ID](https://support.google.com/analytics/answer/12270356).
+  - **type**: `string`
+  - **required**
+
+## Return Values
+
+An object that contains a special `$script` property that gives you access to the underlying script instance.
+
+- `$script.waitForLoad`: A promise that resolves when the script is ready to use. It exposes `gtag` and `dataLayer`, which lets you interact with the API.
+
+::callout
+Learn more about [`useScript`](https://unhead.unjs.io/usage/composables/use-script).
+::
