@@ -37,8 +37,9 @@ export default defineNuxtConfig({
       }
     ]
   },
-  theme: './extends/bar',
   css: ['~/assets/global.css'],
+  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
+  theme: './extends/bar',
   extends: [
     './extends/node_modules/foo'
   ],
@@ -200,6 +201,7 @@ export default defineNuxtConfig({
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
+    clientNodeCompat: true,
     componentIslands: {
       selectiveClient: true
     },

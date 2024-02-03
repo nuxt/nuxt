@@ -19,12 +19,17 @@ export default defineComponent({
     color: {
       type: [String, Boolean],
       default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)'
-    }
+    },
+    estimatedProgress: {
+      type: Function as unknown as () => (duration: number, elapsed: number) => number,
+      required: false
+    },
   },
   setup (props, { slots, expose }) {
     const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
-      throttle: props.throttle
+      throttle: props.throttle,
+      estimatedProgress: props.estimatedProgress,
     })
 
     expose({

@@ -1,6 +1,7 @@
 import { useNuxtApp } from '../nuxt'
 import { requestIdleCallback } from '../compat/idle-callback'
 
+/** @since 3.1.0 */
 export const onNuxtReady = (callback: () => any) => {
   if (import.meta.server) { return }
 

@@ -5,6 +5,7 @@ import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
+import { env, nodeless } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
@@ -20,7 +21,8 @@ export function client (ctx: WebpackConfigContext) {
     clientOptimization,
     clientDevtool,
     clientPerformance,
-    clientHMR
+    clientHMR,
+    clientNodeCompat,
   ])
 }
 
@@ -46,6 +48,24 @@ function clientPerformance (ctx: WebpackConfigContext) {
     hints: ctx.isDev ? false : 'warning',
     ...ctx.config.performance
   }
+}
+
+function clientNodeCompat(ctx: WebpackConfigContext) {
+  if (!ctx.nuxt.options.experimental.clientNodeCompat) {
+    return
+  }
+  ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis', }))
+
+  ctx.config.resolve = ctx.config.resolve || {}
+  ctx.config.resolve.fallback = {
+    ...env(nodeless).alias,
+    ...ctx.config.resolve.fallback,
+  }
+
+  // https://github.com/webpack/webpack/issues/13290#issuecomment-1188760779
+  ctx.config.plugins!.unshift(new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
+    resource.request = resource.request.replace(/^node:/, '');
+  }))
 }
 
 function clientHMR (ctx: WebpackConfigContext) {

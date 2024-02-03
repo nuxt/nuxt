@@ -9,6 +9,7 @@ import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
+import { useRouter } from '#app/composables/router'
 import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
@@ -42,6 +43,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
+    let previousPageKey: string | undefined | false
 
     expose({ pageRef })
 
@@ -49,6 +51,10 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    if (import.meta.client && nuxtApp.isHydrating) {
+      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+      useRouter().beforeEach(removeErrorHook)
+    }
 
     if (props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
@@ -56,6 +62,10 @@ export default defineComponent({
           nuxtApp.callHook('page:loading:start')
         }
       })
+    }
+
+    if (import.meta.dev) {
+      nuxtApp._isNuxtPageUsed = true
     }
 
     return () => {
@@ -100,6 +110,10 @@ export default defineComponent({
           }
 
           const key = generateRouteKey(routeProps, props.pageKey)
+          if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
+            nuxtApp.callHook('page:loading:end')
+          }
+          previousPageKey = key
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([
@@ -158,5 +172,12 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
   return newRoute.matched.slice(0, index)
     .some(
       (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
-        (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
+    (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
+}
+
+function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+  if (!fork) { return false }
+
+  const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  return index < newRoute.matched.length - 1
 }

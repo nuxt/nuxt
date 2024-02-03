@@ -8,13 +8,15 @@ links:
     size: xs
 ---
 
-`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, which is available on both client and server side. It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
+`useNuxtApp` is a built-in composable that provides a way to access shared runtime context of Nuxt, also known as the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), which is available on both client and server side. It helps you access the Vue app instance, runtime hooks, runtime config variables and internal states, such as `ssrContext` and `payload`.
 
 ```vue [app.vue]
 <script setup lang="ts">
 const nuxtApp = useNuxtApp()
 </script>
 ```
+
+If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
 
 ## Methods
 
@@ -257,3 +259,22 @@ Native async context support works currently in Bun and Node.
 ::
 
 :read-more{to="/docs/guide/going-further/experimental-features#asynccontext"}
+
+## tryUseNuxtApp
+
+This function works exactly the same as `useNuxtApp`, but returns `null` if context is unavailable instead of throwing an exception.
+
+You can use it for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
+
+Example usage:
+
+```ts [composable.ts]
+export function useStandType() {
+  // Always works on the client
+  if (tryUseNuxtApp()) {
+    return useRuntimeConfig().public.STAND_TYPE
+  } else {
+    return process.env.STAND_TYPE
+  }
+}
+```

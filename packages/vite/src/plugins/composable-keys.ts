@@ -22,7 +22,10 @@ const NUXT_LIB_RE = /node_modules\/(nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
-  const composableMeta = Object.fromEntries(options.composables.map(({ name, ...meta }) => [name, meta]))
+  const composableMeta: Record<string, any> = {}
+  for (const { name, ...meta } of options.composables) {
+    composableMeta[name] = meta
+  }
 
   const maxLength = Math.max(...options.composables.map(({ argumentLength }) => argumentLength))
   const keyedFunctions = new Set(options.composables.map(({ name }) => name))
@@ -116,7 +119,8 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
           }
 
           // TODO: Optimize me (https://github.com/nuxt/framework/pull/8529)
-          const endsWithComma = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim().endsWith(',')
+          const newCode = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim()
+          const endsWithComma = newCode[newCode.length - 1] === ','
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,

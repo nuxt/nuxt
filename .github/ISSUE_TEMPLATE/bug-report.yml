@@ -9,8 +9,8 @@ body:
         👉 https://nuxt.com/docs/community/reporting-bugs
 
         Please use a template below to create a minimal reproduction
-        👉 https://stackblitz.com/github/nuxt/starter/tree/v3-stackblitz
-        👉 https://codesandbox.io/s/github/nuxt/starter/v3-codesandbox
+        👉 https://stackblitz.com/github/nuxt/starter/tree/v3
+        👉 https://codesandbox.io/s/github/nuxt/starter/tree/v3
   - type: textarea
     id: bug-env
     attributes:

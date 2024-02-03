@@ -5,6 +5,7 @@ import { getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h
 import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
+import type { NuxtPayload } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
@@ -19,8 +20,9 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     stack: import.meta.dev && statusCode !== 404
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : '',
-    data: error.data
-  }
+    // TODO: check and validate error.data for serialisation into query
+    data: error.data as any
+  } satisfies Partial<NuxtPayload['error']> & { url: string }
 
   // Console output
   if (error.unhandled || error.fatal) {

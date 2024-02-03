@@ -1,12 +1,18 @@
 ---
 title: "callOnce"
 description: "Run a given function or block of code once during SSR or CSR."
+navigation:
+  badge: New
 links:
   - label: Source
     icon: i-simple-icons-github
     to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/once.ts
     size: xs
 ---
+
+::callout{icon="i-ph-info-duotone" color="blue"}
+This utility is available since [Nuxt v3.9](/blog/v3-9).
+::
 
 ## Purpose
 
