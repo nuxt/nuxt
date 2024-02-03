@@ -24,10 +24,11 @@ export type NuxtPage = {
   name?: string
   path: string
   file?: string
-  meta?: Record<string, any> & { mode?: 'client' | 'server' | 'all' }
+  meta?: Record<string, any>
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
+  mode?: 'client' | 'server' | 'all'
 }
 
 export type NuxtMiddleware = {

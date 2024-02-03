@@ -14,8 +14,6 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
-import { ClientOnly } from '#build/pages-wrapper.mjs'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -107,7 +105,6 @@ export default defineComponent({
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          const isClientOnly  = routeProps.route.meta.mode === 'client';
           const transitionProps = hasTransition && _mergeTransitionProps([
             props.transition,
             routeProps.route.meta.pageTransition,
@@ -115,8 +112,7 @@ export default defineComponent({
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
 
-          vnode = _wrapIf(ClientOnly, ClientOnly && isClientOnly,
-            _wrapIf(Transition, hasTransition && transitionProps,
+          vnode = _wrapIf(Transition, hasTransition && transitionProps,
               wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                 suspensible: true,
                 onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
@@ -137,8 +133,7 @@ export default defineComponent({
                   return providerVNode
                 }
               })
-            ))
-          ).default()
+            )).default()
 
           return vnode
         }

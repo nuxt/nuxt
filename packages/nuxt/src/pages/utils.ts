@@ -1,7 +1,7 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash } from 'ufo'
+import { encodePath, joinURL, withLeadingSlash, withQuery } from 'ufo'
 import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -14,6 +14,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
+import { pageWrappersQueryKey } from './plugins/page-wrappers'
 
 enum SegmentParserState {
   initial,
@@ -69,14 +70,14 @@ type GenerateRoutesFromFilesOptions = {
   vfs?: Record<string, string>
 }
 
-const CLIENT_PAGE_EXT_RE = /\.client/;
+const CLIENT_PAGE_EXT_RE = /\.client$/;
 export async function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
     const segments = file.relativePath
-    .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
-    .split('/')
+      .replace(new RegExp(`${escapeRE(extname(file.relativePath))}$`), '')
+      .split('/')
 
     const route: NuxtPage = {
       name: '',
@@ -84,15 +85,14 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       file: file.absolutePath,
       children: [],
     }
-    
 
-    if (CLIENT_PAGE_EXT_RE.test(segments.at(-1)!)) {
-      const segmentWithoutClientExt = segments.at(-1)?.replace(CLIENT_PAGE_EXT_RE, '')
+    const lastSegment = segments.at(-1)
+    if (lastSegment && CLIENT_PAGE_EXT_RE.test(lastSegment)) {
+      const segmentWithoutClientExt = lastSegment.replace(CLIENT_PAGE_EXT_RE, '')
 
       if (segmentWithoutClientExt) {
         segments[segments.length - 1] = segmentWithoutClientExt;
-
-        route.meta = { mode: 'client' }
+        route.mode = 'client'
       }
     }
 
@@ -438,7 +438,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: genDynamicImport(file, { interopDefault: true })
+        component: genDynamicImport(
+          page.mode === 'client' ? withQuery(file, { [pageWrappersQueryKey]: 'client' }) : file
+        , { interopDefault: true })
       }
 
       if (route.children != null) {
