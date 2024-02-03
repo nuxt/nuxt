@@ -29,7 +29,7 @@ const { $script } = useGoogleTagManager({
 $script.waitForLoad().then(({ dataLayer }) => {
   dataLayer.push({
     event: 'pageview',
-    page_path: '/google-tag-manager',
+    page_path: '/google-tag-manager'
   })
 })
 </script>
