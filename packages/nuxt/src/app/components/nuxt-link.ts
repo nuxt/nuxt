@@ -6,7 +6,7 @@ import type {
   PropType, VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { Router, RouteLocation, RouteLocationRaw, RouterLinkProps } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 
 import type { AllowedComponentProps } from "vue";
@@ -26,7 +26,6 @@ const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
  * Create a NuxtLink component with given options as defaults.
- *
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
 export interface NuxtLinkOptions extends
@@ -50,7 +49,6 @@ export interface NuxtLinkOptions extends
 
 /**
  * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
- *
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
 export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'>, Pick<Partial<RouterLinkProps>, 'to'> {
