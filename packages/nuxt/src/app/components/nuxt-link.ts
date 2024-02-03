@@ -6,10 +6,9 @@ import type {
   PropType, VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from '#vue-router'
 import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-
-import type { AllowedComponentProps } from "vue";
+import type { AllowedComponentProps } from 'vue'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
@@ -33,7 +32,6 @@ export interface NuxtLinkOptions extends
   Pick<NuxtLinkProps, 'prefetchedClass'> {
   /**
    * The name of the component.
-   *
    * @default "NuxtLink"
    */
   componentName?: string
