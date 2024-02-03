@@ -18,7 +18,7 @@ useGoogleTagManager({ id: 'GTM-123456' })
 </script>
 ```
 
-## Example with custom event
+## Example with Custom Event
 
 ```vue
 <script setup>
