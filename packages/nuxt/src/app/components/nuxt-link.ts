@@ -54,11 +54,11 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   /**
    * Route Location the link should navigate to when clicked on.
    */
-  to?: RouteLocationRaw
+  to?: RouteLocationRaw // need to manually type to avoid breaking typedPages
   /**
    * An alias for `to`. If used with `to`, `href` will be ignored
    */
-  href?: RouteLocationRaw
+  href?: NuxtLinkProps['to']
   /**
    * Forces the link to be considered as external (true) or internal (false). This is helpful to handle edge-cases
    */
