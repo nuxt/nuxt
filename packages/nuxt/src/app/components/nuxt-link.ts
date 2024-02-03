@@ -24,7 +24,11 @@ const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => a
 const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
-
+/**
+ * Create a NuxtLink component with given options as defaults.
+ *
+ * @see https://nuxt.com/docs/api/components/nuxt-link
+ */
 export interface NuxtLinkOptions extends
   Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>,
   Pick<NuxtLinkProps, 'prefetchedClass'> {
@@ -44,6 +48,11 @@ export interface NuxtLinkOptions extends
   trailingSlash?: 'append' | 'remove'
 }
 
+/**
+ * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
+ *
+ * @see https://nuxt.com/docs/api/components/nuxt-link
+ */
 export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'>, Pick<Partial<RouterLinkProps>, 'to'> {
   /**
    * An alias for `to`. If used with `to`, `href` will be ignored
