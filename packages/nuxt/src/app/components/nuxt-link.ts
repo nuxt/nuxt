@@ -1,14 +1,14 @@
 import type {
+  AllowedComponentProps,
   AnchorHTMLAttributes,
   ComputedRef,
   DefineComponent,
-  InjectionKey,
-  PropType, VNodeProps,
+  InjectionKey, PropType,
+  VNodeProps
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from '#vue-router'
 import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-import type { AllowedComponentProps } from 'vue'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
@@ -50,11 +50,15 @@ export interface NuxtLinkOptions extends
  * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
-export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'>, Pick<Partial<RouterLinkProps>, 'to'> {
+export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
+  /**
+   * Route Location the link should navigate to when clicked on.
+   */
+  to?: RouteLocationRaw
   /**
    * An alias for `to`. If used with `to`, `href` will be ignored
    */
-  href?: NuxtLinkProps['to']
+  href?: RouteLocationRaw
   /**
    * Forces the link to be considered as external (true) or internal (false). This is helpful to handle edge-cases
    */
@@ -129,12 +133,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     props: {
       // Routing
       to: {
-        type: [String, Object] as PropType<NuxtLinkProps['to']>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
       href: {
-        type: [String, Object] as PropType<NuxtLinkProps['href']>,
+        type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
         required: false
       },
@@ -358,12 +362,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               if (!href) { return undefined }
 
               const url = parseURL(href)
-              return {
+              return <RouteLocation & { href: string }> {
                 path: url.pathname,
                 fullPath: url.pathname,
                 get query () { return parseQuery(url.search) },
                 hash: url.hash,
-                // stub properties for compat with vue-router
                 params: {},
                 name: undefined,
                 matched: [],
