@@ -33,7 +33,6 @@ export interface NuxtLinkOptions extends
   Pick<NuxtLinkProps, 'prefetchedClass'> {
   /**
    * The name of the component.
-   *
    * @default "NuxtLink"
    */
   componentName?: string
