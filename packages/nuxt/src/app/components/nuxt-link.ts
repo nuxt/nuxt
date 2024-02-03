@@ -14,7 +14,6 @@ import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
-const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noreferrer'
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 export type NuxtLinkOptions = {
@@ -183,6 +182,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       // Lazily check whether to.value has a protocol
       const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
 
+      const hasTarget = computed(() => props.target && props.target !== '_self')
+
       // Resolving link type
       const isExternal = computed<boolean>(() => {
         // External prop is explicitly set
@@ -191,7 +192,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         }
 
         // When `target` prop is set, link is external
-        if (props.target && props.target !== '_self') {
+        if (hasTarget.value) {
           return true
         }
 
@@ -292,12 +293,18 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // Resolves `target` value
         const target = props.target || null
 
+        /*
+         * A fallback rel of `noreferrer` is applied for external links or links that open in a new tab.
+         * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
+         */
+        const fallbackRel = (isAbsoluteUrl.value || hasTarget.value) ?
+          [options.externalRelAttribute, href ? 'noreferrer' : ''] : []
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
         const rel = (props.noRel)
           ? null
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          : firstNonUndefined<string | null>(props.rel, ...(isAbsoluteUrl.value ? [options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : ''] : [])) || null
+          : firstNonUndefined<string | null>(props.rel, ...fallbackRel) || null
 
         const navigate = () => navigateTo(href, { replace: props.replace })
 
