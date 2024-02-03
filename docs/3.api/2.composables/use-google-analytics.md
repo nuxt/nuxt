@@ -57,5 +57,5 @@ An object that contains a special `$script` property that gives you access to th
 - `$script.waitForLoad`: A promise that resolves when the script is ready to use. It exposes `gtag` and `dataLayer`, which lets you interact with the API.
 
 ::callout
-Learn more about [useScript](https://unhead.unjs.io/usage/composables/use-script).
+Learn more about [`useScript`](https://unhead.unjs.io/usage/composables/use-script).
 ::
