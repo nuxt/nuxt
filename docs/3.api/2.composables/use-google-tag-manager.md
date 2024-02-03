@@ -23,7 +23,7 @@ useGoogleTagManager({ id: 'GTM-123456' })
 ```vue
 <script setup>
 const { $script } = useGoogleTagManager({
-  id: 'GTM-123456',
+  id: 'GTM-123456'
 })
 
 $script.waitForLoad().then(({ dataLayer }) => {
