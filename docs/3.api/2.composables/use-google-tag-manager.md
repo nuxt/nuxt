@@ -49,7 +49,7 @@ An object containing the following options:
   - **type**: `string`
   - **required**
 
-## Return values
+## Return Values
 
 An object that contains a special `$script` property that gives you access to the underlying script instance.
 
