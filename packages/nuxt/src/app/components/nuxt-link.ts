@@ -293,18 +293,18 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // Resolves `target` value
         const target = props.target || null
 
-        /*
-         * A fallback rel of `noreferrer` is applied for external links or links that open in a new tab.
-         * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
-         */
-        const fallbackRel = (isAbsoluteUrl.value || hasTarget.value) ?
-          [options.externalRelAttribute, href ? 'noreferrer' : ''] : []
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
-        const rel = (props.noRel)
-          ? null
+        const rel = firstNonUndefined<string | null>(
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          : firstNonUndefined<string | null>(props.rel, ...fallbackRel) || null
+          props.noRel ? '' : undefined, props.rel,
+          options.externalRelAttribute,
+          /*
+          * A fallback rel of `noreferrer` is applied for external links or links that open in a new tab.
+          * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
+          */
+          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : ''
+        ) || null
 
         const navigate = () => navigateTo(href, { replace: props.replace })
 
