@@ -14,7 +14,7 @@ import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
-const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noopener noreferrer'
+const DEFAULT_EXTERNAL_REL_ATTRIBUTE = 'noreferrer'
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 export type NuxtLinkOptions = {
@@ -181,7 +181,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       })
 
       // Lazily check whether to.value has a protocol
-      const isProtocolURL = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
+      const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
 
       // Resolving link type
       const isExternal = computed<boolean>(() => {
@@ -200,7 +200,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return false
         }
 
-        return to.value === '' || isProtocolURL.value
+        return to.value === '' || isAbsoluteUrl.value
       })
 
       // Prefetching
@@ -285,7 +285,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
         const href = typeof to.value === 'object'
           ? router.resolve(to.value)?.href ?? null
-          : (to.value && !props.external && !isProtocolURL.value)
+          : (to.value && !props.external && !isAbsoluteUrl.value)
               ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
               : to.value || null
 
@@ -297,7 +297,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const rel = (props.noRel)
           ? null
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          : firstNonUndefined<string | null>(props.rel, options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : '') || null
+          : firstNonUndefined<string | null>(props.rel, ...(isAbsoluteUrl.value ? [options.externalRelAttribute, href ? DEFAULT_EXTERNAL_REL_ATTRIBUTE : ''] : [])) || null
 
         const navigate = () => navigateTo(href, { replace: props.replace })
 
