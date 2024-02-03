@@ -439,7 +439,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
         component: genDynamicImport(
-          page.mode === 'client' ? withQuery(file, { [pageWrappersQueryKey]: 'client' }) : file
+          page.mode !== undefined ? withQuery(file, { [pageWrappersQueryKey]: page.mode }) : file
         , { interopDefault: true })
       }
 
