@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-The `useGoogleTagManager` composable function allows you to install [Google Tag Manager](https://developers.google.com/tag-platform/tag-manager/web) in your Nuxt application.
+The `useGoogleTagManager` composable allows you to install [Google Tag Manager](https://developers.google.com/tag-platform/tag-manager/web) in your Nuxt application.
 
 ## Minimal example
 
