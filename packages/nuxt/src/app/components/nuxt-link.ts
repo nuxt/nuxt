@@ -300,7 +300,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           props.noRel ? '' : undefined, props.rel,
           options.externalRelAttribute,
           /*
-          * A fallback rel of `noreferrer` is applied for external links or links that open in a new tab.
+          * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
           * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
           */
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : ''
