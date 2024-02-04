@@ -12,6 +12,8 @@ export function useId (key?: string): string {
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [useId] key must be a string.')
   }
+  // TODO: implement in composable-keys
+  key = key.slice(1)
   const nuxtApp = useNuxtApp()
   const instance = getCurrentInstance()
 
