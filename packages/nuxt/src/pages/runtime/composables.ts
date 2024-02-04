@@ -38,6 +38,8 @@ export interface PageMeta {
   path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+  /** render the page as a server island */
+  island?: boolean
 }
 
 declare module 'vue-router' {

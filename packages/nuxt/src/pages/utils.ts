@@ -14,6 +14,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
+import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -90,7 +91,6 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
     if(segments[segments.length - 1].endsWith('.server')) {
       segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
       route.server = true
-      route.meta = {...route.meta, server: true}
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -432,7 +432,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: genDynamicImport(file, { interopDefault: true })
+        component: route.server ? `() => import('${resolve(distDir, 'components/runtime/server-component')}').then(({ createServerComponent }) => createServerComponent({
+          name: ${JSON.stringify(route.name)}
+        }))` : genDynamicImport(file, { interopDefault: true })
       }
 
       if (route.children != null) {

@@ -38,8 +38,7 @@ export default defineComponent({
       default: null
     }
   },
-  setup (props, { attrs, expose }) {
-    const NuxtIsland = defineAsyncComponent(() => import('#app/components/nuxt-island'))
+  setup(props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -71,17 +70,6 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
-          if(routeProps.route.meta.server) {
-            return h(Suspense, {
-              suspensible: true,
-              onResolve: () => nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) 
-            }, {
-              default: () => h(NuxtIsland, {
-                props: attrs,
-                name: routeProps.route.name as string,
-              })
-            })
-          }
           const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
           const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
 
@@ -122,7 +110,7 @@ export default defineComponent({
             defaultPageTransition,
             { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
           ].filter(Boolean))
-        
+
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
@@ -154,7 +142,7 @@ export default defineComponent({
   }
 })
 
-function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+function _mergeTransitionProps(routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
     onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
@@ -162,7 +150,7 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 
-function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+function haveParentRoutesRendered(fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
@@ -175,7 +163,7 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
     (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
 }
 
-function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+function hasChildrenRoutes(fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)

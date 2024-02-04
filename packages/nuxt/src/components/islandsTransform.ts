@@ -1,15 +1,16 @@
 import { pathToFileURL } from 'node:url'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import fs from 'node:fs'
-import type { Component } from '@nuxt/schema'
-import { parseURL } from 'ufo'
+import type { Component, NuxtPage } from '@nuxt/schema'
+import { parseQuery, parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { hash } from 'ohash'
 import { resolvePath } from '@nuxt/kit'
-import { isVue } from '../core/utils'
-
+import { isVue } from '../core/utils' 
+import { distDir } from '../dirs'
+import { genImport } from 'knitwork'
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
   /**
@@ -38,6 +39,54 @@ const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/compo
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
+
+function isPage (id: string, pages: NuxtPage[]) {
+  for(const page of pages) {
+    if (page.file && id === page.file) {
+      return true
+    }
+    if(page.children) {
+      if (isPage(id, page.children)) {
+        return true
+      }
+    }
+  }
+
+  return false
+} 
+
+function findPage(id: string, pages: NuxtPage[]): NuxtPage|null {
+  for(const page of pages) {
+    if (page.file && id === page.file) {
+      return page
+    }
+    if(page.children) {
+      const found = findPage(id, page.children)
+      if (found) {
+        return found
+      }
+    }
+  }
+
+  return null
+}
+
+// export const pageIslandTransform = createUnplugin((options: {pages: NuxtPage[]}, meta) => {
+//   return {
+//     name: 'page-island-transform',
+//     enforce: 'post',
+//     transformInclude (id) {
+//       if (!isVue(id) || !isPage(id, options.pages) || parseQuery<{ 'server-page': any }>(id)['server-page']) { return false }
+//       return true
+//     },
+//     async transform(code, id) { 
+//         return  [
+//           genImport(resolve(distDir, 'components/runtime/server-component'), {name: 'createServerComponent'}),
+//           `export default createServerComponent(${JSON.stringify(id)})`
+//         ]
+//     }       
+//   }
+// })
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
