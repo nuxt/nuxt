@@ -362,7 +362,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
               if (!href) { return undefined }
 
               const url = parseURL(href)
-              return <RouteLocation & { href: string }> {
+              return {
                 path: url.pathname,
                 fullPath: url.pathname,
                 get query () { return parseQuery(url.search) },
@@ -373,7 +373,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                 redirectedFrom: undefined,
                 meta: {},
                 href
-              }
+              } satisfies RouteLocation & { href: string }
             },
             rel,
             target,
