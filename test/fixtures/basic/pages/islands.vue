@@ -20,14 +20,14 @@ const count = ref(0)
         name="PureComponent"
         :props="islandProps"
       />
-    <div id="wrapped-client-only"> 
-      <ClientOnly>
-        <NuxtIsland
-          name="PureComponent"
-          :props="islandProps"
-        />
-      </ClientOnly>
-    </div>
+      <div id="wrapped-client-only"> 
+        <ClientOnly>
+          <NuxtIsland
+            name="PureComponent"
+            :props="islandProps"
+          />
+        </ClientOnly>
+      </div>
     </div>
     <button
       id="increase-pure-component"
