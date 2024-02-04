@@ -1,4 +1,4 @@
-import { Suspense, Transition, defineAsyncComponent, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
