@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
+import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
 import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
 import { PageRouteSymbol } from './injections'
@@ -18,7 +18,6 @@ export const RouteProvider = defineComponent({
     trackRootNodes: Boolean
   },
   setup (props) {
-    const NuxtIsland = defineAsyncComponent(() => import('#app/components/nuxt-island').then(c => c.default || c))
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     const previousKey = props.renderKey
     const previousRoute = props.route
@@ -44,8 +43,6 @@ export const RouteProvider = defineComponent({
         })
       })
     }
-
-    
 
     return () => {
       if (import.meta.dev && import.meta.client) {

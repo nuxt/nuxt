@@ -48,7 +48,7 @@ function createCurrentLocation (
   const path = !renderedPath || isEqual(displayedPath, renderedPath, { trailingSlash: true }) ? displayedPath : renderedPath
   return path + (path.includes('?') ? '' : search) + hash
 }
- 
+
 const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   name: 'nuxt:router',
   enforce: 'pre',
@@ -70,7 +70,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const initialURL = import.meta.server
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
-    const router = createRouter({
+
+      const router = createRouter({
       ...routerOptions,
       scrollBehavior: (to, from, savedPosition) => {
         if (from === START_LOCATION) {
@@ -248,6 +249,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         await nuxtApp.runWithContext(() => showError(error))
       }
     })
+  
     return { provide: { router } }
   }
 })

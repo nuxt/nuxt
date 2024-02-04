@@ -7,6 +7,7 @@ export default defineNuxtModule({
   setup () {
     const nuxt = useNuxt()
     const resolver = createResolver(import.meta.url)
+
     nuxt.hook('pages:extend', (pages) => {
       pages.push({
         name: 'page-extend',
