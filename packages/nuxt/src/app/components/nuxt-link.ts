@@ -297,7 +297,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         checkPropConflicts(props, 'noRel', 'rel')
         const rel = firstNonUndefined<string | null>(
           // converts `""` to `null` to prevent the attribute from being added as empty (`rel=""`)
-          props.noRel ? '' : undefined, props.rel,
+          props.noRel ? '' : props.rel,
           options.externalRelAttribute,
           /*
           * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
