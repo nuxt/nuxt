@@ -13,8 +13,8 @@ import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getFragmentHTML } from './utils'
 import { useRoute } from '../../app/composables/router'
+import { getFragmentHTML } from './utils'
 
 
 // @ts-expect-error virtual file
