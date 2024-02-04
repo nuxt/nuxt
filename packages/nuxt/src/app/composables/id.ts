@@ -7,6 +7,7 @@ const ATTR_KEY = 'data-n-ids'
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
  */
+export function useId (): string
 export function useId (key?: string): string {
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [useId] key must be a string.')
