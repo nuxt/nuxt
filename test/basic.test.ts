@@ -1530,6 +1530,9 @@ describe('server components/islands', () => {
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
 
+    // test islands wrapped with client-only
+    expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
+
     if (!isWebpack) {
       // test client component interactivity
       expect(await page.locator('.interactive-component-wrapper').innerHTML()).toContain('Sugar Counter 12')
