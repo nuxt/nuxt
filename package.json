@@ -40,7 +40,7 @@
     "nuxt": "workspace:*",
     "vite": "5.0.12",
     "vue": "3.4.15",
-    "magic-string": "^0.30.6"
+    "magic-string": "^0.30.7"
   },
   "devDependencies": {
     "@codspeed/vitest-plugin": "3.1.0",
@@ -58,7 +58,7 @@
     "devalue": "4.3.2",
     "eslint": "8.56.0",
     "eslint-plugin-import": "2.29.1",
-    "eslint-plugin-jsdoc": "48.0.4",
+    "eslint-plugin-jsdoc": "48.0.5",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-unicorn": "50.0.1",
     "execa": "8.0.1",
@@ -75,7 +75,7 @@
     "pathe": "1.1.2",
     "playwright-core": "1.41.2",
     "rimraf": "5.0.5",
-    "semver": "7.5.4",
+    "semver": "7.6.0",
     "std-env": "3.7.0",
     "typescript": "5.3.3",
     "ufo": "1.3.2",
