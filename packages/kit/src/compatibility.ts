@@ -93,5 +93,5 @@ export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt
   if (!rawVersion) {
     throw new Error('Cannot determine nuxt version! Is current instance passed?')
   }
-  return version.replace(/^v/g, '')
+  return rawVersion.replace(/^v/g, '')
 }
