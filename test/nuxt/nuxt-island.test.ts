@@ -201,4 +201,41 @@ describe('client components', () => {
     vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
   })
+
+    
+  it('should not replace nested client components data-island-uid', async () => {
+    const componentId = 'Client-12345'
+ 
+    const stubFetch = vi.fn(() => {
+      return {
+        id: '1234',
+        html: `<div data-island-uid>hello<div data-island-uid="not-to-be-replaced" data-island-component="${componentId}"></div></div>`,
+        state: {},
+        head: {
+          link: [],
+          style: []
+        },
+        json() {
+          return this
+        }
+      }
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'WithNestedClient',
+        props: {
+          force: true
+        }
+      },
+      attachTo: 'body'
+    })
+
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.html()).toContain('data-island-uid="not-to-be-replaced"')
+    vi.mocked(fetch).mockReset()
+    expectNoConsoleIssue()
+  })
 })

@@ -78,13 +78,25 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           startPosition = savedPosition
           return
         }
-        // reset scroll behavior to initial value
-        router.options.scrollBehavior = routerOptions.scrollBehavior
-        return routerOptions.scrollBehavior?.(to, START_LOCATION, startPosition || savedPosition)
+        if (routerOptions.scrollBehavior) {
+          // reset scroll behavior to initial value
+          router.options.scrollBehavior = routerOptions.scrollBehavior
+          if ('scrollRestoration' in window.history) {
+            const unsub = router.beforeEach(() => {
+              unsub()
+              window.history.scrollRestoration = 'manual'
+            })
+          }
+          return routerOptions.scrollBehavior(to, START_LOCATION, startPosition || savedPosition)
+        }
       },
       history,
       routes
     })
+
+    if (import.meta.client && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'auto'
+    }
     nuxtApp.vueApp.use(router)
 
     const previousRoute = shallowRef(router.currentRoute.value)

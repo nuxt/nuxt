@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 import { isWindows } from 'std-env'
 import codspeedPlugin from '@codspeed/vitest-plugin'

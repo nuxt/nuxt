@@ -20,7 +20,7 @@
 import { defineAsyncComponent, onErrorCaptured, onServerPrefetch, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { isNuxtError, showError, useError } from '../composables/error'
-import { useRoute } from '../composables/router'
+import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
@@ -31,6 +31,10 @@ const IslandRenderer = import.meta.server
 
 const nuxtApp = useNuxtApp()
 const onResolve = nuxtApp.deferHydration()
+if (import.meta.client && nuxtApp.isHydrating) {
+  const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', onResolve)
+  useRouter().beforeEach(removeErrorHook)
+}
 
 const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathname
 const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
