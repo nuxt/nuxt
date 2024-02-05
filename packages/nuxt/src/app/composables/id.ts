@@ -26,7 +26,7 @@ export function useId (key?: string): string {
   const instanceIndex = key + ':' + instance._nuxtIdIndex[key]++
 
   if (import.meta.server) {
-    if (!import.meta.dev && instance.vnode.type && typeof instance.vnode.type === 'object' && 'inheritAttrs' in instance.vnode.type && instance.vnode.type.inheritAttrs === false) {
+    if (import.meta.dev && instance.vnode.type && typeof instance.vnode.type === 'object' && 'inheritAttrs' in instance.vnode.type && instance.vnode.type.inheritAttrs === false) {
       console.warn('[nuxt] `useId` is not compatible with components that have `inheritAttrs: false`.')
     }
     const ids = JSON.parse(instance.attrs[ATTR_KEY] as string | undefined || '{}')
