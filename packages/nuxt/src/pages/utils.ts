@@ -139,8 +139,8 @@ const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
 async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
-  if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) { 
-    pageContentsCache[absolutePath] = contents 
+  if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
+    pageContentsCache[absolutePath] = contents
     delete metaCache[absolutePath]
   }
 
@@ -412,6 +412,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
+      }
+
+      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+        if (route[key] === undefined) {
+          delete route[key]
+        }
       }
 
       if (page.children?.length) {
