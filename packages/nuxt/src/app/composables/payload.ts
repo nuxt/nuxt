@@ -53,9 +53,6 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 const extension = renderJsonPayloads ? 'json' : 'js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
-  if (u.search) {
-    throw new Error('Payload URL cannot contain search params: ' + url)
-  }
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
