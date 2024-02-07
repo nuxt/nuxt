@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0 # All history
       - name: fetch tags
         run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
-      - uses: actions/setup-node@b39b52d1213e96004bfcb1c61a8a6fa8ab84f3e8 # v4.0.1
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
           node-version: 18
           registry-url: 'https://registry.npmjs.org'
