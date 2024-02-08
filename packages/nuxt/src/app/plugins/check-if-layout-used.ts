@@ -17,7 +17,7 @@ export default defineNuxtPlugin({
       }
     }
     if (import.meta.server) {
-      nuxtApp.hook('app:rendered', () => { nextTick(checkIfLayoutUsed) })
+      nuxtApp.hook('app:rendered', ({ renderResult }) => { renderResult?.html && nextTick(checkIfLayoutUsed) })
     } else {
       onNuxtReady(checkIfLayoutUsed)
     }

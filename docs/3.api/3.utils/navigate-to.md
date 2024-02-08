@@ -14,6 +14,8 @@ links:
 
 ## Usage
 
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
+
 ### Within a Vue Component
 
 ```vue

@@ -264,4 +264,21 @@ describe('plugin dependsOn', () => {
       'end B',
     ])
   })
+
+  it('expect to execute plugins if a plugin depends on a plugin that does not exist', async () => {
+    const nuxtApp = useNuxtApp()
+    const sequence: string[] = []
+    const plugins = [
+      pluginFactory('B', undefined, sequence,),
+      pluginFactory('C', ['A', 'B'], sequence,),
+    ]
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(sequence).toMatchObject([
+      'start B',
+      'end B',
+      'start C',
+      'end C',
+    ])
+  })
 })

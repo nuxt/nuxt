@@ -235,7 +235,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we're rendering an error page
   const ssrError = event.path.startsWith('/__nuxt_error')
-    ? getQuery(event) as unknown as Exclude<NuxtPayload['error'], Error>
+    ? getQuery(event) as unknown as NuxtPayload['error'] & { url: string }
     : null
 
   if (ssrError && ssrError.statusCode) {
