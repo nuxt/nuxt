@@ -391,7 +391,7 @@ export default defineNuxtModule({
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
       .flatMap(p =>
-        [relative(nuxt.options.srcDir, p.file as string), ...(p.children.length ? getSources(p.children) : [])]
+        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])]
       )
 
     // Do not prefetch page chunks
