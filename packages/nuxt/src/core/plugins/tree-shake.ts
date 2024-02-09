@@ -32,7 +32,7 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
       const matches = strippedCode.matchAll(COMPOSABLE_RE_GLOBAL)
-      if (matches) {
+      if (matches.length) {
         for (const match of matches) {
           s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} false && /*@__PURE__*/ ${match[2]}`)
         }
