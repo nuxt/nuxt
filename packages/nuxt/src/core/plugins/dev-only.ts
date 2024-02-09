@@ -22,7 +22,7 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
 
       const s = new MagicString(code)
       const matches = code.matchAll(DEVONLY_COMP_RE)
-      if (matches) {
+      if (matches.length>0) {
         for (const match of matches) {
           const ast: Node = parse(match[0]).children[0]
           const fallback: Node | undefined = ast.children?.find((n: Node) => n.name === 'template' && Object.values(n.attributes).includes('#fallback'))
