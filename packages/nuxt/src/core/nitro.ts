@@ -288,7 +288,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           createRadixRouter({ routes: routeRules })
         )
         const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
-        if (nitro._prerenderedRoutes.length) {
+        if (nitro._prerenderedRoutes?.length) {
           for (const route of nitro._prerenderedRoutes) {
             if (!route.error && route.route.endsWith(payloadSuffix)) {
               const url = route.route.slice(0, -payloadSuffix.length) || '/'
