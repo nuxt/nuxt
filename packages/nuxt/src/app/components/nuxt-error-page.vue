@@ -13,7 +13,7 @@ const props = defineProps({
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = !_error.stack ? '' : _error.stack
+const stacktrace = _error.stack ? _error.stack
   .split('\n')
   .splice(1)
   .map((line) => {
@@ -27,7 +27,7 @@ const stacktrace = !_error.stack ? '' : _error.stack
         line.includes('internal') ||
         line.includes('new Promise')
     }
-  }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
+  }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n') : ''
 
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
