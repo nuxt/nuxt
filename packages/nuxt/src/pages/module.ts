@@ -397,7 +397,7 @@ export default defineNuxtModule({
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
-      const sourceFiles = nuxt.apps.default.pages.length ? getSources(nuxt.apps.default.pages) : []
+      const sourceFiles = nuxt.apps.default?.pages.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const key in manifest) {
         if (manifest[key].isEntry) {
