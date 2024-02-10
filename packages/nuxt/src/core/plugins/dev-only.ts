@@ -25,7 +25,6 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
         const ast: Node = parse(match[0]).children[0]
         const fallback: Node | undefined = ast.children?.find((n: Node) => n.name === 'template' && Object.values(n.attributes).includes('#fallback'))
         const replacement = fallback ? match[0].slice(fallback.loc[0].end, fallback.loc[fallback.loc.length - 1].start) : ''
-  
         s.overwrite(match.index!, match.index! + match[0].length, replacement)
       }
 
