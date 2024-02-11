@@ -490,11 +490,13 @@ describe('nuxt composables', () => {
     expect(await extractCookie()).toEqual({ foo: 'bar' })
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
+    let text = await page.innerText('pre')
+    expect(text).toContain('baz')
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.evaluate(() => document.cookie = 'updated=foobar')
+    await page.evaluate(() => document.cookie = `browser-object-default=${encodeURIComponent('{"foo":"foobar"}')}`)
     await page.getByText('Refresh cookie').click()
-    const text = await page.innerText('pre')
+    text = await page.innerText('pre')
     expect(text).toContain('foobar')
     await page.close()
   })
@@ -1527,6 +1529,9 @@ describe('server components/islands', () => {
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
+    // test islands wrapped with client-only
+    expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
 
     if (!isWebpack) {
       // test nested client components

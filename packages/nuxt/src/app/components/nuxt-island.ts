@@ -224,9 +224,9 @@ export default defineComponent({
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
     }
 
-    if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
+    if (import.meta.client && !instance.vnode.el && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
+    } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)

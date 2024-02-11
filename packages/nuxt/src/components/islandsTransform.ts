@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
-import { join } from 'node:path'
 import fs from 'node:fs'
+import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
