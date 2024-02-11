@@ -411,6 +411,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
+        server: serializeRouteValue(page.server),
       }
 
       if (page.children?.length) {
@@ -432,7 +433,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: `(${metaImportName}?.island ?? ${route.server}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
+        component: `(${metaImportName}?.island || ${route.server}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
       }
 
       if (route.children != null) {
