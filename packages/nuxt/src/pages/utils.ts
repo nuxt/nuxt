@@ -432,7 +432,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: `${metaImportName}?.name ?? ${route.name} ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createServerComponent }) => createServerComponent(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
+        component: `(${metaImportName}?.island ?? ${route.server}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
       }
 
       if (route.children != null) {

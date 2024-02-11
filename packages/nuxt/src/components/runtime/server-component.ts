@@ -25,3 +25,28 @@ export const createServerComponent = (name: string) => {
     }
   })
 }
+
+/*@__NO_SIDE_EFFECTS__*/
+export const createIslandPage = (name: string) => {
+  return defineComponent({
+    name,
+    inheritAttrs: false,
+    props: { lazy: Boolean },
+    setup (props, { attrs, slots, expose }) {
+      const islandRef = ref<null | typeof NuxtIsland>(null)
+
+      expose({
+        refresh: () => islandRef.value?.refresh()
+      })
+
+      return () => {
+        return h('div', [h(NuxtIsland, {
+          name,
+          lazy: props.lazy,
+          props: attrs,
+          ref: islandRef
+        }, slots)])
+      }
+    }
+  })
+}
