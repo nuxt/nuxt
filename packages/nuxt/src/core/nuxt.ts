@@ -304,6 +304,13 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // Add <NuxtRouteAnnouncer>
+  addComponent({
+    name: 'NuxtRouteAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer')
+  })
+
   // Add stubs for <NuxtImg> and <NuxtPicture>
   for (const name of ['NuxtImg', 'NuxtPicture']) {
     addComponent({

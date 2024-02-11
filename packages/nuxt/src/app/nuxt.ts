@@ -18,6 +18,7 @@ import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
+import type { RouteAnnouncer } from './composables/route-announcer'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -148,6 +149,11 @@ interface _NuxtApp {
   /** @internal */
   _payloadRevivers: Record<string, (data: any) => any>
 
+  /** @internal */
+  _routeAnnouncer?: RouteAnnouncer
+  /** @internal */
+  _routeAnnouncerDeps?: number
+
   // Nuxt injections
   $config: RuntimeConfig
 
@@ -163,7 +169,9 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
-export interface NuxtApp extends _NuxtApp {}
+export interface NuxtApp extends _NuxtApp {
+  nuxtApp: { message: Ref<string>; politeness: Ref<string>; set: (messageValue: string, politenessSetting: string, includeCompelentRoute?: boolean) => void; polite: (message: string) => void; assertive: (message: string) => void; setComplementRoute: (complementRouteMessage: string) => void };
+}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
 
