@@ -138,27 +138,29 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
-  // Identify which layers will need to have an extra resolve step.
-  const layerDirs: string[] = []
-  const delimitedRootDir = nuxt.options.rootDir + '/'
-  for (const layer of nuxt.options._layers) {
-    if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
-      layerDirs.push(layer.config.srcDir + '/')
+  if (nuxt.options.dev) {
+    // Identify which layers will need to have an extra resolve step.
+    const layerDirs: string[] = []
+    const delimitedRootDir = nuxt.options.rootDir + '/'
+    for (const layer of nuxt.options._layers) {
+      if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
+        layerDirs.push(layer.config.srcDir + '/')
+      }
     }
-  }
-  if (layerDirs.length > 0) {
-    ctx.config.plugins!.push({
-      name: 'nuxt:optimize-layer-deps',
-      enforce: 'pre',
-      async resolveId (source, _importer) {
-        if (!_importer) { return }
-        const importer = normalize(_importer)
-        if (layerDirs.some(dir => importer.startsWith(dir))) {
-          // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
-          await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
-        }
-      },
-    })
+    if (layerDirs.length > 0) {
+      ctx.config.plugins!.push({
+        name: 'nuxt:optimize-layer-deps',
+        enforce: 'pre',
+        async resolveId (source, _importer) {
+          if (!_importer) { return }
+          const importer = normalize(_importer)
+          if (layerDirs.some(dir => importer.startsWith(dir))) {
+            // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
+            await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+          }
+        },
+      })
+    }
   }
 
   // Add type-checking
