@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -138,13 +138,23 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
-  // Trigger vite to optimize any dependencies that are imported within a layer, just as if they were imported by a user
-  if (nuxt.options.dev) {
+  // Identify which layers will need to have an extra resolve step.
+  const layerDirs: string[] = []
+  const delimitedRootDir = nuxt.options.rootDir + '/'
+  for (const layer of nuxt.options._layers) {
+    if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
+      layerDirs.push(layer.config.srcDir + '/')
+    }
+  }
+  if (layerDirs.length > 0) {
     ctx.config.plugins!.push({
       name: 'nuxt:optimize-layer-deps',
       enforce: 'pre',
-      async resolveId (source, importer) {
-        if (importer && nuxt.options._layers.some(layer => layer.cwd !== nuxt.options.rootDir && importer.includes(layer.cwd))) {
+      async resolveId (source, _importer) {
+        if (!_importer) { return }
+        const importer = normalize(_importer)
+        if (layerDirs.some(dir => importer.startsWith(dir))) {
+          // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
           await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
         }
       },
