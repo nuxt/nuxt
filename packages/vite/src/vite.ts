@@ -138,6 +138,19 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
+  // Trigger vite to optimize any dependencies that are imported within a layer, just as if they were imported by a user
+  if (nuxt.options.dev) {
+    ctx.config.plugins!.push({
+      name: 'nuxt:optimize-layer-deps',
+      enforce: 'pre',
+      async resolveId (source, importer) {
+        if (importer && nuxt.options._layers.some(layer => layer.cwd !== nuxt.options.rootDir && importer.includes(layer.cwd))) {
+          await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+        }
+      },
+    })
+  }
+
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
