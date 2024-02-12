@@ -299,6 +299,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
+    modules: new Set(),
+    set _registeredComponents(value) { this.modules = value },
+    get _registeredComponents() { return this.modules },
     islandContext
   }
 
@@ -320,6 +323,13 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     writeEarlyHints(event, link)
+  }
+
+
+  if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
+    for (const id of await getEntryIds()) {
+      ssrContext.modules!.add(id)
+    }
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
@@ -356,18 +366,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
-  if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
-    const source = ssrContext.modules ?? ssrContext._registeredComponents
-    if (source) {
-      for (const id of await getEntryIds()) {
-        source.add(id)
-      }
-    }
-  }
-
   // Render inline styles
   const inlinedStyles = (process.env.NUXT_INLINE_STYLES || isRenderingIsland)
-    ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
+    ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
