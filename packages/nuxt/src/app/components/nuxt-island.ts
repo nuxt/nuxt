@@ -16,7 +16,7 @@ import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
-import { remoteComponentIslands, selectiveClient,appBaseURL } from '#build/nuxt.config.mjs'
+import { appBaseURL, remoteComponentIslands,selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
@@ -29,13 +29,13 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (source = '/', paths: NuxtIslandResponse['components']) {
+async function loadComponents (maybeSource :string | undefined, paths: NuxtIslandResponse['components']) {
   const promises = []
-
+  const source = !maybeSource ? appBaseURL ?? '/' : maybeSource
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source,appBaseURL, paths[component].chunk)
+        const chunkSource = join(source, paths[component].chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
