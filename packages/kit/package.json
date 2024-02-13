@@ -30,7 +30,7 @@
     "c12": "^1.7.0",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
-    "globby": "^14.0.0",
+    "globby": "^14.0.1",
     "hash-sum": "^2.0.0",
     "ignore": "^5.3.1",
     "jiti": "^1.21.0",
@@ -48,7 +48,7 @@
   "devDependencies": {
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
-    "@types/semver": "7.5.6",
+    "@types/semver": "7.5.7",
     "lodash-es": "4.17.21",
     "nitropack": "2.8.1",
     "unbuild": "latest",
