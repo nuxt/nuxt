@@ -236,7 +236,6 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   }
 }
 
-
 function filename (name: string) {
   return _filename(name.replace(/\?.+$/, ''))
 }
