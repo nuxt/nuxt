@@ -593,7 +593,7 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component', 
+  it('expect scroll to top on routes with same component',
     async () => {
       // #22402
       const page = await createPage('/big-page-1', {
@@ -616,12 +616,12 @@ describe('nuxt links', () => {
       await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
       expect(await page.evaluate(() => window.scrollY)).toBe(0)
       await page.close()
-    }, 
+    },
     // Flaky behavior when using Webpack
     { retry: isWebpack ? 10 : 0 }
   )
 
-  it('expect scroll to top on nested pages', 
+  it('expect scroll to top on nested pages',
     async () => {
       // #20523
       const page = await createPage('/nested/foo/test', {
@@ -1722,6 +1722,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
         (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
+
+    expect(await $fetch('/foo/url')).toContain('path: /foo/url')
   })
 
   it('should allow setting relative baseURL', async () => {
