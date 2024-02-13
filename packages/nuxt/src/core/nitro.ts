@@ -152,10 +152,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir
           },
-      ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
-        .filter(dir => existsSync(dir))
-        .map(dir => ({ dir }))
+      ...nuxt.options._layers.reduce((layers, layer) => {
+        const layerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
+        if (existsSync(layerDir)) {
+          layers.push({dir: layerDir})
+        }
+        return layers
+      }, [])
     ],
     prerender: {
       failOnError: true,
