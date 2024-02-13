@@ -86,10 +86,11 @@ export const NoScript = defineComponent({
   },
   setup: setupForUseMeta((props, { slots }) => {
     const noscript = { ...props }
-    const textContent = slots.default?.()
+    const tempContent = slots.default?.()
+    const textContent = tempContent ? tempContent
       .filter(({ children }) => children)
       .map(({ children }) => children)
-      .join('') || ''
+      .join('') : ''
     if (textContent) {
       noscript.children = textContent
     }
