@@ -71,7 +71,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
-      const router = createRouter({
+    const router = createRouter({
       ...routerOptions,
       scrollBehavior: (to, from, savedPosition) => {
         if (from === START_LOCATION) {
@@ -249,7 +249,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         await nuxtApp.runWithContext(() => showError(error))
       }
     })
-  
+
     return { provide: { router } }
   }
 })

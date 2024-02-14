@@ -38,7 +38,7 @@ export default defineComponent({
       default: null
     }
   },
-  setup(props, { attrs, expose }) {
+  setup (props, { attrs, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -142,7 +142,7 @@ export default defineComponent({
   }
 })
 
-function _mergeTransitionProps(routeProps: TransitionProps[]): TransitionProps {
+function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
     onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
@@ -150,7 +150,7 @@ function _mergeTransitionProps(routeProps: TransitionProps[]): TransitionProps {
   return defu(..._props as [TransitionProps, TransitionProps])
 }
 
-function haveParentRoutesRendered(fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
@@ -163,7 +163,7 @@ function haveParentRoutesRendered(fork: RouteLocationNormalizedLoaded | null, ne
     (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
 }
 
-function hasChildrenRoutes(fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
+function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
