@@ -18,7 +18,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
-const { data, pending, error, refresh } = await useAsyncData(
+const { data, error, refresh } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains')
 )
@@ -26,7 +26,7 @@ const { data, pending, error, refresh } = await useAsyncData(
 ```
 
 ::callout
-`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+`data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
 ::
 
 ### Watch Params
@@ -88,7 +88,6 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
-- `pending`: a boolean indicating whether the data is still being fetched.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
@@ -127,7 +126,6 @@ type AsyncDataOptions<DataT> = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>

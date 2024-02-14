@@ -25,7 +25,7 @@ By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation unti
 /* Navigation will occur before fetching is complete.
   Handle pending and error states directly within your component's template
 */
-const { pending, data: posts } = await useLazyFetch('/api/posts')
+const { status, data: posts } = await useLazyFetch('/api/posts')
 watch(posts, (newPosts) => {
   // Because posts might start out null, you won't have access
   // to its contents immediately, but you can watch it.
@@ -33,7 +33,7 @@ watch(posts, (newPosts) => {
 </script>
 
 <template>
-  <div v-if="pending">
+  <div v-if="status === 'pending'">
     Loading ...
   </div>
   <div v-else>
