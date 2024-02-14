@@ -120,6 +120,7 @@ describe('composables', () => {
       'preloadPayload',
       'preloadRouteComponents',
       'reloadNuxtApp',
+      'refreshCookie',
       'useCookie',
       'useFetch',
       'useHead',
@@ -625,7 +626,7 @@ describe('callOnce', () => {
     const execute = () => callOnce(fn)
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
-    
+
     const fnSync = vi.fn().mockImplementation(() => { })
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])

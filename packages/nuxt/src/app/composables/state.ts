@@ -24,13 +24,13 @@ export function useState <T> (...args: any): Ref<T> {
   }
   const key = useStateKeyPrefix + _key
 
-  const nuxt = useNuxtApp()
-  const state = toRef(nuxt.payload.state, key)
+  const nuxtApp = useNuxtApp()
+  const state = toRef(nuxtApp.payload.state, key)
   if (state.value === undefined && init) {
     const initialValue = init()
     if (isRef(initialValue)) {
       // vue will unwrap the ref for us
-      nuxt.payload.state[key] = initialValue
+      nuxtApp.payload.state[key] = initialValue
       return initialValue as Ref<T>
     }
     state.value = initialValue

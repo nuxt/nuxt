@@ -182,7 +182,7 @@ export default defineNuxtModule({
       await mkdir(dirname(dtsFile), { recursive: true })
       await context.scanPages(false)
 
-      if (nuxt.options._prepare) {
+      if (nuxt.options._prepare || !nuxt.options.dev) {
         // TODO: could we generate this from context instead?
         const dts = await readFile(dtsFile, 'utf-8')
         addTemplate({
