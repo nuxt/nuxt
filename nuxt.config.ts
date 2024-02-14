@@ -1,4 +1,4 @@
-// This is for pnpm typecheck:docs to generate correct types
+// For pnpm typecheck:docs to generate correct types
 export default defineNuxtConfig({
-  pages: true
+  pages: process.env.DOCS_TYPECHECK === 'true'
 })
