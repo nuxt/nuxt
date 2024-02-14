@@ -71,7 +71,7 @@
     "@unhead/vue": "^1.8.10",
     "@vue/shared": "^3.4.19",
     "acorn": "8.11.3",
-    "c12": "^1.7.0",
+    "c12": "^1.8.0",
     "chokidar": "^3.6.0",
     "cookie-es": "^1.0.0",
     "defu": "^6.1.4",
@@ -121,7 +121,7 @@
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "5.0.4",
     "unbuild": "latest",
-    "vite": "5.1.1",
+    "vite": "5.1.2",
     "vitest": "1.2.2"
   },
   "peerDependencies": {
