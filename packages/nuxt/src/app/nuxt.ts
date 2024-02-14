@@ -111,7 +111,6 @@ interface _NuxtApp {
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<any>
-    pending: Ref<boolean>
     error: Ref<Error | null>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
