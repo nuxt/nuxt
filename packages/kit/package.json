@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@nuxt/schema": "workspace:*",
-    "c12": "^1.7.0",
+    "c12": "^1.8.0",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "globby": "^14.0.1",
@@ -52,7 +52,7 @@
     "lodash-es": "4.17.21",
     "nitropack": "2.8.1",
     "unbuild": "latest",
-    "vite": "5.1.1",
+    "vite": "5.1.2",
     "vitest": "1.2.2",
     "webpack": "5.90.1"
   },
