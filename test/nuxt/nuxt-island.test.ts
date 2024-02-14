@@ -111,6 +111,29 @@ describe('runtime server component', () => {
     expect(component.html()).toBe('<div>2</div>')
     vi.mocked(fetch).mockReset()
   })
+
+  
+  it('expect NuxtIsland to emit an error', async  () => {
+    const stubFetch = vi.fn(() => {
+      throw new Error('fetch error')
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+
+    const wrapper = await mountSuspended(createServerComponent('ErrorServerComponent'), {
+      props: {
+        name: 'Error',
+        props: {
+          force: true
+        }
+      },
+      attachTo: 'body'
+    })
+
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('error')).toHaveLength(1)
+    vi.mocked(fetch).mockReset()
+  })
 })
 
 
@@ -166,7 +189,7 @@ describe('client components', () => {
     expect(fetch).toHaveBeenCalledOnce()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="3">hello<div data-island-uid="3" data-island-component="Client-12345">
+      "<div data-island-uid="4">hello<div data-island-uid="4" data-island-component="Client-12345">
           <div>client component</div>
         </div>
       </div>
@@ -192,7 +215,7 @@ describe('client components', () => {
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
     expect(wrapper.html()).toMatchInlineSnapshot( `
-      "<div data-island-uid="3">hello<div>
+      "<div data-island-uid="4">hello<div>
           <div>fallback</div>
         </div>
       </div>"

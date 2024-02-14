@@ -69,7 +69,8 @@ export default defineComponent({
       default: false
     }
   },
-  async setup (props, { slots, expose }) {
+  emits: ['error'],
+  async setup (props, { slots, expose, emit }) {
     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
@@ -207,11 +208,12 @@ export default defineComponent({
         }
       } catch (e) {
         error.value = e
+        emit('error', e)
       }
     }
 
     expose({
-      refresh: () => fetchComponent(true)
+      refresh: () => fetchComponent(true),
     })
 
     if (import.meta.hot) {
