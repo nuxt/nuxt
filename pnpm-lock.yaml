@@ -104,7 +104,7 @@ importers:
         specifier: workspace:*
         version: link:packages/nuxt
       nuxt-content-twoslash:
-        specifier: ^0.0.4
+        specifier: 0.0.4
         version: 0.0.4(@nuxtjs/mdc@0.5.0)(typescript@5.3.3)
       ofetch:
         specifier: 1.3.3
