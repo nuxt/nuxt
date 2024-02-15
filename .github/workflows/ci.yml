@@ -134,6 +134,9 @@ jobs:
         env:
           MODULE_RESOLUTION: ${{ matrix.module }}
 
+      - name: Typecheck (docs)
+        run: pnpm typecheck:docs
+
   lint:
     # autofix workflow will be triggered instead for PRs
     if: github.event_name == 'push'
