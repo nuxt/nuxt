@@ -29,7 +29,8 @@
     "test:runtime": "vitest -c vitest.nuxt.config.ts --coverage",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run packages/ --coverage",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "typecheck:docs": "nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
   "resolutions": {
     "@nuxt/kit": "workspace:*",
@@ -71,6 +72,7 @@
     "nitropack": "2.8.1",
     "nuxi": "3.10.1",
     "nuxt": "workspace:*",
+    "nuxt-content-twoslash": "^0.0.4",
     "ofetch": "1.3.3",
     "pathe": "1.1.2",
     "playwright-core": "1.41.2",

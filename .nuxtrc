@@ -1,1 +1,3 @@
 telemetry.enabled=false
+# For pnpm typecheck:docs to generate correct types
+pages=true
