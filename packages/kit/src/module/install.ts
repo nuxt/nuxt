@@ -2,6 +2,7 @@ import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
+import { loadConfig } from 'c12'
 import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule } from '../internal/cjs'
@@ -14,6 +15,18 @@ const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 /** Installs a module on a Nuxt instance. */
 export async function installModule (moduleToInstall: string | NuxtModule, inlineOptions?: any, nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
+  const nuxtModuleMeta = await nuxtModule.getMeta?.()
+  let moduleOptions = inlineOptions
+
+  if (nuxtModuleMeta?.configKey) {
+    const { config } = await loadConfig({
+      name: nuxtModuleMeta.name,
+      configFile: `${nuxtModuleMeta.configKey}.nuxt.config`,
+      defaultConfig: inlineOptions
+    })
+
+    moduleOptions = defu(inlineOptions, config)
+  }
 
   const localLayerModuleDirs = new Set<string>()
   for (const l of nuxt.options._layers) {
@@ -27,8 +40,8 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
   const res = (
     isNuxt2()
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
-      ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
-      : await nuxtModule(inlineOptions, nuxt)
+      ? await nuxtModule.call(nuxt.moduleContainer, moduleOptions, nuxt)
+      : await nuxtModule(moduleOptions, nuxt)
   ) ?? {}
   if (res === false /* setup aborted */) {
     return
@@ -44,7 +57,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
 
   nuxt.options._installedModules = nuxt.options._installedModules || []
   nuxt.options._installedModules.push({
-    meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
+    meta: defu(nuxtModuleMeta, buildTimeModuleMeta),
     timings: res.timings,
     entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
   })
