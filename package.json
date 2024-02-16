@@ -46,6 +46,7 @@
   "devDependencies": {
     "@codspeed/vitest-plugin": "3.1.0",
     "@nuxt/eslint-config": "0.2.0",
+    "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.11.0",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "^8.0.2",
