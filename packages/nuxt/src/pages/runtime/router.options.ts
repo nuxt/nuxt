@@ -36,7 +36,7 @@ export default <RouterConfig> {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
       }
       // The route isn't changing so keep current scroll position
-      return false;
+      return false
     }
 
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
@@ -44,7 +44,7 @@ export default <RouterConfig> {
     const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise(resolve => setTimeout(resolve, 0))
         if (to.hash) {
           position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
         }
