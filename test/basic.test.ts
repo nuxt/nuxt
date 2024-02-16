@@ -1414,6 +1414,15 @@ describe('automatically keyed composables', () => {
   })
 })
 
+describe.runIf(isDev() && !isWebpack)('css links', () => {
+  it('should not inject links to CSS files that are inlined', async () => {
+    const html = await $fetch('/inline-only-css')
+    expect(html).toContain('--inline-only')
+    expect(html).not.toContain('inline-only.css')
+    expect(html).toContain('assets/plugin.css')
+  })
+})
+
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
