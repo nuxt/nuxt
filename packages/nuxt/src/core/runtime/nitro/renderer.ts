@@ -13,7 +13,7 @@ import { appendResponseHeader, createError, getQuery, getResponseStatus, getResp
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
-import { joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
@@ -394,7 +394,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       const resource = styles[style]
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
         // support for the ?inline query parameter for Vite version > 5.0
-        if (import.meta.dev && 'inline' in getQuery(resource.file)) continue
+        if (import.meta.dev && 'inline' in getURLQuery(resource.file)) continue
 
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
