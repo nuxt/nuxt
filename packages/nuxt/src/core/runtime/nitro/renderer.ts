@@ -392,10 +392,15 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const link = []
     for (const style in styles) {
       const resource = styles[style]
+      // Do not add links to resources that are inlined (vite v5+)
+      if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+        continue
+      }
+      // Add CSS links in <head> for CSS files
+      // - in production
+      // - in dev mode when not rendering an island
+      // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-        // support for the ?inline query parameter for Vite version > 5.0
-        if (import.meta.dev && 'inline' in getURLQuery(resource.file)) continue
-
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
     }
