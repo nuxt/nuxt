@@ -30,7 +30,7 @@
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run packages/ --coverage",
     "typecheck": "tsc --noEmit",
-    "typecheck:docs": "nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
+    "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
   "resolutions": {
     "@nuxt/kit": "workspace:*",
