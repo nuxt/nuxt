@@ -35,7 +35,7 @@ importers:
         specifier: workspace:*
         version: link:packages/webpack
       '@testing-library/vue':
-        specifier: ^8.0.2
+        specifier: 8.0.2
         version: 8.0.2(vue@3.4.19)
       '@types/fs-extra':
         specifier: 11.0.4
@@ -6607,7 +6607,7 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.7
-      has-tostringtag: 1.0.0
+      has-tostringtag: 1.0.2
     dev: true
 
   /is-array-buffer@3.0.2:
