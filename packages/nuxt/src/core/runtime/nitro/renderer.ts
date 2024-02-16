@@ -394,7 +394,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       const resource = styles[style]
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
         // support for the ?inline query parameter for Vite version > 5.0
-        if (process.env.NUXT_VITE_NODE_OPTIONS && resource.file.endsWith("?inline")) break;
+        if (import.meta.dev && resource.file.endsWith('?inline')) continue
 
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
