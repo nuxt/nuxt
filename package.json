@@ -49,7 +49,7 @@
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.11.0",
     "@nuxt/webpack-builder": "workspace:*",
-    "@testing-library/vue": "^8.0.2",
+    "@testing-library/vue": "8.0.2",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.11.19",
     "@types/semver": "7.5.7",
