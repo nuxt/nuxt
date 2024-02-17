@@ -73,7 +73,7 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
 /**
  * composable to handle the route announcer
  */
-export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): Omit<RouteAnnouncer, '_reset'> {
+export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): Omit<RouteAnnouncer, '_cleanup'> {
   const nuxtApp = useNuxtApp()
 
   // Initialise global route announcer if it doesn't exist already

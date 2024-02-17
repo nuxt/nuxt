@@ -169,10 +169,6 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
-export interface NuxtApp extends _NuxtApp {
-  nuxtApp: { message: Ref<string>; politeness: Ref<string>; set: (messageValue: string, politenessSetting: string, includeCompelentRoute?: boolean) => void; polite: (message: string) => void; assertive: (message: string) => void; setComplementRoute: (complementRouteMessage: string) => void };
-}
-
 export const NuxtPluginIndicator = '__nuxt_plugin'
 
 export interface PluginMeta {
