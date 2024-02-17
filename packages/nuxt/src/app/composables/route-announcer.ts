@@ -16,38 +16,19 @@ export type RouteAnnouncer = {
   set: (message: string, politeness: string) => void
   polite: (message: string) => void
   assertive: (message: string) => void
-  setComplementRoute: (complementRoute: string) => void
-  _reset: () => void
+  _cleanup: () => void
 }
 
-const draf = (cb: () => void) => requestAnimationFrame(() => requestAnimationFrame(cb))
-
 function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
-  let { complementRoute = 'has changed'} = opts
   const message = ref('')
   const politeness = ref(opts.politeness || 'polite')
   const router = useRouter();
   const nuxtApp = useNuxtApp()
+  let rafId: number | null = null
 
-  router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
-    if (from.fullPath !== to.fullPath) {
-      nuxtApp.hook('page:loading:end', () => {
-        setTimeout(() => {
-          set(document?.title?.trim(), politeness.value)
-        })
-      })
-    }
-  })
-
-  function set (messageValue: string, politenessSetting: string, includeCompelentRoute: boolean = true) {
-    if (nuxtApp.isHydrating) {
-      return
-    }
-    _reset()
-    draf(() => {
-      politeness.value = politenessSetting
-      message.value = includeCompelentRoute ? `${messageValue} ${complementRoute}` : messageValue
-    })
+  function set (messageValue: string, politenessSetting: string ) {
+    politeness.value = politenessSetting
+    message.value = messageValue
   }
 
   function polite (message: string) {
@@ -58,23 +39,34 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
     return set(message, 'assertive')
   }
 
-  function _reset () {
-    message.value = ''
-    politeness.value = opts.politeness || 'polite'
-  }
+  let _cleanup = () => {}
 
-  function setComplementRoute (complementRouteMessage: string) {
-    if (typeof complementRoute !== 'string') return
-    complementRoute = complementRouteMessage
+  if (import.meta.client) {
+    let unsubLoadingFinishHook: () => void
+    const removeBeforeResolveGuard = router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+      cancelAnimationFrame(rafId!)
+      if (from.fullPath === to.fullPath) { return }
+      unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
+        rafId = requestAnimationFrame(() => {
+          set(document?.title?.trim(), politeness.value)
+        })
+      })
+    })
+
+    _cleanup = () => {
+      cancelAnimationFrame(rafId!)
+      removeBeforeResolveGuard()
+      unsubLoadingFinishHook()
+    }
   }
 
   return {
+    _cleanup,
     message,
     politeness,
     set,
     polite,
     assertive,
-    setComplementRoute
   }
 }
 
@@ -92,7 +84,7 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
     onScopeDispose(() => {
       nuxtApp._routeAnnouncerDeps!--
       if (nuxtApp._routeAnnouncerDeps === 0) {
-        announcer._reset()
+        announcer._cleanup()
         delete nuxtApp._routeAnnouncer
       }
     })

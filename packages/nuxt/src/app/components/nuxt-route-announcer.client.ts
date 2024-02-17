@@ -6,7 +6,6 @@ export default defineComponent({
   name: 'NuxtRouteAnnouncer',
   setup () {
     const { message, politeness } = useRouteAnnouncer();
-    if (!import.meta.client) { return }
    
     return () => h('div', {
       class: 'nuxt-route-announcer',
