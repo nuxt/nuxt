@@ -33,7 +33,6 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
@@ -41,7 +40,12 @@ function wrapWithVForDiv (code: string, vfor: string): string {
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
-  const { isDev, rootDir } = options
+  const { isDev, rootDir, selectiveClient } = options
+  let IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+
+  if (selectiveClient) {
+    IMPORT_CODE += '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\''
+  }
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
@@ -102,7 +106,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot name="${slotName}" :props="${bindings}">`)
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-          } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
+          } else if (selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
             const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
             if (isVite) {
