@@ -515,6 +515,23 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
+  options.routeRules ||= {}
+  for(const path in options.routeRules) {
+    if (!options.routeRules[path].nuxtMiddleware) {
+      continue
+    }
+    if (typeof options.routeRules[path].nuxtMiddleware === 'string') {
+      options.routeRules[path].nuxtMiddleware = [options.routeRules[path].nuxtMiddleware as string]
+    }
+    if (Array.isArray(options.routeRules[path].nuxtMiddleware)) {
+      const middlewareObject: Record<string, boolean> = {}
+      for (const middleware in options.routeRules[path].nuxtMiddleware as string[]) {
+        middlewareObject[middleware] = true
+      }
+      options.routeRules[path].nuxtMiddleware = middlewareObject
+    }
+  }
+
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {

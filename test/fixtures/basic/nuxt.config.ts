@@ -60,6 +60,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/route-rules/middleware': { nuxtMiddleware: 'routeRulesMiddleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true }
     },
