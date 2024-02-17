@@ -14,7 +14,7 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
-import { type Plugin, type RouteMiddleware, getRouteRules } from '#app'
+import { type Plugin, type RouteMiddleware, getRouteRules, onNuxtReady } from '#app'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
@@ -173,11 +173,17 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        const routeRules = await getRouteRules(to.fullPath);
-        if (routeRules.nuxtMiddleware) {
-          for (const middleware in routeRules.nuxtMiddleware) {
-            if (routeRules.nuxtMiddleware[middleware] === true) {
-              middlewareEntries.add(middleware)
+        let nuxtReady: boolean = false
+
+        onNuxtReady(() => nuxtReady = true)
+
+        if (nuxtReady) {
+          const routeRules = await getRouteRules(to.path);
+          if (routeRules.nuxtMiddleware) {
+            for (const middleware in routeRules.nuxtMiddleware) {
+              if (routeRules.nuxtMiddleware[middleware] === true) {
+                middlewareEntries.add(middleware)
+              }
             }
           }
         }
