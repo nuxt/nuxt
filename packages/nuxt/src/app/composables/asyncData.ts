@@ -138,7 +138,7 @@ export function useAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (
+>(
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
@@ -154,7 +154,7 @@ export function useAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
-> (
+>(
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
@@ -171,7 +171,7 @@ export function useAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (
+>(
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
@@ -189,7 +189,7 @@ export function useAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
-> (
+>(
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
@@ -200,7 +200,7 @@ export function useAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null> {
+>(...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
@@ -274,9 +274,17 @@ export function useAsyncData<
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if (!opts.force && hasCachedData(opts._triggeredBy)) {
+    if(opts._triggeredBy === 'initial' && !opts.force && nuxtApp.isHydrating && hasCachedData(opts._triggeredBy)) {
       return Promise.resolve(options.getCachedData!(key, opts._triggeredBy))
     }
+
+    // If cache changed based on the triggeredBy, set new data result
+    if (!opts.force && hasCachedData(opts._triggeredBy)) {
+      const result = options.getCachedData!(key, opts._triggeredBy)
+      asyncData.data.value = result
+      return Promise.resolve(result)
+    }
+
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
     // TODO: Cancel previous promise
@@ -325,7 +333,7 @@ export function useAsyncData<
     return nuxtApp._asyncDataPromises[key]!
   }
 
-  const initialFetch = () => asyncData.refresh({ _triggeredBy: 'refresh:manual' })
+  const initialFetch = () => asyncData.refresh({ _triggeredBy: 'initial' })
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -372,7 +380,7 @@ export function useAsyncData<
       initialFetch()
     }
     if (options.watch) {
-      watch(options.watch, () => asyncData.refresh({ _triggeredBy: 'watch'}))
+      watch(options.watch, () => asyncData.refresh({ _triggeredBy: 'watch' }))
     }
     const off = nuxtApp.hook('app:data:refresh', async (keys, force) => {
       if (!keys || keys.includes(key)) {
@@ -397,7 +405,7 @@ export function useLazyAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (
+>(
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
@@ -407,7 +415,7 @@ export function useLazyAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
-> (
+>(
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null>
@@ -417,7 +425,7 @@ export function useLazyAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (
+>(
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
@@ -428,7 +436,7 @@ export function useLazyAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
-> (
+>(
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
@@ -440,7 +448,7 @@ export function useLazyAsyncData<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null> {
+>(...args: any[]): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
@@ -455,7 +463,7 @@ export function useLazyAsyncData<
 }
 
 /** @since 3.1.0 */
-export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
+export function useNuxtData<DataT = any>(key: string): { data: Ref<DataT | null> } {
   const nuxtApp = useNuxtApp()
 
   // Initialize value when key is not already set
@@ -469,7 +477,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
 }
 
 /** @since 3.0.0 */
-export async function refreshNuxtData (keys?: string | string[], force?: boolean): Promise<void> {
+export async function refreshNuxtData(keys?: string | string[], force?: boolean): Promise<void> {
   if (import.meta.server) {
     return Promise.resolve()
   }
@@ -481,7 +489,7 @@ export async function refreshNuxtData (keys?: string | string[], force?: boolean
 }
 
 /** @since 3.0.0 */
-export function clearNuxtData (keys?: string | string[] | ((key: string) => boolean)): void {
+export function clearNuxtData(keys?: string | string[] | ((key: string) => boolean)): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.data)
   const _keys: string[] = !keys
@@ -509,7 +517,7 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
-function pick (obj: Record<string, any>, keys: string[]) {
+function pick(obj: Record<string, any>, keys: string[]) {
   const newObj = {}
   for (const key of keys) {
     (newObj as any)[key] = obj[key]

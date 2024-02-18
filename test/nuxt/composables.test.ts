@@ -239,19 +239,16 @@ describe('useAsyncData', () => {
   })
 
   it('will use cache on refresh by default', async () => {
-    let called = 0
-    const fn = () => called++
-    const { data, refresh } = await useAsyncData(() => 'other value', { getCachedData: () => fn() })
-    expect(data.value).toBe(0)
+    const { data, refresh } = await useAsyncData(() => 'other value', { getCachedData: () => 'cached' })
+    expect(data.value).toBe('cached')
     await refresh()
-    expect(data.value).toBe(0)
+    expect(data.value).toBe('cached')
   })
 
   it('will not use cache with force option', async () => {
     let called = 0
     const fn = () => called++
     const { data, refresh } = await useAsyncData(() => 'other value', { getCachedData: () => fn() })
-    expect(data.value).toBe(0)
     await refresh({ force: true })
     expect(data.value).toBe('other value')
   })
@@ -262,16 +259,18 @@ describe('useAsyncData', () => {
   })
 
   it('getCachedData should receive triggeredBy on manual refresh', async () => {
-    const { data, refresh } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy })
+    const { data, refresh } = await useAsyncData(() => '', {
+      getCachedData: (_, triggeredBy) => triggeredBy
+    })
     await refresh()
     expect(data.value).toBe('refresh:manual')
   })
 
   it('getCachedData should receive triggeredBy on watch', async () => {
     const number = ref(0)
-    const { data } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy })
+    const { data } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy, watch: [number] })
     number.value = 1
-    // TODO: Maybe setTimeout or similar
+    await new Promise(resolve => setTimeout(resolve, 1))
     expect(data.value).toBe('watch')
   })
 
