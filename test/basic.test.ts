@@ -112,7 +112,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component </div>')
+    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -538,10 +538,16 @@ describe('nuxt composables', () => {
       return JSON.parse(decodeURIComponent(raw))
     }
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.getByRole('button').click()
+    await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
-    await page.getByRole('button').click()
+    let text = await page.innerText('pre')
+    expect(text).toContain('baz')
+    await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'bar' })
+    await page.evaluate(() => document.cookie = `browser-object-default=${encodeURIComponent('{"foo":"foobar"}')}`)
+    await page.getByText('Refresh cookie').click()
+    text = await page.innerText('pre')
+    expect(text).toContain('foobar')
     await page.close()
   })
 })
@@ -637,53 +643,61 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component', async () => {
-    // #22402
-    const page = await createPage('/big-page-1', {
-      viewport: {
-        width: 1000,
-        height: 1000
-      }
-    })
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
+  it('expect scroll to top on routes with same component',
+    async () => {
+      // #22402
+      const page = await createPage('/big-page-1', {
+        viewport: {
+          width: 1000,
+          height: 1000
+        }
+      })
+      await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
 
-    await page.locator('#big-page-2').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#big-page-2').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.locator('#big-page-2').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#big-page-2').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
-    await page.locator('#big-page-1').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#big-page-1').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
-    await page.close()
-  })
+      await page.locator('#big-page-1').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#big-page-1').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.close()
+    },
+    // Flaky behavior when using Webpack
+    { retry: isWebpack ? 10 : 0 }
+  )
 
-  it('expect scroll to top on nested pages', async () => {
-    // #20523
-    const page = await createPage('/nested/foo/test', {
-      viewport: {
-        width: 1000,
-        height: 1000
-      }
-    })
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
+  it('expect scroll to top on nested pages',
+    async () => {
+      // #20523
+      const page = await createPage('/nested/foo/test', {
+        viewport: {
+          width: 1000,
+          height: 1000
+        }
+      })
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
 
-    await page.locator('#user-test').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#user-test').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.locator('#user-test').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#user-test').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
 
-    await page.locator('#test').scrollIntoViewIfNeeded()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-    await page.locator('#test').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
-    expect(await page.evaluate(() => window.scrollY)).toBe(0)
-    await page.close()
-  })
+      await page.locator('#test').scrollIntoViewIfNeeded()
+      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+      await page.locator('#test').click()
+      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
+      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+      await page.close()
+    },
+    // Flaky behavior when using Webpack
+    { retry: isWebpack ? 10 : 0 }
+  )
 })
 
 describe('head tags', () => {
@@ -918,7 +932,7 @@ describe('navigate external', () => {
 })
 
 describe('composables', () => {
-  it('should run code once', async () => {
+  it('`callOnce` should run code once', async () => {
     const html = await $fetch('/once')
 
     expect(html).toContain('once.vue')
@@ -926,6 +940,31 @@ describe('composables', () => {
 
     const { page } = await renderPage('/once')
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
+  })
+  it('`useId` should generate unique ids', async () => {
+    // TODO: work around interesting Vue bug where async components are loaded in a different order on first import
+    await $fetch('/use-id')
+
+    const sanitiseHTML = (html: string) => html.replace(/ data-[^= ]+="[^"]+"/g, '').replace(/<!--[[\]]-->/, '')
+
+    const serverHTML = await $fetch('/use-id').then(html => sanitiseHTML(html.match(/<form.*<\/form>/)![0]))
+    const ids = serverHTML.match(/id="[^"]*"/g)?.map(id => id.replace(/id="([^"]*)"/, '$1')) as string[]
+    const renderedForm = [
+      `<h2 id="${ids[0]}"> id: ${ids[0]}</h2><div><label for="${ids[1]}">Email</label><input id="${ids[1]}" name="email" type="email"><label for="${ids[2]}">Password</label><input id="${ids[2]}" name="password" type="password"></div>`,
+      `<div><label for="${ids[3]}">Email</label><input id="${ids[3]}" name="email" type="email"><label for="${ids[4]}">Password</label><input id="${ids[4]}" name="password" type="password"></div>`
+    ]
+    const clientOnlyServer = '<span></span>'
+    expect(serverHTML).toEqual(`<form>${renderedForm.join(clientOnlyServer)}</form>`)
+
+    const { page, pageErrors } = await renderPage('/use-id')
+    const clientHTML = await page.innerHTML('form')
+    const clientIds = clientHTML
+      .match(/id="[^"]*"/g)?.map(id => id.replace(/id="([^"]*)"/, '$1'))
+      .filter(i => !ids.includes(i)) as string[]
+    const clientOnlyClient = `<div><label for="${clientIds[0]}">Email</label><input id="${clientIds[0]}" name="email" type="email"><label for="${clientIds[1]}">Password</label><input id="${clientIds[1]}" name="password" type="password"></div>`
+    expect(sanitiseHTML(clientHTML)).toEqual(`${renderedForm.join(clientOnlyClient)}`)
+    expect(pageErrors).toEqual([])
+    await page.close()
   })
 })
 
@@ -1425,6 +1464,15 @@ describe('automatically keyed composables', () => {
   })
 })
 
+describe.runIf(isDev() && !isWebpack)('css links', () => {
+  it('should not inject links to CSS files that are inlined', async () => {
+    const html = await $fetch('/inline-only-css')
+    expect(html).toContain('--inline-only')
+    expect(html).not.toContain('inline-only.css')
+    expect(html).toContain('assets/plugin.css')
+  })
+})
+
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
@@ -1432,6 +1480,8 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     '{--assets:"assets"}', // <script>
     '{--postcss:"postcss"}', // <style lang=postcss>
     '{--scoped:"scoped"}', // <style lang=css>
+    '{--shared-component:"shared-component"}', // styles in a chunk shared between pages
+    '{--server-only-child:"server-only-child"}', // child of a server-only component
     '{--server-only:"server-only"}' // server-only component not in client build
     // TODO: ideally both client/server components would have inlined css when used
     // '{--client-only:"client-only"}', // client-only component not in server build
@@ -1442,7 +1492,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   it('should inline styles', async () => {
     const html = await $fetch('/styles')
     for (const style of inlinedCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1453,7 +1503,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     ]
     const html = await $fetch('/route-rules/spa')
     for (const style of globalCSS) {
-      expect(html).toContain(style)
+      expect.soft(html).toContain(style)
     }
   })
 
@@ -1461,7 +1511,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
-    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+    expect(files.map(m => m.replace(/\.[\w-]+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
   it('should not include inlined CSS in generated CSS file', async () => {
@@ -1538,6 +1588,9 @@ describe('server components/islands', () => {
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
+    // test islands wrapped with client-only
+    expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
 
     if (!isWebpack) {
       // test client component interactivity
@@ -1728,6 +1781,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
         (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
+
+    expect(await $fetch('/foo/url')).toContain('path: /foo/url')
   })
 
   it('should allow setting relative baseURL', async () => {
@@ -2000,6 +2055,11 @@ describe('component islands', () => {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
+            {
+              "href": "/_nuxt/components/SharedComponent.vue?vue&type=style&index=0&scoped=3ee84738&lang.css",
+              "key": "island-link",
+              "rel": "stylesheet",
+            },
             {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",

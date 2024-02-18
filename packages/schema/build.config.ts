@@ -9,6 +9,8 @@ export default defineBuildConfig({
       name: 'config',
       builder: 'untyped',
       defaults: {
+        srcDir: '/<srcDir>/',
+        workspaceDir: '/<workspaceDir>/',
         rootDir: '/<rootDir>/',
         vite: {
           base: '/'
