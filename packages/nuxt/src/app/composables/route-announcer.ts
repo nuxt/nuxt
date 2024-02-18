@@ -3,17 +3,21 @@ import type { RouteLocationNormalized } from 'vue-router'
 import { getCurrentScope, onScopeDispose, ref } from 'vue'
 import { useNuxtApp, useRouter } from '#app'
 
+export enum Politeness {
+  Assertive = 'assertive',
+  Polite = 'polite',
+  Off = 'off',
+}
+
 export type NuxtRouteAnnouncerOpts = {
-  /** @default 'has loaded' */
-  complementRoute: string
   /** @default 'polite' */
-  politeness: string
+  politeness: Politeness
 }
 
 export type RouteAnnouncer = {
   message: Ref<string>
-  politeness: Ref<string>
-  set: (message: string, politeness: string) => void
+  politeness: Ref<Politeness>
+  set: (message: string, politeness: Politeness) => void
   polite: (message: string) => void
   assertive: (message: string) => void
   _cleanup: () => void
@@ -21,33 +25,34 @@ export type RouteAnnouncer = {
 
 function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
   const message = ref('')
-  const politeness = ref(opts.politeness || 'polite')
+  const politeness = ref(opts.politeness || Politeness.Polite)
   const router = useRouter();
   const nuxtApp = useNuxtApp()
   let rafId: number | null = null
-
-  function set (messageValue: string, politenessSetting: string ) {
+  let unsubLoadingFinishHook: () => {}
+  
+  function set (messageValue: string, politenessSetting: Politeness = Politeness.Polite ) {
     politeness.value = politenessSetting
     message.value = messageValue
   }
 
   function polite (message: string) {
-    return set(message, 'polite')
+    return set(message, Politeness.Polite)
   }
 
   function assertive (message: string) {
-    return set(message, 'assertive')
+    return set(message, Politeness.Assertive)
   }
 
   let _cleanup = () => {}
 
   if (import.meta.client) {
-    let unsubLoadingFinishHook: () => void
     const removeBeforeResolveGuard = router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
       cancelAnimationFrame(rafId!)
       if (from.fullPath === to.fullPath) { return }
       unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
         rafId = requestAnimationFrame(() => {
+          unsubLoadingFinishHook()
           set(document?.title?.trim(), politeness.value)
         })
       })
