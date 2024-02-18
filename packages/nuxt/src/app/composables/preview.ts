@@ -13,6 +13,7 @@ type EnteredState = Record<any, unknown> | null | undefined | void
 
 let unregisterRefreshHook: (() => any) | undefined
 
+/** @since 3.11.0 */
 export function usePreviewMode<S extends EnteredState>(options: {
   shouldEnable?: (state: Preview['state']) => boolean,
   getState?: (state: Preview['state']) => S,
