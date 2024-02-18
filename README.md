@@ -39,7 +39,7 @@ Simple, intuitive and powerful, Nuxt lets you write Vue components in a way that
 Example of an `app.vue`:
 
 ```vue
-<script setup>
+<script setup lang="ts">
 useSeoMeta({
   title: 'Meet Nuxt',
   description: 'The Intuitive Vue Framework.'

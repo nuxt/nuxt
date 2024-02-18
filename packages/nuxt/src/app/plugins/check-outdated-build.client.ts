@@ -14,7 +14,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     const currentManifest = await getAppManifest()
     if (timeout) { clearTimeout(timeout) }
     timeout = setTimeout(getLatestManifest, 1000 * 60 * 60)
-    const meta = await $fetch<NuxtAppManifestMeta>(buildAssetsURL('builds/latest.json'))
+    const meta = await $fetch<NuxtAppManifestMeta>(buildAssetsURL('builds/latest.json') + `?${Date.now()}`)
     if (meta.id !== currentManifest.id) {
       // There is a newer build which we will let the user handle
       nuxtApp.hooks.callHook('app:manifest:update', meta)
