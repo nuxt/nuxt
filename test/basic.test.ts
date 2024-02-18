@@ -1414,6 +1414,15 @@ describe('automatically keyed composables', () => {
   })
 })
 
+describe.runIf(isDev() && !isWebpack)('css links', () => {
+  it('should not inject links to CSS files that are inlined', async () => {
+    const html = await $fetch('/inline-only-css')
+    expect(html).toContain('--inline-only')
+    expect(html).not.toContain('inline-only.css')
+    expect(html).toContain('assets/plugin.css')
+  })
+})
+
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
@@ -1452,7 +1461,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
-    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+    expect(files.map(m => m.replace(/\.[\w-]+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
   it('should not include inlined CSS in generated CSS file', async () => {

@@ -9,7 +9,7 @@ links:
 ---
 
 ```vue [pages/index.vue]
-<script setup>
+<script setup lang="ts">
 const router = useRouter()
 </script>
 ```
