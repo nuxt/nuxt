@@ -11,18 +11,21 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
   }
 
   const lastPlugins = ['autoprefixer', 'cssnano']
-  css.postcss.plugins = Object.entries(nuxt.options.postcss.plugins)
-    .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))
-    .filter(([, opts]) => opts)
-    .map(([name, opts]) => {
-      const plugin = requireModule(name, {
-        paths: [
-          ...nuxt.options.modulesDir,
-          distDir
-        ]
-      })
-      return plugin(opts)
-    })
+  const cssPlugins: Array<unknown> = []
+  for (const plugin of Object.entries(nuxt.options.postcss.plugins)
+    .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))) {
+      const [name, opts] = plugin
+      if (opts) {
+        const plugin = requireModule(name, {
+          paths: [
+            ...nuxt.options.modulesDir,
+            distDir
+          ]
+        })
+        cssPlugins.push(plugin(opts))
+      }
+  }
+  css.postcss.plugins = cssPlugins
 
   return css
 }
