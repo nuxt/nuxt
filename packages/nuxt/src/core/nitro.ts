@@ -98,8 +98,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       : false,
     scanDirs: nuxt.options._layers.reduce((dirs, layer) => {
       const layerDir = (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))
-      if (layer) {
-        dirs.push(layer)
+      if (layerDir) {
+        dirs.push(layerDir)
       }
       return dirs
     }, []),
