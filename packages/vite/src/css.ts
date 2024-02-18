@@ -11,7 +11,7 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
   }
 
   const lastPlugins = ['autoprefixer', 'cssnano']
-  const cssPlugins: Array<unknown> = []
+  const cssPlugins: AcceptedPlugin[] = []
   for (const plugin of Object.entries(nuxt.options.postcss.plugins)
     .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))) {
       const [name, opts] = plugin
