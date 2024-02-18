@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 
 export const fixtureDir = resolve(__dirname, 'fixture')
 

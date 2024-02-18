@@ -18,7 +18,7 @@ It automatically generates a key based on URL and fetch options, provides type h
 ## Usage
 
 ```vue [pages/modules.vue]
-<script setup>
+<script setup lang="ts">
 const { data, pending, error, refresh } = await useFetch('/api/modules', {
   pick: ['title']
 })

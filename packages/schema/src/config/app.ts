@@ -98,14 +98,14 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      */
     head: {
-      $resolve: async (val, get) => {
-        const resolved: Required<AppHeadMetaObject> = defu(val, await get('meta'), {
+      $resolve: async (val: Partial<AppHeadMetaObject> | undefined, get) => {
+        const resolved = defu(val, await get('meta') as Partial<AppHeadMetaObject>, {
           meta: [],
           link: [],
           style: [],
           script: [],
           noscript: []
-        })
+        } as Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>)
 
         // provides default charset and viewport if not set
         if (!resolved.meta.find(m => m.charset)?.charset) {
@@ -156,7 +156,9 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
     viewTransition: {
-      $resolve: async (val, get) => val ?? await get('experimental.viewTransition') ?? false
+      $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
+        (e) => e?.viewTransition
+      ) ?? false
     },
 
     /**
@@ -255,7 +257,7 @@ export default defineUntypedSchema({
    * @type {string | boolean}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val ?? null
+    $resolve: async (val: string | boolean | undefined, get) => typeof val === 'string' ? resolve(await get('srcDir') as string, val) : val ?? null
   },
 
   /**
@@ -306,6 +308,6 @@ export default defineUntypedSchema({
    * @type {string[]}
    */
   css: {
-    $resolve: val => (val ?? []).map((c: any) => c.src || c)
+    $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c)
   }
 })

@@ -39,8 +39,9 @@ export default defineNuxtConfig({
       }
     ]
   },
-  theme: './extends/bar',
   css: ['~/assets/global.css'],
+  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
+  theme: './extends/bar',
   extends: [
     './extends/node_modules/foo'
   ],
@@ -100,6 +101,14 @@ export default defineNuxtConfig({
         }
       }))
       addBuildPlugin(plugin)
+    },
+    function (_options, nuxt) {
+      nuxt.hook('pages:extend', pages => {
+        pages.push({
+          path: '/manual-redirect',
+          redirect: '/',
+        })
+      })
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']

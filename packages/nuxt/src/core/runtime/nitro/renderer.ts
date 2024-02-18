@@ -13,7 +13,7 @@ import { appendResponseHeader, createError, getQuery, getResponseStatus, getResp
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
-import { joinURL, withoutTrailingSlash } from 'ufo'
+import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { renderSSRHead } from '@unhead/ssr'
@@ -308,6 +308,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
+    modules: new Set(),
+    set _registeredComponents(value) { this.modules = value },
+    get _registeredComponents() { return this.modules },
     islandContext
   }
 
@@ -329,6 +332,13 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     writeEarlyHints(event, link)
+  }
+
+
+  if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
+    for (const id of await getEntryIds()) {
+      ssrContext.modules!.add(id)
+    }
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
@@ -365,18 +375,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     await payloadCache!.setItem(withoutTrailingSlash(url), renderPayloadResponse(ssrContext))
   }
 
-  if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
-    const source = ssrContext.modules ?? ssrContext._registeredComponents
-    if (source) {
-      for (const id of await getEntryIds()) {
-        source.add(id)
-      }
-    }
-  }
-
   // Render inline styles
   const inlinedStyles = (process.env.NUXT_INLINE_STYLES || isRenderingIsland)
-    ? await renderInlineStyles(ssrContext.modules ?? ssrContext._registeredComponents ?? [])
+    ? await renderInlineStyles(ssrContext.modules ?? [])
     : []
 
   const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
@@ -400,6 +401,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const link = []
     for (const style in styles) {
       const resource = styles[style]
+      // Do not add links to resources that are inlined (vite v5+)
+      if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+        continue
+      }
+      // Add CSS links in <head> for CSS files
+      // - in production
+      // - in dev mode when not rendering an island
+      // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }

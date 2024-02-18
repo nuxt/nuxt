@@ -103,6 +103,8 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
+  _id?: number
+  /** @internal */
   _scope: EffectScope
   /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
@@ -438,7 +440,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Returns `null` if Nuxt instance is unavailable.
  */
 export function tryUseNuxtApp (): NuxtApp | null {
@@ -455,7 +457,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
 /*@__NO_SIDE_EFFECTS__*/
 /**
  * Returns the current Nuxt instance.
- * 
+ *
  * Throws an error if Nuxt instance is unavailable.
  */
 export function useNuxtApp (): NuxtApp {

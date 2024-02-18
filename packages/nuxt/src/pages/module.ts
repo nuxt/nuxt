@@ -35,13 +35,14 @@ export default defineNuxtModule({
       const context = {
         files: [] as Array<{ path: string, optional?: boolean }>
       }
-      // Add default options
-      context.files.push({ path: resolve(runtimeDir, 'router.options'), optional: true })
 
       for (const layer of nuxt.options._layers) {
         const path = await findPath(resolve(layer.config.srcDir, 'app/router.options'))
-        if (path) { context.files.push({ path }) }
+        if (path) { context.files.unshift({ path }) }
       }
+
+      // Add default options at beginning
+      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -69,6 +70,11 @@ export default defineNuxtModule({
       return false
     }
     nuxt.options.pages = await isPagesEnabled()
+
+    if (nuxt.options.dev && nuxt.options.pages) {
+      // Add plugin to check if pages are enabled without NuxtPage being instantiated
+      addPlugin(resolve(runtimeDir, 'plugins/check-if-page-unused'))
+    }
 
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
@@ -176,7 +182,7 @@ export default defineNuxtModule({
       await mkdir(dirname(dtsFile), { recursive: true })
       await context.scanPages(false)
 
-      if (nuxt.options._prepare) {
+      if (nuxt.options._prepare || !nuxt.options.dev) {
         // TODO: could we generate this from context instead?
         const dts = await readFile(dtsFile, 'utf-8')
         addTemplate({
@@ -216,11 +222,17 @@ export default defineNuxtModule({
       ]
     })
 
+    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+      if (!pages) { return false }
+      return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
+    }
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (updateTemplatePaths.some(dir => path.startsWith(dir))) {
+      const shouldAlwaysRegenerate = nuxt.options.experimental.scanPageMeta && isPage(path)
+
+      if (event === 'change' && !shouldAlwaysRegenerate) { return }
+
+      if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
           filter: template => template.filename === 'routes.mjs'
         })
@@ -398,7 +410,7 @@ export default defineNuxtModule({
       filename: 'routes.mjs',
       getContents ({ app }) {
         if (!app.pages) return 'export default []'
-        const { routes, imports } = normalizeRoutes(app.pages)
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
         return [...imports, `export default ${routes}`].join('\n')
       }
     })
@@ -433,8 +445,7 @@ export default defineNuxtModule({
           `const configRouterOptions = ${configRouterOptions}`,
           'export default {',
           '...configRouterOptions,',
-          // We need to reverse spreading order to respect layers priority
-          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`).reverse(),
+          ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
           '}'
         ].join('\n')
       }

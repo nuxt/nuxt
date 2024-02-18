@@ -3,6 +3,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
+import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import * as composables from '#app/composables'
@@ -14,6 +15,7 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
@@ -98,6 +100,7 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
+      'useId',
       'useRoute',
       'navigateTo',
       'abortNavigation',
@@ -117,6 +120,7 @@ describe('composables', () => {
       'preloadPayload',
       'preloadRouteComponents',
       'reloadNuxtApp',
+      'refreshCookie',
       'useCookie',
       'useFetch',
       'useHead',
@@ -431,6 +435,33 @@ describe('clearNuxtState', () => {
   })
 })
 
+describe('useId', () => {
+  it('default', () => {
+    const vals = new Set<string>()
+    for (let index = 0; index < 100; index++) {
+      mount(defineComponent({
+        setup () {
+          const id = useId()
+          vals.add(id)
+          return () => h('div', id)
+        }
+      }))
+    }
+    expect(vals.size).toBe(100)
+  })
+
+  it('generates unique ids per-component', () => {
+    const component = defineComponent({
+      setup () {
+        const id = useId()
+        return () => h('div', id)
+      }
+    })
+
+    expect(mount(component).html()).not.toBe(mount(component).html())
+  })
+})
+
 describe('url', () => {
   it('useRequestURL', () => {
     const url = useRequestURL()
@@ -595,7 +626,7 @@ describe('callOnce', () => {
     const execute = () => callOnce(fn)
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
-    
+
     const fnSync = vi.fn().mockImplementation(() => { })
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])

@@ -12,7 +12,6 @@ import {
   resolveSchema as resolveUntypedSchema
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-// @ts-expect-error TODO: add upstream type
 import untypedPlugin from 'untyped/babel-plugin'
 import jiti from 'jiti'
 

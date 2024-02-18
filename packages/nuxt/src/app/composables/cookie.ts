@@ -69,7 +69,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
 
       cookies[name] = klona(cookie.value)
-      channel?.postMessage(opts.encode(cookie.value as T))
+      channel?.postMessage({ value: opts.encode(cookie.value as T) })
     }
 
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
