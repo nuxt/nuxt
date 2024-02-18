@@ -17,13 +17,10 @@ export const vueShim: NuxtTemplate = {
       return ''
     }
 
-    return [
-      'declare module \'*.vue\' {',
-      '  import { DefineComponent } from \'vue\'',
-      '  const component: DefineComponent<{}, {}, any>',
-      '  export default component',
-      '}'
-    ].join('\n')
+    return `declare module \'*.vue\' {
+  import { DefineComponent } from \'vue\'
+  const component: DefineComponent<{}, {}, any>
+  export default component\n}`
   }
 }
 
@@ -52,7 +49,7 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
-  getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
+  getContents: ctx => ctx.nuxt.options.css.reduce((cssList,i) => cssList+genImport(i)+'\n','')
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
@@ -98,7 +95,7 @@ export const serverPluginTemplate: NuxtTemplate = {
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async (ctx) => {
-    const EXTENSION_RE = new RegExp(`(?<=\\w)(${ctx.nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
+    const EXTENSION_RE = new RegExp(`(?<=\\w)(${ctx.nuxt.options.extensions.reduce((exts,e) => exts+escapeRE(e)+'\n','')})$`, 'g')
     const tsImports: string[] = []
     for (const p of ctx.app.plugins) {
       const sources = [p.src, p.src.replace(EXTENSION_RE, '.d.ts')]
