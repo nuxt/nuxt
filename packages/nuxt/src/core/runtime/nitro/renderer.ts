@@ -226,11 +226,14 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
+const HAS_APP_TELEPORTS = appTeleportTag && appTeleportId
+
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload(\.[a-zA-Z0-9]+)?.json(\?.*)?$/ : /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
-const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>$`)
+const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">[\\s\\S]*</${appTeleportTag}>` : ''
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>${APP_TELEPORT_REGEX_STRING}$`)
 const RENDER_TEMPLATE_FN = (html: string) => {
   const base = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>${html}</${appRootTag}>`
-  const nuxtTeleports = appTeleportTag && appTeleportId ? `<${appTeleportTag} id="${appTeleportId}"></${appTeleportTag}>` : ''
+  const nuxtTeleports = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}"></${appTeleportTag}>` : ''
   return base + nuxtTeleports
 }
 
