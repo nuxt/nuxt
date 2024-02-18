@@ -96,7 +96,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html')
         }
       : false,
-    scanDirs: nuxt.options._layers.reduce((dirs, layer) => {
+    scanDirs: nuxt.options._layers.reduce<string[]>((dirs, layer) => {
       const layerDir = (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))
       if (layerDir) {
         dirs.push(layerDir)
