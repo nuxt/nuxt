@@ -36,6 +36,7 @@ export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
 
+export type GetCachedDataTriggeredBy = 'initial' | 'refresh:hook' | 'refresh:manual' | 'watch'
 export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
@@ -60,8 +61,9 @@ export interface AsyncDataOptions<
    * Provide a function which returns cached data.
    * A `null` or `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
+   * triggeredBy is a string that indicates in which case the cached data was requested.
    */
-  getCachedData?: (key: string) => DataT
+  getCachedData?: (key: string, triggeredBy?: GetCachedDataTriggeredBy) => DataT
   /**
    * A function that can be used to alter handler function result after resolving
    */
@@ -91,7 +93,7 @@ export interface AsyncDataOptions<
 }
 
 export interface AsyncDataExecuteOptions {
-  _initial?: boolean
+  _triggeredBy?: GetCachedDataTriggeredBy
   // TODO: remove boolean option in Nuxt 4
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
@@ -101,7 +103,12 @@ export interface AsyncDataExecuteOptions {
    * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
    * Boolean values will be removed in a future release.
    */
-  dedupe?: boolean | 'cancel' | 'defer'
+  dedupe?: boolean | 'cancel' | 'defer',
+  /**
+   * Do not use potentially cached data from getCachedData and perform a new request
+   * @default false
+   */
+  force?: boolean,
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -239,7 +246,7 @@ export function useAsyncData<
     console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
   }
 
-  const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
+  const hasCachedData = (triggeredBy?: GetCachedDataTriggeredBy) => ![null, undefined].includes(options.getCachedData!(key, triggeredBy) as any)
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
@@ -248,8 +255,8 @@ export function useAsyncData<
     const _ref = options.deep ? ref : shallowRef
 
     nuxtApp._asyncData[key] = {
-      data: _ref(options.getCachedData!(key) ?? options.default!()),
-      pending: ref(!hasCachedData()),
+      data: _ref(options.getCachedData!(key, 'initial') ?? options.default!()),
+      pending: ref(!hasCachedData('initial')),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle')
     }
@@ -258,7 +265,7 @@ export function useAsyncData<
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxtApp._asyncData[key] } as AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 
-  asyncData.refresh = asyncData.execute = (opts = {}) => {
+  asyncData.refresh = asyncData.execute = (opts = { _triggeredBy: 'refresh:manual' }) => {
     if (nuxtApp._asyncDataPromises[key]) {
       if (isDefer(opts.dedupe ?? options.dedupe)) {
         // Avoid fetching same key more than once at a time
@@ -267,8 +274,8 @@ export function useAsyncData<
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return Promise.resolve(options.getCachedData!(key))
+    if (!opts.force && hasCachedData(opts._triggeredBy)) {
+      return Promise.resolve(options.getCachedData!(key, opts._triggeredBy))
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -318,7 +325,7 @@ export function useAsyncData<
     return nuxtApp._asyncDataPromises[key]!
   }
 
-  const initialFetch = () => asyncData.refresh({ _initial: true })
+  const initialFetch = () => asyncData.refresh({ _triggeredBy: 'refresh:manual' })
 
   const fetchOnServer = options.server !== false && nuxtApp.payload.serverRendered
 
@@ -352,7 +359,7 @@ export function useAsyncData<
       }
     }
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData())) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData('initial'))) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
@@ -365,11 +372,11 @@ export function useAsyncData<
       initialFetch()
     }
     if (options.watch) {
-      watch(options.watch, () => asyncData.refresh())
+      watch(options.watch, () => asyncData.refresh({ _triggeredBy: 'watch'}))
     }
-    const off = nuxtApp.hook('app:data:refresh', async (keys) => {
+    const off = nuxtApp.hook('app:data:refresh', async (keys, force) => {
       if (!keys || keys.includes(key)) {
-        await asyncData.refresh()
+        await asyncData.refresh({ force, _triggeredBy: 'refresh:hook' })
       }
     })
     if (instance) {
@@ -462,7 +469,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
 }
 
 /** @since 3.0.0 */
-export async function refreshNuxtData (keys?: string | string[]): Promise<void> {
+export async function refreshNuxtData (keys?: string | string[], force?: boolean): Promise<void> {
   if (import.meta.server) {
     return Promise.resolve()
   }
@@ -470,7 +477,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
   await new Promise<void>(resolve => onNuxtReady(resolve))
 
   const _keys = keys ? toArray(keys) : undefined
-  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
+  await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys, force)
 }
 
 /** @since 3.0.0 */

@@ -222,6 +222,13 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should be refreshable with force and cache', async () => {
+    await useAsyncData('key', () => Promise.resolve('test'), { getCachedData: () => 'cached' })
+    await refreshNuxtData('key', { force: true })
+    const data = useNuxtData('key')
+    expect(data.data.value).toMatchInlineSnapshot('"test"')
+  })
+
   it('allows custom access to a cache', async () => {
     const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
     expect(data.value).toMatchInlineSnapshot(`
@@ -229,6 +236,43 @@ describe('useAsyncData', () => {
         "val": false,
       }
     `)
+  })
+
+  it('will use cache on refresh by default', async () => {
+    let called = 0
+    const fn = () => called++
+    const { data, refresh } = await useAsyncData(() => 'other value', { getCachedData: () => fn() })
+    expect(data.value).toBe(0)
+    await refresh()
+    expect(data.value).toBe(0)
+  })
+
+  it('will not use cache with force option', async () => {
+    let called = 0
+    const fn = () => called++
+    const { data, refresh } = await useAsyncData(() => 'other value', { getCachedData: () => fn() })
+    expect(data.value).toBe(0)
+    await refresh({ force: true })
+    expect(data.value).toBe('other value')
+  })
+
+  it('getCachedData should receive triggeredBy on initial fetch', async () => {
+    const { data } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy })
+    expect(data.value).toBe('initial')
+  })
+
+  it('getCachedData should receive triggeredBy on manual refresh', async () => {
+    const { data, refresh } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy })
+    await refresh()
+    expect(data.value).toBe('refresh:manual')
+  })
+
+  it('getCachedData should receive triggeredBy on watch', async () => {
+    const number = ref(0)
+    const { data } = await useAsyncData(() => '', { getCachedData: (_, triggeredBy) => triggeredBy })
+    number.value = 1
+    // TODO: Maybe setTimeout or similar
+    expect(data.value).toBe('watch')
   })
 
   it('should use default while pending', async () => {
@@ -369,7 +413,7 @@ describe('useHydration', () => {
   it('should hydrate value from payload', async () => {
     let val: any
     const nuxtApp = useNuxtApp()
-    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    useHydration('key', () => { }, (fromPayload) => { val = fromPayload })
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
     expect(val).toMatchInlineSnapshot('undefined')
 
@@ -440,7 +484,7 @@ describe('useId', () => {
     const vals = new Set<string>()
     for (let index = 0; index < 100; index++) {
       mount(defineComponent({
-        setup () {
+        setup() {
           const id = useId()
           vals.add(id)
           return () => h('div', id)
@@ -452,7 +496,7 @@ describe('useId', () => {
 
   it('generates unique ids per-component', () => {
     const component = defineComponent({
-      setup () {
+      setup() {
         const id = useId()
         return () => h('div', id)
       }
