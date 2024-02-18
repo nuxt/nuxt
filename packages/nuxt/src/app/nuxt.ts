@@ -169,6 +169,8 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
+export interface NuxtApp extends _NuxtApp {}
+
 export const NuxtPluginIndicator = '__nuxt_plugin'
 
 export interface PluginMeta {
