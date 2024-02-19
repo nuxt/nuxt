@@ -20,7 +20,8 @@ export const vueShim: NuxtTemplate = {
     return `declare module '*.vue' {
   import { DefineComponent } from 'vue'
   const component: DefineComponent<{}, {}, any>
-  export default component\n}`
+  export default component
+}`
   }
 }
 
@@ -49,7 +50,13 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
-  getContents: ctx => ctx.nuxt.options.css.reduce((cssList,i) => cssList+genImport(i)+'\n','')
+  getContents: ctx => {
+    let cssList=''
+    for (const i of ctx.nuxt.options.css) {
+      cssList += genImport(i) + '\n'
+    }
+    return cssList
+  }
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
@@ -95,7 +102,11 @@ export const serverPluginTemplate: NuxtTemplate = {
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async (ctx) => {
-    const EXTENSION_RE = new RegExp(`(?<=\\w)(${ctx.nuxt.options.extensions.reduce((exts,e) => exts+escapeRE(e)+'\n','')})$`, 'g')
+    let exts = ''
+    for (const e of ctx.nuxt.options.extensions) {
+      exts += escapeRE(e) +'\n'
+    }
+    const EXTENSION_RE = new RegExp(`(?<=\\w)(${exts})$`, 'g')
     const tsImports: string[] = []
     for (const p of ctx.app.plugins) {
       const sources = [p.src, p.src.replace(EXTENSION_RE, '.d.ts')]
@@ -370,22 +381,24 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       baseURL: undefined,
       headers: undefined
     }
-    return [
-      ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
-      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
-      `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
-      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
-      `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
-      `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,
-      `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}`,
-      `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.selectiveClient}`,
-      `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
-      `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
-      `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
-      `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
-      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
-      `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`
-    ].join('\n\n')
+    let contents = ''
+    for (const k in ctx.nuxt.options.app) {
+      contents += `export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k])}\n`
+    }
+    return contents +
+      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n`+
+      `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}\n\n`+
+      `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}\n\n`+
+      `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}\n\n`+
+      `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}\n\n`+
+      `export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}\n\n`+
+      `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.selectiveClient}\n\n`+
+      `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}\n\n`+
+      `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}\n\n`+
+      `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}\n\n`+
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}\n\n`+
+      `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n`+
+      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n`+
+      `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n`
   }
 }
