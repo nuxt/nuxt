@@ -354,13 +354,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : ''
         ) || null
 
-        const navigate = () => navigateTo(href, { replace: props.replace })
-
         // https://router.vuejs.org/api/#custom
         if (props.custom) {
           if (!slots.default) {
             return null
           }
+
+          const navigate = () => navigateTo(href, { replace: props.replace, external: props.external })
 
           return slots.default({
             href,
