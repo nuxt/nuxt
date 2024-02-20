@@ -2089,6 +2089,17 @@ describe('component islands', () => {
 
     await startServer()
   })
+
+  it('render island page', async () => {
+    const { page } = await renderPage('/')
+
+    const islandPageRequest = page.waitForRequest((req) => {
+      return req.url().includes('/__nuxt_island/page:server-page')
+    })
+    await page.getByText('to server page').click()
+    await islandPageRequest
+    await page.locator('#server-page').waitFor()
+  })
 })
 
 describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
