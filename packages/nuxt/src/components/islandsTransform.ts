@@ -8,7 +8,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { hash } from 'ohash'
 import { resolvePath } from '@nuxt/kit'
-import { isVue } from '../core/utils' 
+import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]

@@ -430,7 +430,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       if (page.children?.length) {
         route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes
       }
- 
+
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
       if (!page.file) {
         return route
