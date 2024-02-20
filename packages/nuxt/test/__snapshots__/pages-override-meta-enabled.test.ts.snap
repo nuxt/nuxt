@@ -2,7 +2,7 @@
   "pushed route, skips generation from file": [
     {
       "alias": "["pushed-route-alias"]",
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("pushed-route")) : () => import("pages/route-file.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("pushed-route")) : () => import("pages/route-file.vue").then(m => m.default || m)",
       "meta": "{"someMetaData":true}",
       "name": ""pushed-route"",
       "path": ""/"",
@@ -12,14 +12,14 @@
     {
       "alias": "["sweet-home"]",
       "meta": "{"hello":"world"}",
+      "mode": undefined,
       "name": ""home"",
       "path": ""/"",
-      "server": undefined,
     },
   ],
   "should allow pages with `:` in their path": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("test:name")) : () => import("pages/test:name.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("test:name")) : () => import("pages/test:name.vue").then(m => m.default || m)",
       "name": ""test:name"",
       "path": ""/test\\:name"",
     },
@@ -30,44 +30,44 @@
         {
           "children": [
             {
-              "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-index")) : () => import("pages/param/index/index.vue").then(m => m.default || m)",
+              "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-index")) : () => import("pages/param/index/index.vue").then(m => m.default || m)",
               "name": ""param-index"",
               "path": """",
             },
             {
-              "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-index-sibling")) : () => import("layer/pages/param/index/sibling.vue").then(m => m.default || m)",
+              "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-index-sibling")) : () => import("layer/pages/param/index/sibling.vue").then(m => m.default || m)",
               "name": ""param-index-sibling"",
               "path": ""sibling"",
             },
           ],
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("layer/pages/param/index.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("layer/pages/param/index.vue").then(m => m.default || m)",
           "name": "mockMeta?.name",
           "path": """",
         },
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-sibling")) : () => import("pages/param/sibling.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("param-sibling")) : () => import("pages/param/sibling.vue").then(m => m.default || m)",
           "name": ""param-sibling"",
           "path": ""sibling"",
         },
       ],
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/param.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/param.vue").then(m => m.default || m)",
       "name": "mockMeta?.name",
       "path": ""/param"",
     },
     {
       "children": [
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("wrapper-expose-other")) : () => import("layer/pages/wrapper-expose/other/index.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("wrapper-expose-other")) : () => import("layer/pages/wrapper-expose/other/index.vue").then(m => m.default || m)",
           "name": ""wrapper-expose-other"",
           "path": """",
         },
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("wrapper-expose-other-sibling")) : () => import("pages/wrapper-expose/other/sibling.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("wrapper-expose-other-sibling")) : () => import("pages/wrapper-expose/other/sibling.vue").then(m => m.default || m)",
           "name": ""wrapper-expose-other-sibling"",
           "path": ""sibling"",
         },
       ],
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/wrapper-expose/other.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/wrapper-expose/other.vue").then(m => m.default || m)",
       "name": "mockMeta?.name",
       "path": ""/wrapper-expose/other"",
     },
@@ -75,7 +75,7 @@
   "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
     {
       "alias": "["sweet-home"]",
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("home")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("home")) : () => import("pages/index.vue").then(m => m.default || m)",
       "meta": "mockMeta || {}",
       "name": ""home"",
       "path": ""/"",
@@ -84,131 +84,131 @@
   ],
   "should generate correct catch-all route": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("slug")) : () => import("pages/[...slug].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("slug")) : () => import("pages/[...slug].vue").then(m => m.default || m)",
       "name": ""slug"",
       "path": ""/:slug(.*)*"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
       "name": ""index"",
       "path": ""/"",
     },
   ],
   "should generate correct dynamic routes": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
       "name": ""index"",
       "path": ""/"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("slug")) : () => import("pages/[slug].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("slug")) : () => import("pages/[slug].vue").then(m => m.default || m)",
       "name": ""slug"",
       "path": ""/:slug()"",
     },
     {
       "children": [
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[[foo]]/index.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[[foo]]/index.vue").then(m => m.default || m)",
           "name": ""foo"",
           "path": """",
         },
       ],
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/[[foo]]").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage(undefined)) : () => import("pages/[[foo]]").then(m => m.default || m)",
       "name": "mockMeta?.name",
       "path": ""/:foo?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-opt")) : () => import("pages/optional/[[opt]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-opt")) : () => import("pages/optional/[[opt]].vue").then(m => m.default || m)",
       "name": ""optional-opt"",
       "path": ""/optional/:opt?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-prefix-opt")) : () => import("pages/optional/prefix-[[opt]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-prefix-opt")) : () => import("pages/optional/prefix-[[opt]].vue").then(m => m.default || m)",
       "name": ""optional-prefix-opt"",
       "path": ""/optional/prefix-:opt?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-opt-postfix")) : () => import("pages/optional/[[opt]]-postfix.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-opt-postfix")) : () => import("pages/optional/[[opt]]-postfix.vue").then(m => m.default || m)",
       "name": ""optional-opt-postfix"",
       "path": ""/optional/:opt?-postfix"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-prefix-opt-postfix")) : () => import("pages/optional/prefix-[[opt]]-postfix.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("optional-prefix-opt-postfix")) : () => import("pages/optional/prefix-[[opt]]-postfix.vue").then(m => m.default || m)",
       "name": ""optional-prefix-opt-postfix"",
       "path": ""/optional/prefix-:opt?-postfix"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("bar")) : () => import("pages/[bar]/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("bar")) : () => import("pages/[bar]/index.vue").then(m => m.default || m)",
       "name": ""bar"",
       "path": ""/:bar()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("nonopt-slug")) : () => import("pages/nonopt/[slug].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("nonopt-slug")) : () => import("pages/nonopt/[slug].vue").then(m => m.default || m)",
       "name": ""nonopt-slug"",
       "path": ""/nonopt/:slug()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("opt-slug")) : () => import("pages/opt/[[slug]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("opt-slug")) : () => import("pages/opt/[[slug]].vue").then(m => m.default || m)",
       "name": ""opt-slug"",
       "path": ""/opt/:slug?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("sub-route-slug")) : () => import("pages/[[sub]]/route-[slug].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("sub-route-slug")) : () => import("pages/[[sub]]/route-[slug].vue").then(m => m.default || m)",
       "name": ""sub-route-slug"",
       "path": ""/:sub?/route-:slug()"",
     },
   ],
   "should generate correct id for catchall (order 1)": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories")) : () => import("pages/[...stories].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories")) : () => import("pages/[...stories].vue").then(m => m.default || m)",
       "name": ""stories"",
       "path": ""/:stories(.*)*"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories-id")) : () => import("pages/stories/[id].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories-id")) : () => import("pages/stories/[id].vue").then(m => m.default || m)",
       "name": ""stories-id"",
       "path": ""/stories/:id()"",
     },
   ],
   "should generate correct id for catchall (order 2)": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories-id")) : () => import("pages/stories/[id].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories-id")) : () => import("pages/stories/[id].vue").then(m => m.default || m)",
       "name": ""stories-id"",
       "path": ""/stories/:id()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories")) : () => import("pages/[...stories].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("stories")) : () => import("pages/[...stories].vue").then(m => m.default || m)",
       "name": ""stories"",
       "path": ""/:stories(.*)*"",
     },
   ],
   "should generate correct route for kebab-case file": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("kebab-case")) : () => import("pages/kebab-case.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("kebab-case")) : () => import("pages/kebab-case.vue").then(m => m.default || m)",
       "name": ""kebab-case"",
       "path": ""/kebab-case"",
     },
   ],
   "should generate correct route for snake_case file": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("snake_case")) : () => import("pages/snake_case.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("snake_case")) : () => import("pages/snake_case.vue").then(m => m.default || m)",
       "name": ""snake_case"",
       "path": ""/snake_case"",
     },
   ],
   "should generate correct routes for index pages": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
       "name": ""index"",
       "path": ""/"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent")) : () => import("pages/parent/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent")) : () => import("pages/parent/index.vue").then(m => m.default || m)",
       "name": ""parent"",
       "path": ""/parent"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/child/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/child/index.vue").then(m => m.default || m)",
       "name": ""parent-child"",
       "path": ""/parent/child"",
     },
@@ -217,12 +217,12 @@
     {
       "children": [
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/child.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/child.vue").then(m => m.default || m)",
           "name": ""parent-child"",
           "path": ""child"",
         },
       ],
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent")) : () => import("pages/parent.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent")) : () => import("pages/parent.vue").then(m => m.default || m)",
       "name": ""parent"",
       "path": ""/parent"",
     },
@@ -231,70 +231,70 @@
     {
       "children": [
         {
-          "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index-index-all")) : () => import("pages/index/index/all.vue").then(m => m.default || m)",
+          "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index-index-all")) : () => import("pages/index/index/all.vue").then(m => m.default || m)",
           "name": ""index-index-all"",
           "path": ""all"",
         },
       ],
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index/index.vue").then(m => m.default || m)",
       "name": ""index"",
       "path": ""/"",
     },
   ],
   "should not generate colliding route names when hyphens are in file name": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/[child].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent/[child].vue").then(m => m.default || m)",
       "name": ""parent-child"",
       "path": ""/parent/:child()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent-[child].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("parent-child")) : () => import("pages/parent-[child].vue").then(m => m.default || m)",
       "name": ""parent-child"",
       "path": ""/parent-:child()"",
     },
   ],
   "should not merge required param as a child of optional param": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[[foo]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[[foo]].vue").then(m => m.default || m)",
       "name": ""foo"",
       "path": ""/:foo?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[foo].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("foo")) : () => import("pages/[foo].vue").then(m => m.default || m)",
       "name": ""foo"",
       "path": ""/:foo()"",
     },
   ],
   "should only allow "_" & "." as special character for dynamic route": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("a1_1a")) : () => import("pages/[a1_1a].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("a1_1a")) : () => import("pages/[a1_1a].vue").then(m => m.default || m)",
       "name": ""a1_1a"",
       "path": ""/:a1_1a()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("b2.2b")) : () => import("pages/[b2.2b].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("b2.2b")) : () => import("pages/[b2.2b].vue").then(m => m.default || m)",
       "name": ""b2.2b"",
       "path": ""/:b2.2b()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("b2_2b")) : () => import("pages/[b2]_[2b].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("b2_2b")) : () => import("pages/[b2]_[2b].vue").then(m => m.default || m)",
       "name": ""b2_2b"",
       "path": ""/:b2()_:2b()"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("c33c")) : () => import("pages/[[c3@3c]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("c33c")) : () => import("pages/[[c3@3c]].vue").then(m => m.default || m)",
       "name": ""c33c"",
       "path": ""/:c33c?"",
     },
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("d44d")) : () => import("pages/[[d4-4d]].vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("d44d")) : () => import("pages/[[d4-4d]].vue").then(m => m.default || m)",
       "name": ""d44d"",
       "path": ""/:d44d?"",
     },
   ],
   "should properly override route name if definePageMeta name override is defined.": [
     {
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("home")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("home")) : () => import("pages/index.vue").then(m => m.default || m)",
       "name": ""home"",
       "path": ""/"",
     },
@@ -302,7 +302,7 @@
   "should use fallbacks when normalized with `overrideMeta: true`": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "(mockMeta?.island || undefined) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
+      "component": "(mockMeta?.mode === 'server' || false) ? () => import("/home/runner/work/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component").then(({ createIslandPage }) => createIslandPage("index")) : () => import("pages/index.vue").then(m => m.default || m)",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name",
       "path": ""/"",
