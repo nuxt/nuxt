@@ -140,7 +140,6 @@ describe('useAsyncData', () => {
     expect(Object.keys(res)).toMatchInlineSnapshot(`
       [
         "data",
-        "pending",
         "error",
         "status",
         "execute",
@@ -157,29 +156,25 @@ describe('useAsyncData', () => {
     const immediate = await useAsyncData(() => Promise.resolve('test'))
     expect(immediate.data.value).toBe('test')
     expect(immediate.status.value).toBe('success')
-    expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
     expect(nonimmediate.data.value).toBe(null)
     expect(nonimmediate.status.value).toBe('idle')
-    expect(nonimmediate.pending.value).toBe(true)
   })
 
   it('should capture errors', async () => {
-    const { data, error, status, pending } = await useAsyncData('error-test', () => Promise.reject(new Error('test')), { default: () => 'default' })
+    const { data, error, status } = await useAsyncData('error-test', () => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
     expect(error.value).toMatchInlineSnapshot('[Error: test]')
     expect(status.value).toBe('error')
-    expect(pending.value).toBe(false)
     expect(useNuxtApp().payload._errors['error-test']).toMatchInlineSnapshot('[Error: test]')
 
     // TODO: fix the below
-    // const { data: syncedData, error: syncedError, status: syncedStatus, pending: syncedPending } = await useAsyncData('error-test', () => ({}), { immediate: false })
+    // const { data: syncedData, error: syncedError, status: syncedStatus } = await useAsyncData('error-test', () => ({}), { immediate: false })
 
     // expect(syncedData.value).toEqual(null)
     // expect(syncedError.value).toEqual(error.value)
     // expect(syncedStatus.value).toEqual('idle')
-    // expect(syncedPending.value).toEqual(true)
   })
 
   // https://github.com/nuxt/nuxt/issues/23411
@@ -233,9 +228,9 @@ describe('useAsyncData', () => {
 
   it('should use default while pending', async () => {
     const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
-    const { data, pending } = promise
+    const { data, status } = promise
 
-    expect(pending.value).toBe(true)
+    expect(status.value).toBe('pending')
     expect(data.value).toMatchInlineSnapshot('"default"')
 
     await promise

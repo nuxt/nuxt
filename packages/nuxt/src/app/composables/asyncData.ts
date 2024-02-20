@@ -106,7 +106,6 @@ export interface AsyncDataExecuteOptions {
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   error: Ref<ErrorT | null>
@@ -249,7 +248,6 @@ export function useAsyncData<
 
     nuxtApp._asyncData[key] = {
       data: _ref(options.getCachedData!(key) ?? options.default!()),
-      pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle')
     }
@@ -270,7 +268,6 @@ export function useAsyncData<
     if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && hasCachedData()) {
       return Promise.resolve(options.getCachedData!(key))
     }
-    asyncData.pending.value = true
     asyncData.status.value = 'pending'
     // TODO: Cancel previous promise
     const promise = new Promise<ResT>(
@@ -309,8 +306,6 @@ export function useAsyncData<
       })
       .finally(() => {
         if ((promise as any).cancelled) { return }
-
-        asyncData.pending.value = false
 
         delete nuxtApp._asyncDataPromises[key]
       })
@@ -354,7 +349,6 @@ export function useAsyncData<
 
     if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData())) {
       // 1. Hydration (server: true): no fetch
-      asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
     } else if (instance && ((nuxtApp.payload.serverRendered && nuxtApp.isHydrating) || options.lazy) && options.immediate) {
       // 2. Initial load (server: false): fetch on mounted
@@ -493,7 +487,6 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     if (nuxtApp._asyncData[key]) {
       nuxtApp._asyncData[key]!.data.value = undefined
       nuxtApp._asyncData[key]!.error.value = null
-      nuxtApp._asyncData[key]!.pending.value = false
       nuxtApp._asyncData[key]!.status.value = 'idle'
     }
     if (key in nuxtApp._asyncDataPromises) {
