@@ -418,7 +418,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
-        mode: serializeRouteValue(page.mode),
+        mode: page.mode,
       }
 
       for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
