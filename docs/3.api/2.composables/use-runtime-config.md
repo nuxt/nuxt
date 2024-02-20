@@ -132,7 +132,7 @@ And then access the new CDN url using `config.app.cdnURL`.
 
 ```ts [server/api/foo.ts]
 export default defineEventHandler((event) => {
-  const config = useRuntimeConfig()
+  const config = useRuntimeConfig(event)
 
   // Access cdnURL universally
   const cdnURL = config.app.cdnURL

@@ -17,13 +17,14 @@ links:
 The example below shows how you can use cached data as a placeholder while the most recent data is being fetched from the server.
 
 ```vue [pages/posts.vue]
-<script setup>
+<script setup lang="ts">
 // We can access same data later using 'posts' key
 const { data } = await useFetch('/api/posts', { key: 'posts' })
 </script>
 ```
 
-```ts [pages/posts/[id\\].vue]
+```vue [pages/posts/[id\\].vue]
+<script setup lang="ts">
 // Access to the cached value of useFetch in posts.vue (parent route)
 const { id } = useRoute().params
 const { data: posts } = useNuxtData('posts')
@@ -34,6 +35,7 @@ const { data } = useLazyFetch(`/api/posts/${id}`, {
     return posts.value.find(post => post.id === id)
   }
 })
+</script>
 ```
 
 ## Optimistic Updates
@@ -41,14 +43,14 @@ const { data } = useLazyFetch(`/api/posts/${id}`, {
 We can leverage the cache to update the UI after a mutation, while the data is being invalidated in the background.
 
 ```vue [pages/todos.vue]
-<script setup>
+<script setup lang="ts">
 // We can access same data later using 'todos' key
 const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
 </script>
 ```
 
 ```vue [components/NewTodo.vue]
-<script setup>
+<script setup lang="ts">
 const newTodo = ref('')
 const previousTodos = ref([])
 
