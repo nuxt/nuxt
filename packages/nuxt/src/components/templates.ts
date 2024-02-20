@@ -79,7 +79,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
 
-    const pageExports = pages?.filter(p => (p.server && p.file && p.name)).map((p) => {
+    const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
       const comment = createImportMagicComments({
         chunkName: p.file!
       })

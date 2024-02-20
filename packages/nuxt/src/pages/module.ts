@@ -397,7 +397,7 @@ export default defineNuxtModule({
       if (nuxt.options.dev) { return }
       const sourceFiles = getSources(nuxt.apps.default.pages || [])
       for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.server && page.file === join(nuxt.options.srcDir, manifest[key].src!) ))) {
+        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!) ))) {
           delete manifest[key]
           continue
         }

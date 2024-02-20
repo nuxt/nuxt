@@ -90,7 +90,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
     if(segments[segments.length - 1].endsWith('.server')) {
       segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
-      route.server = true
+      route.mode = 'server'
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -418,7 +418,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
-        server: serializeRouteValue(page.server),
+        mode: serializeRouteValue(page.mode),
       }
 
       for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
@@ -446,7 +446,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: `(${metaImportName}?.island || ${route.server}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
+        component: `(${metaImportName}?.mode === 'server' || ${route.mode === 'server'}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
       }
 
       if (route.children != null) {
