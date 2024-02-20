@@ -80,11 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
     )
 
     const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
-      const comment = createImportMagicComments({
-        chunkName: p.file!
-      })
-
-      return `"page:${p.name}": defineAsyncComponent(${genDynamicImport(p.file!, { comment })})`
+      return `"page:${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
     }) || []
 
     return [
