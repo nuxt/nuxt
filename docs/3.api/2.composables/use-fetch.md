@@ -11,7 +11,7 @@ links:
 This composable provides a convenient wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) and [`$fetch`](/docs/api/utils/dollarfetch).
 It automatically generates a key based on URL and fetch options, provides type hints for request url based on server routes, and infers API response type.
 
-::callout
+::note
 `useFetch` is a composable meant to be called directly in a setup function, plugin, or route middleware. It returns reactive composables and handles adding responses to the Nuxt payload so they can be passed from server to client without re-fetching the data on client side when the page hydrates.
 ::
 
@@ -25,7 +25,7 @@ const { data, pending, error, refresh } = await useFetch('/api/modules', {
 </script>
 ```
 
-::callout
+::note
 `data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
 ::
 
@@ -62,7 +62,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 })
 ```
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
 
@@ -84,7 +84,7 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `baseURL`: Base URL for the request.
   - `timeout`: Milliseconds to automatically abort request
 
-::callout
+::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
 ::
 
@@ -103,11 +103,11 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
 
-::callout
+::note
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
 ::
 
-::callout{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
+::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
 Learn how to use `transform` and `getCachedData` to avoid superfluous calls to an API and cache data for visitors on the client.
 ::
 
@@ -121,7 +121,7 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
-::callout
+::note
 If you have not fetched data on the server (for example, with `server: false`), then the data _will not_ be fetched until hydration completes. This means even if you await `useFetch` on client-side, `data` will remain null within `<script setup>`.
 ::
 

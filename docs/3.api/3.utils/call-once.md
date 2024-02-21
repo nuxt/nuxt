@@ -10,7 +10,7 @@ links:
     size: xs
 ---
 
-::callout{icon="i-ph-info-duotone" color="blue"}
+::important
 This utility is available since [Nuxt v3.9](/blog/v3-9).
 ::
 
@@ -35,17 +35,17 @@ await callOnce(async () => {
 </script>
 ```
 
-::callout{to="/docs/getting-started/state-management#usage-with-pinia"}
+::tip{to="/docs/getting-started/state-management#usage-with-pinia"}
 `callOnce` is useful in combination with the [Pinia module](/modules/pinia) to call store actions.
 ::
 
 :read-more{to="/docs/getting-started/state-management"}
 
-::callout{color="info" icon="i-ph-warning-duotone"}
+::warning
 Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/docs/api/composables/use-async-data) or [`useFetch`](/docs/api/composables/use-fetch) if you want to do data fetching during SSR.
 ::
 
-::callout
+::note
 `callOnce` is a composable meant to be called directly in a setup function, plugin, or route middleware, because it needs to add data to the Nuxt payload to avoid re-calling the function on the client when the page hydrates.
 ::
 

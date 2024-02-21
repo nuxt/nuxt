@@ -34,6 +34,6 @@ Additionally to the above options, `nuxi` can pass options through to `listhen`,
 
 This command sets `process.env.NODE_ENV` to `development`.
 
-::callout
+::note
 If you are using a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
