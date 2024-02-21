@@ -15,6 +15,7 @@ export default defineComponent({
   },
   setup (props) {
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
+
     if (!component) {
       throw createError({
         statusCode: 404,

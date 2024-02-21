@@ -16,7 +16,6 @@ import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { useRoute } from '../../app/composables/router'
 import { getFragmentHTML } from './utils'
 
-
 // @ts-expect-error virtual file
 import { remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
@@ -160,7 +159,6 @@ export default defineComponent({
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
-
  // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
@@ -178,8 +176,6 @@ export default defineComponent({
       }
       setPayload(key, result)
       return result
-  
-     
     }
 
     async function fetchComponent (force = false) {
