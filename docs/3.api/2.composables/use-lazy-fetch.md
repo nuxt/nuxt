@@ -12,7 +12,7 @@ links:
 
 By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation until its async handler is resolved. `useLazyFetch` provides a wrapper around [`useFetch`](/docs/api/composables/use-fetch) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
-::callout
+::note
 `useLazyFetch` has the same signature as [`useFetch`](/docs/api/composables/use-fetch).
 ::
 
@@ -44,7 +44,7 @@ watch(posts, (newPosts) => {
 </template>
 ```
 
-::callout
+::note
 `useLazyFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyFetch`.
 ::
 
