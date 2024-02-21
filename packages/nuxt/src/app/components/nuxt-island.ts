@@ -159,7 +159,7 @@ export default defineComponent({
         // Hint to Nitro to prerender the island component
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }
- // TODO: Validate response
+      // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         url: route.fullPath,
