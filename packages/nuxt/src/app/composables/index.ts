@@ -22,7 +22,7 @@ export { clearError, createError, isNuxtError, showError, useError } from './err
 export type { NuxtError } from './error'
 export { useFetch, useLazyFetch } from './fetch'
 export type { FetchResult, UseFetchOptions } from './fetch'
-export { useCookie } from './cookie'
+export { useCookie, refreshCookie } from './cookie'
 export type { CookieOptions, CookieRef } from './cookie'
 export { prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus } from './ssr'
 export { onNuxtReady } from './ready'

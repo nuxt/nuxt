@@ -558,11 +558,13 @@ describe('nuxt composables', () => {
     expect(await extractCookie()).toEqual({ foo: 'bar' })
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'baz' })
+    let text = await page.innerText('pre')
+    expect(text).toContain('baz')
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.evaluate(() => document.cookie = 'updated=foobar')
+    await page.evaluate(() => document.cookie = `browser-object-default=${encodeURIComponent('{"foo":"foobar"}')}`)
     await page.getByText('Refresh cookie').click()
-    const text = await page.innerText('pre')
+    text = await page.innerText('pre')
     expect(text).toContain('foobar')
     await page.close()
   })
@@ -659,7 +661,7 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component', 
+  it('expect scroll to top on routes with same component',
     async () => {
       // #22402
       const page = await createPage('/big-page-1', {
@@ -682,12 +684,12 @@ describe('nuxt links', () => {
       await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
       expect(await page.evaluate(() => window.scrollY)).toBe(0)
       await page.close()
-    }, 
+    },
     // Flaky behavior when using Webpack
     { retry: isWebpack ? 10 : 0 }
   )
 
-  it('expect scroll to top on nested pages', 
+  it('expect scroll to top on nested pages',
     async () => {
       // #20523
       const page = await createPage('/nested/foo/test', {
@@ -1480,6 +1482,15 @@ describe('automatically keyed composables', () => {
   })
 })
 
+describe.runIf(isDev() && !isWebpack)('css links', () => {
+  it('should not inject links to CSS files that are inlined', async () => {
+    const html = await $fetch('/inline-only-css')
+    expect(html).toContain('--inline-only')
+    expect(html).not.toContain('inline-only.css')
+    expect(html).toContain('assets/plugin.css')
+  })
+})
+
 describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
   const inlinedCSS = [
     '{--plugin:"plugin"}', // CSS imported ambiently in JS/TS
@@ -1518,7 +1529,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
-    expect(files.map(m => m.replace(/\.\w+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+    expect(files.map(m => m.replace(/\.[\w-]+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
   })
 
   it('should not include inlined CSS in generated CSS file', async () => {
@@ -1595,6 +1606,9 @@ describe('server components/islands', () => {
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+
+    // test islands wrapped with client-only
+    expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
 
     if (!isWebpack) {
       // test client component interactivity
@@ -1785,6 +1799,8 @@ describe.skipIf(isDev())('dynamic paths', () => {
         (isWebpack && url === '/public.svg')
       ).toBeTruthy()
     }
+
+    expect(await $fetch('/foo/url')).toContain('path: /foo/url')
   })
 
   it('should allow setting relative baseURL', async () => {

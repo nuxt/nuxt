@@ -17,7 +17,7 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 ## Usage
 
 ```vue [pages/index.vue]
-<script setup>
+<script setup lang="ts">
 const { data, pending, error, refresh } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains')
@@ -34,7 +34,7 @@ const { data, pending, error, refresh } = await useAsyncData(
 The built-in `watch` option allows automatically rerunning the fetcher function when any changes are detected.
 
 ```vue [pages/index.vue]
-<script setup>
+<script setup lang="ts">
 const page = ref(1)
 const { data: posts } = await useAsyncData(
   'posts',

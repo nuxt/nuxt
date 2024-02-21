@@ -156,7 +156,9 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
     viewTransition: {
-      $resolve: async (val, get) => val ?? await get('experimental.viewTransition') ?? false
+      $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
+        (e) => e?.viewTransition
+      ) ?? false
     },
 
     /**

@@ -147,18 +147,25 @@ export function extractScriptContent (html: string) {
 const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
+const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-async function getRouteMeta (contents: string, absolutePath?: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
-  if (contents in metaCache) { return metaCache[contents] }
+async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+  // set/update pageContentsCache, invalidate metaCache on cache mismatch
+  if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
+    pageContentsCache[absolutePath] = contents
+    delete metaCache[absolutePath]
+  }
+
+  if (absolutePath in metaCache) { return metaCache[absolutePath] }
 
   const script = extractScriptContent(contents)
   if (!script) {
-    metaCache[contents] = {}
+    metaCache[absolutePath] = {}
     return {}
   }
 
   if (!PAGE_META_RE.test(script)) {
-    metaCache[contents] = {}
+    metaCache[absolutePath] = {}
     return {}
   }
 
@@ -170,7 +177,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
   }) as unknown as Program
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
   if (!pageMetaAST) {
-    metaCache[contents] = {}
+    metaCache[absolutePath] = {}
     return {}
   }
 
@@ -233,7 +240,7 @@ async function getRouteMeta (contents: string, absolutePath?: string): Promise<P
     extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
   }
 
-  metaCache[contents] = extractedMeta
+  metaCache[absolutePath] = extractedMeta
   return extractedMeta
 }
 
@@ -417,6 +424,12 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
+      }
+
+      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+        if (route[key] === undefined) {
+          delete route[key]
+        }
       }
 
       if (page.children?.length) {

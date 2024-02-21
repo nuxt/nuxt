@@ -291,6 +291,7 @@ export default defineUntypedSchema({
      * const { data } = await useAsyncData(route.params.slug, async () => {
      *   return await $fetch(`/api/my-page/${route.params.slug}`)
      * })
+     * ```
      */
     sharedPrerenderData: false,
 

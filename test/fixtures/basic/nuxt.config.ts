@@ -101,6 +101,14 @@ export default defineNuxtConfig({
       addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
+      nuxt.hook('pages:extend', pages => {
+        pages.push({
+          path: '/manual-redirect',
+          redirect: '/',
+        })
+      })
+    },
+    function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
       const stripLayout = (page: NuxtPage): NuxtPage => ({
         ...page,

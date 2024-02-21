@@ -25,7 +25,7 @@ This is useful for code that should be executed only once, such as logging an ev
 ## Usage
 
 ```vue [app.vue]
-<script setup>
+<script setup lang="ts">
 const websiteConfig = useState('config')
 
 await callOnce(async () => {
