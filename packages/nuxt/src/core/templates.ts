@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtMiddleware, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtTemplate } from 'nuxt/schema'
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
 export const vueShim: NuxtTemplate = {
@@ -208,7 +208,7 @@ export const layoutTemplate: NuxtTemplate = {
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
   getContents ({ app }) {
-    const globalMiddleware = sortGlobalMiddleware(app.middleware.filter(mw => mw.global))
+    const globalMiddleware = app.middleware.filter(mw => mw.global)
     const namedMiddleware = app.middleware.filter(mw => !mw.global)
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
 
@@ -217,12 +217,6 @@ export const middlewareTemplate: NuxtTemplate = {
       `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
       `export const namedMiddleware = ${namedMiddlewareObject}`
     ].join('\n')
-    function sortGlobalMiddleware (globalMiddleware: NuxtMiddleware[]): NuxtMiddleware[] {
-      const reg = /^\d/
-      const orderedGlobalMiddleware = globalMiddleware.filter(m => reg.test(m.name)).toSorted((l, r) => l.name > r.name ? 1 : -1)
-      const unorderedGlobalMiddleware = globalMiddleware.filter(m => !reg.test(m.name))
-      return  [...orderedGlobalMiddleware, ...unorderedGlobalMiddleware]
-    }
   }
 }
 

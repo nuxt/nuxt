@@ -2,7 +2,7 @@ import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
-import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtMiddleware, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
@@ -141,6 +141,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
   }
+  app.middleware = sortMiddleware(app.middleware)
 
   // Resolve plugins, first extended layers and then base
   app.plugins = []
@@ -237,5 +238,21 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
   for (const name in deps) {
     checkDeps(name)
+  }
+}
+
+
+function sortMiddleware(middleware: NuxtMiddleware[]) {
+  const globalMiddleware = middleware.filter(mw => mw.global)
+  const namedMiddleware = middleware.filter(mw => !mw.global)
+  return [
+    ...sortOrderedMiddleware(globalMiddleware),
+    ...sortOrderedMiddleware(namedMiddleware)
+  ]
+  function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
+    const reg = /^\d/
+    const orderedMiddleware = middleware.filter(m => reg.test(m.name)).toSorted((l, r) => l.name > r.name ? 1 : -1)
+    const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
+    return  [...orderedMiddleware, ...unorderedMiddleware]
   }
 }
