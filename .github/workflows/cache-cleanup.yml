@@ -1,3 +1,5 @@
+# From https://github.com/actions/cache/blob/main/tips-and-workarounds.md#force-deletion-of-caches-overriding-default-cache-eviction-policy
+
 name: cache
 on:
   pull_request:
@@ -7,12 +9,17 @@ on:
 jobs:
   cleanup:
     runs-on: ubuntu-latest
+    permissions:
+      # `actions:write` permission is required to delete caches
+      #   See also: https://docs.github.com/en/rest/actions/cache?apiVersion=2022-11-28#delete-a-github-actions-cache-for-a-repository-using-a-cache-id
+      actions: write
+      contents: read
     steps:
       - name: Cleanup
         run: |
           gh extension install actions/gh-actions-cache
 
-          echo "Fetching list of cache key"
+          echo "Fetching list of cache keys"
           cacheKeysForPR=$(gh actions-cache list -R $REPO -B $BRANCH -L 100 | cut -f 1 )
 
           ## Setting this to not fail the workflow while deleting cache keys.
