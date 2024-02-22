@@ -161,7 +161,7 @@ describe('resolveApp', () => {
       'layer2/middleware/02.order.global.ts',
       'layer2/middleware/global.global.ts',
       'layer2/middleware/named-from-layer.ts',
-      'layer1/middleware/named-override.ts',
+      'layer2/middleware/named-override.ts',
       'layer2/plugins/override-test.ts',
       'layer2/nuxt.config.ts',
       // final (user) layer
