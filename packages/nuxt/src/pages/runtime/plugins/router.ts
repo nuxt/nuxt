@@ -239,7 +239,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       try {
         const to = router.resolve(initialURL)
         // #4920, #4982
-        if ('name' in to) { delete to.name }
+        if ('name' in to) { to.name = undefined }
         await router.replace({
           ...to,
           force: true
