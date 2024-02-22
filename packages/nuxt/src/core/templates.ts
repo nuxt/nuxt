@@ -219,9 +219,9 @@ export const middlewareTemplate: NuxtTemplate = {
     ].join('\n')
     function sortGlobalMiddleware (globalMiddleware: NuxtMiddleware[]): NuxtMiddleware[] {
       const reg = /^\d/
-      const withOrdergGobalMiddleware = globalMiddleware.filter(m => reg.test(m.name)).toSorted((l, r) => l.name > r.name ? 1 : -1)
-      const withoutOrdergGobalMiddleware = globalMiddleware.filter(m => !reg.test(m.name))
-      return  [...withOrdergGobalMiddleware, ...withoutOrdergGobalMiddleware]
+      const orderedGlobalMiddleware = globalMiddleware.filter(m => reg.test(m.name)).toSorted((l, r) => l.name > r.name ? 1 : -1)
+      const unorderedGlobalMiddleware = globalMiddleware.filter(m => !reg.test(m.name))
+      return  [...orderedGlobalMiddleware, ...unorderedGlobalMiddleware]
     }
   }
 }
