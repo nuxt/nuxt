@@ -98,18 +98,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function resolveTrailingSlashBehavior (
-    to: string,
-    resolve: Router['resolve']
-  ): string
-  function resolveTrailingSlashBehavior (
-    to: RouteLocationRaw,
-    resolve: Router['resolve']
-  ): Omit<RouteLocationRaw, string>
-  function resolveTrailingSlashBehavior (
-    to: RouteLocationRaw,
-    resolve: Router['resolve']
-  ): RouteLocationRaw | RouteLocation {
+  function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
+  function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
+  function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): RouteLocationRaw | RouteLocation {
     if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
       return to
     }
