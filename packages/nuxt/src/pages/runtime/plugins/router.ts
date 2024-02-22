@@ -237,9 +237,11 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
+        const to = router.resolve(initialURL)
+        // #4920, #4982
+        if ('name' in to) { delete to.name }
         await router.replace({
-          ...router.resolve(initialURL),
-          name: undefined, // #4920, #4982
+          ...to,
           force: true
         })
         // reset scroll behavior to initial value

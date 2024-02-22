@@ -88,7 +88,7 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   noPrefetch?: boolean
 }
 
-  /*@__NO_SIDE_EFFECTS__*/
+/*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
@@ -100,7 +100,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
-  function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): RouteLocationRaw | RouteLocation {
+  function resolveTrailingSlashBehavior (to: undefined, resolve: Router['resolve']): undefined
+  function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
     if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
       return to
     }
@@ -109,13 +110,18 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return applyTrailingSlashBehavior(to, options.trailingSlash)
     }
 
-    const path = 'path' in to ? to.path : resolve(to).path
+    const path = 'path' in to && to.path !== undefined ? to.path : resolve(to).path
 
-    return {
+    const resolvedPath = {
       ...to,
-      name: undefined, // named routes would otherwise always override trailing slash behavior
       path: applyTrailingSlashBehavior(path, options.trailingSlash)
     }
+
+    if ('name' in resolvedPath) {
+      delete resolvedPath.name
+    }
+
+    return resolvedPath
   }
 
   return defineComponent({
@@ -326,8 +332,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const href = typeof to.value === 'object'
           ? router.resolve(to.value)?.href ?? null
           : (to.value && !props.external && !isAbsoluteUrl.value)
-              ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-              : to.value || null
+            ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
+            : to.value || null
 
         // Resolves `target` value
         const target = props.target || null
