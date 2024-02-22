@@ -393,8 +393,8 @@ importers:
         specifier: ^1.7.1
         version: 1.7.1
       unplugin-vue-router:
-        specifier: ^0.8.2
-        version: 0.8.2(rollup@4.12.0)(vue-router@4.3.0)(vue@3.4.19)
+        specifier: ^0.7.0
+        version: 0.7.0(rollup@4.12.0)(vue-router@4.3.0)(vue@3.4.19)
       untyped:
         specifier: ^1.4.2
         version: 1.4.2
@@ -4026,12 +4026,23 @@ packages:
       - rollup
     dev: false
 
-  /ast-walker-scope@0.6.0(rollup@4.12.0):
-    resolution: {integrity: sha512-p+5g400eD1wGLfrEGQIAWtLTT4OBUDWKABrYp1e+xNTNkPniCqXJVfjd7QPTRbt0clm3G71ZMjx/X47DOWpCUQ==}
+  /ast-kit@0.9.5(rollup@4.12.0):
+    resolution: {integrity: sha512-kbL7ERlqjXubdDd+szuwdlQ1xUxEz9mCz1+m07ftNVStgwRb2RWw+U6oKo08PAvOishMxiqz1mlJyLl8yQx2Qg==}
     engines: {node: '>=16.14.0'}
     dependencies:
       '@babel/parser': 7.23.9
-      ast-kit: 0.11.3(rollup@4.12.0)
+      '@rollup/pluginutils': 5.1.0(rollup@4.12.0)
+      pathe: 1.1.2
+    transitivePeerDependencies:
+      - rollup
+    dev: false
+
+  /ast-walker-scope@0.5.0(rollup@4.12.0):
+    resolution: {integrity: sha512-NsyHMxBh4dmdEHjBo1/TBZvCKxffmZxRYhmclfu0PP6Aftre47jOHYaYaNqJcV0bxihxFXhDkzLHUwHc0ocd0Q==}
+    engines: {node: '>=16.14.0'}
+    dependencies:
+      '@babel/parser': 7.23.9
+      ast-kit: 0.9.5(rollup@4.12.0)
     transitivePeerDependencies:
       - rollup
     dev: false
@@ -7078,6 +7089,11 @@ packages:
       big.js: 5.2.2
       emojis-list: 3.0.0
       json5: 2.2.3
+
+  /local-pkg@0.4.3:
+    resolution: {integrity: sha512-SFppqq5p42fe2qcZQqqEOiVRXl+WCP1MdT6k7BDEW1j++sp5fIY+/fdRQitvKgB5BrBcmrs5m/L0v2FrU5MY1g==}
+    engines: {node: '>=14'}
+    dev: false
 
   /local-pkg@0.5.0:
     resolution: {integrity: sha512-ok6z3qlYyCDS4ZEU27HaU6x/xZa9Whf8jD4ptH5UZTQYZVYeb9bnZ3ojVhiJNLiXK1Hfc0GNbLXcmZ5plLDDBg==}
@@ -10625,10 +10641,10 @@ packages:
     resolution: {integrity: sha512-hAZsKq7Yy11Zu1DE0OzWjw7nnLZmJZYTDZZyEFHZdUhV8FkH5MCfoU1XMaxXovpyW5nq5scPqq0ZDP9Zyl04oQ==}
     engines: {node: '>= 10.0.0'}
 
-  /unplugin-vue-router@0.8.2(rollup@4.12.0)(vue-router@4.3.0)(vue@3.4.19):
-    resolution: {integrity: sha512-C56kKswBtbupN4OGDtn4OZjLill4SRn8ZaAVofg1XFUhwbuNeY1zrNkbT/AfQazTFZgCYwZrVTM9/Xf+M/KOqQ==}
+  /unplugin-vue-router@0.7.0(rollup@4.12.0)(vue-router@4.3.0)(vue@3.4.19):
+    resolution: {integrity: sha512-ddRreGq0t5vlSB7OMy4e4cfU1w2AwBQCwmvW3oP/0IHQiokzbx4hd3TpwBu3eIAFVuhX2cwNQwp1U32UybTVCw==}
     peerDependencies:
-      vue-router: ^4.3.0
+      vue-router: ^4.1.0
     peerDependenciesMeta:
       vue-router:
         optional: true
@@ -10636,11 +10652,11 @@ packages:
       '@babel/types': 7.23.9
       '@rollup/pluginutils': 5.1.0(rollup@4.12.0)
       '@vue-macros/common': 1.10.1(rollup@4.12.0)(vue@3.4.19)
-      ast-walker-scope: 0.6.0(rollup@4.12.0)
+      ast-walker-scope: 0.5.0(rollup@4.12.0)
       chokidar: 3.6.0
       fast-glob: 3.3.2
       json5: 2.2.3
-      local-pkg: 0.5.0
+      local-pkg: 0.4.3
       mlly: 1.6.0
       pathe: 1.1.2
       scule: 1.3.0
