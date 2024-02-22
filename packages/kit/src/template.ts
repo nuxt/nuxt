@@ -145,6 +145,7 @@ export async function writeTypes (nuxt: Nuxt) {
     },
     include: [
       './nuxt.d.ts',
+      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '.config/nuxt.config.*'),
       join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
       ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
