@@ -53,6 +53,17 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Display logs on the client console that are normally only shown in the server console.
+     *
+     * This also enables an ongoing stream of server logs in the browser console as you are developing.
+     *
+     * If set to `silent`, the logs will be streamed and you can handle them yourself with the `dev:ssr-logs` hook,
+     * but they will not be shown in the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: true,
+
+    /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
      * You can also disable scripts more granularly within `routeRules`.
      */
