@@ -61,7 +61,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   let _throttle: any = null
 
-  function start(force: boolean = true) {
+  function start(force: boolean | null = true) {
     if (force) {
       _reset(isLoading, progress)
     }
@@ -86,7 +86,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function finish (force: boolean = false) {
+  function finish (force: boolean | null = false) {
     progress.value = 100
     done = true
     clear()
