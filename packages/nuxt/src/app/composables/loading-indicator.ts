@@ -19,7 +19,7 @@ export type LoadingIndicatorOpts = {
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
-function _hide (isLoading: Ref<boolean>, progress: Ref<number>, hideDelay: Ref<number>, resetDelay: Ref<number>) {
+function _hide (isLoading: Ref<boolean>, progress: Ref<number>, hideDelay: number, resetDelay: number) {
   if (import.meta.client) {
     setTimeout(() => {
       isLoading.value = false
