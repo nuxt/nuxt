@@ -7,12 +7,6 @@ import { defineNuxtPlugin } from '../nuxt'
 // @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
-declare module '#app' {
-  interface RuntimeNuxtHooks {
-    'dev:ssr-logs': (logs: LogObject[]) => void | Promise<void>
-  }
-}
-
 export default defineNuxtPlugin(nuxtApp => {
   // Show things in console
   if (devLogs !== 'silent') {
