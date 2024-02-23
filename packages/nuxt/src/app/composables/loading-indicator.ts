@@ -7,6 +7,10 @@ export type LoadingIndicatorOpts = {
   duration: number
   /** @default 200 */
   throttle: number
+  /** @default 500 */
+  hideDelay: number
+  /** @default 400 */
+  resetDelay: number
   /**
    * You can provide a custom function to customize the progress estimation,
    * which is a function that receives the duration of the loading bar (above)
@@ -15,12 +19,19 @@ export type LoadingIndicatorOpts = {
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
-function _hide (isLoading: Ref<boolean>, progress: Ref<number>) {
+function _hide (isLoading: Ref<boolean>, progress: Ref<number>, hideDelay: Ref<number>, resetDelay: Ref<number>) {
   if (import.meta.client) {
     setTimeout(() => {
       isLoading.value = false
-      setTimeout(() => { progress.value = 0 }, 400)
-    }, 500)
+      setTimeout(() => { progress.value = 0 }, resetDelay)
+    }, hideDelay)
+  }
+}
+
+function _reset (isLoading: Ref<boolean>, progress: Ref<number>) {
+  if (import.meta.client) {
+    isLoading.value = false
+    progress.value = 0
   }
 }
 
@@ -40,7 +51,7 @@ function defaultEstimatedProgress (duration: number, elapsed: number): number {
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
-  const { duration = 2000, throttle = 200 } = opts
+  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
@@ -50,7 +61,12 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   let _throttle: any = null
 
-  const start = () => set(0)
+  function start (force = true) {
+    if (force) {
+      _reset(isLoading, progress)
+    }
+    set(0)
+  }
 
   function set (at = 0) {
     if (nuxtApp.isHydrating) {
@@ -70,11 +86,15 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function finish () {
+  function finish (force = true) {
     progress.value = 100
     done = true
     clear()
-    _hide(isLoading, progress)
+    if(force) {
+      _reset(isLoading, progress)
+    } else {
+      _hide(isLoading, progress, hideDelay, resetDelay)
+    }
   }
 
   function clear () {
