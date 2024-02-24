@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import type { Plugin } from 'vite'
 import { dirname, relative } from 'pathe'
 import { genImport, genObjectFromRawEntries } from 'knitwork'
-import { filename } from 'pathe/utils'
+import { filename as _filename } from 'pathe/utils'
 import { parseQuery, parseURL } from 'ufo'
 import type { Component } from '@nuxt/schema'
 import MagicString from 'magic-string'
@@ -234,4 +234,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       }
     }
   }
+}
+
+function filename (name: string) {
+  return _filename(name.replace(/\?.+$/, ''))
 }

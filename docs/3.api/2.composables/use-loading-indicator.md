@@ -47,7 +47,7 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
 
 ## Example
 
-```ts
+```vue
 <script setup lang="ts">
   const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
     duration: 2000,

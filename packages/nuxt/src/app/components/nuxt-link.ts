@@ -98,18 +98,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function resolveTrailingSlashBehavior (
-    to: string,
-    resolve: Router['resolve']
-  ): string
-  function resolveTrailingSlashBehavior (
-    to: RouteLocationRaw,
-    resolve: Router['resolve']
-  ): Omit<RouteLocationRaw, string>
-  function resolveTrailingSlashBehavior (
-    to: RouteLocationRaw,
-    resolve: Router['resolve']
-  ): RouteLocationRaw | RouteLocation {
+  function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
+  function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
+  function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
     if (!to || (options.trailingSlash !== 'append' && options.trailingSlash !== 'remove')) {
       return to
     }
@@ -118,13 +109,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return applyTrailingSlashBehavior(to, options.trailingSlash)
     }
 
-    const path = 'path' in to ? to.path : resolve(to).path
+    const path = 'path' in to && to.path !== undefined ? to.path : resolve(to).path
 
-    return {
+    const resolvedPath = {
       ...to,
-      name: undefined, // named routes would otherwise always override trailing slash behavior
       path: applyTrailingSlashBehavior(path, options.trailingSlash)
     }
+
+    // named routes would otherwise always override trailing slash behavior
+    if ('name' in resolvedPath) {
+      delete resolvedPath.name
+    }
+
+    return resolvedPath
   }
 
   return defineComponent({
@@ -354,13 +351,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : ''
         ) || null
 
-        const navigate = () => navigateTo(href, { replace: props.replace })
-
         // https://router.vuejs.org/api/#custom
         if (props.custom) {
           if (!slots.default) {
             return null
           }
+
+          const navigate = () => navigateTo(href, { replace: props.replace, external: props.external })
 
           return slots.default({
             href,

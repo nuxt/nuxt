@@ -10,7 +10,7 @@ links:
 
 When prerendering, you can hint to Nitro to prerender additional paths, even if their URLs do not show up in the HTML of the generated page.
 
-::callout
+::important
 `prerenderRoutes` can only be called within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
@@ -21,6 +21,6 @@ prerenderRoutes('/')
 prerenderRoutes(['/', '/about'])
 ```
 
-::callout
+::note
 In the browser, or if called outside prerendering, `prerenderRoutes` will have no effect.
 ::

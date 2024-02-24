@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::callout
+::note
 This method is useful if you want to invalidate the data fetching for another page.
 ::
 
