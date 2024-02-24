@@ -24,3 +24,6 @@ for PKG in packages/* ; do
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
+
+# Restore environment to dev mode
+pnpm dev:prepare
