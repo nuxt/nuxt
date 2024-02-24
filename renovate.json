@@ -21,6 +21,12 @@
       ]
     },
     {
+      "groupName": "unplugin-vue-router",
+      "matchPackageNames": [
+        "unplugin-vue-router"
+      ]
+    },
+    {
       "matchBaseBranches": [
         "main"
       ],
