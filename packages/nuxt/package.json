@@ -88,7 +88,7 @@
     "klona": "^2.0.6",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.7",
-    "mlly": "^1.6.0",
+    "mlly": "^1.6.1",
     "nitropack": "^2.8.1",
     "nuxi": "^3.10.1",
     "nypm": "^0.3.6",
@@ -116,7 +116,7 @@
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
-    "@parcel/watcher": "2.4.0",
+    "@parcel/watcher": "2.4.1",
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "5.0.4",
