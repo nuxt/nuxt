@@ -383,7 +383,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     }
     let contents = ''
     for (const k in ctx.nuxt.options.app) {
-      contents += `export const ${camelCase('app-' + k)} = ${JSON.stringify(k)}\n`
+      contents += `export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k as keyof typeof ctx.nuxt.options.app])}\n`
     }
     return contents +
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n`+
