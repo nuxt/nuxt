@@ -13,7 +13,6 @@ import { join } from 'pathe'
 import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { useRoute } from '../../app/composables/router'
 import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
@@ -71,7 +70,6 @@ export default defineComponent({
     }
   },
   async setup (props, { slots, expose }) {
-    const route = useRoute()
     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
@@ -162,7 +160,6 @@ export default defineComponent({
       // TODO: Validate response
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
-        url: route.fullPath,
         ...props.context,
         props: props.props ? JSON.stringify(props.props) : undefined
       }))
