@@ -1,6 +1,6 @@
 import { defineComponent, h, ref } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
-import { useRoute } from '#vue-router'
+import { useRoute } from '#app/composables/router'
 
 /*@__NO_SIDE_EFFECTS__*/
 export const createServerComponent = (name: string) => {
