@@ -56,7 +56,7 @@ export const isNuxtError = <DataT = unknown>(
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(
-    error: string | Partial<NuxtError<DataT>>
+    error: Parameters<typeof createH3Error<DataT>>[0]
 ) => {
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)
 
