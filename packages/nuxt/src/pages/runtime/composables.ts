@@ -39,7 +39,7 @@ export interface PageMeta {
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   /** Set the render mode between client only and island/server only. Currently only server is supported . */
-  mode?: 'server'
+  mode?: 'server' | 'all'
 }
 
 declare module 'vue-router' {
