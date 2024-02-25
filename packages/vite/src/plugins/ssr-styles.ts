@@ -174,6 +174,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (!(id in options.clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
 
       const query = parseQuery(search)
+      if (query.macro || query.nuxt_component) { return }
 
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
