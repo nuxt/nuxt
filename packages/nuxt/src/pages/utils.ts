@@ -88,7 +88,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    if(segments[segments.length - 1].endsWith('.server')) {
+    if (segments[segments.length - 1].endsWith('.server')) {
       segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
       route.mode = 'server'
     }
