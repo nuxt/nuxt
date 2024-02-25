@@ -9,7 +9,7 @@ max_retries = 6
 # Explicitly exclude some URLs
 exclude = [
   "https://twitter.nuxt.dev/",
-  "https://github.com/nuxt/nuxt.com",
   "https://github.com/nuxt/translations/discussions/4",
-  '(https?:\/\/github\.com\/)(.*\/)(generate)'
+  "https://stackoverflow.com/help/minimal-reproducible-example",
+  "(https?:\/\/github\.com\/)(.*\/)(generate)",
 ]
