@@ -46,7 +46,7 @@ router.hasRoute('home')
 router.resolve({ name: 'home' })
 ```
 
-::callout
+::note
 `router.addRoute()` adds route details into an array of routes and it is useful while building [Nuxt plugins](/docs/guide/directory-structure/plugins) while `router.push()` on the other hand, triggers a new navigation immediately and it is useful in pages, Vue components and composable.
 ::
 
