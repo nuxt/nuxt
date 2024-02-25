@@ -2,6 +2,9 @@ import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
+let hideTimeout: any = null
+let resetTimeout: any = null
+
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
   duration: number
@@ -11,8 +14,6 @@ export type LoadingIndicatorOpts = {
   hideDelay: number
   /** @default 400 */
   resetDelay: number
-  /** @default true */
-  force: boolean
   /**
    * You can provide a custom function to customize the progress estimation,
    * which is a function that receives the duration of the loading bar (above)
@@ -23,15 +24,17 @@ export type LoadingIndicatorOpts = {
 
 function _hide (isLoading: Ref<boolean>, progress: Ref<number>, hideDelay: number, resetDelay: number) {
   if (import.meta.client) {
-    setTimeout(() => {
+    hideTimeout = setTimeout(() => {
       isLoading.value = false
-      setTimeout(() => { progress.value = 0 }, resetDelay)
+      resetTimeout = setTimeout(() => { progress.value = 0 }, resetDelay)
     }, hideDelay)
   }
 }
 
 function _reset (isLoading: Ref<boolean>, progress: Ref<number>) {
   if (import.meta.client) {
+    clearTimeout(hideTimeout)
+    clearTimeout(resetTimeout)
     isLoading.value = false
     progress.value = 0
   }
@@ -53,7 +56,7 @@ function defaultEstimatedProgress (duration: number, elapsed: number): number {
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
-  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400, force = true } = opts
+  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
@@ -63,7 +66,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
 
   let _throttle: any = null
 
-  const start = () => {
+  function start ({ force = true }: { force?: boolean } = {}) {
     if (force) {
       _reset(isLoading, progress)
     }
@@ -88,7 +91,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function finish () {
+  function finish ({ force = true }: { force?: boolean } = {}) {
     progress.value = 100
     done = true
     clear()
