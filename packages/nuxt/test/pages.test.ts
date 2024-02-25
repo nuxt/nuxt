@@ -17,7 +17,7 @@ describe('pages:generateRoutesFromFiles', () => {
       },
     }
   })
-  
+
   const tests: Array<{
     description: string
     files?: Array<{ path: string; template?: string; }>

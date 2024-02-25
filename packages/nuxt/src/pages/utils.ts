@@ -398,6 +398,12 @@ function serializeRouteValue (value: any, skipSerialisation = false) {
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
+  metaImports.add(`
+let _createIslandPage
+async function createIslandPage (name) {
+  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  return _createIslandPage(name)
+};`)
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -421,7 +427,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         mode: page.mode,
       }
 
-      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+      for (const key of ['path', 'name', 'meta', 'alias', 'redirect', 'mode'] satisfies NormalizedRouteKeys) {
         if (route[key] === undefined) {
           delete route[key]
         }
@@ -446,7 +452,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: `(${metaImportName}?.mode === 'server' || ${route.mode === 'server'}) ? ${genDynamicImport(resolve(distDir, 'components/runtime/server-component'))}.then(({ createIslandPage }) => createIslandPage(${ route.name })) : ${genDynamicImport(file, { interopDefault: true })}`  
+        component: `(${metaImportName}?.mode === 'server' || ${route.mode === 'server'}) ? () => createIslandPage(${route.name}) : ${genDynamicImport(file, { interopDefault: true })}`
       }
 
       if (route.children != null) {
