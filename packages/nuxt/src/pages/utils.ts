@@ -452,7 +452,9 @@ async function createIslandPage (name) {
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: `(${metaImportName}?.mode === 'server' || ${route.mode === 'server'}) ? () => createIslandPage(${route.name}) : ${genDynamicImport(file, { interopDefault: true })}`
+        component: route.mode === 'server'
+          ? `() => createIslandPage(${route.name})`
+          : `${metaImportName}?.mode === 'server' ? () => createIslandPage(${route.name}) : ${genDynamicImport(file, { interopDefault: true })}`
       }
 
       if (route.children != null) {
