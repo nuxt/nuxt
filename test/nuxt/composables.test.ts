@@ -412,7 +412,7 @@ describe('useHydration', () => {
   it('should hydrate value from payload', async () => {
     let val: any
     const nuxtApp = useNuxtApp()
-    useHydration('key', () => { }, (fromPayload) => { val = fromPayload })
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
     expect(val).toMatchInlineSnapshot('undefined')
 
@@ -483,7 +483,7 @@ describe('useId', () => {
     const vals = new Set<string>()
     for (let index = 0; index < 100; index++) {
       mount(defineComponent({
-        setup() {
+        setup () {
           const id = useId()
           vals.add(id)
           return () => h('div', id)
@@ -495,7 +495,7 @@ describe('useId', () => {
 
   it('generates unique ids per-component', () => {
     const component = defineComponent({
-      setup() {
+      setup () {
         const id = useId()
         return () => h('div', id)
       }
