@@ -134,7 +134,7 @@ export function useAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+): AsyncData<PickFrom<ResT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -150,7 +150,7 @@ export function useAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+): AsyncData<PickFrom<ResT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -168,7 +168,7 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+): AsyncData<PickFrom<ResT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -186,14 +186,14 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
+): AsyncData<PickFrom<ResT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null>
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null> {
+> (...args: any[]): AsyncData<PickFrom<ResT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | null> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
@@ -381,7 +381,7 @@ export function useAsyncData<
   const asyncDataPromise = Promise.resolve(nuxtApp._asyncDataPromises[key]).then(() => asyncData) as AsyncData<ResT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
   Object.assign(asyncDataPromise, asyncData)
 
-  return asyncDataPromise as AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
+  return asyncDataPromise as AsyncData<PickFrom<ResT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 }
 /** @since 3.0.0 */
 export function useLazyAsyncData<
