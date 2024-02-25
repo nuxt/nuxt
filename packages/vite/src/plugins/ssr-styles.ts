@@ -144,25 +144,25 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         if (id === options.entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
           const s = new MagicString(code)
           options.clientCSSMap[id] ||= new Set()
-          if (options.globalCSS.length) {
-            for (const file of options.globalCSS) {
-              const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-              const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
-              if (!resolved || !res) {
-                if (!warnCache.has(file)) {
-                  warnCache.add(file)
-                  this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
-                }
-                s.prepend(`${genImport(file)}\n`)
-                continue
+          if (!options.globalCSS.length) { return }
+
+          for (const file of options.globalCSS) {
+            const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+            const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+            if (!resolved || !res) {
+              if (!warnCache.has(file)) {
+                warnCache.add(file)
+                this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
               }
-              options.clientCSSMap[id].add(resolved.id)
+              s.prepend(`${genImport(file)}\n`)
+              continue
             }
-            if (s.hasChanged()) {
-              return {
-                code: s.toString(),
-                map: s.generateMap({ hires: true })
-              }
+            options.clientCSSMap[id].add(resolved.id)
+          }
+          if (s.hasChanged()) {
+            return {
+              code: s.toString(),
+              map: s.generateMap({ hires: true })
             }
           }
         }
@@ -174,7 +174,6 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (!(id in options.clientCSSMap) && !islands.some(c => c.filePath === pathname)) { return }
 
       const query = parseQuery(search)
-      if (query.macro || query.nuxt_component) { return }
 
       if (!islands.some(c => c.filePath === pathname)) {
         if (options.shouldInline === false || (typeof options.shouldInline === 'function' && !options.shouldInline(id))) { return }
@@ -187,27 +186,25 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
       let styleCtr = 0
       const ids = options.clientCSSMap[id] || []
-      if (ids.size) {
-        for (const file of ids) {
-          const resolved = await this.resolve(file) ?? await this.resolve(file, id)
-          const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
-          if (!resolved || !res) {
-            if (!warnCache.has(file)) {
-              warnCache.add(file)
-              this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
-            }
-            continue
+      for (const file of ids) {
+        const resolved = await this.resolve(file) ?? await this.resolve(file, id)
+        const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
+        if (!resolved || !res) {
+          if (!warnCache.has(file)) {
+            warnCache.add(file)
+            this.warn(`[nuxt] Cannot extract styles for \`${file}\`. Its styles will not be inlined when server-rendering.`)
           }
-          if (emittedIds.has(file)) { continue }
-          const ref = this.emitFile({
-            type: 'chunk',
-            name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-            id: file + '?inline&used'
-          })
-  
-          idRefMap[relativeToSrcDir(file)] = ref
-          cssMap[relativeId].files.push(ref)
+          continue
         }
+        if (emittedIds.has(file)) { continue }
+        const ref = this.emitFile({
+          type: 'chunk',
+          name: `${filename(id)}-styles-${++styleCtr}.mjs`,
+          id: file + '?inline&used'
+        })
+
+        idRefMap[relativeToSrcDir(file)] = ref
+        cssMap[relativeId].files.push(ref)
       }
 
       if (!SUPPORTED_FILES_RE.test(pathname)) { return }

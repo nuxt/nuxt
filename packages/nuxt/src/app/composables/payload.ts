@@ -101,7 +101,7 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const inlineData =  el.textContent ? await parsePayload(el.textContent) : ''
+  const inlineData =  await parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
