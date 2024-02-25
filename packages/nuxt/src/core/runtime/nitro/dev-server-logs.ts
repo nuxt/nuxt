@@ -60,7 +60,7 @@ export default (nitroApp: NitroApp) => {
 
   // Pass any unhandled logs to the client
   nitroApp.hooks.hook('render:html', htmlContext => {
-    htmlContext.bodyAppend.push(`<script>window.__NUXT_LOGS__ = ${devalue(logs)}</script>`)
+    htmlContext.bodyAppend.unshift(`<script>window.__NUXT_LOGS__ = ${devalue(logs)}</script>`)
     logs.length = 0
   })
 }
