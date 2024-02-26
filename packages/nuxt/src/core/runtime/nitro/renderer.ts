@@ -548,6 +548,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
+  const styleArray = []
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
     if (mod in styleMap) {
@@ -556,7 +557,10 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
       }
     }
   }
-  return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
+  for (const style of inlinedStyles) {
+    styleArray.push({innerHTML: style})
+  }
+  return styleArray
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
