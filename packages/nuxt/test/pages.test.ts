@@ -17,7 +17,7 @@ describe('pages:generateRoutesFromFiles', () => {
       },
     }
   })
-  
+
   const tests: Array<{
     description: string
     files?: Array<{ path: string; template?: string; }>
@@ -570,6 +570,7 @@ describe('pages:generateRoutesFromFiles', () => {
 
         try {
           result = await generateRoutesFromFiles(test.files.map(file => ({
+            shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, '')
           })), { shouldExtractBuildMeta: true, vfs })

@@ -28,6 +28,15 @@ export type NuxtPage = {
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
+  /**
+   * Set the render mode.
+   *
+   * `all` means the page will be rendered isomorphically - with JavaScript both on client and server.
+   *
+   * `server` means pages are automatically rendered with server components, so there will be no JavaScript to render the page in your client bundle.
+   * @default 'all'
+   */
+  mode?: 'server' | 'all'
 }
 
 export type NuxtMiddleware = {
