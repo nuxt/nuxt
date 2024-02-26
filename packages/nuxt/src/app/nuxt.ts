@@ -225,6 +225,7 @@ export interface CreateOptions {
   globalName?: NuxtApp['globalName']
 }
 
+/** @since 3.0.0 */
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
@@ -341,6 +342,7 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
+/** @since 3.0.0 */
 export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
@@ -355,6 +357,7 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
   }
 }
 
+/** @since 3.0.0 */
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
   const resolvedPlugins: string[] = []
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
@@ -405,6 +408,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   if (errors.length) { throw errors[0] }
 }
 
+/** @since 3.0.0 */
 /*@__NO_SIDE_EFFECTS__*/
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
   if (typeof plugin === 'function') { return plugin }
@@ -417,6 +421,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
 /*@__NO_SIDE_EFFECTS__*/
 export const definePayloadPlugin = defineNuxtPlugin
 
+/** @since 3.0.0 */
 export function isNuxtPlugin (plugin: unknown) {
   return typeof plugin === 'function' && NuxtPluginIndicator in plugin
 }
@@ -425,6 +430,7 @@ export function isNuxtPlugin (plugin: unknown) {
  * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
  * @param nuxt A Nuxt instance
  * @param setup The function to call
+ * @since 3.0.0
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
@@ -442,6 +448,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * Returns the current Nuxt instance.
  *
  * Returns `null` if Nuxt instance is unavailable.
+ * @since 3.10.0
  */
 export function tryUseNuxtApp (): NuxtApp | null {
   let nuxtAppInstance
@@ -459,6 +466,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
  * Returns the current Nuxt instance.
  *
  * Throws an error if Nuxt instance is unavailable.
+ * @since 3.0.0
  */
 export function useNuxtApp (): NuxtApp {
   const nuxtAppInstance = tryUseNuxtApp()
@@ -474,6 +482,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
+/** @since 3.0.0 */
 /*@__NO_SIDE_EFFECTS__*/
 export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
@@ -483,6 +492,7 @@ function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>,
   Object.defineProperty(obj, key, { get: () => val })
 }
 
+/** @since 3.0.0 */
 export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
 }
