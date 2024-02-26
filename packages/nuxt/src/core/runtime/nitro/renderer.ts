@@ -107,7 +107,7 @@ const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r =>
       entries.push(val.src!)
     }
   }
-  return entriers
+  return entries
 })
 
 // @ts-expect-error file will be produced after app build
