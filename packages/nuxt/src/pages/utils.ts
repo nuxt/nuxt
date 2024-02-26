@@ -59,6 +59,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
+    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
     vfs: nuxt.vfs
   })
 
@@ -67,6 +68,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
 type GenerateRoutesFromFilesOptions = {
   shouldExtractBuildMeta?: boolean
+  shouldUseServerComponents?: boolean
   vfs?: Record<string, string>
 }
 
@@ -90,7 +92,9 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
     if (segments[segments.length - 1].endsWith('.server')) {
       segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
-      route.mode = 'server'
+      if (options.shouldUseServerComponents) {
+        route.mode = 'server'
+      }
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -398,12 +402,6 @@ function serializeRouteValue (value: any, skipSerialisation = false) {
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
 export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
-  metaImports.add(`
-let _createIslandPage
-async function createIslandPage (name) {
-  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
-  return _createIslandPage(name)
-};`)
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -424,10 +422,9 @@ async function createIslandPage (name) {
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
-        mode: page.mode,
       }
 
-      for (const key of ['path', 'name', 'meta', 'alias', 'redirect', 'mode'] satisfies NormalizedRouteKeys) {
+      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
         if (route[key] === undefined) {
           delete route[key]
         }
@@ -454,7 +451,16 @@ async function createIslandPage (name) {
         redirect: `${metaImportName}?.redirect`,
         component: route.mode === 'server'
           ? `() => createIslandPage(${route.name})`
-          : `${metaImportName}?.mode === 'server' ? () => createIslandPage(${route.name}) : ${genDynamicImport(file, { interopDefault: true })}`
+          : genDynamicImport(file, { interopDefault: true })
+      }
+
+      if (page.mode === 'server') {
+        metaImports.add(`
+let _createIslandPage
+async function createIslandPage (name) {
+  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  return _createIslandPage(name)
+};`)
       }
 
       if (route.children != null) {
