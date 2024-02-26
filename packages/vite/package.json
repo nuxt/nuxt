@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.19"
+    "vue": "3.4.20"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -47,7 +47,7 @@
     "externality": "^1.0.2",
     "fs-extra": "^11.2.0",
     "get-port-please": "^3.1.2",
-    "h3": "^1.10.2",
+    "h3": "^1.11.1",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.7",
     "mlly": "^1.6.1",

@@ -271,13 +271,15 @@ export default defineNuxtModule({
         processPages(pages)
       })
       nuxt.hook('nitro:build:before', (nitro) => {
-        for (const route of nitro.options.prerender.routes || []) {
-          // Skip default route value as we only generate it if it is already
-          // in the detected routes from `~/pages`.
-          if (route === '/') { continue }
-          prerenderRoutes.add(route)
+        if (nitro.options.prerender.routes.length) {
+          for (const route of nitro.options.prerender.routes) {
+            // Skip default route value as we only generate it if it is already
+            // in the detected routes from `~/pages`.
+            if (route === '/') { continue }
+            prerenderRoutes.add(route)
+          }
+          nitro.options.prerender.routes = Array.from(prerenderRoutes)
         }
-        nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
     })
 
@@ -389,13 +391,13 @@ export default defineNuxtModule({
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
       .flatMap(p =>
-        [relative(nuxt.options.srcDir, p.file as string), ...getSources(p.children || [])]
+        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])]
       )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
-      const sourceFiles = getSources(nuxt.apps.default.pages || [])
+      const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const key in manifest) {
         if (manifest[key].isEntry) {
