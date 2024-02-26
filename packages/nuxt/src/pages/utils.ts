@@ -449,7 +449,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: route.mode === 'server'
+        component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
           : genDynamicImport(file, { interopDefault: true })
       }
