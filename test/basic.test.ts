@@ -1986,6 +1986,7 @@ describe('component islands', () => {
         link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
         link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
       }
+      result.head.link.sort((a, b) => b.href.localeCompare(a.href))
     }
 
     // TODO: fix rendering of styles in webpack
