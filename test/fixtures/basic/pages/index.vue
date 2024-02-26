@@ -86,6 +86,9 @@
     <NuxtLink to="/big-page-1">
       to big 1
     </NuxtLink>
+    <NuxtLink to="/server-page">
+      to server page
+    </NuxtLink>
   </div>
 </template>
 

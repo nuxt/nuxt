@@ -144,6 +144,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         if (id === options.entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
           const s = new MagicString(code)
           options.clientCSSMap[id] ||= new Set()
+          if (!options.globalCSS.length) { return }
+
           for (const file of options.globalCSS) {
             const resolved = await this.resolve(file) ?? await this.resolve(file, id)
             const res = await this.resolve(file + '?inline&used') ?? await this.resolve(file + '?inline&used', id)
