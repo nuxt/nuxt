@@ -34,23 +34,25 @@ export const createIslandPage = (name: string) => {
     name,
     inheritAttrs: false,
     props: { lazy: Boolean },
-    async setup (props, { attrs, slots, expose }) {
+    async setup (props, { slots, expose }) {
       const islandRef = ref<null | typeof NuxtIsland>(null)
-      const route = useRoute()
+
       expose({
         refresh: () => islandRef.value?.refresh()
       })
 
+      const route = useRoute()
       const path = await isPrerendered(route.path) ? route.path : route.fullPath.replace(/#.*$/, '')
 
       return () => {
-        return h('div', [h(NuxtIsland, {
-          name: `page:${name}`,
-          lazy: props.lazy,
-          props: attrs,
-          ref: islandRef,
-          context: { url: path }
-        }, slots)])
+        return h('div', [
+          h(NuxtIsland, {
+            name: `page:${name}`,
+            lazy: props.lazy,
+            ref: islandRef,
+            context: { url: path }
+          }, slots)
+        ])
       }
     }
   })
