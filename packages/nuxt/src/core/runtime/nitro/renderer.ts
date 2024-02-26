@@ -99,10 +99,16 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS
-).map(r => r.src!))
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => {
+  const entries: string[] = []
+  for (const key in r) { 
+    const val = r[key]
+    if (val._globalCSS) {
+      entries.push(val.src!)
+    }
+  }
+  return entriers
+})
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -435,13 +441,18 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 5. Scripts
   if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
-    head.push({
-      script: Object.values(scripts).map(resource => (<Script> {
+    const headScript: Array<Script> = []
+    for (const resourceKey in scripts) {
+      const resource = scripts[resourceKey]
+      headScript.push(<Script>{
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
         crossorigin: ''
-      }))
+      })
+    }
+    head.push({
+      script: headScript
     }, headEntryOptions)
   }
 
@@ -527,7 +538,13 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const normalizedChunks: string[] = []
+  for (const chunk of chunks) {
+    if (chunk) {
+      normalizedChunks.push(chunk!.trim())
+    }
+  }
+  return normalizedChunks
 }
 
 function joinTags (tags: string[]) {
