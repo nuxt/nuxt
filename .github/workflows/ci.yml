@@ -91,7 +91,7 @@ jobs:
           queries: +security-and-quality
 
       - name: Restore dist cache
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: dist
           path: packages
@@ -124,7 +124,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: dist
           path: packages
@@ -247,7 +247,7 @@ jobs:
         run: pnpm playwright-core install chromium
 
       - name: Restore dist cache
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: dist
           path: packages
@@ -261,7 +261,7 @@ jobs:
           TEST_CONTEXT: ${{ matrix.context }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || runner.os == 'Windows' }}
 
-      - uses: codecov/codecov-action@0cfda1dd0a4ad9efc75517f399d859cd1ea4ced1 # v4.0.2
+      - uses: codecov/codecov-action@54bcd8715eee62d40e33596ef5e8f0f48dbbccab # v4.1.0
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -296,7 +296,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: dist
           path: packages
@@ -335,7 +335,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4.1.2
+        uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
         with:
           name: dist
           path: packages
