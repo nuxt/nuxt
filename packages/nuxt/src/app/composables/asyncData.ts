@@ -1,5 +1,5 @@
-import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
-import type { Ref, WatchSource, WritableComputedRef } from 'vue'
+import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -105,7 +105,7 @@ export interface AsyncDataExecuteOptions {
 }
 
 export interface _AsyncData<DataT, ErrorT> {
-  data: WritableComputedRef<DataT>
+  data: Ref<DataT>
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
