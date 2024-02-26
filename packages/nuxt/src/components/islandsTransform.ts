@@ -47,7 +47,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
-      if(options.selectiveClient === 'deep') { return true }
+      if (options.selectiveClient === 'deep') { return true }
       const components = options.getComponents()
 
       const islands = components.filter(component =>
