@@ -15,6 +15,7 @@ export const InjectionSymbol = Symbol('NuxtTeleportIslandComponent')
  * component only used with componentsIsland
  * this teleport the component in SSR only if it needs to be hydrated on client
  */
+/* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandComponent',
   props: {

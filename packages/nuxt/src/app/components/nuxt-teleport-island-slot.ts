@@ -6,6 +6,7 @@ import { InjectionSymbol } from './nuxt-teleport-island-component'
 /**
  * component only used within islands for slot teleport
  */
+/* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandSlot',
   props: {
