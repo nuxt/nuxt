@@ -5,7 +5,6 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
-import replace from '@rollup/plugin-replace'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
@@ -44,7 +43,12 @@ export async function buildServer (ctx: ViteBuildContext) {
       'process.browser': false,
       'import.meta.server': true,
       'import.meta.client': false,
-      'import.meta.browser': false
+      'import.meta.browser': false,
+      'window': 'undefined',
+      'document': 'undefined',
+      'navigator': 'undefined',
+      'location': 'undefined',
+      'XMLHttpRequest': 'undefined'
     },
     optimizeDeps: {
       entries: ctx.nuxt.options.ssr ? [ctx.entry] : []
@@ -70,7 +74,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
-      sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? true : false,
+      sourcemap: ctx.nuxt.options.sourcemap.server ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.server : false,
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rollupOptions: {
@@ -96,25 +100,12 @@ export async function buildServer (ctx: ViteBuildContext) {
       preTransformRequests: false,
       hmr: false
     },
-    plugins: [
-      // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
-      replace({
-        values: {
-          'typeof window': '"undefined"',
-          'typeof document': '"undefined"',
-          'typeof navigator': '"undefined"',
-          'typeof location': '"undefined"',
-          'typeof XMLHttpRequest': '"undefined"'
-        },
-        preventAssignment: true
-      })
-    ]
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
     const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
       .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
-    serverConfig.ssr!.external!.push(
+    ;(serverConfig.ssr!.external as string[])!.push(
       // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
       'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
       // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build

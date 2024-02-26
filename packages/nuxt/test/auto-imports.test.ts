@@ -162,6 +162,7 @@ const excludedVueHelpers = [
   'Transition',
   'TransitionGroup',
   'VueElement',
+  'ErrorTypeStrings',
   'createApp',
   'createSSRApp',
   'defineCustomElement',
@@ -176,7 +177,11 @@ const excludedVueHelpers = [
   'vModelSelect',
   'vModelText',
   'vShow',
-  'compile'
+  'compile',
+  'DeprecationTypes',
+  'ErrorCodes',
+  'TrackOpTypes',
+  'TriggerOpTypes'
 ]
 
 describe('imports:vue', () => {

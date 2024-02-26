@@ -16,7 +16,7 @@ import importsModule from '../imports/module'
 /* eslint-enable */
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
-import { ImportProtectionPlugin, vueAppPatterns } from './plugins/import-protection'
+import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
@@ -89,20 +89,10 @@ async function initNuxt (nuxt: Nuxt) {
     rootDir: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.rootDir, 'index.html')],
-    patterns: vueAppPatterns(nuxt)
+    patterns: nuxtImportProtections(nuxt)
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
-
-  if (nuxt.options.experimental.appManifest) {
-    addRouteMiddleware({
-      name: 'manifest-route-rule',
-      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
-      global: true
-    })
-
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
-  }
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
@@ -174,7 +164,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
-  if (nuxt.options.experimental.noScripts && !nuxt.options.dev) {
+  if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
@@ -401,6 +391,16 @@ async function initNuxt (nuxt: Nuxt) {
 
   await nuxt.callHook('modules:done')
 
+  if (nuxt.options.experimental.appManifest) {
+    addRouteMiddleware({
+      name: 'manifest-route-rule',
+      path: resolve(nuxt.options.appDir, 'middleware/manifest-route-rule'),
+      global: true
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -508,6 +508,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   const nuxt = createNuxt(options)
+
+  // We register hooks layer-by-layer so any overrides need to be registered separately
+  if (opts.overrides?.hooks) {
+    nuxt.hooks.addHooks(opts.overrides.hooks)
+  }
 
   if (nuxt.options.debug) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })

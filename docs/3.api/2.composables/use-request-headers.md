@@ -18,7 +18,7 @@ const headers = useRequestHeaders()
 const headers = useRequestHeaders(['cookie'])
 ```
 
-::callout
+::tip
 In the browser, `useRequestHeaders` will return an empty object.
 ::
 

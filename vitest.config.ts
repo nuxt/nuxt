@@ -1,8 +1,10 @@
-import { resolve } from 'node:path'
-import { configDefaults, defineConfig } from 'vitest/config'
+import { resolve } from 'pathe'
+import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 import { isWindows } from 'std-env'
+import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
+  plugins: [codspeedPlugin()],
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
@@ -11,12 +13,12 @@ export default defineConfig({
       '#app': resolve('./packages/nuxt/dist/app')
     }
   },
-  define: {
-    'process.env.NUXT_ASYNC_CONTEXT': 'false'
-  },
   test: {
     globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
+    coverage: {
+      exclude: [...coverageConfigDefaults.exclude, 'packages/nuxt/src/app', 'playground', '**/test/', 'scripts', 'vitest.nuxt.config.ts']
+    },
     testTimeout: isWindows ? 60000 : 10000,
     // Excluded plugin because it should throw an error when accidentally loaded via Nuxt
     exclude: [...configDefaults.exclude, 'nuxt/**', '**/test.ts', '**/this-should-not-load.spec.js'],

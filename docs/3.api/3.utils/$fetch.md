@@ -10,11 +10,11 @@ links:
 
 Nuxt uses [ofetch](https://github.com/unjs/ofetch) to expose globally the `$fetch` helper for making HTTP requests within your Vue app or API routes.
 
-::callout{icon="i-ph-rocket-launch-duotone"}
+::tip{icon="i-ph-rocket-launch-duotone" color="gray"}
 During server-side rendering, calling `$fetch` to fetch your internal [API routes](/docs/guide/directory-structure/server) will directly call the relevant function (emulating the request), **saving an additional API call**.
 ::
 
-::callout{color="blue" icon="i-ph-info-duotone"}
+::note{color="blue" icon="i-ph-info-duotone"}
 Using `$fetch` in components without wrapping it with [`useAsyncData`](/docs/api/composables/use-async-data) causes fetching the data twice: initially on the server, then again on the client-side during hydration, because `$fetch` does not transfer state from the server to the client. Thus, the fetch will be executed on both sides because the client has to get the data again.
 ::
 
@@ -35,7 +35,7 @@ const { data } = await useFetch('/api/item')
 
 :read-more{to="/docs/getting-started/data-fetching"}
 
-You can use `$fetch` for any method that are executed only on client-side.
+You can use `$fetch` in any methods that are executed only on client-side.
 
 ```vue [pages/contact.vue]
 <script setup lang="ts">
@@ -52,6 +52,6 @@ function contactForm() {
 </template>
 ```
 
-::callout
+::tip
 `$fetch` is the preferred way to make HTTP calls in Nuxt instead of [@nuxt/http](https://github.com/nuxt/http) and [@nuxtjs/axios](https://github.com/nuxt-community/axios-module) that are made for Nuxt 2.
 ::

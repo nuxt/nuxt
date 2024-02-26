@@ -18,12 +18,16 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['defineNuxtLink']
   },
   {
-    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    imports: ['useNuxtApp', 'tryUseNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
     from: '#app/nuxt'
   },
   {
     imports: ['requestIdleCallback', 'cancelIdleCallback'],
     from: '#app/compat/idle-callback'
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
   },
   {
     imports: ['useAppConfig', 'updateAppConfig'],
@@ -42,6 +46,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/hydrate'
   },
   {
+    imports: ['callOnce'],
+    from: '#app/composables/once'
+  },
+  {
     imports: ['useState', 'clearNuxtState'],
     from: '#app/composables/state'
   },
@@ -54,11 +62,11 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/fetch'
   },
   {
-    imports: ['useCookie'],
+    imports: ['useCookie', 'refreshCookie'],
     from: '#app/composables/cookie'
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr'
   },
   {
@@ -78,6 +86,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/payload'
   },
   {
+    imports: ['useLoadingIndicator'],
+    from: '#app/composables/loading-indicator'
+  },
+  {
     imports: ['getAppManifest', 'getRouteRules'],
     from: '#app/composables/manifest'
   },
@@ -88,6 +100,10 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['useRequestURL'],
     from: '#app/composables/url'
+  },
+  {
+    imports: ['useId'],
+    from: '#app/composables/id'
   }
 ]
 

@@ -5,6 +5,7 @@ prerenderRoutes(['/some/url/from/server-only/component'])
 <template>
   <div>
     server-only component
+    <ServerOnlyComponentChild />
   </div>
 </template>
 

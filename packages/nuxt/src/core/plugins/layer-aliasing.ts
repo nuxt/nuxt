@@ -17,22 +17,23 @@ const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 
 export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
-  const aliases = Object.fromEntries(options.layers.map((l) => {
-    const srcDir = l.config.srcDir || l.cwd
-    const rootDir = l.config.rootDir || l.cwd
-    const publicDir = join(srcDir, l.config?.dir?.public || 'public')
+  const aliases: Record<string, { aliases: Record<string, string>, prefix: string, publicDir: false | string }> = {}
+  for (const layer of options.layers) {
+    const srcDir = layer.config.srcDir || layer.cwd
+    const rootDir = layer.config.rootDir || layer.cwd
+    const publicDir = join(srcDir, layer.config?.dir?.public || 'public')
 
-    return [srcDir, {
+    aliases[srcDir] = {
       aliases: {
-        '~': l.config?.alias?.['~'] || srcDir,
-        '@': l.config?.alias?.['@'] || srcDir,
-        '~~': l.config?.alias?.['~~'] || rootDir,
-        '@@': l.config?.alias?.['@@'] || rootDir
+        '~': layer.config?.alias?.['~'] || srcDir,
+        '@': layer.config?.alias?.['@'] || srcDir,
+        '~~': layer.config?.alias?.['~~'] || rootDir,
+        '@@': layer.config?.alias?.['@@'] || rootDir
       },
       prefix: relative(options.root, publicDir),
       publicDir: !options.dev && existsSync(publicDir) && publicDir
-    }]
-  }))
+    }
+  }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
   return {

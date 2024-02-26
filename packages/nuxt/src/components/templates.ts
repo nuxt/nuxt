@@ -1,15 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
-
-interface ComponentsTemplateContext {
-  app: NuxtApp
-  nuxt: Nuxt
-  options: {
-    getComponents: (mode?: 'client' | 'server' | 'all') => Component[]
-    mode?: 'client' | 'server'
-  }
-}
+import type { NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -70,14 +61,14 @@ export default defineNuxtPlugin({
   }
 }
 
-export const componentNamesTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
     return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
   }
 }
 
-export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
   getContents ({ app }) {
     const components = app.components
@@ -89,7 +80,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
 
     return [
       'import { defineAsyncComponent } from \'vue\'',
-      'export const islandComponents = {',
+      'export const islandComponents = import.meta.client ? {} : {',
       islands.map(
         (c) => {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
@@ -102,7 +93,7 @@ export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> 
   }
 }
 
-export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentsTypeTemplate: NuxtTemplate = {
   filename: 'components.d.ts',
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir

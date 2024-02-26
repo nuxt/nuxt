@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import * as vite from 'vite'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
@@ -77,7 +77,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          'process.env.NUXT_ASYNC_CONTEXT': nuxt.options.experimental.asyncContext
+          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext
         },
         build: {
           copyPublicDir: false,
@@ -103,7 +103,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             rootDir: nuxt.options.rootDir,
             composables: nuxt.options.optimization.keyedComposables
           }),
-          // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
             preventAssignment: true
@@ -139,6 +138,31 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
+  if (nuxt.options.dev) {
+    // Identify which layers will need to have an extra resolve step.
+    const layerDirs: string[] = []
+    const delimitedRootDir = nuxt.options.rootDir + '/'
+    for (const layer of nuxt.options._layers) {
+      if (layer.config.srcDir !== nuxt.options.srcDir && !layer.config.srcDir.startsWith(delimitedRootDir)) {
+        layerDirs.push(layer.config.srcDir + '/')
+      }
+    }
+    if (layerDirs.length > 0) {
+      ctx.config.plugins!.push({
+        name: 'nuxt:optimize-layer-deps',
+        enforce: 'pre',
+        async resolveId (source, _importer) {
+          if (!_importer) { return }
+          const importer = normalize(_importer)
+          if (layerDirs.some(dir => importer.startsWith(dir))) {
+            // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
+            await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+          }
+        },
+      })
+    }
+  }
+
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
     const checker = await import('vite-plugin-checker').then(r => r.default)
@@ -152,7 +176,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:extendConfig', (config) => {
-    // @ts-expect-error types not compatible yet in `@rollup/plugin-replace`
     config.plugins!.push(replace({
       preventAssignment: true,
       ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.')))
@@ -168,7 +191,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         srcDir: ctx.nuxt.options.srcDir,
         clientCSSMap,
         chunksWithInlinedCSS,
-        shouldInline: ctx.nuxt.options.experimental.inlineSSRStyles,
+        shouldInline: ctx.nuxt.options.features.inlineStyles,
         components: ctx.nuxt.apps.default.components,
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',

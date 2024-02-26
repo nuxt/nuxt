@@ -12,8 +12,16 @@ import type {
   Target
 } from './types'
 
-const removeUndefinedProps = (props: Props) =>
-  Object.fromEntries(Object.entries(props).filter(([, value]) => value !== undefined))
+const removeUndefinedProps = (props: Props) => {
+  const filteredProps = Object.create(null)
+  for (const key in props) {
+    const value = props[key]
+    if (value !== undefined) {
+      filteredProps[key] = value;
+    }
+  }
+  return filteredProps
+}
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
   useHead(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))
@@ -78,10 +86,10 @@ export const NoScript = defineComponent({
   },
   setup: setupForUseMeta((props, { slots }) => {
     const noscript = { ...props }
-    const textContent = (slots.default?.() || [])
-      .filter(({ children }) => children)
-      .map(({ children }) => children)
-      .join('')
+    const slotVnodes = slots.default?.()
+    const textContent = slotVnodes
+      ? slotVnodes.filter(({ children }) => children).map(({ children }) => children).join('')
+      : ''
     if (textContent) {
       noscript.children = textContent
     }
