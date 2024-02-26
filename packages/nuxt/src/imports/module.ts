@@ -145,7 +145,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
   const resolvedImportPathMap = new Map<string, string>()
   const r = ({ from }: Import) => resolvedImportPathMap.get(from)
 
-  async function cacheImportPaths(imports: Import[]) {
+  async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
     await Promise.all(importSource.map(async (from) => {
       if (resolvedImportPathMap.has(from)) {
@@ -164,9 +164,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       }
 
       if (existsSync(path) && !(await isDirectory(path))) {
-        path = path.replace(/\.[a-z]+$/, '');
+        path = path.replace(/\.[a-z]+$/, '')
       }
-      
+
       if (isAbsolute(path)) {
         path = relative(join(nuxt.options.buildDir, 'types'), path)
       }
