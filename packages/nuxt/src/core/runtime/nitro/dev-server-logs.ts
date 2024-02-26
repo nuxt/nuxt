@@ -2,7 +2,7 @@ import type { LogObject } from 'consola'
 import { createConsola } from 'consola'
 import devalue from '@nuxt/devalue'
 import { createHooks } from 'hookable'
-import { defineEventHandler, setHeaders, setResponseStatus } from 'h3'
+import { createEventStream, defineEventHandler } from 'h3'
 import { withTrailingSlash } from 'ufo'
 
 import type { NitroApp } from '#internal/nitro/app'
@@ -39,23 +39,19 @@ export default (nitroApp: NitroApp) => {
   })
 
   // Add SSE endpoint for streaming logs to the client
-  nitroApp.router.add('/_nuxt_logs', defineEventHandler(async (event) => {
-    setResponseStatus(event, 200)
-    setHeaders(event, {
-      'cache-control': 'no-cache',
-      'connection': 'keep-alive',
-      'content-type': 'text/event-stream'
+  nitroApp.router.add('/_nuxt_logs', defineEventHandler((event) => {
+    const eventStream = createEventStream(event)
+
+    const unsubscribe = hooks.hook('log', async data => {
+      await eventStream.push(JSON.stringify(data))
     })
 
-    // Let Nitro know the connection is opened
-    event._handled = true
-
-    let counter = 0
-
-    hooks.hook('log', data => {
-      event.node.res.write(`id: ${++counter}\n`)
-      event.node.res.write(`data: ${JSON.stringify(data)}\n\n`)
+    eventStream.onClosed(async () => {
+      unsubscribe()
+      await eventStream.close()
     })
+
+    return eventStream.send()
   }))
 
   // Pass any unhandled logs to the client
