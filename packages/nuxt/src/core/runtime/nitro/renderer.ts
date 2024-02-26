@@ -103,6 +103,7 @@ const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r =>
   const entries: string[] = []
   for (const key in r) { 
     const val = r[key]
+    // @ts-expect-error internal key set by CSS inlining configuration
     if (val._globalCSS) {
       entries.push(val.src!)
     }
