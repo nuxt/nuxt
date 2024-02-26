@@ -251,6 +251,8 @@ export function useAsyncData<
   nuxtApp._asyncData[key]!.error ??= toRef(nuxtApp.payload._errors, key)
   nuxtApp._asyncData[key]!.status ??= ref('idle')
 
+  nuxtApp._asyncData[key]!.data!.value ??= options.default!()
+
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxtApp._asyncData[key] } as AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
 
