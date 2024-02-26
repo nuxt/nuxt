@@ -1,6 +1,7 @@
 import { defineComponent, h, ref } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
+import { isPrerendered } from '#app'
 
 /*@__NO_SIDE_EFFECTS__*/
 export const createServerComponent = (name: string) => {
@@ -33,12 +34,14 @@ export const createIslandPage = (name: string) => {
     name,
     inheritAttrs: false,
     props: { lazy: Boolean },
-    setup (props, { attrs, slots, expose }) {
+    async setup (props, { attrs, slots, expose }) {
       const islandRef = ref<null | typeof NuxtIsland>(null)
       const route = useRoute()
       expose({
         refresh: () => islandRef.value?.refresh()
       })
+
+      const path = await isPrerendered(route.path) ? route.path : route.fullPath.replace(/#.*$/, '')
 
       return () => {
         return h('div', [h(NuxtIsland, {
@@ -46,7 +49,7 @@ export const createIslandPage = (name: string) => {
           lazy: props.lazy,
           props: attrs,
           ref: islandRef,
-          context: { url: route.path }
+          context: { url: path }
         }, slots)])
       }
     }
