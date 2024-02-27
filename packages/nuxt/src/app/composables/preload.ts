@@ -53,10 +53,13 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
   }
 
   router._routePreloaded.add(path)
-
-  const components = matched
-    .map(component => component.components?.default)
-    .filter(component => typeof component === 'function')
+  const components = []
+  for (const component of matched) {
+    const defComponent = component.components?.default
+    if (typeof defComponent === 'function') {
+      components.push(defComponent)
+    }
+  }
 
   for (const component of components) {
     const promise = Promise.resolve((component as Function)())
