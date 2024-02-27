@@ -1,7 +1,7 @@
 import type { VNode } from 'vue'
 import { Teleport, createVNode, defineComponent, h, inject } from 'vue'
 import { useNuxtApp } from '../nuxt'
-import { InjectionSymbol } from './nuxt-teleport-island-component'
+import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
 
 /**
  * component only used within islands for slot teleport
@@ -28,7 +28,7 @@ export default defineComponent({
       return () => slots.default?.()[0]
     }
 
-    const componentName = inject(InjectionSymbol, false)
+    const componentName = inject(NuxtTeleportIslandSymbol, false)
     islandContext.slots[props.name] = {
       props: (props.props || []) as unknown[]
     }
