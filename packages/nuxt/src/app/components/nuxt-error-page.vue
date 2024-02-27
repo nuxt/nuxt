@@ -11,15 +11,12 @@ const props = defineProps({
 
 // Deliberately prevent reactive update when error is cleared
 const _error = props.error
-  
+
 // TODO: extract to a separate utility
 let stacktrace = ''
 if (_error.stack) {
-  const stackArray = _error.stack.split('\n')
-  const firstStack = stackArray[0]
-  const lastStack = stackArray[stackArray.length - 1]
+  const stackArray = _error.stack.split('\n').slice(1)
   for (const stk of stackArray) {
-    if (stk === firstStack) { continue; }
     const text = stk
         .replace('webpack:/', '')
         .replace('.vue', '.js') // TODO: Support sourcemap
@@ -27,9 +24,9 @@ if (_error.stack) {
     const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
           text.includes('internal') ||
           text.includes('new Promise')
-    stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>`
-    if (stk !== lastStack) { stacktrace += '\n'; }
+    stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>\n`
   }
+  stacktrace = stacktrace.slice(0,-1)
 }
   
 // Error page props
