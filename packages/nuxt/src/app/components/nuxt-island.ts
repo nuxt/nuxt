@@ -127,7 +127,7 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-    if (import.meta.client && !canLoadClientComponent.value) {
+      if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
