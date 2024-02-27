@@ -131,7 +131,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
       let features = '';
       for (const feature in windowFeatures) {
-        const value = windowFeatures[feature]
+        const value = windowFeatures[feature as keyof typeof windowFeatures]
         if (value !== undefined) {
           features += `${feature.toLowerCase()}=${value},`
         }
