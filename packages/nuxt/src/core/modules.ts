@@ -19,7 +19,7 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   const buildTranspile = []
   for (const m of nuxt.options.build.transpile) {
     const x = typeof m === 'string' ? m.split('node_modules/').pop() : m
-    if (!!x) {
+    if (x) {
       buildTranspile.push(x)
     }
   }
