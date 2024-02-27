@@ -11,26 +11,26 @@ const props = defineProps({
 
 // Deliberately prevent reactive update when error is cleared
 const _error = props.error
-
+  
 // TODO: extract to a separate utility
-const stacktrace = _error.stack
-  ? _error.stack
-    .split('\n')
-    .splice(1)
-    .map((line) => {
-      const text = line
+let stacktrace = ''
+if (_error.stack) {
+  const stackArray = _error.stack.split('\n')
+  const stkLength = stackArray.length
+  for (const stk of stackArray) {
+    if (stk === stackArray[0]) { continue; }
+    const text = stk
         .replace('webpack:/', '')
         .replace('.vue', '.js') // TODO: Support sourcemap
         .trim()
-      return {
-        text,
-        internal: (line.includes('node_modules') && !line.includes('.cache')) ||
-          line.includes('internal') ||
-          line.includes('new Promise')
-      }
-    }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
-  : ''
-
+    const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
+          text.includes('internal') ||
+          text.includes('new Promise')
+    stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>`
+    if (stk !== stackArray[stkLength-1]) { stacktrace += '\n'; }
+  }
+}
+  
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
 const is404 = statusCode === 404
