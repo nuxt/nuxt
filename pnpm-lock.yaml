@@ -494,7 +494,7 @@ importers:
         specifier: 3.4.20
         version: 3.4.20
       '@vue/language-core':
-        specifier: ^1.8.27
+        specifier: 1.8.27
         version: 1.8.27(typescript@5.3.3)
       c12:
         specifier: 1.9.0
