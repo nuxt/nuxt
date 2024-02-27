@@ -140,8 +140,9 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-      if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(payloads.components || {})) {
+      if (import.meta.client && !canLoadClientComponent.value && payloads.components) {
+        for (const key in payloads.components) {
+          const value = payloads.components[key]
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
@@ -266,20 +267,22 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
+                  { default: () => (payloads.slots[slot].props?.length ? payloads.slots[slot].props.map((data: any) => slots[slot]?.(data)) : [{}]) })
                 )
               }
             }
-            if (import.meta.server) {
-              for (const [id, info] of Object.entries(payloads.components ?? {})) {
+            if (import.meta.server && payloads.components) {
+              for (const id in payloads.components) {
+                const info = payloads.components[id]
                 const { html } = info
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                   default: () => [createStaticVNode(html, 1)]
                 }))
               }
             }
-            if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
-              for (const [id, info] of Object.entries(payloads.components ?? {})) {
+            if (selectiveClient && import.meta.client && canLoadClientComponent.value && payloads.components) {
+              for (const id in payloads.components) {
+                const info = payloads.components[id]
                 const { props } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport
