@@ -15,7 +15,7 @@ const _error = props.error
 // TODO: extract to a separate utility
 let stacktrace = ''
 if (_error.stack) {
-  const stackArray = _error.stack.split('\n').slice(1)
+  const stackArray = _error.stack.split('\n').splice(1)
   for (const stk of stackArray) {
     const text = stk
         .replace('webpack:/', '')
