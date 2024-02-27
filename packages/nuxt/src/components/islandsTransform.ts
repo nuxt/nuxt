@@ -147,7 +147,7 @@ function getPropsToString (bindings: Record<string, string>, vfor?: [string, str
   for (const b in bindings) {
     if (b && b !== '_bind') {
       const value = bindings[b];
-      content += isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\`,`;
+      content += (isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\``) + `,`;
     }
   }
   content = content.slice(0,-1)
