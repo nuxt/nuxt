@@ -127,7 +127,7 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-     if (import.meta.client && !canLoadClientComponent.value) {
+    if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
@@ -259,7 +259,6 @@ export default defineComponent({
             }
             if (import.meta.server) {
               for (const [id, info] of Object.entries(payloads.components ?? {})) {
-                const info = payloads.components[id]
                 const { html } = info
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                   default: () => [createStaticVNode(html, 1)]
