@@ -7,14 +7,14 @@ interface AddModuleTranspilesOptions {
 export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   const nuxt = useNuxt()
 
-  const modules = [
-    ...opts.additionalModules || [],
-    ...nuxt.options.modules,
-    ...nuxt.options._modules
-  ]
-    .map(m => typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src)
-    .filter(m => typeof m === 'string')
-    .map(normalizeModuleTranspilePath)
+  const modules: string[] = []
+  const allModules = [...opts.additionalModules || [], ...nuxt.options.modules, ...nuxt.options._modules]  
+  for (const m of allModules) {
+    const mSrc = typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src
+    if (typeof m === 'string') {
+      modules.push(normalizeModuleTranspilePath(mSrc))
+    }
+  }
 
   // Try to sanitize modules to better match imports
   nuxt.options.build.transpile =
