@@ -129,10 +129,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (import.meta.client) {
       const { target = '_blank', windowFeatures = {} } = options.open
 
-      const features = Object.entries(windowFeatures)
-        .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-        .join(', ')
+      let features = '';
+      for (const feature in windowFeatures) {
+        const value = windowFeatures[feature]
+        if (value !== undefined) {
+          features += `${feature.toLowerCase()}=${value},`
+        }
+      }
+      // Remove last comma
+      features=features.slice(0,-1)
 
       open(toPath, target, features)
     }
