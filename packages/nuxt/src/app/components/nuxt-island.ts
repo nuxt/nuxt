@@ -77,17 +77,7 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => {
-      const filtered = Object.create(null)
-      if (props.props) {
-        for (const key in props.props) {
-          if (!key.startsWith('data-v-')) {
-            filtered[key] = props.props[key]
-          }
-        }
-      }
-      return filtered
-    })
+    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
