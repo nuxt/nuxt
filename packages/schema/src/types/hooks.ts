@@ -9,6 +9,7 @@ import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nitro, NitroConfig } from 'nitropack'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw } from 'vue-router'
+import type { VueCompilerOptions } from '@vue/language-core'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
 import type { Nuxt, NuxtApp, ResolvedNuxtTemplate } from './nuxt'
@@ -19,6 +20,10 @@ export type HookResult = Promise<void> | void
 export type TSReference = { types: string } | { path: string }
 
 export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
+
+// If the user does not have `@vue/language-core` installed, VueCompilerOptions will be typed as `any`,
+// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available. 
+export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: VueCompilerOptions }
 
 export type NuxtPage = {
   name?: string
@@ -282,7 +287,7 @@ export interface NuxtHooks {
    * @param options Objects containing `references`, `declarations`, `tsConfig`
    * @returns Promise
    */
-  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: TSConfig }) => HookResult
+  'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig }) => HookResult
   /**
    * Called when the dev server is loading.
    * @param listenerServer The HTTP/HTTPS server object
