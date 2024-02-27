@@ -3,7 +3,7 @@ import { useNuxtApp } from '../nuxt'
 import { clientOnlySymbol } from '#app/components/client-only'
 
 const ATTR_KEY = 'data-n-ids'
-const SEPARATOR = '_'
+const SEPARATOR = '-'
 
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
