@@ -16,9 +16,10 @@ const _error = props.error
 let stacktrace = ''
 if (_error.stack) {
   const stackArray = _error.stack.split('\n')
-  const stkLength = stackArray.length
+  const firstStack = stackArray[0]
+  const lastStack = stackArray[stackArray.length - 1]
   for (const stk of stackArray) {
-    if (stk === stackArray[0]) { continue; }
+    if (stk === firstStack) { continue; }
     const text = stk
         .replace('webpack:/', '')
         .replace('.vue', '.js') // TODO: Support sourcemap
@@ -27,7 +28,7 @@ if (_error.stack) {
           text.includes('internal') ||
           text.includes('new Promise')
     stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>`
-    if (stk !== stackArray[stkLength-1]) { stacktrace += '\n'; }
+    if (stk !== lastStack) { stacktrace += '\n'; }
   }
 }
   
