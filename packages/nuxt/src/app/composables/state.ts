@@ -4,6 +4,7 @@ import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 
 const useStateKeyPrefix = '$s'
+const useStateKeyLength = useStateKeyPrefix.length
 /**
  * Create a global reactive ref that will be hydrated but not shared across ssr requests
  * @since 3.0.0
@@ -43,8 +44,10 @@ export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean)
 ): void {
   const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.state)
-    .map(key => key.substring(useStateKeyPrefix.length))
+  const _allKeys: string[] = []
+  for (const key of nuxtApp.payload.state) {
+    _allKeys.push(key.substring(useStateKeyLength))
+  }
 
   const _keys: string[] = !keys
     ? _allKeys
