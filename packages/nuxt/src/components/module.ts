@@ -43,9 +43,6 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
-      if (!dir) {
-        return []
-      }
       if (Array.isArray(dir)) {
         return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
       }
@@ -60,6 +57,9 @@ export default defineNuxtModule<ComponentsOptions>({
         return [
           { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) }
         ]
+      }
+      if (!dir) {
+        return []
       }
       const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
