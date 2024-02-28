@@ -94,7 +94,7 @@ export default defineNuxtModule<ComponentsOptions>({
           for (const e of dirOptions.extensions || nuxt.options.extensions) {
             const extRaw = e.replace(/^\./g, '')
             extensions.push(extRaw)
-            extPattern += extRaw.replace(/^\./g, '')+','
+            extPattern += extRaw+','
           }  
           const present = isDirectory(dirPath)
           if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
