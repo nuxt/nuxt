@@ -89,9 +89,12 @@ export default defineNuxtModule<ComponentsOptions>({
           const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
           const dirPath = resolveAlias(dirOptions.path)
           const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-          let extensions = ''
+          const extensions = []
+          let extPattern = ''
           for (const e of dirOptions.extensions || nuxt.options.extensions) {
-            extensions += e.replace(/^\./g, '')+','
+            const extRaw = e.replace(/^\./g, '')
+            extensions.push(extRaw)
+            extPattern += extRaw.replace(/^\./g, '')+','
           }  
           const present = isDirectory(dirPath)
           if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
@@ -103,8 +106,8 @@ export default defineNuxtModule<ComponentsOptions>({
             // TODO: https://github.com/nuxt/framework/pull/251
             enabled: true,
             path: dirPath,
-            extensions,
-            pattern: dirOptions.pattern || `**/*.{${extensions.slice(0,-1)},}`,
+            extensions: extsArray,
+            pattern: dirOptions.pattern || `**/*.{${extPattern.slice(0,-1)},}`,
             ignore: [
               '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
               '**/*.d.{cts,mts,ts}', // .d.ts files
