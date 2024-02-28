@@ -46,9 +46,6 @@ export default defineNuxtModule<ComponentsOptions>({
       if (Array.isArray(dir)) {
         return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
       }
-      if (!dir) {
-        return []
-      }
       if (dir === true || dir === undefined) {
         return [
           { priority: options?.priority || 0, path: resolve(cwd, 'components/islands'), island: true },
@@ -60,6 +57,9 @@ export default defineNuxtModule<ComponentsOptions>({
         return [
           { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) }
         ]
+      }
+      if (!dir) {
+        return []
       }
       const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
@@ -106,20 +106,12 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       }).filter(d => d.enabled)
 
-      const nodeComponents = []
-      const noNodeComponents = []
-      for (const dir of componentDirs) {
-        if (dir.transpile) {
-          if (dir.path.includes('node_modules')) {
-            nodeComponents.push(dir.path)
-          }
-          else {
-            noNodeComponents.push(dir.path)
-          }
-        }
-      }
-      
-      nuxt.options.build!.transpile!.push(...noNodeComponents, ...nodeComponents)
+       componentDirs = [
+        ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
+        ...componentDirs.filter(dir => dir.path.includes('node_modules'))
+      ]
+
+      nuxt.options.build!.transpile!.push(...componentDirs.filter(dir => dir.transpile).map(dir => dir.path))
     })
 
     // components.d.ts
@@ -147,7 +139,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
-      
+
       for (const key in manifest) {
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
