@@ -106,7 +106,7 @@ export default defineNuxtModule<ComponentsOptions>({
             // TODO: https://github.com/nuxt/framework/pull/251
             enabled: true,
             path: dirPath,
-            extensions: extsArray,
+            extensions,
             pattern: dirOptions.pattern || `**/*.{${extPattern.slice(0,-1)},}`,
             ignore: [
               '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
