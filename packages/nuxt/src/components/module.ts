@@ -61,13 +61,7 @@ export default defineNuxtModule<ComponentsOptions>({
           { priority: options?.priority || 0, path: resolve(cwd, resolveAlias(dir)) }
         ]
       }
-      const dirs: ComponentsDir[] = []
-      for (const compDir of dir.dirs || [dir]) {
-        const _dir: ComponentsDir = typeof dir === 'string' ? { path: compDir } : compDir
-        if (_dir.path) {
-          dirs.push(_dir)
-        }
-      }
+      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
       return dirs.map(_dir => ({
         priority: options?.priority || 0,
         ..._dir,
@@ -152,13 +146,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const comps = getComponents()
-      const sourceFiles: string[] = []
-      for (const c of comps) {
-        if (c.global) {
-          sourceFiles.push(relative(nuxt.options.srcDir, c.filePath))
-        }
-      }
+      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
       
       for (const key in manifest) {
         if (manifest[key].isEntry) {
