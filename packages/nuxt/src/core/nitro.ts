@@ -29,23 +29,31 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const _nitroConfig = ((nuxt.options as any).nitro || {}) as NitroConfig
 
-  const excludePaths = nuxt.options._layers
-    .flatMap(l => [
-      l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
-      l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
-    ])
-    .filter((dir): dir is string => Boolean(dir))
-    .map(dir => escapeRE(dir))
+  let excludePaths: string = ''
+  for (const l of nuxt.options._layers) {
+    const match1 = l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1]
+    const match2 = l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
+    if (match1) {
+      excludePaths += escapeRE(match1) + '|'
+    }
+    if (match2) {
+      excludePaths += escapeRE(match2) + '|'
+    }
+  }
   const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
+    ? [new RegExp(`node_modules\\/(?!${excludePaths.slice(0,-1)})`)]
     : [/node_modules/]
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
+  const moduleEntries = []
+  for (const m of nuxt.options._installedModules) {
+    if (m.entryPath) {
+      moduleEntries.push(m.entryPath)
+    }
+  }
   const modules = await resolveNuxtModule(rootDirWithSlash,
-    nuxt.options._installedModules
-      .filter(m => m.entryPath)
-      .map(m => m.entryPath)
+    moduleEntries
   )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
@@ -281,7 +289,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect'].includes(routeKey) && value) {
+            if ((routeKey === 'prerender' || routeKey === 'redirect') && value) {
               filteredRules[routeKey] = routeKey === 'redirect' ? typeof value === 'string' ? value : value.to : value
               hasRules = true
             }
@@ -488,8 +496,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   if (nitro.options.static) {
     nitro.hooks.hook('prerender:routes', (routes) => {
-      for (const route of [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html']) {
-        routes.add(route)
+      if (nuxt.options.ssr) {
+        routes.add('/')
+      }
+      else {
+        for (const route of ['/index.html', '/200.html', '/404.html']) {
+          routes.add(route)
+        }
       }
     })
   }
