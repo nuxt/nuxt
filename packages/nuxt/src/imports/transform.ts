@@ -24,7 +24,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
       if (options.transform?.exclude?.length) {
         for (const pattern of options.transform.exclude) {
           if (pattern.test(id)) {
-            return true;
+            return false;
           }
         }
       }
