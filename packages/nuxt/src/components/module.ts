@@ -106,12 +106,20 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       }).filter(d => d.enabled)
 
-      componentDirs = [
-        ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
-        ...componentDirs.filter(dir => dir.path.includes('node_modules'))
-      ]
-
-      nuxt.options.build!.transpile!.push(...componentDirs.filter(dir => dir.transpile).map(dir => dir.path))
+      const nodeComponents = []
+      const noNodeComponents = []
+      for (const dir of componentDirs) {
+        if (dir.transpile) {
+          if (dir.path.includes('node_modules')) {
+            nodeComponents.push(dir.path)
+          }
+          else {
+            noNodeComponents.push(dir.path)
+          }
+        }
+      }
+      
+      nuxt.options.build!.transpile!.push(...noNodeComponents, ...nodeComponents)
     })
 
     // components.d.ts
@@ -188,7 +196,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Watch for changes
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (!['add', 'unlink'].includes(event)) {
+      if (event !== 'add' && event !== 'unlink') {
         return
       }
       const path = resolve(nuxt.options.srcDir, relativePath)
