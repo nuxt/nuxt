@@ -97,7 +97,7 @@ export default defineNuxtModule<ComponentsOptions>({
           if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
             logger.warn('Components directory not found: `' + dirPath + '`')
           }
-          const comp = {
+          const comp: ComponentsDir = {
             global: componentOptions.global,
             ...dirOptions,
             // TODO: https://github.com/nuxt/framework/pull/251
