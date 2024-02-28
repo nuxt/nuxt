@@ -90,7 +90,7 @@ export default defineNuxtModule<ComponentsOptions>({
           const dirPath = resolveAlias(dirOptions.path)
           const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
           let extensions = ''
-          for (const e of dirOptions.extensions || nuxt.options.extension) {
+          for (const e of dirOptions.extensions || nuxt.options.extensions) {
             extensions += e.replace(/^\./g, '')+','
           }  
           const present = isDirectory(dirPath)
