@@ -257,17 +257,12 @@ export default defineNuxtModule<ComponentsOptions>({
               buildDir: nuxt.options.buildDir
             }))
           } else {
-            const comps = getComponents()
-            const compObj: Record<string, string> = {}
-            for (const c of comps) {
-              if (c.mode === 'client' || c.mode === 'all') {
-                if(c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) Object.assign(compObj, {[c.pascalName]: `/@fs/${c.filePath}`}); continue;
-                const filePath = fs.existsSync( `${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync( `${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                Object.assign(compObj, {[c.pascalName]: `/@fs/${filePath}`})
-              }
-            }
             fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'),`export const paths = ${JSON.stringify(
-              compObj
+              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
+                if(c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) return Object.assign(acc, {[c.pascalName]: `/@fs/${c.filePath}`})
+                const filePath = fs.existsSync( `${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync( `${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
+                return Object.assign(acc, {[c.pascalName]: `/@fs/${filePath}`})
+              }, {} as Record<string, string>)
             )}`)
           }         
         }
