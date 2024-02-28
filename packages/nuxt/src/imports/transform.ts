@@ -13,12 +13,20 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     enforce: 'post',
     transformInclude (id) {
       // Included
-      if (options.transform?.include?.some(pattern => pattern.test(id))) {
-        return true
+      if (options.transform?.include?.length) {
+        for (const pattern of options.transform.include) {
+          if (pattern.test(id)) {
+            return true;
+          }
+        }
       }
       // Excluded
-      if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
-        return false
+      if (options.transform?.exclude?.length) {
+        for (const pattern of options.transform.exclude) {
+          if (pattern.test(id)) {
+            return true;
+          }
+        }
       }
 
       // Vue files
@@ -31,7 +39,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     },
     async transform (code, id) {
       id = normalize(id)
-      const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
+      const isNodeModule = NODE_MODULES_RE.test(id) && options.transform?.include?.length && !options.transform.include.some(pattern => pattern.test(id))
       // For modules in node_modules, we only transform `#imports` but not doing imports
       if (isNodeModule && !IMPORTS_RE.test(code)) {
         return
