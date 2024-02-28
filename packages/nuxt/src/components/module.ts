@@ -31,7 +31,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: []
   },
   setup (componentOptions, nuxt) {
-    let componentDirs: ComponentsDir[] = []
+    const componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[]
     }
