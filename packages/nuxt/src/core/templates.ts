@@ -135,7 +135,7 @@ type Decorate<T extends Record<string, any>> = { [K in keyof T as K extends stri
 type IsAny<T> = 0 extends 1 & T ? true : false
 type InjectionType<A extends Plugin> = IsAny<A> extends true ? unknown : A extends Plugin<infer T> ? Decorate<T> : unknown
 
-type NuxtAppInjections = \n  ${nuxtAppInjects.slice(0,-5}
+type NuxtAppInjections = \n  ${nuxtAppInjects.slice(0,-5)}
 
 declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
