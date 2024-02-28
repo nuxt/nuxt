@@ -31,7 +31,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: []
   },
   setup (componentOptions, nuxt) {
-    const componentDirs: ComponentsDir[] = []
+    let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[]
     }
@@ -84,42 +84,33 @@ export default defineNuxtModule<ComponentsOptions>({
 
       await nuxt.callHook('components:dirs', allDirs)
 
-      for (const dir of allDirs) {
-        if (isPureObjectOrString(dir)) {
-          const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
-          const dirPath = resolveAlias(dirOptions.path)
-          const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-          const extensions = []
-          let extPattern = ''
-          for (const e of dirOptions.extensions || nuxt.options.extensions) {
-            const extRaw = e.replace(/^\./g, '')
-            extensions.push(extRaw)
-            extPattern += extRaw+','
-          }  
-          const present = isDirectory(dirPath)
-          if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-            logger.warn('Components directory not found: `' + dirPath + '`')
-          }
-          const comp: ComponentsDir = {
-            global: componentOptions.global,
-            ...dirOptions,
-            // TODO: https://github.com/nuxt/framework/pull/251
-            enabled: true,
-            path: dirPath,
-            extensions,
-            pattern: dirOptions.pattern || `**/*.{${extPattern.slice(0,-1)},}`,
-            ignore: [
-              '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-              '**/*.d.{cts,mts,ts}', // .d.ts files
-              ...(dirOptions.ignore || [])
-            ],
-            transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)
-          }
-          if (comp.enabled) {
-            componentDirs.push(comp)
-          }
+      componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
+        const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
+        const dirPath = resolveAlias(dirOptions.path)
+        const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
+
+        const present = isDirectory(dirPath)
+        if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
+          logger.warn('Components directory not found: `' + dirPath + '`')
         }
-      }
+
+        return {
+          global: componentOptions.global,
+          ...dirOptions,
+          // TODO: https://github.com/nuxt/framework/pull/251
+          enabled: true,
+          path: dirPath,
+          extensions,
+          pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
+          ignore: [
+            '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
+            '**/*.d.{cts,mts,ts}', // .d.ts files
+            ...(dirOptions.ignore || [])
+          ],
+          transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile)
+        }
+      }).filter(d => d.enabled)
 
       const nodeComponents = []
       const noNodeComponents = []
