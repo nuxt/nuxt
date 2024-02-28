@@ -13,20 +13,13 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     enforce: 'post',
     transformInclude (id) {
       // Included
-      if (options.transform?.include?.length) {
-        for (const pattern of options.transform.include) {
-          if (pattern.test(id)) {
-            return true;
-          }
-        }
-      }
+       if (options.transform?.include?.length && options.transform.include.some(pattern => pattern.test(id))) {
+        return true
+       
+       }
       // Excluded
-      if (options.transform?.exclude?.length) {
-        for (const pattern of options.transform.exclude) {
-          if (pattern.test(id)) {
-            return false;
-          }
-        }
+      if (options.transform?.exclude?.length && options.transform.exclude.some(pattern => pattern.test(id))) {	      
+        return false
       }
 
       // Vue files
