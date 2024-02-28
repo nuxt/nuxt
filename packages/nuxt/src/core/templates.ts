@@ -164,7 +164,8 @@ export const schemaTemplate: NuxtTemplate = {
       const impName = m.entryPath || meta?.name
       if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
         moduleInfo.push({...meta, importName: impName})
-    })
+      }
+    }
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
     const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
