@@ -15,6 +15,7 @@ import type { NuxtPage } from 'nuxt/schema'
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
 import { pageWrappersQueryKey } from './plugins/page-wrappers'
+import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -59,6 +60,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
+    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
     vfs: nuxt.vfs
   })
 
@@ -67,6 +69,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
 type GenerateRoutesFromFilesOptions = {
   shouldExtractBuildMeta?: boolean
+  shouldUseServerComponents?: boolean
   vfs?: Record<string, string>
 }
 
@@ -98,6 +101,13 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
     // Array where routes should be added, useful when adding child routes
     let parent = routes
+
+    if (segments[segments.length - 1].endsWith('.server')) {
+      segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
+      if (options.shouldUseServerComponents) {
+        route.mode = 'server'
+      }
+    }
 
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
@@ -451,9 +461,18 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: genDynamicImport(
-          page.mode !== undefined ? withQuery(file, { [pageWrappersQueryKey]: page.mode }) : file
-        , { interopDefault: true })
+        component: page.mode === 'server'
+          ? `() => createIslandPage(${route.name})`
+          : genDynamicImport(file, { interopDefault: true })
+      }
+
+      if (page.mode === 'server') {
+        metaImports.add(`
+let _createIslandPage
+async function createIslandPage (name) {
+  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  return _createIslandPage(name)
+};`)
       }
 
       if (route.children != null) {

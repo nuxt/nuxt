@@ -21,6 +21,6 @@ Option        | Default          | Description
 `--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
 `--log-level` | `info` | Specify build-time logging level, allowing `silent` \| `info` \| `verbose`.
 
-::callout
+::note
 This command sets `process.env.NODE_ENV` to `production`.
 ::

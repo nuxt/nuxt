@@ -10,7 +10,7 @@ links:
     size: xs
 ---
 
-::callout{icon="i-ph-info-duotone" color="blue"}
+::important
 This utility is available since [Nuxt v3.10](/blog/v3-10).
 ::
 
@@ -35,7 +35,7 @@ const loggedIn = computed(() => !!tokenCookie.value)
 </script>
 ```
 
-::callout{to="/docs/guide/going-further/experimental-features#cookiestore"}
+::note{to="/docs/guide/going-further/experimental-features#cookiestore"}
 You can enable experimental `cookieStore` option to automatically refresh `useCookie` value when cookie changes in the browser.
 ::
 

@@ -8,11 +8,11 @@ links:
     size: xs
 ---
 
-::callout
+::note
 `defineNuxtComponent()` is a helper function for defining type safe Vue components using options API similar to [`defineComponent()`](https://vuejs.org/api/general.html#definecomponent). `defineNuxtComponent()` wrapper also adds support for `asyncData` and `head` component options.
 ::
 
-::callout{color="blue" icon="i-ph-info-duotone"}
+::note
 Using `<script setup lang="ts">` is the recommended way of declaring Vue components in Nuxt 3.
 ::
 
