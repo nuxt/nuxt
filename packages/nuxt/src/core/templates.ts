@@ -160,7 +160,6 @@ export const schemaTemplate: NuxtTemplate = {
   getContents: async ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const moduleInfo = []
     let moduleInfoStr = ''
     let modulesStr = ''
     for (const m of nuxt.options._installedModules) {
@@ -171,7 +170,6 @@ export const schemaTemplate: NuxtTemplate = {
         const importName = getImportName(impName)
         moduleInfoStr += ` [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>\n`
         modulesStr += `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>] | `
-        moduleInfo.push([genString(meta.configKey), getImportName(impName)]);
       }
     }
     const privateRuntimeConfig = Object.create(null)
@@ -180,13 +178,13 @@ export const schemaTemplate: NuxtTemplate = {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    return [
-      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
-      "declare module 'nuxt/schema' {",
-      '  interface NuxtConfig {',
-      moduleInfoStr.slice(0,-1),
-      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],` : '',
-      '  }',
+    return 
+      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'\n" +
+      "declare module 'nuxt/schema' {\n" +
+      '  interface NuxtConfig {\n' + 
+      moduleInfoStr + 
+      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],\n` : '\n' +
+      '  }\n' +
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
@@ -194,7 +192,7 @@ export const schemaTemplate: NuxtTemplate = {
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2
-        }),
+        }) + '\n' +
       generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
           interfaceName: 'PublicRuntimeConfig',
@@ -202,14 +200,13 @@ export const schemaTemplate: NuxtTemplate = {
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2
-        }),
-      '}',
+        }) + '\n' +
+      '}\n' +
       `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }
       }`
-    ].join('\n')
   }
 }
 
@@ -417,6 +414,6 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}\n\n`+
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n`+
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n`+
-      `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n`
+      `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`
   }
 }
