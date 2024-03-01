@@ -17,7 +17,6 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
-import { PageWrappersPlugin } from './plugins/page-wrappers'
 
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
@@ -376,8 +375,6 @@ export default defineNuxtModule({
     nuxt.hook('modules:done', () => {
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
       addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
-
-      addBuildPlugin(PageWrappersPlugin);
     })
 
     // Add prefetching support for middleware & layouts
