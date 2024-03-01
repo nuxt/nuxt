@@ -40,7 +40,7 @@ export type NuxtPage = {
    *
    * `server` means pages are automatically rendered with server components, so there will be no JavaScript to render the page in your client bundle.
    *
-   * `client` means that page will render only on the client side.
+   * `client` means that page will render on the client-side only.
    *
    * @default 'all'
    */
