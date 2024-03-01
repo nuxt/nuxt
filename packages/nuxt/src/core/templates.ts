@@ -178,13 +178,13 @@ export const schemaTemplate: NuxtTemplate = {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    return 
-      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'\n" +
-      "declare module 'nuxt/schema' {\n" +
-      '  interface NuxtConfig {\n' + 
-      moduleInfoStr + 
-      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],\n` : '\n' +
-      '  }\n' +
+    return [
+      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
+      "declare module 'nuxt/schema' {",
+      '  interface NuxtConfig {',
+      moduleInfoStr.slice(0,-1),
+      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],` : '',
+      '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
@@ -192,7 +192,7 @@ export const schemaTemplate: NuxtTemplate = {
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2
-        }) + '\n' +
+        }),
       generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
           interfaceName: 'PublicRuntimeConfig',
@@ -200,13 +200,14 @@ export const schemaTemplate: NuxtTemplate = {
           addDefaults: false,
           allowExtraKeys: false,
           indentation: 2
-        }) + '\n' +
-      '}\n' +
+        }),
+      '}',
       `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }
       }`
+    ].join('\n')
   }
 }
 
