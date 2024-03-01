@@ -158,17 +158,17 @@ const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
-    const moduleInfo = []
-    for (const m of nuxt.options._installedModules) {
-      const meta = {...m.meta}
-      const impName = m.entryPath || meta?.name
-      if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
-         moduleInfo.push({...meta, importName: impName})
-      }
-    }
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
+    const moduleInfo = []
+    for (const m of nuxt.options._installedModules) {
+      const meta = { ...m.meta };
+      const impName = m.entryPath || meta?.name;
+      if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
+        moduleInfo.push([genString(meta.configKey), getImportName(impName)]);
+      }
+    }
+    const modules = moduleInfo.slice()
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
