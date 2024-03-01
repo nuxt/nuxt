@@ -1,4 +1,4 @@
-import { h, defineComponent, defineAsyncComponent } from "vue";
+import { defineAsyncComponent, defineComponent, h } from "vue";
 import type { AsyncComponentLoader} from 'vue'
 import { default as ClientOnly } from '#app/components/client-only'
 
