@@ -1,7 +1,7 @@
 import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
-import { encodePath, joinURL, withLeadingSlash, withQuery } from 'ufo'
+import { encodePath, joinURL, withLeadingSlash } from 'ufo'
 import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
@@ -14,7 +14,6 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
-import { pageWrappersQueryKey } from './plugins/page-wrappers'
 import { distDir } from '../dirs'
 
 enum SegmentParserState {
