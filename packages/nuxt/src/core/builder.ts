@@ -75,7 +75,14 @@ async function watch (nuxt: Nuxt) {
 function createWatcher () {
   const nuxt = useNuxt()
 
-  const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+  const layers = []
+  for (const i of nuxt.options._layers) {
+    const srcDir = i.config.srcDir as string
+    if (srcDir) {
+      layers.push(srcDir)
+    }
+  }
+  const watcher = chokidar.watch(layers, {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [
@@ -100,7 +107,13 @@ function createGranularWatcher () {
   let pending = 0
 
   const ignoredDirs = new Set([...nuxt.options.modulesDir, nuxt.options.buildDir])
-  const pathsToWatch = nuxt.options._layers.map(layer => layer.config.srcDir || layer.cwd).filter(d => d && !isIgnored(d))
+  const pathsToWatch = []
+  for (const layer of nuxt.options._layers) {
+    const srcDir = layer.config.srcDir || layer.cwd)
+    if (srcDir && !isIgnored(srcDir)) {
+      pathsToWatch.push(srcDir)
+    }
+  }
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
