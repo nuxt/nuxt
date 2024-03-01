@@ -174,7 +174,6 @@ export const schemaTemplate: NuxtTemplate = {
         moduleInfo.push([genString(meta.configKey), getImportName(impName)]);
       }
     }
-    const modules = moduleInfo.slice()
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
