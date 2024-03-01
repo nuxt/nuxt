@@ -73,7 +73,6 @@ type GenerateRoutesFromFilesOptions = {
   vfs?: Record<string, string>
 }
 
-const CLIENT_PAGE_EXT_RE = /\.client$/;
 export async function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): Promise<NuxtPage[]> {
   const routes: NuxtPage[] = []
 
@@ -89,22 +88,18 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       children: [],
     }
 
-    const lastSegment = segments.at(-1)
-    if (lastSegment && CLIENT_PAGE_EXT_RE.test(lastSegment)) {
-      const segmentWithoutClientExt = lastSegment.replace(CLIENT_PAGE_EXT_RE, '')
-
-      if (segmentWithoutClientExt) {
-        segments[segments.length - 1] = segmentWithoutClientExt;
-        route.mode = 'client'
-      }
-    }
-
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    if (segments[segments.length - 1].endsWith('.server')) {
-      segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
-      if (options.shouldUseServerComponents) {
+    const lastSegment = segments[segments.length - 1];
+    if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '');
+      route.mode = 'client'
+    }
+
+    if (options.shouldUseServerComponents) {
+      if (lastSegment.endsWith('.server')) {
+        segments[segments.length - 1] = lastSegment.replace('.server', '')
         route.mode = 'server'
       }
     }
@@ -463,6 +458,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         redirect: `${metaImportName}?.redirect`,
         component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
+          : page.mode === 'client'
+            ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
           : genDynamicImport(file, { interopDefault: true })
       }
 
@@ -473,6 +470,16 @@ async function createIslandPage (name) {
   _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
+      }
+
+      if (page.mode === 'client') {
+        const createClientOnlyImport = JSON.stringify(resolve(distDir, 'components/runtime/client-component'))
+        metaImports.add(`
+let _createClientPage
+async function createClientPage(loader) {
+  _createClientPage ||= await import(${createClientOnlyImport}).then(r => r.createClientPage)
+  return _createClientPage(loader);
+}`)
       }
 
       if (route.children != null) {
