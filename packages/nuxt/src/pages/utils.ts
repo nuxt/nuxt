@@ -96,9 +96,9 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       route.mode = 'client'
     }
 
-    if (options.shouldUseServerComponents) {
-      if (lastSegment.endsWith('.server')) {
-        segments[segments.length - 1] = lastSegment.replace('.server', '')
+    if (lastSegment.endsWith('.server')) {
+      segments[segments.length - 1] = lastSegment.replace('.server', '')
+      if(options.shouldUseServerComponents) {
         route.mode = 'server'
       }
     }
