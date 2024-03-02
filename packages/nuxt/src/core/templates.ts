@@ -65,17 +65,16 @@ export const clientPluginTemplate: NuxtTemplate = {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
-    const imports: string[] = []
+    let imports: string = ''
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      imports += genImport(plugin.src, variable) + '\n'
     }
-    return [
-      ...imports,
+    return 
+      imports +
       `export default ${genArrayFromRaw(exports)}`
-    ].join('\n')
   }
 }
 
@@ -85,17 +84,16 @@ export const serverPluginTemplate: NuxtTemplate = {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
-    const imports: string[] = []
+    let imports: string = ''
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      imports += genImport(plugin.src, variable) + '\n'
     }
-    return [
-      ...imports,
+    return 
+      imports + 
       `export default ${genArrayFromRaw(exports)}`
-    ].join('\n')
   }
 }
 
@@ -215,9 +213,12 @@ export const schemaTemplate: NuxtTemplate = {
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
-    const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
-    }))
+    const entries = []
+    for (const key in app.layouts) {
+      const { name, file } = app.layouts[key]
+      entries.push([name, genDynamicImport(file, { interopDefault: true })])
+    }
+    const layoutsObject = genObjectFromRawEntries(entries)
     return `export default ${layoutsObject}`
   }
 }
@@ -237,11 +238,16 @@ export const middlewareTemplate: NuxtTemplate = {
       }
     }
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
-    return [
-      ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
-      `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
+    const globalMiddlewareObject = []
+    let globalMiddlewareImport = ''
+    for (const mw of globalMiddleware) {
+      globalMiddlewareObject.push(genSafeVariableName(mw.name))
+      globalMiddlewareImport += genImport(mw.path, genSafeVariableName(mw.name)) + '\n'
+    }
+    return 
+      globalMiddlewareImport + 
+      `export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}\n` +
       `export const namedMiddleware = ${namedMiddlewareObject}`
-    ].join('\n')
   }
 }
 
