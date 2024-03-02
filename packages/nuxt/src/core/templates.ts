@@ -72,9 +72,7 @@ export const clientPluginTemplate: NuxtTemplate = {
       exports.push(variable)
       imports += genImport(plugin.src, variable) + '\n'
     }
-    return 
-      imports +
-      `export default ${genArrayFromRaw(exports)}`
+    return imports + `export default ${genArrayFromRaw(exports)}`
   }
 }
 
@@ -91,9 +89,7 @@ export const serverPluginTemplate: NuxtTemplate = {
       exports.push(variable)
       imports += genImport(plugin.src, variable) + '\n'
     }
-    return 
-      imports + 
-      `export default ${genArrayFromRaw(exports)}`
+    return imports + `export default ${genArrayFromRaw(exports)}`
   }
 }
 
@@ -245,8 +241,7 @@ export const middlewareTemplate: NuxtTemplate = {
       globalMiddlewareObject.push(variableName)
       globalMiddlewareImport += genImport(mw.path, variableName) + '\n'
     }
-    return 
-      globalMiddlewareImport + 
+    return globalMiddlewareImport + 
       `export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}\n` +
       `export const namedMiddleware = ${namedMiddlewareObject}`
   }
