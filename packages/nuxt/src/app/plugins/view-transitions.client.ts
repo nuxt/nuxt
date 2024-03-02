@@ -35,6 +35,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       changeRoute()
       return promise
     })
+    nuxtApp.callHook('page:view-transition:start', transition)
 
     transition.finished.then(() => {
       abortTransition = undefined
@@ -56,11 +57,13 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 
 declare global {
+  interface ViewTransition {
+    ready: Promise<void>
+    finished: Promise<void>
+    updateCallbackDone: Promise<void>
+  }
+
   interface Document {
-    startViewTransition?: (callback: () => Promise<void> | void) => {
-      finished: Promise<void>
-      updateCallbackDone: Promise<void>
-      ready: Promise<void>
-    }
+    startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition
   }
 }

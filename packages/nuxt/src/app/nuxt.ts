@@ -45,6 +45,7 @@ export interface RuntimeNuxtHooks {
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
   'page:loading:end': () => HookResult
   'vue:setup': () => void
