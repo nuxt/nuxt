@@ -42,7 +42,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     ]
     for (const tag of tagArr) {
       if (tag) {
-        tags += ' '
+        tags += tag + ' '
       }
     }
     console.error(tags, errorObject.message + '\n' + consoleStr.slice(0,-3))
