@@ -213,7 +213,7 @@ export const schemaTemplate: NuxtTemplate = {
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
-    const entries = []
+    const entries: [string, any][]= []
     for (const key in app.layouts) {
       const { name, file } = app.layouts[key]
       entries.push([name, genDynamicImport(file, { interopDefault: true })])
