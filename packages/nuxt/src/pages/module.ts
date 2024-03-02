@@ -456,11 +456,10 @@ export default defineNuxtModule({
         ].join('\n')
       }
     })
-    let composablesFile = ''
+    const composablesFile = genString(relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables')))
     addTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
-        composablesFile = genString(relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables')))
+      getContents: ({  app }: { app: NuxtApp }) => {
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         let middlewareKey = ''
         if (namedMiddleware.length) {
@@ -469,8 +468,8 @@ export default defineNuxtModule({
           }
         }
         return 'import type { NavigationGuard } from \'vue-router\'\n' +
-          `export type MiddlewareKey = ${middlewreKey?.slice(0, -3) || 'string'}\n` +
-          `declare module ${composablesFile} {\m` +
+          `export type MiddlewareKey = ${middlewareKey?.slice(0, -3) || 'string'}\n` +
+          `declare module ${composablesFile} {\n` +
           '  interface PageMeta {\n' +
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>\n' +
           '  }\n' +
@@ -480,7 +479,7 @@ export default defineNuxtModule({
 
     addTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+      getContents: ({ app }: { app: NuxtApp }) => {
         let layoutKey = ''
         for (const name in app.layouts) {
           layoutKey += genString(name) + ' | '
@@ -500,8 +499,7 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
-        getContents: ({ nuxt }) => {
-          const runtimeDir = resolve(distDir, 'pages/runtime')
+        getContents: () => {
           return 'import { ComputedRef, MaybeRef } from \'vue\'\n' +
             `declare module ${composablesFile} {\n` +
             '  interface PageMeta {\n' +
