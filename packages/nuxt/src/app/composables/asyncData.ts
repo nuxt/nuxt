@@ -69,7 +69,7 @@ export interface AsyncDataOptions<
   transform?: _Transform<ResT, DataT>
   /**
    * Only pick specified keys in this array from the handler function result.
-   * Do not use it along with `transform` option and vice versa
+   * Do not use it along with the `transform` option.
    */
   pick?: PickKeys
   /**
