@@ -61,7 +61,7 @@ export const cssTemplate: NuxtTemplate = {
 
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins/client.mjs',
-  async getContents (ctx) {
+  async getContents (ctx): Promise<string> {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
@@ -80,7 +80,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 
 export const serverPluginTemplate: NuxtTemplate = {
   filename: 'plugins/server.mjs',
-  async getContents (ctx) {
+  async getContents (ctx): Promise<string> {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
@@ -226,7 +226,7 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
-  getContents ({ app }): string | Promise<string> {
+  getContents ({ app }): string {
     const globalMiddleware = []
     const namedMiddleware = []
     for (const mw of app.middleware) {
