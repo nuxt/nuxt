@@ -424,11 +424,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[]
     }, headEntryOptions)
     // 4. Payloads
+    const ssrData = splitPayload(ssrContext).initial
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrData, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: ssrData, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload })
@@ -582,10 +583,11 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
+  const ssrPayload = splitPayload(ssrContext).payload
   return {
     body: process.env.NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
+      ? stringify(ssrPayload, ssrContext._payloadReducers)
+      : `export default ${devalue(ssrPayload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
@@ -617,17 +619,18 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
 function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const payloadData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${payloadData})}`
       }
     ]
   }
   return [
     {
-      innerHTML: `window.__NUXT__=${devalue(opts.data)}`
+      innerHTML: `window.__NUXT__=${payloadData}`
     }
   ]
 }
