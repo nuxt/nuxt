@@ -56,13 +56,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 })
 
-declare global {
-  interface ViewTransition {
-    ready: Promise<void>
-    finished: Promise<void>
-    updateCallbackDone: Promise<void>
-  }
+export interface ViewTransition {
+  ready: Promise<void>
+  finished: Promise<void>
+  updateCallbackDone: Promise<void>
+}
 
+declare global {
   interface Document {
     startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition
   }
