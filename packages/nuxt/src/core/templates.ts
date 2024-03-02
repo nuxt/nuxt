@@ -226,7 +226,7 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
-  getContents ({ app }) {
+  getContents ({ app }): string | Promise<string> {
     const globalMiddleware = []
     const namedMiddleware = []
     for (const mw of app.middleware) {
@@ -241,8 +241,9 @@ export const middlewareTemplate: NuxtTemplate = {
     const globalMiddlewareObject = []
     let globalMiddlewareImport = ''
     for (const mw of globalMiddleware) {
-      globalMiddlewareObject.push(genSafeVariableName(mw.name))
-      globalMiddlewareImport += genImport(mw.path, genSafeVariableName(mw.name)) + '\n'
+      const variableName = genSafeVariableName(mw.name)
+      globalMiddlewareObject.push(variableName)
+      globalMiddlewareImport += genImport(mw.path, variableName) + '\n'
     }
     return 
       globalMiddlewareImport + 
