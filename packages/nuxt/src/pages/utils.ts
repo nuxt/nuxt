@@ -91,16 +91,14 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
     let parent = routes
 
     const lastSegment = segments[segments.length - 1];
-    if (lastSegment.endsWith('.client')) {
-      segments[segments.length - 1] = lastSegment.replace('.client', '');
-      route.mode = 'client'
-    }
-
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
-      if(options.shouldUseServerComponents) {
+      if (options.shouldUseServerComponents) {
         route.mode = 'server'
       }
+    } else if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '');
+      route.mode = 'client'
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -469,14 +467,11 @@ async function createIslandPage (name) {
   _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
-      }
-
-      if (page.mode === 'client') {
-        const createClientOnlyImport = JSON.stringify(resolve(distDir, 'components/runtime/client-component'))
+      } else if (page.mode === 'client') {
         metaImports.add(`
 let _createClientPage
 async function createClientPage(loader) {
-  _createClientPage ||= await import(${createClientOnlyImport}).then(r => r.createClientPage)
+  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
   return _createClientPage(loader);
 }`)
       }
