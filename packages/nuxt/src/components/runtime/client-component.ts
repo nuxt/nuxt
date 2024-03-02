@@ -8,10 +8,10 @@ export const createClientPage = (loader: AsyncComponentLoader) => {
 
   return defineComponent({
     inheritAttrs: false,
-    setup() {
+    setup(_, { attrs }) {
       return () => h('div', [
         h(ClientOnly, undefined, {
-          default: () => h(page)
+          default: () => h(page, attrs)
         })
       ])
     }
