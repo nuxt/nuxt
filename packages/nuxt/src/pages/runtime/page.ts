@@ -153,11 +153,12 @@ function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps 
 function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
-  const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  const index = newRoute.matched.length ? newRoute.matched.findIndex(m => m.components?.default === Component?.type) : -1
   if (!index || index === -1) { return false }
 
   // we only care whether the parent route components have had to rerender
-  return newRoute.matched.slice(0, index)
+  const parentRoute = newRoute.matched.slice(0, index)
+  return parentRoute.length && parentRoute
     .some(
       (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
     (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
@@ -166,6 +167,6 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
 function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
-  const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
+  const index = newRoute.matched.length ? newRoute.matched.findIndex(m => m.components?.default === Component?.type) : -1
   return index < newRoute.matched.length - 1
 }
