@@ -98,9 +98,9 @@ export const pluginsDeclaration: NuxtTemplate = {
   getContents: async (ctx) => {
     let exts = ''
     for (const e of ctx.nuxt.options.extensions) {
-      exts += escapeRE(e) +'\n'
+      exts += escapeRE(e) +'|'
     }
-    const EXTENSION_RE = new RegExp(`(?<=\\w)(${exts})$`, 'g')
+    const EXTENSION_RE = new RegExp(`(?<=\\w)(${exts.slice(0,-1)})$`, 'g')
     const tsImports: string[] = []
     for (const p of ctx.app.plugins) {
       const sources = [p.src, p.src.replace(EXTENSION_RE, '.d.ts')]
