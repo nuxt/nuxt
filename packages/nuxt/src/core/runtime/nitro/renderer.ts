@@ -158,7 +158,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig()
+    const config = useRuntimeConfig(ssrContext.event)
     ssrContext.modules = ssrContext.modules || new Set<string>()
     ssrContext!.payload = {
       _errors: {},
@@ -288,7 +288,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const ssrContext: NuxtSSRContext = {
     url,
     event,
-    runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
+    runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
       event.context.nuxt?.noSSR ||
@@ -311,7 +311,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
