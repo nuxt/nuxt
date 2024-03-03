@@ -14,7 +14,8 @@ import { isEqual, withoutBase } from 'ufo'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
-import { type Plugin, type RouteMiddleware, getRouteRules, onNuxtReady } from '#app'
+import { type Plugin, type RouteMiddleware } from '#app'
+import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
@@ -173,13 +174,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        let nuxtReady: boolean = false
+        const routeRules = await nuxtApp.runWithContext(async () => {
+          console.log('get route rules')
+          return await getRouteRules(to.path)
+        })
+        console.log('routerules ', routeRules)
 
-        onNuxtReady(() => nuxtReady = true)
-
-        if (nuxtReady) {
-          const routeRules = await getRouteRules(to.path);
-          if (routeRules.nuxtMiddleware) {
+        if (routeRules.nuxtMiddleware) {
+          if (typeof routeRules.nuxtMiddleware === 'string') routeRules.nuxtMiddleware = [routeRules.nuxtMiddleware]
+          if (Array.isArray(routeRules.nuxtMiddleware)) {
             for (const middleware in routeRules.nuxtMiddleware) {
               if (routeRules.nuxtMiddleware[middleware] === true) {
                 middlewareEntries.add(middleware)
@@ -188,8 +191,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
+        console.log('named', nuxtApp._middleware.named)
+
         for (const entry of middlewareEntries) {
           const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
+
+          console.log(entry, ' ', middleware)
 
           if (!middleware) {
             if (import.meta.dev) {
