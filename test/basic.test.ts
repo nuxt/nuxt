@@ -1986,6 +1986,7 @@ describe('component islands', () => {
         link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
         link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
       }
+      result.head.link.sort((a, b) => b.href.localeCompare(a.href))
     }
 
     // TODO: fix rendering of styles in webpack
@@ -2088,6 +2089,17 @@ describe('component islands', () => {
     expect(result.status).toBe(200)
 
     await startServer()
+  })
+
+  it('render island page', async () => {
+    const { page } = await renderPage('/')
+
+    const islandPageRequest = page.waitForRequest((req) => {
+      return req.url().includes('/__nuxt_island/page:server-page')
+    })
+    await page.getByText('to server page').click()
+    await islandPageRequest
+    await page.locator('#server-page').waitFor()
   })
 })
 

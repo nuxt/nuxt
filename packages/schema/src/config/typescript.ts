@@ -43,7 +43,7 @@ export default defineUntypedSchema({
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
-     * @type {typeof import('pkg-types')['TSConfig']}
+     * @type {0 extends 1 & VueCompilerOptions ? typeof import('pkg-types')['TSConfig'] : typeof import('pkg-types')['TSConfig'] & { vueCompilerOptions?: typeof import('@vue/language-core')['VueCompilerOptions']}}
      */
     tsConfig: {},
 

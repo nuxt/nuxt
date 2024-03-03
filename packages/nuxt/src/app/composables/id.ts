@@ -3,6 +3,7 @@ import { useNuxtApp } from '../nuxt'
 import { clientOnlySymbol } from '#app/components/client-only'
 
 const ATTR_KEY = 'data-n-ids'
+const SEPARATOR = '-'
 
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
@@ -13,7 +14,8 @@ export function useId (key?: string): string {
     throw new TypeError('[nuxt] [useId] key must be a string.')
   }
   // TODO: implement in composable-keys
-  key = key.slice(1)
+  // Make sure key starts with a letter to be a valid selector
+  key = `n${key.slice(1)}`
   const nuxtApp = useNuxtApp()
   const instance = getCurrentInstance()
 
@@ -26,11 +28,11 @@ export function useId (key?: string): string {
   instance._nuxtIdIndex ||= {}
   instance._nuxtIdIndex[key] ||= 0
 
-  const instanceIndex = key + ':' + instance._nuxtIdIndex[key]++
+  const instanceIndex = key + SEPARATOR + instance._nuxtIdIndex[key]++
 
   if (import.meta.server) {
     const ids = JSON.parse(instance.attrs[ATTR_KEY] as string | undefined || '{}')
-    ids[instanceIndex] = key + ':' + nuxtApp._id++
+    ids[instanceIndex] = key + SEPARATOR + nuxtApp._id++
     instance.attrs[ATTR_KEY] = JSON.stringify(ids)
     return ids[instanceIndex]
   }
