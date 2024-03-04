@@ -3,6 +3,7 @@ import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useAppConfig } from '../config'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -50,14 +51,16 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 // --- Internal ---
 
-const extension = renderJsonPayloads ? 'json' : 'js'
+const filename = renderJsonPayloads ? 'payload.json' : 'payload.js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+  // @ts-expect-error private property
+  const buildId = useAppConfig().nuxt?.buildId
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
-  const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.${extension}` : `_payload.${extension}`)
+  const hash = opts.hash || (opts.fresh ? Date.now() : buildId)
+  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
 async function _importPayload (payloadURL: string) {
