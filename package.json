@@ -40,8 +40,8 @@
     "rollup": "^4.12.0",
     "nuxt": "workspace:*",
     "vite": "5.1.4",
-    "vue": "3.4.20",
-    "magic-string": "^0.30.7"
+    "vue": "3.4.21",
+    "magic-string": "^0.30.8"
   },
   "devDependencies": {
     "@codspeed/vitest-plugin": "3.1.0",
@@ -51,7 +51,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.0.2",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.11.20",
+    "@types/node": "20.11.24",
     "@types/semver": "7.5.8",
     "@vitest/coverage-v8": "1.3.1",
     "@vue/test-utils": "2.4.4",
@@ -71,13 +71,13 @@
     "happy-dom": "13.6.2",
     "jiti": "1.21.0",
     "markdownlint-cli": "0.39.0",
-    "nitropack": "2.8.1",
+    "nitropack": "2.9.1",
     "nuxi": "3.10.1",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.0.10",
     "ofetch": "1.3.3",
     "pathe": "1.1.2",
-    "playwright-core": "1.41.2",
+    "playwright-core": "1.42.1",
     "rimraf": "5.0.5",
     "semver": "7.6.0",
     "std-env": "3.7.0",
@@ -85,10 +85,10 @@
     "ufo": "1.4.0",
     "vitest": "1.3.1",
     "vitest-environment-nuxt": "1.0.0",
-    "vue": "3.4.20",
+    "vue": "3.4.21",
     "vue-eslint-parser": "9.4.2",
     "vue-router": "4.3.0",
-    "vue-tsc": "2.0.1"
+    "vue-tsc": "2.0.4"
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {
