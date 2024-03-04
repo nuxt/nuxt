@@ -50,7 +50,8 @@ export default defineUntypedSchema({
     /**
      * Generate a `*.vue` shim.
      *
-     * We recommend instead installing the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar).
+     * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+     * generate accurate types for your components.
      */
     shim: false
   }
