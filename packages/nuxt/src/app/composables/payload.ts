@@ -51,7 +51,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 // --- Internal ---
 
-const filename = renderJsonPayloads ? 'payload.json' : 'payload.js'
+const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
