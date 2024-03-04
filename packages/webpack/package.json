@@ -27,7 +27,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "autoprefixer": "^10.4.17",
+    "autoprefixer": "^10.4.18",
     "css-loader": "^6.10.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
     "cssnano": "^6.0.5",
@@ -41,9 +41,9 @@
     "h3": "^1.11.1",
     "hash-sum": "^2.0.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.7",
+    "magic-string": "^0.30.8",
     "memfs": "^4.7.7",
-    "mini-css-extract-plugin": "^2.8.0",
+    "mini-css-extract-plugin": "^2.8.1",
     "mlly": "^1.6.1",
     "ohash": "^1.1.3",
     "pathe": "^1.1.2",
@@ -51,14 +51,14 @@
     "postcss": "^8.4.35",
     "postcss-import": "^16.0.1",
     "postcss-import-resolver": "^2.0.0",
-    "postcss-loader": "^8.1.0",
+    "postcss-loader": "^8.1.1",
     "postcss-url": "^10.1.3",
     "pug-plain-loader": "^1.1.0",
     "std-env": "^3.7.0",
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.4.0",
     "unenv": "^1.9.0",
-    "unplugin": "^1.7.1",
+    "unplugin": "^1.8.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.0.0",
     "vue-loader": "^17.4.2",
@@ -78,7 +78,7 @@
     "@types/webpack-hot-middleware": "2.25.9",
     "@types/webpack-virtual-modules": "0.1.3",
     "unbuild": "latest",
-    "vue": "3.4.20"
+    "vue": "3.4.21"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
