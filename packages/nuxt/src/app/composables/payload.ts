@@ -53,13 +53,11 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 
 const filename = renderJsonPayloads ? 'payload.json' : 'payload.js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
-  // @ts-expect-error private property
-  const buildId = useAppConfig().nuxt?.buildId
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
-  const hash = opts.hash || (opts.fresh ? Date.now() : buildId)
+  const hash = opts.hash || (opts.fresh ? Date.now() : (useAppConfig().nuxt as any)?.buildId)
   return joinURL(useRuntimeConfig().app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
