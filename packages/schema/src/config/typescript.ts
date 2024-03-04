@@ -52,6 +52,6 @@ export default defineUntypedSchema({
      *
      * We recommend instead installing the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar).
      */
-    shim: true
+    shim: false
   }
 })
