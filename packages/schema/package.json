@@ -42,7 +42,7 @@
     "@vitejs/plugin-vue": "5.0.4",
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "@vue/compiler-core": "3.4.21",
-    "@vue/language-core": "2.0.4",
+    "@vue/language-core": "2.0.5",
     "c12": "1.9.0",
     "esbuild-loader": "4.0.3",
     "h3": "1.11.1",
