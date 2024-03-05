@@ -42,7 +42,7 @@ export const createIslandPage = (name: string) => {
       })
 
       const route = useRoute()
-      const path = !import.meta.dev && await isPrerendered(route.path) ? route.path : route.fullPath.replace(/#.*$/, '')
+      const path = import.meta.client && await isPrerendered(route.path) ? route.path : route.fullPath.replace(/#.*$/, '')
 
       return () => {
         return h('div', [
