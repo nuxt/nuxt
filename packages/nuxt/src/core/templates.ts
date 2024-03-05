@@ -10,7 +10,6 @@ import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
 import { tryResolveModule } from '@nuxt/kit'
 
-
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
 export const vueShim: NuxtTemplate = {
