@@ -150,7 +150,7 @@ export default defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (!force && nuxtApp.payload.data[key] && 'html' in nuxtApp.payload.data[key]) { return nuxtApp.payload.data[key] }
+      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
