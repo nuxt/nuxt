@@ -58,7 +58,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.4.0",
     "unenv": "^1.9.0",
-    "unplugin": "^1.8.0",
+    "unplugin": "^1.8.1",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.0.0",
     "vue-loader": "^17.4.2",
