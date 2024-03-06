@@ -2,7 +2,7 @@
   <div>
     <NuxtLink
       to="/"
-      prefetched-class="prefetched"
+      no-prefetch
     >
       Home
     </NuxtLink>

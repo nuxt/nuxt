@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
-import { createUnimport, scanDirExports } from 'unimport'
+import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions } from 'nuxt/schema'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
@@ -79,7 +79,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
-      getContents: async () => await ctx.toExports() + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
+      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
@@ -177,7 +177,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   addTemplate({
     filename: 'imports.d.ts',
-    getContents: () => ctx.toExports(nuxt.options.buildDir, true)
+    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true)
   })
 
   addTemplate({
