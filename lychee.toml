@@ -9,7 +9,6 @@ max_retries = 6
 # Explicitly exclude some URLs
 exclude = [
   "https://twitter.nuxt.dev/",
-  "https://cssnano.co/",
   "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
   # single-quotes are required for regexp
