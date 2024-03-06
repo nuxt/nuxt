@@ -535,14 +535,15 @@ function joinTags (tags: string[]) {
 }
 
 function joinAttrs (chunks: string[]) {
-  return chunks.join(' ')
+  if (chunks.length === 0) return ''
+  return ' ' + chunks.join(' ')
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   return '<!DOCTYPE html>'
-    + `<html ${joinAttrs(html.htmlAttrs)}>`
+    + `<html${joinAttrs(html.htmlAttrs)}>`
     + `<head>${joinTags(html.head)}</head>`
-    + `<body ${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>`
+    + `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>`
     + '</html>'
 }
 
