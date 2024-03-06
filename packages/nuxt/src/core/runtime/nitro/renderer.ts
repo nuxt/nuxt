@@ -70,6 +70,7 @@ export interface NuxtIslandClientResponse {
   html: string
   props: unknown
   chunk: string
+  slots?: Record<string, string>
 }
 
 export interface NuxtIslandResponse {
@@ -629,6 +630,7 @@ function getServerComponentHTML (body: string[]): string {
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
+const SSR_CLIENT_SLOT_MARKER = /^island-slot=(?:[^;]*);(.*)$/
 
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext) { return {} }
@@ -636,7 +638,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
     }
   }
   return response
@@ -645,14 +647,31 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
 function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['components'] = {}
+
   for (const clientUid in ssrContext.islandContext.components) {
     const html = ssrContext.teleports?.[clientUid] || ''
     response[clientUid] = {
       ...ssrContext.islandContext.components[clientUid],
       html,
+      slots: getComponentSlotTeleport(ssrContext.teleports ?? {})
     }
   }
   return response
+}
+
+function getComponentSlotTeleport (teleports: Record<string, string>) {
+  const entries = Object.entries(teleports)
+  const slots: Record<string, string> = {}
+
+  for (const [key, value] of entries) {
+    const match = key.match(SSR_CLIENT_SLOT_MARKER)
+    if (match) {
+      const [, slot] = match
+      if (!slot) { continue }
+      slots[slot] = value
+    }
+  }
+  return slots
 }
 
 function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {

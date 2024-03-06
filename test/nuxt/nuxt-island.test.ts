@@ -26,7 +26,7 @@ vi.mock('vue', async (original) => {
 const consoleError = vi.spyOn(console, 'error')
 const consoleWarn = vi.spyOn(console, 'warn')
 
-function expectNoConsoleIssue() {
+function expectNoConsoleIssue () {
   expect(consoleError).not.toHaveBeenCalled()
   expect(consoleWarn).not.toHaveBeenCalled()
 }
@@ -93,7 +93,7 @@ describe('runtime server component', () => {
           link: [],
           style: []
         },
-        json() {
+        json () {
           return this
         }
       }
@@ -123,7 +123,7 @@ describe('client components', () => {
     vi.doMock(mockPath, () => ({
       default: {
         name: 'ClientComponent',
-        setup() {
+        setup () {
           return () => h('div', 'client component')
         }
       }
@@ -145,7 +145,7 @@ describe('client components', () => {
             chunk: mockPath
           }
         },
-        json() {
+        json () {
           return this
         }
       }
@@ -184,14 +184,14 @@ describe('client components', () => {
         style: []
       },
       components: {},
-      json() {
+      json () {
         return this
       }
     }))
 
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
-    expect(wrapper.html()).toMatchInlineSnapshot( `
+    expect(wrapper.html()).toMatchInlineSnapshot(`
       "<div data-island-uid="3">hello<div>
           <div>fallback</div>
         </div>
@@ -202,10 +202,10 @@ describe('client components', () => {
     expectNoConsoleIssue()
   })
 
-    
+
   it('should not replace nested client components data-island-uid', async () => {
     const componentId = 'Client-12345'
- 
+
     const stubFetch = vi.fn(() => {
       return {
         id: '1234',
@@ -215,7 +215,7 @@ describe('client components', () => {
           link: [],
           style: []
         },
-        json() {
+        json () {
           return this
         }
       }
@@ -236,6 +236,68 @@ describe('client components', () => {
     expect(fetch).toHaveBeenCalledOnce()
     expect(wrapper.html()).toContain('data-island-uid="not-to-be-replaced"')
     vi.mocked(fetch).mockReset()
+    expectNoConsoleIssue()
+  })
+
+  it('pass a slot to a client components within islands', async () => {
+    const mockPath = '/nuxt-client-with-slot.js'
+    const componentId = 'ClientWithSlot-12345'
+
+    vi.doMock(mockPath, () => ({
+      default: {
+        name: 'ClientWithSlot',
+        setup (_, { slots }) {
+          return () => h('div', { class: "client-component" }, slots.default())
+        }
+      }
+    }))
+
+    const stubFetch = vi.fn(() => {
+      return {
+        id: '123',
+        html: `<div data-island-uid>hello<div data-island-uid data-island-component="${componentId}"></div></div>`,
+        state: {},
+        head: {
+          link: [],
+          style: []
+        },
+        components: {
+          [componentId]: {
+            html: '<div>fallback</div>',
+            props: {},
+            chunk: mockPath,
+            slots: {
+              default: '<div>slot in client component</div>'
+            }
+          }
+        },
+        json () {
+          return this
+        }
+      }
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+    const wrapper = await mountSuspended(NuxtIsland, {
+      props: {
+        name: 'NuxtClientWithSlot',
+      },
+      attachTo: 'body'
+    })
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.html()).toMatchInlineSnapshot(`
+      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="ClientWithSlot-12345">
+          <div class="client-component">
+            <div style="display: contents" data-island-uid="" data-island-slot="default">
+              <div>slot in client component</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--teleport start-->
+      <!--teleport end-->"
+    `)
+
     expectNoConsoleIssue()
   })
 })
