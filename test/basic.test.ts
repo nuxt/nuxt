@@ -2134,11 +2134,11 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     await gotoPath(page, '/random/a')
 
     // We are manually prefetching other payloads
-    await page.waitForRequest(url('/random/c/_payload.json'))
+    await page.waitForRequest(request => request.url().includes('/random/c/_payload.json'))
 
     // We are not triggering API requests in the payload
-    expect(requests).not.toContain(expect.stringContaining('/api/random'))
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/api/random'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
     // requests.length = 0
 
     await page.click('[href="/random/b"]')
@@ -2146,10 +2146,10 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
 
     // We are fetching a payload we did not prefetch
-    expect(requests).toContain('/random/b/_payload.json')
+    expect(requests).toContainEqual(expect.stringContaining('/random/b/_payload.json'))
 
     // We are not refetching payloads we've already prefetched
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(1)
@@ -2160,7 +2160,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
