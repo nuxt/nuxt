@@ -2,8 +2,8 @@ import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
-let hideTimeout: any = null
-let resetTimeout: any = null
+let hideTimeout: number | NodeJS.Timeout
+let resetTimeout: number | NodeJS.Timeout
 
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
