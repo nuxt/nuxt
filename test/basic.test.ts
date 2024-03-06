@@ -568,6 +568,61 @@ describe('nuxt composables', () => {
     expect(text).toContain('foobar')
     await page.close()
   })
+
+  it('respects preview mode with a token', async () => {
+    const token = 'hehe'
+    const page = await createPage(`/preview?preview=true&token=${token}`)
+
+    const hasRerunFetchOnClient = await new Promise<boolean>((resolve) => {
+      page.on('console', (message) => {
+        setTimeout(() => resolve(false), 4000)
+
+        if (message.text() === 'true') { resolve(true) }
+      })
+    })
+
+    expect(hasRerunFetchOnClient).toBe(true)
+
+    expect(await page.locator('#fetched-on-client').textContent()).toContain('fetched on client')
+    expect(await page.locator('#preview-mode').textContent()).toContain('preview mode enabled')
+
+    await page.click('#use-fetch-check')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/preview/with-use-fetch'))
+
+    expect(await page.locator('#token-check').textContent()).toContain(token)
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('true')
+    await page.close()
+  })
+
+  it('respects preview mode with custom state', async () => {
+    const { page } = await renderPage('/preview/with-custom-state?preview=true')
+
+    expect(await page.locator('#data1').textContent()).toContain('data1 updated')
+    expect(await page.locator('#data2').textContent()).toContain('data2')
+
+    await page.click('#toggle-preview') // manually turns off preview mode
+    await page.click('#with-use-fetch')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/preview/with-use-fetch'))
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+    expect(await page.locator('#token-check').textContent()).toEqual('')
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('false')
+    await page.close()
+  })
+
+  it('respects preview mode with custom enable', async () => {
+    const { page } = await renderPage('/preview/with-custom-enable?preview=true')
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+    await page.close()
+  })
+
+  it('respects preview mode with custom enable and customPreview', async () => {
+    const { page } = await renderPage('/preview/with-custom-enable?customPreview=true')
+
+    expect(await page.locator('#enabled').textContent()).toContain('true')
+    await page.close()
+  })
 })
 
 describe('rich payloads', () => {
