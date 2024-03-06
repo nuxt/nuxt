@@ -35,12 +35,13 @@ export default defineNuxtPlugin((nuxtApp) => {
       changeRoute()
       return promise
     })
-    await nuxtApp.callHook('page:view-transition:start', transition)
 
     transition.finished.then(() => {
       abortTransition = undefined
       finishTransition = undefined
     })
+
+    await nuxtApp.callHook('page:view-transition:start', transition)
 
     return ready
   })
