@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { Nuxt, NuxtConfig, NuxtOptions } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { defu } from 'defu'
 
 import { _generateTypes } from '../src/template'
