@@ -128,7 +128,8 @@ describe('composables', () => {
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
-      'useServerSeoMeta'
+      'useServerSeoMeta',
+      'usePreviewMode'
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -484,6 +485,21 @@ describe('loading state', () => {
     await nuxtApp.callHook('page:loading:end')
     expect(isLoading.value).toBeFalsy()
     vi.mocked(setTimeout).mockRestore()
+  })
+})
+
+describe('loading state', () => {
+  it('expect loading state to be changed by force starting/stoping', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+    start()
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
   })
 })
 

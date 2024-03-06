@@ -110,6 +110,7 @@ const count = ref(0)
       </div>
     </div>
     <ServerWithClient />
+    <ServerWithNestedClient />
   </div>
 </template>
 
