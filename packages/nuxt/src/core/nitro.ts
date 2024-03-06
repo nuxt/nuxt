@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, normalize, relative, resolve } from 'pathe'
@@ -18,6 +19,7 @@ import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { isWindows } from 'std-env'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -394,7 +396,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
-      driver: await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver')),
+      driver: pathToFileURL(await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))).href,
       base: resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
     }
   })
