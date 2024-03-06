@@ -19,7 +19,6 @@ import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
-import { isWindows } from 'std-env'
 
 const logLevelMapReverse = {
   silent: 0,
