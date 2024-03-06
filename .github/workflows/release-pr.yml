@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Ensure action is by maintainer
-        uses: octokit/request-action@89697eb6635e52c6e1e5559f15b5c91ba5100cb0 # v2.1.9
+        uses: octokit/request-action@d69a4d4369a61d4045c56451421ff93ee5e7bea0 # v2.2.0
         id: check_role
         with:
           route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
