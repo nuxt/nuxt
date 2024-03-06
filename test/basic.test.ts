@@ -522,7 +522,7 @@ describe('pages', () => {
     `)
 
     // also there should not be any errors
-    expect(errors.length).toBe(0);
+    expect(errors.length).toBe(0)
 
     await normalInitialPage.close()
   })

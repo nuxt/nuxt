@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const state = useState('test', () => {
-  let hasAccessToWindow = null as null | boolean;
+  let hasAccessToWindow = null as null | boolean
 
   try {
     hasAccessToWindow = Object.keys(window).at(0) ? true : false

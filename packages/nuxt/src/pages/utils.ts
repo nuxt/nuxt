@@ -90,14 +90,14 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    const lastSegment = segments[segments.length - 1];
+    const lastSegment = segments[segments.length - 1]
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
         route.mode = 'server'
       }
     } else if (lastSegment.endsWith('.client')) {
-      segments[segments.length - 1] = lastSegment.replace('.client', '');
+      segments[segments.length - 1] = lastSegment.replace('.client', '')
       route.mode = 'client'
     }
 
@@ -457,7 +457,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
           ? `() => createIslandPage(${route.name})`
           : page.mode === 'client'
             ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
-          : genDynamicImport(file, { interopDefault: true })
+            : genDynamicImport(file, { interopDefault: true })
       }
 
       if (page.mode === 'server') {
