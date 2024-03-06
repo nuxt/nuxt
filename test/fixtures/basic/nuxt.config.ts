@@ -211,7 +211,7 @@ export default defineNuxtConfig({
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
-      selectiveClient: true
+      selectiveClient: 'deep'
     },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',

@@ -22,7 +22,7 @@ export type TSReference = { types: string } | { path: string }
 export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
 // If the user does not have `@vue/language-core` installed, VueCompilerOptions will be typed as `any`,
-// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available. 
+// thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available.
 export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: VueCompilerOptions }
 
 export type NuxtPage = {
@@ -39,9 +39,11 @@ export type NuxtPage = {
    * `all` means the page will be rendered isomorphically - with JavaScript both on client and server.
    *
    * `server` means pages are automatically rendered with server components, so there will be no JavaScript to render the page in your client bundle.
+   *
+   * `client` means that page will render on the client-side only.
    * @default 'all'
    */
-  mode?: 'server' | 'all'
+  mode?: 'client' | 'server' | 'all'
 }
 
 export type NuxtMiddleware = {

@@ -37,7 +37,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "rollup": "^4.12.0",
+    "rollup": "^4.12.1",
     "nuxt": "workspace:*",
     "vite": "5.1.5",
     "vue": "3.4.21",
@@ -88,7 +88,7 @@
     "vue": "3.4.21",
     "vue-eslint-parser": "9.4.2",
     "vue-router": "4.3.0",
-    "vue-tsc": "2.0.4"
+    "vue-tsc": "2.0.5"
   },
   "packageManager": "pnpm@8.15.4",
   "engines": {

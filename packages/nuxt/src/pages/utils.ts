@@ -84,17 +84,21 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       name: '',
       path: '',
       file: file.absolutePath,
-      children: []
+      children: [],
     }
 
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    if (segments[segments.length - 1].endsWith('.server')) {
-      segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
+    const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith('.server')) {
+      segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
         route.mode = 'server'
       }
+    } else if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '')
+      route.mode = 'client'
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -451,7 +455,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         redirect: `${metaImportName}?.redirect`,
         component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
-          : genDynamicImport(file, { interopDefault: true })
+          : page.mode === 'client'
+            ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
+            : genDynamicImport(file, { interopDefault: true })
       }
 
       if (page.mode === 'server') {
@@ -461,6 +467,13 @@ async function createIslandPage (name) {
   _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
+      } else if (page.mode === 'client') {
+        metaImports.add(`
+let _createClientPage
+async function createClientPage(loader) {
+  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  return _createClientPage(loader);
+}`)
       }
 
       if (route.children != null) {
