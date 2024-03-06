@@ -109,7 +109,6 @@ export default defineComponent({
       components: {}
     }
 
-
     if (nuxtApp.isHydrating) {
       payloads.slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {}
       payloads.components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {}
@@ -119,6 +118,8 @@ export default defineComponent({
 
     if (import.meta.client && nuxtApp.isHydrating) {
       ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
+      const key = `${props.name}_${hashId.value}`
+      nuxtApp.payload.data[key].html = ssrHTML.value
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
@@ -149,7 +150,7 @@ export default defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (nuxtApp.payload.data[key]?.html && !force) { return nuxtApp.payload.data[key] }
+      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
@@ -259,20 +260,24 @@ export default defineComponent({
             }
             if (import.meta.server) {
               for (const [id, info] of Object.entries(payloads.components ?? {})) {
-                const { html } = info
+                const { html, slots } = info
+                let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
+                for (const slot in slots) {
+                  replaced = replaced.replaceAll(`data-island-slot="${slot}">`, (full) => full + slots[slot])
+                }
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
-                  default: () => [createStaticVNode(html, 1)]
+                  default: () => [createStaticVNode(replaced, 1)]
                 }))
               }
-            }
-            if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
+            } else if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
               for (const [id, info] of Object.entries(payloads.components ?? {})) {
-                const { props } = info
+                const { props, slots } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport
                 const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                   default: () => {
-                    return [h(component, props)]
+                    return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1)
+                    ]))))]
                   }
                 })
                 teleports.push(vnode)

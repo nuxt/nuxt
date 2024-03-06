@@ -63,7 +63,7 @@ export async function warmupViteServer (
 
     try {
       const mod = await server.moduleGraph.getModuleByUrl(url, isServer)
-      const deps = mod?.ssrTransformResult?.deps /* server */ || Array.from(mod?.importedModules /* client */ || []).map(m => m.url)
+      const deps = mod?.ssrTransformResult?.deps /* server */ || mod?.importedModules.size ? Array.from(mod?.importedModules /* client */).map(m => m.url) : []
       await Promise.all(deps.map(m => warmup(m)))
     } catch (e) {
       logger.debug('[warmup] tracking dependencies for %s failed with: %s', url, e)

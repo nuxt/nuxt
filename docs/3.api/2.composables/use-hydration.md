@@ -10,7 +10,7 @@ links:
 
 `useHydration` is a built-in composable that provides a way to set data on the server side every time a new HTTP request is made and receive that data on the client side. This way `useHydration` allows you to take full control of the hydration cycle.
 
-::callout
+::note
 This is an advanced composable and is mostly used internally (`useAsyncData`) or by Nuxt modules.
 ::
 

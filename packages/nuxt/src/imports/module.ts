@@ -1,10 +1,12 @@
+import { existsSync } from 'node:fs'
 import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
-import { createUnimport, scanDirExports } from 'unimport'
+import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions } from 'nuxt/schema'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
+import { isDirectory } from '../utils'
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
 
@@ -77,7 +79,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
-      getContents: async () => await ctx.toExports() + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
+      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
@@ -140,13 +142,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions>) {
   const nuxt = useNuxt()
 
-  // Remove file extension for benefit of TypeScript
-  const stripExtension = (path: string) => path.replace(/\.[a-z]+$/, '')
-
   const resolvedImportPathMap = new Map<string, string>()
   const r = ({ from }: Import) => resolvedImportPathMap.get(from)
 
-  async function cacheImportPaths(imports: Import[]) {
+  async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
     await Promise.all(importSource.map(async (from) => {
       if (resolvedImportPathMap.has(from)) {
@@ -163,18 +162,22 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           return join(dir, name, subpath || '')
         }) ?? path
       }
+
+      if (existsSync(path) && !(await isDirectory(path))) {
+        path = path.replace(/\.[a-z]+$/, '')
+      }
+
       if (isAbsolute(path)) {
         path = relative(join(nuxt.options.buildDir, 'types'), path)
       }
 
-      path = stripExtension(path)
       resolvedImportPathMap.set(from, path)
     }))
   }
 
   addTemplate({
     filename: 'imports.d.ts',
-    getContents: () => ctx.toExports(nuxt.options.buildDir, true)
+    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true)
   })
 
   addTemplate({
