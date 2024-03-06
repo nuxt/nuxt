@@ -112,7 +112,6 @@ describe('runtime server component', () => {
     vi.mocked(fetch).mockReset()
   })
 
-
   it('expect NuxtIsland to emit an error', async () => {
     const stubFetch = vi.fn(() => {
       throw new Error('fetch error')
@@ -138,7 +137,6 @@ describe('runtime server component', () => {
 
 
 describe('client components', () => {
-
   it('expect swapping nuxt-client should not trigger errors #25289', async () => {
     const mockPath = '/nuxt-client.js'
     const componentId = 'Client-12345'
