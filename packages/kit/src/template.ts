@@ -155,9 +155,7 @@ export async function writeTypes (nuxt: Nuxt) {
       ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
     ],
     exclude: [
-      ...nuxt.options.modulesDir
-        .filter(modulesDir => modulesDir.endsWith('node_modules'))
-        .map(m => relativeWithDot(nuxt.options.buildDir, m)),
+      ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
       ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
