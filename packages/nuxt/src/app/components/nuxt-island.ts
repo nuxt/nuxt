@@ -109,7 +109,6 @@ export default defineComponent({
       components: {}
     }
 
-
     if (nuxtApp.isHydrating) {
       payloads.slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots ?? {}
       payloads.components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components ?? {}
@@ -119,6 +118,8 @@ export default defineComponent({
 
     if (import.meta.client && nuxtApp.isHydrating) {
       ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
+      const key = `${props.name}_${hashId.value}`
+      nuxtApp.payload.data[key].html = ssrHTML.value
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
@@ -149,7 +150,7 @@ export default defineComponent({
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
 
-      if (nuxtApp.payload.data[key]?.html && !force) { return nuxtApp.payload.data[key] }
+      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
@@ -224,9 +225,9 @@ export default defineComponent({
       watch(props, debounce(() => fetchComponent(), 100), { deep: true })
     }
 
-    if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
+    if (import.meta.client && !instance.vnode.el && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
+    } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)

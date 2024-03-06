@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 `abortNavigation` is only usable inside a [route middleware handler](/docs/guide/directory-structure/middleware).
 ::
 
@@ -37,7 +37,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   if (!user.value.isAuthorized) {
     return abortNavigation()
   }
- 
+
   if (to.path !== '/edit-post') {
     return navigateTo('/edit-post')
   }

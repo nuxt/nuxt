@@ -329,6 +329,25 @@ describe('head', () => {
       }
     })
   })
+  it('types head for defineNuxtComponent', () => {
+    defineNuxtComponent({
+      head(nuxtApp) {
+        expectTypeOf(nuxtApp).not.toBeAny()
+        return {
+          title: 'Site Title'
+        }
+      }
+    })
+
+    defineNuxtComponent({
+      // @ts-expect-error wrong return type for head function
+      head() {
+        return {
+          'test': true
+        }
+      }
+    })
+  })
 })
 
 describe('components', () => {
@@ -360,6 +379,11 @@ describe('composables', () => {
 
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
+  })
+
+  it('prevents passing string to `useId`', () => {
+    // @ts-expect-error providing a key is not allowed
+    useId('test')
   })
 
   it('enforces readonly cookies', () => {

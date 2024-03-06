@@ -3,31 +3,36 @@ import { useNuxtApp } from '../nuxt'
 import { clientOnlySymbol } from '#app/components/client-only'
 
 const ATTR_KEY = 'data-n-ids'
+const SEPARATOR = '-'
 
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
  */
+export function useId (): string
 export function useId (key?: string): string {
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [useId] key must be a string.')
   }
+  // TODO: implement in composable-keys
+  // Make sure key starts with a letter to be a valid selector
+  key = `n${key.slice(1)}`
   const nuxtApp = useNuxtApp()
   const instance = getCurrentInstance()
 
   if (!instance) {
     // TODO: support auto-incrementing ID for plugins if there is need?
-    throw new TypeError('[nuxt] `useId` must be called within a component.')
+    throw new TypeError('[nuxt] `useId` must be called within a component setup function.')
   }
 
   nuxtApp._id ||= 0
   instance._nuxtIdIndex ||= {}
   instance._nuxtIdIndex[key] ||= 0
 
-  const instanceIndex = key + ':' + instance._nuxtIdIndex[key]++
+  const instanceIndex = key + SEPARATOR + instance._nuxtIdIndex[key]++
 
   if (import.meta.server) {
     const ids = JSON.parse(instance.attrs[ATTR_KEY] as string | undefined || '{}')
-    ids[instanceIndex] = key + ':' + nuxtApp._id++
+    ids[instanceIndex] = key + SEPARATOR + nuxtApp._id++
     instance.attrs[ATTR_KEY] = JSON.stringify(ids)
     return ids[instanceIndex]
   }
@@ -41,6 +46,10 @@ export function useId (key?: string): string {
     const ids = JSON.parse(el?.getAttribute?.(ATTR_KEY) || '{}')
     if (ids[instanceIndex]) {
       return ids[instanceIndex]
+    }
+
+    if (import.meta.dev && instance.vnode.type && typeof instance.vnode.type === 'object' && 'inheritAttrs' in instance.vnode.type && instance.vnode.type.inheritAttrs === false) {
+      console.warn('[nuxt] `useId` might not work correctly with components that have `inheritAttrs: false`.')
     }
   }
 

@@ -233,7 +233,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
       return []
     }
     visited.push(name)
-    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
+    return deps[name]?.length ? deps[name].flatMap(dep => checkDeps(dep, [...visited])) : []
   }
   for (const name in deps) {
     checkDeps(name)
