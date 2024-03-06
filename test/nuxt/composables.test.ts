@@ -491,11 +491,12 @@ describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
     vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
     const nuxtApp = useNuxtApp()
-    const { isLoading, start, finish } = useLoadingIndicator({ force: true })
+    const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
     await nuxtApp.callHook('page:loading:start')
     expect(isLoading.value).toBeTruthy()
     start()
+    expect(isLoading.value).toBeTruthy()
     finish()
     expect(isLoading.value).toBeFalsy()
   })

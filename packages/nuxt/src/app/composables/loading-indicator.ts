@@ -80,6 +80,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     progress.value = 100
     done = true
     clear()
+    _clearTimeouts()
     if (opts.force) {
       progress.value = 0
       isLoading.value = false
@@ -88,10 +89,15 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function clear () {
+  function _clearTimeouts () {
     if (import.meta.client) {
       clearTimeout(hideTimeout)
       clearTimeout(resetTimeout)
+    }
+  }
+
+  function clear () {
+    if (import.meta.client) {
       clearTimeout(throttleTimeout)
       cancelAnimationFrame(rafId)
     }
