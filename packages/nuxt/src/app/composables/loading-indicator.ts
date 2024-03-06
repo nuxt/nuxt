@@ -2,9 +2,6 @@ import { computed, getCurrentScope, onScopeDispose, ref } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
-let hideTimeout: number | NodeJS.Timeout
-let resetTimeout: number | NodeJS.Timeout
-
 export type LoadingIndicatorOpts = {
   /** @default 2000 */
   duration: number
@@ -22,31 +19,13 @@ export type LoadingIndicatorOpts = {
   estimatedProgress?: (duration: number, elapsed: number) => number
 }
 
-function _hide (isLoading: Ref<boolean>, progress: Ref<number>, hideDelay: number, resetDelay: number) {
-  if (import.meta.client) {
-    hideTimeout = setTimeout(() => {
-      isLoading.value = false
-      resetTimeout = setTimeout(() => { progress.value = 0 }, resetDelay)
-    }, hideDelay)
-  }
-}
-
-function _reset (isLoading: Ref<boolean>, progress: Ref<number>) {
-  if (import.meta.client) {
-    clearTimeout(hideTimeout)
-    clearTimeout(resetTimeout)
-    isLoading.value = false
-    progress.value = 0
-  }
-}
-
 export type LoadingIndicator = {
   _cleanup: () => void
   progress: Ref<number>
   isLoading: Ref<boolean>
   start: () => void
   set: (value: number) => void
-  finish: () => void
+  finish: (opts: { force?: boolean }) => void
   clear: () => void
 }
 
@@ -64,14 +43,11 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let done = false
   let rafId: number
 
-  let _throttle: any = null
+  let throttleTimeout: number | NodeJS.Timeout
+  let hideTimeout: number | NodeJS.Timeout
+  let resetTimeout: number | NodeJS.Timeout
 
-  function start ({ force = true }: { force?: boolean } = {}) {
-    if (force) {
-      _reset(isLoading, progress)
-    }
-    set(0)
-  }
+  const start = () => set(0)
 
   function set (at = 0) {
     if (nuxtApp.isHydrating) {
@@ -81,7 +57,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     clear()
     progress.value = at < 0 ? 0 : at
     if (throttle && import.meta.client) {
-      _throttle = setTimeout(() => {
+      throttleTimeout = setTimeout(() => {
         isLoading.value = true
         _startProgress()
       }, throttle)
@@ -91,23 +67,34 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function finish ({ force = true }: { force?: boolean } = {}) {
+  function _hide () {
+    if (import.meta.client) {
+      hideTimeout = setTimeout(() => {
+        isLoading.value = false
+        resetTimeout = setTimeout(() => { progress.value = 0 }, resetDelay)
+      }, hideDelay)
+    }
+  }
+
+  function finish (opts: { force?: boolean } = {}) {
     progress.value = 100
     done = true
     clear()
-    if (force) {
-      _reset(isLoading, progress)
+    if (opts.force) {
+      progress.value = 0
+      isLoading.value = false
     } else {
-      _hide(isLoading, progress, hideDelay, resetDelay)
+      _hide()
     }
   }
 
   function clear () {
-    clearTimeout(_throttle)
     if (import.meta.client) {
+      clearTimeout(hideTimeout)
+      clearTimeout(resetTimeout)
+      clearTimeout(throttleTimeout)
       cancelAnimationFrame(rafId)
     }
-    _throttle = null
   }
 
   function _startProgress () {
@@ -138,7 +125,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     const unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
       finish()
     })
-    const unsubError = nuxtApp.hook('vue:error', finish)
+    const unsubError = nuxtApp.hook('vue:error', () => finish())
 
     _cleanup = () => {
       unsubError()
