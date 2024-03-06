@@ -43,6 +43,9 @@ describe('tsConfig generation', () => {
         "~": [
           "..",
         ],
+        "~/*": [
+          "../*",
+        ],
       }
     `)
   })
