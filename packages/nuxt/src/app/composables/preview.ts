@@ -7,6 +7,7 @@ import { useRoute, useRouter } from './router'
 interface Preview {
   enabled: boolean
   state: Record<any, unknown>
+  _initialized?: boolean
 }
 
 interface PreviewModeOptions<S> {
@@ -20,18 +21,19 @@ let unregisterRefreshHook: (() => any) | undefined
 
 /** @since 3.11.0 */
 export function usePreviewMode<S extends EnteredState> (options: PreviewModeOptions<S> = {}) {
-  const preview = useState<Preview>('_preview-state')
-  if (preview.value) {
+  const preview = useState<Preview>('_preview-state', () => ({
+    enabled: false,
+    state: {}
+  }))
+
+  if (preview.value._initialized) {
     return {
       enabled: toRef(preview.value, 'enabled'),
       state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
     }
   }
 
-  preview.value = {
-    enabled: false,
-    state: {}
-  }
+  preview.value._initialized = true
 
   if (!preview.value.enabled) {
     const shouldEnable = options.shouldEnable ?? defaultShouldEnable
