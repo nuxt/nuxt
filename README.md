@@ -13,26 +13,28 @@
 Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.
 
 It provides a number of features that make it easy to build fast, SEO-friendly, and scalable web applications, including:
-- Server-side rendering, Static Site Generation or Hybrid Rendering
-- Automatic routing with code-splitting
-- State management
-- SEO Optimization
-- Auto imports
-- Extensible with [180+ modules](https://nuxt.com/modules)
+- Server-side rendering, Static Site Generation, Hybrid Rendering and Edge-Side Rendering
+- Automatic routing with code-splitting and pre-fetching
+- Data fetching and state management
+- SEO Optimization and Meta tags definition
+- Auto imports of components, composables and utils
+- TypeScript with zero configuration
+- Go fullstack with our server/ directory
+- Extensible with [200+ modules](https://nuxt.com/modules)
 - Deployment to a variety of [hosting platforms](https://nuxt.com/deploy)
 - ...[and much more](https://nuxt.com) 🚀
 
 ### Table of Contents
 
-1. [🚀 Getting Started](#getting-started)
-2. [💻 Vue Development](#vue-development)
-3. [📖 Documentation](#documentation)
-4. [🧩 Modules](#modules)
-5. [❤️ Contribute](#contribute)
-6. [🏠 Local Development](#local-development)
-7. [⛰️ Nuxt 2](#nuxt-2)
-8. [🔗 Follow us](#follow-us)
-9. [⚖️ License](#license)
+- 🚀 [Getting Started](#getting-started)
+- 💻 [ Vue Development](#vue-development)
+- 📖 [Documentation](#documentation)
+- 🧩 [Modules](#modules)
+- ❤️  [Contribute](#contribute)
+- 🏠 [Local Development](#local-development)
+- ⛰️ [Nuxt 2](#nuxt-2)
+- 🔗 [Follow us](#follow-us)
+- ⚖️ [License](#license)
 
 ---
 
