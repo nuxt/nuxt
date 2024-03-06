@@ -273,7 +273,7 @@ export default defineComponent({
                   default: () => [createStaticVNode(replaced, 1)]
                 }))
               }
-            } else if (selectiveClient && import.meta.client && canLoadClientComponent.value && payloads.components) {
+            } if (selectiveClient && import.meta.client && canLoadClientComponent.value && payloads.components) {
               for (const id in payloads.components) {
                 const info = payloads.components[id]
                 const { props, slots } = info
