@@ -33,7 +33,9 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
     }
   }
 
-  preview.value._initialized = true
+  if (import.meta.client) {
+    preview.value._initialized = true
+  }
 
   if (!preview.value.enabled) {
     const shouldEnable = options.shouldEnable ?? defaultShouldEnable
