@@ -113,7 +113,7 @@ describe('runtime server component', () => {
   })
 
 
-  it('expect NuxtIsland to emit an error', async  () => {
+  it('expect NuxtIsland to emit an error', async () => {
     const stubFetch = vi.fn(() => {
       throw new Error('fetch error')
     })
@@ -224,7 +224,6 @@ describe('client components', () => {
     vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
   })
-
 
   it('should not replace nested client components data-island-uid', async () => {
     const componentId = 'Client-12345'
