@@ -24,11 +24,11 @@ export function resolveComponentNameSegments (fileName: string, prefixParts: str
    */
   const fileNameParts = splitByCase(fileName)
   const fileNamePartsContent = fileNameParts.join('/').toLowerCase()
-  const componentNameParts: string[] = [...prefixParts]
+  const componentNameParts: string[] = prefixParts.flatMap(p => splitByCase(p))
   let index = prefixParts.length - 1
   const matchedSuffix: string[] = []
   while (index >= 0) {
-    matchedSuffix.unshift(...splitByCase(prefixParts[index] || '').map(p => p.toLowerCase()))
+    matchedSuffix.unshift(...splitByCase(prefixParts[index]).map(p => p.toLowerCase()))
     const matchedSuffixContent = matchedSuffix.join('/')
     if ((fileNamePartsContent === matchedSuffixContent || fileNamePartsContent.startsWith(matchedSuffixContent + '/')) ||
       // e.g Item/Item/Item.vue -> Item

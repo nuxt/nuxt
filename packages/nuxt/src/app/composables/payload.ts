@@ -1,4 +1,4 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
@@ -15,6 +15,7 @@ interface LoadPayloadOptions {
   hash?: string
 }
 
+/** @since 3.0.0 */
 export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = _getPayloadURL(url, opts)
@@ -37,7 +38,7 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   })
   return cache[payloadURL]
 }
-
+/** @since 3.0.0 */
 export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
   const payloadURL = _getPayloadURL(url, opts)
   useHead({
@@ -52,9 +53,6 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
 const extension = renderJsonPayloads ? 'json' : 'js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
-  if (u.search) {
-    throw new Error('Payload URL cannot contain search params: ' + url)
-  }
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
@@ -75,10 +73,11 @@ async function _importPayload (payloadURL: string) {
   }
   return null
 }
-
+/** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  url = withoutTrailingSlash(url)
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
@@ -88,6 +87,7 @@ export async function isPrerendered (url = useRoute().path) {
 }
 
 let payloadCache: any = null
+/** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
     return
@@ -101,7 +101,7 @@ export async function getNuxtClientPayload () {
     return {}
   }
 
-  const inlineData = parsePayload(el.textContent || '')
+  const inlineData = await parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
@@ -114,12 +114,13 @@ export async function getNuxtClientPayload () {
   return payloadCache
 }
 
-export function parsePayload (payload: string) {
-  return parse(payload, useNuxtApp()._payloadRevivers)
+export async function parsePayload (payload: string) {
+  return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
 /**
  * This is an experimental function for configuring passing rich data from server -> client.
+ * @since 3.4.0
  */
 export function definePayloadReducer (
   name: string,
@@ -134,6 +135,7 @@ export function definePayloadReducer (
  * This is an experimental function for configuring passing rich data from server -> client.
  *
  * This function _must_ be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.
+ * @since 3.4.0
  */
 export function definePayloadReviver (
   name: string,

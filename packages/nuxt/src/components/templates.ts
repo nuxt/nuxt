@@ -1,15 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { Component, Nuxt, NuxtApp, NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
-
-interface ComponentsTemplateContext {
-  app: NuxtApp
-  nuxt: Nuxt
-  options: {
-    getComponents: (mode?: 'client' | 'server' | 'all') => Component[]
-    mode?: 'client' | 'server'
-  }
-}
+import type { NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -70,33 +61,44 @@ export default defineNuxtPlugin({
   }
 }
 
-export const componentNamesTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
     return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
   }
 }
 
-export const componentsIslandsTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
   getContents ({ app }) {
     const components = app.components
+    const pages = app.pages
     const islands = components.filter(component =>
       component.island ||
       // .server components without a corresponding .client component will need to be rendered as an island
       (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
     )
-    return ['import { defineAsyncComponent } from \'vue\'', ...islands.map(
-      (c) => {
-        const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
-        const comment = createImportMagicComments(c)
-        return `export const ${c.pascalName} = defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
-      }
-    )].join('\n')
+
+    const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
+      return `"page:${p.name}": defineAsyncComponent(${genDynamicImport(p.file!)}.then(c => c.default || c))`
+    }) || []
+
+    return [
+      'import { defineAsyncComponent } from \'vue\'',
+      'export const islandComponents = import.meta.client ? {} : {',
+      islands.map(
+        (c) => {
+          const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
+          const comment = createImportMagicComments(c)
+          return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
+        }
+      ).concat(pageExports).join(',\n'),
+      '}'
+    ].join('\n')
   }
 }
 
-export const componentsTypeTemplate: NuxtTemplate<ComponentsTemplateContext> = {
+export const componentsTypeTemplate: NuxtTemplate = {
   filename: 'components.d.ts',
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir

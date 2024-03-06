@@ -1,4 +1,5 @@
-import { h, isReadonly, reactive } from 'vue'
+import type { Ref } from 'vue'
+import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
@@ -71,7 +72,7 @@ interface RouterHooks {
 }
 
 interface Router {
-  currentRoute: Route
+  currentRoute: Ref<Route>
   isReady: () => Promise<void>
   options: {}
   install: () => Promise<void>
@@ -158,8 +159,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
+    const currentRoute = computed(() => route)
+
     const router: Router = {
-      currentRoute: route,
+      currentRoute,
       isReady: () => Promise.resolve(),
       // These options provide a similar API to vue-router but have no effect
       options: {},
@@ -188,10 +191,13 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       }
     }
 
-    nuxtApp.vueApp.component('RouterLink', {
+    nuxtApp.vueApp.component('RouterLink', defineComponent({
       functional: true,
       props: {
-        to: String,
+        to: {
+          type: String,
+          required: true
+        },
         custom: Boolean,
         replace: Boolean,
         // Not implemented
@@ -200,15 +206,15 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         ariaCurrentValue: String
       },
       setup: (props, { slots }) => {
-        const navigate = () => handleNavigation(props.to, props.replace)
+        const navigate = () => handleNavigation(props.to!, props.replace)
         return () => {
-          const route = router.resolve(props.to)
+          const route = router.resolve(props.to!)
           return props.custom
             ? slots.default?.({ href: props.to, navigate, route })
             : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
       }
-    })
+    }))
 
     if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
@@ -243,7 +249,10 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
               if (result === false || result instanceof Error) {
                 const error = result || createError({
                   statusCode: 404,
-                  statusMessage: `Page Not Found: ${initialURL}`
+                  statusMessage: `Page Not Found: ${initialURL}`,
+                  data: {
+                    path: initialURL
+                  }
                 })
                 delete nuxtApp._processingMiddleware
                 return nuxtApp.runWithContext(() => showError(error))

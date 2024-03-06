@@ -22,7 +22,10 @@ const NUXT_LIB_RE = /node_modules\/(nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
-  const composableMeta = Object.fromEntries(options.composables.map(({ name, ...meta }) => [name, meta]))
+  const composableMeta: Record<string, any> = {}
+  for (const { name, ...meta } of options.composables) {
+    composableMeta[name] = meta
+  }
 
   const maxLength = Math.max(...options.composables.map(({ argumentLength }) => argumentLength))
   const keyedFunctions = new Set(options.composables.map(({ name }) => name))
@@ -116,7 +119,8 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
           }
 
           // TODO: Optimize me (https://github.com/nuxt/framework/pull/8529)
-          const endsWithComma = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim().endsWith(',')
+          const newCode = code.slice(codeIndex + (node as any).start, codeIndex + (node as any).end - 1).trim()
+          const endsWithComma = newCode[newCode.length - 1] === ','
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,
@@ -236,28 +240,27 @@ class ScopedVarsCollector {
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
 export function detectImportNames (code: string, composableMeta: Record<string, { source?: string | RegExp }>) {
-  const imports = findStaticImports(code)
   const names = new Set<string>()
-  for (const i of imports) {
-    if (NUXT_IMPORT_RE.test(i.specifier)) { continue }
-
-    function addName (name: string) {
-      const source = composableMeta[name]?.source
-      if (source && matchWithStringOrRegex(i.specifier, source)) {
-        return
-      }
-      names.add(name)
+  function addName (name: string, specifier: string) {
+    const source = composableMeta[name]?.source
+    if (source && matchWithStringOrRegex(specifier, source)) {
+      return
     }
+    names.add(name)
+  }
+
+  for (const i of findStaticImports(code)) {
+    if (NUXT_IMPORT_RE.test(i.specifier)) { continue }
 
     const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
     for (const name in namedImports || {}) {
-      addName(namedImports![name])
+      addName(namedImports![name], i.specifier)
     }
     if (defaultImport) {
-      addName(defaultImport)
+      addName(defaultImport, i.specifier)
     }
     if (namespacedImport) {
-      addName(namespacedImport)
+      addName(namespacedImport, i.specifier)
     }
   }
   return names

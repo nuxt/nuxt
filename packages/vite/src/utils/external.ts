@@ -1,6 +1,7 @@
 import type { ExternalsOptions } from 'externality'
 import { ExternalsDefaults, isExternal } from 'externality'
 import type { ViteDevServer } from 'vite'
+import { toArray } from '.'
 
 export function createIsExternal (viteServer: ViteDevServer, rootDir: string, modulesDirs?: string[]) {
   const externalOpts: ExternalsOptions = {
@@ -8,10 +9,14 @@ export function createIsExternal (viteServer: ViteDevServer, rootDir: string, mo
       /virtual:/,
       /\.ts$/,
       ...ExternalsDefaults.inline || [],
-      ...Array.isArray(viteServer.config.ssr.noExternal) ? viteServer.config.ssr.noExternal : []
+      ...(
+        viteServer.config.ssr.noExternal && viteServer.config.ssr.noExternal !== true
+          ? toArray(viteServer.config.ssr.noExternal)
+          : []
+      )
     ],
     external: [
-      ...viteServer.config.ssr.external || [],
+      ...(viteServer.config.ssr.external as string[]) || [],
       /node_modules/
     ],
     resolve: {

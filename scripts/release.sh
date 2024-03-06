@@ -13,7 +13,7 @@ for PKG in packages/* ; do
   if [[ $PKG == "packages/nuxi" ]] ; then
     continue
   fi
-  if [[ $p == "packages/test-utils" ]] ; then
+  if [[ $PKG == "packages/test-utils" ]] ; then
     continue
   fi
   pushd $PKG
@@ -24,3 +24,6 @@ for PKG in packages/* ; do
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
+
+# Restore environment to dev mode
+pnpm dev:prepare

@@ -1,4 +1,5 @@
 import { hasProtocol } from 'ufo'
+import { toArray } from '../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 // @ts-expect-error virtual file
@@ -25,8 +26,8 @@ export default defineNuxtPlugin({
       if (hasProtocol(url)) { return }
       const route = router.resolve(url)
       if (!route) { return }
-      const layout = route?.meta?.layout
-      let middleware = Array.isArray(route?.meta?.middleware) ? route?.meta?.middleware : [route?.meta?.middleware]
+      const layout = route.meta.layout
+      let middleware = toArray(route.meta.middleware)
       middleware = middleware.filter(m => typeof m === 'string')
 
       for (const name of middleware) {

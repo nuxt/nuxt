@@ -1,23 +1,19 @@
 {
+  "$schema": "https://json.schemastore.org/eslintrc",
   "ignorePatterns": [
     "dist",
+    "public",
     "node_modules",
-    "packages/schema/schema",
-    "**/*.tmpl.*",
-    "sw.js"
+    "packages/schema/schema"
   ],
-  "$schema": "https://json.schemastore.org/eslintrc",
   "globals": {
     "NodeJS": true,
     "$fetch": true
   },
-  "plugins": [
-    "jsdoc",
-    "no-only-tests"
-  ],
+  "plugins": ["jsdoc", "import", "unicorn", "no-only-tests"],
   "extends": [
     "plugin:jsdoc/recommended",
-    "@nuxtjs/eslint-config-typescript",
+    "@nuxt/eslint-config",
     "plugin:import/typescript"
   ],
   "rules": {
@@ -30,16 +26,49 @@
     "no-only-tests/no-only-tests": "error",
     "unicorn/prefer-node-protocol": "error",
     "no-console": "warn",
-    "vue/multi-word-component-names": "off",
     "vue/one-component-per-file": "off",
     "vue/require-default-prop": "off",
-    "vue/no-multiple-template-root": "off",
-    "vue/no-v-model-argument": "off",
+
+    // Vue stylistic rules from `@antfu/eslint-config`
+    "vue/array-bracket-spacing": ["error", "never"],
+    "vue/arrow-spacing": ["error", { "after": true, "before": true }],
+    "vue/block-spacing": ["error", "always"],
+    "vue/block-tag-newline": [
+      "error",
+      {
+        "multiline": "always",
+        "singleline": "always"
+      }
+    ],
+    "vue/brace-style": ["error", "stroustrup", { "allowSingleLine": true }],
+    "vue/comma-dangle": ["error", "always-multiline"],
+    "vue/comma-spacing": ["error", { "after": true, "before": false }],
+    "vue/comma-style": ["error", "last"],
+    "vue/html-comment-content-spacing": [
+      "error",
+      "always",
+      {
+        "exceptions": ["-"]
+      }
+    ],
+    "vue/key-spacing": ["error", { "afterColon": true, "beforeColon": false }],
+    "vue/keyword-spacing": ["error", { "after": true, "before": true }],
+    "vue/object-curly-newline": "off",
+    "vue/object-curly-spacing": ["error", "always"],
+    "vue/object-property-newline": [
+      "error",
+      { "allowMultiplePropertiesPerLine": true }
+    ],
+    "vue/operator-linebreak": ["error", "before"],
+    "vue/padding-line-between-blocks": ["error", "always"],
+    "vue/quote-props": ["error", "consistent-as-needed"],
+    "vue/space-in-parens": ["error", "never"],
+    "vue/template-curly-spacing": "error",
+
     "jsdoc/require-jsdoc": "off",
     "jsdoc/require-param": "off",
     "jsdoc/require-returns": "off",
     "jsdoc/require-param-type": "off",
-    "no-redeclare": "off",
     "import/order": [
       "error",
       {
@@ -103,36 +132,25 @@
     "jsdoc/check-tag-names": [
       "error",
       {
-        "definedTags": [
-          "__NO_SIDE_EFFECTS__"
-        ]
+        "definedTags": ["__NO_SIDE_EFFECTS__"]
       }
     ]
   },
   "overrides": [
     {
-      "files": [
-        "packages/schema/**"
-      ],
+      "files": ["packages/schema/**"],
       "rules": {
-        "jsdoc/no-undefined-types": "off",
         "jsdoc/valid-types": "off",
         "jsdoc/check-tag-names": [
           "error",
           {
-            "definedTags": [
-              "experimental"
-            ]
+            "definedTags": ["experimental"]
           }
         ]
       }
     },
     {
-      "files": [
-        "packages/nuxt/src/app/**",
-        "test/**",
-        "**/runtime/**"
-      ],
+      "files": ["packages/nuxt/src/app/**", "test/**", "**/runtime/**"],
       "rules": {
         "no-console": "off"
       }

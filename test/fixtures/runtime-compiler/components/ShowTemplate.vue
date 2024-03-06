@@ -1,9 +1,11 @@
 <template>
-  <component :is="showIt" :name="name" />
+  <component
+    :is="showIt"
+    :name="name"
+  />
 </template>
 
 <script>
-
 export default defineNuxtComponent({
   props: {
     template: {

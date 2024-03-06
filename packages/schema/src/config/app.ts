@@ -28,13 +28,6 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     propsDestructure: false,
-
-    /**
-     * Vue Experimental: Enable macro `defineModel`
-     * @see [Vue RFC#503](https://github.com/vuejs/rfcs/discussions/503)
-     * @type {boolean}
-     */
-    defineModel: false
   },
 
   /**
@@ -105,14 +98,14 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      */
     head: {
-      $resolve: async (val, get) => {
-        const resolved: Required<AppHeadMetaObject> = defu(val, await get('meta'), {
+      $resolve: async (val: Partial<AppHeadMetaObject> | undefined, get) => {
+        const resolved = defu(val, await get('meta') as Partial<AppHeadMetaObject>, {
           meta: [],
           link: [],
           style: [],
           script: [],
           noscript: []
-        })
+        } as Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>)
 
         // provides default charset and viewport if not set
         if (!resolved.meta.find(m => m.charset)?.charset) {
@@ -153,6 +146,22 @@ export default defineUntypedSchema({
     pageTransition: false,
 
     /**
+     * Default values for view transitions.
+     *
+     * This only has an effect when **experimental** support for View Transitions is
+     * [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
+     *
+     * This can be overridden with `definePageMeta` on an individual page.
+     * @see https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental
+     * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
+     */
+    viewTransition: {
+      $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
+        (e) => e?.viewTransition
+      ) ?? false
+    },
+
+    /**
      * Default values for KeepAlive configuration between pages.
      *
      * This can be overridden with `definePageMeta` on an individual page.
@@ -181,9 +190,10 @@ export default defineUntypedSchema({
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
-   * - If it is unset, it will use `~/app/spa-loading-template.html` if it exists.
+   * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
-   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file or a default Nuxt image will be used.
+   * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a
+   *   default Nuxt image will be used.
    *
    * Some good sources for spinners are [SpinKit](https://github.com/tobiasahlin/SpinKit) or [SVG Spinners](https://icones.js.org/collection/svg-spinners).
    * @example ~/app/spa-loading-template.html
@@ -232,7 +242,7 @@ export default defineUntypedSchema({
    * @type {string | boolean}
    */
   spaLoadingTemplate: {
-    $resolve: async (val, get) => typeof val === 'string' ? resolve(await get('srcDir'), val) : val ?? null
+    $resolve: async (val: string | boolean | undefined, get) => typeof val === 'string' ? resolve(await get('srcDir') as string, val) : val ?? null
   },
 
   /**
@@ -275,14 +285,14 @@ export default defineUntypedSchema({
    *   // Load a Node.js module directly (here it's a Sass file).
    *   'bulma',
    *   // CSS file in the project
-   *   '@/assets/css/main.css',
+   *   '~/assets/css/main.css',
    *   // SCSS file in the project
-   *   '@/assets/css/main.scss'
+   *   '~/assets/css/main.scss'
    * ]
    * ```
    * @type {string[]}
    */
   css: {
-    $resolve: val => (val ?? []).map((c: any) => c.src || c)
+    $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c)
   }
 })
