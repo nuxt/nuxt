@@ -9,19 +9,29 @@ interface Preview {
   state: Record<any, unknown>
 }
 
+interface PreviewModeOptions<S> {
+  shouldEnable?: (state: Preview['state']) => boolean,
+  getState?: (state: Preview['state']) => S,
+}
+
 type EnteredState = Record<any, unknown> | null | undefined | void
 
 let unregisterRefreshHook: (() => any) | undefined
 
 /** @since 3.11.0 */
-export function usePreviewMode<S extends EnteredState>(options: {
-  shouldEnable?: (state: Preview['state']) => boolean,
-  getState?: (state: Preview['state']) => S,
-} = {}) {
-  const preview = useState('_preview-state', () => ({
+export function usePreviewMode<S extends EnteredState> (options: PreviewModeOptions<S> = {}) {
+  const preview = useState<Preview>('_preview-state')
+  if (preview.value) {
+    return {
+      enabled: toRef(preview.value, 'enabled'),
+      state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
+    }
+  }
+
+  preview.value = {
     enabled: false,
     state: {}
-  }))
+  }
 
   if (!preview.value.enabled) {
     const shouldEnable = options.shouldEnable ?? defaultShouldEnable
@@ -57,14 +67,14 @@ export function usePreviewMode<S extends EnteredState>(options: {
   }
 }
 
-function defaultShouldEnable() {
+function defaultShouldEnable () {
   const route = useRoute()
   const previewQueryName = 'preview'
 
   return route.query[previewQueryName] === 'true'
 }
 
-function getDefaultState(state: Preview['state']) {
+function getDefaultState (state: Preview['state']) {
   if (state.token !== undefined) {
     return state
   }
