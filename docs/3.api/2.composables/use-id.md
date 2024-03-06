@@ -4,7 +4,7 @@ description: Generate an SSR-friendly unique identifier that can be passed to ac
 ---
 
 ::important
-This composable is available since [Nuxt v3.10](/v3-10#ssr-safe-accessible-unique-id-creation).
+This composable is available since [Nuxt v3.10](/blog/v3-10#ssr-safe-accessible-unique-id-creation).
 ::
 
 `useId` generates an SSR-friendly unique identifier that can be passed to accessibility attributes.

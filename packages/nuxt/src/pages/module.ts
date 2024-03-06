@@ -479,7 +479,7 @@ export default defineNuxtModule({
       getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         return [
-          'import { ComputedRef, MaybeRef } from \'vue\'',
+          'import type { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
@@ -499,7 +499,7 @@ export default defineNuxtModule({
           const runtimeDir = resolve(distDir, 'pages/runtime')
           const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
           return [
-            'import { ComputedRef, MaybeRef } from \'vue\'',
+            'import type { ComputedRef, MaybeRef } from \'vue\'',
             `declare module ${genString(composablesFile)} {`,
             '  interface PageMeta {',
             `    viewTransition?: boolean | 'always'`,
