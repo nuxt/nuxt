@@ -95,7 +95,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     progress.value = 100
     done = true
     clear()
-    if(force) {
+    if (force) {
       _reset(isLoading, progress)
     } else {
       _hide(isLoading, progress, hideDelay, resetDelay)
