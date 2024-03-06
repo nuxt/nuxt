@@ -111,11 +111,32 @@ describe('runtime server component', () => {
     expect(component.html()).toBe('<div>2</div>')
     vi.mocked(fetch).mockReset()
   })
+
+  it('expect NuxtIsland to emit an error', async () => {
+    const stubFetch = vi.fn(() => {
+      throw new Error('fetch error')
+    })
+
+    vi.stubGlobal('fetch', stubFetch)
+
+    const wrapper = await mountSuspended(createServerComponent('ErrorServerComponent'), {
+      props: {
+        name: 'Error',
+        props: {
+          force: true
+        }
+      },
+      attachTo: 'body'
+    })
+
+    expect(fetch).toHaveBeenCalledOnce()
+    expect(wrapper.emitted('error')).toHaveLength(1)
+    vi.mocked(fetch).mockReset()
+  })
 })
 
 
 describe('client components', () => {
-
   it('expect swapping nuxt-client should not trigger errors #25289', async () => {
     const mockPath = '/nuxt-client.js'
     const componentId = 'Client-12345'
@@ -166,7 +187,7 @@ describe('client components', () => {
     expect(fetch).toHaveBeenCalledOnce()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="3">hello<div data-island-uid="3" data-island-component="Client-12345">
+      "<div data-island-uid="4">hello<div data-island-uid="4" data-island-component="Client-12345">
           <div>client component</div>
         </div>
       </div>
@@ -192,7 +213,7 @@ describe('client components', () => {
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="3">hello<div>
+      "<div data-island-uid="4">hello<div>
           <div>fallback</div>
         </div>
       </div>"
@@ -201,7 +222,6 @@ describe('client components', () => {
     vi.mocked(fetch).mockReset()
     expectNoConsoleIssue()
   })
-
 
   it('should not replace nested client components data-island-uid', async () => {
     const componentId = 'Client-12345'
@@ -286,7 +306,7 @@ describe('client components', () => {
     })
     expect(fetch).toHaveBeenCalledOnce()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="ClientWithSlot-12345">
+      "<div data-island-uid="6">hello<div data-island-uid="6" data-island-component="ClientWithSlot-12345">
           <div class="client-component">
             <div style="display: contents" data-island-uid="" data-island-slot="default">
               <div>slot in client component</div>

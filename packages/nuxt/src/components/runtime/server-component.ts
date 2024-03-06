@@ -9,7 +9,8 @@ export const createServerComponent = (name: string) => {
     name,
     inheritAttrs: false,
     props: { lazy: Boolean },
-    setup (props, { attrs, slots, expose }) {
+    emits: ['error'],
+    setup (props, { attrs, slots, expose, emit }) {
       const islandRef = ref<null | typeof NuxtIsland>(null)
 
       expose({
@@ -21,7 +22,10 @@ export const createServerComponent = (name: string) => {
           name,
           lazy: props.lazy,
           props: attrs,
-          ref: islandRef
+          ref: islandRef,
+          onError: (err) => {
+            emit('error', err)
+          }
         }, slots)
       }
     }
