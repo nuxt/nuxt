@@ -63,11 +63,13 @@ export interface AsyncDataOptions<
    */
   getCachedData?: (key: string) => DataT
   /**
-   * A function that can be used to alter handler function result after resolving
+   * A function that can be used to alter handler function result after resolving.
+   * Do not use it along with the `pick` option.
    */
   transform?: _Transform<ResT, DataT>
   /**
-   * Only pick specified keys in this array from the handler function result
+   * Only pick specified keys in this array from the handler function result.
+   * Do not use it along with the `transform` option.
    */
   pick?: PickKeys
   /**

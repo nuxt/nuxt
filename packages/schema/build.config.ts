@@ -9,6 +9,8 @@ export default defineBuildConfig({
       name: 'config',
       builder: 'untyped',
       defaults: {
+        srcDir: '/<srcDir>/',
+        workspaceDir: '/<workspaceDir>/',
         rootDir: '/<rootDir>/',
         vite: {
           base: '/'
@@ -51,6 +53,7 @@ export default defineBuildConfig({
     'sass-loader',
     'c12',
     'unenv',
+    '@vue/language-core',
     // Implicit
     '@vue/compiler-core',
     '@vue/shared',

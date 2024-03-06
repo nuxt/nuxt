@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, normalize, relative, resolve } from 'pathe'
@@ -6,7 +7,7 @@ import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig } from 'nitropack'
-import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
+import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -287,13 +288,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         const routeRulesMatcher = toRouteMatcher(
           createRadixRouter({ routes: routeRules })
         )
-        const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
-        for (const route of nitro._prerenderedRoutes || []) {
-          if (!route.error && route.route.endsWith(payloadSuffix)) {
-            const url = route.route.slice(0, -payloadSuffix.length) || '/'
-            const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
-            if (!rules.prerender) {
-              prerenderedRoutes.add(url)
+        if (nitro._prerenderedRoutes?.length) {
+          const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+          for (const route of nitro._prerenderedRoutes) {
+            if (!route.error && route.route.endsWith(payloadSuffix)) {
+              const url = route.route.slice(0, -payloadSuffix.length) || '/'
+              const rules = defu({}, ...routeRulesMatcher.matchAll(url).reverse()) as Record<string, any>
+              if (!rules.prerender) {
+                prerenderedRoutes.add(url)
+              }
             }
           }
         }
@@ -390,11 +393,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   })
 
-  // Set prerender-only options
-  nitro.options._config.storage ||= {}
-  nitro.options._config.storage['internal:nuxt:prerender'] = { driver: 'memory' }
-  nitro.options._config.storage['internal:nuxt:prerender:island'] = { driver: 'lruCache', max: 1000 }
-  nitro.options._config.storage['internal:nuxt:prerender:payload'] = { driver: 'lruCache', max: 1000 }
+  nitro.options._config.storage = defu(nitro.options._config.storage, {
+    'internal:nuxt:prerender': {
+      driver: pathToFileURL(await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))).href,
+      base: resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
+    }
+  })
 
   // Expose nitro to modules and kit
   nuxt._nitro = nitro
