@@ -9,6 +9,7 @@ import type { Nitro, NitroConfig } from 'nitropack'
 import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
+import { resolvePath } from 'mlly'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
@@ -394,7 +395,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
-      driver: join(distDir, 'core/runtime/nitro/cache-driver'),
+      driver: await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver')),
       base: resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
     }
   })
