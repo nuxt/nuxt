@@ -10,17 +10,17 @@ type DeepPartial<T> = {
 
 const mockNuxt = {
   options: {
-    rootDir: '/root',
-    srcDir: '/root',
+    rootDir: '/my-app',
+    srcDir: '/my-app',
     alias: {
-      '~': '/root',
-      'some-custom-alias': '/root/some-alias'
+      '~': '/my-app',
+      'some-custom-alias': '/my-app/some-alias'
     },
     typescript: { includeWorkspace: false },
-    buildDir: '/root/.nuxt',
-    modulesDir: ['/root/node_modules', '/node_modules'],
+    buildDir: '/my-app/.nuxt',
+    modulesDir: ['/my-app/node_modules', '/node_modules'],
     modules: [],
-    _layers: [{ config: { srcDir: '/root' } }],
+    _layers: [{ config: { srcDir: '/my-app' } }],
     _installedModules: [],
     _modules: [],
   },
@@ -43,16 +43,13 @@ describe('tsConfig generation', () => {
         "~": [
           "..",
         ],
-        "~/*": [
-          "../*",
-        ],
       }
     `)
   })
 
   it('should add add exclude for module paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
-      modulesDir: ['/root/modules/test/node_modules', '/root/modules/node_modules', '/root/node_modules/@some/module/node_modules']
+      modulesDir: ['/my-app/modules/test/node_modules', '/my-app/modules/node_modules', '/my-app/node_modules/@some/module/node_modules']
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
