@@ -129,8 +129,9 @@ export default defineComponent({
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
 
-      if (import.meta.client && !canLoadClientComponent.value) {
-        for (const [key, value] of Object.entries(payloads.components || {})) {
+      if (import.meta.client && !canLoadClientComponent.value && payloads.components) {
+        for (const key in payloads.components) {
+          const value = payloads.components[key]
           html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
             return full + value.html
           })
@@ -260,8 +261,9 @@ export default defineComponent({
                 )
               }
             }
-            if (import.meta.server) {
-              for (const [id, info] of Object.entries(payloads.components ?? {})) {
+            if (import.meta.server && payloads.components) {
+              for (const id in payloads.components) {
+                const info = payloads.components[id]
                 const { html, slots } = info
                 let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
                 for (const slot in slots) {
@@ -271,8 +273,9 @@ export default defineComponent({
                   default: () => [createStaticVNode(replaced, 1)]
                 }))
               }
-            } else if (selectiveClient && import.meta.client && canLoadClientComponent.value) {
-              for (const [id, info] of Object.entries(payloads.components ?? {})) {
+            } else if (selectiveClient && import.meta.client && canLoadClientComponent.value && payloads.components) {
+              for (const id in payloads.components) {
+                const info = payloads.components[id]
                 const { props, slots } = info
                 const component = components!.get(id)!
                 // use different selectors for even and odd teleportKey to force trigger the teleport
