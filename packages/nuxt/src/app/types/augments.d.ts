@@ -1,4 +1,4 @@
-import type { UseHeadInput } from "@unhead/vue";
+import type { UseHeadInput } from '@unhead/vue'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 interface NuxtStaticBuildFlags {

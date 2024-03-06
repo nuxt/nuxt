@@ -55,7 +55,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // HTML response (via SSR)
   const res = isRenderingError ? null : await useNitroApp().localFetch(
-    withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
+    withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
     {
       headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
       redirect: 'manual'

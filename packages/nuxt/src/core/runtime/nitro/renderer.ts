@@ -70,6 +70,7 @@ export interface NuxtIslandClientResponse {
   html: string
   props: unknown
   chunk: string
+  slots?: Record<string, string>
 }
 
 export interface NuxtIslandResponse {
@@ -158,7 +159,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
-    const config = useRuntimeConfig()
+    const config = useRuntimeConfig(ssrContext.event)
     ssrContext.modules = ssrContext.modules || new Set<string>()
     ssrContext!.payload = {
       _errors: {},
@@ -225,7 +226,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
-const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload(\.[a-zA-Z0-9]+)?.json(\?.*)?$/ : /\/_payload(\.[a-zA-Z0-9]+)?.js(\?.*)?$/
+const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
@@ -288,7 +289,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const ssrContext: NuxtSSRContext = {
     url,
     event,
-    runtimeConfig: useRuntimeConfig() as NuxtSSRContext['runtimeConfig'],
+    runtimeConfig: useRuntimeConfig(event) as NuxtSSRContext['runtimeConfig'],
     noSSR:
       !!(process.env.NUXT_NO_SSR) ||
       event.context.nuxt?.noSSR ||
@@ -311,7 +312,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(useRuntimeConfig().app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
@@ -535,7 +536,8 @@ function joinTags (tags: string[]) {
 }
 
 function joinAttrs (chunks: string[]) {
-  return chunks.join(' ')
+  if (chunks.length === 0) return ''
+  return ' ' + chunks.join(' ')
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
@@ -628,6 +630,7 @@ function getServerComponentHTML (body: string[]): string {
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
+const SSR_CLIENT_SLOT_MARKER = /^island-slot=(?:[^;]*);(.*)$/
 
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext) { return {} }
@@ -635,7 +638,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
     }
   }
   return response
@@ -644,14 +647,31 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
 function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext) { return {} }
   const response: NuxtIslandResponse['components'] = {}
+
   for (const clientUid in ssrContext.islandContext.components) {
     const html = ssrContext.teleports?.[clientUid] || ''
     response[clientUid] = {
       ...ssrContext.islandContext.components[clientUid],
       html,
+      slots: getComponentSlotTeleport(ssrContext.teleports ?? {})
     }
   }
   return response
+}
+
+function getComponentSlotTeleport (teleports: Record<string, string>) {
+  const entries = Object.entries(teleports)
+  const slots: Record<string, string> = {}
+
+  for (const [key, value] of entries) {
+    const match = key.match(SSR_CLIENT_SLOT_MARKER)
+    if (match) {
+      const [, slot] = match
+      if (!slot) { continue }
+      slots[slot] = value
+    }
+  }
+  return slots
 }
 
 function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
