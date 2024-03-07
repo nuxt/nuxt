@@ -13,7 +13,8 @@ export async function loadNuxtConfig ({
   envConfig = {},
   configFile = defaultNuxtConfigFile,
   configContext = {},
-  configOverrides = {}
+  configOverrides = {},
+  shouldClearRequireCache = true
 } = {}) {
   rootDir = path.resolve(rootDir)
 
@@ -51,8 +52,9 @@ export async function loadNuxtConfig ({
   }
 
   if (configFile) {
-    // Clear cache
-    clearRequireCache(configFile)
+    if (shouldClearRequireCache) {
+      clearRequireCache(configFile)
+    }
     options = _require(configFile) || {}
     if (options.default) {
       options = options.default

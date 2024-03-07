@@ -81,7 +81,7 @@ describe('cli/command', () => {
       env: expect.objectContaining({
         NODE_ENV: 'test'
       })
-    })
+    }, {})
 
     loadConfigSpy.mockRestore()
   })

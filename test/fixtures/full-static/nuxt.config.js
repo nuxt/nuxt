@@ -1,10 +1,5 @@
 export default {
   target: 'static',
-  export: {
-    payload: {
-      config: true
-    }
-  },
   router: {
     // base: '/test',
   },
@@ -18,7 +13,7 @@ export default {
     x: 123
   },
   hooks: {
-    export: {
+    generate: {
       before ({ setPayload }) {
         setPayload({ shared: true })
       },

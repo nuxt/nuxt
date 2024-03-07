@@ -2,11 +2,12 @@ import path from 'path'
 import { defu } from 'defu'
 import { loadNuxtConfig as _loadNuxtConfig, getDefaultNuxtConfig } from '@nuxt/config'
 
-export async function loadNuxtConfig (argv, configContext) {
+export async function loadNuxtConfig (argv, configContext, loadOptions = {}) {
   const rootDir = path.resolve(argv._[0] || '.')
   const configFile = argv['config-file']
 
   // Load config
+  const { shouldClearRequireCache = true } = loadOptions
   const options = await _loadNuxtConfig({
     rootDir,
     configFile,
@@ -14,7 +15,8 @@ export async function loadNuxtConfig (argv, configContext) {
     envConfig: {
       dotenv: argv.dotenv === 'false' ? false : argv.dotenv,
       env: argv.processenv ? process.env : {}
-    }
+    },
+    shouldClearRequireCache
   })
 
   if (argv.spa === true) {
