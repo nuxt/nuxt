@@ -8,7 +8,7 @@ const SEPARATOR = '-'
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
  */
-export function useId (key: string): string {
+export function useId (key: string = 'nuxt'): string {
   if (typeof key !== 'string') {
     throw new TypeError('[nuxt] [useId] key must be a string.')
   }
