@@ -137,7 +137,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
-    return RENDER_TEMPLATE_FN(html)
+    return wrapInRootTag(html)
   }
 
   return renderer
@@ -152,7 +152,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   const options = {
     manifest,
-    renderToString: () => RENDER_TEMPLATE_FN(spaTemplate),
+    renderToString: () => wrapInRootTag(spaTemplate),
     buildAssetsURL
   }
   // Create SPA renderer and cache the result for all requests
@@ -188,12 +188,12 @@ const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:preren
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
-  get<T = unknown> (key: string): Promise<T> | undefined {
+  get <T = unknown>(key: string): Promise<T> | undefined {
     if (sharedPrerenderKeys.has(key)) {
       return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
     }
   },
-  async set<T> (key: string, value: Promise<T>): Promise<void> {
+  async set <T>(key: string, value: Promise<T>): Promise<void> {
     sharedPrerenderKeys.add(key)
     sharedPrerenderPromises!.set(key, value)
     useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
@@ -232,15 +232,12 @@ const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportId)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
-const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
-const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `${APP_TELEPORT_OPEN_TAG}[\\s\\S]*${APP_TELEPORT_CLOSE_TAG}` : ''
-const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>${APP_TELEPORT_REGEX_STRING}$`)
-const RENDER_TEMPLATE_FN = (html: string) => {
-  const base = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>${html}</${appRootTag}>`
-  const nuxtTeleports = HAS_APP_TELEPORTS ? APP_TELEPORT_OPEN_TAG + APP_TELEPORT_CLOSE_TAG : ''
-  return base + nuxtTeleports
-}
+const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>`
+const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
+const wrapInRootTag = (html: string) => APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG + APP_TELEPORT_OPEN_TAG + APP_TELEPORT_CLOSE_TAG
+
+const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
@@ -313,8 +310,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     modules: new Set(),
-    set _registeredComponents (value) { this.modules = value },
-    get _registeredComponents () { return this.modules },
+    set _registeredComponents(value) { this.modules = value },
+    get _registeredComponents() { return this.modules },
     islandContext
   }
 
@@ -469,8 +466,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
-    bodyAppend: [bodyTags],
-    appTeleports: normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]])
+    appTeleports: normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]),
+    bodyAppend: [bodyTags]
   }
 
   // Allow hooking into the rendered result
@@ -640,6 +637,9 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
+const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `${APP_TELEPORT_OPEN_TAG}[\\s\\S]*${APP_TELEPORT_CLOSE_TAG}` : ''
+const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}${APP_TELEPORT_REGEX_STRING}$`)
+
 function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
