@@ -214,9 +214,9 @@ export function useAsyncData<
   const nuxtApp = useNuxtApp()
 
   // When prerendering, share payload data automatically between requests
-  const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache ? _handler : async () => {
-    const value = await nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
-    if (value) { return value as ResT }
+  const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache ? _handler : () => {
+    const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
+    if (value) { return value as Promise<ResT> }
 
     const promise = nuxtApp.runWithContext(_handler)
     nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
