@@ -8,7 +8,6 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
-import { tryResolveModule } from '@nuxt/kit'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
@@ -223,14 +222,13 @@ export const middlewareTemplate: NuxtTemplate = {
 
 export const nitroSchemaTemplate: NuxtTemplate = {
   filename: 'types/nitro-nuxt.d.ts',
-  async getContents ({ nuxt }) {
-    const localH3 = await tryResolveModule('h3', nuxt.options.modulesDir) || 'h3'
+  getContents () {
     return /* typescript */`
 /// <reference path="./schema.d.ts" />
 
 import type { RuntimeConfig } from 'nuxt/schema'
-import type { H3Event } from '${localH3}'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/dist/core/runtime/nitro/renderer'
+import type { H3Event } from 'h3'
+import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
 declare module 'nitropack' {
   interface NitroRuntimeConfigApp {
@@ -264,11 +262,10 @@ export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
-  async getContents ({ app, nuxt }) {
-    const localDefu = await tryResolveModule('defu', nuxt.options.modulesDir) || 'defu'
+  getContents ({ app, nuxt }) {
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
-import type { Defu } from '${localDefu}'
+import type { Defu } from 'defu'
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
@@ -302,11 +299,10 @@ declare module '@nuxt/schema' {
 export const appConfigTemplate: NuxtTemplate = {
   filename: 'app.config.mjs',
   write: true,
-  async getContents ({ app, nuxt }) {
-    const localDefu = await tryResolveModule('defu', nuxt.options.modulesDir) || 'defu'
+  getContents ({ app, nuxt }) {
     return `
 import { updateAppConfig } from '#app/config'
-import { defuFn } from '${localDefu}'
+import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
