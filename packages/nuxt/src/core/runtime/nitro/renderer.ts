@@ -466,8 +466,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
-    appTeleports: normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]),
-    bodyAppend: [bodyTags]
+    bodyAppend: [bodyTags],
+    appTeleports: HAS_APP_TELEPORTS ? normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]) : [],
   }
 
   // Allow hooking into the rendered result
