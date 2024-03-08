@@ -11,8 +11,7 @@ import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import type { NuxtIslandContext } from '../app/types'
 import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'

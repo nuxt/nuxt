@@ -9,8 +9,7 @@ import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
 import { join } from 'pathe'
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML } from './utils'
