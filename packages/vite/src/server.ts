@@ -105,7 +105,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   if (!ctx.nuxt.options.dev) {
     const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
       .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
-    serverConfig.ssr!.external!.push(
+    ;(serverConfig.ssr!.external as string[])!.push(
       // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
       'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
       // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build

@@ -6,7 +6,6 @@ on:
       - opened
     branches:
       - main
-      - 2.x
 
 jobs:
   add-pr-labels:
@@ -24,27 +23,20 @@ jobs:
             const labelsToAdd = []
 
             const pullRequest = {
-              baseLabel: '${{ github.event.pull_request.base.label }}',
               number: ${{ github.event.pull_request.number }},
               title: process.env.PULL_REQUEST_TITLE,
               labelsNames: ${{ toJson(github.event.pull_request.labels.*.name) }}
             }
 
-            // Select label based on the branch name
-            const branchNameBasedLabelName = {
-              'nuxt:main': '3.x',
-              'nuxt:2.x': '2.x'
-            }[pullRequest.baseLabel]
+            // Select label based on the name of the base branch
+            const baseBranchLabelName = '3.x'
 
-            if (
-              branchNameBasedLabelName &&
-              !pullRequest.labelsNames.includes(branchNameBasedLabelName)
-            ) {
-              labelsToAdd.push(branchNameBasedLabelName)
+            if (!pullRequest.labelsNames.includes(baseBranchLabelName)) {
+              labelsToAdd.push(baseBranchLabelName)
             }
 
             // Select label based on the type in PR title
-            const eligibleTypesToLabelsNamesMap = {
+            const pullRequestTypeToLabelName = {
               chore: 'chore',
               ci: 'chore',
               docs: 'documentation',
@@ -55,13 +47,13 @@ jobs:
               test: 'test'
             }
 
-            for (const [eligibleType, labelName] of Object.entries(
-              eligibleTypesToLabelsNamesMap
+            for (const [pullRequestType, labelName] of Object.entries(
+              pullRequestTypeToLabelName
             )) {
               if (
-                pullRequest.title.startsWith(eligibleType) &&
+                pullRequest.title.startsWith(pullRequestType) &&
                 !pullRequest.labelsNames.includes(
-                  eligibleTypesToLabelsNamesMap[eligibleType]
+                  pullRequestTypeToLabelName[pullRequestType]
                 )
               ) {
                 labelsToAdd.push(labelName)

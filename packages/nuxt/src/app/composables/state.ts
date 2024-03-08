@@ -24,13 +24,13 @@ export function useState <T> (...args: any): Ref<T> {
   }
   const key = useStateKeyPrefix + _key
 
-  const nuxt = useNuxtApp()
-  const state = toRef(nuxt.payload.state, key)
+  const nuxtApp = useNuxtApp()
+  const state = toRef(nuxtApp.payload.state, key)
   if (state.value === undefined && init) {
     const initialValue = init()
     if (isRef(initialValue)) {
       // vue will unwrap the ref for us
-      nuxt.payload.state[key] = initialValue
+      nuxtApp.payload.state[key] = initialValue
       return initialValue as Ref<T>
     }
     state.value = initialValue
@@ -43,8 +43,10 @@ export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean)
 ): void {
   const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.state)
-    .map(key => key.substring(useStateKeyPrefix.length))
+  const _allKeys: string[] = []
+  for (const key in nuxtApp.payload.state) {
+    _allKeys.push(key.substring(2))
+  }
 
   const _keys: string[] = !keys
     ? _allKeys

@@ -13,22 +13,22 @@ const props = defineProps({
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = (_error.stack || '')
-  .split('\n')
-  .splice(1)
-  .map((line) => {
-    const text = line
-      .replace('webpack:/', '')
-      .replace('.vue', '.js') // TODO: Support sourcemap
-      .trim()
-    return {
-      text,
-      internal: (line.includes('node_modules') && !line.includes('.cache')) ||
-        line.includes('internal') ||
-        line.includes('new Promise')
-    }
-  }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
-
+let stacktrace = ''
+if (_error.stack) {
+  const stackArray = _error.stack.split('\n').splice(1)
+  for (const stk of stackArray) {
+    const text = stk
+        .replace('webpack:/', '')
+        .replace('.vue', '.js') // TODO: Support sourcemap
+        .trim()
+    const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
+          text.includes('internal') ||
+          text.includes('new Promise')
+    stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>\n`
+  }
+  stacktrace = stacktrace.slice(0,-1)
+}
+  
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
 const is404 = statusCode === 404

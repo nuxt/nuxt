@@ -36,7 +36,8 @@ export const RouteProvider = defineComponent({
     if (import.meta.dev && import.meta.client && props.trackRootNodes) {
       onMounted(() => {
         nextTick(() => {
-          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
+          const nodeName = vnode?.el?.nodeName
+          if (nodeName === '#comment' || nodeName === '#text') {
             const filename = (vnode?.type as any).__file
             console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
           }

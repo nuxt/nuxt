@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
-import { join } from 'node:path'
 import fs from 'node:fs'
+import { join } from 'pathe'
 import type { Component } from '@nuxt/schema'
 import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
@@ -21,7 +21,7 @@ interface ServerOnlyComponentTransformPluginOptions {
   /**
    * allow using `nuxt-client` attribute on components
    */
-  selectiveClient?: boolean
+  selectiveClient?: boolean | 'deep'
 }
 
 interface ComponentChunkOptions {
@@ -47,6 +47,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
+      if (options.selectiveClient === 'deep') { return true }
       const components = options.getComponents()
 
       const islands = components.filter(component =>

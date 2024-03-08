@@ -169,7 +169,7 @@ export default defineComponent({
 
 ### `runWithContext`
 
-::callout
+::note
 You are likely here because you got a "Nuxt instance unavailable" message. Please use this method sparingly, and report examples that are causing issues, so that it can ultimately be solved at the framework level.
 ::
 
@@ -186,7 +186,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     user = null
   }
   if (!user) {
-    // apply the correct Nuxt context to our `navigateTo` call.  
+    // apply the correct Nuxt context to our `navigateTo` call.
     return nuxtApp.runWithContext(() => navigateTo('/auth'))
   }
 })
@@ -254,7 +254,7 @@ The `unjs/unctx` transformation to automatically restore context seems buggy wit
 
 Using a new experimental feature, it is possible to enable native async context support using [Node.js `AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and new unctx support to make async context available **natively** to **any nested async composable** without needing a transform or manual passing/calling with context.
 
-::callout
+::tip
 Native async context support works currently in Bun and Node.
 ::
 

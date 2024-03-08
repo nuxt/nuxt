@@ -329,6 +329,25 @@ describe('head', () => {
       }
     })
   })
+  it('types head for defineNuxtComponent', () => {
+    defineNuxtComponent({
+      head(nuxtApp) {
+        expectTypeOf(nuxtApp).not.toBeAny()
+        return {
+          title: 'Site Title'
+        }
+      }
+    })
+
+    defineNuxtComponent({
+      // @ts-expect-error wrong return type for head function
+      head() {
+        return {
+          'test': true
+        }
+      }
+    })
+  })
 })
 
 describe('components', () => {
@@ -362,6 +381,11 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
+  it('prevents passing string to `useId`', () => {
+    // @ts-expect-error providing a key is not allowed
+    useId('test')
+  })
+
   it('enforces readonly cookies', () => {
     // @ts-expect-error readonly cookie
     useCookie('test', { readonly: true }).value = 'thing'
@@ -392,6 +416,16 @@ describe('composables', () => {
     expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+  })
+
+  it('supports asynchronous transform', () => {
+    const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
+      async transform (data) {
+        await Promise.resolve()
+        return data.foo
+      }
+    })
+    expectTypeOf(data).toEqualTypeOf<Ref<'bar' | null>>()
   })
 
   it('infer request url string literal from server/api routes', () => {

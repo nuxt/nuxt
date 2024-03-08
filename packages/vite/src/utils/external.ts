@@ -16,7 +16,7 @@ export function createIsExternal (viteServer: ViteDevServer, rootDir: string, mo
       )
     ],
     external: [
-      ...viteServer.config.ssr.external || [],
+      ...(viteServer.config.ssr.external as string[]) || [],
       /node_modules/
     ],
     resolve: {
