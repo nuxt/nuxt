@@ -38,7 +38,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
     const directory = getDirectory(moduleToInstall)
     if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
-      nuxt.options.modulesDir.push(directory)
+      nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
   }
 
