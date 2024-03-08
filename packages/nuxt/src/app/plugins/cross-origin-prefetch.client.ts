@@ -27,7 +27,7 @@ export default defineNuxtPlugin({
     })
     nuxtApp.hook('link:prefetch', (url) => {
       const { protocol } = parseURL(url)
-      if (protocol && ['http:', 'https:'].includes(protocol)) {
+      if (protocol && (protocol === 'http:' || protocol === 'https:')) {
         externalURLs.value.add(url)
         head?.patch({
           script: [generateRules()]
