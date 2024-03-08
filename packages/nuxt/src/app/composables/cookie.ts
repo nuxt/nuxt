@@ -123,9 +123,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   return cookie as CookieRef<T>
 }
 /** @since 3.10.0 */
-export function refreshCookie(name: string) {
+export function refreshCookie (name: string) {
   if (store || typeof BroadcastChannel === 'undefined') return
-  
+
   new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
 }
 
@@ -176,12 +176,19 @@ const MAX_TIMEOUT_DELAY = 2_147_483_647
 // custom ref that will update the value to undefined if the cookie expires
 function cookieRef<T> (value: T | undefined, delay: number) {
   let timeout: NodeJS.Timeout
+  let unsubscribe: (() => void) | undefined
   let elapsed = 0
+  const internalRef = ref(value)
   if (getCurrentScope()) {
-    onScopeDispose(() => { clearTimeout(timeout) })
+    onScopeDispose(() => {
+      unsubscribe?.()
+      clearTimeout(timeout)
+    })
   }
 
   return customRef((track, trigger) => {
+    unsubscribe = watch(internalRef, trigger)
+
     function createExpirationTimeout () {
       clearTimeout(timeout)
       const timeRemaining = delay - elapsed
@@ -190,7 +197,7 @@ function cookieRef<T> (value: T | undefined, delay: number) {
         elapsed += timeoutLength
         if (elapsed < delay) { return createExpirationTimeout() }
 
-        value = undefined
+        internalRef.value = undefined
         trigger()
       }, timeoutLength)
     }
@@ -198,12 +205,12 @@ function cookieRef<T> (value: T | undefined, delay: number) {
     return {
       get () {
         track()
-        return value
+        return internalRef.value
       },
       set (newValue) {
         createExpirationTimeout()
 
-        value = newValue
+        internalRef.value = newValue
         trigger()
       }
     }
