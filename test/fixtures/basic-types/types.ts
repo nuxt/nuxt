@@ -418,6 +418,16 @@ describe('composables', () => {
     expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
   })
 
+  it('supports asynchronous transform', () => {
+    const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
+      async transform (data) {
+        await Promise.resolve()
+        return data.foo
+      }
+    })
+    expectTypeOf(data).toEqualTypeOf<Ref<'bar' | null>>()
+  })
+
   it('infer request url string literal from server/api routes', () => {
     // request can accept dynamic string type
     const dynamicStringUrl = 'https://example.com/api'
