@@ -43,8 +43,10 @@ export function clearNuxtState (
   keys?: string | string[] | ((key: string) => boolean)
 ): void {
   const nuxtApp = useNuxtApp()
-  const _allKeys = Object.keys(nuxtApp.payload.state)
-    .map(key => key.substring(2))
+  const _allKeys: string[] = []
+  for (const key in nuxtApp.payload.state) {
+    _allKeys.push(key.substring(2))
+  }
 
   const _keys: string[] = !keys
     ? _allKeys
