@@ -188,12 +188,12 @@ const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:preren
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
-  get <T = unknown>(key: string): Promise<T> | undefined {
+  get<T = unknown> (key: string): Promise<T> | undefined {
     if (sharedPrerenderKeys.has(key)) {
       return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
     }
   },
-  async set <T>(key: string, value: Promise<T>): Promise<void> {
+  async set<T> (key: string, value: Promise<T>): Promise<void> {
     sharedPrerenderKeys.add(key)
     sharedPrerenderPromises!.set(key, value)
     useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
@@ -228,14 +228,16 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
-const HAS_APP_TELEPORTS = appTeleportTag && appTeleportId
+const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportId)
+const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">` : ''
+const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
-const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">[\\s\\S]*</${appTeleportTag}>` : ''
+const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `${APP_TELEPORT_OPEN_TAG}[\\s\\S]*${APP_TELEPORT_CLOSE_TAG}` : ''
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>${APP_TELEPORT_REGEX_STRING}$`)
 const RENDER_TEMPLATE_FN = (html: string) => {
   const base = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>${html}</${appRootTag}>`
-  const nuxtTeleports = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}"></${appTeleportTag}>` : ''
+  const nuxtTeleports = HAS_APP_TELEPORTS ? APP_TELEPORT_OPEN_TAG + APP_TELEPORT_CLOSE_TAG : ''
   return base + nuxtTeleports
 }
 
@@ -311,8 +313,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     modules: new Set(),
-    set _registeredComponents(value) { this.modules = value },
-    get _registeredComponents() { return this.modules },
+    set _registeredComponents (value) { this.modules = value },
+    get _registeredComponents () { return this.modules },
     islandContext
   }
 
@@ -553,9 +555,8 @@ function joinAttrs (chunks: string[]) {
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   let bodyTags = joinTags(html.body)
-  if (html.appTeleports.length) {
-    const appTeleportOpenTag = `<${appTeleportTag} id="${appTeleportId}">`
-    bodyTags = bodyTags.replace(appTeleportOpenTag, appTeleportOpenTag + joinTags(html.appTeleports))
+  if (HAS_APP_TELEPORTS && html.appTeleports.length) {
+    bodyTags = bodyTags.replace(APP_TELEPORT_OPEN_TAG, APP_TELEPORT_OPEN_TAG + joinTags(html.appTeleports))
   }
   return '<!DOCTYPE html>'
     + `<html${joinAttrs(html.htmlAttrs)}>`

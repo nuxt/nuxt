@@ -198,7 +198,7 @@ export default defineUntypedSchema({
      * @type {string | false}
      */
     teleportId: {
-      $resolve: val => val === false ? false : val || '__nuxt-teleport'
+      $resolve: val => val === false ? false : (val || '__nuxt-teleport')
     }
   },
 
