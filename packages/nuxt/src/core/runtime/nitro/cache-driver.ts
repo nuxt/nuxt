@@ -2,8 +2,7 @@ import { defineDriver } from 'unstorage'
 import fsDriver from 'unstorage/drivers/fs-lite'
 import lruCache from 'unstorage/drivers/lru-cache'
 
-// Ensure we don't try to write/read from directory index for `/` paths
-const normalizeFsKey = (item: string) => item.indexOf(':') === -1 ? `${item}:index` : item
+const normalizeFsKey = (item: string) => item.replaceAll(':', '_')
 
 export default defineDriver((opts: { base: string }) => {
   const fs = fsDriver({ base: opts.base })
