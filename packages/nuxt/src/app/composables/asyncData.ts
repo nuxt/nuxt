@@ -12,7 +12,7 @@ import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
-export type _Transform<Input = any, Output = any> = (input: Input) => Output
+export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
@@ -283,13 +283,13 @@ export function useAsyncData<
           reject(err)
         }
       })
-      .then((_result) => {
+      .then(async (_result) => {
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxtApp._asyncDataPromises[key] }
 
         let result = _result as unknown as DataT
         if (options.transform) {
-          result = options.transform(_result)
+          result = await options.transform(_result)
         }
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT
