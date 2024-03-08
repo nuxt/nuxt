@@ -393,10 +393,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   })
 
+  const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
+  await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
       driver: pathToFileURL(await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))).href,
-      base: resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
+      base: cacheDir
     }
   })
 

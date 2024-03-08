@@ -185,16 +185,17 @@ const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
+const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
-  get <T = unknown>(key: string): Promise<T> {
-    if (sharedPrerenderPromises!.has(key)) {
-      return sharedPrerenderPromises!.get(key)!
+  get <T = unknown>(key: string): Promise<T> | undefined {
+    if (sharedPrerenderKeys.has(key)) {
+      return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
     }
-    return useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
   },
-  async set <T>(key: string, value: Promise<T>) {
+  async set <T>(key: string, value: Promise<T>): Promise<void> {
+    sharedPrerenderKeys.add(key)
     sharedPrerenderPromises!.set(key, value)
-    return useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+    useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
       // free up memory after the promise is resolved
       .finally(() => sharedPrerenderPromises!.delete(key))
   },

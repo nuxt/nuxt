@@ -97,6 +97,7 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useCookie',
       'clearNuxtState',
       'useState',
       'useRequestURL',
@@ -121,7 +122,6 @@ describe('composables', () => {
       'preloadRouteComponents',
       'reloadNuxtApp',
       'refreshCookie',
-      'useCookie',
       'useFetch',
       'useHead',
       'useLazyFetch',
@@ -628,6 +628,33 @@ describe('defineNuxtComponent', () => {
   it.todo('should support Options API head')
 })
 
+describe('useCookie', () => {
+  it('should watch custom cookie refs', () => {
+    const user = useCookie('userInfo', {
+      default: () => ({ score: -1 }),
+      maxAge: 60 * 60,
+    })
+    const computedVal = computed(() => user.value.score)
+    expect(computedVal.value).toBe(-1)
+    user.value.score++
+    expect(computedVal.value).toBe(0)
+  })
+
+  it('should not watch custom cookie refs when shallow', () => {
+    for (const value of ['shallow', false] as const) {
+      const user = useCookie('shallowUserInfo', {
+        default: () => ({ score: -1 }),
+        maxAge: 60 * 60,
+        watch: value
+      })
+      const computedVal = computed(() => user.value.score)
+      expect(computedVal.value).toBe(-1)
+      user.value.score++
+      expect(computedVal.value).toBe(-1)
+    }
+  })
+})
+
 describe('callOnce', () => {
   it('should only call composable once', async () => {
     const fn = vi.fn()
@@ -643,7 +670,7 @@ describe('callOnce', () => {
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => { })
+    const fnSync = vi.fn().mockImplementation(() => {})
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])
     expect(fnSync).toHaveBeenCalledTimes(1)

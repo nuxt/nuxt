@@ -73,7 +73,7 @@ export interface NuxtSSRContext extends SSRContext {
   _payloadReducers: Record<string, (data: any) => any>
   /** @internal */
   _sharedPrerenderCache?: {
-    get<T = unknown> (key: string): Promise<T>
+    get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
 }
