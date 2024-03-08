@@ -148,11 +148,11 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const manifest = await getClientManifest()
 
   // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
+  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '').then(r => wrapInRootTag(r))
 
   const options = {
     manifest,
-    renderToString: () => wrapInRootTag(spaTemplate),
+    renderToString: () => spaTemplate,
     buildAssetsURL
   }
   // Create SPA renderer and cache the result for all requests
