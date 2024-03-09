@@ -1815,7 +1815,7 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   })
 })
 
-describe.only('public directories', () => {
+describe('public directories', () => {
   it('should directly return public directory paths', async () => {
     const html = await $fetch('/assets-custom')
     expect(html).toContain('"/public.svg"')
