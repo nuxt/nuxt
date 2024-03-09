@@ -35,12 +35,12 @@ interface TransformOptions {
 async function transformRequest (opts: TransformOptions, id: string) {
   // Virtual modules start with `\0`
   if (id && id.startsWith('/@id/__x00__')) {
-    id = '\0' + id.slice('/@id/__x00__'.length)
+    id = '\0' + id.slice(12)
   }
   if (id && id.startsWith('/@id/')) {
-    id = id.slice('/@id/'.length)
+    id = id.slice(5)
   }
-  if (id && !id.startsWith('/@fs/') && id.startsWith('/')) {
+  if (id && !id.startsWith('/@fs/') && id[0] === '/') {
     // Relative to the root directory
     const resolvedPath = resolve(opts.viteServer.config.root, '.' + id)
     if (existsSync(resolvedPath)) {
@@ -112,15 +112,25 @@ async function transformRequestRecursive (opts: TransformOptions, id: string, pa
 async function bundleRequest (opts: TransformOptions, entryURL: string) {
   const chunks = (await transformRequestRecursive(opts, entryURL))!
 
-  const listIds = (ids: string[]) => ids.map(id => `// - ${id} (${hashId(id)})`).join('\n')
-  const chunksCode = chunks.map(chunk => `
+  const listIds = (ids: string[]) => {
+    let idString = ''
+    for (const id of ids) {
+      idString += `// - ${id} (${hashId(id)})\n`
+    }
+    return idString.slice(0,-1)
+  }
+  let chunksCode = ''
+  for (const chunk of chunks) {
+    chunksCode += `
 // --------------------
 // Request: ${chunk.id}
 // Parents: \n${listIds(chunk.parents)}
 // Dependencies: \n${listIds(chunk.deps)}
 // --------------------
 const ${hashId(chunk.id + '-' + chunk.code)} = ${chunk.code}
-`).join('\n')
+\n`
+  }
+  chunksCode = chunksCode.slice(0,-1)
 
   const manifestCode = `const __modules__ = ${
     genObjectFromRawEntries(chunks.map(chunk => [chunk.id, hashId(chunk.id + '-' + chunk.code)]))
@@ -212,12 +222,11 @@ async function __instantiateModule__(url, urlStack) {
 }
 `
 
-  const code = [
-    chunksCode,
-    manifestCode,
-    ssrModuleLoader,
+  const code = 
+    chunksCode + '\n\n' +
+    manifestCode + '\n\n' +
+    ssrModuleLoader + '\n\n' +
     `export default await __ssrLoadModule__(${JSON.stringify(entryURL)})`
-  ].join('\n\n')
 
   return {
     code,

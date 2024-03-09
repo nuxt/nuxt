@@ -67,7 +67,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Restart nuxt when composable directories are added/removed
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) { return }
+      if (event !== 'addDir' && event !== 'unlinkDir') { return }
 
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (composablesDirs.includes(path)) {

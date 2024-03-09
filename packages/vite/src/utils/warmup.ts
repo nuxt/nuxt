@@ -21,7 +21,7 @@ function normaliseURL (url: string, base: string) {
   url = withoutBase(url, base)
   // unwrap record
   if (url.startsWith('/@id/')) {
-    url = url.slice('/@id/'.length).replace('__x00__', '\0')
+    url = url.slice(5).replace('__x00__', '\0')
   }
   // strip query
   url = url.replace(/(\?|&)import=?(?:&|$)/, '').replace(/[?&]$/, '')

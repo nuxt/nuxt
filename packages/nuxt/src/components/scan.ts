@@ -131,7 +131,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         continue
       }
 
-      const existingComponent = components.find(c => c.pascalName === component.pascalName && ['all', component.mode].includes(c.mode))
+      const existingComponent = components.find(c => c.pascalName === component.pascalName && (c.mode === 'all' || c.mode === component.mode))
       // Ignore component if component is already defined (with same mode)
       if (existingComponent) {
         const existingPriority = existingComponent.priority ?? 0
