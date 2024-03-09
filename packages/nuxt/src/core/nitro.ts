@@ -92,10 +92,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
-        template: 'treemap',
-        projectRoot: nuxt.options.rootDir,
-        filename: join(nuxt.options.analyzeDir, '{name}.html')
-      }
+          template: 'treemap',
+          projectRoot: nuxt.options.rootDir,
+          filename: join(nuxt.options.analyzeDir, '{name}.html')
+        }
       : false,
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
@@ -149,10 +149,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       nuxt.options.dev
         ? { dir: resolve(nuxt.options.buildDir, 'dist/client') }
         : {
-          dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
-          maxAge: 31536000 /* 1 year */,
-          baseURL: nuxt.options.app.buildAssetsDir
-        },
+            dir: join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir),
+            maxAge: 31536000 /* 1 year */,
+            baseURL: nuxt.options.app.buildAssetsDir
+          },
       ...nuxt.options._layers
         .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
         .filter(dir => existsSync(dir))
@@ -169,10 +169,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         ...(nuxt.options.dev
           ? []
           : [
-            ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
-            '@nuxt/',
-            nuxt.options.buildDir
-          ]),
+              ...nuxt.options.experimental.externalVue ? [] : ['vue', '@vue/'],
+              '@nuxt/',
+              nuxt.options.buildDir
+            ]),
         ...nuxt.options.build.transpile.filter((i): i is string => typeof i === 'string'),
         'nuxt/dist',
         'nuxt3/dist',
@@ -183,12 +183,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         // force include files used in generated code from the runtime-compiler
         ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
           ? [
-            ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-              const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
-              if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-              return targets
-            }, [])
-          ]
+              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
+                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
+                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
+                return targets
+              }, [])
+            ]
           : []
       ]
     },
@@ -197,12 +197,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options.vue.runtimeCompiler || nuxt.options.experimental.externalVue
         ? {}
         : {
-          'estree-walker': 'unenv/runtime/mock/proxy',
-          '@babel/parser': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-core': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
-          '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
-        },
+            'estree-walker': 'unenv/runtime/mock/proxy',
+            '@babel/parser': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-core': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-dom': 'unenv/runtime/mock/proxy',
+            '@vue/compiler-ssr': 'unenv/runtime/mock/proxy'
+          },
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
