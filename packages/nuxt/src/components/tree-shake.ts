@@ -197,7 +197,7 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
     let found = false
     walk(codeAst, {
       enter (node) {
-        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && node.id?.name === '_sfc_ssrRender')) {
+        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
           // walk through the setup function node or the ssrRender function
           walk(node, {
             enter (node) {
