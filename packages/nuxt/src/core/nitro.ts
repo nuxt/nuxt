@@ -272,8 +272,25 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect'].includes(routeKey) && value) {
-              filteredRules[routeKey] = routeKey === 'redirect' ? typeof value === 'string' ? value : value.to : value
+            if (['prerender', 'redirect', 'nuxtMiddleware'].includes(routeKey) && value) {
+              if (routeKey === 'redirect') {
+                filteredRules[routeKey] = typeof value === 'string' ? value : value.to
+              }
+              if (routeKey === 'prerender') {
+                filteredRules[routeKey] = value
+              }
+              if (routeKey === 'nuxtMiddleware') {
+                if (typeof value === 'string') {
+                  filteredRules[routeKey] = { value: true }
+                } else if (Array.isArray(value)) {
+                  filteredRules[routeKey] = {}
+                  for (const middleware of value) {
+                    filteredRules[routeKey][middleware] = true
+                  }
+                } else {
+                  filteredRules[routeKey] = value
+                }
+              }
               hasRules = true
             }
           }
