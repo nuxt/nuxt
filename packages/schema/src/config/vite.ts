@@ -1,5 +1,4 @@
 import { consola } from 'consola'
-import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
