@@ -19,10 +19,10 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
     name: 'nuxt:client-fallback-auto-id',
     enforce: 'pre',
     transformInclude (id) {
-      if (exclude.some(pattern => pattern.test(id))) {
+      if (exclude.length && exclude.some(pattern => pattern.test(id))) {
         return false
       }
-      if (include.some(pattern => pattern.test(id))) {
+      if (include.length && include.some(pattern => pattern.test(id))) {
         return true
       }
       return isVue(id)
