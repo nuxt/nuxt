@@ -147,11 +147,11 @@ function getPropsToString (bindings: Record<string, string>, vfor?: [string, str
   let content = ''
   for (const b in bindings) {
     if (b && b !== '_bind') {
-      const value = bindings[b];
-      content += (isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\``) + `,`;
+      const value = bindings[b]
+      content += (isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\``) + ','
     }
   }
-  content = content.slice(0,-1)
+  content = content.slice(0, -1)
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
