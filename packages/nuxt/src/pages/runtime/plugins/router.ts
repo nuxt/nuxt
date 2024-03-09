@@ -177,20 +177,17 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
 
         if (routeRules.nuxtMiddleware) {
-          if (typeof routeRules.nuxtMiddleware === 'string') { routeRules.nuxtMiddleware = [routeRules.nuxtMiddleware] }
-          if (Array.isArray(routeRules.nuxtMiddleware)) {
-            for (const middleware in routeRules.nuxtMiddleware) {
-              if (routeRules.nuxtMiddleware[middleware] === true) {
-                middlewareEntries.add(middleware)
-              }
+          for (const key in routeRules.nuxtMiddleware) {
+            if (routeRules.nuxtMiddleware[key]) {
+              middlewareEntries.add(key)
+            } else {
+              middlewareEntries.delete(key)
             }
           }
         }
 
         for (const entry of middlewareEntries) {
           const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
-
-          console.log(entry, ' ', middleware)
 
           if (!middleware) {
             if (import.meta.dev) {
