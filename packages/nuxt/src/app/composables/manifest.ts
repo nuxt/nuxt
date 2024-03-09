@@ -46,7 +46,7 @@ export async function getRouteRules (url: string) {
     const _routeRulesMatcher = toRouteMatcher(
       createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules })
     )
-    return defu({}, ..._routeRulesMatcher.matchAll(url).reverse())
+    return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(url).reverse())
   }
   await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
