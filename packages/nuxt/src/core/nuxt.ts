@@ -516,7 +516,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   options.routeRules ||= {}
-  for(const path in options.routeRules) {
+  for (const path in options.routeRules) {
     if (!options.routeRules[path].nuxtMiddleware) {
       continue
     }
