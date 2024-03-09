@@ -240,10 +240,12 @@ declare module 'nitropack' {
   interface NitroRouteConfig {
     ssr?: boolean
     experimentalNoScripts?: boolean
+    nuxtMiddleware?: string | string[] | Record<string, boolean>
   }
   interface NitroRouteRules {
     ssr?: boolean
     experimentalNoScripts?: boolean
+    nuxtMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>

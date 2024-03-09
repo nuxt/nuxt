@@ -19,7 +19,7 @@ export default defineUntypedSchema({
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
    * @see https://nitro.unjs.io/config/#routerules
-   * @type {{ [path: string]: typeof import('nitropack')['NitroRouteConfig'] & { nuxtMiddleware?: string | string[] | Record<string, boolean> }}}
+   * @type {typeof import('nitropack')['NitroConfig']['routeRules']}
    */
   routeRules: {},
 
