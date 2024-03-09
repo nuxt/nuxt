@@ -80,12 +80,13 @@ describe('route rules', () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')
   })
+
+  it('should run middleware defined in routeRules config', async () => {
+    const html = await $fetch('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
 })
 
-it('should run middleware defined in routeRules config', async () => {
-  const html = await fetch('/route-rules/middleware')
-  expect(html).toContain('Hello from routeRules!')
-})
 
 describe('modules', () => {
   it('should auto-register modules in ~/modules', async () => {
