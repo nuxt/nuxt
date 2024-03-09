@@ -74,9 +74,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
     let error: unknown
     for (const path of paths) {
-      const src = await resolvePath(path)
-      // Prefer ESM resolution if possible
       try {
+        const src = await resolvePath(path)
+        // Prefer ESM resolution if possible
         nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
 
         // nuxt-module-builder generates a module.json with metadata including the version
