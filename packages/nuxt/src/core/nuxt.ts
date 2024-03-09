@@ -64,11 +64,11 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('close', () => nuxtCtx.unset())
 
   const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
-  const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async pkg => {
+  const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
     if (!path) { return }
     return [pkg, [dirname(path)]]
-  })).then((r) => r.filter(Boolean) as [string, [string]][]))
+  })).then(r => r.filter(Boolean) as [string, [string]][]))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {

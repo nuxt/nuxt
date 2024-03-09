@@ -23,29 +23,6 @@ const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => a
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
- * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/api/components/nuxt-link
- */
-export interface NuxtLinkOptions extends
-  Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>,
-  Pick<NuxtLinkProps, 'prefetchedClass'> {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-}
-
-/**
  * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
@@ -88,7 +65,30 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   noPrefetch?: boolean
 }
 
-  /*@__NO_SIDE_EFFECTS__*/
+/**
+ * Create a NuxtLink component with given options as defaults.
+ * @see https://nuxt.com/docs/api/components/nuxt-link
+ */
+export interface NuxtLinkOptions extends
+  Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>,
+  Pick<NuxtLinkProps, 'prefetchedClass'> {
+  /**
+   * The name of the component.
+   * @default "NuxtLink"
+   */
+  componentName?: string
+  /**
+   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
+   */
+  externalRelAttribute?: string | null
+  /**
+   * An option to either add or remove trailing slashes in the `href`.
+   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
+   */
+  trailingSlash?: 'append' | 'remove'
+}
+
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 

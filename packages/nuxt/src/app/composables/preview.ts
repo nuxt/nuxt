@@ -29,7 +29,7 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
   if (preview.value._initialized) {
     return {
       enabled: toRef(preview.value, 'enabled'),
-      state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
+      state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state'])
     }
   }
 
@@ -56,7 +56,7 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
       if (import.meta.client && !unregisterRefreshHook) {
         refreshNuxtData()
 
-        unregisterRefreshHook = useRouter().afterEach((() => refreshNuxtData()))
+        unregisterRefreshHook = useRouter().afterEach(() => refreshNuxtData())
       }
     } else if (unregisterRefreshHook) {
       unregisterRefreshHook()
@@ -67,7 +67,7 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
 
   return {
     enabled: toRef(preview.value, 'enabled'),
-    state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
+    state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state'])
   }
 }
 

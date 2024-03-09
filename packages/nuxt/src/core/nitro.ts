@@ -227,7 +227,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       output: {},
       plugins: []
     },
-    logLevel: logLevelMapReverse[nuxt.options.logLevel],
+    logLevel: logLevelMapReverse[nuxt.options.logLevel]
   } satisfies NitroConfig)
 
   // Resolve user-provided paths

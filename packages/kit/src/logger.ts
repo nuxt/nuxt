@@ -1,5 +1,5 @@
 import { consola } from 'consola'
-import type { ConsolaOptions } from 'consola';
+import type { ConsolaOptions } from 'consola'
 
 export const logger = consola
 

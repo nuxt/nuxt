@@ -21,6 +21,6 @@ export default defineDriver((opts: { base: string }) => {
     },
     async getItem (key, opts) {
       return await lru.getItem(key, opts) || await fs.getItem(normalizeFsKey(key), opts)
-    },
+    }
   }
 })

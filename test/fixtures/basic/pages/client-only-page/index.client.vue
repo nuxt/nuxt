@@ -3,7 +3,7 @@ const state = useState('test', () => {
   let hasAccessToWindow = null as null | boolean
 
   try {
-    hasAccessToWindow = Object.keys(window).at(0) ? true : false
+    hasAccessToWindow = !!Object.keys(window).at(0)
   } catch {
     hasAccessToWindow = null
   }

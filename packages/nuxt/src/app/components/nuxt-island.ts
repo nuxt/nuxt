@@ -213,7 +213,7 @@ export default defineComponent({
     }
 
     expose({
-      refresh: () => fetchComponent(true),
+      refresh: () => fetchComponent(true)
     })
 
     if (import.meta.hot) {
@@ -264,7 +264,7 @@ export default defineComponent({
                 const { html, slots } = info
                 let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
                 for (const slot in slots) {
-                  replaced = replaced.replaceAll(`data-island-slot="${slot}">`, (full) => full + slots[slot])
+                  replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
                 }
                 teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                   default: () => [createStaticVNode(replaced, 1)]

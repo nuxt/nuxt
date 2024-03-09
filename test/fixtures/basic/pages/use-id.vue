@@ -12,4 +12,3 @@ const id = useId()
     <ComponentWithIds />
   </form>
 </template>
-

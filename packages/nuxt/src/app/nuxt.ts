@@ -21,7 +21,7 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 
 import type { NuxtAppLiterals } from '#app'
 
-const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
+const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
 })
 
@@ -406,7 +406,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   if (errors.length) { throw errors[0] }
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
   if (typeof plugin === 'function') { return plugin }
 
@@ -415,7 +415,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
@@ -438,7 +438,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -455,7 +455,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
   return nuxtAppInstance || null
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -475,7 +475,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
 }

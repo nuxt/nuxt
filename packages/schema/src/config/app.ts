@@ -27,7 +27,7 @@ export default defineUntypedSchema({
      * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
      * @type {boolean}
      */
-    propsDestructure: false,
+    propsDestructure: false
   },
 
   /**
@@ -157,7 +157,7 @@ export default defineUntypedSchema({
      */
     viewTransition: {
       $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
-        (e) => e?.viewTransition
+        e => e?.viewTransition
       ) ?? false
     },
 
