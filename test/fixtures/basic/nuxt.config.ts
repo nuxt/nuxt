@@ -44,6 +44,12 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    publicAssets: [
+      {
+        dir: '../custom-public',
+        baseURL: '/custom'
+      }
+    ],
     esbuild: {
       options: {
         // in order to test bigint serialization
