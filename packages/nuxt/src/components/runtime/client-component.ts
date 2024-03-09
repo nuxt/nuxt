@@ -1,8 +1,8 @@
 import { defineAsyncComponent, defineComponent, h } from 'vue'
 import type { AsyncComponentLoader } from 'vue'
-import { default as ClientOnly } from '#app/components/client-only'
+import ClientOnly from '#app/components/client-only'
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export const createClientPage = (loader: AsyncComponentLoader) => {
   const page = defineAsyncComponent(loader)
 

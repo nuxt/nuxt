@@ -61,7 +61,7 @@ if (import.meta.client) {
 
     const nuxt = createNuxtApp({ vueApp })
 
-    async function handleVueError(error: any) {
+    async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error = nuxt.payload.error || createError(error as any)
     }
@@ -85,8 +85,7 @@ if (import.meta.client) {
     }
 
     // If the errorHandler is not overridden by the user, we unset it
-    if (vueApp.config.errorHandler === handleVueError)
-      vueApp.config.errorHandler = undefined
+    if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
 
     return vueApp
   }

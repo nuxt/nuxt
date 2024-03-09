@@ -27,7 +27,7 @@ export default defineUntypedSchema({
         }
         return true
       }
-    },
+    }
   },
   /**
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
@@ -61,7 +61,7 @@ export default defineUntypedSchema({
         // TODO: remove in v3.10
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
-    },
+    }
   },
   experimental: {
     /**
@@ -335,6 +335,6 @@ export default defineUntypedSchema({
      * ```
      * @type {boolean}
      */
-    clientNodeCompat: false,
+    clientNodeCompat: false
   }
 })

@@ -58,7 +58,7 @@ describe('islandTransform - server and island components', () => {
       const someData = 'some data'
 
       </script>`
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -94,7 +94,7 @@ describe('islandTransform - server and island components', () => {
       const someData = 'some data'
 
       </script>`
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -145,7 +145,7 @@ describe('islandTransform - server and island components', () => {
     const message = "Hello World";
     </script>
     `
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -351,7 +351,7 @@ describe('islandTransform - server and island components', () => {
 
               "
       `)
-        expect(result).toContain(`import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'`)
+        expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
       })
     })
 

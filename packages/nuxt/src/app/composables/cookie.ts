@@ -92,7 +92,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     if (store) {
       store.onchange = (event) => {
         const cookie = event.changed.find((c: any) => c.name === name)
-        if (cookie) handleChange({ value: cookie.value })
+        if (cookie) { handleChange({ value: cookie.value }) }
       }
     } else if (channel) {
       channel.onmessage = ({ data }) => handleChange(data)
@@ -124,7 +124,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 }
 /** @since 3.10.0 */
 export function refreshCookie (name: string) {
-  if (store || typeof BroadcastChannel === 'undefined') return
+  if (store || typeof BroadcastChannel === 'undefined') { return }
 
   new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
 }

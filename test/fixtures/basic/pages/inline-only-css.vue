@@ -5,4 +5,3 @@ import css from '~/assets/inline-only.css?inline'
 <template>
   <pre>{{ css }}</pre>
 </template>
-

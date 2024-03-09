@@ -22,9 +22,9 @@ const mockNuxt = {
     modules: [],
     _layers: [{ config: { srcDir: '/my-app' } }],
     _installedModules: [],
-    _modules: [],
+    _modules: []
   },
-  callHook: () => {},
+  callHook: () => {}
 } satisfies DeepPartial<Nuxt> as unknown as Nuxt
 
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt

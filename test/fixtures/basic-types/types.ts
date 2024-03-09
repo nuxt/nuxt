@@ -331,7 +331,7 @@ describe('head', () => {
   })
   it('types head for defineNuxtComponent', () => {
     defineNuxtComponent({
-      head(nuxtApp) {
+      head (nuxtApp) {
         expectTypeOf(nuxtApp).not.toBeAny()
         return {
           title: 'Site Title'
@@ -341,9 +341,9 @@ describe('head', () => {
 
     defineNuxtComponent({
       // @ts-expect-error wrong return type for head function
-      head() {
+      head () {
         return {
-          'test': true
+          test: true
         }
       }
     })
