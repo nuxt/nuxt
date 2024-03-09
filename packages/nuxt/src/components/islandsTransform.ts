@@ -84,9 +84,9 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               let attrString = ''
               for (const name in attributes) {
                 const value = attributes[name]
-                attrString += (name ? `${name}="${value}" ` : value) + " "
+                attrString += (name ? `${name}="${value}" ` : value) + ' '
               }
-              attrString = attrString.slice(0,-1)
+              attrString = attrString.slice(0, -1)
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             }
