@@ -72,7 +72,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
-    tsConfig: { compilerOptions: { paths } }
+    tsConfig: { compilerOptions: { paths: { ...paths } } }
   })
 
   // Add nuxt types
@@ -88,7 +88,7 @@ async function initNuxt (nuxt: Nuxt) {
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
 
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
-    opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths })
+    opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
