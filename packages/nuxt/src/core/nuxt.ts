@@ -2,6 +2,7 @@ import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 import { resolvePackageJSON } from 'pkg-types'
 
@@ -64,9 +65,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async pkg => {
-    const path = await resolvePath(pkg).then(r => resolvePackageJSON(r))
+    const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+    if (!path) { return }
     return [pkg, [dirname(path)]]
-  })))
+  })).then((r) => r.filter(Boolean) as [string, [string]][]))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
