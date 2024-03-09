@@ -7,7 +7,6 @@ const PREFIX = 'virtual:public?'
 
 export const VitePublicDirsPlugin = createUnplugin(() => {
   const nitro = useNitro()
-  const publicFiles = new Set()
 
   return {
     name: 'nuxt:vite-public-dir-resolution',
@@ -29,7 +28,6 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
             if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
             const path = id.replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
             if (existsSync(path)) {
-              publicFiles.add(path)
               return PREFIX + encodeURIComponent(id)
             }
           }
