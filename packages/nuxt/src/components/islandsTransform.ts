@@ -144,7 +144,14 @@ function isBinding (attr: string): boolean {
 
 function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
+  let content = ''
+  for (const b in bindings) {
+    if (b && b !== '_bind') {
+      const value = bindings[b];
+      content += (isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\``) + `,`;
+    }
+  }
+  content = content.slice(0,-1)
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
@@ -176,7 +183,8 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
       async generateBundle (_opts, bundle) {
         const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
         const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
+        for (const chunkPath in bundle) {
+          const chunkInfo = bundle[chunkPath]
           if (chunkInfo.type !== 'chunk') { continue }
 
           for (const component of components) {
