@@ -18,17 +18,17 @@ if (_error.stack) {
   const stackArray = _error.stack.split('\n').splice(1)
   for (const stk of stackArray) {
     const text = stk
-        .replace('webpack:/', '')
-        .replace('.vue', '.js') // TODO: Support sourcemap
-        .trim()
+      .replace('webpack:/', '')
+      .replace('.vue', '.js') // TODO: Support sourcemap
+      .trim()
     const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
           text.includes('internal') ||
           text.includes('new Promise')
-    stacktrace +=  `<span class="stack${internal ? ' internal' : ''}">${text}</span>\n`
+    stacktrace += `<span class="stack${internal ? ' internal' : ''}">${text}</span>\n`
   }
-  stacktrace = stacktrace.slice(0,-1)
+  stacktrace = stacktrace.slice(0, -1)
 }
-  
+
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
 const is404 = statusCode === 404
