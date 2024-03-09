@@ -474,6 +474,11 @@ export default defineNuxtModule({
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
+          '}',
+          'declare module \'nitropack\' {',
+          '  interface NitroRouteConfig {',
+          '    nuxtMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+          '  }',
           '}'
         ].join('\n')
       }

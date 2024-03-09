@@ -240,7 +240,6 @@ declare module 'nitropack' {
   interface NitroRouteConfig {
     ssr?: boolean
     experimentalNoScripts?: boolean
-    nuxtMiddleware?: string | string[] | Record<string, boolean>
   }
   interface NitroRouteRules {
     ssr?: boolean
