@@ -87,7 +87,6 @@ describe('route rules', () => {
   })
 })
 
-
 describe('modules', () => {
   it('should auto-register modules in ~/modules', async () => {
     const result = await $fetch('/auto-registered-module')
