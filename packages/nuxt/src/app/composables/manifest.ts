@@ -1,7 +1,8 @@
 import type { MatcherExport, RouteMatcher } from 'radix3'
-import { createMatcherFromExport } from 'radix3'
+import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import { useAppConfig } from '../config'
+import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -26,10 +27,7 @@ function fetchManifest () {
   }
   // @ts-expect-error private property
   const buildId = useAppConfig().nuxt?.buildId
-  manifest = import.meta.server
-    // @ts-expect-error virtual file
-    ? import('#app-manifest').then(r => r.default).then(r => r.default || r)
-    : $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${buildId}.json`))
+  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${buildId}.json`))
   manifest.then((m) => { matcher = createMatcherFromExport(m.matcher) })
   return manifest
 }
@@ -44,6 +42,12 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 
 /** @since 3.7.4 */
 export async function getRouteRules (url: string) {
+  if (import.meta.server) {
+    const _routeRulesMatcher = toRouteMatcher(
+      createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules })
+    )
+    return defu({}, ..._routeRulesMatcher.matchAll(url).reverse())
+  }
   await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
 }
