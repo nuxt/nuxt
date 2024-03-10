@@ -101,10 +101,10 @@ export default defineNuxtConfig({
       addBuildPlugin(plugin)
     },
     function (_options, nuxt) {
-      nuxt.hook('pages:extend', pages => {
+      nuxt.hook('pages:extend', (pages) => {
         pages.push({
           path: '/manual-redirect',
-          redirect: '/',
+          redirect: '/'
         })
       })
     },
@@ -201,7 +201,7 @@ export default defineNuxtConfig({
     }
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
+    inlineStyles: id => !!id && !id.includes('assets.vue')
   },
   experimental: {
     typedPages: true,

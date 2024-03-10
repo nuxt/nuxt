@@ -84,7 +84,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       name: '',
       path: '',
       file: file.absolutePath,
-      children: [],
+      children: []
     }
 
     // Array where routes should be added, useful when adding child routes
@@ -399,7 +399,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
-  if (skipSerialisation || value === undefined) return undefined
+  if (skipSerialisation || value === undefined) { return undefined }
   return JSON.stringify(value)
 }
 
@@ -425,7 +425,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         name: serializeRouteValue(page.name),
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
-        redirect: serializeRouteValue(page.redirect),
+        redirect: serializeRouteValue(page.redirect)
       }
 
       for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
@@ -487,13 +487,13 @@ async function createClientPage(loader) {
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
           metaRoute[key] = route[key] ?? metaRoute[key]
         }
 
         // set to extracted value or delete if none extracted
         for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
 
           if (route[key] == null) {
             delete metaRoute[key]

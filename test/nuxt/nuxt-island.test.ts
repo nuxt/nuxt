@@ -135,7 +135,6 @@ describe('runtime server component', () => {
   })
 })
 
-
 describe('client components', () => {
   it('expect swapping nuxt-client should not trigger errors #25289', async () => {
     const mockPath = '/nuxt-client.js'
@@ -198,7 +197,7 @@ describe('client components', () => {
     // @ts-expect-error mock
     vi.mocked(fetch).mockImplementation(() => ({
       id: '123',
-      html: `<div data-island-uid>hello<div><div>fallback</div></div></div>`,
+      html: '<div data-island-uid>hello<div><div>fallback</div></div></div>',
       state: {},
       head: {
         link: [],
@@ -267,7 +266,7 @@ describe('client components', () => {
       default: {
         name: 'ClientWithSlot',
         setup (_, { slots }) {
-          return () => h('div', { class: "client-component" }, slots.default())
+          return () => h('div', { class: 'client-component' }, slots.default())
         }
       }
     }))
@@ -300,7 +299,7 @@ describe('client components', () => {
     vi.stubGlobal('fetch', stubFetch)
     const wrapper = await mountSuspended(NuxtIsland, {
       props: {
-        name: 'NuxtClientWithSlot',
+        name: 'NuxtClientWithSlot'
       },
       attachTo: 'body'
     })

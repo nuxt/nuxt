@@ -9,8 +9,8 @@ export default defineNuxtConfig({
     function () {
       addPluginTemplate({
         filename: 'plugins/my-plugin.mjs',
-        getContents: () => `export default defineNuxtPlugin({ name: 'my-plugin' })`
+        getContents: () => 'export default defineNuxtPlugin({ name: \'my-plugin\' })'
       })
     }
-  ],
+  ]
 })

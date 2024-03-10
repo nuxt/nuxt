@@ -243,10 +243,10 @@ export function useLazyFetch<
   autoKey)
 }
 
-function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments <_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
-    toValue(opts.baseURL),
+    toValue(opts.baseURL)
   ]
   for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)

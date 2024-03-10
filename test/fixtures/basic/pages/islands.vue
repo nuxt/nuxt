@@ -20,7 +20,7 @@ const count = ref(0)
         name="PureComponent"
         :props="islandProps"
       />
-      <div id="wrapped-client-only"> 
+      <div id="wrapped-client-only">
         <ClientOnly>
           <NuxtIsland
             name="PureComponent"

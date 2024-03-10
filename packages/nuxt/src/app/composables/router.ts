@@ -48,7 +48,7 @@ export interface RouteMiddleware {
 }
 
 /** @since 3.0.0 */
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -214,8 +214,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
-/** 
- * This will abort navigation within a Nuxt route middleware handler. 
+/**
+ * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {
