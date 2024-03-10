@@ -243,7 +243,7 @@ export function useAsyncData<
     console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
   }
 
-  const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
+  const hasCachedData = () => options.getCachedData!(key) != null
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
