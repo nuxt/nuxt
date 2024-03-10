@@ -38,7 +38,7 @@ export interface RuntimeNuxtHooks {
   'app:error': (err: any) => HookResult
   'app:error:cleared': (options: { redirect?: string }) => HookResult
   'app:chunkError': (options: { error: any }) => HookResult
-  'app:data:refresh': (keys?: string[]) => HookResult
+  'app:data:refresh': (keys?: string[], force?: boolean) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
