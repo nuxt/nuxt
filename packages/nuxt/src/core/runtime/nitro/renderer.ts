@@ -29,7 +29,7 @@ import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appRootId, appRootTag } from '#internal/nuxt.config.mjs'
+import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
@@ -137,7 +137,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
-    return `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>${html}</${appRootTag}>`
+    return APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG
   }
 
   return renderer
@@ -149,10 +149,11 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   // @ts-expect-error virtual file
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
+    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
 
   const options = {
     manifest,
-    renderToString: () => `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>${spaTemplate}</${appRootTag}>`,
+    renderToString: () => spaTemplate,
     buildAssetsURL
   }
   // Create SPA renderer and cache the result for all requests
@@ -230,8 +231,15 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
+const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportId)
+const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">` : ''
+const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
+
+const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>`
+const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
+
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
-const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>([\\s\\S]*)</${appRootTag}>$`)
+const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -459,7 +467,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
+    body: [
+      process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
+      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]) : '') + APP_TELEPORT_CLOSE_TAG
+    ],
     bodyAppend: [bodyTags]
   }
 
@@ -534,7 +545,7 @@ function normalizeChunks (chunks: (string | undefined)[]) {
   return chunks.filter(Boolean).map(i => i!.trim())
 }
 
-function joinTags (tags: string[]) {
+function joinTags (tags: Array<string | undefined>) {
   return tags.join('')
 }
 
