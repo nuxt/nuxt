@@ -200,19 +200,17 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
-    _plugins.push({
-      ...await extractMetadata(code)
-        .catch((e) => {
-          const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
-          if (e.message === 'Invalid plugin metadata') {
-            logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/guide/directory-structure/plugins#object-syntax-plugins`)
-          } else {
-            logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
-          }
-          return {} as Omit<PluginMeta, 'enforce'>
-        }),
-      ...plugin
-    })
+    const meta = await extractMetadata(code)
+      .catch((e) => {
+        const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
+        if (e.message === 'Invalid plugin metadata') {
+          logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/guide/directory-structure/plugins#object-syntax-plugins`)
+        } else {
+          logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
+        }
+      })
+    // assign meta to the plugin
+    _plugins.push(meta ? Object.assign(plugin, meta) : plugin)
   }
 
   return _plugins.sort((a, b) => (a.order ?? orderMap.default) - (b.order ?? orderMap.default))
