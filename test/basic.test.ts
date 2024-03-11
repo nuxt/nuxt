@@ -2470,6 +2470,23 @@ describe('keepalive', () => {
   })
 })
 
+describe('teleports', () => {
+  it('should append teleports to body', async () => {
+    const html = await $fetch('/teleport')
+
+    // Teleport is prepended to body, before the __nuxt div
+    expect(html).toContain('<div>Teleport</div><!--teleport anchor--><div id="__nuxt">')
+    // Teleport start and end tag are rendered as expected
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div>')
+  })
+  it('should render teleports to app teleports element', async () => {
+    const html = await $fetch('/nuxt-teleport')
+
+    // Teleport is appended to body, after the __nuxt div
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div></div><span id="nuxt-teleport"><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
+  })
+})
+
 describe('Node.js compatibility for client-side', () => {
   it('should work', async () => {
     const { page } = await renderPage('/node-compat')
