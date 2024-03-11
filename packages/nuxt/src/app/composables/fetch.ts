@@ -1,7 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
 import type { MaybeRef, Ref } from 'vue'
-import { reactive, toValue, toRef } from 'vue'
+import { reactive, toRef, toValue } from 'vue'
 import { hash } from 'ohash'
 
 import { useRequestFetch } from './ssr'
