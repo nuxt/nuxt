@@ -47,8 +47,6 @@ export async function extractMetadata (code: string) {
   if (metaCache[code]) {
     return metaCache[code]
   }
-  // avoid re-parsing failed plugin code, initial error will bubble up
-  metaCache[code] = {}
   const js = await transform(code, { loader: 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
