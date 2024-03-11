@@ -209,6 +209,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
           } else {
             logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
           }
+          return {}
         }),
       ...plugin
     })
