@@ -148,7 +148,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const manifest = await getClientManifest()
 
   // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '').then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
+  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
+    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
 
   const options = {
     manifest,
@@ -238,6 +239,7 @@ const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
+
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
 export default defineRenderHandler(async (event): Promise<Partial<RenderResponse>> => {
