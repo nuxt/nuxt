@@ -1,7 +1,7 @@
 import type { FetchError, FetchOptions } from 'ofetch'
 import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
 import type { MaybeRef, Ref } from 'vue'
-import { computed, reactive, toValue } from 'vue'
+import { computed, reactive, toValue, toRef } from 'vue'
 import { hash } from 'ohash'
 
 import { useRequestFetch } from './ssr'
@@ -94,13 +94,7 @@ export function useFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  const _request = computed(() => {
-    let r = request
-    if (typeof r === 'function') {
-      r = r()
-    }
-    return toValue(r)
-  })
+  const _request = toRef(request)
 
   const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
   if (!_key || typeof _key !== 'string') {
