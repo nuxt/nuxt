@@ -70,7 +70,7 @@ export default defineUntypedSchema({
       exclude: {
         $resolve: async (val: string[] | undefined, get) => [
           ...val || [],
-          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>).filter((i) => typeof i === 'string'),
+          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>).filter(i => typeof i === 'string'),
           'vue-demi'
         ]
       }

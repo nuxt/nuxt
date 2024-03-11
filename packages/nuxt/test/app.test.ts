@@ -87,7 +87,7 @@ describe('resolveApp', () => {
       'middleware/other.ts',
       'layouts/index.vue',
       'layouts/default/index.vue',
-      'layouts/other.vue',
+      'layouts/other.vue'
     ])
     // Middleware are not resolved in a nested manner
     expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`

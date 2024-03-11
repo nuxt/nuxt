@@ -354,14 +354,14 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.appManifest) {
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
-      nuxt.hook('pages:extend', routes => {
+      nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
         for (const path in nitro.options.routeRules) {
           const rule = nitro.options.routeRules[path]
           if (!rule.redirect) { continue }
           routes.push({
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: resolve(runtimeDir, 'component-stub'),
+            file: resolve(runtimeDir, 'component-stub')
           })
         }
       })
@@ -400,7 +400,7 @@ export default defineNuxtModule({
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!) ))) {
+        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
           delete manifest[key]
           continue
         }
@@ -415,7 +415,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        if (!app.pages) return 'export default []'
+        if (!app.pages) { return 'export default []' }
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
         return [...imports, `export default ${routes}`].join('\n')
       }
@@ -490,7 +490,6 @@ export default defineNuxtModule({
       }
     })
 
-
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
@@ -502,9 +501,9 @@ export default defineNuxtModule({
             'import type { ComputedRef, MaybeRef } from \'vue\'',
             `declare module ${genString(composablesFile)} {`,
             '  interface PageMeta {',
-            `    viewTransition?: boolean | 'always'`,
+            '    viewTransition?: boolean | \'always\'',
             '  }',
-            '}',
+            '}'
           ].join('\n')
         }
       })

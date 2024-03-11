@@ -54,6 +54,18 @@ export interface NuxtRenderHTMLContext {
   appTeleports: string[]
 }
 
+export interface NuxtIslandSlotResponse {
+  props: Array<unknown>
+  fallback?: string
+}
+
+export interface NuxtIslandClientResponse {
+  html: string
+  props: unknown
+  chunk: string
+  slots?: Record<string, string>
+}
+
 export interface NuxtIslandContext {
   id?: string
   name: string
@@ -61,17 +73,6 @@ export interface NuxtIslandContext {
   url?: string
   slots: Record<string, Omit<NuxtIslandSlotResponse, 'html' | 'fallback'>>
   components: Record<string, Omit<NuxtIslandClientResponse, 'html'>>
-}
-
-export interface NuxtIslandSlotResponse {
-  props: Array<unknown>
-  fallback?: string
-}
-export interface NuxtIslandClientResponse {
-  html: string
-  props: unknown
-  chunk: string
-  slots?: Record<string, string>
 }
 
 export interface NuxtIslandResponse {
@@ -187,20 +188,22 @@ const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderKeys = new Set<string>()
-const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? {
-  get <T = unknown>(key: string): Promise<T> | undefined {
-    if (sharedPrerenderKeys.has(key)) {
-      return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
+  ? {
+      get<T = unknown> (key: string): Promise<T> | undefined {
+        if (sharedPrerenderKeys.has(key)) {
+          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+        }
+      },
+      async set<T> (key: string, value: Promise<T>): Promise<void> {
+        sharedPrerenderKeys.add(key)
+      sharedPrerenderPromises!.set(key, value)
+      useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+        // free up memory after the promise is resolved
+        .finally(() => sharedPrerenderPromises!.delete(key))
+      }
     }
-  },
-  async set <T>(key: string, value: Promise<T>): Promise<void> {
-    sharedPrerenderKeys.add(key)
-    sharedPrerenderPromises!.set(key, value)
-    useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
-      // free up memory after the promise is resolved
-      .finally(() => sharedPrerenderPromises!.delete(key))
-  },
-} : null
+  : null
 
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
@@ -222,7 +225,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     name: componentName,
     props: destr(context.props) || {},
     slots: {},
-    components: {},
+    components: {}
   }
 
   return ctx
@@ -310,8 +313,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     modules: new Set(),
-    set _registeredComponents(value) { this.modules = value },
-    get _registeredComponents() { return this.modules },
+    set _registeredComponents (value) { this.modules = value },
+    get _registeredComponents () { return this.modules },
     islandContext
   }
 
@@ -334,7 +337,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
     writeEarlyHints(event, link)
   }
-
 
   if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
     for (const id of await getEntryIds()) {
@@ -467,7 +469,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
     bodyAppend: [bodyTags],
-    appTeleports: HAS_APP_TELEPORTS ? normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]) : [],
+    appTeleports: HAS_APP_TELEPORTS ? normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]) : []
   }
 
   // Allow hooking into the rendered result
@@ -546,7 +548,7 @@ function joinTags (tags: string[]) {
 }
 
 function joinAttrs (chunks: string[]) {
-  if (chunks.length === 0) return ''
+  if (chunks.length === 0) { return '' }
   return ' ' + chunks.join(' ')
 }
 
@@ -555,11 +557,11 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   if (HAS_APP_TELEPORTS && html.appTeleports.length) {
     bodyTags = bodyTags.replace(APP_TELEPORT_OPEN_TAG, APP_TELEPORT_OPEN_TAG + joinTags(html.appTeleports))
   }
-  return '<!DOCTYPE html>'
-    + `<html${joinAttrs(html.htmlAttrs)}>`
-    + `<head>${joinTags(html.head)}</head>`
-    + `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${bodyTags}${joinTags(html.bodyAppend)}</body>`
-    + '</html>'
+  return '<!DOCTYPE html>' +
+    `<html${joinAttrs(html.htmlAttrs)}>` +
+    `<head>${joinTags(html.head)}</head>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${bodyTags}${joinTags(html.bodyAppend)}</body>` +
+    '</html>'
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
@@ -655,7 +657,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
+      fallback: ssrContext.teleports?.[`island-fallback=${slot}`]
     }
   }
   return response

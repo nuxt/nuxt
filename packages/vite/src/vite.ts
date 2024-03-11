@@ -158,7 +158,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
             await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
           }
-        },
+        }
       })
     }
   }
