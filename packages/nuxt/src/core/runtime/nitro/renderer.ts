@@ -239,6 +239,7 @@ const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
+const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -636,7 +637,6 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}$`)
 function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
