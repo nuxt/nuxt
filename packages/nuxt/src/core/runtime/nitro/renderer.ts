@@ -51,7 +51,6 @@ export interface NuxtRenderHTMLContext {
   bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
-  appTeleports: string[]
 }
 
 export interface NuxtIslandSlotResponse {
@@ -138,7 +137,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
-    return wrapInRootTag(html)
+    return APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG
   }
 
   return renderer
@@ -149,7 +148,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const manifest = await getClientManifest()
 
   // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '').then(r => wrapInRootTag(r))
+  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '').then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
 
   const options = {
     manifest,
@@ -237,8 +236,6 @@ const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
 const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>`
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
-
-const wrapInRootTag = (html: string) => APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG + APP_TELEPORT_OPEN_TAG + APP_TELEPORT_CLOSE_TAG
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
@@ -467,9 +464,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head: normalizeChunks([headTags, ssrContext.styles]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html],
-    bodyAppend: [bodyTags],
-    appTeleports: HAS_APP_TELEPORTS ? normalizeChunks([ssrContext.teleports?.[`#${appTeleportId}`]]) : []
+    body: [
+      process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
+      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]) : '') + APP_TELEPORT_CLOSE_TAG
+    ],
+    bodyAppend: [bodyTags]
   }
 
   // Allow hooking into the rendered result
@@ -543,7 +542,7 @@ function normalizeChunks (chunks: (string | undefined)[]) {
   return chunks.filter(Boolean).map(i => i!.trim())
 }
 
-function joinTags (tags: string[]) {
+function joinTags (tags: Array<string | undefined>) {
   return tags.join('')
 }
 
@@ -553,14 +552,10 @@ function joinAttrs (chunks: string[]) {
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
-  let bodyTags = joinTags(html.body)
-  if (HAS_APP_TELEPORTS && html.appTeleports.length) {
-    bodyTags = bodyTags.replace(APP_TELEPORT_OPEN_TAG, APP_TELEPORT_OPEN_TAG + joinTags(html.appTeleports))
-  }
   return '<!DOCTYPE html>' +
     `<html${joinAttrs(html.htmlAttrs)}>` +
     `<head>${joinTags(html.head)}</head>` +
-    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${bodyTags}${joinTags(html.bodyAppend)}</body>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
     '</html>'
 }
 
@@ -639,9 +634,7 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-const APP_TELEPORT_REGEX_STRING = HAS_APP_TELEPORTS ? `${APP_TELEPORT_OPEN_TAG}[\\s\\S]*${APP_TELEPORT_CLOSE_TAG}` : ''
-const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}${APP_TELEPORT_REGEX_STRING}$`)
-
+const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}$`)
 function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
