@@ -114,6 +114,11 @@ export interface ComponentsOptions {
    * @default false
    */
   global?: boolean
+  /**
+   * Whether to write metadata to the build directory with information about the components that
+   * are auto-registered in your app.
+   */
+  generateMetadata?: boolean
   loader?: boolean
 
   transform?: {
