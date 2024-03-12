@@ -164,7 +164,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       }
 
       if (existsSync(path) && !(await isDirectory(path))) {
-        path = path.replace(/\.[a-z]+$/, '')
+        path = path.replace(/\.(mts|js|ts|mjs)$/, '');
       }
 
       if (isAbsolute(path)) {
