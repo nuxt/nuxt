@@ -192,7 +192,7 @@ export default defineNuxtModule({
       }
 
       // Regenerate types/typed-router.d.ts when adding or removing pages
-      nuxt.hook('builder:generateApp', async (options) => {
+      nuxt.hook('app:templatesGenerated', async (_app, _templates, options) => {
         if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
           await context.scanPages()
         }
