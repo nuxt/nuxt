@@ -137,6 +137,17 @@ export default defineNuxtConfig({
     // To test falsy module values
     undefined
   ],
+  $production: {
+    vite: {
+      $client: {
+        build: {
+          rollupOptions: {
+            output: { chunkFileNames: '_nuxt/[name].js' }
+          }
+        }
+      }
+    }
+  },
   vite: {
     logLevel: 'silent',
     build: {
