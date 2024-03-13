@@ -1,3 +1,7 @@
+export interface ComponentMeta {
+  [key: string]: unknown
+}
+
 export interface Component {
   pascalName: string
   kebabName: string
@@ -9,6 +13,7 @@ export interface Component {
   preload: boolean
   global?: boolean | 'sync'
   island?: boolean
+  meta?: ComponentMeta
   mode?: 'client' | 'server' | 'all'
   /**
    * This number allows configuring the behavior of overriding Nuxt components.
