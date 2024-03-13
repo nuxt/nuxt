@@ -24,9 +24,10 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
     vite: {
       load: {
         enforce: 'pre',
-        handler (id) {
+        handler (id, options) {
           if (id.startsWith(PREFIX)) {
-            return `export default __publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
+            const helper = !options?.ssr || nitro.options.imports !== false ? '' : 'globalThis.'
+            return `export default ${helper}__publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
           }
         }
       },
