@@ -124,3 +124,9 @@ export const componentNames: string[]
 `
   }
 }
+
+export const componentsMetadataTemplate: NuxtTemplate = {
+  filename: 'components.json',
+  write: true,
+  getContents: ({ app }) => JSON.stringify(app.components, null, 2)
+}
