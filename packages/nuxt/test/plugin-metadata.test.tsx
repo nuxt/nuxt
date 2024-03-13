@@ -10,7 +10,8 @@ describe('plugin-metadata', () => {
       name: 'test',
       enforce: 'post',
       hooks: { 'app:mounted': () => { } },
-      setup: () => { return { provide: { jsx: '[JSX]' } } },
+      // @ts-expect-error JSX not configured in workspace
+      setup: () => { return { provide: { jsx: () => <span>JSX</span> } } },
       order: 1
     })
 
@@ -19,7 +20,7 @@ describe('plugin-metadata', () => {
 
       const meta = await extractMetadata([
         'export default defineNuxtPlugin({',
-        ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
+        ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString() : JSON.stringify(value)},`),
         '})'
       ].join('\n'))
 
