@@ -9,7 +9,7 @@ describe('plugin-metadata', () => {
     const properties = Object.entries({
       name: 'test',
       enforce: 'post',
-      hooks: { 'app:mounted': () => { } },
+      hooks: { 'app:mounted': () => {} },
       // @ts-expect-error JSX not configured in workspace
       setup: () => { return { provide: { jsx: () => <span>JSX</span> } } },
       order: 1
