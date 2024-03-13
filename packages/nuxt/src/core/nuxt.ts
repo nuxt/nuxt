@@ -314,7 +314,7 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
 
-    if (!nuxt.options.ssr) {
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
       nuxt.options.nitro.routeRules ||= {}
       nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })

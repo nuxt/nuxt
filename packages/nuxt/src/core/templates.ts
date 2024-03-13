@@ -374,10 +374,13 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       baseURL: undefined,
       headers: undefined
     }
+    const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
+      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server')
+    )
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}`,
-      `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}`,
+      `export const componentIslands = ${shouldEnableComponentIslands}`,
       `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}`,
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}`,
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}`,

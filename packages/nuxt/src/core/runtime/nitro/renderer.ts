@@ -29,7 +29,7 @@ import unheadPlugins from '#internal/unhead-plugins.mjs'
 // eslint-disable-next-line import/no-restricted-paths
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag } from '#internal/nuxt.config.mjs'
+import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#paths'
 
@@ -263,7 +263,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // Check for island component rendering
-  const isRenderingIsland = (process.env.NUXT_COMPONENT_ISLANDS as unknown as boolean && event.path.startsWith('/__nuxt_island'))
+  const isRenderingIsland = (componentIslands as unknown as boolean && event.path.startsWith('/__nuxt_island'))
   const islandContext = isRenderingIsland ? await getIslandContext(event) : undefined
 
   if (import.meta.prerender && islandContext && event.path && await islandCache!.hasItem(event.path)) {
@@ -468,7 +468,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
-      process.env.NUXT_COMPONENT_ISLANDS ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
+      componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
       APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]) : '') + APP_TELEPORT_CLOSE_TAG
     ],
     bodyAppend: [bodyTags]

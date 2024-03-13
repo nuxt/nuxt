@@ -172,7 +172,10 @@ export default defineUntypedSchema({
 
     /**
      * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -182,7 +185,7 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
+        return val ?? 'auto'
       }
     },
 
