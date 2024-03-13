@@ -176,6 +176,9 @@ export default defineNuxtModule<ComponentsOptions>({
             chunkName: 'components/' + component.kebabName
           })
         }
+        if (component.mode === 'server' && !nuxt.options.ssr) {
+          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
+        }
       }
       context.components = newComponents
       app.components = newComponents

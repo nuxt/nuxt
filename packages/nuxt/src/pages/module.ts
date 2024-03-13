@@ -79,6 +79,10 @@ export default defineNuxtModule({
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', app.pages)
+
+      if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
+        logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
+      }
     })
 
     // Restart Nuxt when pages dir is added or removed
