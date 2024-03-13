@@ -119,6 +119,7 @@ export default defineComponent({
     if (import.meta.client && nuxtApp.isHydrating) {
       ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
+      nuxtApp.payload.data[key] ||= {}
       nuxtApp.payload.data[key].html = ssrHTML.value
     }
 

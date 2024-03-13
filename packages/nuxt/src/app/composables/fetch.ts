@@ -94,13 +94,7 @@ export function useFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  const _request = computed(() => {
-    let r = request
-    if (typeof r === 'function') {
-      r = r()
-    }
-    return toValue(r)
-  })
+  const _request = computed(() => toValue(request))
 
   const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
   if (!_key || typeof _key !== 'string') {
