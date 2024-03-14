@@ -1815,6 +1815,14 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   })
 })
 
+describe('public directories', () => {
+  it('should directly return public directory paths', async () => {
+    const html = await $fetch('/assets-custom')
+    expect(html).toContain('"/public.svg"')
+    expect(html).toContain('"/custom/file.svg"')
+  })
+})
+
 // TODO: dynamic paths in dev
 describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {

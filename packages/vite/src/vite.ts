@@ -17,6 +17,7 @@ import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
+import { VitePublicDirsPlugin } from './plugins/public-dirs'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -98,6 +99,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }
         },
         plugins: [
+          // add resolver for files in public assets directories
+          VitePublicDirsPlugin.vite(),
           composableKeysPlugin.vite({
             sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,
