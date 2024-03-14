@@ -86,7 +86,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   for (const write of writes) { write() }
 
   const changedTemplates = result
-    .map((r) => r.status === 'fulfilled' && r.value ? r.value : null)
+    .map(r => r.status === 'fulfilled' && r.value ? r.value : null)
     .filter((x): x is ResolvedNuxtTemplate<any> => !!x)
 
   if (changedTemplates.length) {
