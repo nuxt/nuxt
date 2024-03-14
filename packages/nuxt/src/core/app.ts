@@ -40,14 +40,19 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     .filter(template => !options.filter || options.filter(template))
 
   const writes: Array<() => void> = []
-  await Promise.allSettled(filteredTemplates
+  const result = await Promise.allSettled(filteredTemplates
     .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
+      const oldContents = nuxt.vfs[fullPath]
       const contents = await compileTemplate(template, templateContext).catch((e) => {
         logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
+
+      if (oldContents === contents) {
+        return false
+      }
 
       nuxt.vfs[fullPath] = contents
 
@@ -72,13 +77,21 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
           writeFileSync(fullPath, contents, 'utf8')
         })
       }
+
+      return template
     }))
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
   for (const write of writes) { write() }
 
-  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
+  const changedTemplates = result
+    .map((r) => r.status === 'fulfilled' && r.value ? r.value : null)
+    .filter((x): x is ResolvedNuxtTemplate<any> => !!x)
+
+  if (changedTemplates.length) {
+    await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
+  }
 }
 
 /** @internal */
