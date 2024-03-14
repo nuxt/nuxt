@@ -94,7 +94,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         '/types/imports.d.ts',
         '/imports.d.ts',
         '/imports.mjs'
-      ].some(i=>template.filename.endsWith(i))
+      ].some(i => template.filename.endsWith(i))
     }
 
     const regenerateImports = async () => {
