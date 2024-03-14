@@ -155,7 +155,13 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+      const comps = getComponents()
+      const sourceFiles: string[] = []
+      for (const c of comps) {
+        if (c.global) {
+          sourceFiles.push(relative(nuxt.options.srcDir, c.filePath))
+        }
+      }
 
       for (const key in manifest) {
         if (manifest[key].isEntry) {
@@ -167,7 +173,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Restart dev server when component directories are added/removed
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) {
+      if (event !== 'addDir' && event !== 'unlinkDir') {
         return
       }
 
@@ -208,7 +214,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Watch for changes
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (!['add', 'unlink'].includes(event)) {
+      if (event !== 'add' && event !== 'unlink') {
         return
       }
       const path = resolve(nuxt.options.srcDir, relativePath)
