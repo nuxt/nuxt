@@ -171,7 +171,7 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
      *
      * By default it is set to 'auto', which means it will be enabled only when there are islands,
      * server components or server pages in your app.
