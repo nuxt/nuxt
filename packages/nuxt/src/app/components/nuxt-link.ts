@@ -23,7 +23,7 @@ const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => a
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
- * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
+ * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
 export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
