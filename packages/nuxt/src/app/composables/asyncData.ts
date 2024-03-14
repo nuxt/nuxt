@@ -323,7 +323,7 @@ export function useAsyncData<
     return nuxtApp._asyncDataPromises[key]!
   }
 
-  asyncData.clear = () => clearNuxtDataByKey(key)
+  asyncData.clear = () => clearNuxtDataByKey(nuxtApp, key)
 
   const initialFetch = () => asyncData.refresh({ _initial: true })
 
@@ -491,13 +491,11 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       : toArray(keys)
 
   for (const key of _keys) {
-    clearNuxtDataByKey(key)
+    clearNuxtDataByKey(nuxtApp, key)
   }
 }
 
-function clearNuxtDataByKey (key: string): void {
-  const nuxtApp = useNuxtApp()
-
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   if (key in nuxtApp.payload.data) {
     nuxtApp.payload.data[key] = undefined
   }
