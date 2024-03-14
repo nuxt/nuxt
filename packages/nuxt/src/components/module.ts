@@ -118,8 +118,7 @@ export default defineNuxtModule<ComponentsOptions>({
         if (dir.transpile) {
           if (dir.path.includes('node_modules')) {
             nodeComponents.push(dir.path)
-          }
-          else {
+          } else {
             noNodeComponents.push(dir.path)
           }
         }
