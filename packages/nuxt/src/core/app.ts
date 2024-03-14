@@ -86,7 +86,9 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   for (const write of writes) { write() }
 
   const anyTemplateUpdated = result.some(r => r.status === 'fulfilled' && r.value)
-  if (anyTemplateUpdated) { await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options) }
+  if (anyTemplateUpdated) {
+    await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
+  }
 }
 
 /** @internal */
