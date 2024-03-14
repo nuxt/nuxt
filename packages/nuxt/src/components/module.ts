@@ -94,8 +94,8 @@ export default defineNuxtModule<ComponentsOptions>({
           for (const e of dirOptions.extensions || nuxt.options.extensions) {
             const extRaw = e.replace(/^\./g, '')
             extensions.push(extRaw)
-            extPattern += extRaw+','
-          }  
+            extPattern += extRaw + ','
+          }
           const present = isDirectory(dirPath)
           if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
             logger.warn('Components directory not found: `' + dirPath + '`')
@@ -107,7 +107,7 @@ export default defineNuxtModule<ComponentsOptions>({
             enabled: true,
             path: dirPath,
             extensions,
-            pattern: dirOptions.pattern || `**/*.{${extPattern.slice(0,-1)},}`,
+            pattern: dirOptions.pattern || `**/*.{${extPattern.slice(0, -1)},}`,
             ignore: [
               '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
               '**/*.d.{cts,mts,ts}', // .d.ts files
