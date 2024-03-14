@@ -76,8 +76,6 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
           writeFileSync(fullPath, contents, 'utf8')
         })
       }
-
-      return template
     }))
 
   // Write template files in single synchronous step to avoid (possible) additional
