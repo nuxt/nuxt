@@ -140,9 +140,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Watch for template generation
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
-      // Filter out templates of imports to avoid circular regeneration
-      const nonDtsTemplates = templates.filter(t => !isImportsTemplate(t))
-      if (nonDtsTemplates.length) {
+      // Only regenerate when non-imports templates are updated
+      if (templates.some(t => !isImportsTemplate(t))) {
         await regenerateImports()
       }
     })
