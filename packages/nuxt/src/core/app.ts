@@ -40,7 +40,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     .filter(template => !options.filter || options.filter(template))
 
   const writes: Array<() => void> = []
-  const result = await Promise.allSettled(filteredTemplates
+  await Promise.allSettled(filteredTemplates
     .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
@@ -50,18 +50,17 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         throw e
       })
 
-      if (oldContents === contents) {
-        return false
-      }
+      template.modified = oldContents !== contents
+      if (template.modified) {
+        nuxt.vfs[fullPath] = contents
 
-      nuxt.vfs[fullPath] = contents
+        const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
+        nuxt.vfs[aliasPath] = contents
 
-      const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
-      nuxt.vfs[aliasPath] = contents
-
-      // In case a non-normalized absolute path is called for on Windows
-      if (process.platform === 'win32') {
-        nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+        // In case a non-normalized absolute path is called for on Windows
+        if (process.platform === 'win32') {
+          nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+        }
       }
 
       const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
@@ -71,7 +70,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
-      if (template.write) {
+      if (template.modified && template.write) {
         writes.push(() => {
           mkdirSync(dirname(fullPath), { recursive: true })
           writeFileSync(fullPath, contents, 'utf8')
@@ -85,9 +84,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // runtime overhead of cascading HMRs from vite/webpack
   for (const write of writes) { write() }
 
-  const changedTemplates = result
-    .map(r => r.status === 'fulfilled' && r.value ? r.value : null)
-    .filter((x): x is ResolvedNuxtTemplate<any> => !!x)
+  const changedTemplates = filteredTemplates.filter(t => t.modified)
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
