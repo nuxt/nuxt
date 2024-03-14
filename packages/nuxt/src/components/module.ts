@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -127,6 +127,10 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
     }
 
+    if (componentOptions.generateMetadata) {
+      addTemplate(componentsMetadataTemplate)
+    }
+
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
     const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
@@ -175,6 +179,9 @@ export default defineNuxtModule<ComponentsOptions>({
             filePath: resolve(distDir, 'app/components/server-placeholder'),
             chunkName: 'components/' + component.kebabName
           })
+        }
+        if (component.mode === 'server' && !nuxt.options.ssr) {
+          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
       context.components = newComponents

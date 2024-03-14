@@ -79,6 +79,10 @@ export default defineNuxtModule({
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', app.pages)
+
+      if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
+        logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
+      }
     })
 
     // Restart Nuxt when pages dir is added or removed
@@ -192,7 +196,7 @@ export default defineNuxtModule({
       }
 
       // Regenerate types/typed-router.d.ts when adding or removing pages
-      nuxt.hook('builder:generateApp', async (options) => {
+      nuxt.hook('app:templatesGenerated', async (_app, _templates, options) => {
         if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
           await context.scanPages()
         }

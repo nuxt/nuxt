@@ -14,6 +14,8 @@ export default defineNuxtConfig({
   app: {
     pageTransition: true,
     layoutTransition: true,
+    teleportId: 'nuxt-teleport',
+    teleportTag: 'span',
     head: {
       charset: 'utf-8',
       link: [undefined],
@@ -44,6 +46,12 @@ export default defineNuxtConfig({
     './extends/node_modules/foo'
   ],
   nitro: {
+    publicAssets: [
+      {
+        dir: '../custom-public',
+        baseURL: '/custom'
+      }
+    ],
     esbuild: {
       options: {
         // in order to test bigint serialization
