@@ -31,7 +31,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: []
   },
   setup (componentOptions, nuxt) {
-    let componentDirs: ComponentsDir[] = []
+    const componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[]
     }
@@ -61,12 +61,18 @@ export default defineNuxtModule<ComponentsOptions>({
       if (!dir) {
         return []
       }
-      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
-      return dirs.map(_dir => ({
-        priority: options?.priority || 0,
-        ..._dir,
-        path: resolve(cwd, resolveAlias(_dir.path))
-      }))
+      const dirs: ComponentsDir[] = []
+      for (const compDir of dir.dirs || [dir]) {
+        const _dir: ComponentsDir = typeof dir === 'string' ? { path: compDir } : compDir
+        if (_dir.path) {
+          dirs.push({
+            priority: options?.priority || 0,
+            ..._dir,
+            path: resolve(cwd, resolveAlias(_dir.path))
+          })
+        }
+      }
+      return dirs
     }
 
     // Resolve dirs
