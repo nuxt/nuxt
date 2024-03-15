@@ -77,7 +77,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "devalue": "^4.3.2",
-    "esbuild": "^0.20.1",
+    "esbuild": "^0.20.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.2.0",
