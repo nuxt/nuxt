@@ -248,7 +248,7 @@ export function useAsyncData<
   nuxtApp.payload._errors[key] ??= null
   const _ref = options.deep ? ref : shallowRef
 
-  if (!nuxtApp._asyncData[key] || !options.immediate) nuxtApp._asyncData[key] = {}
+  if (!nuxtApp._asyncData[key] || !options.immediate) { nuxtApp._asyncData[key] = {} }
 
   nuxtApp._asyncData[key]!.data ??= _ref(options.getCachedData!(key))
   nuxtApp._asyncData[key]!.pending ??= ref(!hasCachedData())
@@ -491,10 +491,10 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       nuxtApp.payload._errors[key] = null
     }
 
-    if (nuxtApp._asyncData?.[key]?.data) nuxtApp._asyncData[key]!.data!.value = undefined
-    if (nuxtApp._asyncData?.[key]?.error) nuxtApp._asyncData[key]!.error!.value = null
-    if (nuxtApp._asyncData?.[key]?.pending) nuxtApp._asyncData[key]!.pending!.value = false
-    if (nuxtApp._asyncData?.[key]?.status) nuxtApp._asyncData[key]!.status!.value = 'idle'
+    if (nuxtApp._asyncData?.[key]?.data) { nuxtApp._asyncData[key]!.data!.value = undefined }
+    if (nuxtApp._asyncData?.[key]?.error) { nuxtApp._asyncData[key]!.error!.value = null }
+    if (nuxtApp._asyncData?.[key]?.pending) { nuxtApp._asyncData[key]!.pending!.value = false }
+    if (nuxtApp._asyncData?.[key]?.status) { nuxtApp._asyncData[key]!.status!.value = 'idle' }
 
     if (key in nuxtApp._asyncDataPromises) {
       nuxtApp._asyncDataPromises[key] = undefined
