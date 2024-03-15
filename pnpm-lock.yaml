@@ -137,8 +137,8 @@ importers:
         specifier: 5.4.2
         version: 5.4.2
       ufo:
-        specifier: 1.5.0
-        version: 1.5.0
+        specifier: 1.5.1
+        version: 1.5.1
       vitest:
         specifier: 1.4.0
         version: 1.4.0(@types/node@20.11.28)(happy-dom@13.8.6)
@@ -203,8 +203,8 @@ importers:
         specifier: ^7.6.0
         version: 7.6.0
       ufo:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       unctx:
         specifier: ^2.3.1
         version: 2.3.1
@@ -375,8 +375,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       ufo:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       ultrahtml:
         specifier: ^1.5.3
         version: 1.5.3
@@ -466,8 +466,8 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
       ufo:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       unimport:
         specifier: ^3.7.1
         version: 3.7.1(rollup@4.13.0)
@@ -635,8 +635,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       ufo:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       unenv:
         specifier: ^1.9.0
         version: 1.9.0
@@ -771,8 +771,8 @@ importers:
         specifier: ^2.0.7
         version: 2.0.7(webpack@5.90.3)
       ufo:
-        specifier: ^1.5.0
-        version: 1.5.0
+        specifier: ^1.5.1
+        version: 1.5.1
       unenv:
         specifier: ^1.9.0
         version: 1.9.0
@@ -2327,7 +2327,7 @@ packages:
       radix3: 1.1.1
       scule: 1.3.0
       std-env: 3.7.0
-      ufo: 1.5.0
+      ufo: 1.5.1
       unenv: 1.9.0
       unplugin: 1.10.0
       vite: 5.1.6(@types/node@20.11.28)
@@ -2374,11 +2374,11 @@ packages:
       remark-rehype: 11.1.0
       scule: 1.3.0
       shiki: 1.1.6
-      ufo: 1.5.0
+      ufo: 1.5.1
       unified: 11.0.4
       unist-builder: 4.0.0
       unist-util-visit: 5.0.0
-      unwasm: 0.3.7
+      unwasm: 0.3.8
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5795,7 +5795,7 @@ packages:
       enhanced-resolve: 5.15.0
       mlly: 1.6.1
       pathe: 1.1.2
-      ufo: 1.5.0
+      ufo: 1.5.1
     dev: false
 
   /fake-indexeddb@5.0.2:
@@ -6295,7 +6295,7 @@ packages:
       iron-webcrypto: 1.0.0
       ohash: 1.1.3
       radix3: 1.1.1
-      ufo: 1.5.0
+      ufo: 1.5.1
       uncrypto: 0.1.3
       unenv: 1.9.0
     transitivePeerDependencies:
@@ -7193,7 +7193,7 @@ packages:
       node-forge: 1.3.1
       pathe: 1.1.2
       std-env: 3.7.0
-      ufo: 1.5.0
+      ufo: 1.5.1
       untun: 0.1.3
       uqr: 0.1.2
     transitivePeerDependencies:
@@ -8057,7 +8057,7 @@ packages:
       acorn: 8.11.3
       pathe: 1.1.2
       pkg-types: 1.0.3
-      ufo: 1.5.0
+      ufo: 1.5.1
 
   /mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -8175,7 +8175,7 @@ packages:
       serve-placeholder: 2.0.1
       serve-static: 1.15.0
       std-env: 3.7.0
-      ufo: 1.5.0
+      ufo: 1.5.1
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.9.0
@@ -8443,7 +8443,7 @@ packages:
       consola: 3.2.3
       execa: 8.0.1
       pathe: 1.1.2
-      ufo: 1.5.0
+      ufo: 1.5.1
 
   /object-assign@4.1.1:
     resolution: {integrity: sha512-rJgTQnkUnH1sFw8yT6VSU3zD3sWmu6sZhIseY8VX+GRu3P6F7Fu+JNDoXfklElbLJSnc3FUQHVe4cU5hj+BcUg==}
@@ -8508,7 +8508,7 @@ packages:
     dependencies:
       destr: 2.0.3
       node-fetch-native: 1.6.2
-      ufo: 1.5.0
+      ufo: 1.5.1
 
   /ohash@1.1.3:
     resolution: {integrity: sha512-zuHHiGTYTA1sYJ/wZN+t5HKZaH23i4yI1HMwbuXm24Nid7Dv0KcuRlKoNKS9UNfAVSBlnGLcuQrnOKWOZoEGaw==}
@@ -10618,6 +10618,10 @@ packages:
 
   /ufo@1.5.0:
     resolution: {integrity: sha512-c7SxU8XB0LTO7hALl6CcE1Q92ZrLzr1iE0IVIsUa9SlFfkn2B2p6YLO6dLxOj7qCWY98PB3Q3EZbN6bEu8p7jA==}
+    dev: true
+
+  /ufo@1.5.1:
+    resolution: {integrity: sha512-HGyF79+/qZ4soRvM+nHERR2pJ3VXDZ/8sL1uLahdgEDf580NkgiWOxLk33FetExqOWp352JZRsgXbG/4MaGOSg==}
 
   /ultrahtml@1.5.3:
     resolution: {integrity: sha512-GykOvZwgDWZlTQMtp5jrD4BVL+gNn2NVlVafjcFUJ7taY20tqYdwdoWBFy6GBJsNTZe1GkGPkSl5knQAjtgceg==}
@@ -10896,7 +10900,7 @@ packages:
       mri: 1.2.0
       node-fetch-native: 1.6.2
       ofetch: 1.3.3
-      ufo: 1.5.0
+      ufo: 1.5.1
     transitivePeerDependencies:
       - uWebSockets.js
 
@@ -10925,16 +10929,6 @@ packages:
       scule: 1.3.0
     transitivePeerDependencies:
       - supports-color
-
-  /unwasm@0.3.7:
-    resolution: {integrity: sha512-+s4iWvHHYnLuwNo+9mqVFLBmBzGc3gIuzkVZ8fdMN9K/kWopCnfaUVnDagd2OX3It5nRR5EenI5nSQb8FOd0fA==}
-    dependencies:
-      magic-string: 0.30.8
-      mlly: 1.6.1
-      pathe: 1.1.2
-      pkg-types: 1.0.3
-      unplugin: 1.10.0
-    dev: true
 
   /unwasm@0.3.8:
     resolution: {integrity: sha512-nIJQXxGl/gTUp5dZkSc8jbxAqSOa9Vv4jjSZXNI6OK0JXdvW3SQUHR+KY66rjI0W//km59jivGgd5TCvBUWsnA==}
@@ -11386,7 +11380,7 @@ packages:
   /vue-bundle-renderer@2.0.0:
     resolution: {integrity: sha512-oYATTQyh8XVkUWe2kaKxhxKVuuzK2Qcehe+yr3bGiaQAhK3ry2kYE4FWOfL+KO3hVFwCdLmzDQTzYhTi9C+R2A==}
     dependencies:
-      ufo: 1.5.0
+      ufo: 1.5.1
 
   /vue-component-type-helpers@2.0.6:
     resolution: {integrity: sha512-qdGXCtoBrwqk1BT6r2+1Wcvl583ZVkuSZ3or7Y1O2w5AvWtlvvxwjGhmz5DdPJS9xqRdDlgTJ/38ehWnEi0tFA==}
