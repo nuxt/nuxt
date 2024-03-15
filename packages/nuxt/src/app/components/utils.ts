@@ -2,7 +2,6 @@ import { h } from 'vue'
 import type { Component, RendererNode, TransitionProps } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import destr from 'destr'
 import { defu } from 'defu'
 import type { RouteLocationNormalized } from '#vue-router'
 import { toArray } from '#app/utils'
