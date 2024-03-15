@@ -61,7 +61,7 @@ export default defineUntypedSchema({
      */
     devLogs: {
       async $resolve (val, get) {
-        if (val !== undefined) return val
+        if (val !== undefined) { return val }
         const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
         return isDev && !isTest
       }

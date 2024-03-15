@@ -14,11 +14,11 @@ const originalConsole = {
   log: console.log,
   warn: console.warn,
   info: console.info,
-  error: console.error,
+  error: console.error
 }
 
 export default (nitroApp: NitroApp) => {
-  const hooks = createHooks<{ log: (data: any) => void }>()
+  const hooks = createHooks<{ log:(data: any) => void }>()
   const logs: LogObject[] = []
 
   onConsoleLog((_log) => {
@@ -42,7 +42,7 @@ export default (nitroApp: NitroApp) => {
   nitroApp.router.add('/_nuxt_logs', defineEventHandler((event) => {
     const eventStream = createEventStream(event)
 
-    const unsubscribe = hooks.hook('log', async data => {
+    const unsubscribe = hooks.hook('log', async (data) => {
       await eventStream.push(JSON.stringify(data))
     })
 
@@ -55,15 +55,16 @@ export default (nitroApp: NitroApp) => {
   }))
 
   // Pass any unhandled logs to the client
-  nitroApp.hooks.hook('render:html', htmlContext => {
+  nitroApp.hooks.hook('render:html', (htmlContext) => {
     htmlContext.bodyAppend.unshift(`<script>window.__NUXT_LOGS__ = ${devalue(logs)}</script>`)
     logs.length = 0
   })
 }
 
-const EXCLUDE_TRACE_RE = new RegExp('^.*at.*(\\/node_modules\\/(.*\\/)?(nuxt|consola|@vue)\\/.*|core\\/runtime\\/nitro.*)$\\n?', 'gm')
+const EXCLUDE_TRACE_RE = /^.*at.*(\/node_modules\/(.*\/)?(nuxt|consola|@vue)\/.*|core\/runtime\/nitro.*)$\n?/gm
 function getStack () {
   // Pass along stack traces if needed (for error and warns)
+  // eslint-disable-next-line unicorn/error-message
   const stack = new Error()
   Error.captureStackTrace(stack)
   return stack.stack?.replace(EXCLUDE_TRACE_RE, '').replace(/^Error.*\n/, '') || ''
@@ -89,7 +90,7 @@ function onConsoleLog (callback: (log: LogObject) => void) {
           (originalConsole[logObj.type as 'log'] || originalConsole.log)(...logObj.args)
 
           callback(logObj)
-        },
+        }
       }
     ]
   })

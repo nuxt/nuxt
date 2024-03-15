@@ -7,13 +7,13 @@ import { defineNuxtPlugin } from '../nuxt'
 // @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
-export default defineNuxtPlugin(nuxtApp => {
+export default defineNuxtPlugin((nuxtApp) => {
   // Show things in console
   if (devLogs !== 'silent') {
     const logger = createConsola({
       formatOptions: {
         colors: true,
-        date: true,
+        date: true
       }
     })
     const hydrationLogs = new Set<string>()
@@ -27,7 +27,7 @@ export default defineNuxtPlugin(nuxtApp => {
         }
       }
     })
-    nuxtApp.hook('dev:ssr-logs', logs => {
+    nuxtApp.hook('dev:ssr-logs', (logs) => {
       for (const log of logs) {
         // deduplicate so we don't print out things that are logged on client
         if (!hydrationLogs.size || !hydrationLogs.has(JSON.stringify(log.args))) {
