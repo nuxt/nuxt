@@ -33,6 +33,7 @@ interface PageMeta {
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
+  viewTransition?: boolean | 'always'
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -60,7 +61,7 @@ interface PageMeta {
 
   - **Type**: `string`
 
-    You may define a path matcher, if you have a more complex pattern than can be expressed with the file name.
+    You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
 
   **`alias`**
 
@@ -103,6 +104,14 @@ interface PageMeta {
   - **Type**: `boolean` | [`TransitionProps`](https://vuejs.org/api/built-in-components.html#transition)
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
+
+  **`viewTransition`**
+
+  - **Type**: `boolean | 'always'`
+
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    Enable/disable View Transitions for the current page.
+    If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
 
   **`redirect`**
 
@@ -182,6 +191,24 @@ definePageMeta({
 })
 </script>
 ```
+
+### Using a Custom Regular Expression
+
+A custom regular expression is a good way to resolve conflicts between overlapping routes, for instance:
+
+The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug].vue` and `[categorySlug].vue` page routes.
+
+To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
+
+```vue [pages/[postId\\]-[postSlug\\].vue]
+<script setup lang="ts">
+definePageMeta({
+  path: '/:postId(\\d+)-:postSlug' 
+})
+</script>
+```
+
+For more examples see [Vue Router's Matching Syntax](https://router.vuejs.org/guide/essentials/route-matching-syntax.html).
 
 ### Defining Layout
 

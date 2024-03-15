@@ -10,6 +10,9 @@ import { klona } from 'klona'
 import { useNuxtApp } from '../nuxt'
 import { useRequestEvent } from './ssr'
 
+// @ts-expect-error virtual import
+import { cookieStore } from '#build/nuxt.config.mjs'
+
 type _CookieOptions = Omit<CookieSerializeOptions & CookieParseOptions, 'decode' | 'encode'>
 
 export interface CookieOptions<T = any> extends _CookieOptions {
@@ -29,6 +32,9 @@ const CookieDefaults = {
   encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
 } satisfies CookieOptions<any>
 
+const store = import.meta.client && cookieStore ? window.cookieStore : undefined
+
+/** @since 3.0.0 */
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
 export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
@@ -49,7 +55,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   // use a custom ref to expire the cookie on client side otherwise use basic ref
   const cookie = import.meta.client && delay && !hasExpired
-    ? cookieRef<T | undefined>(cookieValue, delay)
+    ? cookieRef<T | undefined>(cookieValue, delay, opts.watch && opts.watch !== 'shallow')
     : ref<T | undefined>(cookieValue)
 
   if (import.meta.dev && hasExpired) {
@@ -57,11 +63,20 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
   }
 
   if (import.meta.client) {
-    const channel = typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
+    const channel = store || typeof BroadcastChannel === 'undefined' ? null : new BroadcastChannel(`nuxt:cookies:${name}`)
     const callback = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
       writeClientCookie(name, cookie.value, opts as CookieSerializeOptions)
-      channel?.postMessage(opts.encode(cookie.value as T))
+
+      cookies[name] = klona(cookie.value)
+      channel?.postMessage({ value: opts.encode(cookie.value as T) })
+    }
+
+    const handleChange = (data: { value?: any, refresh?: boolean }) => {
+      const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
+      watchPaused = true
+      cookies[name] = cookie.value = value
+      nextTick(() => { watchPaused = false })
     }
 
     let watchPaused = false
@@ -74,12 +89,13 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
       })
     }
 
-    if (channel) {
-      channel.onmessage = (event) => {
-        watchPaused = true
-        cookies[name] = cookie.value = opts.decode(event.data)
-        nextTick(() => { watchPaused = false })
+    if (store) {
+      store.onchange = (event) => {
+        const cookie = event.changed.find((c: any) => c.name === name)
+        if (cookie) { handleChange({ value: cookie.value }) }
       }
+    } else if (channel) {
+      channel.onmessage = ({ data }) => handleChange(data)
     }
 
     if (opts.watch) {
@@ -95,7 +111,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const nuxtApp = useNuxtApp()
     const writeFinalCookieValue = () => {
       if (opts.readonly || isEqual(cookie.value, cookies[name])) { return }
-      writeServerCookie(useRequestEvent(nuxtApp), name, cookie.value, opts as CookieOptions<any>)
+      writeServerCookie(useRequestEvent(nuxtApp)!, name, cookie.value, opts as CookieOptions<any>)
     }
     const unhook = nuxtApp.hooks.hookOnce('app:rendered', writeFinalCookieValue)
     nuxtApp.hooks.hookOnce('app:error', () => {
@@ -106,10 +122,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
   return cookie as CookieRef<T>
 }
+/** @since 3.10.0 */
+export function refreshCookie (name: string) {
+  if (store || typeof BroadcastChannel === 'undefined') { return }
 
-function readRawCookies (opts: CookieOptions = {}): Record<string, string> | undefined {
+  new BroadcastChannel(`nuxt:cookies:${name}`)?.postMessage({ refresh: true })
+}
+
+function readRawCookies (opts: CookieOptions = {}): Record<string, unknown> | undefined {
   if (import.meta.server) {
-    return parse(getRequestHeader(useRequestEvent(), 'cookie') || '', opts)
+    return parse(getRequestHeader(useRequestEvent()!, 'cookie') || '', opts)
   } else if (import.meta.client) {
     return parse(document.cookie, opts)
   }
@@ -152,14 +174,21 @@ function writeServerCookie (event: H3Event, name: string, value: any, opts: Cook
 const MAX_TIMEOUT_DELAY = 2_147_483_647
 
 // custom ref that will update the value to undefined if the cookie expires
-function cookieRef<T> (value: T | undefined, delay: number) {
+function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean) {
   let timeout: NodeJS.Timeout
+  let unsubscribe: (() => void) | undefined
   let elapsed = 0
+  const internalRef = shouldWatch ? ref(value) : { value }
   if (getCurrentScope()) {
-    onScopeDispose(() => { clearTimeout(timeout) })
+    onScopeDispose(() => {
+      unsubscribe?.()
+      clearTimeout(timeout)
+    })
   }
 
   return customRef((track, trigger) => {
+    if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
+
     function createExpirationTimeout () {
       clearTimeout(timeout)
       const timeRemaining = delay - elapsed
@@ -168,7 +197,7 @@ function cookieRef<T> (value: T | undefined, delay: number) {
         elapsed += timeoutLength
         if (elapsed < delay) { return createExpirationTimeout() }
 
-        value = undefined
+        internalRef.value = undefined
         trigger()
       }, timeoutLength)
     }
@@ -176,12 +205,12 @@ function cookieRef<T> (value: T | undefined, delay: number) {
     return {
       get () {
         track()
-        return value
+        return internalRef.value
       },
       set (newValue) {
         createExpirationTimeout()
 
-        value = newValue
+        internalRef.value = newValue
         trigger()
       }
     }

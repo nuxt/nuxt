@@ -1,3 +1,7 @@
+export interface ComponentMeta {
+  [key: string]: unknown
+}
+
 export interface Component {
   pascalName: string
   kebabName: string
@@ -9,6 +13,7 @@ export interface Component {
   preload: boolean
   global?: boolean | 'sync'
   island?: boolean
+  meta?: ComponentMeta
   mode?: 'client' | 'server' | 'all'
   /**
    * This number allows configuring the behavior of overriding Nuxt components.
@@ -114,6 +119,11 @@ export interface ComponentsOptions {
    * @default false
    */
   global?: boolean
+  /**
+   * Whether to write metadata to the build directory with information about the components that
+   * are auto-registered in your app.
+   */
+  generateMetadata?: boolean
   loader?: boolean
 
   transform?: {

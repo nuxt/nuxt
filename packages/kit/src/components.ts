@@ -48,12 +48,14 @@ export async function addComponent (opts: AddComponentOptions) {
     mode: 'all',
     shortPath: opts.filePath,
     priority: 0,
+    meta: {},
     ...opts
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {
-    const existingComponent = components.find(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
-    if (existingComponent) {
+    const existingComponentIndex = components.findIndex(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
+    if (existingComponentIndex !== -1) {
+      const existingComponent = components[existingComponentIndex]
       const existingPriority = existingComponent.priority ?? 0
       const newPriority = component.priority ?? 0
 
@@ -65,7 +67,7 @@ export async function addComponent (opts: AddComponentOptions) {
         const name = existingComponent.pascalName || existingComponent.kebabName
         logger.warn(`Overriding ${name} component. You can specify a \`priority\` option when calling \`addComponent\` to avoid this warning.`)
       }
-      Object.assign(existingComponent, component)
+      components.splice(existingComponentIndex, 1, component)
     } else {
       components.push(component)
     }

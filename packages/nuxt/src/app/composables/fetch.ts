@@ -39,6 +39,13 @@ export interface UseFetchOptions<
   watch?: MultiWatchSources | false
 }
 
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @since 3.0.0
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -52,6 +59,12 @@ export function useFetch<
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | null>
+/**
+ * Fetch data from an API endpoint with an SSR-friendly composable.
+ * See {@link https://nuxt.com/docs/api/composables/use-fetch}
+ * @param request The URL to fetch
+ * @param opts extends $fetch options and useAsyncData options
+ */
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -81,13 +94,7 @@ export function useFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  const _request = computed(() => {
-    let r = request
-    if (typeof r === 'function') {
-      r = r()
-    }
-    return toValue(r)
-  })
+  const _request = computed(() => toValue(request))
 
   const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
   if (!_key || typeof _key !== 'string') {
@@ -113,6 +120,7 @@ export function useFetch<
     immediate,
     getCachedData,
     deep,
+    dedupe,
     ...fetchOptions
   } = opts
 
@@ -131,7 +139,13 @@ export function useFetch<
     immediate,
     getCachedData,
     deep,
+    dedupe,
     watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
+  }
+
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    _asyncDataOptions._functionName = opts._functionName || 'useFetch'
   }
 
   let controller: AbortController
@@ -167,6 +181,7 @@ export function useFetch<
   return asyncData
 }
 
+/** @since 3.0.0 */
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -207,7 +222,12 @@ export function useLazyFetch<
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
   arg2?: string
 ) {
-  const [opts, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+  const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
+
+  if (import.meta.dev && import.meta.client) {
+    // @ts-expect-error private property
+    opts._functionName ||= 'useLazyFetch'
+  }
 
   return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
@@ -217,10 +237,10 @@ export function useLazyFetch<
   autoKey)
 }
 
-function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments <_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
-    toValue(opts.baseURL),
+    toValue(opts.baseURL)
   ]
   for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)

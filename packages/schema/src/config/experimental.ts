@@ -12,20 +12,22 @@ export default defineUntypedSchema({
      *
      * It improves type support when using modern libraries with `exports`.
      *
+     * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
+     *
      * See https://github.com/microsoft/TypeScript/pull/51669
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then(e => e?.typescriptBundlerResolution)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution') as string | undefined
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
-        return false
+        return true
       }
-    },
+    }
   },
   /**
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
@@ -41,7 +43,7 @@ export default defineUntypedSchema({
     inlineStyles: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
@@ -57,9 +59,9 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
+        return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
-    },
+    }
   },
   experimental: {
     /**
@@ -158,6 +160,7 @@ export default defineUntypedSchema({
     /**
      * Enable View Transition API integration with client-side router.
      * @see [View Transitions API](https://developer.chrome.com/docs/web-platform/view-transitions)
+     * @type {boolean | 'always'}
      */
     viewTransition: false,
 
@@ -168,8 +171,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -179,7 +185,7 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
+        return val ?? 'auto'
       }
     },
 
@@ -259,6 +265,46 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     *
+     * This only works with static or strings/arrays rather than variables or conditional assignment.
+     *
+     * https://github.com/nuxt/nuxt/issues/24770
+     */
+    scanPageMeta: false,
+
+    /**
+     * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
+     * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
+     * data in different pages.
+     *
+     * It is particularly important when enabling this feature to make sure that any unique key of your data
+     * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
+     * data related to a particular page, you should provide a key that uniquely matches that data. (`useFetch`
+     * should do this automatically for you.)
+     * @example
+     * ```ts
+     * // This would be unsafe in a dynamic page (e.g. `[slug].vue`) because the route slug makes a difference
+     * // to the data fetched, but Nuxt can't know that because it's not reflected in the key.
+     * const route = useRoute()
+     * const { data } = await useAsyncData(async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     * // Instead, you should use a key that uniquely identifies the data fetched.
+     * const { data } = await useAsyncData(route.params.slug, async () => {
+     *   return await $fetch(`/api/my-page/${route.params.slug}`)
+     * })
+     * ```
+     */
+    sharedPrerenderData: false,
+
+    /**
+     * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
+     * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
+     */
+    cookieStore: false,
+
+    /**
      * This allows specifying the default options for core Nuxt components and composables.
      *
      * These options will likely be moved elsewhere in the future, such as into `app.config` or into the
@@ -277,6 +323,21 @@ export default defineUntypedSchema({
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {}
-    }
+    },
+
+    /**
+     * Automatically polyfill Node.js imports in the client build using `unenv`.
+     * @see https://github.com/unjs/unenv
+     *
+     * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
+     *
+     * ```ts
+     * import { Buffer } from 'node:buffer'
+     *
+     * globalThis.Buffer = globalThis.Buffer || Buffer
+     * ```
+     * @type {boolean}
+     */
+    clientNodeCompat: false
   }
 })

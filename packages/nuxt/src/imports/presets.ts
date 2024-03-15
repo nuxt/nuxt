@@ -18,12 +18,16 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['defineNuxtLink']
   },
   {
-    imports: ['useNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
+    imports: ['useNuxtApp', 'tryUseNuxtApp', 'defineNuxtPlugin', 'definePayloadPlugin', 'useRuntimeConfig', 'defineAppConfig'],
     from: '#app/nuxt'
   },
   {
     imports: ['requestIdleCallback', 'cancelIdleCallback'],
     from: '#app/compat/idle-callback'
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval'
   },
   {
     imports: ['useAppConfig', 'updateAppConfig'],
@@ -58,7 +62,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/fetch'
   },
   {
-    imports: ['useCookie'],
+    imports: ['useCookie', 'refreshCookie'],
     from: '#app/composables/cookie'
   },
   {
@@ -96,6 +100,14 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['useRequestURL'],
     from: '#app/composables/url'
+  },
+  {
+    imports: ['usePreviewMode'],
+    from: '#app/composables/preview'
+  },
+  {
+    imports: ['useId'],
+    from: '#app/composables/id'
   }
 ]
 

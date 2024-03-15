@@ -14,6 +14,8 @@ export default defineNuxtConfig({
   app: {
     pageTransition: true,
     layoutTransition: true,
+    teleportId: 'nuxt-teleport',
+    teleportTag: 'span',
     head: {
       charset: 'utf-8',
       link: [undefined],
@@ -37,12 +39,19 @@ export default defineNuxtConfig({
       }
     ]
   },
-  theme: './extends/bar',
   css: ['~/assets/global.css'],
+  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
+  theme: './extends/bar',
   extends: [
     './extends/node_modules/foo'
   ],
   nitro: {
+    publicAssets: [
+      {
+        dir: '../custom-public',
+        baseURL: '/custom'
+      }
+    ],
     esbuild: {
       options: {
         // in order to test bigint serialization
@@ -98,6 +107,14 @@ export default defineNuxtConfig({
         }
       }))
       addBuildPlugin(plugin)
+    },
+    function (_options, nuxt) {
+      nuxt.hook('pages:extend', (pages) => {
+        pages.push({
+          path: '/manual-redirect',
+          redirect: '/'
+        })
+      })
     },
     function (_options, nuxt) {
       const routesToDuplicate = ['/async-parent', '/fixed-keyed-child-parent', '/keyed-child-parent', '/with-layout', '/with-layout2']
@@ -192,7 +209,7 @@ export default defineNuxtConfig({
     }
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
+    inlineStyles: id => !!id && !id.includes('assets.vue')
   },
   experimental: {
     typedPages: true,
@@ -200,8 +217,9 @@ export default defineNuxtConfig({
     respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
+    clientNodeCompat: true,
     componentIslands: {
-      selectiveClient: true
+      selectiveClient: 'deep'
     },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',

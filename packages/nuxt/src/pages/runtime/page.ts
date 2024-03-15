@@ -3,11 +3,12 @@ import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
-import type { RouterViewSlotProps } from './utils'
 import { generateRouteKey, wrapInKeepAlive } from './utils'
+import type { RouterViewSlotProps } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { _mergeTransitionProps, _wrapIf } from '#app/components/utils'
+import { useRouter } from '#app/composables/router'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -47,6 +48,10 @@ export default defineComponent({
     let vnode: VNode
 
     const done = nuxtApp.deferHydration()
+    if (import.meta.client && nuxtApp.isHydrating) {
+      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+      useRouter().beforeEach(removeErrorHook)
+    }
 
     if (props.pageKey) {
       watch(() => props.pageKey, (next, prev) => {
@@ -54,6 +59,10 @@ export default defineComponent({
           nuxtApp.callHook('page:loading:start')
         }
       })
+    }
+
+    if (import.meta.dev) {
+      nuxtApp._isNuxtPageUsed = true
     }
 
     return () => {
@@ -141,12 +150,12 @@ function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, n
   return newRoute.matched.slice(0, index)
     .some(
       (c, i) => c.components?.default !== fork.matched[i]?.components?.default) ||
-        (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
+    (Component && generateRouteKey({ route: newRoute, Component }) !== generateRouteKey({ route: fork, Component }))
 }
 
 function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
-  return index < newRoute.matched.length -1
+  return index < newRoute.matched.length - 1
 }

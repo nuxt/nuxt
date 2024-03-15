@@ -18,6 +18,6 @@ Option        | Default          | Description
 -------------------------|-----------------|------------------
 `rootDir` | `.` | The directory of the target application.
 
-::callout
+::note
 This command sets `process.env.NODE_ENV` to `production`.
 ::

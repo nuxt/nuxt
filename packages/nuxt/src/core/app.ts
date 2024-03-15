@@ -44,19 +44,23 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     .map(async (template) => {
       const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
       const mark = performance.mark(fullPath)
+      const oldContents = nuxt.vfs[fullPath]
       const contents = await compileTemplate(template, templateContext).catch((e) => {
         logger.error(`Could not compile template \`${template.filename}\`.`)
         throw e
       })
 
-      nuxt.vfs[fullPath] = contents
+      template.modified = oldContents !== contents
+      if (template.modified) {
+        nuxt.vfs[fullPath] = contents
 
-      const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
-      nuxt.vfs[aliasPath] = contents
+        const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
+        nuxt.vfs[aliasPath] = contents
 
-      // In case a non-normalized absolute path is called for on Windows
-      if (process.platform === 'win32') {
-        nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+        // In case a non-normalized absolute path is called for on Windows
+        if (process.platform === 'win32') {
+          nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+        }
       }
 
       const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
@@ -66,7 +70,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
         logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
       }
 
-      if (template.write) {
+      if (template.modified && template.write) {
         writes.push(() => {
           mkdirSync(dirname(fullPath), { recursive: true })
           writeFileSync(fullPath, contents, 'utf8')
@@ -78,7 +82,11 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // runtime overhead of cascading HMRs from vite/webpack
   for (const write of writes) { write() }
 
-  await nuxt.callHook('app:templatesGenerated', app, filteredTemplates, options)
+  const changedTemplates = filteredTemplates.filter(t => t.modified)
+
+  if (changedTemplates.length) {
+    await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
+  }
 }
 
 /** @internal */
@@ -119,7 +127,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
         // Ignore files like `~/layouts/index.vue` which end up not having a name at all
-        logger.warn(`No layout name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
+        logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
       app.layouts[name] = app.layouts[name] || { name, file }
@@ -135,7 +143,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       const name = getNameFromPath(file)
       if (!name) {
         // Ignore files like `~/middleware/index.vue` which end up not having a name at all
-        logger.warn(`No middleware name could not be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
+        logger.warn(`No middleware name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a middleware name.`)
         continue
       }
       app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
@@ -150,8 +158,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*.{ts,js,mjs,cjs,mts,cts}`,
-          `${pluginDir}/*/index.*{ts,js,mjs,cjs,mts,cts}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
+          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}` // TODO: remove, only scan top-level plugins #18418
         ])
         : []
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
@@ -206,7 +214,12 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
         ...plugin
       })
     } catch (e) {
-      logger.warn(`Could not resolve \`${plugin.src}\`.`)
+      const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
+      if ((e as Error).message === 'Invalid plugin metadata') {
+        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`, falling back to non-optimized runtime meta. Learn more: https://nuxt.com/docs/guide/directory-structure/plugins#object-syntax-plugins`)
+      } else {
+        logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
+      }
       _plugins.push(plugin)
     }
   }
@@ -233,7 +246,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
       return []
     }
     visited.push(name)
-    return (deps[name] || []).flatMap(dep => checkDeps(dep, [...visited]))
+    return deps[name]?.length ? deps[name].flatMap(dep => checkDeps(dep, [...visited])) : []
   }
   for (const name in deps) {
     checkDeps(name)

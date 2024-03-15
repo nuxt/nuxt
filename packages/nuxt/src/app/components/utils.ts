@@ -145,7 +145,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     if (withoutSlots) {
       const clone = element.cloneNode(true)
-      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
       return [clone.outerHTML]
     }
     return [element.outerHTML]
@@ -160,7 +160,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }

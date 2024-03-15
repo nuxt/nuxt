@@ -33,6 +33,7 @@ function fetchManifest () {
   return manifest
 }
 
+/** @since 3.7.4 */
 export function getAppManifest (): Promise<NuxtAppManifest> {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
@@ -40,6 +41,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
   return manifest || fetchManifest()
 }
 
+/** @since 3.7.4 */
 export async function getRouteRules (url: string) {
   await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())

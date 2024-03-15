@@ -1,6 +1,9 @@
-import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, ref } from 'vue'
-import type { ComponentInternalInstance, ComponentOptions } from 'vue'
+import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
+import { useNuxtApp } from '../nuxt'
 import { getFragmentHTML } from './utils'
+
+export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
 export default defineComponent({
   name: 'ClientOnly',
@@ -10,6 +13,13 @@ export default defineComponent({
   setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
+    // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
+    if (import.meta.dev) {
+      const nuxtApp = useNuxtApp()
+      nuxtApp._isNuxtPageUsed = true
+      nuxtApp._isNuxtLayoutUsed = true
+    }
+    provide(clientOnlySymbol, true)
     return (props: any) => {
       if (mounted.value) { return slots.default?.() }
       const slot = slots.fallback || slots.placeholder
@@ -23,7 +33,7 @@ export default defineComponent({
 
 const cache = new WeakMap()
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (cache.has(component)) {
     return cache.get(component)
@@ -55,15 +65,18 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   clone.setup = (props, ctx) => {
     const instance = getCurrentInstance()!
 
-    const attrs = instance.attrs
+    const attrs = { ...instance.attrs }
+
     // remove existing directives during hydration
     const directives = extractDirectives(instance)
     // prevent attrs inheritance since a staticVNode is rendered before hydration
-    instance.attrs = {}
+    for (const key in attrs) {
+      delete instance.attrs[key]
+    }
     const mounted$ = ref(false)
 
     onMounted(() => {
-      instance.attrs = attrs
+      Object.assign(instance.attrs, attrs)
       instance.vnode.dirs = directives
       mounted$.value = true
     })

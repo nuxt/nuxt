@@ -1,4 +1,4 @@
-import { resolve } from 'node:path'
+import { resolve } from 'pathe'
 import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
