@@ -49,18 +49,15 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 
 function normalizeFilenames (stack?: string) {
-  return stack?.replace(/at.*\(([^)]+)\)/g, (match, filename) => {
-    if (!isAbsolute(filename)) { return match }
-    // TODO: normalise file names for clickable links in console
-    return match.replace(filename, filename.replace(devRootDir, ''))
-  })
+  stack = stack?.split('\n')[0] || ''
+  stack = stack.replace(`${devRootDir}/`, '')
+  stack = stack.replace(/:\d+:\d+\)?$/, '')
+  return stack
 }
 
 function normalizeServerLog (log: LogObject) {
-  if (log.type === 'error' || log.type === 'warn') {
-    log.additional = normalizeFilenames(log.stack as string)
-  }
-  log.tag = `[ssr]${log.filename ? ` ${log.filename}` : ''}${log.tag || ''}`
+  log.additional = normalizeFilenames(log.stack as string)
+  log.tag = `ssr`
   delete log.stack
   return log
 }
