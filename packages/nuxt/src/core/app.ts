@@ -149,6 +149,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
   }
+
+  //
   app.middleware = sortMiddleware(app.middleware)
 
   // Resolve plugins, first extended layers and then base
@@ -254,8 +256,7 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
 }
 
-
-function sortMiddleware(middleware: NuxtMiddleware[]) {
+function sortMiddleware (middleware: NuxtMiddleware[]) {
   const globalMiddleware = middleware.filter(mw => mw.global)
   const namedMiddleware = middleware.filter(mw => !mw.global)
   return [
@@ -266,6 +267,6 @@ function sortMiddleware(middleware: NuxtMiddleware[]) {
     const reg = /^\d/
     const orderedMiddleware = middleware.filter(m => reg.test(m.name)).sort((l, r) => l.name > r.name ? 1 : -1)
     const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
-    return  [...orderedMiddleware, ...unorderedMiddleware]
+    return [...orderedMiddleware, ...unorderedMiddleware]
   }
 }
