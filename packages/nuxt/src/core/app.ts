@@ -151,9 +151,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // hoist (and sort) middleware beginning with a number
-  app.middleware = sortMiddleware(app.middleware)
-
   // Resolve plugins, first extended layers and then base
   app.plugins = []
   for (const config of reversedConfigs) {
@@ -177,9 +174,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  // Normalize and de-duplicate plugins and middleware and hoist (and sort)
+  // middleware/plugin files that begin with a number
+  app.middleware = sortMiddleware(uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse())
+  app.plugins = sortPlugins(uniqueBy(await resolvePaths(app.plugins, 'src'), 'src'))
 
   // Resolve app.config
   app.configs = []
@@ -257,18 +255,34 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
 }
 
-function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
-  const reg = /^\d+\./
-  const orderedMiddleware = middleware.filter(m => reg.test(filename(m.path))).sort((l, r) => l.name > r.name ? 1 : -1)
-  const unorderedMiddleware = middleware.filter(m => !reg.test(filename(m.path)))
-  return [...orderedMiddleware, ...unorderedMiddleware]
-}
+const ORDERED_FILE_RE = /^\d+\./
 
 function sortMiddleware (middleware: NuxtMiddleware[]) {
-  const globalMiddleware = middleware.filter(mw => mw.global)
-  const namedMiddleware = middleware.filter(mw => !mw.global)
+  const orderedMiddleware: NuxtMiddleware[] = []
+  const unorderedMiddleware: NuxtMiddleware[] = []
+
+  for (const mw of middleware) {
+    const bucket = mw.global && ORDERED_FILE_RE.test(filename(mw.path)) ? orderedMiddleware : unorderedMiddleware
+    bucket.push(mw)
+  }
+
   return [
-    ...sortOrderedMiddleware(globalMiddleware),
-    ...sortOrderedMiddleware(namedMiddleware)
+    ...orderedMiddleware.sort((l, r) => filename(l.path).localeCompare(filename(r.path))),
+    ...unorderedMiddleware
+  ]
+}
+
+function sortPlugins (plugins: NuxtPlugin[]) {
+  const orderedPlugins: NuxtPlugin[] = []
+  const unorderedPlugins: NuxtPlugin[] = []
+
+  for (const plugin of plugins) {
+    const bucket = ORDERED_FILE_RE.test(filename(plugin.src)) ? orderedPlugins : unorderedPlugins
+    bucket.push(plugin)
+  }
+
+  return [
+    ...orderedPlugins.sort((l, r) => filename(l.src).localeCompare(filename(r.src))),
+    ...unorderedPlugins
   ]
 }

@@ -137,13 +137,13 @@ describe('resolveApp', () => {
     // TODO: support overriding named plugins
     expect(fixturePlugins).toMatchInlineSnapshot(`
       [
+        "<rootDir>/plugins/00.plugin.ts",
+        "<rootDir>/layer2/plugins/01.plugin.ts",
         "<rootDir>/layer1/plugins/02.plugin.ts",
         "<rootDir>/layer1/plugins/object-named.ts",
         "<rootDir>/layer1/plugins/override-test.ts",
-        "<rootDir>/layer2/plugins/01.plugin.ts",
         "<rootDir>/layer2/plugins/object-named.ts",
         "<rootDir>/layer2/plugins/override-test.ts",
-        "<rootDir>/plugins/00.plugin.ts",
         "<rootDir>/plugins/object-named.ts",
       ]
     `)
