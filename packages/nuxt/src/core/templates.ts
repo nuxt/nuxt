@@ -324,7 +324,7 @@ export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
   getContents ({ nuxt }) {
     return [
-      'import { joinURL } from \'ufo\'',
+      'import { joinRelativeURL as joinURL } from \'ufo\'',
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
 
       nuxt.options.dev
