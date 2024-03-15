@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📚 Nuxt 3 Documentation
-    url: https://nuxt.com/docs/
+    url: https://nuxt.com/docs
     about: Check the documentation for usage of Nuxt 3
   - name: 📚 Nuxt 2 Documentation
     url: https://v2.nuxt.com/
