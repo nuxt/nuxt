@@ -68,7 +68,7 @@ function normalizeServerLog (log: LogObject) {
   if (log.type === 'error' || log.type === 'warn') {
     log.additional = normalizeFilenames(log.stack as string)
   }
-  log.tag = `[ssr]${log.filename ? ` ${log.filename}` : ''}${log.tag || ''}`
+  log.tag = `[ssr: ${log.path}]${log.filename ? ` ${log.filename}` : ''}${log.tag || ''}`
   delete log.stack
   return log
 }
