@@ -17,7 +17,7 @@ const removeUndefinedProps = (props: Props) => {
   for (const key in props) {
     const value = props[key]
     if (value !== undefined) {
-      filteredProps[key] = value;
+      filteredProps[key] = value
     }
   }
   return filteredProps

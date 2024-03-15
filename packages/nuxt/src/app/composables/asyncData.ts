@@ -12,7 +12,7 @@ import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
-export type _Transform<Input = any, Output = any> = (input: Input) => Output
+export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>
 
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
@@ -63,11 +63,13 @@ export interface AsyncDataOptions<
    */
   getCachedData?: (key: string) => DataT
   /**
-   * A function that can be used to alter handler function result after resolving
+   * A function that can be used to alter handler function result after resolving.
+   * Do not use it along with the `pick` option.
    */
   transform?: _Transform<ResT, DataT>
   /**
-   * Only pick specified keys in this array from the handler function result
+   * Only pick specified keys in this array from the handler function result.
+   * Do not use it along with the `transform` option.
    */
   pick?: PickKeys
   /**
@@ -212,14 +214,16 @@ export function useAsyncData<
   const nuxtApp = useNuxtApp()
 
   // When prerendering, share payload data automatically between requests
-  const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache ? _handler : async () => {
-    const value = await nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
-    if (value) { return value as ResT }
+  const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
+    ? _handler
+    : () => {
+        const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
+        if (value) { return value as Promise<ResT> }
 
-    const promise = nuxtApp.runWithContext(_handler)
+        const promise = nuxtApp.runWithContext(_handler)
     nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
     return promise
-  }
+      }
 
   // Used to get default values
   const getDefault = () => null
@@ -239,7 +243,7 @@ export function useAsyncData<
     console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
   }
 
-  const hasCachedData = () => ![null, undefined].includes(options.getCachedData!(key) as any)
+  const hasCachedData = () => options.getCachedData!(key) != null
 
   nuxtApp.payload._errors[key] ??= null
   const _ref = options.deep ? ref : shallowRef
@@ -279,13 +283,13 @@ export function useAsyncData<
           reject(err)
         }
       })
-      .then((_result) => {
+      .then(async (_result) => {
         // If this request is cancelled, resolve to the latest request.
         if ((promise as any).cancelled) { return nuxtApp._asyncDataPromises[key] }
 
         let result = _result as unknown as DataT
         if (options.transform) {
-          result = options.transform(_result)
+          result = await options.transform(_result)
         }
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT

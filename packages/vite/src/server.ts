@@ -44,11 +44,11 @@ export async function buildServer (ctx: ViteBuildContext) {
       'import.meta.server': true,
       'import.meta.client': false,
       'import.meta.browser': false,
-      'window': 'undefined',
-      'document': 'undefined',
-      'navigator': 'undefined',
-      'location': 'undefined',
-      'XMLHttpRequest': 'undefined'
+      window: 'undefined',
+      document: 'undefined',
+      navigator: 'undefined',
+      location: 'undefined',
+      XMLHttpRequest: 'undefined'
     },
     optimizeDeps: {
       entries: ctx.nuxt.options.ssr ? [ctx.entry] : []
@@ -99,7 +99,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
       preTransformRequests: false,
       hmr: false
-    },
+    }
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
