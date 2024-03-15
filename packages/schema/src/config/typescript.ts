@@ -27,6 +27,17 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Modules to generate deep aliases for within `compilerOptions.paths`. This does not yet support subpaths.
+     * It may be necessary when using Nuxt within a pnpm monorepo with `shamefully-hoist=false`.
+     */
+    hoist: {
+      $resolve: (val) => {
+        const defaults = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+        return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
+      }
+    },
+
+    /**
      * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
      */
     includeWorkspace: false,
