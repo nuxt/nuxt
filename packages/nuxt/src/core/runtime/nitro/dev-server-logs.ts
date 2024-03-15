@@ -21,7 +21,7 @@ interface NuxtDevAsyncContext {
 const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
 
 export default (nitroApp: NitroApp) => {
-  const hooks = createHooks<{ log: (data: any) => void }>()
+  const hooks = createHooks<{ log:(data: any) => void }>()
 
   const handler = nitroApp.h3App.handler
   nitroApp.h3App.handler = (event) => {
