@@ -1,5 +1,5 @@
 import type { LogObject } from 'consola'
-import { createConsola } from 'consola'
+import { consola } from 'consola'
 import devalue from '@nuxt/devalue'
 import { createHooks } from 'hookable'
 import { createEventStream, defineEventHandler } from 'h3'
@@ -9,13 +9,6 @@ import type { NitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
-
-const originalConsole = {
-  log: console.log,
-  warn: console.warn,
-  info: console.info,
-  error: console.error
-}
 
 export default (nitroApp: NitroApp) => {
   const hooks = createHooks<{ log:(data: any) => void }>()
@@ -81,18 +74,10 @@ function normalizeFilenames (stacktrace: string) {
 }
 
 function onConsoleLog (callback: (log: LogObject) => void) {
-  const logger = createConsola({
-    reporters: [
-      {
-        log (logObj) {
-          // Don't swallow log messages in console - is there a better way to do this @pi0?
-          // TODO: display (clickable) filename in server log as well when we use consola for this
-          (originalConsole[logObj.type as 'log'] || originalConsole.log)(...logObj.args)
-
-          callback(logObj)
-        }
-      }
-    ]
+  consola.addReporter({
+    log (logObj) {
+      callback(logObj)
+    }
   })
-  logger.wrapAll()
+  consola.wrapAll()
 }
