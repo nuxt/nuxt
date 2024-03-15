@@ -264,7 +264,7 @@ function sortMiddleware (middleware: NuxtMiddleware[]) {
     ...sortOrderedMiddleware(namedMiddleware)
   ]
   function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
-    const reg = /^\d/
+    const reg = /^\d+\./
     const orderedMiddleware = middleware.filter(m => reg.test(m.name)).sort((l, r) => l.name > r.name ? 1 : -1)
     const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
     return [...orderedMiddleware, ...unorderedMiddleware]
