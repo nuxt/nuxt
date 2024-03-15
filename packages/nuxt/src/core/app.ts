@@ -1,5 +1,6 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
+import { filename } from 'pathe/utils'
 import { defu } from 'defu'
 import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtMiddleware, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
@@ -258,8 +259,8 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
 
 function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
   const reg = /^\d+\./
-  const orderedMiddleware = middleware.filter(m => reg.test(m.name)).sort((l, r) => l.name > r.name ? 1 : -1)
-  const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
+  const orderedMiddleware = middleware.filter(m => reg.test(filename(m.path))).sort((l, r) => l.name > r.name ? 1 : -1)
+  const unorderedMiddleware = middleware.filter(m => !reg.test(filename(m.path)))
   return [...orderedMiddleware, ...unorderedMiddleware]
 }
 
