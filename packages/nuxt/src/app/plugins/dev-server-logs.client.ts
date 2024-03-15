@@ -1,6 +1,5 @@
 import { consola, createConsola } from 'consola'
 import type { LogObject } from 'consola'
-import { isAbsolute } from 'pathe'
 
 import { defineNuxtPlugin } from '../nuxt'
 
