@@ -28,13 +28,12 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (maybeSource :string | undefined, paths: NuxtIslandResponse['components']) {
+async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
   const promises = []
-  const source = !maybeSource ? appBaseURL ?? '/' : maybeSource
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source,appBaseURL, paths[component].chunk)
+        const chunkSource = join(source, paths[component].chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
