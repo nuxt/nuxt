@@ -177,18 +177,6 @@ function isStartFragment (element: RendererNode) {
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
 }
-const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
-
-export function getSlotProps (html: string) {
-  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
-  const data: Record<string, any> = {}
-  for (const slot of slotsDivs) {
-    const [_, slotName, json] = slot
-    const slotData = destr(decodeHtmlEntities(json))
-    data[slotName] = slotData
-  }
-  return data
-}
 
 export function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
