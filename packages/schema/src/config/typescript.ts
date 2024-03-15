@@ -32,7 +32,7 @@ export default defineUntypedSchema({
      */
     hoist: {
       $resolve: (val) => {
-        const defaults = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+        const defaults = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', 'consola', '@nuxt/schema']
         return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
       }
     },
