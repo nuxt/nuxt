@@ -150,7 +150,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  //
+  // hoist (and sort) middleware beginning with a number
   app.middleware = sortMiddleware(app.middleware)
 
   // Resolve plugins, first extended layers and then base
@@ -256,6 +256,13 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   }
 }
 
+function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
+  const reg = /^\d+\./
+  const orderedMiddleware = middleware.filter(m => reg.test(m.name)).sort((l, r) => l.name > r.name ? 1 : -1)
+  const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
+  return [...orderedMiddleware, ...unorderedMiddleware]
+}
+
 function sortMiddleware (middleware: NuxtMiddleware[]) {
   const globalMiddleware = middleware.filter(mw => mw.global)
   const namedMiddleware = middleware.filter(mw => !mw.global)
@@ -263,10 +270,4 @@ function sortMiddleware (middleware: NuxtMiddleware[]) {
     ...sortOrderedMiddleware(globalMiddleware),
     ...sortOrderedMiddleware(namedMiddleware)
   ]
-  function sortOrderedMiddleware (middleware: NuxtMiddleware[]) {
-    const reg = /^\d+\./
-    const orderedMiddleware = middleware.filter(m => reg.test(m.name)).sort((l, r) => l.name > r.name ? 1 : -1)
-    const unorderedMiddleware = middleware.filter(m => !reg.test(m.name))
-    return [...orderedMiddleware, ...unorderedMiddleware]
-  }
 }
