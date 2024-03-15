@@ -46,14 +46,6 @@ export default defineNuxtPlugin((nuxtApp) => {
       await nuxtApp.hooks.callHook('dev:ssr-logs', window.__NUXT_LOGS__)
     }
   })
-
-  // initialise long-running SSE connection
-  const source = new EventSource('/_nuxt_logs')
-  source.onmessage = (event) => {
-    const log = JSON.parse(event.data) as LogObject
-    log.date = new Date(log.date)
-    nuxtApp.hooks.callHook('dev:ssr-logs', [log])
-  }
 })
 
 function normalizeFilenames (stack?: string) {
@@ -68,7 +60,7 @@ function normalizeServerLog (log: LogObject) {
   if (log.type === 'error' || log.type === 'warn') {
     log.additional = normalizeFilenames(log.stack as string)
   }
-  log.tag = `[ssr: ${log.path}]${log.filename ? ` ${log.filename}` : ''}${log.tag || ''}`
+  log.tag = `[ssr]${log.filename ? ` ${log.filename}` : ''}${log.tag || ''}`
   delete log.stack
   return log
 }
