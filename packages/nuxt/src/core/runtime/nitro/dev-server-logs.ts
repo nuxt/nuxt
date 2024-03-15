@@ -27,6 +27,7 @@ export default (nitroApp: NitroApp) => {
   onConsoleLog((_log) => {
     const ctx = asyncContext.use()
     const stack = getStack()
+    if (stack.includes('runtime/vite-node.mjs')) { return }
 
     const log = {
       ..._log,
