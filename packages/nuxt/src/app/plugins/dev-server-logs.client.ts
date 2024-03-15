@@ -56,7 +56,7 @@ function normalizeFilenames (stack?: string) {
 
 function normalizeServerLog (log: LogObject) {
   log.additional = normalizeFilenames(log.stack as string)
-  log.tag = `ssr`
+  log.tag = 'ssr'
   delete log.stack
   return log
 }
