@@ -51,7 +51,7 @@ export default (nitroApp: NitroApp) => {
   })
 }
 
-const EXCLUDE_TRACE_RE = /^.*at.*(\/node_modules\/(.*\/)?(nuxt|consola|@vue)\/.*|core\/runtime\/nitro.*)$\n?/gm
+const EXCLUDE_TRACE_RE = /^.*at.*(\/node_modules\/(.*\/)?(nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/.*|core\/runtime\/nitro.*)$\n?/gm
 function getStack () {
   // Pass along stack traces if needed (for error and warns)
   // eslint-disable-next-line unicorn/error-message
