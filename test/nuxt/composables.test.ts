@@ -274,6 +274,26 @@ describe('useAsyncData', () => {
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
   })
+
+  it('should be synced with useNuxtData', async () => {
+    const { data: nuxtData } = useNuxtData('nuxtdata-sync')
+    const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
+    const { data: fetchData } = promise
+
+    expect(fetchData.value).toMatchInlineSnapshot('"default"')
+
+    nuxtData.value = 'before-fetch'
+    expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
+
+    await promise
+    expect(fetchData.value).toMatchInlineSnapshot('"test"')
+    expect(nuxtData.value).toMatchInlineSnapshot('"test"')
+
+    nuxtData.value = 'new value'
+    expect(fetchData.value).toMatchInlineSnapshot('"new value"')
+    fetchData.value = 'another value'
+    expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
 })
 
 describe('useFetch', () => {

@@ -63,7 +63,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxtCtx.set(nuxt)
   nuxt.hook('close', () => nuxtCtx.unset())
 
-  const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+  const coreTypePackages = nuxt.options.typescript.hoist || []
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
     if (!path) { return }
