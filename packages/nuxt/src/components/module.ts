@@ -212,6 +212,28 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
+    const detectedComponentsUsage = {
+      NuxtLayout: false,
+      NuxtPage: false
+    }
+
+    if (process.env.NODE_ENV === 'development') {
+      addTemplate({
+        filename: 'detected-nuxt-layout-usage.mjs',
+        options: detectedComponentsUsage,
+        getContents: data => `
+      export const isNuxtLayoutUsed = ${data.options.NuxtLayout}
+      `
+      })
+      addTemplate({
+        filename: 'detected-nuxt-page-usage.mjs',
+        options: detectedComponentsUsage,
+        getContents: data => `
+      export const isNuxtPageUsed = ${data.options.NuxtPage}
+      `
+      })
+    }
+
     nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
       const mode = isClient ? 'client' : 'server'
 
@@ -231,7 +253,8 @@ export default defineNuxtModule<ComponentsOptions>({
         getComponents,
         mode,
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-        experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
+        experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
+        detectedComponentsUsage
       }))
 
       if (nuxt.options.experimental.componentIslands) {
@@ -300,7 +323,8 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents,
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-          experimentalComponentIslands: !!nuxt.options.experimental.componentIslands
+          experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
+          detectedComponentsUsage
         }))
 
         if (nuxt.options.experimental.componentIslands) {

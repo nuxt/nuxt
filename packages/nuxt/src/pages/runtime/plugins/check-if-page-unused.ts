@@ -3,13 +3,16 @@ import { defineNuxtPlugin } from '#app/nuxt'
 import { onNuxtReady } from '#app/composables/ready'
 import { useError } from '#app/composables/error'
 
+// @ts-expect-error virtual file
+import { isNuxtPageUsed } from '#build/detected-nuxt-page-usage'
+
 export default defineNuxtPlugin({
   name: 'nuxt:checkIfPageUnused',
   setup (nuxtApp) {
     const error = useError()
 
     function checkIfPageUnused () {
-      if (!error.value && !nuxtApp._isNuxtPageUsed) {
+      if (!error.value && !nuxtApp._isNuxtPageUsed && !isNuxtPageUsed) {
         console.warn(
           '[nuxt] Your project has pages but the `<NuxtPage />` component has not been used.' +
           ' You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.' +
