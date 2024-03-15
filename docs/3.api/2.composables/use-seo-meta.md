@@ -10,7 +10,7 @@ links:
 
 This helps you avoid common mistakes, such as using `name` instead of `property`, as well as typos - with over 100+ meta tags fully typed.
 
-::callout
+::important
 This is the recommended way to add meta tags to your site as it is XSS safe and has full TypeScript support.
 ::
 
@@ -46,6 +46,6 @@ useSeoMeta({
 
 ## Parameters
 
-There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts).
+There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/packages/zhead/src/metaFlat.ts#L1035).
 
 :read-more{to="/docs/getting-started/seo-meta"}

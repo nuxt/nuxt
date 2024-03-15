@@ -102,6 +102,10 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/url'
   },
   {
+    imports: ['usePreviewMode'],
+    from: '#app/composables/preview'
+  },
+  {
     imports: ['useId'],
     from: '#app/composables/id'
   }

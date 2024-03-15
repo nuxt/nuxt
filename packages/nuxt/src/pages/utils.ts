@@ -14,6 +14,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
+import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -58,6 +59,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
+    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
     vfs: nuxt.vfs
   })
 
@@ -66,6 +68,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
 type GenerateRoutesFromFilesOptions = {
   shouldExtractBuildMeta?: boolean
+  shouldUseServerComponents?: boolean
   vfs?: Record<string, string>
 }
 
@@ -86,6 +89,17 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
     // Array where routes should be added, useful when adding child routes
     let parent = routes
+
+    const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith('.server')) {
+      segments[segments.length - 1] = lastSegment.replace('.server', '')
+      if (options.shouldUseServerComponents) {
+        route.mode = 'server'
+      }
+    } else if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '')
+      route.mode = 'client'
+    }
 
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
@@ -385,7 +399,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
-  if (skipSerialisation || value === undefined) return undefined
+  if (skipSerialisation || value === undefined) { return undefined }
   return JSON.stringify(value)
 }
 
@@ -411,7 +425,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         name: serializeRouteValue(page.name),
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
-        redirect: serializeRouteValue(page.redirect),
+        redirect: serializeRouteValue(page.redirect)
       }
 
       for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
@@ -439,7 +453,27 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
-        component: genDynamicImport(file, { interopDefault: true })
+        component: page.mode === 'server'
+          ? `() => createIslandPage(${route.name})`
+          : page.mode === 'client'
+            ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
+            : genDynamicImport(file, { interopDefault: true })
+      }
+
+      if (page.mode === 'server') {
+        metaImports.add(`
+let _createIslandPage
+async function createIslandPage (name) {
+  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  return _createIslandPage(name)
+};`)
+      } else if (page.mode === 'client') {
+        metaImports.add(`
+let _createClientPage
+async function createClientPage(loader) {
+  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  return _createClientPage(loader);
+}`)
       }
 
       if (route.children != null) {
@@ -453,13 +487,13 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
           metaRoute[key] = route[key] ?? metaRoute[key]
         }
 
         // set to extracted value or delete if none extracted
         for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
 
           if (route[key] == null) {
             delete metaRoute[key]

@@ -15,7 +15,7 @@ This feature is experimental and in order to use it you must enable the `experim
 ## Usage
 
 ```vue [pages/index.vue]
-<script setup>
+<script setup lang="ts">
 defineRouteRules({
   prerender: true
 })
@@ -36,7 +36,7 @@ export default defineNuxtConfig({
 })
 ```
 
-::callout
+::note
 When running [`nuxt build`](/docs/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
 ::
 

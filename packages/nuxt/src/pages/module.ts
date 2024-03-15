@@ -79,6 +79,10 @@ export default defineNuxtModule({
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
       await nuxt.callHook('pages:extend', app.pages)
+
+      if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
+        logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
+      }
     })
 
     // Restart Nuxt when pages dir is added or removed
@@ -192,7 +196,7 @@ export default defineNuxtModule({
       }
 
       // Regenerate types/typed-router.d.ts when adding or removing pages
-      nuxt.hook('builder:generateApp', async (options) => {
+      nuxt.hook('app:templatesGenerated', async (_app, _templates, options) => {
         if (!options?.filter || options.filter({ filename: 'routes.mjs' } as any)) {
           await context.scanPages()
         }
@@ -271,13 +275,15 @@ export default defineNuxtModule({
         processPages(pages)
       })
       nuxt.hook('nitro:build:before', (nitro) => {
-        for (const route of nitro.options.prerender.routes || []) {
-          // Skip default route value as we only generate it if it is already
-          // in the detected routes from `~/pages`.
-          if (route === '/') { continue }
-          prerenderRoutes.add(route)
+        if (nitro.options.prerender.routes.length) {
+          for (const route of nitro.options.prerender.routes) {
+            // Skip default route value as we only generate it if it is already
+            // in the detected routes from `~/pages`.
+            if (route === '/') { continue }
+            prerenderRoutes.add(route)
+          }
+          nitro.options.prerender.routes = Array.from(prerenderRoutes)
         }
-        nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
     })
 
@@ -352,14 +358,14 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.appManifest) {
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
-      nuxt.hook('pages:extend', routes => {
+      nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
         for (const path in nitro.options.routeRules) {
           const rule = nitro.options.routeRules[path]
           if (!rule.redirect) { continue }
           routes.push({
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: resolve(runtimeDir, 'component-stub'),
+            file: resolve(runtimeDir, 'component-stub')
           })
         }
       })
@@ -389,15 +395,19 @@ export default defineNuxtModule({
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
       .flatMap(p =>
-        [relative(nuxt.options.srcDir, p.file as string), ...getSources(p.children || [])]
+        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])]
       )
 
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
-      const sourceFiles = getSources(nuxt.apps.default.pages || [])
+      const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const key in manifest) {
+        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+          delete manifest[key]
+          continue
+        }
         if (manifest[key].isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
@@ -409,7 +419,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        if (!app.pages) return 'export default []'
+        if (!app.pages) { return 'export default []' }
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
         return [...imports, `export default ${routes}`].join('\n')
       }
@@ -473,7 +483,7 @@ export default defineNuxtModule({
       getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         return [
-          'import { ComputedRef, MaybeRef } from \'vue\'',
+          'import type { ComputedRef, MaybeRef } from \'vue\'',
           `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
@@ -484,7 +494,6 @@ export default defineNuxtModule({
       }
     })
 
-
     // add page meta types if enabled
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
@@ -493,12 +502,12 @@ export default defineNuxtModule({
           const runtimeDir = resolve(distDir, 'pages/runtime')
           const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
           return [
-            'import { ComputedRef, MaybeRef } from \'vue\'',
+            'import type { ComputedRef, MaybeRef } from \'vue\'',
             `declare module ${genString(composablesFile)} {`,
             '  interface PageMeta {',
-            `    viewTransition?: boolean | 'always'`,
+            '    viewTransition?: boolean | \'always\'',
             '  }',
-            '}',
+            '}'
           ].join('\n')
         }
       })
