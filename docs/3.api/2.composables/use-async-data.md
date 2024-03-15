@@ -122,7 +122,7 @@ type AsyncDataOptions<DataT> = {
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[]
-  getCachedData?: (key: string) => DataT
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
 }
 
 type AsyncData<DataT, ErrorT> = {
