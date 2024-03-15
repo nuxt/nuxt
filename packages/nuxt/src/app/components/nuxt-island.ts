@@ -30,6 +30,7 @@ const components = import.meta.client ? new Map<string, Component>() : undefined
 
 async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
   const promises = []
+
   for (const component in paths) {
     if (!(components!.has(component))) {
       promises.push((async () => {
