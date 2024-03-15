@@ -1,8 +1,10 @@
-import { join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
+import { resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -61,6 +63,18 @@ async function initNuxt (nuxt: Nuxt) {
   nuxtCtx.set(nuxt)
   nuxt.hook('close', () => nuxtCtx.unset())
 
+  const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+  const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
+    const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+    if (!path) { return }
+    return [pkg, [dirname(path)]]
+  })).then(r => r.filter(Boolean) as [string, [string]][]))
+
+  // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
+  nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
+    tsConfig: { compilerOptions: { paths: { ...paths } } }
+  })
+
   // Add nuxt types
   nuxt.hook('prepare:types', (opts) => {
     opts.references.push({ types: 'nuxt' })
@@ -72,6 +86,9 @@ async function initNuxt (nuxt: Nuxt) {
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
+
+    // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
+    opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
@@ -166,7 +183,7 @@ async function initNuxt (nuxt: Nuxt) {
         inline: [/#internal\/dev-server-logs-options/]
       },
       virtual: {
-        ['#internal/dev-server-logs-options']: () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`
+        '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`
       }
     })
   }
@@ -310,7 +327,7 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
 
-    if (!nuxt.options.ssr) {
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
       nuxt.options.nitro.routeRules ||= {}
       nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })

@@ -27,7 +27,7 @@ export default defineUntypedSchema({
         }
         return true
       }
-    },
+    }
   },
   /**
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
@@ -76,7 +76,7 @@ export default defineUntypedSchema({
         // TODO: remove in v3.10
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
-    },
+    }
   },
   experimental: {
     /**
@@ -186,8 +186,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -197,7 +200,7 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
+        return val ?? 'auto'
       }
     },
 
@@ -350,6 +353,6 @@ export default defineUntypedSchema({
      * ```
      * @type {boolean}
      */
-    clientNodeCompat: false,
+    clientNodeCompat: false
   }
 })
