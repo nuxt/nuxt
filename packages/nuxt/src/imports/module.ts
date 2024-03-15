@@ -3,7 +3,7 @@ import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnor
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
-import type { ImportPresetWithDeprecation, ImportsOptions } from 'nuxt/schema'
+import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory } from '../utils'
@@ -89,6 +89,14 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
+    function isImportsTemplate (template: ResolvedNuxtTemplate) {
+      return [
+        '/types/imports.d.ts',
+        '/imports.d.ts',
+        '/imports.mjs'
+      ].some(i => template.filename.endsWith(i))
+    }
+
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
@@ -105,6 +113,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         await nuxt.callHook('imports:extend', imports)
         return imports
       })
+
+      await updateTemplates({
+        filter: isImportsTemplate
+      })
     }
 
     await regenerateImports()
@@ -119,22 +131,19 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
 
     // Watch composables/ directory
-    const templates = [
-      'types/imports.d.ts',
-      'imports.d.ts',
-      'imports.mjs'
-    ]
     nuxt.hook('builder:watch', async (_, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
       if (composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
-        await updateTemplates({
-          filter: template => templates.includes(template.filename)
-        })
+        await regenerateImports()
       }
     })
 
-    nuxt.hook('app:templatesGenerated', async () => {
-      await regenerateImports()
+    // Watch for template generation
+    nuxt.hook('app:templatesGenerated', async (_app, templates) => {
+      // Only regenerate when non-imports templates are updated
+      if (templates.some(t => !isImportsTemplate(t))) {
+        await regenerateImports()
+      }
     })
   }
 })

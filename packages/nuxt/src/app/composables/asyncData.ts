@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -461,7 +461,18 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
   }
 
   return {
-    data: toRef(nuxtApp.payload.data, key)
+    data: computed({
+      get () {
+        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+      },
+      set (value) {
+        if (nuxtApp._asyncData[key]) {
+          nuxtApp._asyncData[key]!.data.value = value
+        } else {
+          nuxtApp.payload.data[key] = value
+        }
+      }
+    })
   }
 }
 

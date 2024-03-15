@@ -47,7 +47,7 @@ export async function extractMetadata (code: string) {
   if (metaCache[code]) {
     return metaCache[code]
   }
-  const js = await transform(code, { loader: 'ts' })
+  const js = await transform(code, { loader: 'tsx' })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest'

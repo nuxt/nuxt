@@ -63,7 +63,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxtCtx.set(nuxt)
   nuxt.hook('close', () => nuxtCtx.unset())
 
-  const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+  const coreTypePackages = nuxt.options.typescript.hoist || []
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
     if (!path) { return }
@@ -314,7 +314,7 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-island')
     })
 
-    if (!nuxt.options.ssr) {
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
       nuxt.options.ssr = true
       nuxt.options.nitro.routeRules ||= {}
       nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
