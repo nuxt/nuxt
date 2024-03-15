@@ -17,7 +17,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
     })
     const hydrationLogs = new Set<string>()
-    consola.wrapAll()
+    consola.wrapConsole()
     consola.addReporter({
       log (logObj) {
         try {
@@ -36,7 +36,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
     })
 
-    nuxtApp.hooks.hook('app:suspense:resolve', () => logger.restoreAll())
+    nuxtApp.hooks.hook('app:suspense:resolve', () => consola.restoreAll())
     nuxtApp.hooks.hookOnce('dev:ssr-logs', () => hydrationLogs.clear())
   }
 
