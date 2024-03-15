@@ -1,4 +1,4 @@
-import { getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -245,17 +245,19 @@ export function useAsyncData<
 
   const hasCachedData = () => options.getCachedData!(key) != null
 
-  nuxtApp.payload._errors[key] ??= null
-  const _ref = options.deep ? ref : shallowRef
+  // Create or use a shared asyncData entity
+  if (!nuxtApp._asyncData[key] || !options.immediate) {
+    nuxtApp.payload._errors[key] ??= null
 
-  if (!nuxtApp._asyncData[key] || !options.immediate) { nuxtApp._asyncData[key] = {} }
+    const _ref = options.deep ? ref : shallowRef
 
-  nuxtApp._asyncData[key]!.data ??= _ref(options.getCachedData!(key))
-  nuxtApp._asyncData[key]!.pending ??= ref(!hasCachedData())
-  nuxtApp._asyncData[key]!.error ??= toRef(nuxtApp.payload._errors, key)
-  nuxtApp._asyncData[key]!.status ??= ref('idle')
-
-  nuxtApp._asyncData[key]!.data!.value ??= options.default!()
+    nuxtApp._asyncData[key] = {
+      data: _ref(options.getCachedData!(key) ?? options.default!()),
+      pending: ref(!hasCachedData()),
+      error: toRef(nuxtApp.payload._errors, key),
+      status: ref('idle')
+    }
+  }
 
   // TODO: Else, somehow check for conflicting keys with different defaults or fetcher
   const asyncData = { ...nuxtApp._asyncData[key] } as AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>
@@ -453,11 +455,24 @@ export function useLazyAsyncData<
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null> } {
   const nuxtApp = useNuxtApp()
 
-  nuxtApp._asyncData[key] ??= {}
-  nuxtApp._asyncData[key]!.data ??= ref(null)
+  // Initialize value when key is not already set
+  if (!(key in nuxtApp.payload.data)) {
+    nuxtApp.payload.data[key] = null
+  }
 
   return {
-    data: nuxtApp._asyncData[key]!.data!
+    data: computed({
+      get () {
+        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+      },
+      set (value) {
+        if (nuxtApp._asyncData[key]) {
+          nuxtApp._asyncData[key]!.data.value = value
+        } else {
+          nuxtApp.payload.data[key] = value
+        }
+      }
+    })
   }
 }
 
@@ -490,12 +505,12 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
     if (key in nuxtApp.payload._errors) {
       nuxtApp.payload._errors[key] = null
     }
-
-    if (nuxtApp._asyncData?.[key]?.data) { nuxtApp._asyncData[key]!.data!.value = undefined }
-    if (nuxtApp._asyncData?.[key]?.error) { nuxtApp._asyncData[key]!.error!.value = null }
-    if (nuxtApp._asyncData?.[key]?.pending) { nuxtApp._asyncData[key]!.pending!.value = false }
-    if (nuxtApp._asyncData?.[key]?.status) { nuxtApp._asyncData[key]!.status!.value = 'idle' }
-
+    if (nuxtApp._asyncData[key]) {
+      nuxtApp._asyncData[key]!.data.value = undefined
+      nuxtApp._asyncData[key]!.error.value = null
+      nuxtApp._asyncData[key]!.pending.value = false
+      nuxtApp._asyncData[key]!.status.value = 'idle'
+    }
     if (key in nuxtApp._asyncDataPromises) {
       nuxtApp._asyncDataPromises[key] = undefined
     }
