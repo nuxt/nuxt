@@ -41,7 +41,7 @@
     "consola": "^3.2.3",
     "cssnano": "^6.1.0",
     "defu": "^6.1.4",
-    "esbuild": "^0.20.1",
+    "esbuild": "^0.20.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
