@@ -15,7 +15,7 @@ import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
 import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
-import { appBaseURL, remoteComponentIslands,selectiveClient } from '#build/nuxt.config.mjs'
+import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
 const SSR_UID_RE = /data-island-uid="([^"]*)"/
