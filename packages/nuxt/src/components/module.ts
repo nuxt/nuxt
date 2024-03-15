@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -127,6 +127,10 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
     }
 
+    if (componentOptions.generateMetadata) {
+      addTemplate(componentsMetadataTemplate)
+    }
+
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
     const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
@@ -175,6 +179,9 @@ export default defineNuxtModule<ComponentsOptions>({
             filePath: resolve(distDir, 'app/components/server-placeholder'),
             chunkName: 'components/' + component.kebabName
           })
+        }
+        if (component.mode === 'server' && !nuxt.options.ssr) {
+          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
       context.components = newComponents
@@ -231,20 +238,20 @@ export default defineNuxtModule<ComponentsOptions>({
 
         if (isClient && selectiveClient) {
           fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          if(!nuxt.options.dev) {
+          if (!nuxt.options.dev) {
             config.plugins.push(componentsChunkPlugin.vite({
               getComponents,
               buildDir: nuxt.options.buildDir
             }))
           } else {
-            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'),`export const paths = ${JSON.stringify(
+            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
               getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if(c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) return Object.assign(acc, {[c.pascalName]: `/@fs/${c.filePath}`})
-                const filePath = fs.existsSync( `${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync( `${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, {[c.pascalName]: `/@fs/${filePath}`})
+                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
+                const filePath = fs.existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
+                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
               }, {} as Record<string, string>)
             )}`)
-          }         
+          }
         }
 
         if (isServer) {
@@ -254,7 +261,7 @@ export default defineNuxtModule<ComponentsOptions>({
             isDev: nuxt.options.dev,
             selectiveClient
           }))
-        } 
+        }
       }
       if (!isServer && nuxt.options.experimental.componentIslands) {
         config.plugins.push({

@@ -23,13 +23,13 @@ export default defineComponent({
     estimatedProgress: {
       type: Function as unknown as () => (duration: number, elapsed: number) => number,
       required: false
-    },
+    }
   },
   setup (props, { slots, expose }) {
     const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
-      estimatedProgress: props.estimatedProgress,
+      estimatedProgress: props.estimatedProgress
     })
 
     expose({

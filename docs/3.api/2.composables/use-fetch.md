@@ -148,7 +148,7 @@ type UseFetchOptions<DataT> = {
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   default?: () => DataT
-  transform?: (input: DataT) => DataT
+  transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[] | false
 }

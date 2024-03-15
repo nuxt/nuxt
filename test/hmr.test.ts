@@ -120,21 +120,21 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       // initial state
       await expectWithPolling(
         resolveHmrId,
-        0,
+        0
       )
 
       // first edit
       await triggerHmr()
       await expectWithPolling(
         resolveHmrId,
-        1,
+        1
       )
 
       // just in-case
       await triggerHmr()
       await expectWithPolling(
         resolveHmrId,
-        2,
+        2
       )
 
       // ensure no errors
