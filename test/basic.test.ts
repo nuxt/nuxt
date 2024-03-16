@@ -80,6 +80,11 @@ describe('route rules', () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')
   })
+
+  it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
+    const html = await $fetch('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
 })
 
 describe('modules', () => {

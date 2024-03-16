@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig } from 'nitropack'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
 import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -262,6 +262,25 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       }
     )
 
+    nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+
+    nuxt.hook('nitro:config', (config) => {
+      const rules = config.routeRules
+      for (const rule in rules) {
+        if (!(rules[rule] as any).nuxtMiddleware) { continue }
+        const value = (rules[rule] as any).nuxtMiddleware
+        if (typeof value === 'string') {
+          (rules[rule] as NitroOptions['routeRules']).nuxtMiddleware = { [value]: true }
+        } else if (Array.isArray(value)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of value) {
+            normalizedRules[middleware] = true
+          }
+          (rules[rule] as NitroOptions['routeRules']).nuxtMiddleware = normalizedRules
+        }
+      }
+    })
+
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('rollup:before', async (nitro) => {
         const routeRules = {} as Record<string, any>
@@ -272,8 +291,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect'].includes(routeKey) && value) {
-              filteredRules[routeKey] = routeKey === 'redirect' ? typeof value === 'string' ? value : value.to : value
+            if (['prerender', 'redirect', 'nuxtMiddleware'].includes(routeKey) && value) {
+              if (routeKey === 'redirect') {
+                filteredRules[routeKey] = typeof value === 'string' ? value : value.to
+              } else {
+                filteredRules[routeKey] = value
+              }
               hasRules = true
             }
           }

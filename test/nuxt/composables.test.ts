@@ -19,29 +19,6 @@ import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
-vi.mock('#app/compat/idle-callback', () => ({
-  requestIdleCallback: (cb: Function) => cb()
-}))
-
-const timestamp = Date.now()
-registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp
-})))
-registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp,
-  matcher: {
-    static: {
-      '/': null,
-      '/pre': null,
-      '/pre/test': { redirect: true }
-    },
-    wildcard: { '/pre': { prerender: true } },
-    dynamic: {}
-  },
-  prerendered: ['/specific-prerendered']
-})))
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries())

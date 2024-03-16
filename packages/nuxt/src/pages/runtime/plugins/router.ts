@@ -15,10 +15,13 @@ import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
 import type { Plugin, RouteMiddleware } from '#app'
+import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
+// @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routes from '#build/routes'
 // @ts-expect-error virtual file
@@ -170,6 +173,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           if (!componentMiddleware) { continue }
           for (const entry of toArray(componentMiddleware)) {
             middlewareEntries.add(entry)
+          }
+        }
+
+        if (isAppManifestEnabled) {
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+
+          if (routeRules.nuxtMiddleware) {
+            for (const key in routeRules.nuxtMiddleware) {
+              if (routeRules.nuxtMiddleware[key]) {
+                middlewareEntries.add(key)
+              } else {
+                middlewareEntries.delete(key)
+              }
+            }
           }
         }
 
