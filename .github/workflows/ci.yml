@@ -20,8 +20,6 @@ env:
   # 7 GiB by default on GitHub, setting to 6 GiB
   # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources
   NODE_OPTIONS: --max-old-space-size=6144
-  # install playwright binary manually (because pnpm only runs install script once)
-  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -219,29 +217,6 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install
-
-      # Install playwright's binary under custom directory to cache
-      - name: (non-windows) Set Playwright path and Get playwright version
-        if: runner.os != 'Windows'
-        run: |
-          echo "PLAYWRIGHT_BROWSERS_PATH=$HOME/.cache/playwright-bin" >> $GITHUB_ENV
-          PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright-core | jq --raw-output '.[0].devDependencies["playwright-core"].version')"
-          echo "PLAYWRIGHT_VERSION=$PLAYWRIGHT_VERSION" >> $GITHUB_ENV
-
-      - name: (windows) Set Playwright path and Get playwright version
-        if: runner.os == 'Windows'
-        run: |
-          echo "PLAYWRIGHT_BROWSERS_PATH=$HOME\.cache\playwright-bin" >> $env:GITHUB_ENV
-          $env:PLAYWRIGHT_VERSION="$(pnpm ls --depth 0 --json -w playwright-core | jq --raw-output '.[0].devDependencies["playwright-core"].version')"
-          echo "PLAYWRIGHT_VERSION=$env:PLAYWRIGHT_VERSION" >> $env:GITHUB_ENV
-
-      - name: Cache Playwright's binary
-        uses: actions/cache@ab5e6d0c87105b4c9c2047343972218f562e4319 # v4.0.1
-        with:
-          key: ${{ runner.os }}-playwright-bin-v1-${{ env.PLAYWRIGHT_VERSION }}
-          path: ${{ env.PLAYWRIGHT_BROWSERS_PATH }}
-          restore-keys: |
-            ${{ runner.os }}-playwright-bin-v1-
 
       - name: Install Playwright
         run: pnpm playwright-core install chromium
