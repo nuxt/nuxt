@@ -1,6 +1,6 @@
 import fs, { statSync } from 'node:fs'
 import { join, normalize, relative, resolve } from 'pathe'
-import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -115,7 +115,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate(componentsTypeTemplate)
+    addTypeTemplate(componentsTypeTemplate)
     // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
@@ -188,9 +188,8 @@ export default defineNuxtModule<ComponentsOptions>({
       app.components = newComponents
     })
 
-    nuxt.hook('prepare:types', ({ references, tsConfig }) => {
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
-      references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
     // Watch for changes
