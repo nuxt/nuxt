@@ -21,6 +21,8 @@ import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
+// @ts-expect-error virtual file
 import _routes from '#build/routes'
 // @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
@@ -174,14 +176,16 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
-        const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+        if (isAppManifestEnabled) {
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
 
-        if (routeRules.nuxtMiddleware) {
-          for (const key in routeRules.nuxtMiddleware) {
-            if (routeRules.nuxtMiddleware[key]) {
-              middlewareEntries.add(key)
-            } else {
-              middlewareEntries.delete(key)
+          if (routeRules.nuxtMiddleware) {
+            for (const key in routeRules.nuxtMiddleware) {
+              if (routeRules.nuxtMiddleware[key]) {
+                middlewareEntries.add(key)
+              } else {
+                middlewareEntries.delete(key)
+              }
             }
           }
         }
