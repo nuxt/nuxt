@@ -44,6 +44,8 @@ export type NuxtPage = {
    * @default 'all'
    */
   mode?: 'client' | 'server' | 'all'
+  /** @internal */
+  _sync?: boolean
 }
 
 export type NuxtMiddleware = {

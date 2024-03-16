@@ -53,6 +53,21 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Stream server logs to the client as you are developing. These logs can
+     * be handled in the `dev:ssr-logs` hook.
+     *
+     * If set to `silent`, the logs will not be printed to the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: {
+      async $resolve (val, get) {
+        if (val !== undefined) { return val }
+        const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
+        return isDev && !isTest
+      }
+    },
+
+    /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
      * You can also disable scripts more granularly within `routeRules`.
      */

@@ -364,6 +364,7 @@ export default defineNuxtModule({
           const rule = nitro.options.routeRules[path]
           if (!rule.redirect) { continue }
           routes.push({
+            _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
             file: resolve(runtimeDir, 'component-stub')
           })
