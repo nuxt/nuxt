@@ -122,6 +122,17 @@ export default defineNuxtModule({
           'export const START_LOCATION = Symbol(\'router:start-location\')'
         ].join('\n')
       })
+      addTypeTemplate({
+        filename: 'types/middleware.d.ts',
+        getContents: () => [
+          'declare module \'nitropack\' {',
+          '  interface NitroRouteConfig {',
+          '    appMiddleware?: string | string[] | Record<string, boolean>',
+          '  }',
+          '}',
+          'export {}'
+        ].join('\n')
+      })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
@@ -464,7 +475,7 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+      getContents: ({ nuxt, app }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [

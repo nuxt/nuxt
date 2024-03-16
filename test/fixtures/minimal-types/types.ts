@@ -19,6 +19,12 @@ describe('auto-imports', () => {
       // @ts-expect-error Should show error on unknown properties
       unknownProp: ''
     })
+    defineNuxtConfig({
+      routeRules: {
+        // Should accept any string
+        '/named': { appMiddleware: 'named' }
+      }
+    })
   })
   it('core composables', () => {
     ref()
