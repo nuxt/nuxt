@@ -199,13 +199,14 @@ describe('pages', () => {
   })
 
   it('should render correctly when loaded on a different path', async () => {
-    const { page, pageErrors } = await renderPage('/proxy')
+    const { page, pageErrors } = await renderPage()
+    await page.goto(url('/proxy'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(pageErrors).toEqual([])
 
     await page.close()
-
-    expect(pageErrors).toEqual([])
   })
 
   it('preserves query', async () => {
@@ -1309,7 +1310,8 @@ describe('deferred app suspense resolve', () => {
   })
 
   it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
-    const { page } = await renderPage('/hydration/spa-redirection/start')
+    const { page } = await renderPage()
+    await page.goto(url('/hydration/spa-redirection/start'))
     await page.getByText('fully hydrated and ready to go').waitFor()
     await page.close()
   })
@@ -1641,7 +1643,7 @@ describe('server components/islands', () => {
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
-    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('.box').getByText('"number": 101,').waitFor()
     const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
