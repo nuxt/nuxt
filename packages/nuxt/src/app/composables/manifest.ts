@@ -28,7 +28,9 @@ function fetchManifest () {
   // @ts-expect-error private property
   const buildId = useAppConfig().nuxt?.buildId
   manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${buildId}.json`))
-  manifest.then((m) => { matcher = createMatcherFromExport(m.matcher) })
+  manifest.then((m) => {
+    matcher = createMatcherFromExport(m.matcher)
+  })
   return manifest
 }
 
