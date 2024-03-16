@@ -86,7 +86,6 @@
     "vitest": "1.4.0",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.21",
-    "vue-eslint-parser": "9.4.2",
     "vue-router": "4.3.0",
     "vue-tsc": "2.0.6"
   },

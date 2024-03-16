@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "fixture-minimal",
+  "name": "fixture-suspense",
   "scripts": {
     "build": "nuxi build"
   },
