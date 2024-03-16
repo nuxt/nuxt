@@ -222,8 +222,9 @@ export function useAsyncData<
         if (value) { return value as Promise<ResT> }
 
         const promise = nuxtApp.runWithContext(_handler)
-    nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
-    return promise
+
+        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        return promise
       }
 
   // Used to get default values
@@ -516,10 +517,11 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-      nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = null
-      nuxtApp._asyncData[key]!.pending.value = false
-      nuxtApp._asyncData[key]!.status.value = 'idle'
+    (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+    nuxtApp._asyncData[key]!.data.value = undefined
+    nuxtApp._asyncData[key]!.error.value = null
+    nuxtApp._asyncData[key]!.pending.value = false
+    nuxtApp._asyncData[key]!.status.value = 'idle'
   }
 
   if (key in nuxtApp._asyncDataPromises) {
