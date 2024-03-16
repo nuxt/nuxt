@@ -517,7 +517,6 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-    (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     nuxtApp._asyncData[key]!.data.value = undefined
     nuxtApp._asyncData[key]!.error.value = null
     nuxtApp._asyncData[key]!.pending.value = false
@@ -525,6 +524,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (key in nuxtApp._asyncDataPromises) {
+    (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     nuxtApp._asyncDataPromises[key] = undefined
   }
 }
