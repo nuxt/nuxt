@@ -106,7 +106,7 @@ export default defineNuxtModule({
     })
 
     // adds support for #vue-router alias (used for types) with and without pages integration
-    addTemplate({
+    addTypeTemplate({
       filename: 'vue-router-stub.d.ts',
       getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
     })
@@ -462,7 +462,7 @@ export default defineNuxtModule({
       }
     })
 
-    addTemplate({
+    addTypeTemplate({
       filename: 'types/middleware.d.ts',
       getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
@@ -484,7 +484,7 @@ export default defineNuxtModule({
       }
     })
 
-    addTemplate({
+    addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
@@ -524,13 +524,6 @@ export default defineNuxtModule({
       name: 'NuxtPage',
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
-    })
-
-    // Add declarations for middleware keys
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'vue-router-stub.d.ts') })
     })
   }
 })
