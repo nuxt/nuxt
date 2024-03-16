@@ -411,6 +411,7 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
+    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
@@ -2497,9 +2498,8 @@ describe('teleports', () => {
 describe('Node.js compatibility for client-side', () => {
   it('should work', async () => {
     const { page } = await renderPage('/node-compat')
-    const html = await page.innerHTML('body')
-    expect(html).toContain('Nuxt is Awesome!')
-    expect(html).toContain('CWD: [available]')
+    await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
+    expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
 })
