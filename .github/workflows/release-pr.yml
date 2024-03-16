@@ -1,4 +1,4 @@
-name: release
+name: release-pr
 
 on:
   issue_comment:

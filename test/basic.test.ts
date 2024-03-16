@@ -80,6 +80,11 @@ describe('route rules', () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')
   })
+
+  it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
+    const html = await $fetch('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
+  })
 })
 
 describe('modules', () => {
@@ -194,13 +199,14 @@ describe('pages', () => {
   })
 
   it('should render correctly when loaded on a different path', async () => {
-    const { page, pageErrors } = await renderPage('/proxy')
+    const { page, pageErrors } = await renderPage()
+    await page.goto(url('/proxy'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(pageErrors).toEqual([])
 
     await page.close()
-
-    expect(pageErrors).toEqual([])
   })
 
   it('preserves query', async () => {
@@ -405,6 +411,7 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
+    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
@@ -717,61 +724,53 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component',
-    async () => {
-      // #22402
-      const page = await createPage('/big-page-1', {
-        viewport: {
-          width: 1000,
-          height: 1000
-        }
-      })
-      await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
+  it('expect scroll to top on routes with same component', async () => {
+    // #22402
+    const page = await createPage('/big-page-1', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
+    })
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
 
-      await page.locator('#big-page-2').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#big-page-2').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-2')
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.locator('#big-page-2').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#big-page-2').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-2')
+    await page.waitForFunction(() => window.scrollY === 0)
 
-      await page.locator('#big-page-1').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#big-page-1').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-1')
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
-      await page.close()
-    },
-    // Flaky behavior when using Webpack
-    { retry: isWebpack ? 10 : 0 }
-  )
+    await page.locator('#big-page-1').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#big-page-1').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-1')
+    await page.waitForFunction(() => window.scrollY === 0)
+    await page.close()
+  })
 
-  it('expect scroll to top on nested pages',
-    async () => {
-      // #20523
-      const page = await createPage('/nested/foo/test', {
-        viewport: {
-          width: 1000,
-          height: 1000
-        }
-      })
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
+  it('expect scroll to top on nested pages', async () => {
+    // #20523
+    const page = await createPage('/nested/foo/test', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
+    })
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
 
-      await page.locator('#user-test').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#user-test').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/user-test')
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.locator('#user-test').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#user-test').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/user-test')
+    await page.waitForFunction(() => window.scrollY === 0)
 
-      await page.locator('#test').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#test').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
-      await page.close()
-    },
-    // Flaky behavior when using Webpack
-    { retry: isWebpack ? 10 : 0 }
-  )
+    await page.locator('#test').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#test').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
+    await page.waitForFunction(() => window.scrollY === 0)
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
@@ -1312,7 +1311,8 @@ describe('deferred app suspense resolve', () => {
   })
 
   it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
-    const { page } = await renderPage('/hydration/spa-redirection/start')
+    const { page } = await renderPage()
+    await page.goto(url('/hydration/spa-redirection/start'))
     await page.getByText('fully hydrated and ready to go').waitFor()
     await page.close()
   })
@@ -1644,7 +1644,7 @@ describe('server components/islands', () => {
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
-    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('.box').getByText('"number": 101,').waitFor()
     const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
@@ -2498,9 +2498,8 @@ describe('teleports', () => {
 describe('Node.js compatibility for client-side', () => {
   it('should work', async () => {
     const { page } = await renderPage('/node-compat')
-    const html = await page.innerHTML('body')
-    expect(html).toContain('Nuxt is Awesome!')
-    expect(html).toContain('CWD: [available]')
+    await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
+    expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
 })

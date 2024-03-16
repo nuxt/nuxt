@@ -7,6 +7,8 @@ import { defineNuxtPlugin } from '../nuxt'
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
+  if (!import.meta.client || import.meta.test) { return }
+
   // Show things in console
   if (devLogs !== 'silent') {
     const logger = createConsola({
@@ -41,7 +43,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // pass SSR logs after hydration
   nuxtApp.hooks.hook('app:suspense:resolve', async () => {
-    if (window && window.__NUXT_LOGS__) {
+    if (typeof window !== 'undefined' && window.__NUXT_LOGS__) {
       await nuxtApp.hooks.callHook('dev:ssr-logs', window.__NUXT_LOGS__)
     }
   })

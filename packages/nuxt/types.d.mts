@@ -26,6 +26,7 @@ declare module 'nitropack' {
   interface NitroRouteRules {
     ssr?: boolean
     experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
     'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>

@@ -44,7 +44,6 @@
     "magic-string": "^0.30.8"
   },
   "devDependencies": {
-    "@codspeed/vitest-plugin": "3.1.0",
     "@nuxt/eslint-config": "0.2.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.11.0",
@@ -87,7 +86,6 @@
     "vitest": "1.4.0",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.21",
-    "vue-eslint-parser": "9.4.2",
     "vue-router": "4.3.0",
     "vue-tsc": "2.0.6"
   },
