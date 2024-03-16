@@ -855,7 +855,7 @@ importers:
     devDependencies:
       ufo:
         specifier: latest
-        version: 1.5.0
+        version: 1.5.1
       unplugin:
         specifier: latest
         version: 1.10.0
@@ -10614,10 +10614,6 @@ packages:
 
   /uc.micro@2.0.0:
     resolution: {integrity: sha512-DffL94LsNOccVn4hyfRe5rdKa273swqeA5DJpMOeFmEn1wCDc7nAbbB0gXlgBCL7TNzeTv6G7XVWzan7iJtfig==}
-    dev: true
-
-  /ufo@1.5.0:
-    resolution: {integrity: sha512-c7SxU8XB0LTO7hALl6CcE1Q92ZrLzr1iE0IVIsUa9SlFfkn2B2p6YLO6dLxOj7qCWY98PB3Q3EZbN6bEu8p7jA==}
     dev: true
 
   /ufo@1.5.1:
