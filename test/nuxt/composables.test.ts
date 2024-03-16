@@ -619,7 +619,7 @@ describe('routing utilities: `abortNavigation`', () => {
 })
 
 describe('routing utilities: `setPageLayout`', () => {
-  it('should set error on page metadata if run outside middleware', () => {
+  it('should set layout on page metadata if run outside middleware', () => {
     const route = useRoute()
     expect(route.meta.layout).toBeUndefined()
     setPageLayout('custom')
