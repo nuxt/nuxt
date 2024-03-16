@@ -7,6 +7,9 @@ export default defineVitestConfig({
       include: ['packages/nuxt/src/app']
     },
     environment: 'nuxt',
+    setupFiles: [
+      './test/setup-runtime.ts'
+    ],
     environmentOptions: {
       nuxt: {
         overrides: {
