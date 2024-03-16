@@ -1,10 +1,10 @@
 import { resolve } from 'pathe'
 import { configDefaults, coverageConfigDefaults, defineConfig } from 'vitest/config'
 import { isWindows } from 'std-env'
-import codspeedPlugin from '@codspeed/vitest-plugin'
+// import codspeedPlugin from '@codspeed/vitest-plugin'
 
 export default defineConfig({
-  plugins: [codspeedPlugin()],
+  // plugins: [codspeedPlugin()],
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
