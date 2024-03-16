@@ -477,7 +477,7 @@ export default defineNuxtModule({
           '}',
           'declare module \'nitropack\' {',
           '  interface NitroRouteConfig {',
-          '    nuxtMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}'
         ].join('\n')

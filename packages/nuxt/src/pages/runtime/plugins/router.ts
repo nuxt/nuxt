@@ -179,9 +179,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         if (isAppManifestEnabled) {
           const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
 
-          if (routeRules.nuxtMiddleware) {
-            for (const key in routeRules.nuxtMiddleware) {
-              if (routeRules.nuxtMiddleware[key]) {
+          if (routeRules.appMiddleware) {
+            for (const key in routeRules.appMiddleware) {
+              if (routeRules.appMiddleware[key]) {
                 middlewareEntries.add(key)
               } else {
                 middlewareEntries.delete(key)
