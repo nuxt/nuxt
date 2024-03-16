@@ -3,11 +3,14 @@ import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
 import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
+import { getRouteRules } from '../composables/manifest'
 import { clearError, showError } from '../composables/error'
 import { navigateTo } from '../composables/router'
 
 // @ts-expect-error virtual file
 import { globalMiddleware } from '#build/middleware'
+// @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 
 interface Route {
   /** Percentage encoded pathname section of the URL. */
@@ -242,6 +245,23 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
+
+          if (isAppManifestEnabled) {
+            const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+
+            if (routeRules.nuxtMiddleware) {
+              for (const key in routeRules.nuxtMiddleware) {
+                const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined
+                if (!guard) { return }
+
+                if (routeRules.nuxtMiddleware[key]) {
+                  middlewareEntries.add(guard)
+                } else {
+                  middlewareEntries.delete(guard)
+                }
+              }
+            }
+          }
 
           for (const middleware of middlewareEntries) {
             const result = await nuxtApp.runWithContext(() => middleware(to, from))
