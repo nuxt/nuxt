@@ -42,12 +42,12 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
 }
 
 const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
-export async function extractMetadata (code: string) {
+export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
   let meta: PluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
   }
-  const js = await transform(code, { loader: 'tsx' })
+  const js = await transform(code, { loader })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest'
