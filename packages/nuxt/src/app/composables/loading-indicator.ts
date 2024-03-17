@@ -25,7 +25,7 @@ export type LoadingIndicator = {
   isLoading: Ref<boolean>
   start: () => void
   set: (value: number) => void
-  finish: (opts: { force?: boolean }) => void
+  finish: (opts?: { force?: boolean }) => void
   clear: () => void
 }
 
