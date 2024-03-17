@@ -26,14 +26,16 @@ export type RouteAnnouncer = {
 function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
   const message = ref('')
   const politeness = ref(opts.politeness || Politeness.Polite)
-  const router = useRouter();
+  const router = useRouter()
   const nuxtApp = useNuxtApp()
   let rafId: number | null = null
-  let unsubLoadingFinishHook: () => {}
+  let unsubLoadingFinishHook: () => void = () => {}
+
+  set(document?.title?.trim(), politeness.value)
   
-  function set (messageValue: string, politenessSetting: Politeness = Politeness.Polite ) {
-    politeness.value = politenessSetting
+  function set (messageValue: string = '', politenessSetting: Politeness = Politeness.Polite ) {
     message.value = messageValue
+    politeness.value = politenessSetting
   }
 
   function polite (message: string) {
@@ -44,15 +46,13 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
     return set(message, Politeness.Assertive)
   }
 
-  let _cleanup = () => {}
-
+  let _cleanup: () => void = () => {}
   if (import.meta.client) {
     const removeBeforeResolveGuard = router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
       cancelAnimationFrame(rafId!)
       if (from.fullPath === to.fullPath) { return }
       unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
         rafId = requestAnimationFrame(() => {
-          unsubLoadingFinishHook()
           set(document?.title?.trim(), politeness.value)
         })
       })
@@ -82,7 +82,7 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global route announcer if it doesn't exist already
-  const announcer = nuxtApp._routeAnnouncer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
+  const announcer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
   if (import.meta.client && getCurrentScope()) {
     nuxtApp._routeAnnouncerDeps = nuxtApp._routeAnnouncerDeps || 0
     nuxtApp._routeAnnouncerDeps++
