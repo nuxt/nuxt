@@ -111,6 +111,7 @@ export interface _AsyncData<DataT, ErrorT> {
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  clear: () => void
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
 }
@@ -221,8 +222,9 @@ export function useAsyncData<
         if (value) { return value as Promise<ResT> }
 
         const promise = nuxtApp.runWithContext(_handler)
-    nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
-    return promise
+
+        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        return promise
       }
 
   // Used to get default values
@@ -321,6 +323,8 @@ export function useAsyncData<
     nuxtApp._asyncDataPromises[key] = promise
     return nuxtApp._asyncDataPromises[key]!
   }
+
+  asyncData.clear = () => clearNuxtDataByKey(nuxtApp, key)
 
   const initialFetch = () => asyncData.refresh({ _initial: true })
 
@@ -499,21 +503,29 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
       : toArray(keys)
 
   for (const key of _keys) {
-    if (key in nuxtApp.payload.data) {
-      nuxtApp.payload.data[key] = undefined
-    }
-    if (key in nuxtApp.payload._errors) {
-      nuxtApp.payload._errors[key] = null
-    }
-    if (nuxtApp._asyncData[key]) {
-      nuxtApp._asyncData[key]!.data.value = undefined
-      nuxtApp._asyncData[key]!.error.value = null
-      nuxtApp._asyncData[key]!.pending.value = false
-      nuxtApp._asyncData[key]!.status.value = 'idle'
-    }
-    if (key in nuxtApp._asyncDataPromises) {
-      nuxtApp._asyncDataPromises[key] = undefined
-    }
+    clearNuxtDataByKey(nuxtApp, key)
+  }
+}
+
+function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
+  if (key in nuxtApp.payload.data) {
+    nuxtApp.payload.data[key] = undefined
+  }
+
+  if (key in nuxtApp.payload._errors) {
+    nuxtApp.payload._errors[key] = null
+  }
+
+  if (nuxtApp._asyncData[key]) {
+    nuxtApp._asyncData[key]!.data.value = undefined
+    nuxtApp._asyncData[key]!.error.value = null
+    nuxtApp._asyncData[key]!.pending.value = false
+    nuxtApp._asyncData[key]!.status.value = 'idle'
+  }
+
+  if (key in nuxtApp._asyncDataPromises) {
+    (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+    nuxtApp._asyncDataPromises[key] = undefined
   }
 }
 
