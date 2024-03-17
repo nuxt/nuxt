@@ -21,30 +21,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
-vi.mock('#app/compat/idle-callback', () => ({
-  requestIdleCallback: (cb: Function) => cb()
-}))
-
-const timestamp = Date.now()
-registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp
-})))
-registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp,
-  matcher: {
-    static: {
-      '/': null,
-      '/pre': null,
-      '/pre/test': { redirect: true }
-    },
-    wildcard: { '/pre': { prerender: true } },
-    dynamic: {}
-  },
-  prerendered: ['/specific-prerendered']
-})))
-registerEndpoint('/api/test', defineEventHandler((event) => ({
+registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries())
 })))
@@ -99,6 +76,7 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useCookie',
       'clearNuxtState',
       'useState',
       'useRequestURL',
@@ -107,7 +85,7 @@ describe('composables', () => {
       'navigateTo',
       'abortNavigation',
       'setPageLayout',
-      'defineNuxtComponent',
+      'defineNuxtComponent'
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -123,14 +101,14 @@ describe('composables', () => {
       'preloadRouteComponents',
       'reloadNuxtApp',
       'refreshCookie',
-      'useCookie',
       'useFetch',
       'useHead',
       'useLazyFetch',
       'useLazyAsyncData',
       'useRouter',
       'useSeoMeta',
-      'useServerSeoMeta'
+      'useServerSeoMeta',
+      'usePreviewMode'
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -147,6 +125,7 @@ describe('useAsyncData', () => {
         "status",
         "execute",
         "refresh",
+        "clear",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
@@ -224,6 +203,18 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should be clearable', async () => {
+    const { data, error, pending, status, clear } = await useAsyncData(() => Promise.resolve('test'))
+    expect(data.value).toBe('test')
+
+    clear()
+
+    expect(data.value).toBeUndefined()
+    expect(error.value).toBeNull()
+    expect(pending.value).toBe(false)
+    expect(status.value).toBe('idle')
+  })
+
   it('allows custom access to a cache', async () => {
     const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
     expect(data.value).toMatchInlineSnapshot(`
@@ -249,7 +240,7 @@ describe('useAsyncData', () => {
     expect(data.value).toMatchInlineSnapshot('"default"')
   })
 
-  it('should execute the promise function once when dedupe option is "defer" for multiple calls', async () => {
+  it('should execute the promise function once when dedupe option is "defer" for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
     useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
@@ -258,7 +249,7 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(1)
   })
 
-  it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', async () => {
+  it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData('dedupedKey', promiseFn)
     useAsyncData('dedupedKey', promiseFn)
@@ -267,13 +258,33 @@ describe('useAsyncData', () => {
     expect(promiseFn).toHaveBeenCalledTimes(3)
   })
 
-  it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', async () => {
+  it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
     useAsyncData('dedupedKey', promiseFn)
     useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should be synced with useNuxtData', async () => {
+    const { data: nuxtData } = useNuxtData('nuxtdata-sync')
+    const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
+    const { data: fetchData } = promise
+
+    expect(fetchData.value).toMatchInlineSnapshot('"default"')
+
+    nuxtData.value = 'before-fetch'
+    expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
+
+    await promise
+    expect(fetchData.value).toMatchInlineSnapshot('"test"')
+    expect(nuxtData.value).toMatchInlineSnapshot('"test"')
+
+    nuxtData.value = 'new value'
+    expect(fetchData.value).toMatchInlineSnapshot('"new value"')
+    fetchData.value = 'another value'
+    expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
 })
 
@@ -489,6 +500,21 @@ describe('loading state', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect loading state to be changed by force starting/stoping', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+    start()
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -533,7 +559,7 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
   })
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
-    expect(await isPrerendered('/prerendered/test')).toBeTruthy()
+    expect(await isPrerendered('/prerendered/test')).toBeFalsy()
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
@@ -542,13 +568,13 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
 
 describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[Error: Navigating to an external URL is not allowed by default. Use \`navigateTo(url, { external: true })\`.]`)
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
       ['data:alert("hi")', 'data'],
-      ['\0data:alert("hi")', 'data'],
+      ['\0data:alert("hi")', 'data']
     ]
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
@@ -557,7 +583,7 @@ describe('routing utilities: `navigateTo`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  it('should show provide a mock route', async () => {
+  it('should show provide a mock route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
@@ -568,7 +594,7 @@ describe('routing utilities: `useRoute`', () => {
       params: {},
       path: '/',
       query: {},
-      redirectedFrom: undefined,
+      redirectedFrom: undefined
     })
   })
 })
@@ -576,7 +602,7 @@ describe('routing utilities: `useRoute`', () => {
 describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
-    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot(`[Error: Page not found]`)
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
     expect(error.value).toBeFalsy()
   })
   it('should block navigation if no error is provided', () => {
@@ -585,7 +611,7 @@ describe('routing utilities: `abortNavigation`', () => {
 })
 
 describe('routing utilities: `setPageLayout`', () => {
-  it('should set error on page metadata if run outside middleware', () => {
+  it('should set layout on page metadata if run outside middleware', () => {
     const route = useRoute()
     expect(route.meta.layout).toBeUndefined()
     setPageLayout('custom')
@@ -593,7 +619,7 @@ describe('routing utilities: `setPageLayout`', () => {
     route.meta.layout = undefined
   })
 
-  it('should not set layout directly if run within middleware', async () => {
+  it('should not set layout directly if run within middleware', () => {
     const route = useRoute()
     const nuxtApp = useNuxtApp()
     nuxtApp._processingMiddleware = true
@@ -614,6 +640,33 @@ describe('defineNuxtComponent', () => {
   it.todo('should support Options API head')
 })
 
+describe('useCookie', () => {
+  it('should watch custom cookie refs', () => {
+    const user = useCookie('userInfo', {
+      default: () => ({ score: -1 }),
+      maxAge: 60 * 60
+    })
+    const computedVal = computed(() => user.value.score)
+    expect(computedVal.value).toBe(-1)
+    user.value.score++
+    expect(computedVal.value).toBe(0)
+  })
+
+  it('should not watch custom cookie refs when shallow', () => {
+    for (const value of ['shallow', false] as const) {
+      const user = useCookie('shallowUserInfo', {
+        default: () => ({ score: -1 }),
+        maxAge: 60 * 60,
+        watch: value
+      })
+      const computedVal = computed(() => user.value.score)
+      expect(computedVal.value).toBe(-1)
+      user.value.score++
+      expect(computedVal.value).toBe(-1)
+    }
+  })
+})
+
 describe('callOnce', () => {
   it('should only call composable once', async () => {
     const fn = vi.fn()
@@ -629,7 +682,7 @@ describe('callOnce', () => {
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => { })
+    const fnSync = vi.fn().mockImplementation(() => {})
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])
     expect(fnSync).toHaveBeenCalledTimes(1)

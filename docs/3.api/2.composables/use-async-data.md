@@ -119,10 +119,10 @@ type AsyncDataOptions<DataT> = {
   deep?: boolean
   dedupe?: 'cancel' | 'defer'
   default?: () => DataT | Ref<DataT> | null
-  transform?: (input: DataT) => DataT
+  transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[]
-  getCachedData?: (key: string) => DataT
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
 }
 
 type AsyncData<DataT, ErrorT> = {
@@ -130,6 +130,7 @@ type AsyncData<DataT, ErrorT> = {
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
+  clear: () => void
   error: Ref<ErrorT | null>
   status: Ref<AsyncDataRequestStatus>
 };

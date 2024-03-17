@@ -98,8 +98,8 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   }
 }
 
-export const componentsTypeTemplate: NuxtTemplate = {
-  filename: 'components.d.ts',
+export const componentsTypeTemplate = {
+  filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map(c => [
@@ -123,4 +123,10 @@ ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${
 export const componentNames: string[]
 `
   }
+} satisfies NuxtTemplate
+
+export const componentsMetadataTemplate: NuxtTemplate = {
+  filename: 'components.json',
+  write: true,
+  getContents: ({ app }) => JSON.stringify(app.components, null, 2)
 }

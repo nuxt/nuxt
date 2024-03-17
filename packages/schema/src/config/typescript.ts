@@ -27,6 +27,17 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Modules to generate deep aliases for within `compilerOptions.paths`. This does not yet support subpaths.
+     * It may be necessary when using Nuxt within a pnpm monorepo with `shamefully-hoist=false`.
+     */
+    hoist: {
+      $resolve: (val) => {
+        const defaults = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema', 'nuxt', 'consola']
+        return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
+      }
+    },
+
+    /**
      * Include parent workspace in the Nuxt project. Mostly useful for themes and module authors.
      */
     includeWorkspace: false,
@@ -50,9 +61,9 @@ export default defineUntypedSchema({
     /**
      * Generate a `*.vue` shim.
      *
-     * We recommend instead either enabling [**Take Over Mode**](https://vuejs.org/guide/typescript/overview.html#volar-takeover-mode) or adding
-     * TypeScript Vue Plugin (Volar)** 👉 [[Download](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)].
+     * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+     * generate accurate types for your components.
      */
-    shim: true
+    shim: false
   }
 })

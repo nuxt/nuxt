@@ -7,8 +7,9 @@ import { join, normalize } from 'pathe'
 import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import type { NuxtIslandResponse } from '../packages/nuxt/src/core/runtime/nitro/renderer'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
+
+import type { NuxtIslandResponse } from '#app'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
@@ -78,6 +79,11 @@ describe('route rules', () => {
   it('test noScript routeRules', async () => {
     const html = await $fetch('/no-scripts')
     expect(html).not.toContain('<script')
+  })
+
+  it.runIf(isTestingAppManifest)('should run middleware defined in routeRules config', async () => {
+    const html = await $fetch('/route-rules/middleware')
+    expect(html).toContain('Hello from routeRules!')
   })
 })
 
@@ -193,13 +199,14 @@ describe('pages', () => {
   })
 
   it('should render correctly when loaded on a different path', async () => {
-    const { page, pageErrors } = await renderPage('/proxy')
+    const { page, pageErrors } = await renderPage()
+    await page.goto(url('/proxy'))
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
     expect(await page.innerText('body')).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
+    expect(pageErrors).toEqual([])
 
     await page.close()
-
-    expect(pageErrors).toEqual([])
   })
 
   it('preserves query', async () => {
@@ -362,7 +369,7 @@ describe('pages', () => {
     // don't expect any errors or warning on client-side navigation
     const { page: page2, consoleLogs: consoleLogs2 } = await renderPage('/')
     await page2.locator('#to-client-only-components').click()
-    await page2.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/client-only-components`)
+    await page2.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/client-only-components')
     expect(consoleLogs2.some(log => log.type === 'error' || log.type === 'warning')).toBeFalsy()
     await page2.close()
   })
@@ -404,6 +411,7 @@ describe('pages', () => {
 
   it('/wrapper-expose/page', async () => {
     const { page, pageErrors, consoleLogs } = await renderPage('/wrapper-expose/page')
+    await page.waitForLoadState('networkidle')
     await page.locator('#log-foo').click()
     expect(consoleLogs.at(-1)?.text).toBe('bar')
     // change page
@@ -458,6 +466,74 @@ describe('pages', () => {
     expect(response).not.toContain('don\'t look at this')
     expect(response).toContain('OH NNNNNNOOOOOOOOOOO')
   })
+
+  it('client only page', async () => {
+    const response = await fetch('/client-only').then(r => r.text())
+
+    // Should not contain rendered page on initial request
+    expect(response).not.toContain('"hasAccessToWindow": true')
+    expect(response).not.toContain('"isServer": false')
+
+    const errors: string[] = []
+    const { page: clientInitialPage } = await renderPage('/client-only-page')
+
+    clientInitialPage.on('console', (message) => {
+      const type = message.type()
+      if (type === 'error' || type === 'warning') {
+        errors.push(message.text())
+      }
+    })
+
+    // But after hydration element should appear and contain this object
+    expect(await clientInitialPage.locator('#state').textContent()).toMatchInlineSnapshot(`
+      "{
+        "hasAccessToWindow": true,
+        "isServer": false
+      }"
+    `)
+
+    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
+
+    // Then go to non client only page
+    await clientInitialPage.click('a')
+    await new Promise(resolve => setTimeout(resolve, 50)) // little delay to finish transition
+
+    // that page should be client rendered
+    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
+    // and not contain any errors or warnings
+    expect(errors.length).toBe(0)
+
+    await clientInitialPage.close()
+    errors.length = 0
+
+    const { page: normalInitialPage } = await renderPage('/client-only-page/normal')
+
+    normalInitialPage.on('console', (message) => {
+      const type = message.type()
+      if (type === 'error' || type === 'warning') {
+        errors.push(message.text())
+      }
+    })
+
+    // Now non client only page should be sever rendered
+    expect(await normalInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"true"')
+
+    // Go to client only page
+    await normalInitialPage.click('a')
+
+    // and expect same object to be present
+    expect(await normalInitialPage.locator('#state').textContent()).toMatchInlineSnapshot(`
+      "{
+        "hasAccessToWindow": true,
+        "isServer": false
+      }"
+    `)
+
+    // also there should not be any errors
+    expect(errors.length).toBe(0)
+
+    await normalInitialPage.close()
+  })
 })
 
 describe('nuxt composables', () => {
@@ -494,10 +570,65 @@ describe('nuxt composables', () => {
     expect(text).toContain('baz')
     await page.getByText('Change cookie').click()
     expect(await extractCookie()).toEqual({ foo: 'bar' })
-    await page.evaluate(() => document.cookie = `browser-object-default=${encodeURIComponent('{"foo":"foobar"}')}`)
+    await page.evaluate(() => { document.cookie = `browser-object-default=${encodeURIComponent('{"foo":"foobar"}')}` })
     await page.getByText('Refresh cookie').click()
     text = await page.innerText('pre')
     expect(text).toContain('foobar')
+    await page.close()
+  })
+
+  it('respects preview mode with a token', async () => {
+    const token = 'hehe'
+    const page = await createPage(`/preview?preview=true&token=${token}`)
+
+    const hasRerunFetchOnClient = await new Promise<boolean>((resolve) => {
+      page.on('console', (message) => {
+        setTimeout(() => resolve(false), 4000)
+
+        if (message.text() === 'true') { resolve(true) }
+      })
+    })
+
+    expect(hasRerunFetchOnClient).toBe(true)
+
+    expect(await page.locator('#fetched-on-client').textContent()).toContain('fetched on client')
+    expect(await page.locator('#preview-mode').textContent()).toContain('preview mode enabled')
+
+    await page.click('#use-fetch-check')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/preview/with-use-fetch'))
+
+    expect(await page.locator('#token-check').textContent()).toContain(token)
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('true')
+    await page.close()
+  })
+
+  it('respects preview mode with custom state', async () => {
+    const { page } = await renderPage('/preview/with-custom-state?preview=true')
+
+    expect(await page.locator('#data1').textContent()).toContain('data1 updated')
+    expect(await page.locator('#data2').textContent()).toContain('data2')
+
+    await page.click('#toggle-preview') // manually turns off preview mode
+    await page.click('#with-use-fetch')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath.includes('/preview/with-use-fetch'))
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+    expect(await page.locator('#token-check').textContent()).toEqual('')
+    expect(await page.locator('#correct-api-key-check').textContent()).toContain('false')
+    await page.close()
+  })
+
+  it('respects preview mode with custom enable', async () => {
+    const { page } = await renderPage('/preview/with-custom-enable?preview=true')
+
+    expect(await page.locator('#enabled').textContent()).toContain('false')
+    await page.close()
+  })
+
+  it('respects preview mode with custom enable and customPreview', async () => {
+    const { page } = await renderPage('/preview/with-custom-enable?customPreview=true')
+
+    expect(await page.locator('#enabled').textContent()).toContain('true')
     await page.close()
   })
 })
@@ -515,7 +646,7 @@ describe('rich payloads', () => {
       'BigInt ref:',
       'Reactive: true',
       'Ref: true',
-      'Recursive objects: true',
+      'Recursive objects: true'
     ]) {
       expect(html).toContain(test)
     }
@@ -593,61 +724,53 @@ describe('nuxt links', () => {
     await page.close()
   })
 
-  it('expect scroll to top on routes with same component',
-    async () => {
-      // #22402
-      const page = await createPage('/big-page-1', {
-        viewport: {
-          width: 1000,
-          height: 1000
-        }
-      })
-      await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
+  it('expect scroll to top on routes with same component', async () => {
+    // #22402
+    const page = await createPage('/big-page-1', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
+    })
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/big-page-1')
 
-      await page.locator('#big-page-2').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#big-page-2').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-2`)
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.locator('#big-page-2').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#big-page-2').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-2')
+    await page.waitForFunction(() => window.scrollY === 0)
 
-      await page.locator('#big-page-1').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#big-page-1').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/big-page-1`)
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
-      await page.close()
-    },
-    // Flaky behavior when using Webpack
-    { retry: isWebpack ? 10 : 0 }
-  )
+    await page.locator('#big-page-1').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#big-page-1').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/big-page-1')
+    await page.waitForFunction(() => window.scrollY === 0)
+    await page.close()
+  })
 
-  it('expect scroll to top on nested pages',
-    async () => {
-      // #20523
-      const page = await createPage('/nested/foo/test', {
-        viewport: {
-          width: 1000,
-          height: 1000
-        }
-      })
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
+  it('expect scroll to top on nested pages', async () => {
+    // #20523
+    const page = await createPage('/nested/foo/test', {
+      viewport: {
+        width: 1000,
+        height: 1000
+      }
+    })
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
 
-      await page.locator('#user-test').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#user-test').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/user-test`)
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
+    await page.locator('#user-test').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#user-test').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/user-test')
+    await page.waitForFunction(() => window.scrollY === 0)
 
-      await page.locator('#test').scrollIntoViewIfNeeded()
-      expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
-      await page.locator('#test').click()
-      await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `/nested/foo/test`)
-      expect(await page.evaluate(() => window.scrollY)).toBe(0)
-      await page.close()
-    },
-    // Flaky behavior when using Webpack
-    { retry: isWebpack ? 10 : 0 }
-  )
+    await page.locator('#test').scrollIntoViewIfNeeded()
+    await page.waitForFunction(() => window.scrollY > 0)
+    await page.locator('#test').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/foo/test')
+    await page.waitForFunction(() => window.scrollY === 0)
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
@@ -755,7 +878,7 @@ describe('navigate', () => {
     const res = await fetch('/navigate-some-path/', { redirect: 'manual', headers: { 'trailing-slash': 'true' } })
     expect(res.headers.get('location')).toEqual('/navigate-some-path')
     expect(res.status).toEqual(307)
-    expect(await res.text()).toMatchInlineSnapshot(`"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"`)
+    expect(await res.text()).toMatchInlineSnapshot('"<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=/navigate-some-path"></head></html>"')
   })
 
   it('should not overwrite headers', async () => {
@@ -1188,7 +1311,8 @@ describe('deferred app suspense resolve', () => {
   })
 
   it('should fully hydrate even if there is a redirection on a page with `ssr: false`', async () => {
-    const { page } = await renderPage('/hydration/spa-redirection/start')
+    const { page } = await renderPage()
+    await page.goto(url('/hydration/spa-redirection/start'))
     await page.getByText('fully hydrated and ready to go').waitFor()
     await page.close()
   })
@@ -1520,7 +1644,7 @@ describe('server components/islands', () => {
     // test fallback slot with v-for
     expect(await page.locator('.fallback-slot-content').all()).toHaveLength(2)
     // test islands update
-    expect(await page.locator('.box').innerHTML()).toContain('"number": 101,')
+    await page.locator('.box').getByText('"number": 101,').waitFor()
     const requests = [
       page.waitForResponse(response => response.url().includes('/__nuxt_island/LongAsyncComponent') && response.status() === 200),
       page.waitForResponse(response => response.url().includes('/__nuxt_island/AsyncServerComponent') && response.status() === 200)
@@ -1541,6 +1665,12 @@ describe('server components/islands', () => {
 
     // test islands wrapped with client-only
     expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
+
+    if (!isWebpack) {
+      // test nested client components
+      await page.locator('.server-with-nested-client button').click()
+      expect(await page.locator('.server-with-nested-client .sugar-counter').innerHTML()).toContain('Sugar Counter 13 x 1 = 13')
+    }
 
     if (!isWebpack) {
       // test client component interactivity
@@ -1599,9 +1729,9 @@ describe('server components/islands', () => {
     const text = (await page.innerText('pre')).replaceAll(/ data-island-uid="([^"]*)"/g, '').replace(/data-island-component="([^"]*)"/g, (_, content) => `data-island-component="${content.split('-')[0]}"`)
 
     if (isWebpack) {
-      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
+      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <div class="sugar-counter" nuxt-client=""> Sugar Counter 12 x 1 = 12 <button> Inc </button></div></div></div>"')
     } else {
-      expect(text).toMatchInlineSnapshot(`" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>"`)
+      expect(text).toMatchInlineSnapshot('" End page <pre></pre><section id="fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><section id="no-fallback"><div> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">42</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div></section><div> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>"')
     }
     expect(text).toContain('async component that was very long')
 
@@ -1685,6 +1815,14 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   })
 })
 
+describe('public directories', () => {
+  it('should directly return public directory paths', async () => {
+    const html = await $fetch('/assets-custom')
+    expect(html).toContain('"/public.svg"')
+    expect(html).toContain('"/custom/file.svg"')
+  })
+})
+
 // TODO: dynamic paths in dev
 describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
@@ -1717,7 +1855,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
-        NUXT_APP_BASE_URL: '/foo/',
+        NUXT_APP_BASE_URL: '/foo/'
       }
     })
 
@@ -1759,7 +1897,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     await startServer({
       env: {
         NUXT_APP_BUILD_ASSETS_DIR: '/_other/',
-        NUXT_APP_BASE_URL: '/foo/',
+        NUXT_APP_BASE_URL: '/foo/'
       }
     })
     const { headers } = await fetch('/foo/navigate-to/', { redirect: 'manual' })
@@ -1860,7 +1998,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"></div><!--teleport start--><!--teleport end--><!--]--></div>",
+        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
             "props": [],
@@ -1924,7 +2062,7 @@ describe('component islands', () => {
           "link": [],
           "style": [],
         },
-        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"></div><!--]--></div>",
+        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
         "state": {},
@@ -2134,11 +2272,11 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
     await gotoPath(page, '/random/a')
 
     // We are manually prefetching other payloads
-    await page.waitForRequest(url('/random/c/_payload.json'))
+    await page.waitForRequest(request => request.url().includes('/random/c/_payload.json'))
 
     // We are not triggering API requests in the payload
-    expect(requests).not.toContain(expect.stringContaining('/api/random'))
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/api/random'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
     // requests.length = 0
 
     await page.click('[href="/random/b"]')
@@ -2146,10 +2284,10 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
 
     // We are fetching a payload we did not prefetch
-    expect(requests).toContain('/random/b/_payload.json')
+    expect(requests).toContainEqual(expect.stringContaining('/random/b/_payload.json'))
 
     // We are not refetching payloads we've already prefetched
     // expect(requests.filter(p => p.includes('_payload')).length).toBe(1)
@@ -2160,7 +2298,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('payload rendering', (
 
     // We are not triggering API requests in the payload in client-side nav
     expect(requests).not.toContain('/api/random')
-    expect(requests).not.toContain(expect.stringContaining('/__nuxt_island'))
+    expect(requests).not.toContainEqual(expect.stringContaining('/__nuxt_island'))
 
     // We are not refetching payloads we've already prefetched
     // Note: we refetch on dev as urls differ between '' and '?import'
@@ -2314,7 +2452,7 @@ describe('keepalive', () => {
       'keepalive-in-nuxtpage-2',
       'keepalive-in-nuxtpage',
       'not-keepalive',
-      'keepalive-in-nuxtpage-2',
+      'keepalive-in-nuxtpage-2'
     ]
 
     for (const slug of slugs) {
@@ -2340,12 +2478,28 @@ describe('keepalive', () => {
   })
 })
 
+describe('teleports', () => {
+  it('should append teleports to body', async () => {
+    const html = await $fetch('/teleport')
+
+    // Teleport is prepended to body, before the __nuxt div
+    expect(html).toContain('<div>Teleport</div><!--teleport anchor--><div id="__nuxt">')
+    // Teleport start and end tag are rendered as expected
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div>')
+  })
+  it('should render teleports to app teleports element', async () => {
+    const html = await $fetch('/nuxt-teleport')
+
+    // Teleport is appended to body, after the __nuxt div
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div></div><span id="nuxt-teleport"><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
+  })
+})
+
 describe('Node.js compatibility for client-side', () => {
   it('should work', async () => {
     const { page } = await renderPage('/node-compat')
-    const html = await page.innerHTML('body')
-    expect(html).toContain('Nuxt is Awesome!')
-    expect(html).toContain('CWD: [available]')
+    await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
+    expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
 })
