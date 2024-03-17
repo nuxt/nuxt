@@ -21,7 +21,7 @@ describe('plugin-metadata', () => {
         'export default defineNuxtPlugin({',
         ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
         '})'
-      ].join('\n'))
+      ].join('\n'), 'tsx')
 
       expect(meta).toMatchInlineSnapshot(`
         {
