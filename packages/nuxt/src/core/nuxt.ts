@@ -4,7 +4,8 @@ import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
-import { resolvePackageJSON } from 'pkg-types'
+import type { PackageJson } from 'pkg-types'
+import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -51,6 +52,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
+const nightlies = {
+  nitropack: 'nitropack-nightly',
+  h3: 'h3-nightly',
+  nuxt: 'nuxt-nightly',
+  '@nuxt/schema': '@nuxt/schema-nightly',
+  '@nuxt/kit': '@nuxt/kit-nightly'
+}
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
@@ -64,11 +73,28 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('close', () => nuxtCtx.unset())
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
+  const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
+  const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (dependencies.has(pkg) && !(pkg in nightlies)) { return [] }
+
+    // deduplicate types for nightly releases
+    if (pkg in nightlies) {
+      const nightly = nightlies[pkg as keyof typeof nightlies]
+      const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+      if (path) {
+        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+      }
+    }
+
     const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
-    if (!path) { return }
-    return [pkg, [dirname(path)]]
-  })).then(r => r.filter(Boolean) as [string, [string]][]))
+    if (path) {
+      return [[pkg, [dirname(path)]]]
+    }
+
+    return []
+  })).then(r => r.flat()))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
