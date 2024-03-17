@@ -11,11 +11,11 @@ links:
 ## Description
 
 A composable which returns the title of the page. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
-It subscribes route guard [`beforeResolve`](/docs/api/composables/use-router#navigation-guards) and hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to change its message.
+It subscribes route guard [`beforeResolve`](/docs/api/composables/use-router#navigation-guards) and hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to read the page's title and set it as the announcer message.
 
 ## Parameters
 
-- `politeness`: Sets the urgency for screen reader announcements: off, polite (waits for silence), or assertive (interrupts immediately).  (default `polite`).
+- `politeness`: Sets the urgency for screen reader announcements: `off` (disable the announcement), `polite` (waits for silence), or `assertive` (interrupts immediately).  (default `polite`).
 
 ## Properties
 
@@ -33,7 +33,7 @@ It subscribes route guard [`beforeResolve`](/docs/api/composables/use-router#nav
 
 ### `set(message, politeness)`
 
-Set the message to announce with its' urgency level
+Set the message to announce with its' urgency level. `politeness` is optional and set to `polite` if omitted
 
 ### `polite(message)`
 
