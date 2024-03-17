@@ -444,8 +444,15 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+
+      if (page._sync) {
+        metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
+      }
+
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file, { interopDefault: true })
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
@@ -456,8 +463,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
           : page.mode === 'client'
-            ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
-            : genDynamicImport(file, { interopDefault: true })
+            ? `() => createClientPage(${pageImport})`
+            : pageImport
       }
 
       if (page.mode === 'server') {

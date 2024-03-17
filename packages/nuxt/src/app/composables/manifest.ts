@@ -1,7 +1,8 @@
 import type { MatcherExport, RouteMatcher } from 'radix3'
-import { createMatcherFromExport } from 'radix3'
+import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
 import { useAppConfig } from '../config'
+import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
@@ -43,6 +44,12 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 
 /** @since 3.7.4 */
 export async function getRouteRules (url: string) {
+  if (import.meta.server) {
+    const _routeRulesMatcher = toRouteMatcher(
+      createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules })
+    )
+    return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(url).reverse())
+  }
   await getAppManifest()
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
 }

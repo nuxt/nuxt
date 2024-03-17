@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -124,12 +124,6 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Generate types
     addDeclarationTemplates(ctx, options)
 
-    // Add generated types to `nuxt.d.ts`
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/imports.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'imports.d.ts') })
-    })
-
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
@@ -186,12 +180,12 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
     }))
   }
 
-  addTemplate({
+  addTypeTemplate({
     filename: 'imports.d.ts',
     getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true)
   })
 
-  addTemplate({
+  addTypeTemplate({
     filename: 'types/imports.d.ts',
     getContents: async () => {
       const imports = await ctx.getImports()
