@@ -54,5 +54,5 @@ export function useId (key?: string): string {
   }
 
   // pure client-side ids, avoiding potential collision with server-side ids
-  return key + '_' + nuxtApp._id++
+  return key + SEPARATOR + nuxtApp._id++
 }
