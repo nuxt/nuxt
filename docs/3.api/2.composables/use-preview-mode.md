@@ -24,7 +24,8 @@ export function useMyPreviewMode () {
       return !!route.query.customPreview
     }
   });
-}```
+}
+```
 
 ### Modify default state
 
