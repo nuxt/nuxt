@@ -1,5 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
+import { nextTick } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
@@ -18,6 +19,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb()
@@ -640,5 +642,20 @@ describe('callOnce', () => {
     await execute('first')
     await execute('second')
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('route announcer', () => {
+  it('expect route announcer message to be changed by navigating', async () => {
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('document', { title: 'Old Title' })
+    const nuxtApp = useNuxtApp()
+    const announcer = useRouteAnnouncer()
+    expect(announcer.message.value).toBe('Old Title')
+    await navigateTo('/test')
+    vi.stubGlobal('document', { title: 'New Title' })
+    await nuxtApp.callHook('page:loading:end')
+    expect(announcer.message.value).toBe('New Title')
+    vi.mocked(requestAnimationFrame).mockRestore()
   })
 })
