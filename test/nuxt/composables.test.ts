@@ -1,6 +1,5 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { nextTick } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 
@@ -19,7 +18,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
-import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
