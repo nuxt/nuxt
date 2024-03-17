@@ -44,12 +44,15 @@ export default (nitroApp: NitroApp) => {
   })
 
   nitroApp.hooks.hook('afterResponse', () => {
-    const ctx = asyncContext.use()
+    const ctx = asyncContext.tryUse()
+    if (!ctx) { return }
     return nitroApp.hooks.callHook('dev:ssr-logs', { logs: ctx.logs, path: ctx.event.path })
   })
 
   // Pass any logs to the client
   nitroApp.hooks.hook('render:html', (htmlContext) => {
+    const ctx = asyncContext.tryUse()
+    if (!ctx) { return }
     htmlContext.bodyAppend.unshift(`<script>window.__NUXT_LOGS__ = ${devalue(asyncContext.use().logs)}</script>`)
   })
 }
