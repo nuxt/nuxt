@@ -32,8 +32,8 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
   let unsubLoadingFinishHook: () => void = () => {}
 
   set(document?.title?.trim(), politeness.value)
-  
-  function set (messageValue: string = '', politenessSetting: Politeness = Politeness.Polite ) {
+
+  function set (messageValue: string = '', politenessSetting: Politeness = Politeness.Polite) {
     message.value = messageValue
     politeness.value = politenessSetting
   }
@@ -49,10 +49,13 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
   let _cleanup: () => void = () => {}
   if (import.meta.client) {
     const removeBeforeResolveGuard = router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+      console.log('GUAAARD')
       cancelAnimationFrame(rafId!)
       if (from.fullPath === to.fullPath) { return }
       unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
+        console.log('HOOOOOOK')
         rafId = requestAnimationFrame(() => {
+          console.log('RAAAAFF')
           set(document?.title?.trim(), politeness.value)
         })
       })
@@ -71,7 +74,7 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
     politeness,
     set,
     polite,
-    assertive,
+    assertive
   }
 }
 
@@ -82,7 +85,7 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
   const nuxtApp = useNuxtApp()
 
   // Initialise global route announcer if it doesn't exist already
-  const announcer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
+  const announcer = nuxtApp._routeAnnouncer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
   if (import.meta.client && getCurrentScope()) {
     nuxtApp._routeAnnouncerDeps = nuxtApp._routeAnnouncerDeps || 0
     nuxtApp._routeAnnouncerDeps++

@@ -1,16 +1,11 @@
 import { defineComponent, h } from 'vue'
-import { useRouteAnnouncer } from '#app/composables/route-announcer'
-import { Politeness } from '#app/composables/route-announcer'
+import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
 class NuxtRouteAnnouncerShadow extends HTMLElement {
-  constructor() {
-    super();
-  }
-
-  connectedCallback() {
-    const shadow = this.attachShadow({ mode: "closed" });
-    const style = document.createElement("style");
-    const fragment = document.createDocumentFragment();
+  connectedCallback () {
+    const shadow = this.attachShadow({ mode: 'closed' })
+    const style = document.createElement('style')
+    const fragment = document.createDocumentFragment()
     style.textContent = `
       :host {
         border: 0;
@@ -26,13 +21,13 @@ class NuxtRouteAnnouncerShadow extends HTMLElement {
         padding: 0;
       }
     `
-    fragment.appendChild(style);
-    fragment.appendChild(document.createElement("slot"));
-    shadow.appendChild(fragment);
+    fragment.appendChild(style)
+    fragment.appendChild(document.createElement('slot'))
+    shadow.appendChild(fragment)
   }
 }
 
-customElements.define("nuxt-route-announcer-shadow", NuxtRouteAnnouncerShadow);
+customElements.define('nuxt-route-announcer-shadow', NuxtRouteAnnouncerShadow)
 
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',
@@ -47,8 +42,8 @@ export default defineComponent({
     }
   },
   setup (props, { slots, expose }) {
-    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness });
-   
+    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
+
     expose({
       set, polite, assertive
     })
@@ -56,9 +51,7 @@ export default defineComponent({
     return () => h('nuxt-route-announcer-shadow', {
       class: 'nuxt-route-announcer',
       ariaLive: politeness.value,
-      ariaAtomic: props.ariaAtomic,
+      ariaAtomic: props.ariaAtomic
     }, slots.default ? slots.default({ message }) : message.value)
   }
 })
-
-
