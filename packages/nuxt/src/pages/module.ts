@@ -293,8 +293,8 @@ export default defineNuxtModule({
             if (route === '/') { continue }
             prerenderRoutes.add(route)
           }
-          nitro.options.prerender.routes = Array.from(prerenderRoutes)
         }
+        nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
     })
 
