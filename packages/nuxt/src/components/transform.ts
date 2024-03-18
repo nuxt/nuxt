@@ -30,18 +30,18 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}`
         : c.filePath
 
-      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
-
+      const mode = !c._raw && c.mode && (c.mode === 'client' || c.mode === 'server') ? c.mode : undefined
+      const compName = c.export || 'default'
       return [
         {
           as: c.pascalName,
           from: withMode(mode),
-          name: c.export || 'default'
+          name: compName
         },
         {
           as: 'Lazy' + c.pascalName,
-          from: withMode([mode, 'async'].filter(Boolean).join(',')),
-          name: c.export || 'default'
+          from: withMode((mode ? mode + "," : mode) + "async"),
+          name: compName
         }
       ]
     })
@@ -62,37 +62,29 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         const bare = id.replace(/\?.*/, '')
         if (mode === 'async') {
           return {
-            code: [
-              'import { defineAsyncComponent } from "vue"',
-              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r.default))`
-            ].join('\n'),
+            code: 'import { defineAsyncComponent } from "vue"\n' +
+              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r.default))`,
             map: null
           }
         } else if (mode === 'client') {
           return {
-            code: [
-              `import __component from ${JSON.stringify(bare)}`,
-              'import { createClientOnly } from "#app/components/client-only"',
-              'export default createClientOnly(__component)'
-            ].join('\n'),
+            code: `import __component from ${JSON.stringify(bare)}\n` +
+              'import { createClientOnly } from "#app/components/client-only"\n' +
+              'export default createClientOnly(__component)',
             map: null
           }
         } else if (mode === 'client,async') {
           return {
-            code: [
-              'import { defineAsyncComponent } from "vue"',
-              'import { createClientOnly } from "#app/components/client-only"',
-              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`
-            ].join('\n'),
+            code: 'import { defineAsyncComponent } from "vue"\n' +
+              'import { createClientOnly } from "#app/components/client-only"\n' +
+              `export default defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r.default)))`,
             map: null
           }
         } else if (mode === 'server' || mode === 'server,async') {
           const name = query.nuxt_component_name
           return {
-            code: [
-              `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
-              `export default createServerComponent(${JSON.stringify(name)})`
-            ].join('\n'),
+            code: `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}\n` +
+              `export default createServerComponent(${JSON.stringify(name)})`,
             map: null
           }
         } else {
