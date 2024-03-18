@@ -30,23 +30,31 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const _nitroConfig = ((nuxt.options as any).nitro || {}) as NitroConfig
 
-  const excludePaths = nuxt.options._layers
-    .flatMap(l => [
-      l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
-      l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
-    ])
-    .filter((dir): dir is string => Boolean(dir))
-    .map(dir => escapeRE(dir))
+  let excludePaths: string = ''
+  for (const l of nuxt.options._layers) {
+    const match1 = l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1]
+    const match2 = l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
+    if (match1) {
+      excludePaths += escapeRE(match1) + '|'
+    }
+    if (match2) {
+      excludePaths += escapeRE(match2) + '|'
+    }
+  }
   const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
+    ? [new RegExp(`node_modules\\/(?!${excludePaths.slice(0,-1)})`)]
     : [/node_modules/]
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
+  const moduleEntries = []
+  for (const m of nuxt.options._installedModules) {
+    if (m.entryPath) {
+      moduleEntries.push(m.entryPath)
+    }
+  }
   const modules = await resolveNuxtModule(rootDirWithSlash,
-    nuxt.options._installedModules
-      .filter(m => m.entryPath)
-      .map(m => m.entryPath)
+    moduleEntries
   )
 
   const nitroConfig: NitroConfig = defu(_nitroConfig, {
@@ -97,7 +105,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html')
         }
       : false,
-    scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
+    scanDirs: scanDirs: nuxt.options._layers.reduce<string[]>((dirs, layer) => {
+      const layerDir = (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))
+      if (layerDir) {
+        dirs.push(layerDir)
+      }
+      return dirs
+    }, []),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
@@ -153,10 +167,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir
           },
-      ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
-        .filter(dir => existsSync(dir))
-        .map(dir => ({ dir }))
+      ...nuxt.options._layers.reduce<{dir: string}[]>((layers, layer) => {
+        const layerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
+        if (existsSync(layerDir)) {
+          layers.push({dir: layerDir})
+        }
+        return layers
+      }, [])
     ],
     prerender: {
       failOnError: true,
@@ -291,7 +308,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect', 'appMiddleware'].includes(routeKey) && value) {
+            if ((routeKey === 'prerender' || routeKey === 'redirect' || routeKey === "appMiddleware") && value) {
               if (routeKey === 'redirect') {
                 filteredRules[routeKey] = typeof value === 'string' ? value : value.to
               } else {
@@ -505,8 +522,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   if (nitro.options.static) {
     nitro.hooks.hook('prerender:routes', (routes) => {
-      for (const route of [nuxt.options.ssr ? '/' : '/index.html', '/200.html', '/404.html']) {
-        routes.add(route)
+      if (nuxt.options.ssr) {
+        routes.add('/')
+      }
+      else {
+          routes.add('/index.html')
+          routes.add('/200.html')
+          routes.add('/404.html')
       }
     })
   }
