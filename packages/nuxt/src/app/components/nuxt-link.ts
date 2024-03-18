@@ -113,12 +113,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     const resolvedPath = {
       ...to,
+      name: undefined, // named routes would otherwise always override trailing slash behavior
       path: applyTrailingSlashBehavior(path, options.trailingSlash)
-    }
-
-    // named routes would otherwise always override trailing slash behavior
-    if ('name' in resolvedPath) {
-      delete resolvedPath.name
     }
 
     return resolvedPath
