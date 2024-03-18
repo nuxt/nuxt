@@ -17,6 +17,7 @@ describe('resolveApp', () => {
     const app = await getResolvedApp([])
     expect(app).toMatchInlineSnapshot(`
       {
+        "_hasLayouts": false,
         "components": [],
         "configs": [],
         "dir": "<rootDir>",
