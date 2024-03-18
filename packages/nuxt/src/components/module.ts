@@ -165,6 +165,8 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
+    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
@@ -176,11 +178,11 @@ export default defineNuxtModule<ComponentsOptions>({
             ...component,
             _raw: true,
             mode: 'server',
-            filePath: resolve(distDir, 'app/components/server-placeholder'),
+            filePath: serverPlaceholderPath,
             chunkName: 'components/' + component.kebabName
           })
         }
-        if (component.mode === 'server' && !nuxt.options.ssr) {
+        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
           logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
