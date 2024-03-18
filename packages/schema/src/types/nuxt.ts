@@ -69,9 +69,6 @@ export interface NuxtApp {
   templates: NuxtTemplate[]
   configs: string[]
   pages?: NuxtPage[]
-
-  // Private fields
-  _hasLayouts?: boolean
 }
 
 export interface Nuxt {

@@ -223,7 +223,7 @@ async function initNuxt (nuxt: Nuxt) {
         return
       }
 
-      if (app._hasLayouts) {
+      if (Object.keys(app.layouts).length > 0) {
         if (!detectedComponents.has('NuxtLayout') && !cache.has('NuxtLayout')) {
           logger.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
         }
