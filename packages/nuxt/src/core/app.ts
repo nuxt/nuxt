@@ -124,6 +124,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
     const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
+    app._hasLayouts = layoutFiles.length > 0
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
