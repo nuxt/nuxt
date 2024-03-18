@@ -82,7 +82,7 @@
     "semver": "7.6.0",
     "std-env": "3.7.0",
     "typescript": "5.4.2",
-    "ufo": "1.5.1",
+    "ufo": "1.5.2",
     "vitest": "1.4.0",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.21",
