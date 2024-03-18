@@ -101,9 +101,9 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => {
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then((r) => {
   const entries: string[] = []
-  for (const key in r) { 
+  for (const key in r) {
     const val = r[key]
     // @ts-expect-error internal key set by CSS inlining configuration
     if (val._globalCSS) {
@@ -594,7 +594,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
     }
   }
   for (const style of inlinedStyles) {
-    styleArray.push({innerHTML: style})
+    styleArray.push({ innerHTML: style })
   }
   return styleArray
 }
