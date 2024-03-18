@@ -42,7 +42,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
   const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.slice(0,-1)})`)]
+    ? [new RegExp(`node_modules\\/(?!${excludePaths.slice(0, -1)})`)]
     : [/node_modules/]
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
@@ -170,7 +170,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       ...nuxt.options._layers.reduce<{dir: string}[]>((layers, layer) => {
         const layerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
         if (existsSync(layerDir)) {
-          layers.push({dir: layerDir})
+          layers.push({ dir: layerDir })
         }
         return layers
       }, [])
@@ -308,7 +308,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if ((routeKey === 'prerender' || routeKey === 'redirect' || routeKey === "appMiddleware") && value) {
+            if ((routeKey === 'prerender' || routeKey === 'redirect' || routeKey === 'appMiddleware') && value) {
               if (routeKey === 'redirect') {
                 filteredRules[routeKey] = typeof value === 'string' ? value : value.to
               } else {
@@ -524,11 +524,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nitro.hooks.hook('prerender:routes', (routes) => {
       if (nuxt.options.ssr) {
         routes.add('/')
-      }
-      else {
-          routes.add('/index.html')
-          routes.add('/200.html')
-          routes.add('/404.html')
+      } else {
+        routes.add('/index.html')
+        routes.add('/200.html')
+        routes.add('/404.html')
       }
     })
   }
