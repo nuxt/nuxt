@@ -1,7 +1,7 @@
 import { dirname, join, normalize, relative, resolve, sep } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -199,14 +199,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     // Add component usage detection
-    let hasBeenInitialized = false
     const detectedComponents = new Set<string>()
-    const cache = new Set<string>()
 
     const componentDetectionConfig = {
       rootDir: nuxt.options.rootDir,
       exclude: [
-      // Exclude top-level resolutions by plugins
+        // Exclude top-level resolutions by plugins
         join(nuxt.options.rootDir, 'index.html'),
         // Keep only imports coming from the user's project (inside the rootDir)
         new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}${escapeRE(sep)}).+[^\n]+$`)
@@ -216,28 +214,20 @@ async function initNuxt (nuxt: Nuxt) {
 
     addBuildPlugin(DetectComponentUsagePlugin(componentDetectionConfig))
 
-    nuxt.hook('app:templates', (app) => {
-      // Skip first hook call
-      if (!hasBeenInitialized) {
-        hasBeenInitialized = true
-        return
-      }
-
-      if (Object.keys(app.layouts).length > 0) {
-        if (!detectedComponents.has('NuxtLayout') && !cache.has('NuxtLayout')) {
-          logger.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
-        }
-        cache.add('NuxtLayout')
-      }
-      if (nuxt.options.pages) {
-        if (!detectedComponents.has('NuxtPage') && !cache.has('NuxtPage')) {
-          logger.warn('[nuxt] Your project has pages but the `<NuxtPage />` component has not been used.' +
-          ' You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.' +
-          ' You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.')
-        }
-        cache.add('NuxtPage')
-      }
+    addTemplate({
+      filename: 'detected-component-usage.mjs',
+      options: { detectedComponents, nuxtOptions: nuxt.options },
+      getContents: data =>
+        `export const hasPages = ${data.options.nuxtOptions.pages};
+      export const isNuxtLayoutUsed = ${data.options.detectedComponents.has(
+        'NuxtLayout'
+      )};
+      export const isNuxtPageUsed = ${data.options.detectedComponents.has(
+        'NuxtPage'
+      )};`
     })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-component-usage'))
   }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {

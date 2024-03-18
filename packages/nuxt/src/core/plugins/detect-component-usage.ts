@@ -1,5 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import { isAbsolute, join, relative } from 'pathe'
+import { updateTemplates } from '@nuxt/kit'
 
 interface DetectComponentUsageOptions {
   rootDir: string
@@ -31,6 +32,7 @@ export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions)
       for (const [pattern, name] of detectComponentUsagePatterns) {
         if (pattern instanceof RegExp ? pattern.test(id) : pattern === id) {
           options.detectedComponents.add(name)
+          updateTemplates({ filter: template => template.filename === 'detected-component-usage.mjs' })
         }
       }
       return null
