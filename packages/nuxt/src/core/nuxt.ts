@@ -1,4 +1,4 @@
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { dirname, join, normalize, relative, resolve, sep } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -25,6 +25,7 @@ import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
+import { DetectComponentUsagePlugin } from './plugins/detect-component-usage'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
@@ -194,6 +195,50 @@ async function initNuxt (nuxt: Nuxt) {
     // DevOnly component tree-shaking - build time only
     addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
     addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+  }
+
+  if (nuxt.options.dev) {
+    // Add component usage detection
+    let hasBeenInitialized = false
+    const detectedComponents = new Set<string>()
+    const cache = new Set<string>()
+
+    const componentDetectionConfig = {
+      rootDir: nuxt.options.rootDir,
+      exclude: [
+      // Exclude top-level resolutions by plugins
+        join(nuxt.options.rootDir, 'index.html'),
+        // Keep only imports coming from the user's project (inside the rootDir)
+        new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}${escapeRE(sep)}).+[^\n]+$`)
+      ],
+      detectedComponents
+    }
+
+    addVitePlugin(() => DetectComponentUsagePlugin.vite(componentDetectionConfig))
+    addWebpackPlugin(() => DetectComponentUsagePlugin.webpack(componentDetectionConfig))
+
+    nuxt.hook('app:templates', (app) => {
+      // Skip first hook call
+      if (!hasBeenInitialized) {
+        hasBeenInitialized = true
+        return
+      }
+
+      if (app._hasLayouts) {
+        if (!detectedComponents.has('NuxtLayout') && !cache.has('NuxtLayout')) {
+          logger.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
+        }
+        cache.add('NuxtLayout')
+      }
+      if (nuxt.options.pages) {
+        if (!detectedComponents.has('NuxtPage') && !cache.has('NuxtPage')) {
+          logger.warn('[nuxt] Your project has pages but the `<NuxtPage />` component has not been used.' +
+          ' You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.' +
+          ' You can set `pages: false` in `nuxt.config` if you do not wish to use the Nuxt `vue-router` integration.')
+        }
+        cache.add('NuxtPage')
+      }
+    })
   }
 
   if (nuxt.options.dev) {
