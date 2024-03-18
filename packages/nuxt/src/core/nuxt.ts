@@ -214,8 +214,7 @@ async function initNuxt (nuxt: Nuxt) {
       detectedComponents
     }
 
-    addVitePlugin(() => DetectComponentUsagePlugin.vite(componentDetectionConfig))
-    addWebpackPlugin(() => DetectComponentUsagePlugin.webpack(componentDetectionConfig))
+    addBuildPlugin(DetectComponentUsagePlugin(componentDetectionConfig))
 
     nuxt.hook('app:templates', (app) => {
       // Skip first hook call

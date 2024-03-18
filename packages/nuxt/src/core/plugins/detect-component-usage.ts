@@ -7,7 +7,7 @@ interface DetectComponentUsageOptions {
   detectedComponents: Set<string>
 }
 
-export const DetectComponentUsagePlugin = createUnplugin((options: DetectComponentUsageOptions) => {
+export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions) => createUnplugin(() => {
   const importersToExclude = options?.exclude || []
 
   const detectComponentUsagePatterns: Array<[importPattern: string | RegExp, name: string]> = [
