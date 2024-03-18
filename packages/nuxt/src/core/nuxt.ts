@@ -253,12 +253,13 @@ async function initNuxt (nuxt: Nuxt) {
     specifiedModules.add(modPath)
   }
 
+  const extensions = nuxt.options.extensions.join(',')
   // Automatically register user modules
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
-      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`
+      `${modulesDir}/*{${extensions}}`,
+      `${modulesDir}/*/index{${extensions}}`
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -541,19 +542,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
-  /* const layers = []
+  const layers = []
   for (const i of options._layers) {
     if (i.cwd && i.cwd.includes('node_modules')) {
       layers.push(new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
     }
-  } */
+  }
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
-      include: options._layers
-        .filter(i => i.cwd && i.cwd.includes('node_modules'))
-        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
+      include: layers
     }
   }])
   options._modules.push(schemaModule)
