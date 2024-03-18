@@ -75,7 +75,14 @@ async function watch (nuxt: Nuxt) {
 function createWatcher () {
   const nuxt = useNuxt()
 
-  const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+  const layers = []
+  for (const i of nuxt.options._layers) {
+    const srcDir = i.config.srcDir as string
+    if (srcDir) {
+      layers.push(srcDir)
+    }
+  }
+  const watcher = chokidar.watch(layers, {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
     ignored: [
