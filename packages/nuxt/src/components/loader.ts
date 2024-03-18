@@ -5,7 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger, tryUseNuxt, updateTemplates } from '@nuxt/kit'
+import { logger, tryUseNuxt } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -15,7 +15,6 @@ interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-  detectedComponentsUsage: Record<string, boolean>
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
@@ -54,8 +53,6 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
-
-          detectComponentUsage(component, options.detectedComponentsUsage)
 
           const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
@@ -125,13 +122,4 @@ function findComponent (components: Component[], name: string, mode: LoaderOptio
   // Return the other-mode component in all other cases - we'll handle createClientOnly
   // and createServerComponent above
   return otherModeComponent
-}
-
-function detectComponentUsage (component: Component, detectedComponentsUsage: LoaderOptions['detectedComponentsUsage']) {
-  if (process.env.NODE_ENV !== 'development' || !(component.pascalName in detectedComponentsUsage)) { return }
-
-  detectedComponentsUsage[component.pascalName] = true
-  const virtualFilename = `detected-${component.kebabName}-usage.mjs`
-
-  updateTemplates({ filter: template => template.filename === virtualFilename })
 }

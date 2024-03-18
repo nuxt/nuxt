@@ -5,8 +5,6 @@ import { useError } from '../composables/error'
 
 // @ts-expect-error virtual file
 import layouts from '#build/layouts'
-// @ts-expect-error virtual file
-import { isNuxtLayoutUsed } from '#build/detected-nuxt-layout-usage'
 
 export default defineNuxtPlugin({
   name: 'nuxt:checkIfLayoutUsed',
@@ -14,7 +12,7 @@ export default defineNuxtPlugin({
     const error = useError()
 
     function checkIfLayoutUsed () {
-      if (!error.value && !nuxtApp._isNuxtLayoutUsed && !isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
+      if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
         console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
       }
     }
