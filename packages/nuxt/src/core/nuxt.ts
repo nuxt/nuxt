@@ -542,17 +542,19 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
-  const layers = []
+  /*const layers = []
   for (const i of options._layers) {
     if (i.cwd && i.cwd.includes('node_modules')) {
       layers.push(new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
     }
-  }
+  }*/
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
-      include: layers
+      include: options._layers
+        .filter(i => i.cwd && i.cwd.includes('node_modules'))
+        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
     }
   }])
   options._modules.push(schemaModule)
