@@ -8,7 +8,7 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   const nuxt = useNuxt()
 
   const modules: string[] = []
-  const allModules = [...opts.additionalModules || [], ...nuxt.options.modules, ...nuxt.options._modules]  
+  const allModules = [...opts.additionalModules || [], ...nuxt.options.modules, ...nuxt.options._modules]
   for (const m of allModules) {
     const mSrc = typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src
     if (typeof mSrc === 'string') {
