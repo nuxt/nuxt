@@ -257,7 +257,7 @@ async function initNuxt (nuxt: Nuxt) {
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}`,
+      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
       `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`
     ])
     for (const mod of layerModules) {
