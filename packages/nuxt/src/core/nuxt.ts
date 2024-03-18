@@ -241,11 +241,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  if (nuxt.options.dev) {
-    // Add plugin to check if layouts are defined without NuxtLayout being instantiated
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
-  }
-
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs.client'))
     addServerPlugin(resolve(distDir, 'core/runtime/nitro/dev-server-logs'))
