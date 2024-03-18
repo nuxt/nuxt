@@ -1,4 +1,4 @@
-import { dirname, join, normalize, relative, resolve, sep } from 'pathe'
+import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
@@ -207,7 +207,7 @@ async function initNuxt (nuxt: Nuxt) {
         // Exclude top-level resolutions by plugins
         join(nuxt.options.rootDir, 'index.html'),
         // Keep only imports coming from the user's project (inside the rootDir)
-        new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}${escapeRE(sep)}).+[^\n]+$`)
+        new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}/).+[^\n]+$`)
       ],
       detectedComponents
     }
