@@ -9,19 +9,20 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitropack'
+import type { LogObject } from 'consola'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { NuxtIslandContext } from '../core/runtime/nitro/renderer'
+import type { NuxtIslandContext } from '../app/types'
 import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
+import type { ViewTransition } from './plugins/view-transitions.client'
 
 import type { NuxtAppLiterals } from '#app'
 
-const nuxtAppCtx = /*@__PURE__*/ getContext<NuxtApp>('nuxt-app', {
+const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
   asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
 })
 
@@ -40,11 +41,13 @@ export interface RuntimeNuxtHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
+  'dev:ssr-logs': (logs: LogObject[]) => void | Promise<void>
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
   'page:finish': (Component?: VNode) => HookResult
   'page:transition:start': () => HookResult
   'page:transition:finish': (Component?: VNode) => HookResult
+  'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
   'page:loading:end': () => HookResult
   'vue:setup': () => void
@@ -71,7 +74,7 @@ export interface NuxtSSRContext extends SSRContext {
   _payloadReducers: Record<string, (data: any) => any>
   /** @internal */
   _sharedPrerenderCache?: {
-    get<T = unknown> (key: string): Promise<T>
+    get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
 }
@@ -405,7 +408,7 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
   if (errors.length) { throw errors[0] }
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plugin<T> | ObjectPlugin<T>): Plugin<T> & ObjectPlugin<T> {
   if (typeof plugin === 'function') { return plugin }
 
@@ -414,7 +417,7 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export const definePayloadPlugin = defineNuxtPlugin
 
 export function isNuxtPlugin (plugin: unknown) {
@@ -437,7 +440,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -454,7 +457,7 @@ export function tryUseNuxtApp (): NuxtApp | null {
   return nuxtAppInstance || null
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -474,7 +477,7 @@ export function useNuxtApp (): NuxtApp {
   return nuxtAppInstance
 }
 
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function useRuntimeConfig (_event?: H3Event<EventHandlerRequest>): RuntimeConfig {
   return useNuxtApp().$config
 }

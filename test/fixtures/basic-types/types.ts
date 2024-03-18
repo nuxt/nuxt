@@ -107,6 +107,17 @@ describe('middleware', () => {
     // @ts-expect-error Invalid middleware
     definePageMeta({ middleware: 'nonexistent' })
   })
+  it('types routeRules', () => {
+    defineNuxtConfig({
+      routeRules: {
+        // @ts-expect-error Invalid middleware
+        '/nonexistent': { appMiddleware: 'nonexistent' },
+        // @ts-expect-error ignore global middleware
+        '/global': { appMiddleware: 'global' },
+        '/named': { appMiddleware: 'named' }
+      }
+    })
+  })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalized>()
@@ -331,7 +342,7 @@ describe('head', () => {
   })
   it('types head for defineNuxtComponent', () => {
     defineNuxtComponent({
-      head(nuxtApp) {
+      head (nuxtApp) {
         expectTypeOf(nuxtApp).not.toBeAny()
         return {
           title: 'Site Title'
@@ -341,9 +352,9 @@ describe('head', () => {
 
     defineNuxtComponent({
       // @ts-expect-error wrong return type for head function
-      head() {
+      head () {
         return {
-          'test': true
+          test: true
         }
       }
     })
@@ -416,6 +427,16 @@ describe('composables', () => {
     expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+  })
+
+  it('supports asynchronous transform', () => {
+    const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
+      async transform (data) {
+        await Promise.resolve()
+        return data.foo
+      }
+    })
+    expectTypeOf(data).toEqualTypeOf<Ref<'bar' | null>>()
   })
 
   it('infer request url string literal from server/api routes', () => {

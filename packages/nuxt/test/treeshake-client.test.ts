@@ -185,4 +185,35 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken.replace(/data-v-[\d\w]{8}/g, 'data-v-one-hash').replace(/scoped=[\d\w]{8}/g, 'scoped=one-hash')).toMatchSnapshot()
     })
   }
+
+  it('should not treeshake reused component #26137', async () => {
+    const treeshaken = await treeshake(`import { resolveComponent as _resolveComponent, withCtx as _withCtx, createVNode as _createVNode } from "vue"
+    import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "vue/server-renderer"
+    
+    export function ssrRender(_ctx, _push, _parent, _attrs) {
+      const _component_AppIcon = _resolveComponent("AppIcon")
+      const _component_ClientOnly = _resolveComponent("ClientOnly")
+    
+      _push(\`<div\${_ssrRenderAttrs(_attrs)}>\`)
+      _push(_ssrRenderComponent(_component_AppIcon, { name: "caret-left" }, null, _parent))
+      _push(_ssrRenderComponent(_component_ClientOnly, null, {
+        default: _withCtx((_, _push, _parent, _scopeId) => {
+          if (_push) {
+            _push(\`<span\${_scopeId}>TEST</span>\`)
+            _push(_ssrRenderComponent(_component_AppIcon, { name: "caret-up" }, null, _parent, _scopeId))
+          } else {
+            return [
+              _createVNode("span", null, "TEST"),
+              _createVNode(_component_AppIcon, { name: "caret-up" })
+            ]
+          }
+        }),
+        _: 1 /* STABLE */
+      }, _parent))
+      _push(\`</div>\`)
+    }`)
+
+    expect(treeshaken).toContain('resolveComponent("AppIcon")')
+    expect(treeshaken).not.toContain('caret-up')
+  })
 })

@@ -14,7 +14,7 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         hooks: {
-          ready() {
+          ready () {
             hookRan = true
           }
         }
