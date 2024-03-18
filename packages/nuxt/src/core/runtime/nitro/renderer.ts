@@ -101,10 +101,17 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS
-).map(r => r.src!))
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => {
+  const entries: string[] = []
+  for (const key in r) { 
+    const val = r[key]
+    // @ts-expect-error internal key set by CSS inlining configuration
+    if (val._globalCSS) {
+      entries.push(val.src!)
+    }
+  }
+  return entries
+})
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -208,11 +215,12 @@ const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DA
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
   let url = event.path || ''
+  const islandLength = '/__nuxt_island'.length + 1
   if (import.meta.prerender && event.path && await islandPropCache!.hasItem(event.path)) {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
     url = await islandPropCache!.getItem(event.path) as string
   }
-  url = url.substring('/__nuxt_island'.length + 1) || ''
+  url = url.substring(islandLength) || ''
   const [componentName, hashId] = url.split('?')[0].replace(/\.json$/, '').split('_')
 
   // TODO: Validate context
@@ -429,11 +437,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[]
     }, headEntryOptions)
     // 4. Payloads
+    const ssrData = splitPayload(ssrContext).initial
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrData, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: ssrData, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload })
@@ -447,13 +456,18 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 5. Scripts
   if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
-    head.push({
-      script: Object.values(scripts).map(resource => (<Script> {
+    const headScript: Array<Script> = []
+    for (const resourceKey in scripts) {
+      const resource = scripts[resourceKey]
+      headScript.push(<Script>{
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
         crossorigin: ''
-      }))
+      })
+    }
+    head.push({
+      script: headScript
     }, headEntryOptions)
   }
 
@@ -542,7 +556,13 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const normalizedChunks: string[] = []
+  for (const chunk of chunks) {
+    if (chunk) {
+      normalizedChunks.push(chunk!.trim())
+    }
+  }
+  return normalizedChunks
 }
 
 function joinTags (tags: Array<string | undefined>) {
@@ -564,6 +584,7 @@ function renderHTMLDocument (html: NuxtRenderHTMLContext) {
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
+  const styleArray = []
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
     if (mod in styleMap) {
@@ -572,14 +593,18 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
       }
     }
   }
-  return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
+  for (const style of inlinedStyles) {
+    styleArray.push({innerHTML: style})
+  }
+  return styleArray
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
+  const ssrPayload = splitPayload(ssrContext).payload
   return {
     body: process.env.NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
+      ? stringify(ssrPayload, ssrContext._payloadReducers)
+      : `export default ${devalue(ssrPayload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
@@ -611,17 +636,18 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
 function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const payloadData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${payloadData})}`
       }
     ]
   }
   return [
     {
-      innerHTML: `window.__NUXT__=${devalue(opts.data)}`
+      innerHTML: `window.__NUXT__=${payloadData}`
     }
   ]
 }
