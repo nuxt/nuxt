@@ -11,7 +11,7 @@ export const addModuleTranspiles = (opts: AddModuleTranspilesOptions = {}) => {
   const allModules = [...opts.additionalModules || [], ...nuxt.options.modules, ...nuxt.options._modules]  
   for (const m of allModules) {
     const mSrc = typeof m === 'string' ? m : Array.isArray(m) ? m[0] : m.src
-    if (typeof m === 'string') {
+    if (typeof mSrc === 'string') {
       modules.push(normalizeModuleTranspilePath(mSrc))
     }
   }
