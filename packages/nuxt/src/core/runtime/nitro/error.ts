@@ -35,7 +35,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     const tags = '[nuxt] [request error]' +
         (error.unhandled ? ' [unhandled]' : '') +
         (error.fatal ? ' [fatal]' : '') +
-        (Number(errorObject.statusCode) !== 200 ? ` [${errorObject.statusCode}]` : '');
+        (Number(errorObject.statusCode) !== 200 ? ` [${errorObject.statusCode}]` : '')
     console.error(tags, errorObject.message + '\n' + consoleStr.slice(0, -3))
   }
 
