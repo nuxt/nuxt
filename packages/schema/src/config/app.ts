@@ -184,6 +184,21 @@ export default defineUntypedSchema({
      */
     rootTag: {
       $resolve: val => val || 'div'
+    },
+
+    /**
+     * Customize Nuxt root element tag.
+     */
+    teleportTag: {
+      $resolve: val => val || 'div'
+    },
+
+    /**
+     * Customize Nuxt Teleport element id.
+     * @type {string | false}
+     */
+    teleportId: {
+      $resolve: val => val === false ? false : (val || 'teleports')
     }
   },
 

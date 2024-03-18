@@ -1,5 +1,4 @@
 import { consola } from 'consola'
-import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
@@ -36,11 +35,11 @@ export default defineUntypedSchema({
       extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
     },
     publicDir: {
-      $resolve: async (val, get) => {
+      $resolve: (val) => {
         if (val) {
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
-        return val ?? await Promise.all([get('srcDir') as Promise<string>, get('dir') as Promise<Record<string, string>>]).then(([srcDir, dir]) => resolve(srcDir, dir.public))
+        return false
       }
     },
     vue: {

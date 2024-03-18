@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig } from 'nitropack'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
 import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -217,7 +217,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_NO_SCRIPTS': !!nuxt.options.features.noScripts && !nuxt.options.dev,
       'process.env.NUXT_INLINE_STYLES': !!nuxt.options.features.inlineStyles,
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
-      'process.env.NUXT_COMPONENT_ISLANDS': !!nuxt.options.experimental.componentIslands,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
       'process.env.NUXT_SHARED_DATA': !!nuxt.options.experimental.sharedPrerenderData,
       'process.dev': nuxt.options.dev,
@@ -232,7 +231,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir)]
+  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir), `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir)}/**/*`]
 
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
@@ -263,6 +262,25 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       }
     )
 
+    nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+
+    nuxt.hook('nitro:config', (config) => {
+      const rules = config.routeRules
+      for (const rule in rules) {
+        if (!(rules[rule] as any).appMiddleware) { continue }
+        const value = (rules[rule] as any).appMiddleware
+        if (typeof value === 'string') {
+          (rules[rule] as NitroOptions['routeRules']).appMiddleware = { [value]: true }
+        } else if (Array.isArray(value)) {
+          const normalizedRules: Record<string, boolean> = {}
+          for (const middleware of value) {
+            normalizedRules[middleware] = true
+          }
+          (rules[rule] as NitroOptions['routeRules']).appMiddleware = normalizedRules
+        }
+      }
+    })
+
     nuxt.hook('nitro:init', (nitro) => {
       nitro.hooks.hook('rollup:before', async (nitro) => {
         const routeRules = {} as Record<string, any>
@@ -273,8 +291,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           const filteredRules = {} as Record<string, any>
           for (const routeKey in _routeRules[key]) {
             const value = (_routeRules as any)[key][routeKey]
-            if (['prerender', 'redirect'].includes(routeKey) && value) {
-              filteredRules[routeKey] = routeKey === 'redirect' ? typeof value === 'string' ? value : value.to : value
+            if (['prerender', 'redirect', 'appMiddleware'].includes(routeKey) && value) {
+              if (routeKey === 'redirect') {
+                filteredRules[routeKey] = typeof value === 'string' ? value : value.to
+              } else {
+                filteredRules[routeKey] = value
+              }
               hasRules = true
             }
           }

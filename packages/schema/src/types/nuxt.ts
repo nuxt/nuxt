@@ -45,6 +45,7 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
 export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string
+  modified?: boolean
 }
 
 export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write' | 'filename'> {

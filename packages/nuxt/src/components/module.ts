@@ -1,11 +1,11 @@
 import fs, { statSync } from 'node:fs'
 import { join, normalize, relative, resolve } from 'pathe'
-import { addPluginTemplate, addTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
@@ -115,7 +115,7 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     // components.d.ts
-    addTemplate(componentsTypeTemplate)
+    addTypeTemplate(componentsTypeTemplate)
     // components.plugin.mjs
     addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
@@ -125,6 +125,10 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
     } else {
       addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
+    }
+
+    if (componentOptions.generateMetadata) {
+      addTemplate(componentsMetadataTemplate)
     }
 
     const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
@@ -161,6 +165,8 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
+    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)
@@ -172,18 +178,20 @@ export default defineNuxtModule<ComponentsOptions>({
             ...component,
             _raw: true,
             mode: 'server',
-            filePath: resolve(distDir, 'app/components/server-placeholder'),
+            filePath: serverPlaceholderPath,
             chunkName: 'components/' + component.kebabName
           })
+        }
+        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
+          logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
       context.components = newComponents
       app.components = newComponents
     })
 
-    nuxt.hook('prepare:types', ({ references, tsConfig }) => {
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
-      references.push({ path: resolve(nuxt.options.buildDir, 'components.d.ts') })
     })
 
     // Watch for changes

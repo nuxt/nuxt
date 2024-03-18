@@ -107,6 +107,17 @@ describe('middleware', () => {
     // @ts-expect-error Invalid middleware
     definePageMeta({ middleware: 'nonexistent' })
   })
+  it('types routeRules', () => {
+    defineNuxtConfig({
+      routeRules: {
+        // @ts-expect-error Invalid middleware
+        '/nonexistent': { appMiddleware: 'nonexistent' },
+        // @ts-expect-error ignore global middleware
+        '/global': { appMiddleware: 'global' },
+        '/named': { appMiddleware: 'named' }
+      }
+    })
+  })
   it('handles adding middleware', () => {
     addRouteMiddleware('example', (to, from) => {
       expectTypeOf(to).toEqualTypeOf<RouteLocationNormalized>()

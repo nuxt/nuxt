@@ -1,9 +1,11 @@
 {
-  "$schema": "https://unpkg.com/knip@2/schema.json",
+  "$schema": "https://unpkg.com/knip@5/schema.json",
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/*"
+        "scripts/*",
+        "test/*",
+        "test/fixtures/*"
       ]
     },
     "packages/*": {
