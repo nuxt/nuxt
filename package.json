@@ -48,7 +48,7 @@
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.12.0",
     "@nuxt/webpack-builder": "workspace:*",
-    "@testing-library/vue": "8.0.2",
+    "@testing-library/vue": "8.0.3",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.11.28",
     "@types/semver": "7.5.8",
@@ -82,14 +82,14 @@
     "semver": "7.6.0",
     "std-env": "3.7.0",
     "typescript": "5.4.2",
-    "ufo": "1.5.1",
+    "ufo": "1.5.2",
     "vitest": "1.4.0",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.21",
     "vue-router": "4.3.0",
     "vue-tsc": "2.0.6"
   },
-  "packageManager": "pnpm@8.15.4",
+  "packageManager": "pnpm@8.15.5",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
