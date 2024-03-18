@@ -182,7 +182,7 @@ export default defineNuxtModule<ComponentsOptions>({
             chunkName: 'components/' + component.kebabName
           })
         }
-        if (component.mode === 'server' && component.filePath !== serverPlaceholderPath && !nuxt.options.ssr) {
+        if (component.mode === 'server' && !nuxt.options.ssr && !newComponents.some(other => other.pascalName === component.pascalName && other.mode === 'client')) {
           logger.warn(`Using server components with \`ssr: false\` is not supported with auto-detected component islands. If you need to use server component \`${component.pascalName}\`, set \`experimental.componentIslands\` to \`true\`.`)
         }
       }
