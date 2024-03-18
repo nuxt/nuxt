@@ -40,7 +40,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         },
         {
           as: 'Lazy' + c.pascalName,
-          from: withMode((mode ? mode + "," : mode) + "async"),
+          from: withMode((mode ? mode + "," : "") + "async"),
           name: compName
         }
       ]
