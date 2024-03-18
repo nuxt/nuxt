@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
-import { isAbsolute, join, relative } from 'pathe'
+import { join, resolve } from 'pathe'
 import { updateTemplates } from '@nuxt/kit'
+import { distDir } from '../../dirs'
 
 interface DetectComponentUsageOptions {
   rootDir: string
@@ -12,8 +13,8 @@ export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions)
   const importersToExclude = options?.exclude || []
 
   const detectComponentUsagePatterns: Array<[importPattern: string | RegExp, name: string]> = [
-    ['../packages/nuxt/src/pages/runtime/page', 'NuxtPage'],
-    ['../packages/nuxt/src/app/components/nuxt-layout', 'NuxtLayout']
+    [resolve(distDir, 'pages/runtime/page'), 'NuxtPage'],
+    [resolve(distDir, 'app/components/nuxt-layout'), 'NuxtLayout']
   ]
 
   return {
@@ -23,9 +24,6 @@ export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions)
       if (!importer) { return }
       if (id[0] === '.') {
         id = join(importer, '..', id)
-      }
-      if (isAbsolute(id)) {
-        id = relative(options.rootDir, id)
       }
       if (importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))) { return }
 

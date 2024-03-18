@@ -11,7 +11,7 @@ export default defineNuxtPlugin({
 
     nuxtApp.hook('app:mounted', () => {
       if (Object.keys(layouts).length > 0 && !isNuxtLayoutUsed && !cache.has('NuxtLayout')) {
-        console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used')
+        console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
         cache.add('NuxtLayout')
       }
 
