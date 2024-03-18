@@ -268,14 +268,14 @@ export default defineNuxtModule<ComponentsOptions>({
               if (c.mode === 'client' || c.mode === 'all') {
                 let filePath = c.filePath
                 if (filePath.endsWith('.vue') || filePath.endsWith('.js') || filePath.endsWith('.ts')) {
-                  Object.assign(compObj, {[c.pascalName]: `/@fs/${filePath}`})
-                  continue;
+                  Object.assign(compObj, { [c.pascalName]: `/@fs/${filePath}` })
+                  continue
                 }
                 filePath = fs.existsSync(`${filePath}.vue`) ? `${filePath}.vue` : fs.existsSync(`${filePath}.js`) ? `${filePath}.js` : `${filePath}.ts`
-                Object.assign(compObj, {[c.pascalName]: `/@fs/${filePath}`})
+                Object.assign(compObj, { [c.pascalName]: `/@fs/${filePath}` })
               }
             }
-            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'),`export const paths = ${JSON.stringify(compObj)}`)
+            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(compObj)}`)
           }
         }
 
