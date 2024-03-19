@@ -126,6 +126,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       try {
         // Resolve route
         const to = getRouteFromPath(url)
+
         // Run beforeEach hooks
         for (const middleware of hooks['navigate:before']) {
           const result = await middleware(to, route)
@@ -244,6 +245,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
 
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
+
           if (isAppManifestEnabled) {
             const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
 

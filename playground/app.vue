@@ -1,5 +1,13 @@
+<script setup lang="ts">
+</script>
+
 <template>
-  <NuxtLoadingIndicator />
-  <NuxtRouteAnnouncer />
-  <NuxtPage />
+  <!-- Edit this file to play around with Nuxt but never commit changes! -->
+  <div>
+    Nuxt 3 Playground
+  </div>
 </template>
+
+<style scoped>
+
+</style>
