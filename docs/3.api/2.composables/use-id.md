@@ -19,10 +19,14 @@ const id = useId()
 <template>
   <div>
     <label :for="id">Email</label>
-    <input :id="id" name="email" type="email"/>
+    <input :id="id" name="email" type="email" />
   </div>
 </template>
 ```
+
+::note
+`useId` must be used in a component with a single root element, as it uses this root element's attributes to pass the id from server to client.
+::
 
 ## Parameters
 
