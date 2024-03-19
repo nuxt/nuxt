@@ -45,7 +45,7 @@ export default defineComponent({
     const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
 
     expose({
-      set, polite, assertive
+      set, polite, assertive, message, politeness
     })
 
     return () => h('nuxt-route-announcer-shadow', {
