@@ -99,9 +99,9 @@ export const pluginsDeclaration: NuxtTemplate = {
   getContents: async (ctx) => {
     let exts = ''
     for (const e of ctx.nuxt.options.extensions) {
-      exts += escapeRE(e) +'|'
+      exts += escapeRE(e) + '|'
     }
-    const EXTENSION_RE = new RegExp(`(?<=\\w)(${exts.slice(0,-1)})$`, 'g')
+    const EXTENSION_RE = new RegExp(`(?<=\\w)(${exts.slice(0, -1)})$`, 'g')
     const tsImports: string[] = []
     for (const p of ctx.app.plugins) {
       const sources = [p.src, p.src.replace(EXTENSION_RE, '.d.ts')]
@@ -131,13 +131,13 @@ type Decorate<T extends Record<string, any>> = { [K in keyof T as K extends stri
 type IsAny<T> = 0 extends 1 & T ? true : false
 type InjectionType<A extends Plugin> = IsAny<A> extends true ? unknown : A extends Plugin<infer T> ? Decorate<T> : unknown
 
-type NuxtAppInjections = \n  ${nuxtAppInjects.slice(0,-5)}
+type NuxtAppInjections = \n  ${nuxtAppInjects.slice(0, -5)}
 
 declare module '#app' {
   interface NuxtApp extends NuxtAppInjections { }
 
   interface NuxtAppLiterals {
-    pluginName: ${pluginsName.slice(0,-3)}
+    pluginName: ${pluginsName.slice(0, -3)}
   }
 }
 
