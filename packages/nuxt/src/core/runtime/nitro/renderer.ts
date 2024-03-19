@@ -214,7 +214,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     url = await islandPropCache!.getItem(event.path) as string
   }
   const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
-  const hashId = componentParts.length > 1 ? componentParts.pop() : ''
+  const hashId = componentParts.length > 1 ? componentParts.pop() : undefined
   const componentName = componentParts.join('_')
 
   // TODO: Validate context
