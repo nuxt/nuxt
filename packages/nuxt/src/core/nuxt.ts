@@ -209,6 +209,10 @@ async function initNuxt (nuxt: Nuxt) {
         // Keep only imports coming from the user's project (inside the rootDir)
         new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}/).+[^\n]+$`)
       ],
+      include: [
+        // Keep the imports coming from the auto-generated runtime app.vue
+        resolve(distDir, 'pages/runtime/app.vue')
+      ],
       detectedComponents
     }
 

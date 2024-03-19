@@ -6,11 +6,13 @@ import { distDir } from '../../dirs'
 interface DetectComponentUsageOptions {
   rootDir: string
   exclude?: Array<RegExp | string>
+  include?: Array<RegExp | string>
   detectedComponents: Set<string>
 }
 
 export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions) => createUnplugin(() => {
   const importersToExclude = options?.exclude || []
+  const importersToInclude = options?.include || []
 
   const detectComponentUsagePatterns: Array<[importPattern: string | RegExp, name: string]> = [
     [resolve(distDir, 'pages/runtime/page'), 'NuxtPage'],
@@ -25,7 +27,9 @@ export const DetectComponentUsagePlugin = (options: DetectComponentUsageOptions)
       if (id[0] === '.') {
         id = join(importer, '..', id)
       }
-      if (importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))) { return }
+      const isExcludedImporter = importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))
+      const isIncludedImporter = importersToInclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))
+      if (isExcludedImporter && !isIncludedImporter) { return }
 
       for (const [pattern, name] of detectComponentUsagePatterns) {
         if (pattern instanceof RegExp ? pattern.test(id) : pattern === id) {
