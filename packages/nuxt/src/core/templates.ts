@@ -57,6 +57,7 @@ export const cssTemplate: NuxtTemplate = {
       cssList += genImport(i) + '\n'
     }
     return cssList.slice(0, -1)
+  }
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
