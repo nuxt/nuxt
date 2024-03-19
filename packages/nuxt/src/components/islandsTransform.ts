@@ -106,7 +106,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${vIf ? ` v-if="${vIf}"` : ''} name="${slotName}" :props="${bindings}">`)
             // remove v-if from first tag
             if (vIf) {
-              s.overwrite(startingIndex + loc[0].start,  startingIndex + loc[0].end, code.slice( startingIndex + loc[0].start,  startingIndex + loc[0].end).replace(`v-if="${vIf}"`, ''))
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(`v-if="${vIf}"`, ''))
             }
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
