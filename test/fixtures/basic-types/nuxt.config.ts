@@ -31,8 +31,8 @@ export default defineNuxtConfig({
     }
   },
   routeRules: {
-    '/page': {
-      redirect: 'https://nuxt.com'
+    '/param': {
+      redirect: '/param/1'
     }
   },
   modules: [
