@@ -105,14 +105,24 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
-            const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
+            const { loc, attributes } = node
+            const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
             if (isVite) {
-              // handle granular interactivity
-              const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
+              
+              const vIf = attributes['v-if']
+              delete attributes['v-if']
 
-              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportIslandComponent to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportIslandComponent>`)
-            }
+              let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+
+              if (vIf) {
+                startTag = startTag.replace(`v-if="${vIf}"`, '')
+              }
+
+              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${vIf ? ` v-if="${vIf}"` : ''} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+              s.appendRight(startingIndex + loc[1].end, `</NuxtTeleportIslandComponent>`)
+             }
           }
         }
       })

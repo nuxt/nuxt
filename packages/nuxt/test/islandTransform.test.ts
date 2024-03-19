@@ -353,6 +353,27 @@ describe('islandTransform - server and island components', () => {
       `)
         expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
       })
+
+      it('should move v-if to the wrapper component', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+          <HelloWorld v-if="false" nuxt-client />
+        </div>
+      </template>
+      `, 'hello.server.vue', false, true)
+
+      expect(result).toMatchInlineSnapshot(`
+        "<script setup>
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
+                <div>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-KkxbG0HAMG"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                </div>
+              </template>
+              "
+      `)
+      })
     })
 
     describe('webpack', () => {
