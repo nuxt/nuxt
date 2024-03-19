@@ -211,12 +211,13 @@ export const schemaTemplate: NuxtTemplate = {
 export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
-    const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
-    }))
-    return [
-      `export default ${layoutsObject}`
-    ].join('\n')
+    const entries: [string, any][]= []
+    for (const key in app.layouts) {
+      const { name, file } = app.layouts[key]
+      entries.push([name, genDynamicImport(file, { interopDefault: true })])
+    }
+    const layoutsObject = genObjectFromRawEntries(entries)
+    return `export default ${layoutsObject}`
   }
 }
 
