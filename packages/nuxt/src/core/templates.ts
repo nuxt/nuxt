@@ -51,8 +51,8 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
-  getContents: ctx => {
-    let cssList=''
+  getContents: (ctx) => {
+    let cssList = ''
     for (const i of ctx.nuxt.options.css) {
       cssList += genImport(i) + '\n'
     }
