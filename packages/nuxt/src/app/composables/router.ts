@@ -135,9 +135,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         .join(', ')
 
       open(toPath, target, features)
+      return Promise.resolve()
     }
-
-    return Promise.resolve()
   }
 
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
