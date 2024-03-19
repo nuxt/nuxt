@@ -154,14 +154,20 @@ const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
-    const moduleInfo = nuxt.options._installedModules.map(m => ({
-      ...m.meta,
-      importName: m.entryPath || m.meta?.name
-    })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
-
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
+    let moduleInfoStr = ''
+    let modulesStr = ''
+    for (const m of nuxt.options._installedModules) {
+      const meta = m.meta;
+      const impName = m.entryPath || meta?.name;
+      if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
+        const configKey = genString(meta.configKey)
+        const importName = getImportName(impName)
+        moduleInfoStr += ` [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>\n`
+        modulesStr += `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>] | `
+      }
+    }
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
@@ -172,10 +178,8 @@ export const schemaTemplate: NuxtTemplate = {
       "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
-      ...modules.map(([configKey, importName]) =>
-        `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
-      ),
-      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+      moduleInfoStr.slice(0,-1),
+      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],` : '',
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
