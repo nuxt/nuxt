@@ -201,7 +201,7 @@ describe('islandTransform - server and island components', () => {
               const foo = true;
               </script>
               <template>
-                <NuxtTeleportSsrSlot v-if="foo" name="default" :props="undefined"><slot v-if="foo" /></NuxtTeleportSsrSlot>
+                <NuxtTeleportSsrSlot v-if="foo" name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
               </template>
               "
       `)
