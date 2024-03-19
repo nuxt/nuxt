@@ -362,13 +362,13 @@ describe('islandTransform - server and island components', () => {
       </template>
       `, 'hello.server.vue', false, true)
 
-      expect(result).toMatchInlineSnapshot(`
+        expect(result).toMatchInlineSnapshot(`
         "<script setup>
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                 <div>
-                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-KkxbG0HAMG"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-KDxLgOPhxB"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
                 </div>
               </template>
               "

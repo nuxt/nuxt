@@ -109,7 +109,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
             if (isVite) {
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
-              
+
               const vIf = attributes['v-if']
               delete attributes['v-if']
 
@@ -121,8 +121,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 
               s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${vIf ? ` v-if="${vIf}"` : ''} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-              s.appendRight(startingIndex + loc[1].end, `</NuxtTeleportIslandComponent>`)
-             }
+              s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
+            }
           }
         }
       })
