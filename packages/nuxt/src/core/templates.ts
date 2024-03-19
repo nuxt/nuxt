@@ -224,15 +224,28 @@ export const layoutTemplate: NuxtTemplate = {
 // Add middleware template
 export const middlewareTemplate: NuxtTemplate = {
   filename: 'middleware.mjs',
-  getContents ({ app }) {
-    const globalMiddleware = app.middleware.filter(mw => mw.global)
-    const namedMiddleware = app.middleware.filter(mw => !mw.global)
+  getContents ({ app }): string {
+    const globalMiddleware = []
+    const namedMiddleware = []
+    for (const mw of app.middleware) {
+      if (mw.global) {
+        globalMiddleware.push(mw)
+      }
+      else {
+        namedMiddleware.push(mw);
+      }
+    }
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
-    return [
-      ...globalMiddleware.map(mw => genImport(mw.path, genSafeVariableName(mw.name))),
-      `export const globalMiddleware = ${genArrayFromRaw(globalMiddleware.map(mw => genSafeVariableName(mw.name)))}`,
+    const globalMiddlewareObject = []
+    let globalMiddlewareImport = ''
+    for (const mw of globalMiddleware) {
+      const variableName = genSafeVariableName(mw.name)
+      globalMiddlewareObject.push(variableName)
+      globalMiddlewareImport += genImport(mw.path, variableName) + '\n'
+    }
+    return globalMiddlewareImport + 
+      `export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}\n` +
       `export const namedMiddleware = ${namedMiddlewareObject}`
-    ].join('\n')
   }
 }
 
