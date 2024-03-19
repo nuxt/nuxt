@@ -51,26 +51,28 @@ export const testComponentWrapperTemplate: NuxtTemplate = {
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
-  getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n')
+  getContents: ctx => {
+    let cssList=''
+    for (const i of ctx.nuxt.options.css) {
+      cssList += genImport(i) + '\n'
+    }
+    return cssList.slice(0, -1)
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins/client.mjs',
-  async getContents (ctx) {
+  async getContents (ctx): Promise<string> {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
-    const imports: string[] = []
+    let imports: string = ''
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      imports += genImport(plugin.src, variable) + '\n'
     }
-    return [
-      ...imports,
-      `export default ${genArrayFromRaw(exports)}`
-    ].join('\n')
+    return imports + `export default ${genArrayFromRaw(exports)}`
   }
 }
 
