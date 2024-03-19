@@ -326,6 +326,14 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator')
   })
 
+  // Add <NuxtRouteAnnouncer>
+  addComponent({
+    name: 'NuxtRouteAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer'),
+    mode: 'client'
+  })
+
   // Add <NuxtClientFallback>
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
@@ -359,14 +367,6 @@ async function initNuxt (nuxt: Nuxt) {
       nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
     }
   }
-
-  // Add <NuxtRouteAnnouncer>
-  addComponent({
-    name: 'NuxtRouteAnnouncer',
-    priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer.client'),
-    mode: 'client'
-  })
 
   // Add stubs for <NuxtImg> and <NuxtPicture>
   for (const name of ['NuxtImg', 'NuxtPicture']) {

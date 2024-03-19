@@ -1,7 +1,7 @@
 import { defineComponent, h } from 'vue'
 import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
-class NuxtRouteAnnouncerShadow extends HTMLElement {
+class CustomRouteAnnouncer extends HTMLElement {
   connectedCallback () {
     const shadow = this.attachShadow({ mode: 'closed' })
     const style = document.createElement('style')
@@ -27,31 +27,35 @@ class NuxtRouteAnnouncerShadow extends HTMLElement {
   }
 }
 
-customElements.define('nuxt-route-announcer-shadow', NuxtRouteAnnouncerShadow)
+customElements.define('custom-route-announcer', CustomRouteAnnouncer)
+
+type PolitenessValue = `${Politeness}`;
 
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',
   props: {
-    ariaAtomic: {
+    atomic: {
       type: Boolean,
       default: false
     },
     politeness: {
-      type: String as unknown as () => Politeness,
-      default: Politeness.Polite
+      type: String as () => PolitenessValue,
+      default: Politeness.Polite,
+      validator: (value: string) => Object.values(Politeness).includes(value as Politeness)
     }
   },
   setup (props, { slots, expose }) {
-    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
+    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness as Politeness })
 
     expose({
       set, polite, assertive, message, politeness
     })
 
-    return () => h('nuxt-route-announcer-shadow', {
+    return () => h('custom-route-announcer', {
       class: 'nuxt-route-announcer',
-      ariaLive: politeness.value,
-      ariaAtomic: props.ariaAtomic
-    }, slots.default ? slots.default({ message }) : message.value)
+      role: 'alert',
+      'aria-live': politeness.value,
+      'aria-atomic': props.atomic
+    }, slots.default ? slots.default({ message: message.value }) : message.value)
   }
 })
