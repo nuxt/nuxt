@@ -18,13 +18,11 @@ export const vueShim: NuxtTemplate = {
       return ''
     }
 
-    return [
-      'declare module \'*.vue\' {',
-      '  import { DefineComponent } from \'vue\'',
-      '  const component: DefineComponent<{}, {}, any>',
-      '  export default component',
-      '}'
-    ].join('\n')
+    return `declare module '*.vue' {
+  import { DefineComponent } from 'vue'
+  const component: DefineComponent<{}, {}, any>
+  export default component
+}`
   }
 }
 
