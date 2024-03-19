@@ -30,6 +30,11 @@ export default defineNuxtConfig({
       val: 1
     }
   },
+  routeRules: {
+    '/page': {
+      redirect: 'https://nuxt.com'
+    }
+  },
   modules: [
     function () {
       addTypeTemplate({
