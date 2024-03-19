@@ -183,6 +183,29 @@ describe('islandTransform - server and island components', () => {
             "
       `)
     })
+
+    it('expect v-if to be set in teleport component wrapper', async () => {
+      const result = await viteTransform(`<script setup lang="ts">
+      const foo = true;
+      </script>
+      <template>
+        <slot v-if="foo" />
+      </template>
+      `, 'WithVif.vue', false, true)
+
+      expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+        "<script setup lang="ts">
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
+              const foo = true;
+              </script>
+              <template>
+                <NuxtTeleportSsrSlot v-if="foo" name="default" :props="undefined"><slot v-if="foo" /></NuxtTeleportSsrSlot>
+              </template>
+              "
+      `)
+    })
   })
 
   describe('nuxt-client', () => {

@@ -98,10 +98,12 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               attributes._bind = attributes['v-bind']
               delete attributes['v-bind']
             }
+            const vIf = attributes['v-if']
+            delete attributes['v-if']
             const bindings = getPropsToString(attributes, vfor)
 
             // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot name="${slotName}" :props="${bindings}">`)
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${vIf ? ` v-if="${vIf}"` : ''} name="${slotName}" :props="${bindings}">`)
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
