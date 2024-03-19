@@ -122,32 +122,33 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           const name = 'name' in node.callee && node.callee.name
           if (name !== 'definePageMeta') { return }
 
-          const meta = node.arguments[0] as Expression & { start: number, end: number }
+          const meta = node.arguments[0] as (Expression & { start: number, end: number }) | undefined
+          let contents = `const __nuxt_page_meta = ${meta ? code!.slice(meta.start, meta.end) || 'null' : 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
-
-          function addImport (name: string | false) {
-            if (name && importMap.has(name)) {
-              const importValue = importMap.get(name)!.code
-              if (!addedImports.has(importValue)) {
-                contents = importMap.get(name)!.code + '\n' + contents
-                addedImports.add(importValue)
+          if(meta) {
+            function addImport (name: string | false) {
+              if (name && importMap.has(name)) {
+                const importValue = importMap.get(name)!.code
+                if (!addedImports.has(importValue)) {
+                  contents = importMap.get(name)!.code + '\n' + contents
+                  addedImports.add(importValue)
+                }
               }
             }
+  
+            walk(meta, {
+              enter (_node) {
+                if (_node.type === 'CallExpression') {
+                  const node = _node as CallExpression & { start: number, end: number }
+                  addImport('name' in node.callee && node.callee.name)
+                }
+                if (_node.type === 'Identifier') {
+                  const node = _node as Identifier & { start: number, end: number }
+                  addImport(node.name)
+                }
+              }
+            })
           }
-
-          walk(meta, {
-            enter (_node) {
-              if (_node.type === 'CallExpression') {
-                const node = _node as CallExpression & { start: number, end: number }
-                addImport('name' in node.callee && node.callee.name)
-              }
-              if (_node.type === 'Identifier') {
-                const node = _node as Identifier & { start: number, end: number }
-                addImport(node.name)
-              }
-            }
-          })
 
           s.overwrite(0, code.length, contents)
         }
