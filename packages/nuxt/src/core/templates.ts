@@ -159,8 +159,8 @@ export const schemaTemplate: NuxtTemplate = {
     let moduleInfoStr = ''
     let modulesStr = ''
     for (const m of nuxt.options._installedModules) {
-      const meta = m.meta;
-      const impName = m.entryPath || meta?.name;
+      const meta = m.meta
+      const impName = m.entryPath || meta?.name
       if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
         const configKey = genString(meta.configKey)
         const importName = getImportName(impName)
@@ -178,8 +178,8 @@ export const schemaTemplate: NuxtTemplate = {
       "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
       "declare module 'nuxt/schema' {",
       '  interface NuxtConfig {',
-      moduleInfoStr.slice(0,-1),
-      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0,-3)})[],` : '',
+      moduleInfoStr.slice(0, -1),
+      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0, -3)})[],` : '',
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
