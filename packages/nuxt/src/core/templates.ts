@@ -107,7 +107,7 @@ export const pluginsDeclaration: NuxtTemplate = {
       const sources = [p.src, p.src.replace(EXTENSION_RE, '.d.ts')]
       if (!isAbsolute(p.src)) {
         tsImports.push(p.src.replace(EXTENSION_RE, ''))
-      } else if (ctx.app.templates.some(t => t.write && t.dst && (t.dst === sources[0] || t.dst === sources[1]) || sources.some(s => existsSync(s))) {
+      } else if (ctx.app.templates.some(t => t.write && t.dst && (t.dst === sources[0] || t.dst === sources[1])) || sources.some(s => existsSync(s))) {
         tsImports.push(relative(join(ctx.nuxt.options.buildDir, 'types'), p.src).replace(EXTENSION_RE, ''))
       }
     }
