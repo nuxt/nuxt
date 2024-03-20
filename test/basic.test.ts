@@ -1044,6 +1044,8 @@ describe('composables', () => {
     expect(await page.getByRole('alert').textContent()).toContain('First Page')
     await page.getByRole('link').click()
     await page.getByText('Second page content').waitFor()
+    // Wait for all pending micro ticks to be cleared
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
     expect(await page.getByRole('alert').textContent()).toContain('Second Page')
     await page.close()
   })
