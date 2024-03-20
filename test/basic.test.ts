@@ -1039,6 +1039,13 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
+  it('`useRouteAnnouncer` should change message on route change', async () => {
+    const { page } = await renderPage('/route-announcer')
+    expect(await page.innerHTML('body')).toContain('Route Announcer')
+    await page.getByText('Link').click()
+    expect(await page.innerHTML('body')).toContain('Route Announcer 2')
+    await page.close()
+  })
 })
 
 describe('middlewares', () => {
