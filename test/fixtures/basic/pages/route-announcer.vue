@@ -8,7 +8,10 @@ definePageMeta({
 </script>
 
 <template>
-  <NuxtLink to="/route-announcer2">
+  <NuxtLink
+    role="link"
+    to="/route-announcer2"
+  >
     Link
   </NuxtLink>
 </template>

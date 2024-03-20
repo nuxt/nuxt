@@ -1042,9 +1042,8 @@ describe('composables', () => {
   it('`useRouteAnnouncer` should change message on route change', async () => {
     const { page } = await renderPage('/route-announcer')
     expect(await page.getByRole('alert').textContent()).toContain('First Page')
-    await page.getByText('Link').click()
-    await page.waitForURL(url('/route-announcer2'))
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/route-announcer2')
+    await page.getByRole('link').click()
+    await page.getByText('Second page content').waitFor()
     expect(await page.getByRole('alert').textContent()).toContain('Second Page')
     await page.close()
   })

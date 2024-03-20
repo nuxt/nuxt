@@ -8,5 +8,5 @@ definePageMeta({
 </script>
 
 <template>
-  <div />
+  <div>Second page content</div>
 </template>
