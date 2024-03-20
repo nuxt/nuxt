@@ -1043,6 +1043,7 @@ describe('composables', () => {
     const { page } = await renderPage('/route-announcer')
     expect(await page.innerHTML('body')).toContain('Route Announcer')
     await page.getByText('Link').click()
+    await page.waitForURL(url('/route-announcer2'))
     expect(await page.innerHTML('body')).toContain('Route Announcer 2')
     await page.close()
   })
