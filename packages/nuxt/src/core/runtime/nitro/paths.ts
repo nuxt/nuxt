@@ -1,4 +1,4 @@
-import { joinURL } from 'ufo'
+import { joinRelativeURL as joinURL } from 'ufo'
 import { useRuntimeConfig } from '#internal/nitro'
 
 export function baseURL (): string {
