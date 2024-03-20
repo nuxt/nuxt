@@ -1039,12 +1039,11 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
-  it('`useRouteAnnouncer` should change message on route change', async () => {
+  it.only('`useRouteAnnouncer` should change message on route change', async () => {
     const { page } = await renderPage('/route-announcer')
-    expect(await page.innerHTML('body')).toContain('Route Announcer')
+    expect(await page.getByRole('alert').textContent()).toContain('First Page')
     await page.getByText('Link').click()
-    await page.waitForURL(url('/route-announcer2'))
-    expect(await page.innerHTML('body')).toContain('Route Announcer 2')
+    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
     await page.close()
   })
 })

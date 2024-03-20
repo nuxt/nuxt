@@ -1,6 +1,6 @@
 <script setup>
 useHead({
-  title: 'Route Announcer'
+  title: 'First Page'
 })
 definePageMeta({
   layout: 'with-route-announcer'

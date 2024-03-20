@@ -18,7 +18,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
-import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -698,16 +698,50 @@ describe('callOnce', () => {
 })
 
 describe('route announcer', () => {
-  it('expect route announcer message to be changed by navigating', async () => {
+  it('should create a route announcer with default politeness', () => {
+    const announcer = useRouteAnnouncer()
+    expect(announcer.politeness.value).toBe(Politeness.Polite)
+  })
+
+  it('should create a route announcer with provided politeness', () => {
+    const announcer = useRouteAnnouncer({ politeness: Politeness.Assertive })
+    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.set('Test message with politeness', Politeness.Assertive)
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe(Politeness.Polite)
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+  })
+
+  it('should change message on navigation', async () => {
     vi.stubGlobal('requestAnimationFrame', vi.fn((cb: Function) => cb()))
-    vi.stubGlobal('document', { title: 'Old Title' })
     const nuxtApp = useNuxtApp()
     const announcer = useRouteAnnouncer()
-    expect(announcer.message.value).toBe('Old Title')
-    await navigateTo('/test')
-    vi.stubGlobal('document', { title: 'New Title' })
+    await navigateTo('/first-page')
+    vi.stubGlobal('document', { title: 'First Page' })
     await nuxtApp.callHook('page:loading:end')
-    expect(announcer.message.value).toBe('New Title')
-    vi.mocked(requestAnimationFrame).mockRestore()
+    expect(announcer.message.value).toBe('First Page')
+
+    await navigateTo('/second-page')
+    vi.stubGlobal('document', { title: 'Second Page' })
+    await nuxtApp.callHook('page:loading:end')
+    expect(announcer.message.value).toBe('Second Page')
+    vi.unstubAllGlobals()
   })
 })

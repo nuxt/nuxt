@@ -1,7 +1,6 @@
 import type { Ref } from 'vue'
-import type { RouteLocationNormalized } from 'vue-router'
 import { getCurrentScope, onScopeDispose, ref } from 'vue'
-import { useNuxtApp, useRouter } from '#app'
+import { useNuxtApp } from '#app'
 
 export enum Politeness {
   Assertive = 'assertive',
@@ -26,12 +25,11 @@ export type RouteAnnouncer = {
 function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
   const message = ref('')
   const politeness = ref(opts.politeness || Politeness.Polite)
-  const router = useRouter()
   const nuxtApp = useNuxtApp()
   let rafId: number | null = null
-  let unsubLoadingFinishHook: () => void = () => {}
+  let unsubscribeLoadingFinishHook: () => void = () => {}
 
-  set(document?.title?.trim(), politeness.value)
+  _updateMessageWithPageHeading()
 
   function set (messageValue: string = '', politenessSetting: Politeness = Politeness.Polite) {
     message.value = messageValue
@@ -46,23 +44,23 @@ function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
     return set(message, Politeness.Assertive)
   }
 
+  function _updateMessageWithPageHeading () {
+    set(document?.title?.trim(), politeness.value)
+  }
+
   let _cleanup: () => void = () => {}
 
   if (import.meta.client) {
-    const removeBeforeResolveGuard = router.beforeResolve((to: RouteLocationNormalized, from: RouteLocationNormalized) => {
+    unsubscribeLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
       cancelAnimationFrame(rafId!)
-      if (from.fullPath === to.fullPath) { return }
-      unsubLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
-        rafId = requestAnimationFrame(() => {
-          set(document?.title?.trim(), politeness.value)
-        })
+      rafId = requestAnimationFrame(() => {
+        _updateMessageWithPageHeading()
       })
     })
 
     _cleanup = () => {
       cancelAnimationFrame(rafId!)
-      removeBeforeResolveGuard()
-      unsubLoadingFinishHook()
+      unsubscribeLoadingFinishHook()
     }
   }
 
@@ -84,6 +82,9 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
 
   // Initialise global route announcer if it doesn't exist already
   const announcer = nuxtApp._routeAnnouncer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
+  if (opts.politeness !== announcer.politeness.value) {
+    announcer.politeness.value = opts.politeness || Politeness.Polite
+  }
   if (import.meta.client && getCurrentScope()) {
     nuxtApp._routeAnnouncerDeps = nuxtApp._routeAnnouncerDeps || 0
     nuxtApp._routeAnnouncerDeps++
