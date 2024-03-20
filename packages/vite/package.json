@@ -55,7 +55,7 @@
     "pathe": "^1.1.2",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.0.3",
-    "postcss": "^8.4.36",
+    "postcss": "^8.4.37",
     "rollup-plugin-visualizer": "^5.12.0",
     "std-env": "^3.7.0",
     "strip-literal": "^2.0.0",
