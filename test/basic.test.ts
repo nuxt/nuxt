@@ -1043,7 +1043,7 @@ describe('composables', () => {
     const { page } = await renderPage('/route-announcer')
     expect(await page.getByRole('alert').textContent()).toContain('First Page')
     await page.getByText('Link').click()
-    await page.waitForURL('/route-announcer2')
+    await page.waitForURL(url('/route-announcer2'))
     expect(await page.getByRole('alert').textContent()).toContain('Second Page')
     await page.close()
   })
