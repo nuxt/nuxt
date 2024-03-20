@@ -425,6 +425,6 @@ export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.d
 export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}\n\n
 export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n
 export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n
-export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n`
+export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`
   }
 }
