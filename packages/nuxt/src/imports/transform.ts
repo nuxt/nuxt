@@ -13,11 +13,11 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     enforce: 'post',
     transformInclude (id) {
       // Included
-      if (options.transform?.include?.some(pattern => pattern.test(id))) {
+     if (options.transform?.include?.length && options.transform.include.some(pattern => pattern.test(id))) {
         return true
       }
       // Excluded
-      if (options.transform?.exclude?.some(pattern => pattern.test(id))) {
+      if (options.transform?.exclude?.length && options.transform.exclude.some(pattern => pattern.test(id))) {
         return false
       }
 
@@ -31,7 +31,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
     },
     async transform (code, id) {
       id = normalize(id)
-      const isNodeModule = NODE_MODULES_RE.test(id) && !options.transform?.include?.some(pattern => pattern.test(id))
+      const isNodeModule = NODE_MODULES_RE.test(id) && options.transform?.include?.length && !options.transform.include.some(pattern => pattern.test(id))
       // For modules in node_modules, we only transform `#imports` but not doing imports
       if (isNodeModule && !IMPORTS_RE.test(code)) {
         return
