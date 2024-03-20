@@ -1,6 +1,6 @@
 ---
 title: 'useRouteAnnouncer'
-description: This composable gives you access to the title of the app page.
+description: This composable watches the page load and updates the announcer message with the page title.
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -10,8 +10,8 @@ links:
 
 ## Description
 
-A composable which returns the title of the page. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
-It subscribes route guard [`beforeResolve`](/docs/api/composables/use-router#navigation-guards) and hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to read the page's title and set it as the announcer message.
+A composable which watches the page load and updates the announcer message with the page title. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
+It hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to read the page's title after loading and set it as the announcer message.
 
 ## Parameters
 

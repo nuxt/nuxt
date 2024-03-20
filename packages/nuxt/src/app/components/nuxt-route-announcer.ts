@@ -1,4 +1,5 @@
 import { defineComponent, h } from 'vue'
+import type { PolitenessValue } from '#app/composables/route-announcer'
 import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
 class CustomRouteAnnouncer extends HTMLElement {
@@ -29,8 +30,6 @@ class CustomRouteAnnouncer extends HTMLElement {
 
 customElements.define('custom-route-announcer', CustomRouteAnnouncer)
 
-type PolitenessValue = `${Politeness}`;
-
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',
   props: {
@@ -41,11 +40,11 @@ export default defineComponent({
     politeness: {
       type: String as () => PolitenessValue,
       default: Politeness.Polite,
-      validator: (value: string) => Object.values(Politeness).includes(value as Politeness)
+      validator: (value: PolitenessValue) => Object.values(Politeness).includes(value as Politeness)
     }
   },
   setup (props, { slots, expose }) {
-    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness as Politeness })
+    const { set, polite, assertive, message, politeness } = useRouteAnnouncer({ politeness: props.politeness })
 
     expose({
       set, polite, assertive, message, politeness

@@ -249,7 +249,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           if (isAppManifestEnabled) {
             const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
 
-            if (routeRules?.appMiddleware) {
+            if (routeRules.appMiddleware) {
               for (const key in routeRules.appMiddleware) {
                 const guard = nuxtApp._middleware.named[key] as RouteGuard | undefined
                 if (!guard) { return }

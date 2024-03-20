@@ -8,30 +8,32 @@ export enum Politeness {
   Off = 'off',
 }
 
+export type PolitenessValue = `${Politeness}`;
+
 export type NuxtRouteAnnouncerOpts = {
   /** @default 'polite' */
-  politeness: Politeness
+  politeness?: PolitenessValue
 }
 
 export type RouteAnnouncer = {
   message: Ref<string>
-  politeness: Ref<Politeness>
-  set: (message: string, politeness: Politeness) => void
+  politeness: Ref<PolitenessValue>
+  set: (message: string, politeness: PolitenessValue) => void
   polite: (message: string) => void
   assertive: (message: string) => void
   _cleanup: () => void
 }
 
-function createRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}) {
+function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
   const message = ref('')
-  const politeness = ref(opts.politeness || Politeness.Polite)
+  const politeness = ref<PolitenessValue>(opts.politeness || Politeness.Polite)
   const nuxtApp = useNuxtApp()
   let rafId: number | null = null
   let unsubscribeLoadingFinishHook: () => void = () => {}
 
   _updateMessageWithPageHeading()
 
-  function set (messageValue: string = '', politenessSetting: Politeness = Politeness.Polite) {
+  function set (messageValue: string = '', politenessSetting: PolitenessValue = Politeness.Polite) {
     message.value = messageValue
     politeness.value = politenessSetting
   }
