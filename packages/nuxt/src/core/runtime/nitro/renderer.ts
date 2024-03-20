@@ -205,6 +205,7 @@ const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DA
     }
   : null
 
+const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
 async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
   let url = event.path || ''
@@ -212,8 +213,9 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
     url = await islandPropCache!.getItem(event.path) as string
   }
-  url = url.substring('/__nuxt_island'.length + 1) || ''
-  const [componentName, hashId] = url.split('?')[0].replace(/\.json$/, '').split('_')
+  const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
+  const hashId = componentParts.length > 1 ? componentParts.pop() : undefined
+  const componentName = componentParts.join('_')
 
   // TODO: Validate context
   const context = event.method === 'GET' ? getQuery(event) : await readBody(event)
