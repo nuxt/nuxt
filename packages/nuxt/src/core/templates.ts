@@ -358,7 +358,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',
-      "import { baseURL } from '#build/paths.mjs'",
+      "import { baseURL } from '#paths'",
       'if (!globalThis.$fetch) {',
       '  globalThis.$fetch = $fetch.create({',
       '    baseURL: baseURL()',
