@@ -412,7 +412,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     }
     return contents +
       `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n`+
-      `export const componentIslands = ${!!ctx.nuxt.options.experimental.componentIslands}\n\n`+
+      `export const componentIslands = ${shouldEnableComponentIslands}\n\n`+
       `export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}\n\n`+
       `export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}\n\n`+
       `export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}\n\n`+
