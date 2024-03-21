@@ -12,7 +12,7 @@ import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-v
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
-import { normalizeRoutes, resolvePagesRoutes } from './utils'
+import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
@@ -371,9 +371,13 @@ export default defineNuxtModule({
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
+        let resolvedRoutes: string[]
         for (const path in nitro.options.routeRules) {
           const rule = nitro.options.routeRules[path]
           if (!rule.redirect) { continue }
+          resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
+          // skip if there's already a route matching this path
+          if (resolvedRoutes.includes(path)) { continue }
           routes.push({
             _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
