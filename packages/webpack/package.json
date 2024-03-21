@@ -64,7 +64,7 @@
     "vue-loader": "^17.4.2",
     "webpack": "^5.91.0",
     "webpack-bundle-analyzer": "^4.10.1",
-    "webpack-dev-middleware": "^7.1.0",
+    "webpack-dev-middleware": "^7.1.1",
     "webpack-hot-middleware": "^2.26.1",
     "webpack-virtual-modules": "^0.6.1",
     "webpackbar": "^6.0.1"
