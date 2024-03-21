@@ -30,8 +30,7 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
   const nuxtApp = useNuxtApp()
   let rafId: number | null = null
   let unsubscribeLoadingFinishHook: () => void = () => {}
-
-  _updateMessageWithPageHeading()
+  let _cleanup: () => void = () => {}
 
   function set (messageValue: string = '', politenessSetting: PolitenessValue = Politeness.Polite) {
     message.value = messageValue
@@ -50,7 +49,7 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
     set(document?.title?.trim(), politeness.value)
   }
 
-  let _cleanup: () => void = () => {}
+  _updateMessageWithPageHeading()
 
   if (import.meta.client) {
     unsubscribeLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
