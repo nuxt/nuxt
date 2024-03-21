@@ -26,7 +26,7 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
         enforce: 'pre',
         handler (id) {
           if (id.startsWith(PREFIX)) {
-            return `import { publicAssetsURL } from '#build/paths.mjs';export default publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
+            return `import { publicAssetsURL } from '#internal/nuxt/paths';export default publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
           }
         }
       },

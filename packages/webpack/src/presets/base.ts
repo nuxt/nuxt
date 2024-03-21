@@ -120,6 +120,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     '#app': ctx.options.appDir,
     '#build/plugins': resolve(ctx.options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
     '#build': ctx.options.buildDir,
+    '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
     ...ctx.options.alias,
     ...ctx.alias
   }
