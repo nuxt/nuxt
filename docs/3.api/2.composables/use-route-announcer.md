@@ -1,6 +1,6 @@
 ---
 title: 'useRouteAnnouncer'
-description: This composable watches the page load and updates the announcer message with the page title.
+description: This composable observes the page title changes and updates the announcer message accordingly.
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -11,7 +11,7 @@ links:
 ## Description
 
 A composable which watches the page load and updates the announcer message with the page title. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
-It hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) to read the page's title after loading and set it as the announcer message.
+It hooks into Unhead's [`dom:rendered`](https://unhead.unjs.io/api/core/hooks#dom-hooks) to read the page's title and set it as the announcer message.
 
 ## Parameters
 
@@ -33,15 +33,15 @@ It hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) t
 
 ### `set(message, politeness = "polite")`
 
-Set the message to announce with its' urgency level.
+Sets the message to announce with its urgency level.
 
 ### `polite(message)`
 
-Set the message with `politeness = "polite"`
+Sets the message with `politeness = "polite"`
 
 ### `assertive(message)`
 
-Set the message with `politeness = "assertive"`
+Sets the message with `politeness = "assertive"`
 
 ## Example
 
