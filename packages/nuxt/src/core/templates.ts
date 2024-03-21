@@ -327,7 +327,7 @@ export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
   getContents ({ nuxt }) {
     return [
-      'import { joinRelativeURL as joinURL } from \'ufo\'',
+      'import { joinRelativeURL } from \'ufo\'',
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
 
       nuxt.options.dev
@@ -337,11 +337,11 @@ export const publicPathTemplate: NuxtTemplate = {
       'export const baseURL = () => appConfig.baseURL',
       'export const buildAssetsDir = () => appConfig.buildAssetsDir',
 
-      'export const buildAssetsURL = (...path) => joinURL(publicAssetsURL(), buildAssetsDir(), ...path)',
+      'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
-      '  return path.length ? joinURL(publicBase, ...path) : publicBase',
+      '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
       // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
