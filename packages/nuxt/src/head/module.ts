@@ -31,9 +31,9 @@ export default defineNuxtModule({
 
     // allow @unhead/vue server composables to be tree-shaken from the client bundle
     if (!nuxt.options.dev) {
-      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = defu(nuxt.options.optimization.treeShake.composables.client['@unhead/vue'], [
+      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
         'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
-      ])
+      ]
     }
 
     addImportsSources({
