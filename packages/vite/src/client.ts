@@ -22,11 +22,11 @@ import { createViteLogger } from './utils/logger'
 export async function buildClient (ctx: ViteBuildContext) {
   const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
     ? {
-      alias: env(nodeless).alias,
-      define: {
-        global: 'globalThis'
+        alias: env(nodeless).alias,
+        define: {
+          global: 'globalThis'
+        }
       }
-    }
     : { alias: {}, define: {} }
 
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
