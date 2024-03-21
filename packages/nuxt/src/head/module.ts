@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { defu } from 'defu'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -29,9 +30,11 @@ export default defineNuxtModule({
     }
 
     // allow @unhead/vue server composables to be tree-shaken from the client bundle
-    nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-      'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
-    ]
+    if (!nuxt.options.dev) {
+      nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = defu(nuxt.options.optimization.treeShake.composables.client['@unhead/vue'], [
+        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
+      ])
+    }
 
     addImportsSources({
       from: '@unhead/vue',
