@@ -31,9 +31,9 @@ It hooks into [`page:loading:end`](/docs/api/advanced/hooks#app-hooks-runtime) t
 
 ## Methods
 
-### `set(message, politeness)`
+### `set(message, politeness = "polite")`
 
-Set the message to announce with its' urgency level. `politeness` is optional and set to `polite` if omitted
+Set the message to announce with its' urgency level.
 
 ### `polite(message)`
 
@@ -48,7 +48,7 @@ Set the message with `politeness = "assertive"`
 ```ts
 <script setup lang="ts">
   const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
-    politeness: 'polite'
+    politeness: 'assertive'
   })
 </script>
 ```
