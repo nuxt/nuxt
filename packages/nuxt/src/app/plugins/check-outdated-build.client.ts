@@ -3,7 +3,7 @@ import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
 import { onNuxtReady } from '../composables/ready'
 // @ts-expect-error virtual file
-import { buildAssetsURL } from '#build/paths.mjs'
+import { buildAssetsURL } from '#internal/nuxt/paths'
 
 export default defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }

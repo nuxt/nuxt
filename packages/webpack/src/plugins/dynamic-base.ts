@@ -11,17 +11,17 @@ const defaults: DynamicBasePluginOptions = {
   sourcemap: true
 }
 
+const ENTRY_RE = /import ["']#build\/css["'];/
+
 export const DynamicBasePlugin = createUnplugin((options: DynamicBasePluginOptions = {}) => {
   options = { ...defaults, ...options }
   return {
     name: 'nuxt:dynamic-base-path',
-    enforce: 'post',
+    enforce: 'post' as const,
     transform (code, id) {
-      if (!id.includes('paths.mjs') || !code.includes('const appConfig = ')) {
-        return
-      }
+      if (!id.includes('entry') || !ENTRY_RE.test(code)) { return }
       const s = new MagicString(code)
-      s.append(`\n${options.globalPublicPath} = buildAssetsURL();\n`)
+      s.prepend(`import { buildAssetsURL } from '#internal/nuxt/paths';\n${options.globalPublicPath} = buildAssetsURL();\n`)
       return {
         code: s.toString(),
         map: options.sourcemap
