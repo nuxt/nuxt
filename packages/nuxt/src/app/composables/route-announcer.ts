@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import { getCurrentScope, onScopeDispose, ref } from 'vue'
+import { getActiveHead } from 'unhead'
 import { useNuxtApp } from '#app'
 
 export enum Politeness {
@@ -27,10 +28,7 @@ export type RouteAnnouncer = {
 function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
   const message = ref('')
   const politeness = ref<PolitenessValue>(opts.politeness || Politeness.Polite)
-  const nuxtApp = useNuxtApp()
-  let rafId: number | null = null
-  let unsubscribeLoadingFinishHook: () => void = () => {}
-  let _cleanup: () => void = () => {}
+  const activeHead = getActiveHead()
 
   function set (messageValue: string = '', politenessSetting: PolitenessValue = Politeness.Polite) {
     message.value = messageValue
@@ -49,21 +47,15 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
     set(document?.title?.trim(), politeness.value)
   }
 
+  function _cleanup () {
+    activeHead?.hooks?.removeHook('dom:rendered', _updateMessageWithPageHeading)
+  }
+
   _updateMessageWithPageHeading()
 
-  if (import.meta.client) {
-    unsubscribeLoadingFinishHook = nuxtApp.hook('page:loading:end', () => {
-      cancelAnimationFrame(rafId!)
-      rafId = requestAnimationFrame(() => {
-        _updateMessageWithPageHeading()
-      })
-    })
-
-    _cleanup = () => {
-      cancelAnimationFrame(rafId!)
-      unsubscribeLoadingFinishHook()
-    }
-  }
+  activeHead?.hooks?.hook('dom:rendered', () => {
+    _updateMessageWithPageHeading()
+  })
 
   return {
     _cleanup,

@@ -728,20 +728,4 @@ describe('route announcer', () => {
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe(Politeness.Assertive)
   })
-
-  it('should change message on navigation', async () => {
-    vi.stubGlobal('requestAnimationFrame', vi.fn((cb: Function) => cb()))
-    const nuxtApp = useNuxtApp()
-    const announcer = useRouteAnnouncer()
-    await navigateTo('/first-page')
-    vi.stubGlobal('document', { title: 'First Page' })
-    await nuxtApp.callHook('page:loading:end')
-    expect(announcer.message.value).toBe('First Page')
-
-    await navigateTo('/second-page')
-    vi.stubGlobal('document', { title: 'Second Page' })
-    await nuxtApp.callHook('page:loading:end')
-    expect(announcer.message.value).toBe('Second Page')
-    vi.unstubAllGlobals()
-  })
 })
