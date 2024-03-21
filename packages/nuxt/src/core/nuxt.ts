@@ -1,10 +1,11 @@
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
-import { resolvePackageJSON } from 'pkg-types'
+import type { PackageJson } from 'pkg-types'
+import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -51,6 +52,14 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
+const nightlies = {
+  nitropack: 'nitropack-nightly',
+  h3: 'h3-nightly',
+  nuxt: 'nuxt-nightly',
+  '@nuxt/schema': '@nuxt/schema-nightly',
+  '@nuxt/kit': '@nuxt/kit-nightly'
+}
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
@@ -63,12 +72,29 @@ async function initNuxt (nuxt: Nuxt) {
   nuxtCtx.set(nuxt)
   nuxt.hook('close', () => nuxtCtx.unset())
 
-  const coreTypePackages = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema']
+  const coreTypePackages = nuxt.options.typescript.hoist || []
+  const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
+  const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (dependencies.has(pkg) && !(pkg in nightlies)) { return [] }
+
+    // deduplicate types for nightly releases
+    if (pkg in nightlies) {
+      const nightly = nightlies[pkg as keyof typeof nightlies]
+      const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+      if (path) {
+        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+      }
+    }
+
     const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
-    if (!path) { return }
-    return [pkg, [dirname(path)]]
-  })).then(r => r.filter(Boolean) as [string, [string]][]))
+    if (path) {
+      return [[pkg, [dirname(path)]]]
+    }
+
+    return []
+  })).then(r => r.flat()))
 
   // Set nitro resolutions for types that might be obscured with shamefully-hoist=false
   nuxt.options.nitro.typescript = defu(nuxt.options.nitro.typescript, {
@@ -105,7 +131,7 @@ async function initNuxt (nuxt: Nuxt) {
   const config = {
     rootDir: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
-    exclude: [join(nuxt.options.rootDir, 'index.html')],
+    exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt)
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
@@ -173,6 +199,19 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+  }
+
+  if (nuxt.options.dev && nuxt.options.features.devLogs) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs.client'))
+    addServerPlugin(resolve(distDir, 'core/runtime/nitro/dev-server-logs'))
+    nuxt.options.nitro = defu(nuxt.options.nitro, {
+      externals: {
+        inline: [/#internal\/dev-server-logs-options/]
+      },
+      virtual: {
+        '#internal/dev-server-logs-options': () => `export const rootDir = ${JSON.stringify(nuxt.options.rootDir)};`
+      }
+    })
   }
 
   // Transform initial composable call within `<script setup>` to preserve context

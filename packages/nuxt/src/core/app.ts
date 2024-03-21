@@ -47,6 +47,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const oldContents = nuxt.vfs[fullPath]
       const contents = await compileTemplate(template, templateContext).catch((e) => {
         logger.error(`Could not compile template \`${template.filename}\`.`)
+        logger.error(e)
         throw e
       })
 
@@ -204,13 +205,15 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
   }))
 }
 
+const IS_TSX = /\.[jt]sx$/
+
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
-        ...await extractMetadata(code),
+        ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
         ...plugin
       })
     } catch (e) {

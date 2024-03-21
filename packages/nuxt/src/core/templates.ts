@@ -228,6 +228,7 @@ export const nitroSchemaTemplate: NuxtTemplate = {
 
 import type { RuntimeConfig } from 'nuxt/schema'
 import type { H3Event } from 'h3'
+import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
 declare module 'nitropack' {
@@ -243,8 +244,10 @@ declare module 'nitropack' {
   interface NitroRouteRules {
     ssr?: boolean
     experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
   }
   interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
     'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
   }
@@ -324,7 +327,7 @@ export const publicPathTemplate: NuxtTemplate = {
   filename: 'paths.mjs',
   getContents ({ nuxt }) {
     return [
-      'import { joinURL } from \'ufo\'',
+      'import { joinRelativeURL } from \'ufo\'',
       !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
 
       nuxt.options.dev
@@ -334,11 +337,11 @@ export const publicPathTemplate: NuxtTemplate = {
       'export const baseURL = () => appConfig.baseURL',
       'export const buildAssetsDir = () => appConfig.buildAssetsDir',
 
-      'export const buildAssetsURL = (...path) => joinURL(publicAssetsURL(), buildAssetsDir(), ...path)',
+      'export const buildAssetsURL = (...path) => joinRelativeURL(publicAssetsURL(), buildAssetsDir(), ...path)',
 
       'export const publicAssetsURL = (...path) => {',
       '  const publicBase = appConfig.cdnURL || appConfig.baseURL',
-      '  return path.length ? joinURL(publicBase, ...path) : publicBase',
+      '  return path.length ? joinRelativeURL(publicBase, ...path) : publicBase',
       '}',
 
       // On server these are registered directly in packages/nuxt/src/core/runtime/nitro/renderer.ts
@@ -355,7 +358,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',
-      "import { baseURL } from '#build/paths.mjs'",
+      "import { baseURL } from '#internal/nuxt/paths'",
       'if (!globalThis.$fetch) {',
       '  globalThis.$fetch = $fetch.create({',
       '    baseURL: baseURL()',
@@ -375,7 +378,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       headers: undefined
     }
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server')
+      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
@@ -388,6 +391,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && Boolean(ctx.nuxt.options.experimental.componentIslands.selectiveClient)}`,
       `export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}`,
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
+      `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,

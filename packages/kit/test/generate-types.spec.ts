@@ -30,7 +30,7 @@ const mockNuxt = {
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
 describe('tsConfig generation', () => {
-  it('should add add correct relative paths for aliases', async () => {
+  it('should add correct relative paths for aliases', async () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
       {
@@ -47,7 +47,7 @@ describe('tsConfig generation', () => {
     `)
   })
 
-  it('should add add exclude for module paths', async () => {
+  it('should add exclude for module paths', async () => {
     const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
       modulesDir: ['/my-app/modules/test/node_modules', '/my-app/modules/node_modules', '/my-app/node_modules/@some/module/node_modules']
     }))

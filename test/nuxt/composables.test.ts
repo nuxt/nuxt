@@ -19,29 +19,6 @@ import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
-vi.mock('#app/compat/idle-callback', () => ({
-  requestIdleCallback: (cb: Function) => cb()
-}))
-
-const timestamp = Date.now()
-registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp
-})))
-registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp,
-  matcher: {
-    static: {
-      '/': null,
-      '/pre': null,
-      '/pre/test': { redirect: true }
-    },
-    wildcard: { '/pre': { prerender: true } },
-    dynamic: {}
-  },
-  prerendered: ['/specific-prerendered']
-})))
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries())
@@ -146,6 +123,7 @@ describe('useAsyncData', () => {
         "status",
         "execute",
         "refresh",
+        "clear",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
@@ -223,6 +201,18 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should be clearable', async () => {
+    const { data, error, pending, status, clear } = await useAsyncData(() => Promise.resolve('test'))
+    expect(data.value).toBe('test')
+
+    clear()
+
+    expect(data.value).toBeUndefined()
+    expect(error.value).toBeNull()
+    expect(pending.value).toBe(false)
+    expect(status.value).toBe('idle')
+  })
+
   it('allows custom access to a cache', async () => {
     const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
     expect(data.value).toMatchInlineSnapshot(`
@@ -273,6 +263,26 @@ describe('useAsyncData', () => {
     useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should be synced with useNuxtData', async () => {
+    const { data: nuxtData } = useNuxtData('nuxtdata-sync')
+    const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
+    const { data: fetchData } = promise
+
+    expect(fetchData.value).toMatchInlineSnapshot('"default"')
+
+    nuxtData.value = 'before-fetch'
+    expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
+
+    await promise
+    expect(fetchData.value).toMatchInlineSnapshot('"test"')
+    expect(nuxtData.value).toMatchInlineSnapshot('"test"')
+
+    nuxtData.value = 'new value'
+    expect(fetchData.value).toMatchInlineSnapshot('"new value"')
+    fetchData.value = 'another value'
+    expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
 })
 
@@ -599,7 +609,7 @@ describe('routing utilities: `abortNavigation`', () => {
 })
 
 describe('routing utilities: `setPageLayout`', () => {
-  it('should set error on page metadata if run outside middleware', () => {
+  it('should set layout on page metadata if run outside middleware', () => {
     const route = useRoute()
     expect(route.meta.layout).toBeUndefined()
     setPageLayout('custom')

@@ -68,6 +68,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       alias: {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
+        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
         '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
       },
@@ -122,8 +123,8 @@ export async function buildClient (ctx: ViteBuildContext) {
   // We want to respect users' own rollup output options
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
-      chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[name].[hash].js')),
-      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[name].[hash].js'))
+      chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
+      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js'))
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output']
   }) as any
 

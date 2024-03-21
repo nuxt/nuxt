@@ -12,7 +12,7 @@ import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-v
 import type { NitroRouteConfig } from 'nitropack'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
-import { normalizeRoutes, resolvePagesRoutes } from './utils'
+import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
@@ -106,7 +106,7 @@ export default defineNuxtModule({
     })
 
     // adds support for #vue-router alias (used for types) with and without pages integration
-    addTemplate({
+    addTypeTemplate({
       filename: 'vue-router-stub.d.ts',
       getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
     })
@@ -120,6 +120,17 @@ export default defineNuxtModule({
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
           'export const START_LOCATION = Symbol(\'router:start-location\')'
+        ].join('\n')
+      })
+      addTypeTemplate({
+        filename: 'types/middleware.d.ts',
+        getContents: () => [
+          'declare module \'nitropack\' {',
+          '  interface NitroRouteConfig {',
+          '    appMiddleware?: string | string[] | Record<string, boolean>',
+          '  }',
+          '}',
+          'export {}'
         ].join('\n')
       })
       addComponent({
@@ -282,8 +293,8 @@ export default defineNuxtModule({
             if (route === '/') { continue }
             prerenderRoutes.add(route)
           }
-          nitro.options.prerender.routes = Array.from(prerenderRoutes)
         }
+        nitro.options.prerender.routes = Array.from(prerenderRoutes)
       })
     })
 
@@ -360,10 +371,15 @@ export default defineNuxtModule({
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
+        let resolvedRoutes: string[]
         for (const path in nitro.options.routeRules) {
           const rule = nitro.options.routeRules[path]
           if (!rule.redirect) { continue }
+          resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
+          // skip if there's already a route matching this path
+          if (resolvedRoutes.includes(path)) { continue }
           routes.push({
+            _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
             file: resolve(runtimeDir, 'component-stub')
           })
@@ -461,9 +477,9 @@ export default defineNuxtModule({
       }
     })
 
-    addTemplate({
+    addTypeTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+      getContents: ({ nuxt, app }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         const namedMiddleware = app.middleware.filter(mw => !mw.global)
         return [
@@ -473,12 +489,17 @@ export default defineNuxtModule({
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
+          '}',
+          'declare module \'nitropack\' {',
+          '  interface NitroRouteConfig {',
+          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
+          '  }',
           '}'
         ].join('\n')
       }
     })
 
-    addTemplate({
+    addTypeTemplate({
       filename: 'types/layouts.d.ts',
       getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
@@ -518,13 +539,6 @@ export default defineNuxtModule({
       name: 'NuxtPage',
       priority: 10, // built-in that we do not expect the user to override
       filePath: resolve(distDir, 'pages/runtime/page')
-    })
-
-    // Add declarations for middleware keys
-    nuxt.hook('prepare:types', ({ references }) => {
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/middleware.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'types/layouts.d.ts') })
-      references.push({ path: resolve(nuxt.options.buildDir, 'vue-router-stub.d.ts') })
     })
   }
 })

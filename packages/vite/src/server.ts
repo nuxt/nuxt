@@ -55,6 +55,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     resolve: {
       alias: {
+        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server')
       }
     },
@@ -79,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro'],
+        external: ['#internal/nitro', '#internal/nuxt/paths'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
@@ -105,12 +106,14 @@ export async function buildServer (ctx: ViteBuildContext) {
   if (!ctx.nuxt.options.dev) {
     const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
       .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
-    ;(serverConfig.ssr!.external as string[])!.push(
-      // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-      'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
-      // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-      ...nitroDependencies
-    )
+    if (Array.isArray(serverConfig.ssr!.external)) {
+      serverConfig.ssr!.external.push(
+        // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
+        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
+        // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
+        ...nitroDependencies
+      )
+    }
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig)
