@@ -28,7 +28,7 @@ export function runtimePathsPlugin (options: RuntimePathsOptions): Plugin {
       if (VITE_ASSET_RE.test(code)) {
         const s = new MagicString(code)
         // Register dependency on paths.mjs, which sets globalThis.__publicAssetsURL
-        s.prepend('import "#paths";')
+        s.prepend('import "#internal/nuxt/paths";')
 
         return {
           code: s.toString(),

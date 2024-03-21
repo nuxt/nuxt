@@ -3,7 +3,7 @@ import type { App } from 'vue'
 
 // These files must be imported first as they have side effects:
 // 1. (we set __webpack_public_path via this import, if using webpack builder)
-import '#paths'
+import '#internal/nuxt/paths'
 // 2. we set globalThis.$fetch via this import
 import '#build/fetch.mjs'
 

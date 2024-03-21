@@ -55,7 +55,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
   ]
   const external = ['#internal/nitro']
   if (!ctx.nuxt.options.dev) {
-    external.push('#paths')
+    external.push('#internal/nuxt/paths')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }

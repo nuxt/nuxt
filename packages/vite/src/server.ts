@@ -55,7 +55,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     resolve: {
       alias: {
-        '#paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
+        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server')
       }
     },
@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro', '#paths'],
+        external: ['#internal/nitro', '#internal/nuxt/paths'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',

@@ -31,7 +31,7 @@ import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { buildAssetsURL, publicAssetsURL } from '#paths'
+import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
@@ -190,19 +190,19 @@ const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
-      get<T = unknown> (key: string): Promise<T> | undefined {
-        if (sharedPrerenderKeys.has(key)) {
-          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
-        }
-      },
-      async set<T> (key: string, value: Promise<T>): Promise<void> {
-        sharedPrerenderKeys.add(key)
+    get<T = unknown> (key: string): Promise<T> | undefined {
+      if (sharedPrerenderKeys.has(key)) {
+        return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+      }
+    },
+    async set<T> (key: string, value: Promise<T>): Promise<void> {
+      sharedPrerenderKeys.add(key)
       sharedPrerenderPromises!.set(key, value)
       useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
         // free up memory after the promise is resolved
         .finally(() => sharedPrerenderPromises!.delete(key))
-      }
     }
+  }
   : null
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
