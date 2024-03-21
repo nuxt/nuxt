@@ -2,34 +2,6 @@ import { defineComponent, h } from 'vue'
 import type { PolitenessValue } from '#app/composables/route-announcer'
 import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
 
-class CustomRouteAnnouncer extends HTMLElement {
-  connectedCallback () {
-    const shadow = this.attachShadow({ mode: 'closed' })
-    const style = document.createElement('style')
-    const fragment = document.createDocumentFragment()
-    style.textContent = `
-      :host {
-        border: 0;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        height: 1px;
-        width: 1px;
-        overflow: hidden;
-        position: absolute;
-        white-space: nowrap;
-        word-wrap: normal;
-        margin: -1px;
-        padding: 0;
-      }
-    `
-    fragment.appendChild(style)
-    fragment.appendChild(document.createElement('slot'))
-    shadow.appendChild(fragment)
-  }
-}
-
-customElements.define('custom-route-announcer', CustomRouteAnnouncer)
-
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',
   props: {
@@ -50,11 +22,28 @@ export default defineComponent({
       set, polite, assertive, message, politeness
     })
 
-    return () => h('custom-route-announcer', {
+    return () => h('nuxt-route-announcer', {
       class: 'nuxt-route-announcer',
+      style: {
+        position: 'absolute'
+      }
+    }, h('div', {
       role: 'alert',
       'aria-live': politeness.value,
-      'aria-atomic': props.atomic
-    }, slots.default ? slots.default({ message: message.value }) : message.value)
+      'aria-atomic': props.atomic,
+      style: {
+        border: '0',
+        clip: 'rect(0 0 0 0)',
+        'clip-path': 'inset(50%)',
+        height: '1px',
+        width: '1px',
+        overflow: 'hidden',
+        position: 'absolute',
+        'white-space': 'nowrap',
+        'word-wrap': 'normal',
+        margin: '-1px',
+        padding: '0'
+      }
+    }, slots.default ? slots.default({ message: message.value }) : message.value))
   }
 })
