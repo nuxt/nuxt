@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.1.1",
+    "@nuxt/devtools": "^1.1.3",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.5.3",
