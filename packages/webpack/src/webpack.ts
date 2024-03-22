@@ -2,7 +2,7 @@ import pify from 'pify'
 import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
-import type { OutputFileSystem } from 'webpack-dev-middleware'
+import type { MultiWatching } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
@@ -61,7 +61,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // In dev, write files in memory FS
     if (nuxt.options.dev) {
-      compiler.outputFileSystem = mfs as unknown as OutputFileSystem
+      compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
 
     return compiler
@@ -131,7 +131,7 @@ async function compile (compiler: Compiler) {
 
   // --- Dev Build ---
   if (nuxt.options.dev) {
-    const compilersWatching: Watching[] = []
+    const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
       await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))
