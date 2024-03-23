@@ -95,7 +95,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const bindings = getPropsToString(attributes, vfor)
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
-            
+
             if (children.length) {
               // pass slot fallback to NuxtTeleportSsrSlot fallback
               const attrString = attributeToString(attributes)
@@ -138,7 +138,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 /**
  * extract attributes from a node
  */
-function extractAttributes(attributes: Record<string, string>, names: string[]) {
+function extractAttributes (attributes: Record<string, string>, names: string[]) {
   const extracted:Record<string, string> = {}
   for (const name of names) {
     if (name in attributes) {
