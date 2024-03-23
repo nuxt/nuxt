@@ -34,6 +34,7 @@ const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
 const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
 
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
@@ -79,13 +80,6 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           if (node.name === 'slot') {
             const { attributes, children, loc } = node
 
-            // pass slot fallback to NuxtTeleportSsrSlot fallback
-            if (children.length) {
-              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" ` : value).join(' ')
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            }
-
             const slotName = attributes.name ?? 'default'
             let vfor: [string, string] | undefined
             if (attributes['v-for']) {
@@ -95,19 +89,22 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
-              attributes._bind = attributes['v-bind']
-              delete attributes['v-bind']
+              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
             }
-            const vIf = attributes['v-if']
-            delete attributes['v-if']
+            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
             const bindings = getPropsToString(attributes, vfor)
-
             // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${vIf ? ` v-if="${vIf}"` : ''} name="${slotName}" :props="${bindings}">`)
-            // remove v-if from first tag
-            if (vIf) {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(`v-if="${vIf}"`, ''))
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+            
+            if (children.length) {
+              // pass slot fallback to NuxtTeleportSsrSlot fallback
+              const attrString = attributeToString(attributes)
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+            } else {
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
             }
+
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
@@ -137,6 +134,24 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     }
   }
 })
+
+/**
+ * extract attributes from a node
+ */
+function extractAttributes(attributes: Record<string, string>, names: string[]) {
+  const extracted:Record<string, string> = {}
+  for (const name of names) {
+    if (name in attributes) {
+      extracted[name] = attributes[name]
+      delete attributes[name]
+    }
+  }
+  return extracted
+}
+
+function attributeToString(attributes: Record<string, string>) {
+  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join()
+}
 
 function isBinding (attr: string): boolean {
   return attr.startsWith(':')
