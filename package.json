@@ -39,7 +39,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "rollup": "^4.13.0",
     "nuxt": "workspace:*",
-    "vite": "5.2.2",
+    "vite": "5.2.4",
     "vue": "3.4.21",
     "magic-string": "^0.30.8"
   },
