@@ -81,7 +81,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const { attributes, children, loc } = node
 
             const slotName = attributes.name ?? 'default'
-            let vfor:  string | undefined
+            let vfor: string | undefined
             if (attributes['v-for']) {
               vfor = attributes['v-for']
             }
@@ -100,7 +100,6 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               // pass slot fallback to NuxtTeleportSsrSlot fallback
               const attrString = attributeToString(attributes)
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              debugger
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${vfor ? wrapWithVForDiv(slice, vfor) : slice}</template>`)
             } else {
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
