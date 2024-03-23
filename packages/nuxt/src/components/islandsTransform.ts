@@ -149,7 +149,7 @@ function extractAttributes (attributes: Record<string, string>, names: string[])
   return extracted
 }
 
-function attributeToString(attributes: Record<string, string>) {
+function attributeToString (attributes: Record<string, string>) {
   return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
 }
 
