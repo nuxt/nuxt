@@ -81,9 +81,9 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const { attributes, children, loc } = node
 
             const slotName = attributes.name ?? 'default'
-            let vfor: [string, string] | undefined
+            let vfor:  string | undefined
             if (attributes['v-for']) {
-              vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
+              vfor = attributes['v-for']
             }
             delete attributes['v-for']
 
@@ -92,7 +92,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
             }
             const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes, vfor)
+            const bindings = getPropsToString(attributes, vfor?.split(' in ').map((v: string) => v.trim()) as [string, string])
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
 
@@ -100,7 +100,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               // pass slot fallback to NuxtTeleportSsrSlot fallback
               const attrString = attributeToString(attributes)
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+              debugger
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${vfor ? wrapWithVForDiv(slice, vfor) : slice}</template>`)
             } else {
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
             }
