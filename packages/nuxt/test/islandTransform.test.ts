@@ -65,8 +65,8 @@ describe('islandTransform - server and island components', () => {
               <div>
                 <NuxtTeleportSsrSlot name="default" :props="undefined"><slot /></NuxtTeleportSsrSlot>
 
-                <NuxtTeleportSsrSlot name="named" :props="[{ some-data: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
-                <NuxtTeleportSsrSlot name="other" :props="[{ some-data: someData }]"><slot
+                <NuxtTeleportSsrSlot name="named" :props="[{ [\`some-data\`]: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
+                <NuxtTeleportSsrSlot name="other" :props="[{ [\`some-data\`]: someData }]"><slot
                   name="other"
                   :some-data="someData"
                 /></NuxtTeleportSsrSlot>
@@ -99,7 +99,7 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <NuxtTeleportSsrSlot name="default" :props="[{ some-data: someData }]"><slot :some-data="someData"/><template #fallback>
+                <NuxtTeleportSsrSlot name="default" :props="[{ [\`some-data\`]: someData }]"><slot :some-data="someData"/><template #fallback>
                   <div>fallback</div>
                 </template></NuxtTeleportSsrSlot>
               </div>
