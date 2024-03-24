@@ -1,6 +1,8 @@
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import type { Ref } from "vue"
 
 export default defineComponent({
+  emits: ['intersect'],
   setup (props, { emit }) {
     const intersectionTarget: Ref<Element | null> = ref(null)
     let observer: IntersectionObserver | null = null
@@ -9,7 +11,7 @@ export default defineComponent({
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           emit('intersect')
-          observer.unobserve(entry.target)
+          observer!.unobserve(entry.target)
         }
       })
     }
