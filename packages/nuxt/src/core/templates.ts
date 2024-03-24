@@ -384,7 +384,6 @@ export const publicPathTemplate: NuxtTemplate = {
 export const dollarFetchTemplate: NuxtTemplate = {
   filename: 'fetch.mjs',
   getContents () {
-
     return `import { $fetch } from 'ofetch'
 import { baseURL } from '#internal/nuxt/paths'
 if (!globalThis.$fetch) {
