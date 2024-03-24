@@ -391,7 +391,7 @@ if (!globalThis.$fetch) {
   globalThis.$fetch = $fetch.create({
     baseURL: baseURL()
   })
-}
+}`
   }
 }
 
