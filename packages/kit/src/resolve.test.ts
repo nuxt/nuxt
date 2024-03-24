@@ -8,27 +8,27 @@ import {
 import { defineNuxtModule } from './module/define'
 import { addTemplate } from './template'
 
-describe('resolvePath', () => {
-  const nuxt = await loadNuxt({
-    overrides: {
-      modules: [
-        defineNuxtModule(() => {
-          addTemplate({
-            filename: 'my-template.mjs',
-            getContents: () => 'export const myUtil = () => \'hello\''
-          })
+const nuxt = await loadNuxt({
+  overrides: {
+    modules: [
+      defineNuxtModule(() => {
+        addTemplate({
+          filename: 'my-template.mjs',
+          getContents: () => 'export const myUtil = () => \'hello\''
         })
-      ]
-    }
-  })
+      })
+    ]
+  }
+})
 
+describe('resolvePath', () => {
   it('should resolve paths correctly', async () => {
-    expect(await resolvePath('.nuxt/app.config', { extensions: ['ts', 'mjs'] })).toBe(resolve(nuxt.options.buildDir, 'app.config.mjs'))
+    expect(await resolvePath('.nuxt/app.config')).toBe(resolve(nuxt.options.buildDir, 'app.config'))
   })
 })
 
 describe('findPath', () => {
   it('should find paths correctly', async () => {
-    expect(await findPath(resolve(nuxt.options.buildDir, 'my-template.mjs'))).not.toBeNull()
+    expect(await findPath(resolve(nuxt.options.buildDir, 'my-template.mjs'), { checkTemplates: true })).not.toBeNull()
   })
 })
