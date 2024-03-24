@@ -19,7 +19,7 @@ export interface ResolvePathOptions {
   extensions?: string[]
 
   /** Determine if the file is in Nuxt Templates. Default is false. */
-  checkTemplates?: boolean;
+  checkTemplates?: boolean
 }
 
 /**
