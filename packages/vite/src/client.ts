@@ -178,7 +178,13 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
 
     const viteMiddleware = defineEventHandler(async (event) => {
-      const viteRoutes = viteServer.middlewares.stack.map(m => m.route).filter(r => r.length > 1)
+      const viteRoutes = []
+      for (const viteRoute of viteServer.middlewares.stack) {
+        const m = viteRoute.route
+        if (m.length > 1) {
+          viteRoutes.push(m)
+        }
+      }
       if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
