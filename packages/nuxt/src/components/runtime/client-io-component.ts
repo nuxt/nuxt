@@ -2,10 +2,10 @@ import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
 
 export default defineComponent({
   setup (props, { emit }) {
-    const intersectionTarget = ref(null)
+    const intersectionTarget: Ref<Element | null> = ref(null)
     let observer: IntersectionObserver | null = null
 
-    const intersectionCallback = (entries) => {
+    const intersectionCallback: IntersectionObserverCallback = (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           emit('intersect')
@@ -16,7 +16,7 @@ export default defineComponent({
 
     onMounted(() => {
       observer = new IntersectionObserver(intersectionCallback)
-      observer.observe(intersectionTarget.value)
+      observer.observe(intersectionTarget.value as Element)
     })
 
     onUnmounted(() => {
