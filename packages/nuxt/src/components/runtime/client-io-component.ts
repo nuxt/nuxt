@@ -1,26 +1,32 @@
-import { defineComponent, ref } from "vue"
+import { ref, onMounted, onUnmounted, defineComponent } from 'vue';
+
 export default defineComponent({
-  emits: ['intersected'],
-  setup() {
-    const data = ref(null);
-    const isIntersecting = ref(false);
-    const target = ref(null);
-    let observer: Ref<IntersectionObserver | null> = ref(null)
-    onMounted(() => {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            isIntersecting.value = true;
-            emit('intersected');
-            observer.unobserve(target.value);
-          }
-        });
+  setup(props, { emit }) {
+    const intersectionTarget = ref(null);
+    let observer = null;
+
+    const intersectionCallback = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          emit('intersect');
+          observer.unobserve(entry.target);
+        }
       });
-      observer.observe(target.value);
+    };
+
+    onMounted(() => {
+      observer = new IntersectionObserver(intersectionCallback);
+      observer.observe(intersectionTarget.value);
+    });
+
+    onUnmounted(() => {
+      if (observer) {
+        observer.disconnect();
+      }
     });
 
     return {
-      isIntersecting
+      intersectionTarget
     };
   }
 });
