@@ -17,6 +17,9 @@ export interface ResolvePathOptions {
 
   /** The file extensions to try. Default is Nuxt configured extensions. */
   extensions?: string[]
+
+  /** Determine if the file is in Nuxt Templates. Default is false. */
+  checkTemplates?: boolean;
 }
 
 /**
@@ -92,6 +95,11 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
       if (!pathType || (pathType === 'file' && !_isDir) || (pathType === 'dir' && _isDir)) {
         return rPath
       }
+    }
+
+    const tPath = opts?.checkTemplates && tryUseNuxt()?.options.build.templates.find(template => template.dst === rPath)
+    if (tPath) {
+      return tPath.dst!
     }
   }
   return null
