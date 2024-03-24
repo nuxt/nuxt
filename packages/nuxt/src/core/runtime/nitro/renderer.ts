@@ -31,7 +31,7 @@ import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { buildAssetsURL, publicAssetsURL } from '#paths'
+import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
