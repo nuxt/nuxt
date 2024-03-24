@@ -1,5 +1,6 @@
 import { defineComponent } from "vue"
 export default defineComponent({
+  emits: ['intersected'],
   setup() {
     const data = ref(null);
     const isIntersecting = ref(false);
@@ -10,6 +11,7 @@ export default defineComponent({
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             isIntersecting.value = true;
+            emit('intersected');
             observer.unobserve(target.value);
           }
         });
