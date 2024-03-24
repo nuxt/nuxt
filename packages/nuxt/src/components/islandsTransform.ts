@@ -81,7 +81,12 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 
             // pass slot fallback to NuxtTeleportSsrSlot fallback
             if (children.length) {
-              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" ` : value).join(' ')
+              let attrString = ''
+              for (const name in attributes) {
+                const value = attributes[name]
+                attrString += (name ? `${name}="${value}" ` : value) + ' '
+              }
+              attrString = attrString.slice(0, -1)
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             }
@@ -89,7 +94,8 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const slotName = attributes.name ?? 'default'
             let vfor: [string, string] | undefined
             if (attributes['v-for']) {
-              vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
+              const attrs = attributes['v-for'].split(' in ')
+              vfor = [attrs[0].trim(), attrs[1].trim()] as [string, string]
             }
             delete attributes['v-for']
 
@@ -138,7 +144,14 @@ function isBinding (attr: string): boolean {
 
 function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
+  let content = ''
+  for (const b in bindings) {
+    if (b && b !== '_bind') {
+      const value = bindings[b]
+      content += (isBinding(b) ? `${b.slice(1)}: ${value}` : `${b}: \`${value}\``) + ','
+    }
+  }
+  content = content.slice(0, -1)
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
@@ -170,7 +183,8 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
       async generateBundle (_opts, bundle) {
         const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
         const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
+        for (const chunkPath in bundle) {
+          const chunkInfo = bundle[chunkPath]
           if (chunkInfo.type !== 'chunk') { continue }
 
           for (const component of components) {

@@ -44,7 +44,7 @@ export function clearNuxtState (
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)
-    .map(key => key.substring(useStateKeyPrefix.length))
+    .map(key => key.substring(2))
 
   const _keys: string[] = !keys
     ? _allKeys
