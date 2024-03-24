@@ -1,5 +1,5 @@
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
-import type { Ref } from "vue"
+import type { Ref } from 'vue'
 
 export default defineComponent({
   emits: ['intersect'],
