@@ -3,7 +3,7 @@ import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
 export default defineComponent({
   setup (props, { emit }) {
     const intersectionTarget = ref(null)
-    let observer = null
+    let observer: IntersectionObserver | null = null
 
     const intersectionCallback = (entries) => {
       entries.forEach((entry) => {
