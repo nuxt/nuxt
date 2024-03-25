@@ -1,19 +1,4 @@
-import type {
-  AllowedComponentProps,
-  AnchorHTMLAttributes,
-  ComputedRef,
-  DefineComponent,
-  InjectionKey, PropType,
-  VNodeProps
-} from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
-import { preloadRouteComponents } from './composables/preload'
-import { onNuxtReady } from './composables/ready'
-import { navigateTo, useRouter } from './composables/router'
-import { useNuxtApp, useRuntimeConfig } from './nuxt'
-import { cancelIdleCallback, requestIdleCallback } from './idle-callback'
+import { useNuxtApp } from './nuxt'
 
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
