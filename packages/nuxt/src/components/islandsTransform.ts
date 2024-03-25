@@ -112,17 +112,14 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
             if (isVite) {
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
-
-              const vIf = attributes['v-if']
-              delete attributes['v-if']
+              const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
 
               let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-
-              if (vIf) {
-                startTag = startTag.replace(`v-if="${vIf}"`, '')
+              if (wrapperAttributes) {
+                startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
               }
 
-              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${vIf ? ` v-if="${vIf}"` : ''} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
+              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
               s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
             }
