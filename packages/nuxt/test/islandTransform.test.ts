@@ -65,8 +65,8 @@ describe('islandTransform - server and island components', () => {
               <div>
                 <NuxtTeleportSsrSlot name="default" :props="undefined"><slot /></NuxtTeleportSsrSlot>
 
-                <NuxtTeleportSsrSlot name="named" :props="[{ some-data: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
-                <NuxtTeleportSsrSlot name="other" :props="[{ some-data: someData }]"><slot
+                <NuxtTeleportSsrSlot name="named" :props="[{ [\`some-data\`]: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
+                <NuxtTeleportSsrSlot name="other" :props="[{ [\`some-data\`]: someData }]"><slot
                   name="other"
                   :some-data="someData"
                 /></NuxtTeleportSsrSlot>
@@ -99,7 +99,7 @@ describe('islandTransform - server and island components', () => {
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <NuxtTeleportSsrSlot name="default" :props="[{ some-data: someData }]"><slot :some-data="someData"  /><template #fallback>
+                <NuxtTeleportSsrSlot name="default" :props="[{ [\`some-data\`]: someData }]"><slot :some-data="someData"/><template #fallback>
                   <div>fallback</div>
                 </template></NuxtTeleportSsrSlot>
               </div>
@@ -158,7 +158,7 @@ describe('islandTransform - server and island components', () => {
                     <p>message: {{ message }}</p>
                     <p>Below is the slot I want to be hydrated on the client</p>
                     <div>
-                      <NuxtTeleportSsrSlot name="default" :props="undefined"><slot  /><template #fallback>
+                      <NuxtTeleportSsrSlot name="default" :props="undefined"><slot/><template #fallback>
                         This is the default content of the slot, I should not see this after
                         the client loading has completed.
                       </template></NuxtTeleportSsrSlot>
@@ -181,6 +181,33 @@ describe('islandTransform - server and island components', () => {
             const message = "Hello World";
             </script>
             "
+      `)
+    })
+
+    it('expect v-if/v-else/v-else-if to be set in teleport component wrapper', async () => {
+      const result = await viteTransform(`<script setup lang="ts">
+      const foo = true;
+      </script>
+      <template>
+      <slot v-if="foo" />
+      <slot v-else-if="test" />
+      <slot v-else />
+      </template>
+      `, 'WithVif.vue', false, true)
+
+      expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+        "<script setup lang="ts">
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
+              const foo = true;
+              </script>
+              <template>
+              <NuxtTeleportSsrSlot v-if="foo" name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              <NuxtTeleportSsrSlot v-else-if="test" name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              <NuxtTeleportSsrSlot v-else name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              </template>
+              "
       `)
     })
   })
