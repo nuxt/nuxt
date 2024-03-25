@@ -12,7 +12,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
       let unobserve: (() => void) | null = null
       onMounted(() => {
         const observer = useObserver()
-        unobserve = observer.observe(el.value as Element, () => {
+        unobserve = observer!.observe(el.value as Element, () => {
           isIntersecting.value = true
           unobserve?.()
           unobserve = null
