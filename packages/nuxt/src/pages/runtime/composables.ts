@@ -3,6 +3,7 @@ import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack'
+import { useNuxtApp } from '#app/nuxt'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
@@ -58,8 +59,9 @@ export const definePageMeta = (meta: PageMeta): void => {
     const component = getCurrentInstance()?.type
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
-      if (isRouteComponent) {
-        // don't warn if it's being used in a route component
+      const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
+      if (isRouteComponent || isRenderingServerPage) {
+        // don't warn if it's being used in a route component (or server page)
         return
       }
     } catch {

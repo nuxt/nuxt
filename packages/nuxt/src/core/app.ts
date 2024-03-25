@@ -47,6 +47,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       const oldContents = nuxt.vfs[fullPath]
       const contents = await compileTemplate(template, templateContext).catch((e) => {
         logger.error(`Could not compile template \`${template.filename}\`.`)
+        logger.error(e)
         throw e
       })
 

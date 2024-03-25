@@ -539,3 +539,10 @@ export function pathToNitroGlob (path: string) {
 
   return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
 }
+
+export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
+  return [
+    joinURL(parent, page.path),
+    ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || []
+  ]
+}

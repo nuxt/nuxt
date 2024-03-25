@@ -1,10 +1,7 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-// These files must be imported first as they have side effects:
-// 1. (we set __webpack_public_path via this import, if using webpack builder)
-import '#build/paths.mjs'
-// 2. we set globalThis.$fetch via this import
+// This file must be imported first as we set globalThis.$fetch via this import
 import '#build/fetch.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'

@@ -30,6 +30,11 @@ export default defineNuxtConfig({
       val: 1
     }
   },
+  routeRules: {
+    '/param': {
+      redirect: '/param/1'
+    }
+  },
   modules: [
     function () {
       addTypeTemplate({

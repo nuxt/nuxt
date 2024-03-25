@@ -6,7 +6,7 @@ import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
-import { buildAssetsURL } from '#build/paths.mjs'
+import { buildAssetsURL } from '#internal/nuxt/paths'
 
 export interface NuxtAppManifestMeta {
   id: string

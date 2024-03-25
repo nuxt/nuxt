@@ -206,7 +206,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
-      '#paths': resolve(distDir, 'core/runtime/nitro/paths'),
+      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
 
       // Nuxt aliases
       ...nuxt.options.alias

@@ -131,7 +131,7 @@ async function initNuxt (nuxt: Nuxt) {
   const config = {
     rootDir: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
-    exclude: [join(nuxt.options.rootDir, 'index.html')],
+    exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt)
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
