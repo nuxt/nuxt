@@ -1,34 +1,38 @@
-import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
-import type { Ref } from 'vue'
+import { defineComponent, h, ref, onMounted, onBeforeUnmount } from 'vue'
+import type { Component, Ref } from "vue"
+import ClientOnly from '#app/components/client-only'
+import { useObserver } from "#app/utils"
 
-export default defineComponent({
-  emits: ['intersect'],
-  setup (props, { emit }) {
-    const intersectionTarget: Ref<Element | null> = ref(null)
-    let observer: IntersectionObserver | null = null
-
-    const intersectionCallback: IntersectionObserverCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          emit('intersect')
-          observer!.unobserve(entry.target)
-        }
+export const createLazyIOClientPage = (componentLoader: Component) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      const isIntersecting = ref(false);
+      const el: Ref<Element | null> = ref(null);
+      let unobserve: (() => void) | null = null
+      onMounted(() => {
+        const observer = useObserver()
+        unobserve = observer.observe(el.value as Element, () => {
+          isIntersecting.value = true
+          unobserve?.()
+          unobserve = null
+        })
+      });
+      onBeforeUnmount(() => {
+        unobserve?.()
+        unobserve = null
       })
+      return () => h('div', { ref: el }, [
+        h(ClientOnly, undefined, {
+          default: () => {
+            if (isIntersecting.value) {
+              return h(componentLoader, attrs);
+            } else {
+              return null;
+            }
+          }
+        })
+      ]);
     }
-
-    onMounted(() => {
-      observer = new IntersectionObserver(intersectionCallback)
-      observer.observe(intersectionTarget.value as Element)
-    })
-
-    onUnmounted(() => {
-      if (observer) {
-        observer.disconnect()
-      }
-    })
-
-    return {
-      intersectionTarget
-    }
-  }
-})
+  });
+};
