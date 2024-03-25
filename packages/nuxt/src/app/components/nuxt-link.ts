@@ -14,7 +14,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import { useObserver } from "../utils"
+import { useObserver } from '../utils'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
