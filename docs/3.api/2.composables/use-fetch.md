@@ -72,6 +72,10 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 
 :link-example{to="/docs/examples/features/data-fetching"}
 
+::note
+If you use `useFetch` to call a https URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
+::
+
 ## Params
 
 - `URL`: The URL to fetch.
