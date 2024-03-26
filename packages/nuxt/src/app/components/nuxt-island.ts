@@ -116,8 +116,8 @@ export default defineComponent({
 
     const ssrHTML = ref<string>('')
 
-    if (import.meta.client && instance.vnode.el) {
-      ssrHTML.value = getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') || ''
+    if (import.meta.client && instance.vnode?.el) {
+      ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
       nuxtApp.payload.data[key].html = ssrHTML.value
@@ -250,7 +250,7 @@ export default defineComponent({
           // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
 
-          if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : mounted.value || instance.vnode.el)) {
+          if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
               if (availableSlots.value.includes(slot)) {
                 teleports.push(createVNode(Teleport,
