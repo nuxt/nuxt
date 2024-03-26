@@ -380,6 +380,31 @@ describe('islandTransform - server and island components', () => {
       `)
         expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
       })
+
+      it('should move v-if to the wrapper component', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+        <HelloWorld v-if="false" nuxt-client />
+        <HelloWorld v-else-if="true" nuxt-client />
+        <HelloWorld v-else nuxt-client />
+        </div>
+      </template>
+      `, 'hello.server.vue', false, true)
+
+        expect(result).toMatchInlineSnapshot(`
+          "<script setup>
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
+                  <div>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  </div>
+                </template>
+                "
+        `)
+      })
     })
 
     describe('webpack', () => {
