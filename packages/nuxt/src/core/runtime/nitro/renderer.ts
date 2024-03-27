@@ -21,7 +21,7 @@ import type { HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
 
-import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
+import { defineRenderHandler, getRouteRules, useAppConfig, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
@@ -190,19 +190,19 @@ const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
-      get<T = unknown> (key: string): Promise<T> | undefined {
-        if (sharedPrerenderKeys.has(key)) {
-          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
-        }
-      },
-      async set<T> (key: string, value: Promise<T>): Promise<void> {
-        sharedPrerenderKeys.add(key)
+    get<T = unknown> (key: string): Promise<T> | undefined {
+      if (sharedPrerenderKeys.has(key)) {
+        return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+      }
+    },
+    async set<T> (key: string, value: Promise<T>): Promise<void> {
+      sharedPrerenderKeys.add(key)
       sharedPrerenderPromises!.set(key, value)
       useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
         // free up memory after the promise is resolved
         .finally(() => sharedPrerenderPromises!.delete(key))
-      }
     }
+  }
   : null
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
@@ -326,7 +326,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + (useAppConfig().nuxt as any)?.buildId : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
