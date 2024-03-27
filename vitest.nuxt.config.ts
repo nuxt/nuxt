@@ -1,6 +1,11 @@
 import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
+  resolve: {
+    alias: {
+      '#vue-router': 'vue-router'
+    }
+  },
   test: {
     dir: './test/nuxt',
     coverage: {
