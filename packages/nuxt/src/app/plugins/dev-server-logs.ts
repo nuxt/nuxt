@@ -37,7 +37,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.hook('dev:ssr-logs', (logs) => {
       for (const log of logs) {
         // deduplicate so we don't print out things that are logged on client
-        if (!hydrationLogs.size || !hydrationLogs.has(JSON.stringify(log.args))) {
+        try {
+          if (!hydrationLogs.size || !hydrationLogs.has(JSON.stringify(log.args))) {
+            logger.log(normalizeServerLog({ ...log }))
+          }
+        } catch {
           logger.log(normalizeServerLog({ ...log }))
         }
       }
@@ -50,7 +54,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   // pass SSR logs after hydration
   nuxtApp.hooks.hook('app:suspense:resolve', async () => {
     if (typeof window !== 'undefined') {
-      const logs = parse(document.getElementById('__NUXT_LOGS__')?.textContent || '[]', nuxtApp._payloadRevivers) as LogObject[]
+      const content = document.getElementById('__NUXT_LOGS__')?.textContent
+      const logs = content ? parse(content, nuxtApp._payloadRevivers) as LogObject[] : []
       await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
     }
   })
