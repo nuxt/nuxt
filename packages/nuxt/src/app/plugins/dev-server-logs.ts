@@ -1,5 +1,6 @@
 import { consola, createConsola } from 'consola'
 import type { LogObject } from 'consola'
+import { parse } from 'devalue'
 
 import { defineNuxtPlugin } from '../nuxt'
 
@@ -7,7 +8,12 @@ import { defineNuxtPlugin } from '../nuxt'
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (!import.meta.client || import.meta.test) { return }
+  if (import.meta.test) { return }
+
+  if (import.meta.server) {
+    nuxtApp.ssrContext!.event.context._payloadReducers = nuxtApp.ssrContext!._payloadReducers
+    return
+  }
 
   // Show things in console
   if (devLogs !== 'silent') {
@@ -43,8 +49,9 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // pass SSR logs after hydration
   nuxtApp.hooks.hook('app:suspense:resolve', async () => {
-    if (typeof window !== 'undefined' && window.__NUXT_LOGS__) {
-      await nuxtApp.hooks.callHook('dev:ssr-logs', window.__NUXT_LOGS__)
+    if (typeof window !== 'undefined') {
+      const logs = parse(document.getElementById('__NUXT_LOGS__')?.textContent || '[]', nuxtApp._payloadRevivers) as LogObject[]
+      await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
     }
   })
 })

@@ -18,7 +18,6 @@ declare global {
   interface ImportMeta extends NuxtStaticBuildFlags {}
 
   interface Window {
-    __NUXT_LOGS__?: LogObject[]
     __NUXT__?: Record<string, any>
     useNuxtApp?: typeof useNuxtApp
   }
