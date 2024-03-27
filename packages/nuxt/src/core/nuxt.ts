@@ -201,7 +201,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Add component usage detection
     const detectedComponents = new Set<string>()
 
-    const componentDetectionConfig = {
+    addBuildPlugin(DetectComponentUsagePlugin({
       rootDir: nuxt.options.rootDir,
       exclude: [
         // Exclude top-level resolutions by plugins
@@ -214,21 +214,16 @@ async function initNuxt (nuxt: Nuxt) {
         resolve(distDir, 'pages/runtime/app.vue')
       ],
       detectedComponents
-    }
-
-    addBuildPlugin(DetectComponentUsagePlugin(componentDetectionConfig))
+    }))
 
     addTemplate({
       filename: 'detected-component-usage.mjs',
-      options: { detectedComponents, nuxtOptions: nuxt.options },
-      getContents: data =>
-        `export const hasPages = ${data.options.nuxtOptions.pages};
-      export const isNuxtLayoutUsed = ${data.options.detectedComponents.has(
-        'NuxtLayout'
-      )};
-      export const isNuxtPageUsed = ${data.options.detectedComponents.has(
-        'NuxtPage'
-      )};`
+      getContents: ({ nuxt }) =>
+        [
+          `export const hasPages = ${nuxt.options.pages}`,
+          `export const isNuxtLayoutUsed = ${detectedComponents.has('NuxtLayout')}`,
+          `export const isNuxtPageUsed = ${detectedComponents.has('NuxtPage')}`
+        ].join('\n')
     })
 
     addPlugin(resolve(nuxt.options.appDir, 'plugins/check-component-usage'))
