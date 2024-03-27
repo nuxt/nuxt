@@ -37,7 +37,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "rollup": "^4.13.0",
+    "rollup": "^4.13.1",
     "nuxt": "workspace:*",
     "vite": "5.2.6",
     "vue": "3.4.21",
