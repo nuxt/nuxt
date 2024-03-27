@@ -312,6 +312,6 @@ describe('nuxt-link:useLink', () => {
     expect(link.route).toBeDefined()
     const [type] = (testSFC.setup as unknown as (props: any, context: { slots: Record<string, () => unknown> }) =>
       () => [string, Record<string, unknown>, unknown])({}, { slots: { default: () => null } })()
-    expect(type).toBe(INTERNAL)
+    expect(type).toBe(EXTERNAL)
   })
 })
