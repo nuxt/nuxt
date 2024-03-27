@@ -1,5 +1,4 @@
 import type { UseHeadInput } from '@unhead/vue'
-import type { LogObject } from 'consola'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
 
 interface NuxtStaticBuildFlags {
@@ -18,7 +17,6 @@ declare global {
   interface ImportMeta extends NuxtStaticBuildFlags {}
 
   interface Window {
-    __NUXT_LOGS__?: LogObject[]
     __NUXT__?: Record<string, any>
     useNuxtApp?: typeof useNuxtApp
   }
