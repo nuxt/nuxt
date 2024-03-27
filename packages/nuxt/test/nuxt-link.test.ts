@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import { defineComponent, h } from 'vue'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
@@ -289,5 +290,28 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ href: 'mailto:test@example.com' }, removeSlashOptions).props.href).toEqual('mailto:test@example.com')
       })
     })
+  })
+})
+
+describe('nuxt-link:useLink', () => {
+  const NuxtLinkComponent = defineNuxtLink({ componentName: 'NuxtLink' })
+
+  it('NuxtLink has useLink property', () => {
+    expect(NuxtLinkComponent).toHaveProperty('useLink')
+    expect('useLink' in NuxtLinkComponent).toBeTruthy()
+  })
+  it.skipIf(process.env.SKIP_NUXT_USE_LINK === 'true')('NuxtLink.useLink works', () => {
+    const link = NuxtLinkComponent.useLink({ to: '/to' })
+    const testSFC = defineComponent({
+      setup () {
+        const link = NuxtLinkComponent.useLink({ to: '/to' })
+        return () => h('a', { href: link.route.value.href }, 'test')
+      }
+    })
+    expect(link).toBeDefined()
+    expect(link.route).toBeDefined()
+    const [type] = (testSFC.setup as unknown as (props: any, context: { slots: Record<string, () => unknown> }) =>
+      () => [string, Record<string, unknown>, unknown])({}, { slots: { default: () => null } })()
+    expect(type).toBe(INTERNAL)
   })
 })
