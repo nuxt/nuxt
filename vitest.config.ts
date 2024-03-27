@@ -10,7 +10,8 @@ export default defineConfig({
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
       '#internal/nuxt/paths': resolve('./test/mocks/paths'),
       '#build/app.config.mjs': resolve('./test/mocks/app-config'),
-      '#app': resolve('./packages/nuxt/dist/app')
+      '#app': resolve('./packages/nuxt/dist/app'),
+      '#vue-router': 'vue-router'
     }
   },
   test: {
