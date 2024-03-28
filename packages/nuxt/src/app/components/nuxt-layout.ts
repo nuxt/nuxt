@@ -76,10 +76,6 @@ export default defineComponent({
       useRouter().beforeEach(removeErrorHook)
     }
 
-    if (import.meta.dev) {
-      nuxtApp._isNuxtLayoutUsed = true
-    }
-
     return () => {
       const hasLayout = layout.value && layout.value in layouts
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition

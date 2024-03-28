@@ -1,6 +1,5 @@
 import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
-import { useNuxtApp } from '../nuxt'
 import { getFragmentHTML } from './utils'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
@@ -13,12 +12,6 @@ export default defineComponent({
   setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
-    // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
-    if (import.meta.dev) {
-      const nuxtApp = useNuxtApp()
-      nuxtApp._isNuxtPageUsed = true
-      nuxtApp._isNuxtLayoutUsed = true
-    }
     provide(clientOnlySymbol, true)
     return (props: any) => {
       if (mounted.value) { return slots.default?.() }

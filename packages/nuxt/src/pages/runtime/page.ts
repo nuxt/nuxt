@@ -62,10 +62,6 @@ export default defineComponent({
       })
     }
 
-    if (import.meta.dev) {
-      nuxtApp._isNuxtPageUsed = true
-    }
-
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {

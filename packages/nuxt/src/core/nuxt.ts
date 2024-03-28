@@ -1,7 +1,7 @@
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -25,6 +25,7 @@ import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
+import { DetectComponentUsagePlugin } from './plugins/detect-component-usage'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
 import { addModuleTranspiles } from './modules'
 import { initNitro } from './nitro'
@@ -197,8 +198,35 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   if (nuxt.options.dev) {
-    // Add plugin to check if layouts are defined without NuxtLayout being instantiated
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+    // Add component usage detection
+    const detectedComponents = new Set<string>()
+
+    addBuildPlugin(DetectComponentUsagePlugin({
+      rootDir: nuxt.options.rootDir,
+      exclude: [
+        // Exclude top-level resolutions by plugins
+        join(nuxt.options.rootDir, 'index.html'),
+        // Keep only imports coming from the user's project (inside the rootDir)
+        new RegExp(`^(?!${escapeRE(nuxt.options.rootDir)}/).+[^\n]+$`)
+      ],
+      include: [
+        // Keep the imports coming from the auto-generated runtime app.vue
+        resolve(distDir, 'pages/runtime/app.vue')
+      ],
+      detectedComponents
+    }))
+
+    addTemplate({
+      filename: 'detected-component-usage.mjs',
+      getContents: ({ nuxt }) =>
+        [
+          `export const hasPages = ${nuxt.options.pages}`,
+          `export const isNuxtLayoutUsed = ${detectedComponents.has('NuxtLayout')}`,
+          `export const isNuxtPageUsed = ${detectedComponents.has('NuxtPage')}`
+        ].join('\n')
+    })
+
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-component-usage'))
   }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
