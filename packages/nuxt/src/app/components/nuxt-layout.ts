@@ -7,7 +7,7 @@ import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapIf } from './utils'
+import { _mergeTransitionProps, _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -82,11 +82,18 @@ export default defineComponent({
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
+      const transitionProps = _mergeTransitionProps([
+        route.meta.layoutTransition ?? defaultLayoutTransition,
+        { onAfterLeave: () => { nuxtApp.callHook('layout:transition:finish', layoutRef.value) } }
+      ])
 
       // We avoid rendering layout transition if there is no layout to render
       return _wrapIf(Transition, hasLayout && transitionProps, {
-        default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
+        default: () => h(Suspense, {
+          suspensible: true,
+          onPending: () => { nuxtApp.callHook('layout:start', layoutRef.value) },
+          onResolve: () => { nextTick(() => nuxtApp.callHook('layout:finish', layoutRef.value).finally(done)) }
+        }, {
           default: () => h(
             LayoutProvider,
             {
