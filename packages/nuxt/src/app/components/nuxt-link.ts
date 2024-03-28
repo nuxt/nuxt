@@ -7,7 +7,8 @@ import type {
   VNodeProps
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from '#vue-router'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps, UseLinkOptions } from '#vue-router'
+import { useLink } from '#vue-router'
 import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -120,6 +121,47 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     return resolvedPath
   }
 
+  function useNuxtLink (linkOptions: NuxtLinkProps): ReturnType<typeof useLink> {
+    const router = useRouter()
+    const config = useRuntimeConfig()
+
+    // Resolving `to` value from `to` and `href` props
+    const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
+      checkPropConflicts(linkOptions, 'to', 'href')
+      const path = linkOptions.to || linkOptions.href || '' // Defaults to empty string (won't render any `href` attribute)
+      return resolveTrailingSlashBehavior(path, router.resolve)
+    })
+
+    // Lazily check whether to.value has a protocol
+    const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
+    // Resolves `to` value if it's a route location object
+    const href = computed(() => (typeof to.value === 'object'
+      ? router.resolve(to.value)?.href ?? null
+      : (to.value && !linkOptions.external && !isAbsoluteUrl.value)
+          ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
+          : to.value
+    ))
+
+    const {
+      isActive,
+      isExactActive,
+      route
+    } = useLink({
+      ...linkOptions,
+      to: to.value
+    })
+
+    return {
+      href,
+      isActive,
+      isExactActive,
+      route,
+      async navigate () {
+        await navigateTo(to.value, { replace: linkOptions.replace, external: linkOptions.external })
+      }
+    }
+  }
+
   return defineComponent({
     name: componentName,
     props: {
@@ -207,6 +249,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         required: false
       }
     },
+    useLink: (props: UseLinkOptions) => useNuxtLink(props as NuxtLinkProps),
     setup (props, { slots }) {
       const router = useRouter()
       const config = useRuntimeConfig()

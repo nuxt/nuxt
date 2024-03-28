@@ -5,12 +5,16 @@ import { isWindows } from 'std-env'
 
 export default defineConfig({
   // plugins: [codspeedPlugin()],
+  define: {
+    'process.env.SKIP_NUXT_USE_LINK': 'true'
+  },
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
       '#internal/nuxt/paths': resolve('./test/mocks/paths'),
       '#build/app.config.mjs': resolve('./test/mocks/app-config'),
-      '#app': resolve('./packages/nuxt/dist/app')
+      '#app': resolve('./packages/nuxt/dist/app'),
+      '#vue-router': 'vue-router'
     }
   },
   test: {
