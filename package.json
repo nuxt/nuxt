@@ -61,7 +61,7 @@
     "eslint-multiplexer": "2.0.0",
     "eslint-plugin-jest": "27.6.3",
     "execa": "^5.1.1",
-    "express": "4.18.2",
+    "express": "4.19.2",
     "finalhandler": "1.2.0",
     "fs-extra": "10.1.0",
     "get-port": "7.0.0",
