@@ -111,8 +111,10 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       get: () => previousRoute.value
     })
 
+    const resolvedInitialRoute = router.resolve(initialURL)
+
     // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
+    const _route = shallowRef(resolvedInitialRoute as RouteLocation)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
@@ -142,7 +144,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     try {
       if (import.meta.server) {
-        await router.push(initialURL)
+        await router.push(resolvedInitialRoute)
       }
 
       await router.isReady()
@@ -254,11 +256,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        const to = router.resolve(initialURL)
         // #4920, #4982
-        if ('name' in to) { to.name = undefined }
+        if ('name' in resolvedInitialRoute) {
+          resolvedInitialRoute.name = undefined
+        }
         await router.replace({
-          ...to,
+          ...resolvedInitialRoute,
           force: true
         })
         // reset scroll behavior to initial value
