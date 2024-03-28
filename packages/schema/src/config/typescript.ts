@@ -32,7 +32,22 @@ export default defineUntypedSchema({
      */
     hoist: {
       $resolve: (val) => {
-        const defaults = ['nitropack', 'defu', 'h3', '@unhead/vue', 'vue', 'vue-router', '@nuxt/schema', 'nuxt', 'consola', 'ofetch']
+        const defaults = [
+          // Nitro auto-imported/augmented dependencies
+          'nitropack',
+          'defu',
+          'h3',
+          'consola',
+          'ofetch',
+          // Key nuxt dependencies
+          '@unhead/vue',
+          'vue',
+          '@vue/runtime-core',
+          '@vue/runtime-dom',
+          'vue-router',
+          '@nuxt/schema',
+          'nuxt'
+        ]
         return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
       }
     },
