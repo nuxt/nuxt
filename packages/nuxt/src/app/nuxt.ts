@@ -315,12 +315,7 @@ export function createNuxtApp (options: CreateOptions) {
       Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
     }
     nuxtApp.ssrContext!.payload = nuxtApp.payload
-
-    // Expose client runtime-config to the payload
-    nuxtApp.ssrContext!.config = {
-      public: options.ssrContext!.runtimeConfig.public,
-      app: options.ssrContext!.runtimeConfig.app
-    }
+    nuxtApp.ssrContext!.config = options.ssrContext!.runtimeConfig
   }
 
   // Listen to chunk load errors

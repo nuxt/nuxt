@@ -170,10 +170,17 @@ const getSPARenderer = lazyCachedFunction(async () => {
       state: {},
       once: new Set<string>()
     }
-    ssrContext.config = {
+
+    // client side config
+    const csc = ssrContext.config = {
       public: config.public,
       app: config.app
     }
+
+    if (import.meta.dev) {
+      configureErrorGetter(config, csc)
+    }
+
     return Promise.resolve(result)
   }
 
@@ -182,6 +189,22 @@ const getSPARenderer = lazyCachedFunction(async () => {
     renderToString
   }
 })
+
+/**
+ * Configure error getter on runtime secret property access that doesn't exist in SPA
+ */
+const configureErrorGetter = (serverSideConfig: Record<string, unknown>, clientSideConfig: Record<string, unknown>) => {
+  for (const key in serverSideConfig) {
+    if (key in clientSideConfig) { continue }
+
+    Object.defineProperty(clientSideConfig, key, {
+      get () {
+        throw new Error(`Runtime config key ${key} is not available on the client side. See useRuntimeConfig for more information`)
+      },
+      enumerable: true
+    })
+  }
+}
 
 const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
