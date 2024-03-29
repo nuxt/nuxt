@@ -542,8 +542,8 @@ importers:
         specifier: 5.91.0
         version: 5.91.0
       webpack-dev-middleware:
-        specifier: 7.1.1
-        version: 7.1.1(webpack@5.91.0)
+        specifier: 7.2.0
+        version: 7.2.0(webpack@5.91.0)
 
   packages/vite:
     dependencies:
@@ -789,8 +789,8 @@ importers:
         specifier: ^4.10.1
         version: 4.10.1
       webpack-dev-middleware:
-        specifier: ^7.1.1
-        version: 7.1.1(webpack@5.91.0)
+        specifier: ^7.2.0
+        version: 7.2.0(webpack@5.91.0)
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -12119,8 +12119,8 @@ packages:
       - utf-8-validate
     dev: false
 
-  /webpack-dev-middleware@7.1.1(webpack@5.91.0):
-    resolution: {integrity: sha512-NmRVq4AvRQs66dFWyDR4GsFDJggtSi2Yn38MXLk0nffgF9n/AIP4TFBg2TQKYaRAN4sHuKOTiz9BnNCENDLEVA==}
+  /webpack-dev-middleware@7.2.0(webpack@5.91.0):
+    resolution: {integrity: sha512-VLzmsjJrf+3UVf3QsT3E7xZ9F9bdhUhQFGRxyl6bmYR+W519UWnK6/teZeqAFFjWEtpVs+JqNPCVqB/s7P4tGg==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: ^5.0.0
