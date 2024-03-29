@@ -1,6 +1,6 @@
 ### 🔗 Linked issue
 
-<!-- Please ensure there is an open issue and mention its number as #123 -->
+<!-- Please ensure there is an open issue and mention its number. For example, "resolves #123" -->
 
 ### 📚 Description
 
