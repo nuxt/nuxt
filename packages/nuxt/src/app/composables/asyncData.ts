@@ -218,14 +218,14 @@ export function useAsyncData<
   const handler = import.meta.client || !import.meta.prerender || !nuxtApp.ssrContext?._sharedPrerenderCache
     ? _handler
     : () => {
-      const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
-      if (value) { return value as Promise<ResT> }
+        const value = nuxtApp.ssrContext!._sharedPrerenderCache!.get(key)
+        if (value) { return value as Promise<ResT> }
 
-      const promise = nuxtApp.runWithContext(_handler)
+        const promise = nuxtApp.runWithContext(_handler)
 
       nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
       return promise
-    }
+      }
 
   // Used to get default values
   const getDefault = () => null
