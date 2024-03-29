@@ -6,6 +6,7 @@ import type { AppHeadMetaObject } from '../types/head'
 export default defineUntypedSchema({
   /**
    * Vue.js config
+   * @type {typeof import('../src/types/config').VueConfig}
    */
   vue: {
     template: {
@@ -16,7 +17,7 @@ export default defineUntypedSchema({
         image: ['xlink:href', 'href'],
         use: ['xlink:href', 'href']
       }
-    },
+    } satisfies import('@vitejs/plugin-vue').Options['template'],
     /**
      * Options for the Vue compiler that will be passed at build time.
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
