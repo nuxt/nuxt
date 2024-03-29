@@ -39,6 +39,10 @@ describe('components:transform', () => {
       "import { createServerComponent } from "/Users/daniel/code/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component"
       export default createServerComponent("Foo")"
     `)
+    expect(await transform('', '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=Foo')).toMatchInlineSnapshot(`
+      "import { createServerComponent } from "/Users/daniel/code/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component"
+      export const Foo = createServerComponent("Foo")"
+    `)
   })
 
   it('should correctly resolve client-only components', async () => {
@@ -62,6 +66,11 @@ describe('components:transform', () => {
       "import { defineAsyncComponent } from "vue"
       import { createClientOnly } from "#app/components/client-only"
       export default defineAsyncComponent(() => import("/Foo.vue").then(r => createClientOnly(r["default"] || r.default || r)))"
+    `)
+    expect(await transform('', '/Foo.vue?nuxt_component=client,async&nuxt_component_name=Foo&nuxt_component_export=Foo')).toMatchInlineSnapshot(`
+      "import { defineAsyncComponent } from "vue"
+      import { createClientOnly } from "#app/components/client-only"
+      export const Foo = defineAsyncComponent(() => import("/Foo.vue").then(r => createClientOnly(r["Foo"] || r.default || r)))"
     `)
   })
 })
