@@ -15,7 +15,7 @@ When prerendering, you can hint to Nitro to prerender additional paths, even if 
 ::
 
 ::note
-`prerenderRoutes` has to be executed during prerendering. If the `prerenderRoutes` is used in dynamic pages/routes, then it will never be executed.
+`prerenderRoutes` has to be executed during prerendering. If the `prerenderRoutes` is used in dynamic pages/routes which are not prerendered, then it will not be executed.
 ::
 
 ```js
