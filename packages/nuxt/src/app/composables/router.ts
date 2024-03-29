@@ -125,18 +125,16 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
 
   // Early open handler
-  if (options?.open) {
-    if (import.meta.client) {
-      const { target = '_blank', windowFeatures = {} } = options.open
+  if (import.meta.client && options?.open) {
+    const { target = '_blank', windowFeatures = {} } = options.open
 
-      const features = Object.entries(windowFeatures)
-        .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-        .join(', ')
+    const features = Object.entries(windowFeatures)
+      .filter(([_, value]) => value !== undefined)
+      .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+      .join(', ')
 
-      open(toPath, target, features)
-      return Promise.resolve()
-    }
+    open(toPath, target, features)
+    return Promise.resolve()
   }
 
   const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
