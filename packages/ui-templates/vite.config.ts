@@ -2,7 +2,7 @@ import { resolve } from 'path'
 import { readdirSync } from 'fs'
 
 import { defineConfig } from 'vite'
-import WindiCSS from 'vite-plugin-windicss'
+import UnoCSS from 'unocss/vite'
 
 import { DevRenderingPlugin } from './lib/dev'
 import { RenderPlugin } from './lib/render'
@@ -24,12 +24,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    WindiCSS({
-      scan: {
-        dirs: ['templates'],
-        fileExtensions: ['html']
-      }
-    }),
+    UnoCSS(),
     DevRenderingPlugin(),
     RenderPlugin()
   ],

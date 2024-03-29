@@ -1,15 +1,18 @@
-// eslint-disable-next-line
-const colors = require('windicss/colors')
+import { defineConfig, presetUno } from 'unocss'
 
-module.exports = {
-  purge: ['./src/**/*.html'],
-  darkMode: 'media',
+export default defineConfig({
+  presets: [
+    presetUno({
+      dark: 'media'
+    })
+  ],
+  content: {
+    filesystem: [
+      './templates/**/*.html'
+    ]
+  },
   theme: {
     colors: {
-      white: 'white',
-      black: 'black',
-      transparent: 'transparent',
-      current: 'currentColor',
       primary: {
         50: '#F2FDF9',
         100: '#E6FCF3',
@@ -41,7 +44,6 @@ module.exports = {
       'cloud-darker': '#334040',
       'cloud-darkest': '#273131',
       'cloud-black': '#1A2121',
-      blue: colors.sky,
       green: {
         // 50: "#eefdf2",
         50: '#d0fcde',
@@ -56,10 +58,6 @@ module.exports = {
         900: '#134d2e'
         // 950: "#132a1c",
       },
-      red: colors.red,
-      rose: colors.rose,
-      yellow: colors.amber,
-      orange: colors.orange,
       gray: {
         50: '#f5f5f5',
         100: '#eeeeee',
@@ -72,7 +70,6 @@ module.exports = {
         800: '#212121',
         900: '#18181B'
       },
-      purple: colors.purple,
       sky: {
         surface: '#E5F9FF',
         lightest: '#B7E1ED',
@@ -86,4 +83,4 @@ module.exports = {
       }
     }
   }
-}
+})
