@@ -17,7 +17,7 @@ import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
-import { VitePublicDirsPlugin } from './plugins/public-dirs'
+import { VitePublicDirsPlugin, listPublicAssets } from './plugins/public-dirs'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -83,6 +83,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         build: {
           copyPublicDir: false,
           rollupOptions: {
+            external: nuxt.options.dev ? [] : await listPublicAssets(),
             output: {
               sourcemapIgnoreList: (relativeSourcePath) => {
                 return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(ctx.nuxt.options.buildDir)

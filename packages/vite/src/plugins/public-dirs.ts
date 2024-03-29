@@ -1,10 +1,31 @@
 import { existsSync } from 'node:fs'
-import { useNitro } from '@nuxt/kit'
+import { useNitro, useNuxt } from '@nuxt/kit'
 import { createUnplugin } from 'unplugin'
-import { withLeadingSlash, withTrailingSlash } from 'ufo'
+import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
+import { globby } from 'globby'
 
 const PREFIX = 'virtual:public?'
+
+export async function listPublicAssets () {
+  const nitro = useNitro()
+  const nuxt = useNuxt()
+  const publicFiles = new Set<string>()
+  for (const dir of nitro.options.publicAssets) {
+    const files = await globby('**/*', {
+      cwd: dir.dir,
+      absolute: false,
+      ignore: [
+        ...nuxt.options.ignore,
+        'node_modules'
+      ]
+    })
+    for (const file of files) {
+      publicFiles.add(joinURL(dir.baseURL || '/', file))
+    }
+  }
+  return [...publicFiles]
+}
 
 export const VitePublicDirsPlugin = createUnplugin(() => {
   const nitro = useNitro()
