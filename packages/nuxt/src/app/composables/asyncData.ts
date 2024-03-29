@@ -351,13 +351,11 @@ export function useAsyncData<
     if (instance && !instance._nuxtOnBeforeMountCbs) {
       instance._nuxtOnBeforeMountCbs = []
       const cbs = instance._nuxtOnBeforeMountCbs
-      if (instance) {
-        onBeforeMount(() => {
-          cbs.forEach((cb) => { cb() })
-          cbs.splice(0, cbs.length)
-        })
-        onUnmounted(() => cbs.splice(0, cbs.length))
-      }
+      onBeforeMount(() => {
+        cbs.forEach((cb) => { cb() })
+        cbs.splice(0, cbs.length)
+      })
+      onUnmounted(() => cbs.splice(0, cbs.length))
     }
 
     if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData())) {
