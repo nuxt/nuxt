@@ -5,9 +5,6 @@ import { isWindows } from 'std-env'
 
 export default defineConfig({
   // plugins: [codspeedPlugin()],
-  define: {
-    'process.env.SKIP_NUXT_USE_LINK': 'true'
-  },
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
