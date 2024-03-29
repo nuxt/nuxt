@@ -87,11 +87,11 @@ export default defineComponent({
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
 
-    function setPayload(key: string, result: NuxtIslandResponse) {
+    function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
-      if (result.props) toRevive.props = result.props
-      if (result.slots) toRevive.slots = result.slots
-      if (result.components) toRevive.components = result.components
+      if (result.props) { toRevive.props = result.props }
+      if (result.slots) { toRevive.slots = result.slots }
+      if (result.components) { toRevive.components = result.components }
 
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
@@ -109,10 +109,10 @@ export default defineComponent({
 
     if (instance.vnode.el) {
       const slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots
-      if (slots) payloads.slots = slots
+      if (slots) { payloads.slots = slots }
       if (selectiveClient) {
         const components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components
-        if (components) payloads.components = components
+        if (components) { payloads.components = components }
       }
     }
 
@@ -182,7 +182,7 @@ export default defineComponent({
       return result
     }
 
-    async function fetchComponent(force = false) {
+    async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
         nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
