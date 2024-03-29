@@ -592,6 +592,9 @@ importers:
       get-port-please:
         specifier: ^3.1.2
         version: 3.1.2
+      globby:
+        specifier: ^14.0.1
+        version: 14.0.1
       h3:
         specifier: ^1.11.1
         version: 1.11.1

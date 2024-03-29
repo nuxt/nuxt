@@ -47,6 +47,7 @@
     "externality": "^1.0.2",
     "fs-extra": "^11.2.0",
     "get-port-please": "^3.1.2",
+    "globby": "^14.0.1",
     "h3": "^1.11.1",
     "knitwork": "^1.0.0",
     "magic-string": "^0.30.8",
