@@ -1,6 +1,6 @@
 // Configs
 import standard from "eslint-config-standard"
-import nuxt from '@nuxt/eslint-config'
+// import nuxt from '@nuxt/eslint-config'
 
 // Plugins
 import jsdoc from "eslint-plugin-jsdoc"
@@ -11,7 +11,7 @@ import noOnlyTests from "eslint-plugin-no-only-tests"
 export default [
   standard,
   jsdoc.configs['flat/recommended'],
-  nuxt,
+  // nuxt,
   esImport.configs['typescript'],
   {
     files: ["**/*.vue", "**/*.ts", "**/*.js", "**/*.mjs"],
