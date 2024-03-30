@@ -1,5 +1,5 @@
 // Configs
-import standard from "eslint-config-standard"
+// import standard from "eslint-config-standard"
 // import nuxt from '@nuxt/eslint-config'
 
 // Plugins
@@ -9,7 +9,7 @@ import unicorn from "eslint-plugin-unicorn"
 import noOnlyTests from "eslint-plugin-no-only-tests"
 
 export default [
-  standard,
+  // standard,
   jsdoc.configs['flat/recommended'],
   // nuxt,
   esImport.configs['typescript'],
