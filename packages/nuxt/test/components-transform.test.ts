@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
@@ -32,15 +33,15 @@ describe('components:transform', () => {
     `)
 
     expect(await transform('', '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default')).toMatchInlineSnapshot(`
-      "import { createServerComponent } from "/Users/daniel/code/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component"
+      "import { createServerComponent } from "<repo>/nuxt/src/components/runtime/server-component"
       export default createServerComponent("Foo")"
     `)
     expect(await transform('', '/Foo.vue?nuxt_component=server,async&nuxt_component_name=Foo&nuxt_component_export=default')).toMatchInlineSnapshot(`
-      "import { createServerComponent } from "/Users/daniel/code/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component"
+      "import { createServerComponent } from "<repo>/nuxt/src/components/runtime/server-component"
       export default createServerComponent("Foo")"
     `)
     expect(await transform('', '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=Foo')).toMatchInlineSnapshot(`
-      "import { createServerComponent } from "/Users/daniel/code/nuxt/nuxt/packages/nuxt/src/components/runtime/server-component"
+      "import { createServerComponent } from "<repo>/nuxt/src/components/runtime/server-component"
       export const Foo = createServerComponent("Foo")"
     `)
   })
@@ -75,6 +76,8 @@ describe('components:transform', () => {
   })
 })
 
+const rootDir = fileURLToPath(new URL('../..', import.meta.url))
+
 function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all') {
   const stubNuxt = {
     options: {
@@ -89,7 +92,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)
-    return typeof result === 'string' ? result : result?.code
+    return (typeof result === 'string' ? result : result?.code)?.replaceAll(rootDir, '<repo>/')
   }
 }
 
