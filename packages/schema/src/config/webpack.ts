@@ -201,7 +201,7 @@ export default defineUntypedSchema({
        */
       vue: {
         transformAssetUrls: {
-          $resolve: async (val, get) => (val ?? (await get('vue.template.transformAssetUrls'))) as VueLoaderOptions['transformAssetUrls']
+          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))) as VueLoaderOptions['transformAssetUrls']
         },
         compilerOptions: {
           $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))) as VueLoaderOptions['compilerOptions']

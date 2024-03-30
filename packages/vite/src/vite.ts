@@ -4,13 +4,11 @@ import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
-import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import { sanitizeFilePath } from 'mlly'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 
-import { defu } from 'defu'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import virtual from './plugins/virtual'
@@ -124,19 +122,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       viteConfig
     )
   }
-
-  // Normalise vue configuration for vite-plugin-vue
-  const { compilerOptions, propsDestructure, ...vueConfig } = ctx.nuxt.options.vue || {}
-  ctx.config.vue = defu(ctx.config.vue, vueConfig satisfies VuePluginOptions, {
-    template: {
-      compilerOptions
-    },
-    isProduction: !ctx.nuxt.options.dev,
-    script: {
-      propsDestructure,
-      hoistStatic: compilerOptions?.hoistStatic
-    }
-  } satisfies VuePluginOptions) as VuePluginOptions
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)

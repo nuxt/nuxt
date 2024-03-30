@@ -1,7 +1,6 @@
 import type { KeepAliveProps, TransitionProps } from 'vue'
 import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig } from 'vite'
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
-import type { CompilerOptions as VueCompilerOptions } from '@vue/compiler-core'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
@@ -84,12 +83,6 @@ export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack'> {
   }
   _layers: NuxtConfigLayer[]
   $schema: SchemaDefinition
-}
-
-export interface VueConfig extends VuePluginOptions {
-  compilerOptions?: VueCompilerOptions
-  runtimeCompiler?: boolean
-  propsDestructure?: boolean
 }
 
 export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
