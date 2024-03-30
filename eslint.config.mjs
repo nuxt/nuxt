@@ -8,10 +8,31 @@ import esImport from "eslint-plugin-import"
 import unicorn from "eslint-plugin-unicorn"
 import noOnlyTests from "eslint-plugin-no-only-tests"
 
+/**
+ * eslintrc compatibility
+ * @see https://eslint.org/docs/latest/use/configure/migration-guide#using-eslintrc-configs-in-flat-config
+ * @see https://github.com/eslint/eslintrc#usage-esm
+ */
+import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const compat = new FlatCompat({
+    baseDirectory: __dirname,
+    recommendedConfig: js.configs.recommended,
+});
+
+// TODO: Type definition?
 export default [
   // standard,
+  ...compat.extends("eslint-config-standard"),
   jsdoc.configs['flat/recommended'],
   // nuxt,
+  ...compat.extends("@nuxt/eslint-config"),
   esImport.configs['typescript'],
   {
     files: ["**/*.vue", "**/*.ts", "**/*.js", "**/*.mjs"],
