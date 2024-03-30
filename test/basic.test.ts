@@ -1968,14 +1968,12 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "components": {},
         "head": {
           "link": [],
           "style": [],
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
-        "slots": {},
         "state": {},
       }
     `)
@@ -1993,7 +1991,6 @@ describe('component islands', () => {
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
-        "components": {},
         "head": {
           "link": [],
           "style": [],
