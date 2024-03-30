@@ -50,7 +50,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.0.3",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.11.30",
+    "@types/node": "20.12.2",
     "@types/semver": "7.5.8",
     "@vitest/coverage-v8": "1.4.0",
     "@vue/test-utils": "2.4.5",
