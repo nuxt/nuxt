@@ -133,8 +133,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     },
     isProduction: !ctx.nuxt.options.dev,
     script: {
-      propsDestructure: propsDestructure as boolean,
-      hoistStatic: compilerOptions?.hoistStatic || undefined
+      propsDestructure,
+      hoistStatic: compilerOptions?.hoistStatic
     }
   } satisfies VuePluginOptions) as VuePluginOptions
 
