@@ -188,9 +188,21 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build.rollupOptions.input = config.build.rollupOptions.input || {}
         // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
         config.build.rollupOptions.preserveEntrySignatures = 'allow-extension'
+        const { rollupOptions } = config.build
+
+        // convert input to object syntax
+        if (!rollupOptions.input) { rollupOptions.input = {} }
+
+        if (typeof rollupOptions.input === 'string') {
+          rollupOptions.input = { [rollupOptions.input]: rollupOptions.input }
+        } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
+          rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
+        }
+
+        const input = rollupOptions.input
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
-            (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
+            input[component.pascalName] = await resolvePath(component.filePath)
           }
         }
       },
