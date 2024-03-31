@@ -194,7 +194,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         if (!rollupOptions.input) { rollupOptions.input = {} }
 
         if (typeof rollupOptions.input === 'string') {
-          rollupOptions.input = { [rollupOptions.input]: rollupOptions.input }
+          rollupOptions.input = { entry: rollupOptions.input }
         } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
           rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
         }
