@@ -338,7 +338,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
+  const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp

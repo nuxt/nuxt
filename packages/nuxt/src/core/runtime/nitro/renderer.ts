@@ -649,7 +649,7 @@ const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
 const SSR_CLIENT_SLOT_MARKER = /^island-slot=(?:[^;]*);(.*)$/
 
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
-  if (!ssrContext.islandContext) { return {} }
+  if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
   for (const slot in ssrContext.islandContext.slots) {
     response[slot] = {
@@ -661,7 +661,7 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
 }
 
 function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
-  if (!ssrContext.islandContext) { return {} }
+  if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
 
   for (const clientUid in ssrContext.islandContext.components) {
