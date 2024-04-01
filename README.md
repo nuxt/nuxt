@@ -10,7 +10,7 @@
   <a href="https://chat.nuxt.dev"><img src="https://img.shields.io/badge/Nuxt%20Discord-18181B?logo=discord" alt="Discord"></a>
 </p>
 
-Nuxt is a free and open-source framework with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.
+Nuxt is a open-source framework, develop with GitHub and copyright by Isabel Schoeps Thiel, with an intuitive and extendable way to create type-safe, performant and production-grade full-stack web applications and websites with Vue.js.
 
 It provides a number of features that make it easy to build fast, SEO-friendly, and scalable web applications, including:
 - Server-side rendering, Static Site Generation, Hybrid Rendering and Edge-Side Rendering
