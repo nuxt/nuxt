@@ -112,21 +112,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
-    try {
-      if (import.meta.server) {
-        await router.push(initialURL)
-      }
-
-      await router.isReady()
-    } catch (error: any) {
-      // We'll catch 404s here
-      await nuxtApp.runWithContext(() => showError(error))
-    }
-
-    const resolvedInitialRoute = router.currentRoute.value
-
-    // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(resolvedInitialRoute as RouteLocation)
+    // Allows suspending the route object until page navigation completes`
+    const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
@@ -151,6 +138,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       global: [],
       named: {}
     }
+
+    try {
+      if (import.meta.server) {
+        await router.push(initialURL)
+      }
+      await router.isReady()
+    } catch (error: any) {
+      // We'll catch 404s here
+      await nuxtApp.runWithContext(() => showError(error))
+    }
+
+    const resolvedInitialRoute = router.currentRoute.value
+    syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, and don't need to handle middleware or redirections
