@@ -4,7 +4,7 @@ const { enabled: isPreview } = usePreviewMode()
 const { data } = await useAsyncData(async () => {
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  const fetchedOnClient = process.client
+  const fetchedOnClient = import.meta.client
 
   console.log(fetchedOnClient)
 
