@@ -19,8 +19,6 @@ The example below creates a page where part of a content is rendered only in `Pr
 
 ```vue [pages/some-page.vue]
 <script setup>
-const route = useRoute()
-
 const { enabled, state } = usePreviewMode()
 
 const { data } = await useFetch('/api/preview', {
