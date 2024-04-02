@@ -19,31 +19,27 @@ The example below creates a page where part of a content is rendered only in `Pr
 
 ```vue [pages/some-page.vue]
 <script setup>
-const route = useRoute();
-
+const route = useRoute()
 const { enabled, state } = usePreviewMode({
   shouldEnable: () => {
-    return route.query.customPreview === "true";
+    return route.query.customPreview === 'true'
   },
-});
-
-const { data } = await useFetch("/api/preview", {
+})
+const { data } = await useFetch('/api/preview', {
   query: {
-    apiKey: state.token,
-  },
-});
+    apiKey: state.token
+  }
+})
 </script>
-
 <template>
   <div>
     Some base content
-
     <p v-if="enabled">
       Only preview content: {{ state.token }}
-
-      <br />
-
-      <button @click="enabled = false">disable preview mode</button>
+      <br>
+      <button @click="enabled = false">
+        disable preview mode
+      </button>
     </p>
   </div>
 </template>
@@ -73,11 +69,11 @@ usePreviewMode should be tested locally with nuxi generate and not yarn dev
 You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`). You can wrap the `usePreviewMode` into custom composable, to keep options consistent across usages and prevent any errors.
 
 ```js
-export function useMyPreviewMode() {
+export function useMyPreviewMode () {
   return usePreviewMode({
     shouldEnable: () => {
-      return !!route.query.customPreview;
-    },
+      return !!route.query.customPreview
+    }
   });
 }
 ```
@@ -87,13 +83,13 @@ export function useMyPreviewMode() {
 `usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/api/composables/use-preview-mode) calls.
 
 ```js
-const data1 = ref("data1");
+const data1 = ref('data1');
 
 const { enabled, state } = usePreviewMode({
   getState: (currentState) => {
-    return { data1, data2: "data2" };
-  },
-});
+    return { data1, data2: 'data2' }
+  }
+})
 ```
 
 ::note
