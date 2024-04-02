@@ -20,11 +20,9 @@ The example below creates a page where part of a content is rendered only in `Pr
 ```vue [pages/some-page.vue]
 <script setup>
 const route = useRoute()
-const { enabled, state } = usePreviewMode({
-  shouldEnable: () => {
-    return route.query.customPreview === 'true'
-  },
-})
+
+const { enabled, state } = usePreviewMode()
+
 const { data } = await useFetch('/api/preview', {
   query: {
     apiKey: state.token
@@ -49,17 +47,17 @@ Now you can generate your site and serve it
 
 ```bash [Terminal]
 npx nuxi generate
-npx serve .output/public
+npx nuxi start
 ```
 
-Then you can see your preview page by adding the query param defined in `shouldEnable` to the end of the page you want to see once:
+Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once:
 
 ```js
-?customPreview=true
+?preview=true
 ```
 
 ::note
-usePreviewMode should be tested locally with nuxi generate and not yarn dev
+usePreviewMode should be tested locally with `nuxi generate` and then `nuxi start` rather than `nuxi dev`.
 ::
 
 ## Options
