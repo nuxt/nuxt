@@ -3,6 +3,7 @@
 import { addPluginTemplate } from 'nuxt/kit'
 
 export default defineNuxtConfig({
+  typescript: { shim: process.env.DOCS_TYPECHECK === 'true' },
   pages: process.env.DOCS_TYPECHECK === 'true',
   modules: [
     function () {
