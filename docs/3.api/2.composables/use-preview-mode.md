@@ -83,7 +83,7 @@ export function useMyPreviewMode () {
 `usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/api/composables/use-preview-mode) calls.
 
 ```js
-const data1 = ref('data1');
+const data1 = ref('data1')
 
 const { enabled, state } = usePreviewMode({
   getState: (currentState) => {
