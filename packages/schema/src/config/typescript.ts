@@ -76,9 +76,9 @@ export default defineUntypedSchema({
     /**
      * Generate a `*.vue` shim.
      *
-     * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-     * generate accurate types for your components.
+     * We recommend instead either enabling [**Take Over Mode**](https://vuejs.org/guide/typescript/overview.html#volar-takeover-mode) or adding
+     * TypeScript Vue Plugin (Volar)** 👉 [[Download](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)].
      */
-    shim: false
+    shim: true
   }
 })
