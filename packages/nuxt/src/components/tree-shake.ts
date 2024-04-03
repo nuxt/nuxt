@@ -220,7 +220,7 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
 
 /**
  * retrieve the component identifier being used on ssrRender callExpression
- * @param {CallExpression} ssrRenderNode - ssrRender callExpression
+ * @param ssrRenderNode - ssrRender callExpression
  */
 function getComponentName (ssrRenderNode: AcornNode<CallExpression>): string {
   const componentCall = ssrRenderNode.arguments[0] as Identifier | MemberExpression | CallExpression

@@ -13,8 +13,8 @@
     "cleanup": "rimraf 'packages/**/node_modules' 'playground/node_modules' 'node_modules'",
     "dev": "pnpm play",
     "dev:prepare": "pnpm --filter './packages/**' prepack --stub",
-    "lint": "eslint --ext .vue,.ts,.js,.mjs .",
-    "lint:fix": "eslint --ext .vue,.ts,.js,.mjs . --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "lint:docs": "markdownlint ./docs && case-police 'docs/**/*.md' *.md",
     "lint:docs:fix": "markdownlint ./docs --fix && case-police 'docs/**/*.md' *.md --fix",
     "lint:knip": "pnpx knip",
@@ -44,6 +44,8 @@
     "magic-string": "^0.30.8"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "3.0.2",
+    "@eslint/js": "8.57.0",
     "@nuxt/eslint-config": "0.2.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.12.0",
