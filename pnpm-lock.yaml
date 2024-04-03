@@ -493,6 +493,9 @@ importers:
       '@vue/compiler-core':
         specifier: 3.4.21
         version: 3.4.21
+      '@vue/compiler-sfc':
+        specifier: ^3.4.21
+        version: 3.4.21
       '@vue/language-core':
         specifier: 2.0.7
         version: 2.0.7(typescript@5.4.3)
@@ -534,7 +537,7 @@ importers:
         version: 2.0.0
       vue-loader:
         specifier: 17.4.2
-        version: 17.4.2(vue@3.4.21)(webpack@5.91.0)
+        version: 17.4.2(@vue/compiler-sfc@3.4.21)(vue@3.4.21)(webpack@5.91.0)
       vue-router:
         specifier: 4.3.0
         version: 4.3.0(vue@3.4.21)
@@ -781,7 +784,7 @@ importers:
         version: 2.0.0
       vue-loader:
         specifier: ^17.4.2
-        version: 17.4.2(vue@3.4.21)(webpack@5.91.0)
+        version: 17.4.2(@vue/compiler-sfc@3.4.21)(vue@3.4.21)(webpack@5.91.0)
       webpack:
         specifier: ^5.91.0
         version: 5.91.0
@@ -11974,7 +11977,7 @@ packages:
       - supports-color
     dev: true
 
-  /vue-loader@17.4.2(vue@3.4.21)(webpack@5.91.0):
+  /vue-loader@17.4.2(@vue/compiler-sfc@3.4.21)(vue@3.4.21)(webpack@5.91.0):
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
       '@vue/compiler-sfc': '*'
@@ -11986,6 +11989,7 @@ packages:
       vue:
         optional: true
     dependencies:
+      '@vue/compiler-sfc': 3.4.21
       chalk: 4.1.2
       hash-sum: 2.0.0
       vue: 3.4.21(typescript@5.4.3)
