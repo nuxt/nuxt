@@ -149,7 +149,9 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.runWithContext(() => showError(error))
     }
 
-    const resolvedInitialRoute = router.currentRoute.value
+    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+      ? router.resolve(initialURL)
+      : router.currentRoute.value
     syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
