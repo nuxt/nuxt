@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -223,8 +223,8 @@ export function useAsyncData<
 
         const promise = nuxtApp.runWithContext(_handler)
 
-        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
-        return promise
+      nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+      return promise
       }
 
   // Used to get default values
@@ -370,16 +370,20 @@ export function useAsyncData<
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
+    const hasScope = getCurrentScope()
     if (options.watch) {
-      watch(options.watch, () => asyncData.refresh())
+      const unsub = watch(options.watch, () => asyncData.refresh())
+      if (hasScope) {
+        onScopeDispose(unsub)
+      }
     }
     const off = nuxtApp.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
         await asyncData.refresh()
       }
     })
-    if (instance) {
-      onUnmounted(off)
+    if (hasScope) {
+      onScopeDispose(off)
     }
   }
 

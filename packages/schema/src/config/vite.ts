@@ -49,11 +49,17 @@ export default defineUntypedSchema({
       template: {
         compilerOptions: {
           $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions
+        },
+        transformAssetUrls: {
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).transformAssetUrls
         }
       },
       script: {
         propsDestructure: {
           $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure)
+        },
+        hoistStatic: {
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic
         }
       }
     },

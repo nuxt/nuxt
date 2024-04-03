@@ -8,6 +8,14 @@ export default defineUntypedSchema({
    * Vue.js config
    */
   vue: {
+    /** @type {typeof import('@vue/compiler-sfc').AssetURLTagConfig} */
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: ['src'],
+      img: ['src'],
+      image: ['xlink:href', 'href'],
+      use: ['xlink:href', 'href']
+    },
     /**
      * Options for the Vue compiler that will be passed at build time.
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
