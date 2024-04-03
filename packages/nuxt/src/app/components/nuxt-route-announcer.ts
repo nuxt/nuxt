@@ -22,7 +22,7 @@ export default defineComponent({
       set, polite, assertive, message, politeness
     })
 
-    return () => h('nuxt-route-announcer', {
+    return () => h('div', {
       class: 'nuxt-route-announcer',
       style: {
         position: 'absolute'
