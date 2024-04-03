@@ -494,7 +494,7 @@ importers:
         specifier: 3.4.21
         version: 3.4.21
       '@vue/compiler-sfc':
-        specifier: ^3.4.21
+        specifier: 3.4.21
         version: 3.4.21
       '@vue/language-core':
         specifier: 2.0.7
