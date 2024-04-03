@@ -9,7 +9,7 @@ import {
   createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isEqual, isSamePath, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
@@ -112,7 +112,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       ? nuxtApp.ssrContext!.url
       : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
-    // Allows suspending the route object until page navigation completes`
+    // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
@@ -251,7 +251,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             path: to.fullPath
           }
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
