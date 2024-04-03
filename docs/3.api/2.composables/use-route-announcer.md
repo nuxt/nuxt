@@ -10,7 +10,7 @@ links:
 
 ## Description
 
-A composable which watches the page load and updates the announcer message with the page title. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
+A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
 It hooks into Unhead's [`dom:rendered`](https://unhead.unjs.io/api/core/hooks#dom-hooks) to read the page's title and set it as the announcer message.
 
 ## Parameters
