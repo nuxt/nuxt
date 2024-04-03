@@ -50,7 +50,12 @@ export default [
   ...compat.extends('@nuxt/eslint-config'),
   esImport.configs.typescript,
   {
-    files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.mjs'],
+    rules: {
+      'import/export': 'off'
+    }
+  },
+  {
+    files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
     languageOptions: {
       globals: {
         NodeJS: 'readonly',
