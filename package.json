@@ -68,7 +68,7 @@
     "fs-extra": "11.2.0",
     "globby": "14.0.1",
     "h3": "1.11.1",
-    "happy-dom": "14.3.9",
+    "happy-dom": "14.3.10",
     "jiti": "1.21.0",
     "markdownlint-cli": "0.39.0",
     "nitropack": "2.9.5",
@@ -89,7 +89,7 @@
     "vue-router": "4.3.0",
     "vue-tsc": "2.0.7"
   },
-  "packageManager": "pnpm@8.15.5",
+  "packageManager": "pnpm@8.15.6",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
