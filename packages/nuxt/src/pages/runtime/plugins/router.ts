@@ -9,7 +9,7 @@ import {
   createWebHistory
 } from '#vue-router'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isEqual, isSamePath, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
@@ -70,9 +70,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = import.meta.server
-      ? nuxtApp.ssrContext!.url
-      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
     const router = createRouter({
       ...routerOptions,
@@ -111,8 +108,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       get: () => previousRoute.value
     })
 
+    const initialURL = import.meta.server
+      ? nuxtApp.ssrContext!.url
+      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
     // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
+    const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
@@ -138,18 +139,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       named: {}
     }
 
-    const error = useError()
-
     try {
       if (import.meta.server) {
         await router.push(initialURL)
       }
-
       await router.isReady()
     } catch (error: any) {
       // We'll catch 404s here
       await nuxtApp.runWithContext(() => showError(error))
     }
+
+    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+      ? router.resolve(initialURL)
+      : router.currentRoute.value
+    syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, and don't need to handle middleware or redirections
@@ -225,6 +228,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
+    const error = useError()
     router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
@@ -247,18 +251,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             path: to.fullPath
           }
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
-        const to = router.resolve(initialURL)
         // #4920, #4982
-        if ('name' in to) { to.name = undefined }
+        if ('name' in resolvedInitialRoute) {
+          resolvedInitialRoute.name = undefined
+        }
         await router.replace({
-          ...to,
+          ...resolvedInitialRoute,
           force: true
         })
         // reset scroll behavior to initial value
