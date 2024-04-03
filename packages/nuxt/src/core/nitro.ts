@@ -12,6 +12,7 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
+import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 // @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
@@ -416,10 +417,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
+  const cacheDriverPath = await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))
   await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
-      driver: pathToFileURL(await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))).href,
+      // TODO: resolve upstream where file URLs are not being resolved/inlined correctly
+      driver: isWindows ? pathToFileURL(cacheDriverPath).href : cacheDriverPath,
       base: cacheDir
     }
   })
