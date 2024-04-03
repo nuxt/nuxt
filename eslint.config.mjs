@@ -37,7 +37,10 @@ export default [
       '**/.output-*/**',
       '**/public/**',
       '**/node_modules/**',
-      'packages/schema/schema'
+      'packages/schema/schema',
+
+      // TODO: remove when fully migrated to flat config
+      '**/*.d.mts'
     ]
   },
   // standard,
