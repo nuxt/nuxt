@@ -70,7 +70,7 @@ export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
 }>
 
 export interface NuxtBuilder {
-    bundle: (nuxt: Nuxt) => Promise<void>
+  bundle: (nuxt: Nuxt) => Promise<void>
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
