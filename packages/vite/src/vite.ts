@@ -112,17 +112,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           }),
           virtual(nuxt.vfs)
         ],
-        vue: {
-          template: {
-            transformAssetUrls: {
-              video: ['src', 'poster'],
-              source: ['src'],
-              img: ['src'],
-              image: ['xlink:href', 'href'],
-              use: ['xlink:href', 'href']
-            }
-          }
-        },
         server: {
           watch: { ignored: isIgnored },
           fs: {

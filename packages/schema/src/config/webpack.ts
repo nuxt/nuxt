@@ -1,5 +1,6 @@
 import { defu } from 'defu'
 import { defineUntypedSchema } from 'untyped'
+import type { VueLoaderOptions } from 'vue-loader'
 
 export default defineUntypedSchema({
   webpack: {
@@ -200,14 +201,15 @@ export default defineUntypedSchema({
        */
       vue: {
         transformAssetUrls: {
-          video: 'src',
-          source: 'src',
-          object: 'src',
-          embed: 'src'
+          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))) as VueLoaderOptions['transformAssetUrls']
         },
-        compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
-        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) }
-      },
+        compilerOptions: {
+          $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))) as VueLoaderOptions['compilerOptions']
+        },
+        propsDestructure: {
+          $resolve: async (val, get) => Boolean(val ?? await get('vue.propsDestructure'))
+        }
+      } satisfies { [K in keyof VueLoaderOptions]: { $resolve: (val: unknown, get: (id: string) => Promise<unknown>) => Promise<VueLoaderOptions[K]> } },
 
       css: {
         importLoaders: 0,

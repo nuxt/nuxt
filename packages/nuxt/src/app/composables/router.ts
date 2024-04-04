@@ -85,8 +85,7 @@ const isProcessingMiddleware = () => {
       return true
     }
   } catch {
-    // Within an async middleware
-    return true
+    return false
   }
   return false
 }

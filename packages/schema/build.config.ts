@@ -56,6 +56,7 @@ export default defineBuildConfig({
     '@vue/language-core',
     // Implicit
     '@vue/compiler-core',
+    '@vue/compiler-sfc',
     '@vue/shared',
     'untyped'
   ]
