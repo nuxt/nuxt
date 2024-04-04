@@ -5,12 +5,13 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
 import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
+import { getComponentsPluginTemplate, getGlobalComponents } from './global-components'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
@@ -117,7 +118,6 @@ export default defineNuxtModule<ComponentsOptions>({
     // components.d.ts
     addTemplate(componentsTypeTemplate)
     // components.plugin.mjs
-    addPluginTemplate(componentsPluginTemplate)
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
@@ -179,6 +179,12 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       context.components = newComponents
       app.components = newComponents
+     
+      const globalComponents = getGlobalComponents(app)
+      if (globalComponents) {
+        console.log('!!', getComponentsPluginTemplate(globalComponents))
+        addPluginTemplate(getComponentsPluginTemplate(globalComponents))
+      }
     })
 
     nuxt.hook('prepare:types', ({ references, tsConfig }) => {

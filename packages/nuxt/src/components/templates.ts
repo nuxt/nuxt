@@ -1,6 +1,6 @@
 import { isAbsolute, relative } from 'pathe'
 import { genDynamicImport } from 'knitwork'
-import type { NuxtPluginTemplate, NuxtTemplate } from 'nuxt/schema'
+import type { NuxtTemplate } from 'nuxt/schema'
 
 type ImportMagicCommentsOptions = {
   chunkName: string
@@ -15,50 +15,6 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
     prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
     preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false
   ].filter(Boolean).join(', ')
-}
-
-const emptyComponentsPlugin = `
-import { defineNuxtPlugin } from '#app/nuxt'
-export default defineNuxtPlugin({
-  name: 'nuxt:global-components',
-})
-`
-
-export const componentsPluginTemplate: NuxtPluginTemplate = {
-  filename: 'components.plugin.mjs',
-  getContents ({ app }) {
-    const lazyGlobalComponents = new Set<string>()
-    const syncGlobalComponents = new Set<string>()
-    for (const component of app.components) {
-      if (component.global === 'sync') {
-        syncGlobalComponents.add(component.pascalName)
-      } else if (component.global) {
-        lazyGlobalComponents.add(component.pascalName)
-      }
-    }
-    if (!lazyGlobalComponents.size && !syncGlobalComponents.size) { return emptyComponentsPlugin }
-
-    const lazyComponents = [...lazyGlobalComponents]
-    const syncComponents = [...syncGlobalComponents]
-
-    return `import { defineNuxtPlugin } from '#app/nuxt'
-import { ${[...lazyComponents.map(c => 'Lazy' + c), ...syncComponents].join(', ')} } from '#components'
-const lazyGlobalComponents = [
-  ${lazyComponents.map(c => `["${c}", Lazy${c}]`).join(',\n')},
-  ${syncComponents.map(c => `["${c}", ${c}]`).join(',\n')}
-]
-
-export default defineNuxtPlugin({
-  name: 'nuxt:global-components',
-  setup (nuxtApp) {
-    for (const [name, component] of lazyGlobalComponents) {
-      nuxtApp.vueApp.component(name, component)
-      nuxtApp.vueApp.component('Lazy' + name, component)
-    }
-  }
-})
-`
-  }
 }
 
 export const componentNamesTemplate: NuxtTemplate = {
