@@ -52,10 +52,8 @@ export const clearError = async (options: { redirect?: string } = {}) => {
 
 /** @since 3.0.0 */
 export const isNuxtError = <DataT = unknown>(
-    error?: string | object
-): error is NuxtError<DataT> => (
-  !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
-)
+  error?: string | object
+): error is NuxtError<DataT> => !!error && typeof error === 'object' && NUXT_ERROR_SIGNATURE in error
 
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(

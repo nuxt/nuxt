@@ -120,6 +120,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     '#app': ctx.options.appDir,
     '#build/plugins': resolve(ctx.options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
     '#build': ctx.options.buildDir,
+    '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
     ...ctx.options.alias,
     ...ctx.alias
   }
@@ -217,7 +218,7 @@ function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
     __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
-     __NUXT_ASYNC_CONTEXT__: ctx.options.experimental.asyncContext,
+    __NUXT_ASYNC_CONTEXT__: ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
     'process.test': isTest,

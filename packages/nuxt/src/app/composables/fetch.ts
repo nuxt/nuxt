@@ -94,13 +94,7 @@ export function useFetch<
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
-  const _request = computed(() => {
-    let r = request
-    if (typeof r === 'function') {
-      r = r()
-    }
-    return toValue(r)
-  })
+  const _request = computed(() => toValue(request))
 
   const _key = opts.key || hash([autoKey, typeof _request.value === 'string' ? _request.value : '', ...generateOptionSegments(opts)])
   if (!_key || typeof _key !== 'string') {
@@ -243,10 +237,10 @@ export function useLazyFetch<
   autoKey)
 }
 
-function generateOptionSegments <_ResT, DataT, DefaultT>(opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments <_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
-    toValue(opts.baseURL),
+    toValue(opts.baseURL)
   ]
   for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)

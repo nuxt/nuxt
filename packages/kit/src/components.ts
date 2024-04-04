@@ -48,6 +48,7 @@ export async function addComponent (opts: AddComponentOptions) {
     mode: 'all',
     shortPath: opts.filePath,
     priority: 0,
+    meta: {},
     ...opts
   }
 

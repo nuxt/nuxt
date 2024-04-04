@@ -14,7 +14,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   const router = useRouter()
 
-  router.beforeResolve((to, from) => {
+  router.beforeResolve(async (to, from) => {
     const viewTransitionMode = to.meta.viewTransition ?? defaultViewTransition
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     const prefersNoTransition = prefersReducedMotion && viewTransitionMode !== 'always'
@@ -41,6 +41,8 @@ export default defineNuxtPlugin((nuxtApp) => {
       finishTransition = undefined
     })
 
+    await nuxtApp.callHook('page:view-transition:start', transition)
+
     return ready
   })
 
@@ -55,12 +57,14 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
 })
 
+export interface ViewTransition {
+  ready: Promise<void>
+  finished: Promise<void>
+  updateCallbackDone: Promise<void>
+}
+
 declare global {
   interface Document {
-    startViewTransition?: (callback: () => Promise<void> | void) => {
-      finished: Promise<void>
-      updateCallbackDone: Promise<void>
-      ready: Promise<void>
-    }
+    startViewTransition?: (callback: () => Promise<void> | void) => ViewTransition
   }
 }

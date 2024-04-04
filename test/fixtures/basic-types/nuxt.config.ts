@@ -3,7 +3,7 @@ import { addTypeTemplate } from 'nuxt/kit'
 export default defineNuxtConfig({
   experimental: {
     typedPages: true,
-    appManifest: true,
+    appManifest: true
   },
   future: {
     typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler'
@@ -28,6 +28,11 @@ export default defineNuxtConfig({
     fromNuxtConfig: true,
     nested: {
       val: 1
+    }
+  },
+  routeRules: {
+    '/param': {
+      redirect: '/param/1'
     }
   },
   modules: [

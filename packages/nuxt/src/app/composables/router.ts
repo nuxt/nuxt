@@ -48,7 +48,7 @@ export interface RouteMiddleware {
 }
 
 /** @since 3.0.0 */
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -85,8 +85,7 @@ const isProcessingMiddleware = () => {
       return true
     }
   } catch {
-    // Within an async middleware
-    return true
+    return false
   }
   return false
 }
@@ -125,18 +124,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
 
   // Early open handler
-  if (options?.open) {
-    if (import.meta.client) {
-      const { target = '_blank', windowFeatures = {} } = options.open
+  if (import.meta.client && options?.open) {
+    const { target = '_blank', windowFeatures = {} } = options.open
 
-      const features = Object.entries(windowFeatures)
-        .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-        .join(', ')
+    const features = Object.entries(windowFeatures)
+      .filter(([_, value]) => value !== undefined)
+      .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+      .join(', ')
 
-      open(toPath, target, features)
-    }
-
+    open(toPath, target, features)
     return Promise.resolve()
   }
 
@@ -214,8 +210,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
-/** 
- * This will abort navigation within a Nuxt route middleware handler. 
+/**
+ * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {

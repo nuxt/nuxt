@@ -38,8 +38,7 @@ export async function renderPage (path = '/') {
   })
 
   if (path) {
-    await page.goto(url(path), { waitUntil: 'networkidle' })
-    await page.waitForFunction(() => window.useNuxtApp?.())
+    await gotoPath(page, path)
   }
 
   return {
@@ -70,7 +69,7 @@ export async function expectNoClientErrors (path: string) {
 
 export async function gotoPath (page: Page, path: string) {
   await page.goto(url(path))
-  await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, path)
+  await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
 }
 
 type EqualityVal = string | number | boolean | null | undefined | RegExp

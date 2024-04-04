@@ -8,6 +8,14 @@ export default defineUntypedSchema({
    * Vue.js config
    */
   vue: {
+    /** @type {typeof import('@vue/compiler-sfc').AssetURLTagConfig} */
+    transformAssetUrls: {
+      video: ['src', 'poster'],
+      source: ['src'],
+      img: ['src'],
+      image: ['xlink:href', 'href'],
+      use: ['xlink:href', 'href']
+    },
     /**
      * Options for the Vue compiler that will be passed at build time.
      * @see [documentation](https://vuejs.org/api/application.html#app-config-compileroptions)
@@ -27,7 +35,7 @@ export default defineUntypedSchema({
      * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
      * @type {boolean}
      */
-    propsDestructure: false,
+    propsDestructure: false
   },
 
   /**
@@ -157,7 +165,7 @@ export default defineUntypedSchema({
      */
     viewTransition: {
       $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
-        (e) => e?.viewTransition
+        e => e?.viewTransition
       ) ?? false
     },
 
@@ -184,6 +192,21 @@ export default defineUntypedSchema({
      */
     rootTag: {
       $resolve: val => val || 'div'
+    },
+
+    /**
+     * Customize Nuxt root element tag.
+     */
+    teleportTag: {
+      $resolve: val => val || 'div'
+    },
+
+    /**
+     * Customize Nuxt Teleport element id.
+     * @type {string | false}
+     */
+    teleportId: {
+      $resolve: val => val === false ? false : (val || 'teleports')
     }
   },
 

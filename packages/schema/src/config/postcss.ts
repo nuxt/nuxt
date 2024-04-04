@@ -15,7 +15,7 @@ export default defineUntypedSchema({
       autoprefixer: {},
 
       /**
-       * https://cssnano.co/docs/config-file/#configuration-options
+       * https://cssnano.github.io/cssnano/docs/config-file/#configuration-options
        */
       cssnano: {
         $resolve: async (val, get) => {

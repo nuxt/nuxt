@@ -11,10 +11,10 @@ describe('pages:generateRoutesFromFiles', () => {
   vi.mock('knitwork', async (original) => {
     return {
       ...(await original<typeof import('knitwork')>()),
-      'genArrayFromRaw': (val: any) => val,
-      'genSafeVariableName': (..._args: string[]) => {
+      genArrayFromRaw: (val: any) => val,
+      genSafeVariableName: (..._args: string[]) => {
         return 'mock'
-      },
+      }
     }
   })
 
@@ -471,7 +471,7 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'index',
           path: '/'
         }
-      ],
+      ]
     },
     {
       description: 'should use fallbacks when normalized with `overrideMeta: true`',
@@ -527,7 +527,7 @@ describe('pages:generateRoutesFromFiles', () => {
           alias: ['sweet-home'],
           redirect: '/',
           children: [],
-          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) }
         }
       ]
     },
@@ -538,7 +538,7 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'home',
           path: '/',
           alias: ['sweet-home'],
-          meta: { hello: 'world' },
+          meta: { hello: 'world' }
         }
       ]
     },
@@ -550,10 +550,10 @@ describe('pages:generateRoutesFromFiles', () => {
           path: '/',
           alias: ['pushed-route-alias'],
           meta: { someMetaData: true },
-          file: `${pagesDir}/route-file.vue`,
+          file: `${pagesDir}/route-file.vue`
         }
       ]
-    },
+    }
   ]
 
   const normalizedResults: Record<string, any> = {}
@@ -561,7 +561,6 @@ describe('pages:generateRoutesFromFiles', () => {
 
   for (const test of tests) {
     it(test.description, async () => {
-
       let result
       if (test.files) {
         const vfs = Object.fromEntries(

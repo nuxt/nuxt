@@ -22,7 +22,7 @@ export function client (ctx: WebpackConfigContext) {
     clientDevtool,
     clientPerformance,
     clientHMR,
-    clientNodeCompat,
+    clientNodeCompat
   ])
 }
 
@@ -50,21 +50,21 @@ function clientPerformance (ctx: WebpackConfigContext) {
   }
 }
 
-function clientNodeCompat(ctx: WebpackConfigContext) {
+function clientNodeCompat (ctx: WebpackConfigContext) {
   if (!ctx.nuxt.options.experimental.clientNodeCompat) {
     return
   }
-  ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis', }))
+  ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis' }))
 
   ctx.config.resolve = ctx.config.resolve || {}
   ctx.config.resolve.fallback = {
     ...env(nodeless).alias,
-    ...ctx.config.resolve.fallback,
+    ...ctx.config.resolve.fallback
   }
 
   // https://github.com/webpack/webpack/issues/13290#issuecomment-1188760779
   ctx.config.plugins!.unshift(new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
-    resource.request = resource.request.replace(/^node:/, '');
+    resource.request = resource.request.replace(/^node:/, '')
   }))
 }
 

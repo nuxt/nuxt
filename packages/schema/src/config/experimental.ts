@@ -27,7 +27,7 @@ export default defineUntypedSchema({
         }
         return true
       }
-    },
+    }
   },
   /**
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
@@ -53,6 +53,21 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Stream server logs to the client as you are developing. These logs can
+     * be handled in the `dev:ssr-logs` hook.
+     *
+     * If set to `silent`, the logs will not be printed to the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: {
+      async $resolve (val, get) {
+        if (val !== undefined) { return val }
+        const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
+        return isDev && !isTest
+      }
+    },
+
+    /**
      * Turn off rendering of Nuxt scripts and JS resource hints.
      * You can also disable scripts more granularly within `routeRules`.
      */
@@ -61,7 +76,7 @@ export default defineUntypedSchema({
         // TODO: remove in v3.10
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       }
-    },
+    }
   },
   experimental: {
     /**
@@ -171,8 +186,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -182,7 +200,7 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
+        return val ?? 'auto'
       }
     },
 
@@ -213,11 +231,6 @@ export default defineUntypedSchema({
      * Use app manifests to respect route rules on client-side.
      */
     appManifest: true,
-
-    // This is enabled when `experimental.payloadExtraction` is set to `true`.
-    // appManifest: {
-    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
-    // },
 
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
@@ -335,6 +348,6 @@ export default defineUntypedSchema({
      * ```
      * @type {boolean}
      */
-    clientNodeCompat: false,
+    clientNodeCompat: false
   }
 })

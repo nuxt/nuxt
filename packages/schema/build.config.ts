@@ -53,8 +53,10 @@ export default defineBuildConfig({
     'sass-loader',
     'c12',
     'unenv',
+    '@vue/language-core',
     // Implicit
     '@vue/compiler-core',
+    '@vue/compiler-sfc',
     '@vue/shared',
     'untyped'
   ]

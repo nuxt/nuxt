@@ -45,7 +45,7 @@ async function main () {
       .replace(/^## v.*?\n/, '')
       .replace(`...${releaseBranch}`, `...v${newVersion}`)
       .replace(/### ❤️ Contributors[\s\S]*$/, ''),
-    `### ❤️ Contributors`,
+    '### ❤️ Contributors',
     contributors.map(c => `- ${c.name} (@${c.username})`).join('\n')
   ].join('\n')
 

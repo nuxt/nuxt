@@ -200,7 +200,7 @@ The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug]
 
 To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
 
-```vue [pages/[postId]-[postSlug].vue]
+```vue [pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
   path: '/:postId(\\d+)-:postSlug' 

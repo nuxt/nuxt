@@ -5,7 +5,7 @@ import { isCI, provider } from 'std-env'
 
 const isStackblitz = provider === 'stackblitz'
 
-export interface EnsurePackageInstalledOptions {
+interface EnsurePackageInstalledOptions {
   rootDir: string
   searchPaths?: string[]
   prompt?: boolean

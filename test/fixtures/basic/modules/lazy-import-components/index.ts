@@ -11,21 +11,21 @@ export default defineNuxtModule({
       name: 'NCompClient',
       export: 'NComp',
       filePath: resolve('./runtime/components'),
-      mode: 'client',
+      mode: 'client'
     })
 
     addComponent({
       name: 'NCompServer',
       export: 'NComp',
       filePath: resolve('./runtime/components'),
-      mode: 'server',
+      mode: 'server'
     })
 
     addComponent({
       name: 'NCompAll',
       export: 'NComp',
       filePath: resolve('./runtime/components'),
-      mode: 'all',
+      mode: 'all'
     })
-  },
+  }
 })

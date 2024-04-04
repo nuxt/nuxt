@@ -24,8 +24,10 @@ import { useRoute, useRouter } from '../composables/router'
 import { PageRouteSymbol } from '../components/injections'
 import AppComponent from '#build/app-component.mjs'
 import ErrorComponent from '#build/error-component.mjs'
+// @ts-expect-error virtual file
+import { componentIslands } from '#build/nuxt.config.mjs'
 
-const IslandRenderer = import.meta.server
+const IslandRenderer = import.meta.server && componentIslands
   ? defineAsyncComponent(() => import('./island-renderer').then(r => r.default || r))
   : () => null
 
