@@ -41,7 +41,7 @@
     "nuxt": "workspace:*",
     "vite": "5.2.8",
     "vue": "3.4.21",
-    "magic-string": "^0.30.8"
+    "magic-string": "^0.30.9"
   },
   "devDependencies": {
     "@eslint/eslintrc": "3.0.2",
