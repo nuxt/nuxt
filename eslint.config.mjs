@@ -1,5 +1,3 @@
-/// <reference path="eslint-typegen.d.ts" />
-
 // @ts-check
 import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 // @ts-expect-error missing types
