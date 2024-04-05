@@ -67,9 +67,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Fallback to static rendered error page
   if (!res) {
     const { template } = import.meta.dev
-      // @ts-expect-error TODO: add legacy type support for subpath imports
       ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
-      // @ts-expect-error TODO: add legacy type support for subpath imports
       : await import('@nuxt/ui-templates/templates/error-500.mjs')
     if (import.meta.dev) {
       // TODO: Support `message` in template
