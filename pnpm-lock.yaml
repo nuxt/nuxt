@@ -20,8 +20,8 @@ importers:
   .:
     devDependencies:
       '@eslint/js':
-        specifier: 8.57.0
-        version: 8.57.0
+        specifier: 9.0.0
+        version: 9.0.0
       '@nuxt/eslint-config':
         specifier: 0.3.0
         version: 0.3.0(eslint@9.0.0)(typescript@5.4.3)
