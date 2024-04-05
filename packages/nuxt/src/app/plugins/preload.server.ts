@@ -8,7 +8,7 @@ export default defineNuxtPlugin({
         const { _registeredComponents } = this.$nuxt.ssrContext
         const { __moduleIdentifier } = this.$options
         _registeredComponents.add(__moduleIdentifier)
-      }
+      },
     })
-  }
+  },
 })

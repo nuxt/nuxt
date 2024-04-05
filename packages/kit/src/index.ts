@@ -30,7 +30,7 @@ export {
   requireModule,
   importModule,
   tryImportModule,
-  tryRequireModule
+  tryRequireModule,
 } from './internal/cjs'
 export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
 export { tryResolveModule } from './internal/esm'

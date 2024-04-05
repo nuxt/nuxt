@@ -3,8 +3,8 @@ export default defineNuxtComponent({
   head () {
     return {
       htmlAttrs: {
-        class: 'html-attrs-test'
-      }
+        class: 'html-attrs-test',
+      },
     }
   },
   setup () {
@@ -13,19 +13,19 @@ export default defineNuxtComponent({
       // title template function example
       titleTemplate: title => `${title} - Title Template Fn Change`,
       bodyAttrs: {
-        class: 'body-attrs-test'
+        class: 'body-attrs-test',
       },
       script: [
         {
           src: 'https://a-body-appended-script.com',
-          body: true
-        }
+          body: true,
+        },
       ],
-      meta: [{ name: 'description', content: 'first' }]
+      meta: [{ name: 'description', content: 'first' }],
     })
     useHead({ meta: [{ charset: 'utf-16' }, { name: 'description', content: computed(() => `${a.value} with an inline useHead call`) }] })
     a.value = 'overriding'
-  }
+  },
 })
 </script>
 

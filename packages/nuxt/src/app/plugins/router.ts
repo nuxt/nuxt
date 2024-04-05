@@ -41,7 +41,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     fullPath = stringifyParsedURL({
       pathname: fullPath.path || '',
       search: stringifyQuery(fullPath.query || {}),
-      hash: fullPath.hash || ''
+      hash: fullPath.hash || '',
     })
   }
 
@@ -57,7 +57,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     matched: [],
     redirectedFrom: undefined,
     meta: {},
-    href: fullPath
+    href: fullPath,
   }
 }
 
@@ -112,7 +112,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       'navigate:before': [],
       'resolve:before': [],
       'navigate:after': [],
-      error: []
+      'error': [],
     }
 
     const registerHook = <T extends keyof RouterHooks> (hook: T, guard: RouterHooks[T]) => {
@@ -191,7 +191,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         if (index !== -1) {
           routes.splice(index, 1)
         }
-      }
+      },
     }
 
     nuxtApp.vueApp.component('RouterLink', defineComponent({
@@ -199,14 +199,14 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       props: {
         to: {
           type: String,
-          required: true
+          required: true,
         },
         custom: Boolean,
         replace: Boolean,
         // Not implemented
         activeClass: String,
         exactActiveClass: String,
-        ariaCurrentValue: String
+        ariaCurrentValue: String,
       },
       setup: (props, { slots }) => {
         const navigate = () => handleNavigation(props.to!, props.replace)
@@ -216,7 +216,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             ? slots.default?.({ href: props.to, navigate, route })
             : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
-      }
+      },
     }))
 
     if (import.meta.client) {
@@ -231,7 +231,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     // Handle middleware
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
-      named: {}
+      named: {},
     }
 
     const initialLayout = nuxtApp.payload.state._layout
@@ -271,8 +271,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
                   statusCode: 404,
                   statusMessage: `Page Not Found: ${initialURL}`,
                   data: {
-                    path: initialURL
-                  }
+                    path: initialURL,
+                  },
                 })
                 delete nuxtApp._processingMiddleware
                 return nuxtApp.runWithContext(() => showError(error))
@@ -295,8 +295,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     return {
       provide: {
         route,
-        router
-      }
+        router,
+      },
     }
-  }
+  },
 })

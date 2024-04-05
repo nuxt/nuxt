@@ -11,8 +11,8 @@ interface Preview {
 }
 
 interface PreviewModeOptions<S> {
-  shouldEnable?: (state: Preview['state']) => boolean,
-  getState?: (state: Preview['state']) => S,
+  shouldEnable?: (state: Preview['state']) => boolean
+  getState?: (state: Preview['state']) => S
 }
 
 type EnteredState = Record<any, unknown> | null | undefined | void
@@ -23,13 +23,13 @@ let unregisterRefreshHook: (() => any) | undefined
 export function usePreviewMode<S extends EnteredState> (options: PreviewModeOptions<S> = {}) {
   const preview = useState<Preview>('_preview-state', () => ({
     enabled: false,
-    state: {}
+    state: {},
   }))
 
   if (preview.value._initialized) {
     return {
       enabled: toRef(preview.value, 'enabled'),
-      state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state'])
+      state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
     }
   }
 
@@ -67,7 +67,7 @@ export function usePreviewMode<S extends EnteredState> (options: PreviewModeOpti
 
   return {
     enabled: toRef(preview.value, 'enabled'),
-    state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state'])
+    state: preview.value.state as S extends void ? Preview['state'] : (NonNullable<S> & Preview['state']),
   }
 }
 

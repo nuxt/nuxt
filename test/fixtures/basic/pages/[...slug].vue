@@ -9,7 +9,7 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: ['override'],
-  validate: to => to.path !== '/forbidden'
+  validate: to => to.path !== '/forbidden',
 })
 const route = useRoute('slug')
 if (route.path.includes('navigate-some-path')) {

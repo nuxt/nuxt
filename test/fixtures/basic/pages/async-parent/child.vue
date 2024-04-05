@@ -10,6 +10,6 @@ if (import.meta.client) {
   console.log('isHydrating: ' + useNuxtApp().isHydrating)
 }
 definePageMeta({
-  layout: 'custom-async'
+  layout: 'custom-async',
 })
 </script>

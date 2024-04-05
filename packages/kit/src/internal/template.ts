@@ -9,7 +9,7 @@ import { toArray } from '../utils'
 
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4
-export async function compileTemplate <T> (template: NuxtTemplate<T>, ctx: any) {
+export async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: any) {
   const data = { ...ctx, options: template.options }
   if (template.src) {
     try {

@@ -17,7 +17,7 @@ interface PluginOptions {
   nuxt: Nuxt
 }
 
-function uniq <T> (items: T[]) {
+function uniq<T> (items: T[]) {
   return [...new Set(items)]
 }
 
@@ -26,7 +26,7 @@ export default class VueSSRClientPlugin {
 
   constructor (options: PluginOptions) {
     this.options = Object.assign({
-      filename: null
+      filename: null,
     }, options)
   }
 
@@ -67,7 +67,7 @@ export default class VueSSRClientPlugin {
         initial: initialFiles,
         async: asyncFiles,
         modules: { /* [identifier: string]: Array<index: number> */ } as Record<string, number[]>,
-        assetsMapping
+        assetsMapping,
       }
 
       const { entrypoints = {}, namedChunkGroups = {} } = stats

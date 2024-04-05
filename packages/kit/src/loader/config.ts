@@ -17,7 +17,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     extend: { extendKey: ['theme', 'extends'] },
     dotenv: true,
     globalRc: true,
-    ...opts
+    ...opts,
   })
   delete (globalThis as any).defineNuxtConfig
   const { configFile, layers = [], cwd } = result
@@ -45,8 +45,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       cwd,
       config: {
         rootDir: cwd,
-        srcDir: cwd
-      }
+        srcDir: cwd,
+      },
     })
   }
 

@@ -4,12 +4,12 @@ export default defineBuildConfig({
   declaration: true,
   entries: [
     'src/index',
-    { input: 'src/runtime/', outDir: 'dist/runtime', format: 'esm' }
+    { input: 'src/runtime/', outDir: 'dist/runtime', format: 'esm' },
   ],
   dependencies: [
-    'vue'
+    'vue',
   ],
   externals: [
-    '@nuxt/schema'
-  ]
+    '@nuxt/schema',
+  ],
 })
