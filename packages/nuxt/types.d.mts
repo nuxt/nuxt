@@ -1,11 +1,12 @@
 /// <reference types="nitropack" />
-export * from './dist/index.js'
 
 import type { DefineNuxtConfig } from 'nuxt/config'
 import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types.js'
 import type { LogObject } from 'consola'
+
+export * from './dist/index.js'
 
 declare global {
   const defineNuxtConfig: DefineNuxtConfig

@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/export
 export * from 'vue'
 
 export const install = () => {}
