@@ -27,7 +27,7 @@
     "@nuxt/ui-assets": "^0.2.1",
     "@types/html-minifier": "^4.0.5",
     "@types/lodash.template": "^4.5.3",
-    "@unocss/reset": "^0.58.8",
+    "@unocss/reset": "^0.58.9",
     "critters": "0.0.22",
     "execa": "^8.0.1",
     "globby": "^14.0.1",
@@ -36,9 +36,9 @@
     "knitwork": "^1.1.0",
     "lodash.template": "^4.5.0",
     "scule": "^1.3.0",
-    "unocss": "^0.58.8",
+    "unocss": "^0.58.9",
     "upath": "^2.0.1",
-    "vite": "^5.2.7"
+    "vite": "^5.2.8"
   },
   "publishConfig": {
     "access": "public"
