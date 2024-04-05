@@ -129,6 +129,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       jsxImportSource: 'vue',
       target: 'ESNext',
       module: 'ESNext',
+      moduleDetection: 'force',
       moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
       skipLibCheck: true,
       isolatedModules: true,
