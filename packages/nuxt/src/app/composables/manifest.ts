@@ -46,7 +46,7 @@ export function getAppManifest (): Promise<NuxtAppManifest> {
 export async function getRouteRules (url: string) {
   if (import.meta.server) {
     const _routeRulesMatcher = toRouteMatcher(
-      createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules })
+      createRadixRouter({ routes: useRuntimeConfig().nitro!.routeRules }),
     )
     return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(url).reverse())
   }

@@ -39,7 +39,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server']
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
@@ -48,7 +48,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.plugins!.push(composableKeysPlugin.webpack({
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
       rootDir: nuxt.options.rootDir,
-      composables: nuxt.options.optimization.keyedComposables
+      composables: nuxt.options.optimization.keyedComposables,
     }))
   }
 
@@ -94,7 +94,7 @@ async function createDevMiddleware (compiler: Compiler) {
     publicPath: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
     outputFileSystem: compiler.outputFileSystem as any,
     stats: 'none',
-    ...nuxt.options.webpack.devMiddleware
+    ...nuxt.options.webpack.devMiddleware,
   })
 
   // @ts-expect-error need better types for `pify`
@@ -105,7 +105,7 @@ async function createDevMiddleware (compiler: Compiler) {
     log: false,
     heartbeat: 10000,
     path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
-    ...hotMiddlewareOptions
+    ...hotMiddlewareOptions,
   })
 
   // Register devMiddleware on server

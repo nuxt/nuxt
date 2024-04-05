@@ -8,7 +8,7 @@ import type {
   LinkRelationship,
   Props,
   ReferrerPolicy,
-  Target
+  Target,
 } from './types'
 
 const removeUndefinedProps = (props: Props) => {
@@ -32,24 +32,24 @@ const globalProps = {
   autocapitalize: String,
   autofocus: {
     type: Boolean,
-    default: undefined
+    default: undefined,
   },
   class: [String, Object, Array],
   contenteditable: {
     type: Boolean,
-    default: undefined
+    default: undefined,
   },
   contextmenu: String,
   dir: String,
   draggable: {
     type: Boolean,
-    default: undefined
+    default: undefined,
   },
   enterkeyhint: String,
   exportparts: String,
   hidden: {
     type: Boolean,
-    default: undefined
+    default: undefined,
   },
   id: String,
   inputmode: String,
@@ -65,12 +65,12 @@ const globalProps = {
   slot: String,
   spellcheck: {
     type: Boolean,
-    default: undefined
+    default: undefined,
   },
   style: String,
   tabindex: String,
   title: String,
-  translate: String
+  translate: String,
 }
 
 // <noscript>
@@ -81,7 +81,7 @@ export const NoScript = defineComponent({
     ...globalProps,
     title: String,
     body: Boolean,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
   setup: setupForUseMeta((props, { slots }) => {
     const noscript = { ...props }
@@ -93,9 +93,9 @@ export const NoScript = defineComponent({
       noscript.children = textContent
     }
     return {
-      noscript: [noscript]
+      noscript: [noscript],
     }
-  })
+  }),
 })
 
 // <link>
@@ -117,7 +117,7 @@ export const Link = defineComponent({
     media: String,
     prefetch: {
       type: Boolean,
-      default: undefined
+      default: undefined,
     },
     referrerpolicy: String as PropType<ReferrerPolicy>,
     rel: String as PropType<LinkRelationship>,
@@ -129,11 +129,11 @@ export const Link = defineComponent({
     /** @deprecated **/
     target: String as PropType<Target>,
     body: Boolean,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
   setup: setupForUseMeta(link => ({
-    link: [link]
-  }))
+    link: [link],
+  })),
 })
 
 // <base>
@@ -144,11 +144,11 @@ export const Base = defineComponent({
   props: {
     ...globalProps,
     href: String,
-    target: String as PropType<Target>
+    target: String as PropType<Target>,
   },
   setup: setupForUseMeta(base => ({
-    base
-  }))
+    base,
+  })),
 })
 
 // <title>
@@ -165,14 +165,14 @@ export const Title = defineComponent({
       }
 
       return {
-        title: defaultSlot?.[0]?.children || null
+        title: defaultSlot?.[0]?.children || null,
       }
     }
 
     return {
-      title: slots.default?.()?.[0]?.children || null
+      title: slots.default?.()?.[0]?.children || null,
     }
-  })
+  }),
 })
 
 // <meta>
@@ -187,7 +187,7 @@ export const Meta = defineComponent({
     httpEquiv: String as PropType<HTTPEquiv>,
     name: String,
     body: Boolean,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
   setup: setupForUseMeta((props) => {
     const meta = { ...props }
@@ -197,9 +197,9 @@ export const Meta = defineComponent({
       delete meta.httpEquiv
     }
     return {
-      meta: [meta]
+      meta: [meta],
     }
-  })
+  }),
 })
 
 // <style>
@@ -216,10 +216,10 @@ export const Style = defineComponent({
     /** @deprecated **/
     scoped: {
       type: Boolean,
-      default: undefined
+      default: undefined,
     },
     body: Boolean,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
   setup: setupForUseMeta((props, { slots }) => {
     const style = { ...props }
@@ -231,9 +231,9 @@ export const Style = defineComponent({
       style.children = textContent
     }
     return {
-      style: [style]
+      style: [style],
     }
-  })
+  }),
 })
 
 // <head>
@@ -241,7 +241,7 @@ export const Head = defineComponent({
 
   name: 'Head',
   inheritAttrs: false,
-  setup: (_props, ctx) => () => ctx.slots.default?.()
+  setup: (_props, ctx) => () => ctx.slots.default?.(),
 })
 
 // <html>
@@ -254,9 +254,9 @@ export const Html = defineComponent({
     manifest: String,
     version: String,
     xmlns: String,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
-  setup: setupForUseMeta(htmlAttrs => ({ htmlAttrs }), true)
+  setup: setupForUseMeta(htmlAttrs => ({ htmlAttrs }), true),
 })
 
 // <body>
@@ -266,7 +266,7 @@ export const Body = defineComponent({
   inheritAttrs: false,
   props: {
     ...globalProps,
-    renderPriority: [String, Number]
+    renderPriority: [String, Number],
   },
-  setup: setupForUseMeta(bodyAttrs => ({ bodyAttrs }), true)
+  setup: setupForUseMeta(bodyAttrs => ({ bodyAttrs }), true),
 })

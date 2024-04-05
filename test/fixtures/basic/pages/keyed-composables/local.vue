@@ -24,10 +24,10 @@ function localScopedComposables () {
   function complex () {
     const [useState] = [_assert]
     const { a: useAsyncData } = {
-      a: _assert
+      a: _assert,
     }
     const [_, { b: useLazyAsyncData }] = [null, {
-      b: _assert
+      b: _assert,
     }]
 
     return [useState(), useAsyncData(), useLazyAsyncData()]

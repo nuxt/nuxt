@@ -56,7 +56,7 @@ export async function build (nuxt: Nuxt) {
 const watchEvents: Record<EventType, 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'> = {
   create: 'add',
   delete: 'unlink',
-  update: 'change'
+  update: 'change',
 }
 
 async function watch (nuxt: Nuxt) {
@@ -80,8 +80,8 @@ function createWatcher () {
     ignoreInitial: true,
     ignored: [
       isIgnored,
-      'node_modules'
-    ]
+      'node_modules',
+    ],
   })
 
   // TODO: consider moving to emit absolute path in 3.8 or 4.0
@@ -164,8 +164,8 @@ async function createParcelWatcher () {
     }, {
       ignore: [
         ...nuxt.options.ignore,
-        'node_modules'
-      ]
+        'node_modules',
+      ],
     })
     watcher.then((subscription) => {
       if (nuxt.options.debug) {

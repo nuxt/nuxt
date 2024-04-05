@@ -11,7 +11,7 @@ async function main () {
   const config = await loadChangelogConfig(process.cwd(), {})
 
   const commits = await getLatestCommits().then(commits => commits.filter(
-    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking)
+    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking),
   ))
   const bumpType = await determineBumpType()
 
@@ -46,7 +46,7 @@ async function main () {
       .replace(`...${releaseBranch}`, `...v${newVersion}`)
       .replace(/### ❤️ Contributors[\s\S]*$/, ''),
     '### ❤️ Contributors',
-    contributors.map(c => `- ${c.name} (@${c.username})`).join('\n')
+    contributors.map(c => `- ${c.name} (@${c.username})`).join('\n'),
   ].join('\n')
 
   // Create a PR with release notes if none exists
@@ -54,15 +54,15 @@ async function main () {
     return await $fetch('https://api.github.com/repos/nuxt/nuxt/pulls', {
       method: 'POST',
       headers: {
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
+        Authorization: `token ${process.env.GITHUB_TOKEN}`,
       },
       body: {
         title: `v${newVersion}`,
         head: `v${newVersion}`,
         base: releaseBranch,
         body: releaseNotes,
-        draft: true
-      }
+        draft: true,
+      },
     })
   }
 
@@ -70,11 +70,11 @@ async function main () {
   await $fetch(`https://api.github.com/repos/nuxt/nuxt/pulls/${currentPR.number}`, {
     method: 'PATCH',
     headers: {
-      Authorization: `token ${process.env.GITHUB_TOKEN}`
+      Authorization: `token ${process.env.GITHUB_TOKEN}`,
     },
     body: {
-      body: releaseNotes
-    }
+      body: releaseNotes,
+    },
   })
 }
 

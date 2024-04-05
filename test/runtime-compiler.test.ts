@@ -13,8 +13,8 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
-    builder: isWebpack ? 'webpack' : 'vite'
-  }
+    builder: isWebpack ? 'webpack' : 'vite',
+  },
 })
 
 describe('test basic config', () => {

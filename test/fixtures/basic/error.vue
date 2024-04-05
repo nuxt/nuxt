@@ -17,6 +17,6 @@
 import type { NuxtError } from '#app'
 
 defineProps({
-  error: Object as () => NuxtError
+  error: Object as () => NuxtError,
 })
 </script>

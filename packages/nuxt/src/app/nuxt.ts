@@ -22,7 +22,7 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 import type { NuxtAppLiterals } from '#app'
 
 const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
+  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
 })
 
 type HookResult = Promise<void> | void
@@ -235,17 +235,17 @@ export function createNuxtApp (options: CreateOptions) {
     globalName: 'nuxt',
     versions: {
       get nuxt () { return __NUXT_VERSION__ },
-      get vue () { return nuxtApp.vueApp.version }
+      get vue () { return nuxtApp.vueApp.version },
     },
     payload: reactive({
       data: {},
       state: {},
       once: new Set<string>(),
       _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
+      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
     }),
     static: {
-      data: {}
+      data: {},
     },
     runWithContext: (fn: any) => nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn)),
     isHydrating: import.meta.client,
@@ -270,7 +270,7 @@ export function createNuxtApp (options: CreateOptions) {
     _asyncDataPromises: {},
     _asyncData: {},
     _payloadRevivers: {},
-    ...options
+    ...options,
   } as any as NuxtApp
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
@@ -318,7 +318,7 @@ export function createNuxtApp (options: CreateOptions) {
     // Expose client runtime-config to the payload
     nuxtApp.ssrContext!.config = {
       public: options.ssrContext!.runtimeConfig.public,
-      app: options.ssrContext!.runtimeConfig.app
+      app: options.ssrContext!.runtimeConfig.app,
     }
   }
 

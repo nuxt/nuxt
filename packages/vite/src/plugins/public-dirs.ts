@@ -28,7 +28,7 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
           if (id.startsWith(PREFIX)) {
             return `import { publicAssetsURL } from '#internal/nuxt/paths';export default publicAssetsURL(${JSON.stringify(decodeURIComponent(id.slice(PREFIX.length)))})`
           }
-        }
+        },
       },
       resolveId: {
         enforce: 'post',
@@ -38,7 +38,7 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
           if (resolveFromPublicAssets(id)) {
             return PREFIX + encodeURIComponent(id)
           }
-        }
+        },
       },
       generateBundle (outputOptions, bundle) {
         for (const file in bundle) {
@@ -58,7 +58,7 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
             chunk.source = css
           }
         }
-      }
-    }
+      },
+    },
   }
 })

@@ -11,7 +11,7 @@ describe('plugin-metadata', () => {
       enforce: 'post',
       hooks: { 'app:mounted': () => {} },
       setup: () => { return { provide: { jsx: '[JSX]' } } },
-      order: 1
+      order: 1,
     })
 
     for (const item of properties) {
@@ -20,7 +20,7 @@ describe('plugin-metadata', () => {
       const meta = await extractMetadata([
         'export default defineNuxtPlugin({',
         ...obj.map(([key, value]) => `${key}: ${typeof value === 'function' ? value.toString().replace('"[JSX]"', '() => <span>JSX</span>') : JSON.stringify(value)},`),
-        '})'
+        '})',
       ].join('\n'), 'tsx')
 
       expect(meta).toMatchInlineSnapshot(`
@@ -34,13 +34,13 @@ describe('plugin-metadata', () => {
 
   const transformPlugin: any = RemovePluginMetadataPlugin({
     options: { sourcemap: { client: true } },
-    apps: { default: { plugins: [{ src: 'my-plugin.mjs', order: 10 }] } }
+    apps: { default: { plugins: [{ src: 'my-plugin.mjs', order: 10 }] } },
   } as any).raw({}, {} as any)
 
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
       'export const plugin = {}',
-      'export default function (ctx, inject) {}'
+      'export default function (ctx, inject) {}',
     ]
     for (const plugin of invalidPlugins) {
       expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
@@ -71,17 +71,17 @@ describe('plugin sanity checking', () => {
     checkForCircularDependencies([
       {
         name: 'A',
-        src: ''
+        src: '',
       },
       {
         name: 'B',
         dependsOn: ['D'],
-        src: ''
+        src: '',
       },
       {
         name: 'C',
-        src: ''
-      }
+        src: '',
+      },
     ])
     expect(console.error).toBeCalledWith('Plugin `B` depends on `D` but they are not registered.')
     vi.restoreAllMocks()
@@ -93,18 +93,18 @@ describe('plugin sanity checking', () => {
       {
         name: 'A',
         dependsOn: ['B'],
-        src: ''
+        src: '',
       },
       {
         name: 'B',
         dependsOn: ['C'],
-        src: ''
+        src: '',
       },
       {
         name: 'C',
         dependsOn: ['A'],
-        src: ''
-      }
+        src: '',
+      },
     ])
     expect(console.error).toBeCalledWith('Circular dependency detected in plugins: A -> B -> C -> A')
     expect(console.error).toBeCalledWith('Circular dependency detected in plugins: B -> C -> A -> B')

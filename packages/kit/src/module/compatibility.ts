@@ -36,7 +36,7 @@ export async function hasNuxtModuleCompatibility (module: string | NuxtModule, s
     return false
   }
   return satisfies(normalizeSemanticVersion(version), semverVersion, {
-    includePrerelease: true
+    includePrerelease: true,
   })
 }
 

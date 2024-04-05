@@ -69,7 +69,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       const prefixParts = ([] as string[]).concat(
         dir.prefix ? splitByCase(dir.prefix) : [],
-        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : []
+        (dir.pathPrefix !== false) ? splitByCase(relative(dir.path, dirname(filePath))) : [],
       )
 
       /**
@@ -118,7 +118,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         shortPath,
         export: 'default',
         // by default, give priority to scanned components
-        priority: dir.priority ?? 1
+        priority: dir.priority ?? 1,
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -160,6 +160,6 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 function warnAboutDuplicateComponent (componentName: string, filePath: string, duplicatePath: string) {
   logger.warn(`Two component files resolving to the same name \`${componentName}\`:\n` +
     `\n - ${filePath}` +
-    `\n - ${duplicatePath}`
+    `\n - ${duplicatePath}`,
   )
 }

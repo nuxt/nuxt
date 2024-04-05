@@ -72,7 +72,7 @@ ${genDynamicImport(path, { wrapper: false })}
     throw new Error(${JSON.stringify(`[vite dev] Error loading external "${id}".`)})
   })`,
       deps: [],
-      dynamicDeps: []
+      dynamicDeps: [],
     }
   }
 
@@ -101,7 +101,7 @@ async function transformRequestRecursive (opts: TransformOptions, id: string, pa
     id,
     code: res.code,
     deps,
-    parents: [parent]
+    parents: [parent],
   } as TransformChunk
   for (const dep of deps) {
     await transformRequestRecursive(opts, dep, id, chunks)
@@ -216,12 +216,12 @@ async function __instantiateModule__(url, urlStack) {
     chunksCode,
     manifestCode,
     ssrModuleLoader,
-    `export default await __ssrLoadModule__(${JSON.stringify(entryURL)})`
+    `export default await __ssrLoadModule__(${JSON.stringify(entryURL)})`,
   ].join('\n\n')
 
   return {
     code,
-    ids: chunks.map(i => i.id)
+    ids: chunks.map(i => i.id),
   }
 }
 
@@ -229,7 +229,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   const viteServer = ctx.ssrServer!
   const options: TransformOptions = {
     viteServer,
-    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
+    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir),
   }
 
   // Build and watch

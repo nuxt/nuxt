@@ -7,5 +7,5 @@ export default defineComponent({
         <Counter multiplier={2} />
       </div>
     )
-  }
+  },
 })

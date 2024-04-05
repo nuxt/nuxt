@@ -40,7 +40,7 @@ export function useState<T> (...args: any): Ref<T> {
 
 /** @since 3.6.0 */
 export function clearNuxtState (
-  keys?: string | string[] | ((key: string) => boolean)
+  keys?: string | string[] | ((key: string) => boolean),
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)

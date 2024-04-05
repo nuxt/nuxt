@@ -21,11 +21,11 @@ export default defineComponent({
   props: {
     to: {
       type: String,
-      required: true
+      required: true,
     },
     nuxtClient: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * ONLY used in dev mode since we use build:manifest result in production
@@ -33,8 +33,8 @@ export default defineComponent({
      */
     rootDir: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
@@ -52,14 +52,14 @@ export default defineComponent({
 
       islandContext.components[props.to] = {
         chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
-        props: slot.props || {}
+        props: slot.props || {},
       }
 
       return [h('div', {
-        style: 'display: contents;',
+        'style': 'display: contents;',
         'data-island-uid': '',
-        'data-island-component': props.to
+        'data-island-component': props.to,
       }, []), h(Teleport, { to: props.to }, slot)]
     }
-  }
+  },
 })

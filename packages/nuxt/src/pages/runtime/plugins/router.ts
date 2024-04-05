@@ -6,7 +6,7 @@ import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
-  createWebHistory
+  createWebHistory,
 } from '#vue-router'
 import { createError } from 'h3'
 import { isEqual, isSamePath, withoutBase } from 'ufo'
@@ -33,7 +33,7 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 function createCurrentLocation (
   base: string,
   location: Location,
-  renderedPath?: string
+  renderedPath?: string,
 ): string {
   const { pathname, search, hash } = location
   // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
@@ -91,7 +91,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
       },
       history,
-      routes
+      routes,
     })
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
@@ -105,7 +105,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
-      get: () => previousRoute.value
+      get: () => previousRoute.value,
     })
 
     const initialURL = import.meta.server
@@ -128,7 +128,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const route = {} as RouteLocation
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation]
+        get: () => _route.value[key as keyof RouteLocation],
       })
     }
 
@@ -136,7 +136,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
-      named: {}
+      named: {},
     }
 
     try {
@@ -208,7 +208,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (result === false || result instanceof Error) {
               const error = result || createError({
                 statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`
+                statusMessage: `Page Not Found: ${initialURL}`,
               })
               await nuxtApp.runWithContext(() => showError(error))
               return false
@@ -248,8 +248,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
           data: {
-            path: to.fullPath
-          }
+            path: to.fullPath,
+          },
         })))
       } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
@@ -264,7 +264,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
         await router.replace({
           ...resolvedInitialRoute,
-          force: true
+          force: true,
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
@@ -275,7 +275,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     return { provide: { router } }
-  }
+  },
 })
 
 export default plugin

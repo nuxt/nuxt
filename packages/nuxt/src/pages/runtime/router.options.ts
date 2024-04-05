@@ -51,7 +51,7 @@ export default <RouterConfig> {
         resolve(position)
       })
     })
-  }
+  },
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {

@@ -51,7 +51,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     for: opts.dev ? 'dev' : 'build',
     configOverrides: opts.overrides,
     ready: opts.ready,
-    envConfig: opts.dotenv // TODO: Backward format conversion
+    envConfig: opts.dotenv, // TODO: Backward format conversion
   })
 
   // Mock new hookable methods

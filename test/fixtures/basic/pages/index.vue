@@ -112,12 +112,12 @@ definePageMeta({
   alias: '/some-alias',
   other: ref('test'),
   imported: importedValue,
-  something: importedRE.test('an imported regex')
+  something: importedRE.test('an imported regex'),
 })
 
 // reset title template example
 useHead({
-  titleTemplate: ''
+  titleTemplate: '',
 })
 
 const foo = useFoo()

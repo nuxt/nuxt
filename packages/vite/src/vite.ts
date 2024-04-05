@@ -42,8 +42,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       ...app.middleware.map(m => dirname(m.path)),
       ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
       dirname(nuxt.apps.default.rootComponent!),
-      dirname(nuxt.apps.default.errorComponent!)
-    ])
+      dirname(nuxt.apps.default.errorComponent!),
+    ]),
   ].filter(d => d && existsSync(d))
 
   for (const dir of allowDirs) {
@@ -68,17 +68,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             '#build': nuxt.options.buildDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
             // Cannot destructure property 'AbortController' of ..
-            'abort-controller': 'unenv/runtime/mock/empty'
-          }
+            'abort-controller': 'unenv/runtime/mock/empty',
+          },
         },
         optimizeDeps: {
           include: ['vue'],
-          exclude: ['nuxt/app']
+          exclude: ['nuxt/app'],
         },
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
-          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext
+          __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
         },
         build: {
           copyPublicDir: false,
@@ -91,12 +91,12 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
                 ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`))
-            }
+                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`)),
+            },
           },
           watch: {
-            exclude: nuxt.options.ignore
-          }
+            exclude: nuxt.options.ignore,
+          },
         },
         plugins: [
           // add resolver for files in public assets directories
@@ -104,23 +104,23 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           composableKeysPlugin.vite({
             sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables
+            composables: nuxt.options.optimization.keyedComposables,
           }),
           replace({
             ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
-            preventAssignment: true
+            preventAssignment: true,
           }),
-          virtual(nuxt.vfs)
+          virtual(nuxt.vfs),
         ],
         server: {
           watch: { ignored: isIgnored },
           fs: {
-            allow: [...new Set(allowDirs)]
-          }
-        }
+            allow: [...new Set(allowDirs)],
+          },
+        },
       } satisfies ViteConfig,
-      viteConfig
-    )
+      viteConfig,
+    ),
   }
 
   // In build mode we explicitly override any vite options that vite is relying on
@@ -150,7 +150,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
             await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
           }
-        }
+        },
       })
     }
   }
@@ -160,8 +160,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const checker = await import('vite-plugin-checker').then(r => r.default)
     addVitePlugin(checker({
       vueTsc: {
-        tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir)
-      }
+        tsconfigPath: await resolveTSConfig(ctx.nuxt.options.rootDir),
+      },
     }), { server: nuxt.options.ssr })
   }
 
@@ -170,7 +170,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   nuxt.hook('vite:extendConfig', (config) => {
     config.plugins!.push(replace({
       preventAssignment: true,
-      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.')))
+      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.'))),
     }))
   })
 
@@ -187,7 +187,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         components: ctx.nuxt.apps.default.components,
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',
-        entry: ctx.entry
+        entry: ctx.entry,
       }))
     })
 

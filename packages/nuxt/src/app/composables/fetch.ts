@@ -32,7 +32,7 @@ export interface UseFetchOptions<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = null,
   R extends NitroFetchRequest = string & {},
-  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>
+  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
   key?: string
   $fetch?: typeof globalThis.$fetch
@@ -54,7 +54,7 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = null
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
@@ -73,7 +73,7 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT
+  DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
@@ -86,11 +86,11 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = null
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
-  arg2?: string
+  arg2?: string,
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
@@ -127,7 +127,7 @@ export function useFetch<
   const _fetchOptions = reactive({
     ...fetchDefaults,
     ...fetchOptions,
-    cache: typeof opts.cache === 'boolean' ? undefined : opts.cache
+    cache: typeof opts.cache === 'boolean' ? undefined : opts.cache,
   })
 
   const _asyncDataOptions: AsyncDataOptions<_ResT, DataT, PickKeys, DefaultT> = {
@@ -140,7 +140,7 @@ export function useFetch<
     getCachedData,
     deep,
     dedupe,
-    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])]
+    watch: watch === false ? [] : [_fetchOptions, _request, ...(watch || [])],
   }
 
   if (import.meta.dev && import.meta.client) {
@@ -190,7 +190,7 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = null
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
@@ -203,7 +203,7 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT
+  DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
@@ -216,11 +216,11 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = null
+  DefaultT = null,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
-  arg2?: string
+  arg2?: string,
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
 
@@ -231,7 +231,7 @@ export function useLazyFetch<
 
   return useFetch<ResT, ErrorT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>(request, {
     ...opts,
-    lazy: true
+    lazy: true,
   },
   // @ts-expect-error we pass an extra argument with the resolved auto-key to prevent another from being injected
   autoKey)
@@ -240,7 +240,7 @@ export function useLazyFetch<
 function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
-    toValue(opts.baseURL)
+    toValue(opts.baseURL),
   ]
   for (const _obj of [opts.params || opts.query]) {
     const obj = toValue(_obj)

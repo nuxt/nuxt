@@ -26,8 +26,8 @@ export default defineUntypedSchema({
           return setting.toLowerCase() === 'bundler'
         }
         return true
-      }
-    }
+      },
+    },
   },
   /**
    * Some features of Nuxt are available on an opt-in basis, or can be disabled based on your needs.
@@ -49,7 +49,7 @@ export default defineUntypedSchema({
         }
         // Enabled by default for vite prod with ssr
         return val ?? true
-      }
+      },
     },
 
     /**
@@ -64,7 +64,7 @@ export default defineUntypedSchema({
         if (val !== undefined) { return val }
         const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
         return isDev && !isTest
-      }
+      },
     },
 
     /**
@@ -75,15 +75,15 @@ export default defineUntypedSchema({
       async $resolve (val, get) {
         // TODO: remove in v3.10
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
-      }
-    }
+      },
+    },
   },
   experimental: {
     /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: val => val ?? false
+      $resolve: val => val ?? false,
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
@@ -121,7 +121,7 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      }
+      },
     },
 
     /**
@@ -201,7 +201,7 @@ export default defineUntypedSchema({
           return true
         }
         return val ?? 'auto'
-      }
+      },
     },
 
     /**
@@ -323,16 +323,16 @@ export default defineUntypedSchema({
     defaults: {
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
-        componentName: 'NuxtLink'
+        componentName: 'NuxtLink',
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true
+        deep: true,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
-      useFetch: {}
+      useFetch: {},
     },
 
     /**
@@ -348,6 +348,6 @@ export default defineUntypedSchema({
      * ```
      * @type {boolean}
      */
-    clientNodeCompat: false
-  }
+    clientNodeCompat: false,
+  },
 })

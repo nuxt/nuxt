@@ -4,7 +4,7 @@ const route = useRoute()
 const { enabled } = usePreviewMode({
   shouldEnable: () => {
     return !!route.query.customPreview
-  }
+  },
 })
 </script>
 

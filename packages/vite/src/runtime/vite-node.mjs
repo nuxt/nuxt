@@ -52,7 +52,7 @@ function createRunner () {
           _err = createError({
             statusMessage: 'Vite Error',
             message,
-            stack
+            stack,
           })
         } catch (formatError) {
           consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
@@ -61,12 +61,12 @@ function createRunner () {
           throw createError({
             statusMessage: 'Vite Error',
             message,
-            stack: `${message}\nat ${id}\n` + (errorData?.stack || '')
+            stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
           })
         }
         throw _err
       })
-    }
+    },
   })
 }
 
@@ -92,17 +92,17 @@ function formatViteError (errorData, id) {
     errorCode && `[${errorCode}]`,
     loc,
     errorData.reason && `: ${errorData.reason}`,
-    frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`
+    frame && `<br><pre>${frame.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre><br>`,
   ].filter(Boolean).join(' ')
 
   const stack = [
     message,
     `at ${loc}`,
-    errorData.stack
+    errorData.stack,
   ].filter(Boolean).join('\n')
 
   return {
     message,
-    stack
+    stack,
   }
 }

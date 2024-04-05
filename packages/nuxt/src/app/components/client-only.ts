@@ -28,7 +28,7 @@ export default defineComponent({
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
-  }
+  },
 })
 
 const cache = new WeakMap()
