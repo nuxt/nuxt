@@ -255,8 +255,8 @@ importers:
         specifier: ^2.5.3
         version: 2.5.3
       '@nuxt/ui-templates':
-        specifier: ^1.3.2
-        version: 1.3.2
+        specifier: ^1.3.3
+        version: 1.3.3
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
@@ -436,8 +436,8 @@ importers:
   packages/schema:
     dependencies:
       '@nuxt/ui-templates':
-        specifier: ^1.3.2
-        version: 1.3.2
+        specifier: ^1.3.3
+        version: 1.3.3
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -2443,8 +2443,8 @@ packages:
       vue-router: 4.3.0(vue@3.4.21)
     dev: true
 
-  /@nuxt/ui-templates@1.3.2:
-    resolution: {integrity: sha512-aLHpV7Nj2cAHM2hPtwOtT2OIeOy4p6GN5qvNm6zBt6wke33t1jn0PR/FNwvKROIxM0xTAwB6jdmRJLXRPVGNhA==}
+  /@nuxt/ui-templates@1.3.3:
+    resolution: {integrity: sha512-3BG5doAREcD50dbKyXgmjD4b1GzY8CUy3T41jMhHZXNDdaNwOd31IBq+D6dV00OSrDVhzrTVj0IxsUsnMyHvIQ==}
     dev: false
 
   /@nuxtjs/mdc@0.5.0:

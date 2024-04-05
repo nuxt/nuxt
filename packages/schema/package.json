@@ -62,7 +62,7 @@
     "webpack-dev-middleware": "7.2.1"
   },
   "dependencies": {
-    "@nuxt/ui-templates": "^1.3.2",
+    "@nuxt/ui-templates": "^1.3.3",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "hookable": "^5.5.3",

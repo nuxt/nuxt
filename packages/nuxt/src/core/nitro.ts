@@ -14,7 +14,6 @@ import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
-// @ts-expect-error TODO: add legacy type support for subpath imports
 import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
