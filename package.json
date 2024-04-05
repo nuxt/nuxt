@@ -20,6 +20,7 @@
     "lint:knip": "pnpx knip",
     "play": "nuxi dev playground",
     "play:build": "nuxi build playground",
+    "play:generate": "nuxi generate playground",
     "play:preview": "nuxi preview playground",
     "test": "pnpm test:fixtures && pnpm test:fixtures:dev && pnpm test:fixtures:webpack && pnpm test:unit && pnpm test:runtime && pnpm test:types && pnpm typecheck",
     "test:prepare": "jiti ./test/prepare.ts",
