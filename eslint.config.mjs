@@ -11,83 +11,20 @@ import perfectionist from 'eslint-plugin-perfectionist'
 export default createConfigForNuxt({
   features: {
     stylistic: {
-      // TODO: Discuss if we want set this to 'always'
+      // TODO: Anthony highly suggests to set this to 'always'
       commaDangle: 'never'
     },
     tooling: true
   }
 })
-  .prepend({
-    ignores: [
-      'packages/schema/schema/**'
-    ]
-  })
-  .override('nuxt/stylistic', {
-    rules: {
-      '@stylistic/brace-style': 'off',
-      '@stylistic/indent-binary-ops': 'off',
-      '@stylistic/max-statements-per-line': 'off',
-      '@stylistic/operator-linebreak': 'off',
-      '@stylistic/quote-props': ['error', 'as-needed'],
-      '@stylistic/space-before-function-paren': 'off'
-    }
-  })
-  .override('nuxt/typescript/rules', {
-    rules: {
-      // TODO: Discuss if we want to enable this
-      '@typescript-eslint/ban-types': 'off',
-      '@typescript-eslint/no-dynamic-delete': 'off',
-      // TODO: Discuss if we want to enable this
-      '@typescript-eslint/no-explicit-any': 'off',
-      // TODO: Discuss if we want to enable this
-      '@typescript-eslint/no-invalid-void-type': 'off'
-    }
-  })
-  .override('nuxt/tooling/unicorn', {
-    rules: {
-      'unicorn/no-new-array': 'off',
-      'unicorn/prefer-dom-node-text-content': 'off'
-    }
-  })
-  .override('nuxt/vue/rules', {
-    rules: {
-      'vue/array-bracket-spacing': ['error', 'never'],
-      'vue/arrow-spacing': ['error', { after: true, before: true }],
-      'vue/block-spacing': ['error', 'always'],
-      'vue/block-tag-newline': [
-        'error',
-        {
-          multiline: 'always',
-          singleline: 'always'
-        }
-      ],
-      'vue/brace-style': ['error', 'stroustrup', { allowSingleLine: true }],
-      'vue/comma-dangle': ['error', 'always-multiline'],
-      'vue/comma-spacing': ['error', { after: true, before: false }],
-      'vue/comma-style': ['error', 'last'],
-      'vue/html-comment-content-spacing': [
-        'error',
-        'always',
-        { exceptions: ['-'] }
-      ],
-      'vue/key-spacing': ['error', { afterColon: true, beforeColon: false }],
-      'vue/keyword-spacing': ['error', { after: true, before: true }],
-      'vue/object-curly-newline': 'off',
-      'vue/object-curly-spacing': ['error', 'always'],
-      'vue/object-property-newline': [
-        'error',
-        { allowMultiplePropertiesPerLine: true }
-      ],
-      'vue/one-component-per-file': 'off',
-      'vue/operator-linebreak': ['error', 'before'],
-      'vue/padding-line-between-blocks': ['error', 'always'],
-      'vue/quote-props': ['error', 'consistent-as-needed'],
-      'vue/require-default-prop': 'off',
-      'vue/space-in-parens': ['error', 'never'],
-      'vue/template-curly-spacing': 'error'
-    }
-  })
-  .append(
+  .prepend(
+    {
+      // Ignores have to be a separate object to be treated as global ignores
+      // Don't add other attributes to this object
+      ignores: [
+        'packages/schema/schema/**'
+      ]
+    },
     {
       languageOptions: {
         globals: {
@@ -105,34 +42,88 @@ export default createConfigForNuxt({
           }
         }
       }
-    },
+    }
+  )
+
+  .override('nuxt/javascript', {
+    rules: {
+      curly: ['error', 'all'], // Including if blocks with a single statement
+      'dot-notation': 'error',
+      'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
+      'no-lonely-if': 'error', // No single if in an "else" block
+      'no-useless-rename': 'error',
+      'object-shorthand': 'error',
+      'prefer-const': ['error', { destructuring: 'any', ignoreReadBeforeAssign: false }],
+      'require-await': 'error',
+      'sort-imports': ['error', { ignoreDeclarationSort: true }]
+    }
+  })
+
+  .override('nuxt/typescript/rules', {
+    rules: {
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-expect-error': 'allow-with-description',
+          'ts-ignore': true
+        }
+      ],
+      '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+          varsIgnorePattern: '^_'
+        }
+      ],
+      '@typescript-eslint/triple-slash-reference': 'off',
+      '@typescript-eslint/unified-signatures': 'off',
+      ...{
+        // TODO: Discuss if we want to enable this
+        '@typescript-eslint/ban-types': 'off',
+        // TODO: Discuss if we want to enable this
+        '@typescript-eslint/no-explicit-any': 'off',
+        // TODO: Discuss if we want to enable this
+        '@typescript-eslint/no-invalid-void-type': 'off'
+      }
+    }
+  })
+
+  .override('nuxt/tooling/unicorn', {
+    rules: {
+      'unicorn/no-new-array': 'off',
+      'unicorn/prefer-dom-node-text-content': 'off'
+    }
+  })
+
+  .override('nuxt/vue/rules', {
+    rules: {
+
+    }
+  })
+
+  // Stylistic rules
+  .override('nuxt/stylistic', {
+    rules: {
+      // TODO: Discuss if we want to enable this
+      '@stylistic/brace-style': 'off',
+      '@stylistic/indent-binary-ops': 'off',
+      '@stylistic/max-statements-per-line': 'off',
+      '@stylistic/operator-linebreak': 'off',
+      // TODO: Anthony suggests to set this to 'consistent'
+      '@stylistic/quote-props': ['error', 'as-needed'],
+      // TODO: Should we enable this and set to 'never'?
+      '@stylistic/space-before-function-paren': 'off'
+    }
+  })
+
+  // Append local rules
+  .append(
     {
       files: ['**/*.vue', '**/*.ts', '**/*.mts', '**/*.js', '**/*.cjs', '**/*.mjs'],
       name: 'local/rules',
-      plugins: {
-        'no-only-tests': noOnlyTests
-      },
       rules: {
-        '@typescript-eslint/ban-ts-comment': [
-          'error',
-          {
-            'ts-expect-error': 'allow-with-description',
-            'ts-ignore': true
-          }
-        ],
-        '@typescript-eslint/no-unused-vars': [
-          'error',
-          {
-            argsIgnorePattern: '^_',
-            ignoreRestSiblings: true,
-            varsIgnorePattern: '^_'
-          }
-        ],
-        // including if blocks with a single statement
-        curly: ['error', 'all'],
-        // Force dot notation when possible
-        'dot-notation': 'error',
-
         'import/no-restricted-paths': [
           'error',
           {
@@ -171,7 +162,6 @@ export default createConfigForNuxt({
             ]
           }
         ],
-
         'jsdoc/check-tag-names': [
           'error',
           {
@@ -180,22 +170,7 @@ export default createConfigForNuxt({
               '__NO_SIDE_EFFECTS__'
             ]
           }
-        ],
-
-        'no-console': ['warn', { allow: ['warn', 'error', 'debug'] }],
-        'no-lonely-if': 'error', // No single if in an "else" block
-        'no-only-tests/no-only-tests': 'error',
-        'no-useless-rename': 'error',
-        'object-shorthand': 'error',
-        'prefer-const': ['error', { destructuring: 'any', ignoreReadBeforeAssign: false }],
-        'require-await': 'error',
-        'sort-imports': [
-          'error',
-          {
-            ignoreDeclarationSort: true
-          }
         ]
-
       }
     },
     {
@@ -206,7 +181,7 @@ export default createConfigForNuxt({
       }
     },
     {
-      files: ['test/fixtures/**'],
+      files: ['**/fixtures/**', '**/fixture/**'],
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
@@ -216,12 +191,18 @@ export default createConfigForNuxt({
       }
     },
     {
-      files: ['test/**'],
+      files: ['test/**', '**/*.test.ts'],
       name: 'local/disables/tests',
+      plugins: {
+        'no-only-tests': noOnlyTests
+      },
       rules: {
-        '@typescript-eslint/no-explicit-any': 'off'
+        '@typescript-eslint/no-explicit-any': 'off',
+        'no-console': 'off',
+        'no-only-tests/no-only-tests': 'error'
       }
     },
+    // Sort rule keys in eslint config
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
@@ -233,6 +214,8 @@ export default createConfigForNuxt({
       }
     }
   )
+
+  // Generate type definitions for the eslint config
   .onResolved((configs) => {
     return typegen(configs)
   })
