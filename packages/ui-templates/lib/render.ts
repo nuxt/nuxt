@@ -146,6 +146,7 @@ export const RenderPlugin = () => {
         // Write new template
         await fsp.writeFile(fileName.replace('/index.html', '.mjs'), `${jsCode}\nexport const template = _template`)
         await fsp.writeFile(fileName.replace('/index.html', '.vue'), vueCode)
+        await fsp.writeFile(fileName.replace('/index.html', '.d.mts'), `${types}`)
         await fsp.writeFile(fileName.replace('/index.html', '.d.ts'), `${types}`)
 
         // Remove original html file
@@ -158,6 +159,7 @@ export const RenderPlugin = () => {
       await fsp.writeFile(r('dist/index.mjs'), contents, 'utf8')
 
       await fsp.writeFile(r('dist/index.d.ts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
+      await fsp.writeFile(r('dist/index.d.mts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
     }
   }
 }
