@@ -23,7 +23,7 @@ importers:
         specifier: 8.57.0
         version: 8.57.0
       '@nuxt/eslint-config':
-        specifier: ^0.3.0
+        specifier: 0.3.0
         version: 0.3.0(eslint@8.57.0)(typescript@5.4.3)
       '@nuxt/kit':
         specifier: workspace:*
@@ -2967,7 +2967,7 @@ packages:
     peerDependencies:
       eslint: '>=8.40.0'
     dependencies:
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       acorn: 8.11.3
       escape-string-regexp: 4.0.0
       eslint: 8.57.0
@@ -2982,10 +2982,10 @@ packages:
       eslint: '>=8.40.0'
     dependencies:
       '@stylistic/eslint-plugin-js': 1.7.0(eslint@8.57.0)
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       eslint: 8.57.0
       estraverse: 5.3.0
-      picomatch: 4.0.2
+      picomatch: 4.0.1
     dev: true
 
   /@stylistic/eslint-plugin-plus@1.7.0(eslint@8.57.0)(typescript@5.4.3):
@@ -2993,7 +2993,7 @@ packages:
     peerDependencies:
       eslint: '*'
     dependencies:
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.0)(typescript@5.4.3)
       eslint: 8.57.0
     transitivePeerDependencies:
@@ -3008,7 +3008,7 @@ packages:
       eslint: '>=8.40.0'
     dependencies:
       '@stylistic/eslint-plugin-js': 1.7.0(eslint@8.57.0)
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       '@typescript-eslint/utils': 6.21.0(eslint@8.57.0)(typescript@5.4.3)
       eslint: 8.57.0
     transitivePeerDependencies:
@@ -3026,7 +3026,7 @@ packages:
       '@stylistic/eslint-plugin-jsx': 1.7.0(eslint@8.57.0)
       '@stylistic/eslint-plugin-plus': 1.7.0(eslint@8.57.0)(typescript@5.4.3)
       '@stylistic/eslint-plugin-ts': 1.7.0(eslint@8.57.0)(typescript@5.4.3)
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       eslint: 8.57.0
     transitivePeerDependencies:
       - supports-color
@@ -3111,6 +3111,13 @@ packages:
     dependencies:
       '@types/eslint': 8.56.7
       '@types/estree': 1.0.5
+
+  /@types/eslint@8.56.6:
+    resolution: {integrity: sha512-ymwc+qb1XkjT/gfoQwxIeHZ6ixH23A+tCT2ADSA/DPVKzAjwYkTXBMCQ/f6fe4wEa85Lhp26VPeUxI7wMhAi7A==}
+    dependencies:
+      '@types/estree': 1.0.5
+      '@types/json-schema': 7.0.15
+    dev: true
 
   /@types/eslint@8.56.7:
     resolution: {integrity: sha512-SjDvI/x3zsZnOkYZ3lCt9lOZWZLB2jIlNKz+LBgCtDurK0JZcwucxYHn1w2BJkD34dgX9Tjnak0txtq4WTggEA==}
@@ -6000,7 +6007,7 @@ packages:
   /eslint-flat-config-utils@0.2.0:
     resolution: {integrity: sha512-8jLkFKKBAzWPBEjygdH/P9Y/c+K9AcuMAig9u/4/x7mtsDRHj8EdgEJHX1IEvOTAbZiWXEUoZqiKZUIx/1FWKg==}
     dependencies:
-      '@types/eslint': 8.56.7
+      '@types/eslint': 8.56.6
       pathe: 1.1.2
     dev: true
 
@@ -9270,8 +9277,8 @@ packages:
     resolution: {integrity: sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==}
     engines: {node: '>=8.6'}
 
-  /picomatch@4.0.2:
-    resolution: {integrity: sha512-M7BAV6Rlcy5u+m6oPhAPFgJTzAioX/6B0DxyvDlo9l8+T3nLKbrczg2WLUyzd45L8RqfUMyGPzekbMvX2Ldkwg==}
+  /picomatch@4.0.1:
+    resolution: {integrity: sha512-xUXwsxNjwTQ8K3GnT4pCJm+xq3RUPQbmkYJTP5aFIfNIvbcc/4MUxgBaaRSZJ6yGJZiGSyYlM6MzwTsRk8SYCg==}
     engines: {node: '>=12'}
     dev: true
 
