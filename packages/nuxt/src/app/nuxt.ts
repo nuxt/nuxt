@@ -50,6 +50,9 @@ export interface RuntimeNuxtHooks {
   'page:view-transition:start': (transition: ViewTransition) => HookResult
   'page:loading:start': () => HookResult
   'page:loading:end': () => HookResult
+  'layout:start': (Component?: VNode) => HookResult
+  'layout:finish': (Component?: VNode) => HookResult
+  'layout:transition:finish': (Component?: VNode) => HookResult
   'vue:setup': () => void
   'vue:error': (...args: Parameters<Parameters<typeof onErrorCaptured>[0]>) => HookResult
 }

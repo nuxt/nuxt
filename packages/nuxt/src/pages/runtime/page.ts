@@ -1,15 +1,14 @@
 import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
-import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
-import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
+import { generateRouteKey, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapIf } from '#app/components/utils'
+import { _mergeTransitionProps, _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -140,14 +139,6 @@ export default defineComponent({
     }
   }
 })
-
-function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
-  const _props: TransitionProps[] = routeProps.map(prop => ({
-    ...prop,
-    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
-  }))
-  return defu(..._props as [TransitionProps, TransitionProps])
-}
 
 function haveParentRoutesRendered (fork: RouteLocationNormalizedLoaded | null, newRoute: RouteLocationNormalizedLoaded, Component?: VNode) {
   if (!fork) { return false }

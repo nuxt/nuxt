@@ -1,8 +1,10 @@
 import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import type { Component, RendererNode, TransitionProps } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
+import { defu } from 'defu'
 import type { RouteLocationNormalized } from '#vue-router'
+import { toArray } from '#app/utils'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -155,4 +157,12 @@ function isStartFragment (element: RendererNode) {
 
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+
+export function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
+  const _props: TransitionProps[] = routeProps.map(prop => ({
+    ...prop,
+    onAfterLeave: toArray(prop.onAfterLeave)
+  }))
+  return defu(..._props as [TransitionProps, TransitionProps])
 }
