@@ -70,8 +70,8 @@ export interface ImportGlobFunction {
     glob: string | string[],
     options?: ImportGlobOptions<Eager, As>
   ): (Eager extends true
-  ? true
-  : false) extends true
+    ? true
+    : false) extends true
     ? Record<string, T>
     : Record<string, () => Promise<T>>
   /**

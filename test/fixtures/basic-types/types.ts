@@ -525,7 +525,7 @@ describe('app config', () => {
       }
       userConfig: 123 | 456
       someThing?: {
-        value?: string | false,
+        value?: string | false
       }
       [key: string]: unknown
     }

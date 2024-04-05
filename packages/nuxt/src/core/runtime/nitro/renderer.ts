@@ -26,7 +26,7 @@ import { useNitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
-// eslint-disable-next-line import/no-restricted-paths
+
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
@@ -88,9 +88,9 @@ export interface NuxtIslandResponse {
 }
 
 export interface NuxtRenderResponse {
-  body: string,
-  statusCode: number,
-  statusMessage?: string,
+  body: string
+  statusCode: number
+  statusMessage?: string
   headers: Record<string, string>
 }
 
@@ -197,10 +197,10 @@ const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DA
       },
       async set<T> (key: string, value: Promise<T>): Promise<void> {
         sharedPrerenderKeys.add(key)
-      sharedPrerenderPromises!.set(key, value)
-      useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+        sharedPrerenderPromises!.set(key, value)
+        useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
         // free up memory after the promise is resolved
-        .finally(() => sharedPrerenderPromises!.delete(key))
+          .finally(() => sharedPrerenderPromises!.delete(key))
       }
     }
   : null
@@ -254,7 +254,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     : null
 
   if (ssrError && ssrError.statusCode) {
-    ssrError.statusCode = parseInt(ssrError.statusCode as any)
+    ssrError.statusCode = Number.parseInt(ssrError.statusCode as any)
   }
 
   if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {

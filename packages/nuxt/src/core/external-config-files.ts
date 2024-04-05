@@ -61,8 +61,8 @@ async function checkPostCSSConfig () {
 }
 
 interface CheckAndWarnAboutConfigFileExistenceOptions {
-  fileName: string,
-  extensions: string[],
+  fileName: string
+  extensions: string[]
   createWarningMessage: (foundFile: string) => string
 }
 

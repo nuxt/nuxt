@@ -73,7 +73,6 @@ describe('imports:nuxt', () => {
     }
   } catch (e) {
     it('should import composables', () => {
-      // eslint-disable-next-line no-console
       console.error(e)
       expect(false).toBe(true)
     })

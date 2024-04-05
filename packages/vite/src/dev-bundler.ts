@@ -14,15 +14,15 @@ import { writeManifest } from './manifest'
 import type { ViteBuildContext } from './vite'
 
 interface TransformChunk {
-  id: string,
-  code: string,
-  deps: string[],
+  id: string
+  code: string
+  deps: string[]
   parents: string[]
 }
 
 interface SSRTransformResult {
-  code: string,
-  map: object,
+  code: string
+  map: object
   deps: string[]
   dynamicDeps: string[]
 }

@@ -29,7 +29,7 @@ export function node (ctx: WebpackConfigContext) {
   ctx.config.performance = {
     ...ctx.config.performance,
     hints: false,
-    maxEntrypointSize: Infinity,
-    maxAssetSize: Infinity
+    maxEntrypointSize: Number.POSITIVE_INFINITY,
+    maxAssetSize: Number.POSITIVE_INFINITY
   }
 }

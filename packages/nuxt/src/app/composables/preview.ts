@@ -11,8 +11,8 @@ interface Preview {
 }
 
 interface PreviewModeOptions<S> {
-  shouldEnable?: (state: Preview['state']) => boolean,
-  getState?: (state: Preview['state']) => S,
+  shouldEnable?: (state: Preview['state']) => boolean
+  getState?: (state: Preview['state']) => S
 }
 
 type EnteredState = Record<any, unknown> | null | undefined | void

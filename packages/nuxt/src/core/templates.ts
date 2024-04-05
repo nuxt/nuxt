@@ -38,7 +38,7 @@ export const rootComponentTemplate: NuxtTemplate = {
   filename: 'root-component.mjs',
   // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
   // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
-  getContents: ctx => (ctx.nuxt.options.dev ? "import '#build/components.islands.mjs';\n" : '') + genExport(ctx.app.rootComponent!, ['default'])
+  getContents: ctx => (ctx.nuxt.options.dev ? 'import \'#build/components.islands.mjs\';\n' : '') + genExport(ctx.app.rootComponent!, ['default'])
 }
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate = {
@@ -158,8 +158,8 @@ export const schemaTemplate: NuxtTemplate = {
       }
     }
     return [
-      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
-      "declare module 'nuxt/schema' {",
+      'import { NuxtModule, RuntimeConfig } from \'nuxt/schema\'',
+      'declare module \'nuxt/schema\' {',
       '  interface NuxtConfig {',
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`
@@ -358,7 +358,7 @@ export const dollarFetchTemplate: NuxtTemplate = {
   getContents () {
     return [
       'import { $fetch } from \'ofetch\'',
-      "import { baseURL } from '#internal/nuxt/paths'",
+      'import { baseURL } from \'#internal/nuxt/paths\'',
       'if (!globalThis.$fetch) {',
       '  globalThis.$fetch = $fetch.create({',
       '    baseURL: baseURL()',

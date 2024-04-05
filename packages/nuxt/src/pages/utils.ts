@@ -21,14 +21,14 @@ enum SegmentParserState {
   static,
   dynamic,
   optional,
-  catchall,
+  catchall
 }
 
 enum SegmentTokenType {
   static,
   dynamic,
   optional,
-  catchall,
+  catchall
 }
 
 interface SegmentToken {

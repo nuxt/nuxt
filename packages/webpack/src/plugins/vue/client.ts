@@ -17,7 +17,7 @@ interface PluginOptions {
   nuxt: Nuxt
 }
 
-function uniq <T> (items: T[]) {
+function uniq<T> (items: T[]) {
   return [...new Set(items)]
 }
 

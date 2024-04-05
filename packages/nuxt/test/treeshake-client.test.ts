@@ -124,11 +124,11 @@ describe('treeshake client only in ssr', () => {
       expect(clientResult).toContain('should-be-treeshaken')
       expect(treeshaken).not.toContain('should-be-treeshaken')
 
-      expect(treeshaken).not.toContain("import HelloWorld from '../HelloWorld.vue'")
-      expect(clientResult).toContain("import HelloWorld from '../HelloWorld.vue'")
+      expect(treeshaken).not.toContain('import HelloWorld from \'../HelloWorld.vue\'')
+      expect(clientResult).toContain('import HelloWorld from \'../HelloWorld.vue\'')
 
-      expect(treeshaken).not.toContain("import { Treeshaken } from 'somepath'")
-      expect(clientResult).toContain("import { Treeshaken } from 'somepath'")
+      expect(treeshaken).not.toContain('import { Treeshaken } from \'somepath\'')
+      expect(clientResult).toContain('import { Treeshaken } from \'somepath\'')
 
       // remove resolved import
       expect(treeshaken).not.toContain('const _component_ResolvedImport =')
@@ -137,12 +137,12 @@ describe('treeshake client only in ssr', () => {
       // treeshake multi line variable declaration
       expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
       expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaken).not.toContain("return (await import('./../some.island.vue'))")
+      expect(treeshaken).not.toContain('return (await import(\'./../some.island.vue\'))')
       expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
 
       // treeshake object and array declaration
-      expect(treeshaken).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
-      expect(treeshaken).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
+      expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
+      expect(treeshaken).not.toContain('const { ObjectPattern: ObjectPatternDeclaration } = await import(\'nuxt.com\')')
       expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
@@ -155,7 +155,7 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).not.toContain('import {  } from')
 
       // expect components used in setup to not be removed
-      expect(treeshaken).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
+      expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')

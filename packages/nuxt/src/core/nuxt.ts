@@ -10,13 +10,13 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
 import { withoutLeadingSlash } from 'ufo'
-/* eslint-disable import/no-restricted-paths */
+
 import defu from 'defu'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
 import importsModule from '../imports/module'
-/* eslint-enable */
+
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'

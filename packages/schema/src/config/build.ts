@@ -71,7 +71,7 @@ export default defineUntypedSchema({
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
-      $resolve: (val: Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)> | undefined) => (val || []).filter(Boolean)
+      $resolve: (val: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)> | undefined) => (val || []).filter(Boolean)
     },
 
     /**

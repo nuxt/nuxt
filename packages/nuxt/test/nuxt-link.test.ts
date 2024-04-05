@@ -53,7 +53,7 @@ const nuxtLink = (
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
   const [type, _props, slots] = (component.setup as unknown as (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) =>
-    () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
+  () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
 
   return { type, props: _props, slots }
 }

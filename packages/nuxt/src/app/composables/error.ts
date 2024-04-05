@@ -14,8 +14,8 @@ export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
 /** @since 3.0.0 */
 export const showError = <DataT = unknown>(
   error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number;
-    statusText?: string;
+    status?: number
+    statusText?: string
   })
 ) => {
   const nuxtError = createError<DataT>(error)
@@ -58,8 +58,8 @@ export const isNuxtError = <DataT = unknown>(
 /** @since 3.0.0 */
 export const createError = <DataT = unknown>(
   error: string | Error | (Partial<NuxtError<DataT>> & {
-    status?: number;
-    statusText?: string;
+    status?: number
+    statusText?: string
   })
 ) => {
   const nuxtError: NuxtError<DataT> = createH3Error<DataT>(error)

@@ -5,7 +5,7 @@ import { useNuxtApp } from '../nuxt'
 import { paths } from '#build/components-chunk'
 
 type ExtendedComponent = Component & {
-  __file: string,
+  __file: string
   __name: string
 }
 
@@ -47,7 +47,7 @@ export default defineComponent({
 
     return () => {
       const slot = slots.default!()[0]
-      const slotType = (slot.type as ExtendedComponent)
+      const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
 
       islandContext.components[props.to] = {

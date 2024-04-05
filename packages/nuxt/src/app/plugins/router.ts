@@ -71,7 +71,7 @@ interface RouterHooks {
   'resolve:before': (to: Route, from: Route) => RouteGuardReturn | Promise<RouteGuardReturn>
   'navigate:before': (to: Route, from: Route) => RouteGuardReturn | Promise<RouteGuardReturn>
   'navigate:after': (to: Route, from: Route) => void | Promise<void>
-  'error': (err: any) => void | Promise<void>
+  error: (err: any) => void | Promise<void>
 }
 
 interface Router {

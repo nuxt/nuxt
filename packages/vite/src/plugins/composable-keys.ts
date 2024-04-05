@@ -124,7 +124,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,
-            (node.arguments.length && !endsWithComma ? ', ' : '') + "'$" + hash(`${relativeID}-${++count}`) + "'"
+            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`) + '\''
           )
         },
         leave (_node) {

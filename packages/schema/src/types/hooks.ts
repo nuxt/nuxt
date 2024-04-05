@@ -95,18 +95,18 @@ export interface NuxtHooks {
    * @param nuxt The configured Nuxt object
    * @returns Promise
    */
-  'ready': (nuxt: Nuxt) => HookResult
+  ready: (nuxt: Nuxt) => HookResult
   /**
    * Called when Nuxt instance is gracefully closing.
    * @param nuxt The configured Nuxt object
    * @returns Promise
    */
-  'close': (nuxt: Nuxt) => HookResult
+  close: (nuxt: Nuxt) => HookResult
   /**
    * Called to restart the current Nuxt instance.
    * @returns Promise
    */
-  'restart': (options?: {
+  restart: (options?: {
     /**
      * Try to restart the whole process if supported
      */
@@ -298,7 +298,7 @@ export interface NuxtHooks {
    * @param listener The server's listener object
    * @returns Promise
    */
-  'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
+  listen: (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
 
   // Schema
   /**

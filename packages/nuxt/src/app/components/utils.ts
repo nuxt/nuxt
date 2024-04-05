@@ -44,7 +44,6 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
-// eslint-disable-next-line no-use-before-define
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 

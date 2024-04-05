@@ -1,6 +1,6 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
-// eslint-disable-next-line
+
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { useNuxtApp } from '../nuxt'

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import Helloworld from '../components/Helloworld.vue'
+
 const count = ref(0)
 
 const compTemplate = computed(() => `
@@ -31,7 +32,6 @@ const { data, pending } = await useAsyncData('templates', async () => {
 const Interactive = h({
   template: data.value?.interactiveComponent.template,
   setup (props) {
-    // eslint-disable-next-line no-new-func
     return new Function(
       'ref',
       'computed',

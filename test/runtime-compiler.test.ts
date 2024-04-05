@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { $fetch, setup } from '@nuxt/test-utils/e2e'
 import { isWindows } from 'std-env'
 import { expectNoClientErrors, renderPage } from './utils'
+
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
 await setup({

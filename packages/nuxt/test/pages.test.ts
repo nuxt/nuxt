@@ -20,7 +20,7 @@ describe('pages:generateRoutesFromFiles', () => {
 
   const tests: Array<{
     description: string
-    files?: Array<{ path: string; template?: string; }>
+    files?: Array<{ path: string, template?: string }>
     output?: NuxtPage[]
     normalized?: Record<string, any>[]
     error?: string

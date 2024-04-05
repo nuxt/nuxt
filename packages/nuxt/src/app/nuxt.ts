@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
