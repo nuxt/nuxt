@@ -1,7 +1,9 @@
 import { existsSync, readFileSync } from 'node:fs'
 import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
-import { tryUseNuxt } from './context'
+import { tryUseNuxt, useNuxt } from './context'
+
+const checkIgnoreOutdated = (nuxt = useNuxt()) => nuxt._ignorePatterns?.join(',') !== nuxt.options.ignore.join(',')
 
 /**
  * Return a filter function to filter an array of paths
@@ -14,7 +16,7 @@ export function isIgnored (pathname: string): boolean {
     return false
   }
 
-  if (!nuxt._ignore) {
+  if (!nuxt._ignore || checkIgnoreOutdated(nuxt)) {
     nuxt._ignore = ignore(nuxt.options.ignoreOptions)
     nuxt._ignore.add(resolveIgnorePatterns())
   }
@@ -36,7 +38,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     return []
   }
 
-  if (!nuxt._ignorePatterns) {
+  if (!nuxt._ignorePatterns || checkIgnoreOutdated(nuxt)) {
     nuxt._ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
 
     const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
