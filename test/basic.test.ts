@@ -1815,11 +1815,15 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
   })
 })
 
-describe('public directories', () => {
+describe.only('public directories', () => {
   it('should directly return public directory paths', async () => {
     const html = await $fetch('/assets-custom')
     expect(html).toContain('"/public.svg"')
     expect(html).toContain('"/custom/file.svg"')
+  })
+  it.only('should resolve subfolder image from public assets using alias in dir', async () => {
+    const html = await $fetch('/public-assets-alias')
+    expect(html).toContain('"/subfolder/1x1.png"')
   })
 })
 

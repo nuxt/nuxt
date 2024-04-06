@@ -153,10 +153,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
           },
-      ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
-        .filter(dir => existsSync(dir))
-        .map(dir => ({ dir })),
+      ...(await resolvePublicFolders(nuxt)),
     ],
     prerender: {
       failOnError: true,
@@ -228,6 +225,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  await resolvePublicAssets(nuxt)
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
@@ -593,4 +592,35 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   return ''
+}
+
+async function resolvePublicFolders (nuxt: Nuxt) {
+  const { dir: rootDir, srcDir, alias: rootAlias } = nuxt.options
+  const dirs = await Promise.all(nuxt.options._layers.map((layer) => {
+    const [path, cwd, alias] = layer.config.rootDir === nuxt.options.rootDir
+      ? [rootDir.public || 'public', srcDir, rootAlias]
+      : [layer.config.dir?.public || 'public', layer.config.srcDir, layer.config.alias]
+    return resolvePath(path, { cwd, alias: alias as Record<string, string> })
+  }))
+
+  return dirs.filter(dir => existsSync(dir)).map(dir => ({ dir }))
+}
+
+async function resolvePublicAssets (nuxt: Nuxt) {
+  const { dir: rootDir, srcDir, alias: rootAlias } = nuxt.options
+  await Promise.all(nuxt.options._layers.map((layer) => {
+    return Promise.all((layer.config.nitro?.publicAssets || []).map(async (publicAsset) => {
+      if (!publicAsset) {
+        return
+      }
+      const [path, cwd, alias] = layer.config.rootDir === nuxt.options.rootDir
+        ? [publicAsset.dir || rootDir.public || 'public', srcDir, rootAlias]
+        : [publicAsset.dir || layer.config.dir?.public || 'public', layer.config.srcDir, layer.config.alias]
+      const dir = await resolvePath(path, { cwd, alias: alias as Record<string, string> })
+      // TODO: should warn if missing?
+      if (existsSync(dir)) {
+        publicAsset.dir = dir
+      }
+    }))
+  }))
 }
