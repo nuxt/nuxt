@@ -1337,7 +1337,6 @@ describe('nested suspense', () => {
     await page.click(`[href^="${nav}"]`)
 
     const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
-      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
     // expect(text).toMatchInlineSnapshot()
@@ -1384,7 +1383,6 @@ describe('nested suspense', () => {
 
     // wait until child selector disappears and grab HTML of parent
     const text = await page.waitForFunction(slug => document.querySelector(`main:not(:has(#child${slug}))`)?.innerHTML, slug)
-      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
     expect(text).toContain('Async parent: 1')
@@ -1422,7 +1420,6 @@ describe('nested suspense', () => {
 
     // wait until child selector appears and grab HTML of parent
     const text = await page.waitForFunction(slug => document.querySelector(`main:has(#child${slug})`)?.innerHTML, slug)
-      // @ts-expect-error TODO: fix upstream in playwright - types for evaluate are broken
       .then(r => r.evaluate(r => r))
 
     // const text = await parent.innerText()
