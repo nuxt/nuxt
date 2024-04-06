@@ -631,14 +631,13 @@ async function resolveScanDirs (nuxt: Nuxt) {
   const layersScanDirs = await Promise.all(nuxt.options._layers.filter((_, i) => i > 0).map(async (layer) => {
     const [cwd, alias] = [layer.cwd, layer.config.alias as Record<string, string>]
     const dirs = await Promise.all((layer.config.nitro?.scanDirs ?? []).map(async (scanDir) => {
-      if (!scanDir)
-        return
+      if (!scanDir) { return }
 
-      const dir = await resolvePath(scanDir, {cwd, alias: alias as Record<string, string>})
+      const dir = await resolvePath(scanDir, { cwd, alias: alias as Record<string, string> })
 
       return existsSync(dir) ? dir : null
-    }));
-    return dirs.filter(Boolean).flat() as string[];
+    }))
+    return dirs.filter(Boolean).flat() as string[]
   })).then(dirs => dirs.flat())
 
   for (const scanDir of layersScanDirs) {
@@ -647,4 +646,3 @@ async function resolveScanDirs (nuxt: Nuxt) {
 
   return [...scanDirs]
 }
-
