@@ -148,7 +148,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     start,
     set,
     finish,
-    clear
+    clear,
   }
 }
 

@@ -11,7 +11,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   beforeAll(async () => {
     await Promise.all([
       execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'false' } }),
-      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'true' } })
+      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'true' } }),
     ])
   }, 120 * 1000)
 
@@ -32,7 +32,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"208k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"209k"')
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"1335k"')
@@ -72,10 +72,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"526k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"529k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"75.5k"')
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"75.6k"')
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

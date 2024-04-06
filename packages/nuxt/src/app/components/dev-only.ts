@@ -7,5 +7,5 @@ export default defineComponent({
       return () => props.slots.default?.()
     }
     return () => props.slots.fallback?.()
-  }
+  },
 })

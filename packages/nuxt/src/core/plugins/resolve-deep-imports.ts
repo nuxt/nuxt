@@ -21,11 +21,11 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       return await this.resolve?.(id, dir || pkgDir, { skipSelf: true }) ?? await resolvePath(id, {
         url: [dir || pkgDir, ...nuxt.options.modulesDir],
         // TODO: respect nitro runtime conditions
-        conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require']
+        conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require'],
       }).catch(() => {
         logger.debug('Could not resolve id', id, importer)
         return null
       })
-    }
+    },
   }
 }

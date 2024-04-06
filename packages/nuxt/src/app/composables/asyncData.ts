@@ -1,4 +1,4 @@
-import { computed, getCurrentInstance, onBeforeMount, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
+import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { Ref, WatchSource } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -17,19 +17,19 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output | P
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
-  ? keyof T extends K[number]
-  ? T // Exact same keys as the target, skip Pick
-  : K[number] extends never
-  ? T
-  : Pick<T, K[number]>
-  : T
+    ? keyof T extends K[number]
+      ? T // Exact same keys as the target, skip Pick
+      : K[number] extends never
+        ? T
+        : Pick<T, K[number]>
+    : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
-  ? keyof T extends string
-  ? keyof T
-  : never
-  : never
+    ? keyof T extends string
+      ? keyof T
+      : never
+    : never
 >
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
@@ -257,7 +257,7 @@ export function useAsyncData<
       data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
-      status: ref('idle')
+      status: ref('idle'),
     }
   }
 
@@ -370,16 +370,20 @@ export function useAsyncData<
       // 4. Navigation (lazy: false) - or plugin usage: await fetch
       initialFetch()
     }
+    const hasScope = getCurrentScope()
     if (options.watch) {
-      watch(options.watch, () => asyncData.refresh())
+      const unsub = watch(options.watch, () => asyncData.refresh())
+      if (hasScope) {
+        onScopeDispose(unsub)
+      }
     }
     const off = nuxtApp.hook('app:data:refresh', async (keys) => {
       if (!keys || keys.includes(key)) {
         await asyncData.refresh()
       }
     })
-    if (instance) {
-      onUnmounted(off)
+    if (hasScope) {
+      onScopeDispose(off)
     }
   }
 
@@ -473,8 +477,8 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
         } else {
           nuxtApp.payload.data[key] = value
         }
-      }
-    })
+      },
+    }),
   }
 }
 

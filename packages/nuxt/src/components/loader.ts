@@ -99,10 +99,10 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
 

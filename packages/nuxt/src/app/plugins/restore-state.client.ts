@@ -15,6 +15,6 @@ export default defineNuxtPlugin({
       } catch {
         // don't throw an error if we have issues reading sessionStorage
       }
-    }
-  }
+    },
+  },
 })

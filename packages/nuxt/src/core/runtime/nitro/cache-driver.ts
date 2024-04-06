@@ -13,7 +13,7 @@ export default defineDriver((opts: { base: string }) => {
     async setItem (key, value, opts) {
       await Promise.all([
         fs.setItem(normalizeFsKey(key), value, opts),
-        lru.setItem(key, value, opts)
+        lru.setItem(key, value, opts),
       ])
     },
     async hasItem (key, opts) {
@@ -21,6 +21,6 @@ export default defineDriver((opts: { base: string }) => {
     },
     async getItem (key, opts) {
       return await lru.getItem(key, opts) || await fs.getItem(normalizeFsKey(key), opts)
-    }
+    },
   }
 })

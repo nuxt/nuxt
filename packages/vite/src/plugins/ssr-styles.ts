@@ -33,7 +33,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const islands = options.components.filter(component =>
     component.island ||
     // .server components without a corresponding .client component will need to be rendered as an island
-    (component.mode === 'server' && !options.components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+    (component.mode === 'server' && !options.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
   )
 
   return {
@@ -52,11 +52,11 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           if (res) {
             return {
               ...res,
-              moduleSideEffects: false
+              moduleSideEffects: false,
             }
           }
         }
-      }
+      },
     },
     generateBundle (outputOptions) {
       if (options.mode === 'client') { return }
@@ -72,7 +72,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           : outputOptions.assetFileNames({
             type: 'asset',
             name: `${filename(file)}-styles.mjs`,
-            source: ''
+            source: '',
           })
 
         const baseDir = dirname(base)
@@ -82,8 +82,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           name: `${filename(file)}-styles.mjs`,
           source: [
             ...files.map((css, i) => `import style_${i} from './${relative(baseDir, this.getFileName(css))}';`),
-            `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`
-          ].join('\n')
+            `export default [${files.map((_, i) => `style_${i}`).join(', ')}]`,
+          ].join('\n'),
         })
       }
 
@@ -101,9 +101,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           [
             'const interopDefault = r => r.default || r || []',
             `export default ${genObjectFromRawEntries(
-              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][]
-            )}`
-          ].join('\n')
+              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][],
+            )}`,
+          ].join('\n'),
       })
     },
     renderChunk (_code, chunk) {
@@ -162,7 +162,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           if (s.hasChanged()) {
             return {
               code: s.toString(),
-              map: s.generateMap({ hires: true })
+              map: s.generateMap({ hires: true }),
             }
           }
         }
@@ -201,7 +201,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         const ref = this.emitFile({
           type: 'chunk',
           name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-          id: file + '?inline&used'
+          id: file + '?inline&used',
         })
 
         idRefMap[relativeToSrcDir(file)] = ref
@@ -228,13 +228,13 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         const ref = this.emitFile({
           type: 'chunk',
           name: `${filename(id)}-styles-${++styleCtr}.mjs`,
-          id: resolved.id + '?inline&used'
+          id: resolved.id + '?inline&used',
         })
 
         idRefMap[relativeToSrcDir(resolved.id)] = ref
         cssMap[relativeId].files.push(ref)
       }
-    }
+    },
   }
 }
 

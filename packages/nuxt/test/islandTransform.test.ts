@@ -15,12 +15,12 @@ const getComponents = () => [{
   export: 'default',
   shortPath: '',
   prefetch: false,
-  preload: false
+  preload: false,
 }] as Component[]
 
 const pluginWebpack = islandsTransform.raw({
   getComponents,
-  selectiveClient: true
+  selectiveClient: true,
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
 const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
@@ -28,7 +28,7 @@ const viteTransform = async (source: string, id: string, isDev = false, selectiv
     getComponents,
     rootDir: '/root',
     isDev,
-    selectiveClient
+    selectiveClient,
   }, { framework: 'vite' }) as Plugin
 
   const result = await (vitePlugin.transform! as Function)(source, id)

@@ -4,7 +4,7 @@ const data1 = ref('data1')
 const { enabled, state } = usePreviewMode({
   getState: () => {
     return { data1, data2: 'data2' }
-  }
+  },
 })
 
 onMounted(() => {

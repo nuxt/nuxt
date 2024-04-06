@@ -52,7 +52,7 @@ if (import.meta.client) {
     if (vueAppPromise) { return vueAppPromise }
     const isSSR = Boolean(
       window.__NUXT__?.serverRendered ||
-      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true',
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 

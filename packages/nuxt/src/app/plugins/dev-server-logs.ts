@@ -20,8 +20,8 @@ export default defineNuxtPlugin((nuxtApp) => {
     const logger = createConsola({
       formatOptions: {
         colors: true,
-        date: true
-      }
+        date: true,
+      },
     })
     const hydrationLogs = new Set<string>()
     consola.wrapConsole()
@@ -32,7 +32,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         } catch {
           // silently ignore - the worst case is a user gets log twice
         }
-      }
+      },
     })
     nuxtApp.hook('dev:ssr-logs', (logs) => {
       for (const log of logs) {

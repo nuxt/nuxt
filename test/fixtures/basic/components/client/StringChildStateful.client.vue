@@ -5,7 +5,7 @@ const add = () => state.value++
 
 defineExpose({
   state,
-  add
+  add,
 })
 </script>
 

@@ -38,7 +38,7 @@ function isBuiltin (id: string) {
 export async function warmupViteServer (
   server: ViteDevServer,
   entries: string[],
-  isServer: boolean
+  isServer: boolean,
 ) {
   const warmedUrls = new Set<String>()
 
