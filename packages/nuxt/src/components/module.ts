@@ -222,10 +222,12 @@ export default defineNuxtModule<ComponentsOptions>({
           getComponents,
         }))
       }
-      config.plugins.push(clientFallbackAutoIdPlugin.vite({
-        sourcemap: !!nuxt.options.sourcemap[mode],
-        rootDir: nuxt.options.rootDir,
-      }))
+      if (nuxt.options.experimental.clientFallback) {
+        config.plugins.push(clientFallbackAutoIdPlugin.vite({
+          sourcemap: !!nuxt.options.sourcemap[mode],
+          rootDir: nuxt.options.rootDir,
+        }))
+      }
       config.plugins.push(loaderPlugin.vite({
         sourcemap: !!nuxt.options.sourcemap[mode],
         getComponents,
@@ -291,10 +293,12 @@ export default defineNuxtModule<ComponentsOptions>({
             getComponents,
           }))
         }
-        config.plugins.push(clientFallbackAutoIdPlugin.webpack({
-          sourcemap: !!nuxt.options.sourcemap[mode],
-          rootDir: nuxt.options.rootDir,
-        }))
+        if (nuxt.options.experimental.clientFallback) {
+          config.plugins.push(clientFallbackAutoIdPlugin.webpack({
+            sourcemap: !!nuxt.options.sourcemap[mode],
+            rootDir: nuxt.options.rootDir,
+          }))
+        }
         config.plugins.push(loaderPlugin.webpack({
           sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
