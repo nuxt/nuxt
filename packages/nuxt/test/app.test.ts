@@ -41,19 +41,15 @@ describe('resolveApp', () => {
         "plugins": [
           {
             "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/payload.client.ts",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
+            "mode": "all",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
           },
           {
-            "mode": "server",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+            "mode": "all",
+            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -62,16 +58,20 @@ describe('resolveApp', () => {
             "src": "<rootDir>/.nuxt/components.plugin.mjs",
           },
           {
-            "mode": "all",
-            "src": "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.ts",
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
           },
           {
-            "mode": "all",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
+            "mode": "server",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
           },
           {
             "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/payload.client.ts",
           },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
@@ -134,17 +134,13 @@ describe('resolveApp', () => {
       }
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
-    // TODO: support overriding named plugins
     expect(fixturePlugins).toMatchInlineSnapshot(`
       [
         "<rootDir>/plugins/00.plugin.ts",
         "<rootDir>/layer2/plugins/01.plugin.ts",
         "<rootDir>/layer1/plugins/02.plugin.ts",
-        "<rootDir>/layer1/plugins/object-named.ts",
-        "<rootDir>/layer1/plugins/override-test.ts",
-        "<rootDir>/layer2/plugins/object-named.ts",
-        "<rootDir>/layer2/plugins/override-test.ts",
         "<rootDir>/plugins/object-named.ts",
+        "<rootDir>/layer2/plugins/override-test.ts",
       ]
     `)
   })

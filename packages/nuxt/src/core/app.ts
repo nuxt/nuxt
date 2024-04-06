@@ -177,7 +177,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Normalize and de-duplicate plugins and middleware and hoist (and sort)
   // middleware/plugin files that begin with a number
   app.middleware = sortMiddleware(uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse())
-  app.plugins = sortPlugins(uniqueBy(await resolvePaths(app.plugins, 'src'), 'src'))
+  app.plugins = sortPlugins(uniquePlugins(await resolvePaths([...app.plugins].reverse(), 'src')))
 
   // Resolve app.config
   app.configs = []
@@ -285,4 +285,20 @@ function sortPlugins (plugins: NuxtPlugin[]) {
     ...orderedPlugins.sort((l, r) => filename(l.src).localeCompare(filename(r.src))),
     ...unorderedPlugins
   ]
+}
+
+function uniquePlugins (plugins: NuxtPlugin[]) {
+  const pluginFlags = new Set<string>()
+  const bucket: NuxtPlugin[] = []
+  for (const plugin of plugins) {
+    const name = plugin.name ? plugin.name : filename(plugin.src)
+    const mode = plugin.mode ? plugin.mode : 'all'
+    const flag = `${name}.${mode}`
+    if (pluginFlags.has(flag)) {
+      continue
+    }
+    pluginFlags.add(flag)
+    bucket.push(plugin)
+  }
+  return bucket
 }
