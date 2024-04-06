@@ -97,7 +97,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html'),
         }
       : false,
-    scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
+    scanDirs: await resolveScanDirs(nuxt),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
@@ -595,9 +595,9 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
 }
 
 async function resolvePublicFolders (nuxt: Nuxt) {
-  const { dir: rootDir, srcDir, alias: rootAlias } = nuxt.options
+  const { dir: rootDir, srcDir, alias: rootAlias, rootDir: rootRootDir } = nuxt.options
   const dirs = await Promise.all(nuxt.options._layers.map((layer) => {
-    const [path, cwd, alias] = layer.config.rootDir === nuxt.options.rootDir
+    const [path, cwd, alias] = layer.config.rootDir === rootRootDir
       ? [rootDir.public || 'public', srcDir, rootAlias]
       : [layer.config.dir?.public || 'public', layer.config.srcDir, layer.config.alias]
     return resolvePath(path, { cwd, alias: alias as Record<string, string> })
@@ -607,20 +607,44 @@ async function resolvePublicFolders (nuxt: Nuxt) {
 }
 
 async function resolvePublicAssets (nuxt: Nuxt) {
-  const { dir: rootDir, srcDir, alias: rootAlias } = nuxt.options
+  const { srcDir, alias: rootAlias, rootDir } = nuxt.options
   await Promise.all(nuxt.options._layers.map((layer) => {
     return Promise.all((layer.config.nitro?.publicAssets || []).map(async (publicAsset) => {
-      if (!publicAsset) {
+      if (!publicAsset?.dir) {
         return
       }
-      const [path, cwd, alias] = layer.config.rootDir === nuxt.options.rootDir
-        ? [publicAsset.dir || rootDir.public || 'public', srcDir, rootAlias]
-        : [publicAsset.dir || layer.config.dir?.public || 'public', layer.config.srcDir, layer.config.alias]
-      const dir = await resolvePath(path, { cwd, alias: alias as Record<string, string> })
-      // TODO: should warn if missing?
+      const [cwd, alias] = layer.config.rootDir === rootDir
+        ? [srcDir, rootAlias]
+        : [layer.config.srcDir, layer.config.alias]
+      const dir = await resolvePath(publicAsset.dir, { cwd, alias: alias as Record<string, string> })
+      // TODO: should warn or even throw error if missing?
       if (existsSync(dir)) {
         publicAsset.dir = dir
       }
     }))
   }))
 }
+
+async function resolveScanDirs (nuxt: Nuxt) {
+  const scanDirs = new Set(nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean))
+  //     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
+  const layersScanDirs = await Promise.all(nuxt.options._layers.filter((_, i) => i > 0).map(async (layer) => {
+    const [cwd, alias] = [layer.cwd, layer.config.alias as Record<string, string>]
+    const dirs = await Promise.all((layer.config.nitro?.scanDirs ?? []).map(async (scanDir) => {
+      if (!scanDir)
+        return
+
+      const dir = await resolvePath(scanDir, {cwd, alias: alias as Record<string, string>})
+
+      return existsSync(dir) ? dir : null
+    }));
+    return dirs.filter(Boolean).flat() as string[];
+  })).then(dirs => dirs.flat())
+
+  for (const scanDir of layersScanDirs) {
+    scanDirs.add(scanDir)
+  }
+
+  return [...scanDirs]
+}
+
