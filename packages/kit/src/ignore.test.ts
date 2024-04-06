@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { isIgnored, resolveGroupSyntax } from './ignore.js'
 import * as context from './context.js'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 
 describe('isIgnored', () => {
   it('should populate _ignore', () => {
