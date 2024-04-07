@@ -3,7 +3,7 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt, useNuxt } from './context'
 
-const checkIgnoreOutdated = (nuxt = useNuxt()) => nuxt._ignorePatterns?.join(',') !== nuxt.options.ignore.join(',')
+const checkIgnoreOutdated = (nuxt = useNuxt()) => !nuxt._ignorePatterns?.join(',').startsWith(nuxt.options.ignore.flatMap(resolveGroupSyntax).join(','))
 
 /**
  * Return a filter function to filter an array of paths

@@ -9,6 +9,7 @@ describe('isIgnored', () => {
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
 
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)
+    expect(mockNuxt._ignorePatterns?.includes('my-dir')).toBe(true)
   })
 
   it('should update _ignore', () => {
@@ -17,11 +18,12 @@ describe('isIgnored', () => {
 
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)
     expect(isIgnored('my-dir/my-tracked-file.ts')).toBe(true)
+    expect(mockNuxt._ignorePatterns?.includes('my-dir/*')).toBe(true)
+    expect(mockNuxt._ignorePatterns?.includes('!my-dir/my-tracked-file.ts')).toBe(false)
 
     mockNuxt.options.ignore.push('!my-dir/my-tracked-file.ts')
-    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
-
     expect(isIgnored('my-dir/my-tracked-file.ts')).toBe(false)
+    expect(mockNuxt._ignorePatterns?.includes('!my-dir/my-tracked-file.ts')).toBe(true)
   })
 })
 
