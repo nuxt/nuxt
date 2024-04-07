@@ -493,7 +493,6 @@ describe('composables', () => {
   })
 
   it('correctly types returns when using with getCachedData', () => {
-
     expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: 1 }), {
       getCachedData: (key) => useNuxtApp().payload.data[key]
     }).data).toEqualTypeOf<Ref<{ foo: number } | null>>()
