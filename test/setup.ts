@@ -11,7 +11,7 @@ export async function setup () {
     await fs.remove(tempDir)
   }
   await fs.copy(fixtureDir, tempDir, {
-    filter: src => !src.includes('.cache')
+    filter: src => !src.includes('.cache'),
   })
 }
 

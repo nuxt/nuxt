@@ -1,10 +1,7 @@
 import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
-// These files must be imported first as they have side effects:
-// 1. (we set __webpack_public_path via this import, if using webpack builder)
-import '#build/paths.mjs'
-// 2. we set globalThis.$fetch via this import
+// This file must be imported first as we set globalThis.$fetch via this import
 import '#build/fetch.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
@@ -55,13 +52,13 @@ if (import.meta.client) {
     if (vueAppPromise) { return vueAppPromise }
     const isSSR = Boolean(
       window.__NUXT__?.serverRendered ||
-      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true'
+      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true',
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
     const nuxt = createNuxtApp({ vueApp })
 
-    async function handleVueError(error: any) {
+    async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
       nuxt.payload.error = nuxt.payload.error || createError(error as any)
     }
@@ -85,8 +82,7 @@ if (import.meta.client) {
     }
 
     // If the errorHandler is not overridden by the user, we unset it
-    if (vueApp.config.errorHandler === handleVueError)
-      vueApp.config.errorHandler = undefined
+    if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
 
     return vueApp
   }

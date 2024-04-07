@@ -3,6 +3,7 @@ import { getCurrentInstance } from 'vue'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
 import { useRoute } from 'vue-router'
 import type { NitroRouteConfig } from 'nitropack'
+import { useNuxtApp } from '#app/nuxt'
 import type { NuxtError } from '#app'
 
 export interface PageMeta {
@@ -48,7 +49,7 @@ const warnRuntimeUsage = (method: string) => {
   console.warn(
     `${method}() is a compiler-hint helper that is only usable inside ` +
     'the script block of a single file component which is also a page. Its arguments should be ' +
-    'compiled away and passing it at runtime has no effect.'
+    'compiled away and passing it at runtime has no effect.',
   )
 }
 
@@ -58,8 +59,9 @@ export const definePageMeta = (meta: PageMeta): void => {
     const component = getCurrentInstance()?.type
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
-      if (isRouteComponent) {
-        // don't warn if it's being used in a route component
+      const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
+      if (isRouteComponent || isRenderingServerPage) {
+        // don't warn if it's being used in a route component (or server page)
         return
       }
     } catch {
@@ -78,6 +80,6 @@ export const definePageMeta = (meta: PageMeta): void => {
  * For more control, such as if you are using a custom `path` or `alias` set in the page's `definePageMeta`, you
  * should set `routeRules` directly within your `nuxt.config`.
  */
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const defineRouteRules = (rules: NitroRouteConfig): void => {}

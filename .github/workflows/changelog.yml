@@ -1,4 +1,4 @@
-name: Release
+name: changelog
 
 on:
   push:
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
-  update-changelog:
+  update:
     if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
     runs-on: ubuntu-latest
 

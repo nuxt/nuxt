@@ -6,7 +6,7 @@
     "skipLibCheck": true,
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "strict": true,
     "noImplicitAny": true,
     "allowJs": true,

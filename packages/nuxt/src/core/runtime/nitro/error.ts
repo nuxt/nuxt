@@ -21,7 +21,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
       : '',
     // TODO: check and validate error.data for serialisation into query
-    data: error.data as any
+    data: error.data as any,
   } satisfies Partial<NuxtPayload['error']> & { url: string }
 
   // Console output
@@ -31,7 +31,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       '[request error]',
       error.unhandled && '[unhandled]',
       error.fatal && '[fatal]',
-      Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`
+      Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
     ].filter(Boolean).join(' ')
     console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
@@ -54,20 +54,20 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   const isRenderingError = event.path.startsWith('/__nuxt_error') || !!reqHeaders['x-nuxt-error']
 
   // HTML response (via SSR)
-  const res = isRenderingError ? null : await useNitroApp().localFetch(
-    withQuery(joinURL(useRuntimeConfig().app.baseURL, '/__nuxt_error'), errorObject),
-    {
-      headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
-      redirect: 'manual'
-    }
-  ).catch(() => null)
+  const res = isRenderingError
+    ? null
+    : await useNitroApp().localFetch(
+      withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
+      {
+        headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
+        redirect: 'manual',
+      },
+    ).catch(() => null)
 
   // Fallback to static rendered error page
   if (!res) {
     const { template } = import.meta.dev
-      // @ts-expect-error TODO: add legacy type support for subpath imports
       ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
-      // @ts-expect-error TODO: add legacy type support for subpath imports
       : await import('@nuxt/ui-templates/templates/error-500.mjs')
     if (import.meta.dev) {
       // TODO: Support `message` in template

@@ -20,7 +20,7 @@ function resolveNuxtModuleEntryName (m: NuxtOptions['modules'][number]): string 
  * This will check both the installed modules and the modules to be installed. Note
  * that it cannot detect if a module is _going to be_ installed programmatically by another module.
  */
-export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()) : boolean {
+export function hasNuxtModule (moduleName: string, nuxt: Nuxt = useNuxt()): boolean {
   // check installed modules
   return nuxt.options._installedModules.some(({ meta }) => meta.name === moduleName) ||
     // check modules to be installed
@@ -36,7 +36,7 @@ export async function hasNuxtModuleCompatibility (module: string | NuxtModule, s
     return false
   }
   return satisfies(normalizeSemanticVersion(version), semverVersion, {
-    includePrerelease: true
+    includePrerelease: true,
   })
 }
 

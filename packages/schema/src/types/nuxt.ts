@@ -36,6 +36,7 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** The resolved path to the source file to be template */
   src?: string
   /** Provided compile option instead of src */
+
   getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
@@ -44,6 +45,7 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
 export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string
+  modified?: boolean
 }
 
 export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write' | 'filename'> {

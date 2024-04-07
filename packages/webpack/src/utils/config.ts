@@ -33,7 +33,7 @@ export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
     isClient: false,
 
     alias: {},
-    transpile: []
+    transpile: [],
   }
 }
 

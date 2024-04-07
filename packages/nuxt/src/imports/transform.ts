@@ -43,9 +43,9 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
           code: s.toString(),
           map: sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

@@ -3,6 +3,7 @@ import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { useAppConfig } from '../config'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -43,21 +44,21 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
   const payloadURL = _getPayloadURL(url, opts)
   useHead({
     link: [
-      { rel: 'modulepreload', href: payloadURL }
-    ]
+      { rel: 'modulepreload', href: payloadURL },
+    ],
   })
 }
 
 // --- Internal ---
 
-const extension = renderJsonPayloads ? 'json' : 'js'
+const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
 function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
-  const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.${extension}` : `_payload.${extension}`)
+  const hash = opts.hash || (opts.fresh ? Date.now() : (useAppConfig().nuxt as any)?.buildId)
+  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
 async function _importPayload (payloadURL: string) {
@@ -108,7 +109,7 @@ export async function getNuxtClientPayload () {
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__
+    ...window.__NUXT__,
   }
 
   return payloadCache
@@ -124,7 +125,7 @@ export async function parsePayload (payload: string) {
  */
 export function definePayloadReducer (
   name: string,
-  reduce: (data: any) => any
+  reduce: (data: any) => any,
 ) {
   if (import.meta.server) {
     useNuxtApp().ssrContext!._payloadReducers[name] = reduce
@@ -139,7 +140,7 @@ export function definePayloadReducer (
  */
 export function definePayloadReviver (
   name: string,
-  revive: (data: any) => any | undefined
+  revive: (data: any) => any | undefined,
 ) {
   if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')

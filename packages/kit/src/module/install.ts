@@ -38,7 +38,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
     const directory = getDirectory(moduleToInstall)
     if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
-      nuxt.options.modulesDir.push(directory)
+      nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
   }
 
@@ -46,7 +46,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
     timings: res.timings,
-    entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
+    entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined,
   })
 }
 
@@ -74,9 +74,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
     let error: unknown
     for (const path of paths) {
-      const src = await resolvePath(path)
-      // Prefer ESM resolution if possible
       try {
+        const src = await resolvePath(path)
+        // Prefer ESM resolution if possible
         nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
 
         // nuxt-module-builder generates a module.json with metadata including the version

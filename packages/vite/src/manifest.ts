@@ -17,14 +17,14 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
       file: '@vite/client',
       css,
       module: true,
-      resourceType: 'script'
+      resourceType: 'script',
     },
     [ctx.entry]: {
       isEntry: true,
       file: ctx.entry,
       module: true,
-      resourceType: 'script'
-    }
+      resourceType: 'script',
+    },
   }
 
   const manifestFile = resolve(clientDist, 'manifest.json')

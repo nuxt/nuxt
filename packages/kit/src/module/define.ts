@@ -89,8 +89,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     // Return module install result
     return defu(res, <ModuleSetupReturn> {
       timings: {
-        setup: setupTime
-      }
+        setup: setupTime,
+      },
     })
   }
 
@@ -138,10 +138,10 @@ function nuxt2Shims (nuxt: Nuxt) {
         plugins: nuxt.options.plugins,
         templates: [
           ...templates.templatesFiles,
-          ...virtualTemplates
+          ...virtualTemplates,
         ],
-        templateVars: templates.templateVars
-      }
+        templateVars: templates.templateVars,
+      },
     }
     for await (const template of virtualTemplates) {
       const contents = await compileTemplate({ ...template, src: '' }, context)

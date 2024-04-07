@@ -26,7 +26,7 @@ export default defineUntypedSchema({
           return setting.toLowerCase() === 'bundler'
         }
         return true
-      }
+      },
     },
   },
   /**
@@ -49,7 +49,22 @@ export default defineUntypedSchema({
         }
         // Enabled by default for vite prod with ssr
         return val ?? true
-      }
+      },
+    },
+
+    /**
+     * Stream server logs to the client as you are developing. These logs can
+     * be handled in the `dev:ssr-logs` hook.
+     *
+     * If set to `silent`, the logs will not be printed to the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: {
+      async $resolve (val, get) {
+        if (val !== undefined) { return val }
+        const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
+        return isDev && !isTest
+      },
     },
 
     /**
@@ -60,7 +75,7 @@ export default defineUntypedSchema({
       async $resolve (val, get) {
         // TODO: remove in v3.10
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
-      }
+      },
     },
   },
   experimental: {
@@ -68,7 +83,7 @@ export default defineUntypedSchema({
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: val => val ?? false
+      $resolve: val => val ?? false,
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
@@ -106,7 +121,7 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      }
+      },
     },
 
     /**
@@ -171,8 +186,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -182,8 +200,8 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
-      }
+        return val ?? 'auto'
+      },
     },
 
     /**
@@ -213,11 +231,6 @@ export default defineUntypedSchema({
      * Use app manifests to respect route rules on client-side.
      */
     appManifest: true,
-
-    // This is enabled when `experimental.payloadExtraction` is set to `true`.
-    // appManifest: {
-    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
-    // },
 
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
@@ -310,16 +323,16 @@ export default defineUntypedSchema({
     defaults: {
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
-        componentName: 'NuxtLink'
+        componentName: 'NuxtLink',
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true
+        deep: true,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
-      useFetch: {}
+      useFetch: {},
     },
 
     /**
@@ -336,5 +349,5 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
-  }
+  },
 })

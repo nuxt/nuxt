@@ -8,6 +8,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { hash } from 'ohash'
 import { resolvePath } from '@nuxt/kit'
+import defu from 'defu'
 import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -21,7 +22,7 @@ interface ServerOnlyComponentTransformPluginOptions {
   /**
    * allow using `nuxt-client` attribute on components
    */
-  selectiveClient?: boolean
+  selectiveClient?: boolean | 'deep'
 }
 
 interface ComponentChunkOptions {
@@ -34,6 +35,7 @@ const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
 const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
 
 function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
@@ -47,10 +49,11 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
+      if (options.selectiveClient === 'deep') { return true }
       const components = options.getComponents()
 
       const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
       )
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname)
@@ -78,58 +81,84 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
           if (node.name === 'slot') {
             const { attributes, children, loc } = node
 
-            // pass slot fallback to NuxtTeleportSsrSlot fallback
-            if (children.length) {
-              const attrString = Object.entries(attributes).map(([name, value]) => name ? `${name}="${value}" ` : value).join(' ')
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot ${attrString} /><template #fallback>${attributes["v-for"] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            }
-
             const slotName = attributes.name ?? 'default'
-            let vfor: [string, string] | undefined
+            let vfor: string | undefined
             if (attributes['v-for']) {
-              vfor = attributes['v-for'].split(' in ').map((v: string) => v.trim()) as [string, string]
+              vfor = attributes['v-for']
             }
             delete attributes['v-for']
 
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
-              attributes._bind = attributes['v-bind']
-              delete attributes['v-bind']
+              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
             }
-            const bindings = getPropsToString(attributes, vfor)
-
+            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+            const bindings = getPropsToString(attributes, vfor?.split(' in ').map((v: string) => v.trim()) as [string, string])
             // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot name="${slotName}" :props="${bindings}">`)
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+
+            if (children.length) {
+              // pass slot fallback to NuxtTeleportSsrSlot fallback
+              const attrString = attributeToString(attributes)
+              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${vfor ? wrapWithVForDiv(slice, vfor) : slice}</template>`)
+            } else {
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+            }
+
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
-            const attributeValue = node.attributes[':nuxt-client'] || node.attributes['nuxt-client'] || 'true'
+            const { loc, attributes } = node
+            const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
             if (isVite) {
-              // handle granular interactivity
-              const htmlCode = code.slice(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end)
               const uid = hash(id + node.loc[0].start + node.loc[0].end)
+              const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
 
-              s.overwrite(startingIndex + node.loc[0].start, startingIndex + node.loc[1].end, `<NuxtTeleportIslandComponent to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">${htmlCode.replaceAll(NUXTCLIENT_ATTR_RE, '')}</NuxtTeleportIslandComponent>`)
+              let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+              if (wrapperAttributes) {
+                startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
+              }
+
+              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+              s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
             }
           }
         }
       })
 
       if (!isVite && hasNuxtClient) {
-        // eslint-disable-next-line no-console
         console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
       }
 
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: s.generateMap({ source: id, includeContent: true })
+          map: s.generateMap({ source: id, includeContent: true }),
         }
       }
-    }
+    },
   }
 })
+
+/**
+ * extract attributes from a node
+ */
+function extractAttributes (attributes: Record<string, string>, names: string[]) {
+  const extracted: Record<string, string> = {}
+  for (const name of names) {
+    if (name in attributes) {
+      extracted[name] = attributes[name]
+      delete attributes[name]
+    }
+  }
+  return extracted
+}
+
+function attributeToString (attributes: Record<string, string>) {
+  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+}
 
 function isBinding (attr: string): boolean {
   return attr.startsWith(':')
@@ -137,7 +166,7 @@ function isBinding (attr: string): boolean {
 
 function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `${name.slice(1)}: ${value}` : `${name}: \`${value}\``).join(',')
+  const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
@@ -153,15 +182,27 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
     vite: {
       async config (config) {
         const components = options.getComponents()
-        config.build = config.build || {}
-        config.build.rollupOptions = config.build.rollupOptions || {}
-        config.build.rollupOptions.output = config.build.rollupOptions.output || {}
-        config.build.rollupOptions.input = config.build.rollupOptions.input || {}
+
+        config.build = defu(config.build, {
+          rollupOptions: {
+            input: {},
+            output: {},
+          },
+        })
+
+        const rollupOptions = config.build.rollupOptions!
+
+        if (typeof rollupOptions.input === 'string') {
+          rollupOptions.input = { entry: rollupOptions.input }
+        } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
+          rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
+        }
+
         // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
-        config.build.rollupOptions.preserveEntrySignatures = 'allow-extension'
+        rollupOptions.preserveEntrySignatures = 'allow-extension'
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
-            (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
+            rollupOptions.input![component.pascalName] = await resolvePath(component.filePath)
           }
         }
       },
@@ -186,7 +227,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         }
 
         fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
-      }
-    }
+      },
+    },
   }
 })
