@@ -23,8 +23,8 @@ importers:
         specifier: 9.0.0
         version: 9.0.0
       '@nuxt/eslint-config':
-        specifier: 0.3.1
-        version: 0.3.1(eslint@9.0.0)(typescript@5.4.4)
+        specifier: 0.3.2
+        version: 0.3.2(eslint@9.0.0)(typescript@5.4.4)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:packages/kit
@@ -77,8 +77,8 @@ importers:
         specifier: 2.8.0
         version: 2.8.0(eslint@9.0.0)(typescript@5.4.4)
       eslint-typegen:
-        specifier: 0.2.0
-        version: 0.2.0
+        specifier: 0.2.1
+        version: 0.2.1(eslint@9.0.0)
       execa:
         specifier: 8.0.1
         version: 8.0.1
@@ -684,8 +684,8 @@ importers:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.38)
       css-loader:
-        specifier: ^7.0.0
-        version: 7.0.0(webpack@5.91.0)
+        specifier: ^7.1.0
+        version: 7.1.0(webpack@5.91.0)
       css-minimizer-webpack-plugin:
         specifier: ^6.0.0
         version: 6.0.0(webpack@5.91.0)
@@ -2311,13 +2311,13 @@ packages:
       - vue
     dev: false
 
-  /@nuxt/eslint-config@0.3.1(eslint@9.0.0)(typescript@5.4.4):
-    resolution: {integrity: sha512-+dCRPXbq+/uB7cZn3HnhaVOyte1t21YHvtMj9MRa0ekAbY/G73DQztPVAnyh6yWaV1RtwvDBN6pf3o1SRRNbyg==}
+  /@nuxt/eslint-config@0.3.2(eslint@9.0.0)(typescript@5.4.4):
+    resolution: {integrity: sha512-yjl/bMORzxNNYPuRPyEVSHMWV/5wJdd16gZ3KF/56JUJ1Y8kMg+PrwZx5GTcau98vv+Hvo21IYqiObRYHIoF/w==}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
     dependencies:
       '@eslint/js': 9.0.0
-      '@nuxt/eslint-plugin': 0.3.1(eslint@9.0.0)(typescript@5.4.4)
+      '@nuxt/eslint-plugin': 0.3.2(eslint@9.0.0)(typescript@5.4.4)
       '@rushstack/eslint-patch': 1.10.1
       '@stylistic/eslint-plugin': 1.7.0(eslint@9.0.0)(typescript@5.4.4)
       '@typescript-eslint/eslint-plugin': 7.5.0(@typescript-eslint/parser@7.5.0)(eslint@9.0.0)(typescript@5.4.4)
@@ -2328,7 +2328,7 @@ packages:
       eslint-plugin-import-x: 0.5.0(eslint@9.0.0)(typescript@5.4.4)
       eslint-plugin-jsdoc: 48.2.3(eslint@9.0.0)
       eslint-plugin-unicorn: 52.0.0(eslint@9.0.0)
-      eslint-plugin-vue: 9.24.0(eslint@9.0.0)
+      eslint-plugin-vue: 9.24.1(eslint@9.0.0)
       globals: 15.0.0
       pathe: 1.1.2
       tslib: 2.6.2
@@ -2338,8 +2338,8 @@ packages:
       - typescript
     dev: true
 
-  /@nuxt/eslint-plugin@0.3.1(eslint@9.0.0)(typescript@5.4.4):
-    resolution: {integrity: sha512-TflfVtPm2KNaa/jWCiffpiiiOJVDoS8oE2vAHdbu4BAPWmjonde4DCfrKbaEG4tUVnaOkGio3S1hkNmXllye4w==}
+  /@nuxt/eslint-plugin@0.3.2(eslint@9.0.0)(typescript@5.4.4):
+    resolution: {integrity: sha512-SqPW84bcDMcEwEut0zibNrKte2kj9Idjy8xWX0PsW98zGNBG+6NHYzd0TniUWVZ2/viOJTJO0myHqMFOgfb4NA==}
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
     dependencies:
@@ -5289,8 +5289,8 @@ packages:
       postcss: 8.4.38
     dev: false
 
-  /css-loader@7.0.0(webpack@5.91.0):
-    resolution: {integrity: sha512-WrO4FVoamxt5zY9CauZjoJgXRi/LZKIk+Ta7YvpSGr5r/eMYPNp5/T9ODlMe4/1rF5DYlycG1avhV4g3A/tiAw==}
+  /css-loader@7.1.0(webpack@5.91.0):
+    resolution: {integrity: sha512-VFNj47MAG84MqYDdh9puJG0h98Xs7gEYaX0aeGkfjYqBLB0seOE325sVbqWwaNu3hMZwEP4bB+F4gvF+A63qMA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       '@rspack/core': 0.x || 1.x
@@ -6105,11 +6105,11 @@ packages:
       - supports-color
     dev: true
 
-  /eslint-plugin-vue@9.24.0(eslint@9.0.0):
-    resolution: {integrity: sha512-9SkJMvF8NGMT9aQCwFc5rj8Wo1XWSMSHk36i7ZwdI614BU7sIOR28ZjuFPKp8YGymZN12BSEbiSwa7qikp+PBw==}
+  /eslint-plugin-vue@9.24.1(eslint@9.0.0):
+    resolution: {integrity: sha512-wk3SuwmS1pZdcuJlokGYEi/buDOwD6KltvhIZyOnpJ/378dcQ4zchu9PAMbbLAaydCz1iYc5AozszcOOgZIIOg==}
     engines: {node: ^14.17.0 || >=16.0.0}
     peerDependencies:
-      eslint: ^6.2.0 || ^7.0.0 || ^8.0.0
+      eslint: ^6.2.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
     dependencies:
       '@eslint-community/eslint-utils': 4.4.0(eslint@9.0.0)
       eslint: 9.0.0
@@ -6146,10 +6146,13 @@ packages:
       esrecurse: 4.3.0
       estraverse: 5.3.0
 
-  /eslint-typegen@0.2.0:
-    resolution: {integrity: sha512-zaAQemIb3RfMjxCMv+sgoXAAhrMZDlx8rZ35zaIUS7ebZHvj1QjjspQnHnZ8UA/7U00u9tI+Lv1pjX1A73HHPQ==}
+  /eslint-typegen@0.2.1(eslint@9.0.0):
+    resolution: {integrity: sha512-y2iFHUAkw0hWUmG3r7yuuMYChZloPChuduP7XPsirsgPo3nScV6OXzRYJe+ldw9uyBQXqE0ETHQ3cIQmlTtU5g==}
+    peerDependencies:
+      eslint: ^8.45.0 || ^9.0.0
     dependencies:
       '@types/eslint': 8.56.7
+      eslint: 9.0.0
       json-schema-to-typescript-lite: 14.0.0
       ohash: 1.1.3
     dev: true
