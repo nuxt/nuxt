@@ -37,7 +37,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "rollup": "^4.14.0",
+    "rollup": "^4.14.1",
     "nuxt": "workspace:*",
     "vite": "5.2.8",
     "vue": "3.4.21",
@@ -68,7 +68,7 @@
     "fs-extra": "11.2.0",
     "globby": "14.0.1",
     "h3": "1.11.1",
-    "happy-dom": "14.6.2",
+    "happy-dom": "14.7.1",
     "jiti": "1.21.0",
     "markdownlint-cli": "0.39.0",
     "nitropack": "2.9.6",
@@ -87,7 +87,7 @@
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.21",
     "vue-router": "4.3.0",
-    "vue-tsc": "2.0.10"
+    "vue-tsc": "2.0.11"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
