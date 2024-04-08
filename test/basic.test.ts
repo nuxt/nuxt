@@ -2567,7 +2567,7 @@ describe('lazy import components', () => {
     expect(html).not.toContain('This shouldn\'t be visible at first!')
     const { page } = await renderPage('/lazy-import-components')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(0)
-    await page.mouse.wheel(0,4000)
+    await page.mouse.wheel(0, 4000)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(1)
   })
 })
