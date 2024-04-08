@@ -3,7 +3,13 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt, useNuxt } from './context'
 
-const checkIgnoreOutdated = (nuxt = useNuxt()) => !nuxt._ignorePatterns?.join(',').startsWith(nuxt.options.ignore.flatMap(resolveGroupSyntax).join(','))
+const cache = {
+  '.nuxtignore': undefined as undefined | string[],
+  ignorePaths: undefined as undefined | string,
+  groupSyntax: {} as Record<string, string[]>
+}
+
+const checkIgnoreOutdated = (nuxt = useNuxt()) => cache.ignorePaths !== nuxt.options.ignore.join(',')
 
 /**
  * Return a filter function to filter an array of paths
@@ -39,12 +45,20 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
   }
 
   if (!nuxt._ignorePatterns || checkIgnoreOutdated(nuxt)) {
+    cache.ignorePaths = nuxt.options.ignore.join(',')
     nuxt._ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
 
+    if (cache['.nuxtignore']) {
+      nuxt._ignorePatterns.push(...cache['.nuxtignore'])
+    }
+
     const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
-    if (existsSync(nuxtignoreFile)) {
+    if (!cache['.nuxtignore'] && existsSync(nuxtignoreFile)) {
       const contents = readFileSync(nuxtignoreFile, 'utf-8')
-      nuxt._ignorePatterns.push(...contents.trim().split(/\r?\n/))
+      const contentsArr = contents.trim().split(/\r?\n/)
+
+      cache['.nuxtignore'] = contentsArr
+      nuxt._ignorePatterns.push(...contentsArr)
     }
   }
 
@@ -67,10 +81,17 @@ export function resolveGroupSyntax (group: string): string[] {
   let groups = [group]
   while (groups.some(group => group.includes('{'))) {
     groups = groups.flatMap((group) => {
+      if (cache.groupSyntax[group]) {
+        return cache.groupSyntax[group]
+      }
+
       const [head, ...tail] = group.split('{')
       if (tail.length) {
         const [body, ...rest] = tail.join('{').split('}')
-        return body.split(',').map(part => `${head}${part}${rest.join('')}`)
+        const resolvedGroup = body.split(',').map(part => `${head}${part}${rest.join('')}`)
+        cache.groupSyntax[group] = resolvedGroup
+
+        return resolvedGroup
       }
 
       return group
