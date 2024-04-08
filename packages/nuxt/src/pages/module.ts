@@ -3,7 +3,6 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
-import { joinURL } from 'ufo'
 import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -17,8 +16,6 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
-
-const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
 export default defineNuxtModule({
   meta: {
@@ -266,26 +263,12 @@ export default defineNuxtModule({
       })
     })
 
+    addPlugin(resolve(runtimeDir, "plugins/prerender"));
+
     nuxt.hook('nitro:init', (nitro) => {
       if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
-      // Prerender all non-dynamic page routes when generating app
-      const prerenderRoutes = new Set<string>()
-      nuxt.hook('pages:extend', (pages) => {
-        prerenderRoutes.clear()
-        const processPages = (pages: NuxtPage[], currentPath = '/') => {
-          for (const page of pages) {
-            // Add root of optional dynamic paths and catchalls
-            if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) { prerenderRoutes.add(currentPath) }
-            // Skip dynamic paths
-            if (page.path.includes(':')) { continue }
-            const route = joinURL(currentPath, page.path)
-            prerenderRoutes.add(route)
-            if (page.children) { processPages(page.children, route) }
-          }
-        }
-        processPages(pages)
-      })
       nuxt.hook('nitro:build:before', (nitro) => {
+        const prerenderRoutes = new Set<string>()
         if (nitro.options.prerender.routes.length) {
           for (const route of nitro.options.prerender.routes) {
             // Skip default route value as we only generate it if it is already
