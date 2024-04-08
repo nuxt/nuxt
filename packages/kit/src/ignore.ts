@@ -5,8 +5,8 @@ import { tryUseNuxt, useNuxt } from './context'
 
 const cache = {
   '.nuxtignore': undefined as undefined | string[],
-  ignorePaths: undefined as undefined | string,
-  groupSyntax: {} as Record<string, string[]>
+  'ignorePaths': undefined as undefined | string,
+  'groupSyntax': {} as Record<string, string[]>,
 }
 
 const checkIgnoreOutdated = (nuxt = useNuxt()) => cache.ignorePaths !== nuxt.options.ignore.join(',')
