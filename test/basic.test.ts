@@ -2562,4 +2562,8 @@ describe('lazy import components', () => {
   it('lazy load named component with mode server', () => {
     expect(html).toContain('lazy-named-comp-server')
   })
+  
+  it('lazy load delayed hydration comps at the right time', () => {
+    expect(html).not.toContain("This shouldn't be visible at first!")
+  })
 })
