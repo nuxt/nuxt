@@ -14,7 +14,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   return {
     method,
     ...handler,
-    handler: normalize(handler.handler)
+    handler: normalize(handler.handler),
   }
 }
 

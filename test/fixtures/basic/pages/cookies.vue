@@ -14,7 +14,7 @@ useCookie('browser-set-to-null-with-default', () => 'default').value = null
 
 const objectCookie = useCookie('browser-object-default')
 const objectCookieSecond = useCookie('browser-object-default', {
-  default: () => ({ foo: 'bar' })
+  default: () => ({ foo: 'bar' }),
 })
 </script>
 

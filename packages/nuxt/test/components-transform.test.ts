@@ -9,7 +9,7 @@ describe('components:transform', () => {
   it('should transform #components imports', async () => {
     const transform = createTransformer([
       createComponent('Foo'),
-      createComponent('Bar', { export: 'Bar' })
+      createComponent('Bar', { export: 'Bar' }),
     ])
 
     const code = await transform('import { Foo, Bar } from \'#components\'', '/app.vue')
@@ -22,7 +22,7 @@ describe('components:transform', () => {
 
   it('should correctly resolve server-only components', async () => {
     const transform = createTransformer([
-      createComponent('Foo', { mode: 'server' })
+      createComponent('Foo', { mode: 'server' }),
     ])
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
@@ -48,7 +48,7 @@ describe('components:transform', () => {
 
   it('should correctly resolve client-only components', async () => {
     const transform = createTransformer([
-      createComponent('Foo', { mode: 'client' })
+      createComponent('Foo', { mode: 'client' }),
     ])
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
@@ -84,9 +84,9 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       buildDir: '/',
       sourcemap: {
         server: false,
-        client: false
-      }
-    }
+        client: false,
+      },
+    },
   } as Nuxt
   const plugin = createTransformPlugin(stubNuxt, () => components, mode).vite()
 
@@ -107,6 +107,6 @@ function createComponent (pascalName: string, options: Partial<Component> = {}) 
     prefetch: false,
     preload: false,
     shortPath: `components/${pascalName}.vue`,
-    ...options
+    ...options,
   } satisfies Component
 }

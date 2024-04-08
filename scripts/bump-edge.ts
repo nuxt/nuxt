@@ -6,7 +6,7 @@ import { determineBumpType, loadWorkspace } from './_utils'
 const nightlyPackages = {
   nitropack: 'nitropack-nightly',
   h3: 'h3-nightly',
-  nuxi: 'nuxi-nightly'
+  nuxi: 'nuxi-nightly',
 }
 
 async function main () {
@@ -20,7 +20,7 @@ async function main () {
   for (const pkg of workspace.packages.filter(p => !p.data.private)) {
     const newVersion = inc(pkg.data.version, bumpType || 'patch')
     workspace.setVersion(pkg.data.name, `${newVersion}-${date}.${commit}`, {
-      updateDeps: true
+      updateDeps: true,
     })
     for (const [name, nightlyName] of Object.entries(nightlyPackages)) {
       if (pkg.data.dependencies && name in pkg.data.dependencies) {

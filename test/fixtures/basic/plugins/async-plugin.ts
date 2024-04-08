@@ -9,9 +9,9 @@ export default defineNuxtPlugin({
       provide: {
         asyncPlugin: () => config1 && config1 === config2
           ? 'Async plugin works! ' + config1.public.testConfig + (data.value?.baz ? 'useFetch works!' : 'useFetch does not work')
-          : 'Async plugin failed!'
-      }
+          : 'Async plugin failed!',
+      },
     }
   },
-  parallel: true
+  parallel: true,
 })

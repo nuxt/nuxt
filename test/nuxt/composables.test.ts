@@ -21,7 +21,7 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
-  headers: Object.fromEntries(event.headers.entries())
+  headers: Object.fromEntries(event.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -37,7 +37,7 @@ describe('app config', () => {
     updateAppConfig({
       new: 'value',
       // @ts-expect-error property does not exist
-      nuxt: { nested: 42 }
+      nuxt: { nested: 42 },
     })
     expect(appConfig).toMatchInlineSnapshot(`
       {
@@ -83,7 +83,7 @@ describe('composables', () => {
       'navigateTo',
       'abortNavigation',
       'setPageLayout',
-      'defineNuxtComponent'
+      'defineNuxtComponent',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -106,7 +106,7 @@ describe('composables', () => {
       'useRouter',
       'useSeoMeta',
       'useServerSeoMeta',
-      'usePreviewMode'
+      'usePreviewMode',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -315,7 +315,7 @@ describe('useFetch', () => {
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       () => new Promise(resolve => setTimeout(resolve, 5000)),
-      { timeout: 1 }
+      { timeout: 1 },
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
@@ -455,7 +455,7 @@ describe('useId', () => {
           const id = useId()
           vals.add(id)
           return () => h('div', id)
-        }
+        },
       }))
     }
     expect(vals.size).toBe(100)
@@ -466,7 +466,7 @@ describe('useId', () => {
       setup () {
         const id = useId()
         return () => h('div', id)
-      }
+      },
     })
 
     expect(mount(component).html()).not.toBe(mount(component).html())
@@ -572,7 +572,7 @@ describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
       ['data:alert("hi")', 'data'],
-      ['\0data:alert("hi")', 'data']
+      ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
@@ -592,7 +592,7 @@ describe('routing utilities: `useRoute`', () => {
       params: {},
       path: '/',
       query: {},
-      redirectedFrom: undefined
+      redirectedFrom: undefined,
     })
   })
 })
@@ -630,7 +630,7 @@ describe('routing utilities: `setPageLayout`', () => {
 describe('defineNuxtComponent', () => {
   it('should produce a Vue component', async () => {
     const wrapper = await mountSuspended(defineNuxtComponent({
-      render: () => h('div', 'hi there')
+      render: () => h('div', 'hi there'),
     }))
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
   })
@@ -642,7 +642,7 @@ describe('useCookie', () => {
   it('should watch custom cookie refs', () => {
     const user = useCookie('userInfo', {
       default: () => ({ score: -1 }),
-      maxAge: 60 * 60
+      maxAge: 60 * 60,
     })
     const computedVal = computed(() => user.value.score)
     expect(computedVal.value).toBe(-1)
@@ -655,7 +655,7 @@ describe('useCookie', () => {
       const user = useCookie('shallowUserInfo', {
         default: () => ({ score: -1 }),
         maxAge: 60 * 60,
-        watch: value
+        watch: value,
       })
       const computedVal = computed(() => user.value.score)
       expect(computedVal.value).toBe(-1)

@@ -13,12 +13,12 @@ export default defineBuildConfig({
         workspaceDir: '/<workspaceDir>/',
         rootDir: '/<rootDir>/',
         vite: {
-          base: '/'
-        }
-      }
+          base: '/',
+        },
+      },
     },
     'src/index',
-    'src/builder-env'
+    'src/builder-env',
   ],
   externals: [
     // Type imports
@@ -58,6 +58,6 @@ export default defineBuildConfig({
     '@vue/compiler-core',
     '@vue/compiler-sfc',
     '@vue/shared',
-    'untyped'
-  ]
+    'untyped',
+  ],
 })

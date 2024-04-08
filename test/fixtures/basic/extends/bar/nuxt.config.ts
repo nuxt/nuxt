@@ -1,3 +1,3 @@
 export default defineNuxtConfig({
-  modules: [undefined]
+  modules: [undefined],
 })

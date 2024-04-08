@@ -25,7 +25,7 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
   const js = await transform(code, { loader: 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
-    ecmaVersion: 'latest'
+    ecmaVersion: 'latest',
   }) as Node, {
     enter (_node) {
       if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
@@ -39,7 +39,7 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
           throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
         }
       }
-    }
+    },
   })
 
   ruleCache[code] = rule

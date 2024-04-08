@@ -22,18 +22,18 @@ const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
 export default defineNuxtModule({
   meta: {
-    name: 'pages'
+    name: 'pages',
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const runtimeDir = resolve(distDir, 'pages/runtime')
     const pagesDirs = nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
+      layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
     )
 
     async function resolveRouterOptions () {
       const context = {
-        files: [] as Array<{ path: string, optional?: boolean }>
+        files: [] as Array<{ path: string, optional?: boolean }>,
       }
 
       for (const layer of nuxt.options._layers) {
@@ -90,7 +90,7 @@ export default defineNuxtModule({
       const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
       return [
         join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
-        join(layer.config.srcDir || layer.cwd, pagesDir)
+        join(layer.config.srcDir || layer.cwd, pagesDir),
       ]
     })
 
@@ -108,7 +108,7 @@ export default defineNuxtModule({
     // adds support for #vue-router alias (used for types) with and without pages integration
     addTypeTemplate({
       filename: 'vue-router-stub.d.ts',
-      getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`
+      getContents: () => `export * from '${useExperimentalTypedPages ? 'vue-router/auto' : 'vue-router'}'`,
     })
 
     nuxt.options.alias['#vue-router'] = join(nuxt.options.buildDir, 'vue-router-stub')
@@ -119,8 +119,8 @@ export default defineNuxtModule({
         filename: 'pages.mjs',
         getContents: () => [
           'export { useRoute } from \'#app/composables/router\'',
-          'export const START_LOCATION = Symbol(\'router:start-location\')'
-        ].join('\n')
+          'export const START_LOCATION = Symbol(\'router:start-location\')',
+        ].join('\n'),
       })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
@@ -130,13 +130,13 @@ export default defineNuxtModule({
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
           '}',
-          'export {}'
-        ].join('\n')
+          'export {}',
+        ].join('\n'),
       })
       addComponent({
         name: 'NuxtPage',
         priority: 10, // built-in that we do not expect the user to override
-        filePath: resolve(distDir, 'pages/runtime/page-placeholder')
+        filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
       })
       return
     }
@@ -144,7 +144,7 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'vue-router-stub.mjs',
       // TODO: use `vue-router/auto` when we have support for page metadata
-      getContents: () => 'export * from \'vue-router\';'
+      getContents: () => 'export * from \'vue-router\';',
     })
 
     if (useExperimentalTypedPages) {
@@ -184,7 +184,7 @@ export default defineNuxtModule({
           for (const page of pages) {
             addPage(rootPage, page)
           }
-        }
+        },
       }
 
       nuxt.hook('prepare:types', ({ references }) => {
@@ -202,7 +202,7 @@ export default defineNuxtModule({
         const dts = await readFile(dtsFile, 'utf-8')
         addTemplate({
           filename: 'types/typed-router.d.ts',
-          getContents: () => dts
+          getContents: () => dts,
         })
       }
 
@@ -233,7 +233,7 @@ export default defineNuxtModule({
       return [
         join(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
         join(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
-        join(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/'
+        join(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/',
       ]
     })
 
@@ -249,7 +249,7 @@ export default defineNuxtModule({
 
       if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
         await updateTemplates({
-          filter: template => template.filename === 'routes.mjs'
+          filter: template => template.filename === 'routes.mjs',
         })
       }
     })
@@ -262,7 +262,7 @@ export default defineNuxtModule({
       app.middleware.unshift({
         name: 'validate',
         path: resolve(runtimeDir, 'validate'),
-        global: true
+        global: true,
       })
     })
 
@@ -301,7 +301,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: '#vue-router' }
+        { name: 'useLink', as: 'useLink', from: '#vue-router' },
       )
       if (nuxt.options.experimental.inlineRouteRules) {
         imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
@@ -381,7 +381,7 @@ export default defineNuxtModule({
           routes.push({
             _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: resolve(runtimeDir, 'component-stub')
+            file: resolve(runtimeDir, 'component-stub'),
           })
         }
       })
@@ -390,7 +390,7 @@ export default defineNuxtModule({
     // Extract macros from pages
     const pageMetaOptions: PageMetaPluginOptions = {
       dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
     }
     nuxt.hook('modules:done', () => {
       addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
@@ -411,7 +411,7 @@ export default defineNuxtModule({
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
       .flatMap(p =>
-        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])]
+        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])],
       )
 
     // Do not prefetch page chunks
@@ -438,13 +438,13 @@ export default defineNuxtModule({
         if (!app.pages) { return 'export default []' }
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
         return [...imports, `export default ${routes}`].join('\n')
-      }
+      },
     })
 
     // Add vue-router import for `<NuxtLayout>` integration
     addTemplate({
       filename: 'pages.mjs',
-      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\''
+      getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
     })
 
     // Optimize vue-router to ensure we share the same injection symbol
@@ -472,9 +472,9 @@ export default defineNuxtModule({
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
-          '}'
+          '}',
         ].join('\n')
-      }
+      },
     })
 
     addTypeTemplate({
@@ -494,9 +494,9 @@ export default defineNuxtModule({
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
-          '}'
+          '}',
         ].join('\n')
-      }
+      },
     })
 
     addTypeTemplate({
@@ -510,9 +510,9 @@ export default defineNuxtModule({
           '  interface PageMeta {',
           '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
           '  }',
-          '}'
+          '}',
         ].join('\n')
-      }
+      },
     })
 
     // add page meta types if enabled
@@ -528,9 +528,9 @@ export default defineNuxtModule({
             '  interface PageMeta {',
             '    viewTransition?: boolean | \'always\'',
             '  }',
-            '}'
+            '}',
           ].join('\n')
-        }
+        },
       })
     }
 
@@ -538,7 +538,7 @@ export default defineNuxtModule({
     addComponent({
       name: 'NuxtPage',
       priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(distDir, 'pages/runtime/page')
+      filePath: resolve(distDir, 'pages/runtime/page'),
     })
-  }
+  },
 })

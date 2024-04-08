@@ -33,7 +33,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
-  const majorVersion = pkg.version ? parseInt(pkg.version.split('.')[0]) : ''
+  const majorVersion = pkg.version ? Number.parseInt(pkg.version.split('.')[0]) : ''
 
   const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
 
@@ -51,7 +51,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     for: opts.dev ? 'dev' : 'build',
     configOverrides: opts.overrides,
     ready: opts.ready,
-    envConfig: opts.dotenv // TODO: Backward format conversion
+    envConfig: opts.dotenv, // TODO: Backward format conversion
   })
 
   // Mock new hookable methods

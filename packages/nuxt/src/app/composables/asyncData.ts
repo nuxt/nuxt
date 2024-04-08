@@ -17,19 +17,19 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output | P
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
-  ? keyof T extends K[number]
-  ? T // Exact same keys as the target, skip Pick
-  : K[number] extends never
-  ? T
-  : Pick<T, K[number]>
-  : T
+    ? keyof T extends K[number]
+      ? T // Exact same keys as the target, skip Pick
+      : K[number] extends never
+        ? T
+        : Pick<T, K[number]>
+    : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
-  ? keyof T extends string
-  ? keyof T
-  : never
-  : never
+    ? keyof T extends string
+      ? keyof T
+      : never
+    : never
 >
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
@@ -223,8 +223,8 @@ export function useAsyncData<
 
         const promise = nuxtApp.runWithContext(_handler)
 
-      nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
-      return promise
+        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        return promise
       }
 
   // Used to get default values
@@ -257,7 +257,7 @@ export function useAsyncData<
       data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
-      status: ref('idle')
+      status: ref('idle'),
     }
   }
 
@@ -477,8 +477,8 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
         } else {
           nuxtApp.payload.data[key] = value
         }
-      }
-    })
+      },
+    }),
   }
 }
 

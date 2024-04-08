@@ -4,7 +4,6 @@ import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, Route
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -98,10 +97,10 @@ export type OpenWindowFeatures = {
   popup?: boolean
   noopener?: boolean
   noreferrer?: boolean
-} & XOR<{width?: number}, {innerWidth?: number}>
-  & XOR<{height?: number}, {innerHeight?: number}>
-  & XOR<{left?: number}, {screenX?: number}>
-  & XOR<{top?: number}, {screenY?: number}>
+} & XOR<{ width?: number }, { innerWidth?: number }>
+  & XOR<{ height?: number }, { innerHeight?: number }>
+  & XOR<{ left?: number }, { screenX?: number }>
+  & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
   target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
@@ -170,7 +169,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location }
+          headers: { location },
         }
         return response
       }

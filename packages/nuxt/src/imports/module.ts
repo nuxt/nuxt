@@ -13,7 +13,7 @@ import { defaultPresets } from './presets'
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
     name: 'imports',
-    configKey: 'imports'
+    configKey: 'imports',
   },
   defaults: {
     autoImport: true,
@@ -23,9 +23,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     dirs: [],
     transform: {
       include: [],
-      exclude: undefined
+      exclude: undefined,
     },
-    virtualImports: ['#imports']
+    virtualImports: ['#imports'],
   },
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
@@ -42,9 +42,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       ...options,
       addons: {
         vueTemplate: options.autoImport,
-        ...options.addons
+        ...options.addons,
       },
-      presets
+      presets,
     })
 
     await nuxt.callHook('imports:context', ctx)
@@ -79,7 +79,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
-      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
+      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
@@ -93,7 +93,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       return [
         '/types/imports.d.ts',
         '/imports.d.ts',
-        '/imports.mjs'
+        '/imports.mjs',
       ].some(i => template.filename.endsWith(i))
     }
 
@@ -103,7 +103,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         imports.length = 0
         // Scan `composables/`
         const composableImports = await scanDirExports(composablesDirs, {
-          fileFilter: file => !isIgnored(file)
+          fileFilter: file => !isIgnored(file),
         })
         for (const i of composableImports) {
           i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
@@ -115,7 +115,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
 
       await updateTemplates({
-        filter: isImportsTemplate
+        filter: isImportsTemplate,
       })
     }
 
@@ -139,7 +139,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         await regenerateImports()
       }
     })
-  }
+  },
 })
 
 function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions>) {
@@ -182,7 +182,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   addTypeTemplate({
     filename: 'imports.d.ts',
-    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true)
+    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true),
   })
 
   addTypeTemplate({
@@ -195,6 +195,6 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           ? await ctx.generateTypeDeclarations({ resolvePath: r })
           : '// Implicit auto importing is disabled, you can use explicitly import from `#imports` instead.'
       )
-    }
+    },
   })
 }

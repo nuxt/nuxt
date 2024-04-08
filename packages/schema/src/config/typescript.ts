@@ -23,7 +23,7 @@ export default defineUntypedSchema({
      * @type {'vite' | 'webpack' | 'shared' | false | undefined}
      */
     builder: {
-      $resolve: val => val ?? null
+      $resolve: val => val ?? null,
     },
 
     /**
@@ -47,10 +47,10 @@ export default defineUntypedSchema({
           '@vue/runtime-dom',
           'vue-router',
           '@nuxt/schema',
-          'nuxt'
+          'nuxt',
         ]
         return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
-      }
+      },
     },
 
     /**
@@ -83,6 +83,6 @@ export default defineUntypedSchema({
      * Note that you may wish to set this to `true` if you are using other libraries, such as ESLint,
      * that are unable to understand the type of `.vue` files.
      */
-    shim: false
-  }
+    shim: false,
+  },
 })

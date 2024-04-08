@@ -53,7 +53,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const components = options.getComponents()
 
       const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
       )
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname)
@@ -129,17 +129,16 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       })
 
       if (!isVite && hasNuxtClient) {
-        // eslint-disable-next-line no-console
         console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
       }
 
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: s.generateMap({ source: id, includeContent: true })
+          map: s.generateMap({ source: id, includeContent: true }),
         }
       }
-    }
+    },
   }
 })
 
@@ -187,8 +186,8 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         config.build = defu(config.build, {
           rollupOptions: {
             input: {},
-            output: {}
-          }
+            output: {},
+          },
         })
 
         const rollupOptions = config.build.rollupOptions!
@@ -228,7 +227,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         }
 
         fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
-      }
-    }
+      },
+    },
   }
 })
