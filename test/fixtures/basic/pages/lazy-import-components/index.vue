@@ -6,6 +6,6 @@
     <div style="height:3000px">
       This is a very tall div
     </div>
-    <LazyDelayedWrapperTestComponent/>
+    <LazyDelayedWrapperTestComponent />
   </div>
 </template>
