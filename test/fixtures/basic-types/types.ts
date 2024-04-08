@@ -512,6 +512,20 @@ describe('composables', () => {
     expectTypeOf(notTypedData.value!.content).toEqualTypeOf<string[]>()
     expectTypeOf(notTypedData.value!.untypedKey).toEqualTypeOf<any>()
   })
+
+  it('correctly types returns when using with getCachedData', () => {
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: 1 }), {
+      getCachedData: key => useNuxtApp().payload.data[key],
+    }).data).toEqualTypeOf<Ref<{ foo: number } | null>>()
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), {
+      // @ts-expect-error cached data should return the same as value of fetcher
+      getCachedData: () => ({ bar: 2 }),
+    })
+    useAsyncData<{ foo: number }, unknown, { foo: number }>('test', () => Promise.resolve({ foo: 1 }), {
+      // @ts-expect-error cached data should return the same as asserted type of `useAsyncData`
+      getCachedData: () => ({ bar: 2 }),
+    })
+  })
 })
 
 describe('app config', () => {
