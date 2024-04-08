@@ -42,7 +42,7 @@ export function useObserver (): { observe: ObserveFn } | undefined {
   }
 
   const _observer = nuxtApp._observer = {
-    observe
+    observe,
   }
 
   return _observer

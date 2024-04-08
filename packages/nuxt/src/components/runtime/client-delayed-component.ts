@@ -30,9 +30,9 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
             } else {
               return null
             }
-          }
-        })
+          },
+        }),
       ])
-    }
+    },
   })
 }
