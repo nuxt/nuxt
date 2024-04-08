@@ -2565,5 +2565,7 @@ describe('lazy import components', () => {
 
   it('lazy load delayed hydration comps at the right time', () => {
     expect(html).not.toContain('This shouldn\'t be visible at first!')
+    const { page } = await renderPage('/lazy-import-components')
+    expect(page.locator('body').getByText('This shouldn\'t be visible at first!')).not.toBeDefined()
   })
 })
