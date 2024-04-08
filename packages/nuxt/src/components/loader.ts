@@ -21,7 +21,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
-
+  const clientDelayedComponentRuntime = resolve(distDir, 'components/runtime/client-delayed-component')
   return {
     name: 'nuxt:components-loader',
     enforce: 'post',
@@ -72,9 +72,17 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           }
 
           if (lazy) {
-            imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-            identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            // Temporary hardcoded check to verify runtime functionality
+            if (name === "DelayedWrapperTestComponent") {
+                imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
+                imports.add(`const ${identifier} = createLazyIOClientPage(${JSON.stringify(name)})`)
+                identifier += '_delayedIO'
+            }
+            else {
+              imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
+              identifier += '_lazy'
+              imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            }
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
