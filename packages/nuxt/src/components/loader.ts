@@ -74,9 +74,10 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (lazy) {
             // Temporary hardcoded check to verify runtime functionality
             if (name === 'DelayedWrapperTestComponent') {
+              imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
               identifier += '_delayedIO'
-              imports.add(`const ${identifier} = createLazyIOClientPage(${JSON.stringify(name)})`)
+              imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath)}))`)
             } else {
               imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               identifier += '_lazy'
