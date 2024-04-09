@@ -1,40 +1,40 @@
-import { defineNuxtPlugin } from "#app/nuxt";
-import { prerenderRoutes } from "#app/composables/ssr";
+import type { RouterConfig } from '@nuxt/schema'
+import { joinURL } from 'ufo'
+import { defineNuxtPlugin } from '#app/nuxt'
+import { prerenderRoutes } from '#app/composables/ssr'
 // @ts-expect-error virtual file
-import _routes from "#build/routes";
+import _routes from '#build/routes'
 // @ts-expect-error virtual file
-import routerOptions from "#build/router.options";
-import type { RouterConfig } from "@nuxt/schema";
-import { joinURL } from "ufo";
+import routerOptions from '#build/router.options'
 
-const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/;
+const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
 export default defineNuxtPlugin(() => {
   if (!import.meta.server || !import.meta.prerender) {
-    return;
+    return
   }
-  const routes = routerOptions.routes?.(_routes) ?? _routes;
-  const routesToPrerender = new Set<string>();
+  const routes = routerOptions.routes?.(_routes) ?? _routes
+  const routesToPrerender = new Set<string>()
   const processRoutes = (
-    routes: ReturnType<NonNullable<RouterConfig["routes"]>>,
-    currentPath = "/"
+    routes: ReturnType<NonNullable<RouterConfig['routes']>>,
+    currentPath = '/',
   ) => {
     for (const route of routes) {
       // Add root of optional dynamic paths and catchalls
       if (OPTIONAL_PARAM_RE.test(route.path) && !route.children?.length) {
-        routesToPrerender.add(currentPath);
+        routesToPrerender.add(currentPath)
       }
       // Skip dynamic paths
-      if (route.path.includes(":")) {
-        continue;
+      if (route.path.includes(':')) {
+        continue
       }
-      const fullPath = joinURL(currentPath, route.path);
-      routesToPrerender.add(fullPath);
+      const fullPath = joinURL(currentPath, route.path)
+      routesToPrerender.add(fullPath)
       if (route.children) {
-        processRoutes(route.children, fullPath);
+        processRoutes(route.children, fullPath)
       }
     }
-  };
-  processRoutes(routes);
-  prerenderRoutes(Array.from(routesToPrerender));
-});
+  }
+  processRoutes(routes)
+  prerenderRoutes(Array.from(routesToPrerender))
+})

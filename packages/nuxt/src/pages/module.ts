@@ -263,7 +263,7 @@ export default defineNuxtModule({
       })
     })
 
-    addPlugin(resolve(runtimeDir, "plugins/prerender"));
+    addPlugin(resolve(runtimeDir, 'plugins/prerender'))
 
     nuxt.hook('nitro:init', (nitro) => {
       if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
