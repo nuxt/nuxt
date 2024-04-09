@@ -16,7 +16,7 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
     extensions: nuxt.options.extensions,
     plugins: [],
     components: [],
-    templates: []
+    templates: [],
   } as unknown as NuxtApp) as NuxtApp
 }
 
@@ -97,8 +97,8 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     app.mainComponent = await findPath(
       nuxt.options._layers.flatMap(layer => [
         join(layer.config.srcDir, 'App'),
-        join(layer.config.srcDir, 'app')
-      ])
+        join(layer.config.srcDir, 'app'),
+      ]),
     )
   }
   if (!app.mainComponent) {
@@ -113,7 +113,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve error component
   if (!app.errorComponent) {
     app.errorComponent = (await findPath(
-      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error'))
+      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
     )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
   }
 
@@ -160,9 +160,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
           `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`, // TODO: remove, only scan top-level plugins #18418
         ])
-        : []
+        : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
 
@@ -200,7 +200,7 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
     if (!item[key]) { return item }
     return {
       ...item,
-      [key]: await resolvePath(resolveAlias(item[key]))
+      [key]: await resolvePath(resolveAlias(item[key])),
     }
   }))
 }
@@ -214,7 +214,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
-        ...plugin
+        ...plugin,
       })
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)

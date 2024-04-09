@@ -127,7 +127,7 @@ export function createResolver (base: string | URL): Resolver {
 
   return {
     resolve: (...path) => resolve(base as string, ...path),
-    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts })
+    resolvePath: (path, opts) => resolvePath(path, { cwd: base as string, ...opts }),
   }
 }
 

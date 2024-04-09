@@ -3,14 +3,14 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    'src/index'
+    'src/index',
   ],
   externals: [
     '@nuxt/schema',
     'nitropack',
     'webpack',
     'vite',
-    'h3'
+    'h3',
   ],
-  failOnWarn: false
+  failOnWarn: false,
 })

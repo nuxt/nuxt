@@ -2,8 +2,8 @@
 defineProps({
   multiplier: {
     type: Number,
-    required: true
-  }
+    required: true,
+  },
 })
 </script>
 

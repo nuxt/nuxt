@@ -119,7 +119,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   const modulePaths = await resolveNuxtModule(rootDirWithSlash,
     nuxt.options._installedModules
       .filter(m => m.entryPath)
-      .map(m => getDirectory(m.entryPath))
+      .map(m => getDirectory(m.entryPath)),
   )
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
@@ -142,7 +142,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       noEmit: true,
       resolveJsonModule: true,
       allowSyntheticDefaultImports: true,
-      paths: {}
+      paths: {},
     },
     include: [
       './nuxt.d.ts',
@@ -153,19 +153,19 @@ export async function _generateTypes (nuxt: Nuxt) {
         .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
         .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime'))
+      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime')),
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
       ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
-      relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist'))
-    ]
+      relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+    ],
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir
+    '#build': nuxt.options.buildDir,
   }
 
   // Exclude bridge alias types to support Volar
@@ -215,7 +215,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const references: TSReference[] = await Promise.all([
     ...nuxt.options.modules,
-    ...nuxt.options._modules
+    ...nuxt.options._modules,
   ]
     .filter(f => typeof f === 'string')
     .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
@@ -246,12 +246,12 @@ export async function _generateTypes (nuxt: Nuxt) {
     ...declarations,
     '',
     'export {}',
-    ''
+    '',
   ].join('\n')
 
   return {
     declaration,
-    tsConfig
+    tsConfig,
   }
 }
 

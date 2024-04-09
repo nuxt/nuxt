@@ -1,4 +1,5 @@
 import http from 'node:http'
+
 export function createSimpleRemoteIslandProvider (port = 3001) {
   const server = http.createServer((req, res) => {
     const response = {
@@ -6,8 +7,8 @@ export function createSimpleRemoteIslandProvider (port = 3001) {
       state: {},
       head: {
         link: [],
-        style: []
-      }
+        style: [],
+      },
     }
     res.statusCode = 200
     res.setHeader('Content-Type', 'application/json')

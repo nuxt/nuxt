@@ -28,9 +28,9 @@ export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPlugi
           code: TRANSFORM_MARKER + result.code,
           map: options.sourcemap
             ? result.magicString.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

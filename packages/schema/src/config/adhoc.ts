@@ -18,7 +18,7 @@ export default defineUntypedSchema({
         return { dirs: [{ path: '~/components/global', global: true }, '~/components'] }
       }
       return val
-    }
+    },
   },
 
   /**
@@ -40,7 +40,7 @@ export default defineUntypedSchema({
      * }
      * ```
      */
-    dirs: []
+    dirs: [],
   },
 
   /**
@@ -64,5 +64,5 @@ export default defineUntypedSchema({
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
    * @type { { enabled: boolean, [key: string]: any } }
    */
-  devtools: {}
+  devtools: {},
 })

@@ -8,6 +8,7 @@ import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
 import { hash } from 'ohash'
 import { resolvePath } from '@nuxt/kit'
+import defu from 'defu'
 import { isVue } from '../core/utils'
 
 interface ServerOnlyComponentTransformPluginOptions {
@@ -52,7 +53,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const components = options.getComponents()
 
       const islands = components.filter(component =>
-        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+        component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
       )
       const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
       return islands.some(c => c.filePath === pathname)
@@ -128,17 +129,16 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       })
 
       if (!isVite && hasNuxtClient) {
-        // eslint-disable-next-line no-console
         console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
       }
 
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: s.generateMap({ source: id, includeContent: true })
+          map: s.generateMap({ source: id, includeContent: true }),
         }
       }
-    }
+    },
   }
 })
 
@@ -146,7 +146,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
  * extract attributes from a node
  */
 function extractAttributes (attributes: Record<string, string>, names: string[]) {
-  const extracted:Record<string, string> = {}
+  const extracted: Record<string, string> = {}
   for (const name of names) {
     if (name in attributes) {
       extracted[name] = attributes[name]
@@ -182,15 +182,27 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
     vite: {
       async config (config) {
         const components = options.getComponents()
-        config.build = config.build || {}
-        config.build.rollupOptions = config.build.rollupOptions || {}
-        config.build.rollupOptions.output = config.build.rollupOptions.output || {}
-        config.build.rollupOptions.input = config.build.rollupOptions.input || {}
+
+        config.build = defu(config.build, {
+          rollupOptions: {
+            input: {},
+            output: {},
+          },
+        })
+
+        const rollupOptions = config.build.rollupOptions!
+
+        if (typeof rollupOptions.input === 'string') {
+          rollupOptions.input = { entry: rollupOptions.input }
+        } else if (typeof rollupOptions.input === 'object' && Array.isArray(rollupOptions.input)) {
+          rollupOptions.input = rollupOptions.input.reduce<{ [key: string]: string }>((acc, input) => { acc[input] = input; return acc }, {})
+        }
+
         // don't use 'strict', this would create another "facade" chunk for the entry file, causing the ssr styles to not detect everything
-        config.build.rollupOptions.preserveEntrySignatures = 'allow-extension'
+        rollupOptions.preserveEntrySignatures = 'allow-extension'
         for (const component of components) {
           if (component.mode === 'client' || component.mode === 'all') {
-            (config.build.rollupOptions.input as Record<string, string>)[component.pascalName] = await resolvePath(component.filePath)
+            rollupOptions.input![component.pascalName] = await resolvePath(component.filePath)
           }
         }
       },
@@ -215,7 +227,7 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
         }
 
         fs.writeFileSync(join(buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(pathAssociation, null, 2)}`)
-      }
-    }
+      },
+    },
   }
 })

@@ -3,6 +3,6 @@ const apiKey = 'hehe'
 
 export default defineEventHandler((event) => {
   return {
-    hehe: getQuery(event)[apiKeyName] === apiKey
+    hehe: getQuery(event)[apiKeyName] === apiKey,
   }
 })

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 function useLegacyUseHead () {
   useHead({
-    titleTemplate: '%s - VueUse head polyfill test'
+    titleTemplate: '%s - VueUse head polyfill test',
   })
 }
 function useLegacyVueUseHead () {
@@ -9,7 +9,7 @@ function useLegacyVueUseHead () {
   const vm = getCurrentInstance()
   const head = vm?.appContext.provides.usehead
   head.addHeadObjs({
-    title: 'using provides usehead and updateDOM'
+    title: 'using provides usehead and updateDOM',
   })
   head.updateDOM()
 }

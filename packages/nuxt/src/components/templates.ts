@@ -13,7 +13,7 @@ const createImportMagicComments = (options: ImportMagicCommentsOptions) => {
   return [
     `webpackChunkName: "${chunkName}"`,
     prefetch === true || typeof prefetch === 'number' ? `webpackPrefetch: ${prefetch}` : false,
-    preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false
+    preload === true || typeof preload === 'number' ? `webpackPreload: ${preload}` : false,
   ].filter(Boolean).join(', ')
 }
 
@@ -58,14 +58,14 @@ export default defineNuxtPlugin({
   }
 })
 `
-  }
+  },
 }
 
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
     return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
-  }
+  },
 }
 
 export const componentsIslandsTemplate: NuxtTemplate = {
@@ -76,7 +76,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
     const islands = components.filter(component =>
       component.island ||
       // .server components without a corresponding .client component will need to be rendered as an island
-      (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client'))
+      (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
     )
 
     const pageExports = pages?.filter(p => (p.mode === 'server' && p.file && p.name)).map((p) => {
@@ -91,11 +91,11 @@ export const componentsIslandsTemplate: NuxtTemplate = {
           const exp = c.export === 'default' ? 'c.default || c' : `c['${c.export}']`
           const comment = createImportMagicComments(c)
           return `  "${c.pascalName}": defineAsyncComponent(${genDynamicImport(c.filePath, { comment })}.then(c => ${exp}))`
-        }
+        },
       ).concat(pageExports).join(',\n'),
-      '}'
+      '}',
     ].join('\n')
-  }
+  },
 }
 
 export const componentsTypeTemplate = {
@@ -106,7 +106,7 @@ export const componentsTypeTemplate = {
       c.pascalName,
       `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/(?<=\w)\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+        : c.filePath.replace(/(?<=\w)\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`,
     ])
 
     return `
@@ -132,11 +132,11 @@ ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${
 
 export const componentNames: string[]
 `
-  }
+  },
 } satisfies NuxtTemplate
 
 export const componentsMetadataTemplate: NuxtTemplate = {
   filename: 'components.json',
   write: true,
-  getContents: ({ app }) => JSON.stringify(app.components, null, 2)
+  getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }

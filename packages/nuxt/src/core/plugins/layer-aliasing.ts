@@ -25,7 +25,7 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
       '~': layer.config?.alias?.['~'] || srcDir,
       '@': layer.config?.alias?.['@'] || srcDir,
       '~~': layer.config?.alias?.['~~'] || rootDir,
-      '@@': layer.config?.alias?.['@@'] || rootDir
+      '@@': layer.config?.alias?.['@@'] || rootDir,
     }
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
@@ -46,8 +46,8 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
           if (resolvedId !== id) {
             return await this.resolve(resolvedId, importer, { skipSelf: true })
           }
-        }
-      }
+        },
+      },
     },
 
     // webpack-only transform
@@ -69,9 +69,9 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
+          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
         }
       }
-    }
+    },
   }
 })
