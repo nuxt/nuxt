@@ -4,8 +4,7 @@
   "scripts": {
     "dev": "nuxi dev",
     "build": "nuxi build",
-    "start": "nuxi preview",
-    "generate": "nuxi generate"
+    "start": "nuxi preview"
   },
   "dependencies": {
     "nuxt": "workspace:*",
