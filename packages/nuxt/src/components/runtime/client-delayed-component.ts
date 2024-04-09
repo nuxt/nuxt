@@ -3,6 +3,7 @@ import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
 
+/* @__NO_SIDE_EFFECTS__ */
 export const createLazyIOClientPage = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
