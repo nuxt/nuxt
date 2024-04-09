@@ -16,6 +16,13 @@ export interface ImportsOptions extends UnimportOptions {
   dirs?: string[]
 
   /**
+   * Enabled scan for local directories for auto imports.
+   * When this is disabled, `dirs` options will be ignored.
+   * @default true
+   */
+  scan?: boolean
+
+  /**
    * Assign auto imported utilities to `globalThis` instead of using built time transformation.
    * @default false
    */
