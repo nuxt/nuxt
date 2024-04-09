@@ -24,7 +24,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
       })
       return () => h('div', { ref: el }, [
         h(ClientOnly, undefined, [
-          isIntersecting.value ? h(componentLoader, attrs) : null
+          isIntersecting.value ? h(componentLoader, attrs) : null,
         ]),
       ])
     },
