@@ -10,7 +10,7 @@ import routerOptions from '#build/router.options'
 const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
 
 export default defineNuxtPlugin(() => {
-  if (!import.meta.server || !import.meta.prerender) {
+  if (!import.meta.server || !import.meta.prerender || routerOptions.hashMode) {
     return
   }
   const routes = routerOptions.routes?.(_routes) ?? _routes
