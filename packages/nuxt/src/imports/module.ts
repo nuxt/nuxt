@@ -17,6 +17,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   },
   defaults: {
     autoImport: true,
+    scan: true,
     presets: defaultPresets,
     global: false,
     imports: [],
@@ -51,30 +52,36 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
-    for (const layer of nuxt.options._layers) {
-      composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
-      composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
-      for (const dir of (layer.config.imports?.dirs ?? [])) {
-        if (!dir) {
+    if (options.scan) {
+      for (const layer of nuxt.options._layers) {
+        // Layer disabled scanning for itself
+        if (layer.config?.imports?.scan === false) {
           continue
         }
-        composablesDirs.push(resolve(layer.config.srcDir, dir))
+        composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
+        composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+        for (const dir of (layer.config.imports?.dirs ?? [])) {
+          if (!dir) {
+            continue
+          }
+          composablesDirs.push(resolve(layer.config.srcDir, dir))
+        }
       }
+
+      await nuxt.callHook('imports:dirs', composablesDirs)
+      composablesDirs = composablesDirs.map(dir => normalize(dir))
+
+      // Restart nuxt when composable directories are added/removed
+      nuxt.hook('builder:watch', (event, relativePath) => {
+        if (!['addDir', 'unlinkDir'].includes(event)) { return }
+
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        if (composablesDirs.includes(path)) {
+          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+          return nuxt.callHook('restart')
+        }
+      })
     }
-
-    await nuxt.callHook('imports:dirs', composablesDirs)
-    composablesDirs = composablesDirs.map(dir => normalize(dir))
-
-    // Restart nuxt when composable directories are added/removed
-    nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) { return }
-
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (composablesDirs.includes(path)) {
-        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-        return nuxt.callHook('restart')
-      }
-    })
 
     // Support for importing from '#imports'
     addTemplate({
@@ -101,14 +108,18 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
         imports.length = 0
-        // Scan `composables/`
-        const composableImports = await scanDirExports(composablesDirs, {
-          fileFilter: file => !isIgnored(file),
-        })
-        for (const i of composableImports) {
-          i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+
+        // Scan for `composables/` and `utils/` directories
+        if (options.scan) {
+          const scannedImports = await scanDirExports(composablesDirs, {
+            fileFilter: file => !isIgnored(file),
+          })
+          for (const i of scannedImports) {
+            i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          }
+          imports.push(...scannedImports)
         }
-        imports.push(...composableImports)
+
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
         return imports
@@ -127,7 +138,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+      if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         await regenerateImports()
       }
     })
