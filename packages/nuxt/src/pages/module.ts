@@ -265,22 +265,6 @@ export default defineNuxtModule({
 
     addPlugin(resolve(runtimeDir, 'plugins/prerender'))
 
-    nuxt.hook('nitro:init', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode) { return }
-      nuxt.hook('nitro:build:before', (nitro) => {
-        const prerenderRoutes = new Set<string>()
-        if (nitro.options.prerender.routes.length) {
-          for (const route of nitro.options.prerender.routes) {
-            // Skip default route value as we only generate it if it is already
-            // in the detected routes from `~/pages`.
-            if (route === '/') { continue }
-            prerenderRoutes.add(route)
-          }
-        }
-        nitro.options.prerender.routes = Array.from(prerenderRoutes)
-      })
-    })
-
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
