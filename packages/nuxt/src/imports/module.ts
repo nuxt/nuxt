@@ -54,7 +54,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     let composablesDirs: string[] = []
     if (options.scan) {
       for (const layer of nuxt.options._layers) {
-        // Layer disabled scanning for it's own
+        // Layer disabled scanning for itself
         if (layer.config?.imports?.scan === false) {
           continue
         }
