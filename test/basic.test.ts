@@ -2544,7 +2544,7 @@ describe('import components', () => {
   })
 })
 
-describe.only('lazy import components', () => {
+describe('lazy import components', () => {
   let html = ''
 
   it.sequential('fetch lazy-import-components page', async () => {
