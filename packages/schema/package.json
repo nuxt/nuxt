@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/schema",
-  "version": "3.11.2",
+  "version": "3.12.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
