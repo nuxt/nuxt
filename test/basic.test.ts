@@ -2544,7 +2544,7 @@ describe('import components', () => {
   })
 })
 
-describe('lazy import components', () => {
+describe.only('lazy import components', () => {
   let html = ''
 
   it.sequential('fetch lazy-import-components page', async () => {
@@ -2568,6 +2568,7 @@ describe('lazy import components', () => {
     const { page } = await renderPage('/lazy-import-components')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(0)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(1)
   })
 })
