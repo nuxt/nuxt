@@ -77,7 +77,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
               imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
               identifier += '_delayedIO'
-              imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath)}))`)
+              imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
             } else {
               imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               identifier += '_lazy'
