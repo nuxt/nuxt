@@ -1,6 +1,6 @@
 import { defineComponent, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Component, Ref } from 'vue'
-import ClientOnly from '#app/components/client-only'
+// import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
 
 export const createLazyIOClientPage = (componentLoader: Component) => {
@@ -23,9 +23,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
         unobserve = null
       })
       return () => h('div', { ref: el }, [
-        h(ClientOnly, undefined, [
-          isIntersecting.value ? h(componentLoader, attrs) : null,
-        ]),
+        isIntersecting.value ? h(componentLoader, attrs) : null,
       ])
     },
   })
