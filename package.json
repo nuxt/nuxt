@@ -52,7 +52,7 @@
     "@testing-library/vue": "8.0.3",
     "@types/eslint__js": "8.42.3",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.12.6",
+    "@types/node": "20.12.7",
     "@types/semver": "7.5.8",
     "@vitest/coverage-v8": "1.4.0",
     "@vue/test-utils": "2.4.5",
