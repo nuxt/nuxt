@@ -40,13 +40,13 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       onMounted(() => {
         idleHandle = requestIdleCallback(() => {
           isIdle.value = true
-          cancelIdleCallback(idleHandle)
+          cancelIdleCallback(idleHandle as unknown as number)
           idleHandle = null
         })
       })
       onBeforeUnmount(() => {
         if (idleHandle) {
-          cancelIdleCallback(idleHandle)
+          cancelIdleCallback(idleHandle as unknown as number)
           idleHandle = null
         }
       })
