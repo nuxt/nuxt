@@ -29,3 +29,28 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
     },
   })
 }
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyNetworkClientPage = (componentLoader: Component) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      const isIdle = ref(false)
+      let idleHandle: number | null = null
+      onMounted(() => {
+        idleHandle = requestIdleCallback(() => {
+          isIdle.value = true
+          cancelIdleCallback(idleHandle)
+          idleHandle = null
+        })
+      })
+      onBeforeUnmount(() => {
+        if (idleHandle) {
+          cancelIdleCallback(idleHandle)
+          idleHandle = null
+        }
+      })
+      return () => isIdle.value ? h(componentLoader, attrs) : null,
+    },
+  })
+}
