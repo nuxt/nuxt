@@ -1,4 +1,4 @@
-import { defineComponent, h, onBeforeUnmount, onMounted, ref, getCurrentInstance, createStaticVNode } from 'vue'
+import { createStaticVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
