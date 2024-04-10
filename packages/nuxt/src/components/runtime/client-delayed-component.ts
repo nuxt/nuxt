@@ -50,7 +50,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
           idleHandle = null
         }
       })
-      return () => isIdle.value ? h(componentLoader, attrs) : null,
+      return () => isIdle.value ? h(componentLoader, attrs) : null
     },
   })
 }
