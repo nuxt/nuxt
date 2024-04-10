@@ -33,9 +33,9 @@ export const DevOnlyPlugin = createUnplugin((options: DevOnlyPluginOptions) => {
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

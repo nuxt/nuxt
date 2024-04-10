@@ -6,5 +6,5 @@ export default defineNuxtPlugin({
   enforce: 'pre',
   setup (nuxtApp) {
     createDebugger(nuxtApp.hooks, { tag: 'nuxt-app' })
-  }
+  },
 })

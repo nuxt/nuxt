@@ -50,7 +50,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
       const ast = this.parse(script, {
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
       }) as Node
 
       // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
@@ -72,7 +72,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
             scopeTracker.leaveScope()
             varCollector.refresh(scopeTracker.curScopeKey)
           }
-        }
+        },
       })
 
       scopeTracker = new ScopeTracker()
@@ -124,24 +124,24 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
           s.appendLeft(
             codeIndex + (node as any).end - 1,
-            (node.arguments.length && !endsWithComma ? ', ' : '') + "'$" + hash(`${relativeID}-${++count}`) + "'"
+            (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`) + '\'',
           )
         },
         leave (_node) {
           if (_node.type === 'BlockStatement') {
             scopeTracker.leaveScope()
           }
-        }
+        },
       })
       if (s.hasChanged()) {
         return {
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
 

@@ -1,7 +1,7 @@
 <script setup>
 definePageMeta({
   layout: 'override',
-  middleware: 'override'
+  middleware: 'override',
 })
 </script>
 

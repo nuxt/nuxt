@@ -9,7 +9,7 @@ export {
   /** @deprecated Import `useSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
   useSeoMeta,
   /** @deprecated Import `useServerSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useServerSeoMeta
+  useServerSeoMeta,
 } from '@unhead/vue'
 
 export { defineNuxtComponent } from './component'

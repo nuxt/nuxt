@@ -9,7 +9,7 @@ const fixtures = {
   'basic test fixture': 'test/fixtures/basic',
   'basic test fixture (types)': 'test/fixtures/basic-types',
   'minimal test fixture': 'test/fixtures/minimal',
-  'minimal test fixture (types)': 'test/fixtures/minimal-types'
+  'minimal test fixture (types)': 'test/fixtures/minimal-types',
 }
 
 describe('loadNuxtConfig', () => {

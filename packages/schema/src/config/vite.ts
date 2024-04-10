@@ -13,26 +13,26 @@ export default defineUntypedSchema({
    */
   vite: {
     root: {
-      $resolve: async (val, get) => val ?? (await get('srcDir'))
+      $resolve: async (val, get) => val ?? (await get('srcDir')),
     },
     mode: {
-      $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production')
+      $resolve: async (val, get) => val ?? (await get('dev') ? 'development' : 'production'),
     },
     define: {
       $resolve: async (val: Record<string, any> | undefined, get) => {
         const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')]) as [boolean, boolean]
         return {
-          __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: isDebug,
+          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': isDebug,
           'process.dev': isDev,
           'import.meta.dev': isDev,
           'process.test': isTest,
           'import.meta.test': isTest,
-          ...val
+          ...val,
         }
-      }
+      },
     },
     resolve: {
-      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue']
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
     },
     publicDir: {
       $resolve: (val) => {
@@ -40,57 +40,57 @@ export default defineUntypedSchema({
           consola.warn('Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`. You can read more in `https://nuxt.com/docs/api/nuxt-config#public`.')
         }
         return false
-      }
+      },
     },
     vue: {
       isProduction: {
-        $resolve: async (val, get) => val ?? !(await get('dev'))
+        $resolve: async (val, get) => val ?? !(await get('dev')),
       },
       template: {
         compilerOptions: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions,
         },
         transformAssetUrls: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).transformAssetUrls
-        }
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).transformAssetUrls,
+        },
       },
       script: {
         propsDestructure: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure)
+          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure),
         },
         hoistStatic: {
-          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic
-        }
-      }
+          $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic,
+        },
+      },
     },
     vueJsx: {
       $resolve: async (val: Record<string, any>, get) => {
         return {
           isCustomElement: (await get('vue') as Record<string, any>).compilerOptions?.isCustomElement,
-          ...val
+          ...val,
         }
-      }
+      },
     },
     optimizeDeps: {
       exclude: {
         $resolve: async (val: string[] | undefined, get) => [
           ...val || [],
-          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>).filter(i => typeof i === 'string'),
-          'vue-demi'
-        ]
-      }
+          ...(await get('build.transpile') as Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)>).filter(i => typeof i === 'string'),
+          'vue-demi',
+        ],
+      },
     },
     esbuild: {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
-      tsconfigRaw: '{}'
+      tsconfigRaw: '{}',
     },
     clearScreen: true,
     build: {
       assetsDir: {
-        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app') as Record<string, string>).buildAssetsDir)
+        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app') as Record<string, string>).buildAssetsDir),
       },
-      emptyOutDir: false
+      emptyOutDir: false,
     },
     server: {
       fs: {
@@ -103,11 +103,11 @@ export default defineUntypedSchema({
               rootDir,
               workspaceDir,
               ...(modulesDir),
-              ...val ?? []
+              ...val ?? [],
             ])]
-          }
-        }
-      }
-    }
-  }
+          },
+        },
+      },
+    },
+  },
 })

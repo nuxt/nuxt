@@ -30,5 +30,5 @@ export default defineNuxtPlugin({
         reloadAppAtPath(to)
       }
     })
-  }
+  },
 })

@@ -6,7 +6,7 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 
 export default defineNuxtModule({
   meta: {
-    name: 'meta'
+    name: 'meta',
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
@@ -24,14 +24,14 @@ export default defineNuxtModule({
         // built-in that we do not expect the user to override
         priority: 10,
         // kebab case version of these tags is not valid
-        kebabName: componentName
+        kebabName: componentName,
       })
     }
 
     // allow @unhead/vue server composables to be tree-shaken from the client bundle
     if (!nuxt.options.dev) {
       nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
+        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
       ]
     }
 
@@ -45,8 +45,8 @@ export default defineNuxtModule({
         'useHeadSafe',
         'useServerHead',
         'useServerSeoMeta',
-        'useServerHeadSafe'
-      ]
+        'useServerHeadSafe',
+      ],
     })
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
@@ -65,7 +65,7 @@ export default defineNuxtModule({
         }
         return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
 export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
-      }
+      },
     })
 
     // template is only exposed in nuxt context, expose in nitro context as well
@@ -75,5 +75,5 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
-  }
+  },
 })

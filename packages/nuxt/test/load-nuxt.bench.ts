@@ -11,7 +11,7 @@ describe('loadNuxt', () => {
   bench('empty directory', async () => {
     const nuxt = await loadNuxt({
       cwd: emptyDir,
-      ready: true
+      ready: true,
     })
     await nuxt.close()
   })
@@ -19,7 +19,7 @@ describe('loadNuxt', () => {
   bench('basic test fixture', async () => {
     const nuxt = await loadNuxt({
       cwd: basicTestFixtureDir,
-      ready: true
+      ready: true,
     })
     await nuxt.close()
   })

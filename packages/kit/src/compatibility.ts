@@ -18,7 +18,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
-        message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``
+        message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
       })
     }
   }
@@ -30,12 +30,12 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     if (bridgeRequirement === true && !hasBridge) {
       issues.push({
         name: 'bridge',
-        message: 'Nuxt bridge is required'
+        message: 'Nuxt bridge is required',
       })
     } else if (bridgeRequirement === false && hasBridge) {
       issues.push({
         name: 'bridge',
-        message: 'Nuxt bridge is not supported'
+        message: 'Nuxt bridge is not supported',
       })
     }
   }

@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.11.1",
+  "version": "3.11.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -28,7 +28,7 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
     "autoprefixer": "^10.4.19",
-    "css-loader": "^6.10.0",
+    "css-loader": "^7.1.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
     "cssnano": "^6.1.2",
     "defu": "^6.1.4",
@@ -41,7 +41,7 @@
     "h3": "^1.11.1",
     "hash-sum": "^2.0.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.8",
+    "magic-string": "^0.30.9",
     "memfs": "^4.8.1",
     "mini-css-extract-plugin": "^2.8.1",
     "mlly": "^1.6.1",

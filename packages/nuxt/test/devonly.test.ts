@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { Plugin } from 'vite'
 import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
 import { normalizeLineEndings } from './utils'
+
 const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
 
 const viteTransform = async (source: string, id: string) => {
