@@ -1,9 +1,9 @@
 <script setup>
 useHead({
-  title: 'Second Page'
+  title: 'Second Page',
 })
 definePageMeta({
-  layout: 'with-route-announcer'
+  layout: 'with-route-announcer',
 })
 </script>
 

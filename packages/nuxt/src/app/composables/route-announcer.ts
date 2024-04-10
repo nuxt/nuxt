@@ -9,7 +9,7 @@ export enum Politeness {
   Off = 'off',
 }
 
-export type PolitenessValue = `${Politeness}`;
+export type PolitenessValue = `${Politeness}`
 
 export type NuxtRouteAnnouncerOpts = {
   /** @default 'polite' */
@@ -63,7 +63,7 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
     politeness,
     set,
     polite,
-    assertive
+    assertive,
   }
 }
 

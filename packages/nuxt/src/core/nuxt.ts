@@ -331,7 +331,7 @@ async function initNuxt (nuxt: Nuxt) {
     name: 'NuxtRouteAnnouncer',
     priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer'),
-    mode: 'client'
+    mode: 'client',
   })
 
   // Add <NuxtClientFallback>
