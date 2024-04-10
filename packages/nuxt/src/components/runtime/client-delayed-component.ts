@@ -14,7 +14,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
       const instance = getCurrentInstance()!
       let vnode: VNode | null = null
       if (import.meta.client && nuxt.isHydrating && instance.vnode?.el) {
-        vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true).join('') || '', 1)
+        vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)
       }
       const isIntersecting = ref(false)
       const el: Ref<Element | null> = ref(null)
@@ -47,7 +47,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       const instance = getCurrentInstance()!
       let vnode: VNode | null = null
       if (import.meta.client && nuxt.isHydrating && instance.vnode?.el) {
-        vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true).join('') || '', 1)
+        vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)
       }
       const isIdle = ref(false)
       let idleHandle: number | null = null
