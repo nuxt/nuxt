@@ -3,6 +3,7 @@ import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
+import { useNuxtApp } from '#app/nuxt'
 
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyIOClientPage = (componentLoader: Component) => {
@@ -11,7 +12,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
     setup (_, { attrs }) {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      let vnode = null
+      let vnode: string | null = null
       if (import.meta.client && nuxt.isHydrating) {
         vnode = createStaticVNode(getFragmentHTML(instance.vnode.el), 1)
       }
@@ -44,7 +45,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
     setup (_, { attrs }) {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      let vnode = null
+      let vnode: string | null = null
       if (import.meta.client && nuxt.isHydrating) {
         vnode = createStaticVNode(getFragmentHTML(instance.vnode.el), 1)
       }
