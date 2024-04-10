@@ -1,5 +1,5 @@
 import { createStaticVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { Component, Ref } from 'vue'
+import type { Component, Ref, VNode } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
@@ -12,7 +12,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
     setup (_, { attrs }) {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      let vnode: string | null = null
+      let vnode: VNode | null = null
       if (import.meta.client && nuxt.isHydrating) {
         vnode = createStaticVNode(getFragmentHTML(instance.vnode.el), 1)
       }
@@ -45,7 +45,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
     setup (_, { attrs }) {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      let vnode: string | null = null
+      let vnode: VNode | null = null
       if (import.meta.client && nuxt.isHydrating) {
         vnode = createStaticVNode(getFragmentHTML(instance.vnode.el), 1)
       }
