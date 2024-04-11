@@ -28,7 +28,7 @@
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
     "autoprefixer": "^10.4.19",
-    "css-loader": "^7.0.0",
+    "css-loader": "^7.1.0",
     "css-minimizer-webpack-plugin": "^6.0.0",
     "cssnano": "^6.1.2",
     "defu": "^6.1.4",
