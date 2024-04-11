@@ -8,6 +8,10 @@ links:
     size: xs
 ---
 
+::important
+This composable will be available in Nuxt v3.12
+::
+
 ## Description
 
 A composable which observes the page title changes and updates the announcer message accordingly. Used by [`<NuxtRouteAnnouncer>`](/docs/api/components/nuxt-route-announcer) and controllable.
