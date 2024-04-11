@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { getCurrentScope, onScopeDispose, ref } from 'vue'
-import { getActiveHead } from 'unhead'
+import { injectHead } from '@unhead/vue'
 import { useNuxtApp } from '#app'
 
 export enum Politeness {
@@ -28,7 +28,7 @@ export type RouteAnnouncer = {
 function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
   const message = ref('')
   const politeness = ref<PolitenessValue>(opts.politeness || Politeness.Polite)
-  const activeHead = getActiveHead()
+  const activeHead = injectHead()
 
   function set (messageValue: string = '', politenessSetting: PolitenessValue = Politeness.Polite) {
     message.value = messageValue
