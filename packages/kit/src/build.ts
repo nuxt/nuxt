@@ -42,7 +42,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
  */
 export function extendWebpackConfig (
   fn: ((config: WebpackConfig) => void),
-  options: ExtendWebpackConfigOptions = {}
+  options: ExtendWebpackConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 
@@ -74,7 +74,7 @@ export function extendWebpackConfig (
  */
 export function extendViteConfig (
   fn: ((config: ViteConfig) => void),
-  options: ExtendViteConfigOptions = {}
+  options: ExtendViteConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 

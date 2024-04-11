@@ -32,5 +32,5 @@ export default defineNuxtPlugin({
         setTimeout(getAppManifest, 1000)
       }
     })
-  }
+  },
 })

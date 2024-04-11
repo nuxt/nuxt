@@ -7,7 +7,7 @@ definePageMeta({
   middleware: async () => {
     await new Promise(resolve => setTimeout(resolve, 1))
     return navigateTo({ path: '/' }, { redirectCode: 307 })
-  }
+  },
 })
 if (import.meta.client) {
   console.log('running setup')

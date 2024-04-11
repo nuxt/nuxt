@@ -7,18 +7,18 @@ async function initTesting () {
   const dirs = await globby('*', {
     onlyDirectories: true,
     cwd: fileURLToPath(new URL('./fixtures', import.meta.url)),
-    absolute: true
+    absolute: true,
   })
 
   await Promise.all([
     // clear nuxt build files
     ...dirs.map(dir => fs.remove(`${dir}/.nuxt`)),
     // clear vite cache
-    ...dirs.map(dir => fs.remove(`${dir}/node_modules/.cache`), { force: true })
+    ...dirs.map(dir => fs.remove(`${dir}/node_modules/.cache`), { force: true }),
   ])
 
   await Promise.all(
-    dirs.map(dir => execa('pnpm', ['nuxi', 'prepare'], { cwd: dir }))
+    dirs.map(dir => execa('pnpm', ['nuxi', 'prepare'], { cwd: dir })),
   )
 }
 

@@ -8,7 +8,7 @@ export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-o
 export default defineComponent({
   name: 'ClientOnly',
   inheritAttrs: false,
-  // eslint-disable-next-line vue/require-prop-types
+
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
   setup (_, { slots, attrs }) {
     const mounted = ref(false)
@@ -28,7 +28,7 @@ export default defineComponent({
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
       return createElementBlock(fallbackTag, attrs, fallbackStr)
     }
-  }
+  },
 })
 
 const cache = new WeakMap()

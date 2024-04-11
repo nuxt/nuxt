@@ -6,34 +6,34 @@ export default defineComponent({
   props: {
     throttle: {
       type: Number,
-      default: 200
+      default: 200,
     },
     duration: {
       type: Number,
-      default: 2000
+      default: 2000,
     },
     height: {
       type: Number,
-      default: 3
+      default: 3,
     },
     color: {
       type: [String, Boolean],
-      default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)'
+      default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)',
     },
     estimatedProgress: {
       type: Function as unknown as () => (duration: number, elapsed: number) => number,
-      required: false
-    }
+      required: false,
+    },
   },
   setup (props, { slots, expose }) {
     const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
-      estimatedProgress: props.estimatedProgress
+      estimatedProgress: props.estimatedProgress,
     })
 
     expose({
-      progress, isLoading, start, finish, clear
+      progress, isLoading, start, finish, clear,
     })
 
     return () => h('div', {
@@ -52,8 +52,8 @@ export default defineComponent({
         transform: `scaleX(${progress.value}%)`,
         transformOrigin: 'left',
         transition: 'transform 0.1s, height 0.4s, opacity 0.4s',
-        zIndex: 999999
-      }
+        zIndex: 999999,
+      },
     }, slots)
-  }
+  },
 })

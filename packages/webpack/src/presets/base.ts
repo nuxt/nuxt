@@ -22,7 +22,7 @@ export function base (ctx: WebpackConfigContext) {
     baseConfig,
     basePlugins,
     baseResolve,
-    baseTranspile
+    baseTranspile,
   ])
 }
 
@@ -35,16 +35,16 @@ function baseConfig (ctx: WebpackConfigContext) {
     externals: [],
     optimization: {
       ...ctx.userConfig.optimization,
-      minimizer: []
+      minimizer: [],
     },
     experiments: {
-      ...ctx.userConfig.experiments
+      ...ctx.userConfig.experiments,
     },
     mode: ctx.isDev ? 'development' : 'production',
     cache: getCache(ctx),
     output: getOutput(ctx),
     stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
-    ...ctx.config
+    ...ctx.config,
   }
 }
 
@@ -71,8 +71,8 @@ function basePlugins (ctx: WebpackConfigContext) {
       new FriendlyErrorsWebpackPlugin({
         clearConsole: false,
         reporter: 'consola',
-        logLevel: 'ERROR' // TODO
-      })
+        logLevel: 'ERROR', // TODO
+      }),
     )
   }
 
@@ -81,7 +81,7 @@ function basePlugins (ctx: WebpackConfigContext) {
     const colors = {
       client: 'green',
       server: 'orange',
-      modern: 'blue'
+      modern: 'blue',
     }
     ctx.config.plugins.push(new WebpackBar({
       name: ctx.name,
@@ -108,9 +108,9 @@ function basePlugins (ctx: WebpackConfigContext) {
           },
           progress ({ statesArray }) {
             ctx.nuxt.callHook('webpack:progress', statesArray)
-          }
-        }
-      }
+          },
+        },
+      },
     }))
   }
 }
@@ -122,7 +122,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     '#build': ctx.options.buildDir,
     '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
     ...ctx.options.alias,
-    ...ctx.alias
+    ...ctx.alias,
   }
   if (ctx.isClient) {
     ctx.alias['#internal/nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
@@ -139,12 +139,12 @@ function baseResolve (ctx: WebpackConfigContext) {
     alias: ctx.alias,
     modules: webpackModulesDir,
     fullySpecified: false,
-    ...ctx.config.resolve
+    ...ctx.config.resolve,
   }
 
   ctx.config.resolveLoader = {
     modules: webpackModulesDir,
-    ...ctx.config.resolveLoader
+    ...ctx.config.resolveLoader,
   }
 }
 
@@ -153,7 +153,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
     /vue-demi/,
-    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/
+    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/,
   ]
 
   for (let pattern of ctx.options.build.transpile) {
@@ -198,7 +198,7 @@ function getOutput (ctx: WebpackConfigContext): Configuration['output'] {
     path: resolve(ctx.options.buildDir, 'dist', ctx.isServer ? 'server' : joinURL('client', ctx.options.app.buildAssetsDir)),
     filename: fileName(ctx, 'app'),
     chunkFilename: fileName(ctx, 'chunk'),
-    publicPath: joinURL(ctx.options.app.baseURL, ctx.options.app.buildAssetsDir)
+    publicPath: joinURL(ctx.options.app.baseURL, ctx.options.app.buildAssetsDir),
   }
 }
 
@@ -208,7 +208,7 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
     warn => warn.name === 'ModuleDependencyWarning' &&
       warn.message.includes('export \'default\'') &&
       warn.message.includes('nuxt_plugin_'),
-    ...(ctx.userConfig.warningIgnoreFilters || [])
+    ...(ctx.userConfig.warningIgnoreFilters || []),
   ]
 
   return warn => !filters.some(ignoreFilter => ignoreFilter(warn))
@@ -217,8 +217,8 @@ function getWarningIgnoreFilter (ctx: WebpackConfigContext): WarningFilter {
 function getEnv (ctx: WebpackConfigContext) {
   const _env: Record<string, string | boolean> = {
     'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
-    __NUXT_VERSION__: JSON.stringify(ctx.nuxt._version),
-    __NUXT_ASYNC_CONTEXT__: ctx.options.experimental.asyncContext,
+    '__NUXT_VERSION__': JSON.stringify(ctx.nuxt._version),
+    '__NUXT_ASYNC_CONTEXT__': ctx.options.experimental.asyncContext,
     'process.env.VUE_ENV': JSON.stringify(ctx.name),
     'process.dev': ctx.options.dev,
     'process.test': isTest,
@@ -229,7 +229,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.test': isTest,
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
-    'import.meta.server': ctx.isServer
+    'import.meta.server': ctx.isServer,
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {
@@ -243,5 +243,5 @@ function getEnv (ctx: WebpackConfigContext) {
 const statsMap: Record<NuxtOptions['logLevel'], Configuration['stats']> = {
   silent: 'none',
   info: 'normal',
-  verbose: 'verbose'
+  verbose: 'verbose',
 }

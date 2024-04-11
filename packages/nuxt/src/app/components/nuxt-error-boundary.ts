@@ -5,7 +5,7 @@ export default defineComponent({
   emits: {
     error (_error: unknown) {
       return true
-    }
+    },
   },
   setup (_props, { slots, emit }) {
     const error = ref<Error | null>(null)
@@ -25,5 +25,5 @@ export default defineComponent({
     }
 
     return () => error.value ? slots.error?.({ error, clearError }) : slots.default?.()
-  }
+  },
 })

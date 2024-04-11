@@ -25,8 +25,8 @@ export const __vitePreload = (...args) => ___vitePreload(...args).catch(err => {
         code: s.toString(),
         map: options.sourcemap
           ? s.generateMap({ hires: true })
-          : undefined
+          : undefined,
       }
-    }
+    },
   }
 }

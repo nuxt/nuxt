@@ -22,8 +22,8 @@ export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin 
 
       return {
         code: s.toString(),
-        map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
+        map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
       }
-    }
+    },
   }
 }

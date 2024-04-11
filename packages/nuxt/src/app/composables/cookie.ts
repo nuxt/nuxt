@@ -29,7 +29,7 @@ const CookieDefaults = {
   path: '/',
   watch: true,
   decode: val => destr(decodeURIComponent(val)),
-  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val))
+  encode: val => encodeURIComponent(typeof val === 'string' ? val : JSON.stringify(val)),
 } satisfies CookieOptions<any>
 
 const store = import.meta.client && cookieStore ? window.cookieStore : undefined
@@ -220,7 +220,7 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
 
         internalRef.value = newValue
         trigger()
-      }
+      },
     }
   })
 }

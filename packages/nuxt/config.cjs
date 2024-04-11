@@ -3,5 +3,5 @@ function defineNuxtConfig (config) {
 }
 
 module.exports = {
-  defineNuxtConfig
+  defineNuxtConfig,
 }

@@ -8,9 +8,9 @@ import { useRuntimeConfig } from '../src/app/nuxt'
 vi.mock('../src/app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     app: {
-      baseURL: '/'
-    }
-  }))
+      baseURL: '/',
+    },
+  })),
 }))
 
 // Mocks `h()`
@@ -19,7 +19,7 @@ vi.mock('vue', async () => {
   return {
     ...vue,
     resolveComponent: (name: string) => name,
-    h: (...args: any[]) => args
+    h: (...args: any[]) => args,
   }
 })
 
@@ -35,10 +35,10 @@ vi.mock('../src/app/composables/router', () => ({
         : {
             path: route.path || `/${route.name?.toString()}` || undefined,
             query: route.query || undefined,
-            hash: route.hash || undefined
+            hash: route.hash || undefined,
           }
-    }
-  })
+    },
+  }),
 }))
 
 // Helpers for test visibility
@@ -48,12 +48,12 @@ const INTERNAL = 'RouterLink'
 // Renders a `<NuxtLink />`
 const nuxtLink = (
   props: NuxtLinkProps = {},
-  nuxtLinkOptions: Partial<NuxtLinkOptions> = {}
+  nuxtLinkOptions: Partial<NuxtLinkOptions> = {},
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
   const [type, _props, slots] = (component.setup as unknown as (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) =>
-    () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
+  () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
 
   return { type, props: _props, slots }
 }
@@ -140,8 +140,8 @@ describe('nuxt-link:propsOrAttributes', () => {
         vi.mocked(useRuntimeConfig).withImplementation(() => {
           return {
             app: {
-              baseURL: '/base'
-            }
+              baseURL: '/base',
+            },
           } as any
         }, () => {
           expect(nuxtLink({ to: '/', target: '_blank' }).props.href).toBe('/base')
@@ -161,8 +161,8 @@ describe('nuxt-link:propsOrAttributes', () => {
         vi.mocked(useRuntimeConfig).withImplementation(() => {
           return {
             app: {
-              baseURL: '/base'
-            }
+              baseURL: '/base',
+            },
           } as any
         }, () => {
           expect(nuxtLink({ to: 'http://nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('http://nuxtjs.org/app/about')
