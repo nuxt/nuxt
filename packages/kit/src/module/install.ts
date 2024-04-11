@@ -1,5 +1,5 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import type { ModuleMeta, Nuxt, NuxtModule, NuxtConfig } from '@nuxt/schema'
+import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
@@ -12,10 +12,10 @@ import { logger } from '../logger'
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
 /** Installs a module on a Nuxt instance. */
-export async function installModule <
+export async function installModule<
   T extends string | NuxtModule,
-  Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>
->(moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
+  Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
+> (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs = new Set<string>()
