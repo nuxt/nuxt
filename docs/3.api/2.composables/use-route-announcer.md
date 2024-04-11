@@ -1,6 +1,8 @@
 ---
 title: 'useRouteAnnouncer'
 description: This composable observes the page title changes and updates the announcer message accordingly.
+navigation:
+  badge: New
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -9,7 +11,7 @@ links:
 ---
 
 ::important
-This composable will be available in Nuxt v3.12
+This composable is available since [Nuxt v3.12](/blog/v3-12).
 ::
 
 ## Description
