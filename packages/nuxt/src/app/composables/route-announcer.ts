@@ -69,6 +69,7 @@ function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
 
 /**
  * composable to handle the route announcer
+ * @since 3.12.0
  */
 export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): Omit<RouteAnnouncer, '_cleanup'> {
   const nuxtApp = useNuxtApp()
