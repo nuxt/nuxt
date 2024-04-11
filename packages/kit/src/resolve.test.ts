@@ -3,7 +3,7 @@ import { resolve } from 'pathe'
 import { loadNuxt } from './loader/nuxt'
 import {
   findPath,
-  resolvePath
+  resolvePath,
 } from './resolve'
 import { defineNuxtModule } from './module/define'
 import { addTemplate } from './template'
@@ -14,11 +14,11 @@ const nuxt = await loadNuxt({
       defineNuxtModule(() => {
         addTemplate({
           filename: 'my-template.mjs',
-          getContents: () => 'export const myUtil = () => \'hello\''
+          getContents: () => 'export const myUtil = () => \'hello\'',
         })
-      })
-    ]
-  }
+      }),
+    ],
+  },
 })
 
 describe('resolvePath', () => {
