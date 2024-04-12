@@ -263,7 +263,15 @@ export default defineNuxtModule({
       })
     })
 
-    addPlugin(resolve(runtimeDir, 'plugins/prerender'))
+    nuxt.hook('app:resolve', app => {
+      const nitro = useNitro()
+      if (nitro.options.prerender.crawlLinks) {
+        app.plugins.push({
+          src: resolve(runtimeDir, 'plugins/prerender.server'),
+          mode: 'server',
+        })
+      }
+    })
 
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
