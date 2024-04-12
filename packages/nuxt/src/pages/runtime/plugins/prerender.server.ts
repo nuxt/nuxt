@@ -8,17 +8,17 @@ import _routes from '#build/routes'
 // @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
 
-let hinted = false
+let routes: string[]
 
-export default defineNuxtPlugin(() => {
-  if (!import.meta.server || !import.meta.prerender || hinted || routerOptions.hashMode) {
+export default defineNuxtPlugin(async () => {
+  if (!import.meta.server || !import.meta.prerender || routerOptions.hashMode) {
     return
   }
+  if (routes && !routes.length) { return }
 
-  hinted = true
-
-  const routes = routerOptions.routes?.(_routes) ?? _routes
-  prerenderRoutes(Array.from(processRoutes(routes)))
+  routes ||= Array.from(processRoutes(await routerOptions.routes?.(_routes) ?? _routes))
+  const batch = routes.splice(0, 10)
+  prerenderRoutes(batch)
 })
 
 // Implementation
