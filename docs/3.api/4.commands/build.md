@@ -9,7 +9,7 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi build [--prerender] [--dotenv] [--log-level] [rootDir]
+npx nuxi build [--prerender] [--preset] [--dotenv] [--log-level] [rootDir]
 ```
 
 The `build` command creates a `.output` directory with all your application, server and dependencies ready for production.
