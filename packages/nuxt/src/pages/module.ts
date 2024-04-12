@@ -263,7 +263,7 @@ export default defineNuxtModule({
       })
     })
 
-    nuxt.hook('app:resolve', app => {
+    nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
       if (nitro.options.prerender.crawlLinks) {
         app.plugins.push({
