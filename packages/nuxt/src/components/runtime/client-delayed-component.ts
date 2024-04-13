@@ -1,4 +1,4 @@
-import { createStaticVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref, createVNode } from 'vue'
+import { createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Component, Ref, VNode } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
@@ -6,24 +6,22 @@ import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
 
 // todo find a better way to do it ?
-function elementIsVisibleInViewport(el: Element) {
-  const { top, left, bottom, right } = el.getBoundingClientRect();
-  const { innerHeight, innerWidth } = window;
+function elementIsVisibleInViewport (el: Element) {
+  const { top, left, bottom, right } = el.getBoundingClientRect()
+  const { innerHeight, innerWidth } = window
   return ((top > 0 && top < innerHeight) ||
     (bottom > 0 && bottom < innerHeight)) &&
     ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
 }
 
-
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyIOClientPage = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
-    setup(_, { attrs }) {
-
+    setup (_, { attrs }) {
       if (import.meta.server) {
         return h('div', {}, [
-          h(componentLoader, attrs)
+          h(componentLoader, attrs),
         ])
       }
 
@@ -65,7 +63,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
 export const createLazyNetworkClientPage = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
-    setup(_, { attrs }) {
+    setup (_, { attrs }) {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
       let vnode: VNode | null = null
