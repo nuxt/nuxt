@@ -20,7 +20,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return h('div', {}, [
+        return () => h('div', {}, [
           h(componentLoader, attrs),
         ])
       }
