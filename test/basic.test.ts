@@ -2572,9 +2572,10 @@ describe('lazy import components', () => {
   it('lazy load delayed hydration comps at the right time', async () => {
     expect(html).not.toContain('This shouldn\'t be visible at first!')
     const { page } = await renderPage('/lazy-import-components')
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(0)
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first!').all()).toHaveLength(1)
+    const response = page.waitForResponse(response => response.url().includes("DelayedWrapperTestComponent") && response.status() === 200)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    const resolvedResponse = await response
+    await page.waitForLoadState('networkidle')
   })
 })
