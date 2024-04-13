@@ -205,6 +205,13 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Experimental built-in delayed component hydration
+     * 
+     * This enables components to lazily hydrate when needed, improving performance for sites with components below-the-fold
+    */
+    componentLazyHydration: false,
+    
+    /**
      * Config schema support
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
