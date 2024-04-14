@@ -2576,6 +2576,5 @@ describe('lazy import components', () => {
     const response = page.waitForResponse(response => response.url().includes('DelayedWrapperTestComponent') && response.status() === 200)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await response
-    await page.waitForLoadState('networkidle')
   })
 })
