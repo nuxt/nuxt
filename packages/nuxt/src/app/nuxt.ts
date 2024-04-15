@@ -424,7 +424,7 @@ export function isNuxtPlugin (plugin: unknown) {
 }
 
 /**
- * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
+ * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxtApp`.
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */
