@@ -79,7 +79,7 @@ export default defineUntypedSchema({
    * ------| middleware/
    * ------| pages/
    * ------| plugins/
-   * ------| static/
+   * ------| public/
    * ------| store/
    * ------| server/
    * ------| app.config.ts
