@@ -50,7 +50,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
 
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
-    return nuxt._ignorePatterns.map(p => {
+    return nuxt._ignorePatterns.map((p) => {
       const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
       if (pattern[0] === '*') {
         return p
