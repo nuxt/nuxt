@@ -2,6 +2,9 @@
 useHead({
   title: 'First Page',
 })
+definePageMeta({
+  layout: 'with-route-announcer',
+})
 </script>
 
 <template>
