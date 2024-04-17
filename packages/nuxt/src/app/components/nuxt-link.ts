@@ -7,8 +7,7 @@ import type {
   VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps, UseLinkOptions } from '#vue-router'
-import { useLink } from '#vue-router'
+import type { useLink, RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, UseLinkOptions } from '#vue-router'
 import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
@@ -142,20 +141,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           : to.value
     ))
 
-    const {
-      isActive,
-      isExactActive,
-      route,
-    } = useLink({
+    const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
+    const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
+
+    const link = useBuiltinLink?.({
       ...linkOptions,
       to: to.value,
     })
 
     return {
       href,
-      isActive,
-      isExactActive,
-      route,
+      isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
+      isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
+      route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate () {
         await navigateTo(to.value, { replace: linkOptions.replace, external: linkOptions.external })
       },

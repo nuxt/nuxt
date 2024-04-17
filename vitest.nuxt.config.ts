@@ -13,7 +13,6 @@ export default defineVitestConfig({
     environmentOptions: {
       nuxt: {
         overrides: {
-          pages: true,
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
           },
