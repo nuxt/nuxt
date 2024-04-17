@@ -62,6 +62,10 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 })
 ```
 
+### Watch Params
+
+Look at the example below to see how you can use `useFetch` with [watch](/docs/getting-started/data-fetching#watch)
+
 ::warning
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
