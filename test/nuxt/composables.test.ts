@@ -18,6 +18,7 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -693,5 +694,38 @@ describe('callOnce', () => {
     await execute('first')
     await execute('second')
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('route announcer', () => {
+  it('should create a route announcer with default politeness', () => {
+    const announcer = useRouteAnnouncer()
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create a route announcer with provided politeness', () => {
+    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
   })
 })

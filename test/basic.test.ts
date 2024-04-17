@@ -1045,6 +1045,21 @@ describe('composables', () => {
     expect(pageErrors).toEqual([])
     await page.close()
   })
+  it('`useRouteAnnouncer` should change message on route change', async () => {
+    const { page } = await renderPage('/route-announcer')
+    expect(await page.getByRole('alert').textContent()).toContain('First Page')
+    await page.getByRole('link').click()
+    await page.getByText('Second page content').waitFor()
+    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
+    await page.close()
+  })
+  it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
+    const { page } = await renderPage('/route-announcer')
+    await page.getByRole('button').click()
+    await page.waitForFunction(() => document.title.includes('Dynamically set title'))
+    expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
+    await page.close()
+  })
 })
 
 describe('middlewares', () => {
