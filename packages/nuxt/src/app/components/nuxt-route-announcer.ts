@@ -21,12 +21,12 @@ export default defineComponent({
       set, polite, assertive, message, politeness,
     })
 
-    return () => h('div', {
+    return () => h('span', {
       class: 'nuxt-route-announcer',
       style: {
         position: 'absolute',
       },
-    }, h('div', {
+    }, h('span', {
       'role': 'alert',
       'aria-live': politeness.value,
       'aria-atomic': props.atomic,
