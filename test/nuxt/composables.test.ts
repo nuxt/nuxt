@@ -700,32 +700,32 @@ describe('callOnce', () => {
 describe('route announcer', () => {
   it('should create a route announcer with default politeness', () => {
     const announcer = useRouteAnnouncer()
-    expect(announcer.politeness.value).toBe(Politeness.Polite)
+    expect(announcer.politeness.value).toBe('polite')
   })
 
   it('should create a route announcer with provided politeness', () => {
-    const announcer = useRouteAnnouncer({ politeness: Politeness.Assertive })
-    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
   })
 
   it('should set message and politeness', () => {
     const announcer = useRouteAnnouncer()
-    announcer.set('Test message with politeness', Politeness.Assertive)
+    announcer.set('Test message with politeness', 'assertive')
     expect(announcer.message.value).toBe('Test message with politeness')
-    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+    expect(announcer.politeness.value).toBe('assertive')
   })
 
   it('should set message with polite politeness', () => {
     const announcer = useRouteAnnouncer()
     announcer.polite('Test message polite')
     expect(announcer.message.value).toBe('Test message polite')
-    expect(announcer.politeness.value).toBe(Politeness.Polite)
+    expect(announcer.politeness.value).toBe('polite')
   })
 
   it('should set message with assertive politeness', () => {
     const announcer = useRouteAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
-    expect(announcer.politeness.value).toBe(Politeness.Assertive)
+    expect(announcer.politeness.value).toBe('assertive')
   })
 })

@@ -1,6 +1,6 @@
 import { defineComponent, h } from 'vue'
-import type { PolitenessValue } from '#app/composables/route-announcer'
-import { Politeness, useRouteAnnouncer } from '#app/composables/route-announcer'
+import type { Politeness } from '#app/composables/route-announcer'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 export default defineComponent({
   name: 'NuxtRouteAnnouncer',
@@ -10,9 +10,8 @@ export default defineComponent({
       default: false,
     },
     politeness: {
-      type: String as () => PolitenessValue,
-      default: Politeness.Polite,
-      validator: (value: PolitenessValue) => Object.values(Politeness).includes(value as Politeness),
+      type: String as () => Politeness,
+      default: 'polite',
     },
   },
   setup (props, { slots, expose }) {

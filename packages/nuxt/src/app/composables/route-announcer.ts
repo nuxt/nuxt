@@ -3,23 +3,17 @@ import { getCurrentScope, onScopeDispose, ref } from 'vue'
 import { injectHead } from '@unhead/vue'
 import { useNuxtApp } from '#app'
 
-export enum Politeness {
-  Assertive = 'assertive',
-  Polite = 'polite',
-  Off = 'off',
-}
-
-export type PolitenessValue = `${Politeness}`
+export type Politeness = 'assertive' | 'polite' | 'off'
 
 export type NuxtRouteAnnouncerOpts = {
   /** @default 'polite' */
-  politeness?: PolitenessValue
+  politeness?: Politeness
 }
 
 export type RouteAnnouncer = {
   message: Ref<string>
-  politeness: Ref<PolitenessValue>
-  set: (message: string, politeness: PolitenessValue) => void
+  politeness: Ref<Politeness>
+  set: (message: string, politeness: Politeness) => void
   polite: (message: string) => void
   assertive: (message: string) => void
   _cleanup: () => void
@@ -27,20 +21,20 @@ export type RouteAnnouncer = {
 
 function createRouteAnnouncer (opts: NuxtRouteAnnouncerOpts = {}) {
   const message = ref('')
-  const politeness = ref<PolitenessValue>(opts.politeness || Politeness.Polite)
+  const politeness = ref<Politeness>(opts.politeness || 'polite')
   const activeHead = injectHead()
 
-  function set (messageValue: string = '', politenessSetting: PolitenessValue = Politeness.Polite) {
+  function set (messageValue: string = '', politenessSetting: Politeness = 'polite') {
     message.value = messageValue
     politeness.value = politenessSetting
   }
 
   function polite (message: string) {
-    return set(message, Politeness.Polite)
+    return set(message, 'polite')
   }
 
   function assertive (message: string) {
-    return set(message, Politeness.Assertive)
+    return set(message, 'assertive')
   }
 
   function _updateMessageWithPageHeading () {
@@ -77,7 +71,7 @@ export function useRouteAnnouncer (opts: Partial<NuxtRouteAnnouncerOpts> = {}): 
   // Initialise global route announcer if it doesn't exist already
   const announcer = nuxtApp._routeAnnouncer = nuxtApp._routeAnnouncer || createRouteAnnouncer(opts)
   if (opts.politeness !== announcer.politeness.value) {
-    announcer.politeness.value = opts.politeness || Politeness.Polite
+    announcer.politeness.value = opts.politeness || 'polite'
   }
   if (import.meta.client && getCurrentScope()) {
     nuxtApp._routeAnnouncerDeps = nuxtApp._routeAnnouncerDeps || 0
