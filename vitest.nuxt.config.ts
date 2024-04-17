@@ -1,11 +1,6 @@
 import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
-  resolve: {
-    alias: {
-      '#vue-router': 'vue-router',
-    },
-  },
   test: {
     dir: './test/nuxt',
     coverage: {
@@ -18,6 +13,7 @@ export default defineVitestConfig({
     environmentOptions: {
       nuxt: {
         overrides: {
+          pages: true,
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
           },

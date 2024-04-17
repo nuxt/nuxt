@@ -11,7 +11,6 @@ export default defineConfig({
       '#internal/nuxt/paths': resolve('./test/mocks/paths'),
       '#build/app.config.mjs': resolve('./test/mocks/app-config'),
       '#app': resolve('./packages/nuxt/dist/app'),
-      '#vue-router': 'vue-router',
     },
   },
   test: {
