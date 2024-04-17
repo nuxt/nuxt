@@ -11,7 +11,7 @@ links:
 ---
 
 ::important
-This composable is available since [Nuxt v3.12](/blog/v3-12).
+This composable will be available in Nuxt v3.12.
 ::
 
 ## Description
