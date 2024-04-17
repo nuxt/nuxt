@@ -28,6 +28,8 @@ export function isIgnored (pathname: string): boolean {
   return !!(relativePath && nuxt._ignore.ignores(relativePath))
 }
 
+const NEGATION_RE = /^(!?)(.*)$/
+
 export function resolveIgnorePatterns (relativePath?: string): string[] {
   const nuxt = tryUseNuxt()
 
@@ -48,7 +50,13 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
 
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
-    return nuxt._ignorePatterns.map(p => p[0] === '*' || (p[0] === '!' && p[1] === '*') ? p : relative(relativePath, resolve(nuxt.options.rootDir, p)))
+    return nuxt._ignorePatterns.map(p => {
+      const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
+      if (pattern[0] === '*') {
+        return p
+      }
+      return negation + relative(relativePath, resolve(nuxt.options.rootDir, pattern || p))
+    })
   }
 
   return nuxt._ignorePatterns
