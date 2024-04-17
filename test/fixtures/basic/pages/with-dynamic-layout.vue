@@ -1,6 +1,6 @@
 <script setup>
 definePageMeta({
-  middleware: 'sets-layout'
+  middleware: 'sets-layout',
 })
 </script>
 

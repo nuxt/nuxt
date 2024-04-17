@@ -16,7 +16,7 @@ export function addLayout (this: any, template: NuxtTemplate | string, name?: st
     const layout = (nuxt.options as any).layouts[layoutName]
     if (layout) {
       return logger.warn(
-        `Not overriding \`${layoutName}\` (provided by \`${layout}\`) with \`${src || filename}\`.`
+        `Not overriding \`${layoutName}\` (provided by \`${layout}\`) with \`${src || filename}\`.`,
       )
     }
     (nuxt.options as any).layouts[layoutName] = `./${filename}`
@@ -31,12 +31,12 @@ export function addLayout (this: any, template: NuxtTemplate | string, name?: st
     if (layoutName in app.layouts) {
       const relativePath = relative(nuxt.options.srcDir, app.layouts[layoutName].file)
       return logger.warn(
-        `Not overriding \`${layoutName}\` (provided by \`~/${relativePath}\`) with \`${src || filename}\`.`
+        `Not overriding \`${layoutName}\` (provided by \`~/${relativePath}\`) with \`${src || filename}\`.`,
       )
     }
     app.layouts[layoutName] = {
       file: join('#build', filename),
-      name: layoutName
+      name: layoutName,
     }
   })
 }

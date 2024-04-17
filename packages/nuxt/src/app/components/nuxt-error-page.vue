@@ -6,7 +6,7 @@
 import { defineAsyncComponent } from 'vue'
 
 const props = defineProps({
-  error: Object
+  error: Object,
 })
 
 // Deliberately prevent reactive update when error is cleared
@@ -26,7 +26,7 @@ const stacktrace = _error.stack
         text,
         internal: (line.includes('node_modules') && !line.includes('.cache')) ||
           line.includes('internal') ||
-          line.includes('new Promise')
+          line.includes('new Promise'),
       }
     }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
   : ''

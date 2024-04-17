@@ -23,7 +23,7 @@ export async function renderPage (path = '/') {
   page.on('console', (message) => {
     consoleLogs.push({
       type: message.type(),
-      text: message.text()
+      text: message.text(),
     })
   })
   page.on('pageerror', (err) => {
@@ -45,7 +45,7 @@ export async function renderPage (path = '/') {
     page,
     pageErrors,
     requests,
-    consoleLogs
+    consoleLogs,
   }
 }
 
@@ -77,7 +77,7 @@ export async function expectWithPolling (
   get: () => Promise<EqualityVal> | EqualityVal,
   expected: EqualityVal,
   retries = process.env.CI ? 100 : 30,
-  delay = process.env.CI ? 500 : 100
+  delay = process.env.CI ? 500 : 100,
 ) {
   let result: EqualityVal
   for (let i = retries; i >= 0; i--) {
@@ -100,7 +100,7 @@ const revivers = {
   Ref: (data: any) => ref(data),
   Reactive: (data: any) => reactive(data),
   // test fixture reviver only
-  BlinkingText: () => '<revivified-blink>'
+  BlinkingText: () => '<revivified-blink>',
 }
 export function parsePayload (payload: string) {
   return parse(payload || '', revivers)
@@ -111,7 +111,7 @@ export function parseData (html: string) {
     const _script = new Script(script)
     return {
       script: _script.runInContext(createContext({ window: {} })),
-      attrs: {}
+      attrs: {},
     }
   }
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
@@ -121,6 +121,6 @@ export function parseData (html: string) {
   }
   return {
     script: parsePayload(script || ''),
-    attrs: _attrs
+    attrs: _attrs,
   }
 }

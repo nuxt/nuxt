@@ -40,9 +40,9 @@ export default function virtual (vfs: Record<string, string>): Plugin {
       if (idNoPrefix in vfs) {
         return {
           code: vfs[idNoPrefix],
-          map: null
+          map: null,
         }
       }
-    }
+    },
   }
 }

@@ -16,6 +16,6 @@ function foo () {
 }
 
 defineExpose({
-  foo
+  foo,
 })
 </script>

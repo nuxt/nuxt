@@ -15,6 +15,6 @@ export function nuxt (ctx: WebpackConfigContext) {
     esbuild,
     pug,
     style,
-    vue
+    vue,
   ])
 }
