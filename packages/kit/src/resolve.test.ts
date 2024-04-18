@@ -29,6 +29,6 @@ describe('resolvePath', () => {
 
 describe('findPath', () => {
   it('should find paths correctly', async () => {
-    expect(await findPath(resolve(nuxt.options.buildDir, 'my-template.mjs'), { checkTemplates: true })).not.toBeNull()
+    expect(await findPath(resolve(nuxt.options.buildDir, 'my-template.mjs'), { virtual: true })).not.toBeNull()
   })
 })

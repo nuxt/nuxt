@@ -18,8 +18,11 @@ export interface ResolvePathOptions {
   /** The file extensions to try. Default is Nuxt configured extensions. */
   extensions?: string[]
 
-  /** Determine if the file is in Nuxt Templates. Default is false. */
-  checkTemplates?: boolean
+  /**
+   * Whether to resolve files that exist in the Nuxt VFS (for example, as a Nuxt template).
+   * @default false
+   */
+  virtual?: boolean
 }
 
 /**
@@ -34,7 +37,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
 
   // Fast return if the path exists
   if (isAbsolute(path)) {
-    if (opts?.checkTemplates && existsInVFS(path)) {
+    if (opts?.virtual && existsInVFS(path)) {
       return path
     }
     if (existsSync(path) && !(await isDirectory(path))) {
@@ -57,7 +60,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Check if resolvedPath is a file
-  if (opts?.checkTemplates && existsInVFS(path, nuxt)) {
+  if (opts?.virtual && existsInVFS(path, nuxt)) {
     return path
   }
 
@@ -73,7 +76,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   for (const ext of extensions) {
     // path.[ext]
     const pathWithExt = path + ext
-    if (opts?.checkTemplates && existsInVFS(pathWithExt, nuxt)) {
+    if (opts?.virtual && existsInVFS(pathWithExt, nuxt)) {
       return pathWithExt
     }
     if (existsSync(pathWithExt)) {
@@ -81,7 +84,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
     }
     // path/index.[ext]
     const pathWithIndex = join(path, 'index' + ext)
-    if (opts?.checkTemplates && existsInVFS(pathWithIndex, nuxt)) {
+    if (opts?.virtual && existsInVFS(pathWithIndex, nuxt)) {
       return pathWithIndex
     }
     if (_isDir && existsSync(pathWithIndex)) {
@@ -103,13 +106,13 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
  * Try to resolve first existing file in paths
  */
 export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
-  const nuxt = opts?.checkTemplates ? tryUseNuxt() : undefined
+  const nuxt = opts?.virtual ? tryUseNuxt() : undefined
 
   for (const path of toArray(paths)) {
     const rPath = await resolvePath(path, opts)
 
     // Check VFS
-    if (opts?.checkTemplates && existsInVFS(rPath, nuxt)) {
+    if (opts?.virtual && existsInVFS(rPath, nuxt)) {
       return rPath
     }
 
