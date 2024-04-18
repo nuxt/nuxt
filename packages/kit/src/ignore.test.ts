@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
-import { isIgnored, resolveGroupSyntax } from './ignore.js'
+import { isIgnored, resolveGroupSyntax, resolveIgnorePatterns } from './ignore.js'
 import * as context from './context.js'
 
 describe('isIgnored', () => {
@@ -9,21 +9,7 @@ describe('isIgnored', () => {
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
 
     expect(isIgnored('my-dir/my-file.ts')).toBe(true)
-    expect(mockNuxt._ignorePatterns?.includes('my-dir')).toBe(true)
-  })
-
-  it('should update _ignore', () => {
-    const mockNuxt = { options: { ignore: ['my-dir/*'] } as NuxtOptions } as Nuxt
-    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
-
-    expect(isIgnored('my-dir/my-file.ts')).toBe(true)
-    expect(isIgnored('my-dir/my-tracked-file.ts')).toBe(true)
-    expect(mockNuxt._ignorePatterns?.includes('my-dir/*')).toBe(true)
-    expect(mockNuxt._ignorePatterns?.includes('!my-dir/my-tracked-file.ts')).toBe(false)
-
-    mockNuxt.options.ignore.push('!my-dir/my-tracked-file.ts')
-    expect(isIgnored('my-dir/my-tracked-file.ts')).toBe(false)
-    expect(mockNuxt._ignorePatterns?.includes('!my-dir/my-tracked-file.ts')).toBe(true)
+    expect(resolveIgnorePatterns()?.includes('my-dir')).toBe(true)
   })
 })
 

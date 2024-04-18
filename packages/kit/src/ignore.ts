@@ -1,15 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
-import { tryUseNuxt, useNuxt } from './context'
-
-const cache = {
-  '.nuxtignore': undefined as undefined | string[],
-  'ignorePaths': undefined as undefined | string,
-  'groupSyntax': {} as Record<string, string[]>,
-}
-
-const checkIgnoreOutdated = (nuxt = useNuxt()) => cache.ignorePaths !== nuxt.options.ignore.join(',')
+import { tryUseNuxt } from './context'
 
 /**
  * Return a filter function to filter an array of paths
@@ -22,7 +14,7 @@ export function isIgnored (pathname: string): boolean {
     return false
   }
 
-  if (!nuxt._ignore || checkIgnoreOutdated(nuxt)) {
+  if (!nuxt._ignore) {
     nuxt._ignore = ignore(nuxt.options.ignoreOptions)
     nuxt._ignore.add(resolveIgnorePatterns())
   }
@@ -46,27 +38,17 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     return []
   }
 
-  if (!nuxt._ignorePatterns || checkIgnoreOutdated(nuxt)) {
-    cache.ignorePaths = nuxt.options.ignore.join(',')
-    nuxt._ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
+  const ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
 
-    if (cache['.nuxtignore']) {
-      nuxt._ignorePatterns.push(...cache['.nuxtignore'])
-    }
-
-    const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
-    if (!cache['.nuxtignore'] && existsSync(nuxtignoreFile)) {
-      const contents = readFileSync(nuxtignoreFile, 'utf-8')
-      const contentsArr = contents.trim().split(/\r?\n/)
-
-      cache['.nuxtignore'] = contentsArr
-      nuxt._ignorePatterns.push(...contentsArr)
-    }
+  const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
+  if (existsSync(nuxtignoreFile)) {
+    const contents = readFileSync(nuxtignoreFile, 'utf-8')
+    ignorePatterns.push(...contents.trim().split(/\r?\n/))
   }
 
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
-    return nuxt._ignorePatterns.map((p) => {
+    return ignorePatterns.map((p) => {
       const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
       if (pattern[0] === '*') {
         return p
@@ -75,7 +57,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     })
   }
 
-  return nuxt._ignorePatterns
+  return ignorePatterns
 }
 
 /**
@@ -89,17 +71,10 @@ export function resolveGroupSyntax (group: string): string[] {
   let groups = [group]
   while (groups.some(group => group.includes('{'))) {
     groups = groups.flatMap((group) => {
-      if (cache.groupSyntax[group]) {
-        return cache.groupSyntax[group]
-      }
-
       const [head, ...tail] = group.split('{')
       if (tail.length) {
         const [body, ...rest] = tail.join('{').split('}')
-        const resolvedGroup = body.split(',').map(part => `${head}${part}${rest.join('')}`)
-        cache.groupSyntax[group] = resolvedGroup
-
-        return resolvedGroup
+        return body.split(',').map(part => `${head}${part}${rest.join('')}`)
       }
 
       return group
