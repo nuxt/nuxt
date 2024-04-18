@@ -41,11 +41,11 @@
     "nuxt": "workspace:*",
     "vite": "5.2.9",
     "vue": "3.4.23",
-    "magic-string": "^0.30.9"
+    "magic-string": "^0.30.10"
   },
   "devDependencies": {
     "@eslint/js": "9.0.0",
-    "@nuxt/eslint-config": "0.3.7",
+    "@nuxt/eslint-config": "0.3.8",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.12.1",
     "@nuxt/webpack-builder": "workspace:*",
@@ -89,7 +89,7 @@
     "vue-router": "4.3.1",
     "vue-tsc": "2.0.13"
   },
-  "packageManager": "pnpm@9.0.1",
+  "packageManager": "pnpm@9.0.2",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
