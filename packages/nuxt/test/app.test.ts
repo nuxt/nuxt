@@ -87,7 +87,7 @@ describe('resolveApp', () => {
       'middleware/other.ts',
       'layouts/index.vue',
       'layouts/default/index.vue',
-      'layouts/other.vue'
+      'layouts/other.vue',
     ])
     // Middleware are not resolved in a nested manner
     expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
@@ -130,8 +130,8 @@ describe('resolveApp', () => {
       'plugins/object-named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
     // TODO: support overriding named plugins
@@ -167,8 +167,8 @@ describe('resolveApp', () => {
       'middleware/named.ts',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
     // TODO: fix this
@@ -196,8 +196,8 @@ describe('resolveApp', () => {
       'layouts/default.vue',
       {
         name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })'
-      }
+        contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
+      },
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {
@@ -222,7 +222,7 @@ describe('resolveApp', () => {
       'layouts/thing/thing/thing.vue',
       'layouts/desktop-base/base.vue',
       'layouts/some.vue',
-      'layouts/SomeOther/layout.ts'
+      'layouts/SomeOther/layout.ts',
     ])
     expect(app.layouts).toMatchInlineSnapshot(`
       {

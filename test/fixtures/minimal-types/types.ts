@@ -17,13 +17,13 @@ describe('auto-imports', () => {
     defineNuxtConfig({
       modules: [],
       // @ts-expect-error Should show error on unknown properties
-      unknownProp: ''
+      unknownProp: '',
     })
     defineNuxtConfig({
       routeRules: {
         // Should accept any string
-        '/named': { appMiddleware: 'named' }
-      }
+        '/named': { appMiddleware: 'named' },
+      },
     })
   })
   it('core composables', () => {
@@ -31,7 +31,7 @@ describe('auto-imports', () => {
     useHead({
       script: [],
       // @ts-expect-error Should show error on unknown properties
-      unknown: []
+      unknown: [],
     })
   })
 })

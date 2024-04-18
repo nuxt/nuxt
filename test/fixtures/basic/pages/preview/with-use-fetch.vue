@@ -3,8 +3,8 @@ const { enabled, state } = usePreviewMode()
 
 const { data } = await useFetch('/api/preview', {
   query: {
-    apiKey: state.token || undefined
-  }
+    apiKey: state.token || undefined,
+  },
 })
 </script>
 

@@ -40,9 +40,9 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

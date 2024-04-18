@@ -8,7 +8,7 @@ interface DynamicBasePluginOptions {
 
 const defaults: DynamicBasePluginOptions = {
   globalPublicPath: '__webpack_public_path__',
-  sourcemap: true
+  sourcemap: true,
 }
 
 const ENTRY_RE = /import ["']#build\/css["'];/
@@ -26,8 +26,8 @@ export const DynamicBasePlugin = createUnplugin((options: DynamicBasePluginOptio
         code: s.toString(),
         map: options.sourcemap
           ? s.generateMap({ hires: true })
-          : undefined
+          : undefined,
       }
-    }
+    },
   }
 })

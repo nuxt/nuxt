@@ -1,4 +1,3 @@
-/* eslint-disable no-use-before-define */
 import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
@@ -18,12 +17,13 @@ import type { NuxtError } from '../app/composables/error'
 import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
+import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
 import type { NuxtAppLiterals } from '#app'
 
 const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server
+  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
 })
 
 type HookResult = Promise<void> | void
@@ -151,6 +151,11 @@ interface _NuxtApp {
   /** @internal */
   _payloadRevivers: Record<string, (data: any) => any>
 
+  /** @internal */
+  _routeAnnouncer?: RouteAnnouncer
+  /** @internal */
+  _routeAnnouncerDeps?: number
+
   // Nuxt injections
   $config: RuntimeConfig
 
@@ -236,17 +241,17 @@ export function createNuxtApp (options: CreateOptions) {
     globalName: 'nuxt',
     versions: {
       get nuxt () { return __NUXT_VERSION__ },
-      get vue () { return nuxtApp.vueApp.version }
+      get vue () { return nuxtApp.vueApp.version },
     },
     payload: reactive({
       data: {},
       state: {},
       once: new Set<string>(),
       _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true })
+      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
     }),
     static: {
-      data: {}
+      data: {},
     },
     runWithContext: (fn: any) => nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn)),
     isHydrating: import.meta.client,
@@ -271,7 +276,7 @@ export function createNuxtApp (options: CreateOptions) {
     _asyncDataPromises: {},
     _asyncData: {},
     _payloadRevivers: {},
-    ...options
+    ...options,
   } as any as NuxtApp
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
@@ -333,7 +338,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // Expose runtime config
-  const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : reactive(nuxtApp.payload.config!)
+  const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
 
   return nuxtApp
@@ -420,7 +425,7 @@ export function isNuxtPlugin (plugin: unknown) {
 }
 
 /**
- * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxt`.
+ * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxtApp`.
  * @param nuxt A Nuxt instance
  * @param setup The function to call
  */

@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { LogObject } from 'consola'
 import { consola } from 'consola'
-import devalue from '@nuxt/devalue'
+import { stringify } from 'devalue'
 import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
 import { getContext } from 'unctx'
@@ -36,7 +36,7 @@ export default (nitroApp: NitroApp) => {
       // Pass along filename to allow the client to display more info about where log comes from
       filename: extractFilenameFromStack(stack),
       // Clean up file names in stack trace
-      stack: normalizeFilenames(stack)
+      stack: normalizeFilenames(stack),
     }
 
     // retain log to be include in the next render
@@ -53,7 +53,11 @@ export default (nitroApp: NitroApp) => {
   nitroApp.hooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    htmlContext.bodyAppend.unshift(`<script>window.__NUXT_LOGS__ = ${devalue(asyncContext.use().logs)}</script>`)
+    try {
+      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__">${stringify(ctx.logs, ctx.event.context._payloadReducers)}</script>`)
+    } catch (e) {
+      console.warn('[nuxt] Failed to stringify dev server logs. You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.', e)
+    }
   })
 }
 
@@ -80,7 +84,7 @@ function onConsoleLog (callback: (log: LogObject) => void) {
   consola.addReporter({
     log (logObj) {
       callback(logObj)
-    }
+    },
   })
   consola.wrapConsole()
 }

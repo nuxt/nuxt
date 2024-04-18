@@ -10,8 +10,8 @@ export default defineComponent({
   props: {
     context: {
       type: Object as () => { name: string, props?: Record<string, any> },
-      required: true
-    }
+      required: true,
+    },
   },
   setup (props) {
     const component = islandComponents[props.context.name] as ReturnType<typeof defineAsyncComponent>
@@ -19,7 +19,7 @@ export default defineComponent({
     if (!component) {
       throw createError({
         statusCode: 404,
-        statusMessage: `Island component not found: ${props.context.name}`
+        statusMessage: `Island component not found: ${props.context.name}`,
       })
     }
 
@@ -28,5 +28,5 @@ export default defineComponent({
     })
 
     return () => createVNode(component || 'span', { ...props.context.props, 'data-island-uid': '' })
-  }
+  },
 })

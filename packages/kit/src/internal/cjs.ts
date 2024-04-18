@@ -66,14 +66,14 @@ export function getModulePaths (paths?: string[] | string) {
     global.__NUXT_PREPATHS__,
     paths || [],
     process.cwd(),
-    global.__NUXT_PATHS__
+    global.__NUXT_PATHS__,
   ).filter(Boolean) as string[]
 }
 
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: getModulePaths(opts.paths)
+    paths: getModulePaths(opts.paths),
   }))
 }
 

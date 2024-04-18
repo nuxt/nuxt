@@ -38,7 +38,7 @@ export const defineNuxtComponent: typeof defineComponent =
     if (!setup && !options.asyncData && !options.head) {
       return {
         [NuxtComponentIndicator]: true,
-        ...options
+        ...options,
       }
     }
 
@@ -66,6 +66,6 @@ export const defineNuxtComponent: typeof defineComponent =
           .finally(() => {
             promises.length = 0
           })
-      }
+      },
     } as DefineComponent
   }

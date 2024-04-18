@@ -5,7 +5,7 @@ const testWithInlineVue = process.env.EXTERNAL_VUE === 'false'
 export default defineNuxtConfig({
   pages: false,
   experimental: {
-    externalVue: !testWithInlineVue
+    externalVue: !testWithInlineVue,
   },
   $production: {
     vite: {
@@ -14,16 +14,16 @@ export default defineNuxtConfig({
           rollupOptions: {
             output: {
               chunkFileNames: '_nuxt/[name].js',
-              entryFileNames: '_nuxt/[name].js'
-            }
-          }
-        }
-      }
-    }
+              entryFileNames: '_nuxt/[name].js',
+            },
+          },
+        },
+      },
+    },
   },
   buildDir: testWithInlineVue ? '.nuxt-inline' : '.nuxt',
   nitro: {
-    output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) }
+    output: { dir: fileURLToPath(new URL(testWithInlineVue ? './.output-inline' : './.output', import.meta.url)) },
   },
-  sourcemap: false
+  sourcemap: false,
 })

@@ -13,23 +13,23 @@ export default defineBuildConfig({
       'core',
       'head',
       'components',
-      'pages'
-    ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm', ext: 'js' } as BuildEntry))
+      'pages',
+    ].map(name => ({ input: `src/${name}/runtime/`, outDir: `dist/${name}/runtime`, format: 'esm', ext: 'js' } as BuildEntry)),
   ],
   hooks: {
     'mkdist:entry:options' (_ctx, _entry, mkdistOptions) {
       mkdistOptions.addRelativeDeclarationExtensions = true
-    }
+    },
   },
   dependencies: [
     'nuxi',
     'vue-router',
-    'ofetch'
+    'ofetch',
   ],
   externals: [
     'nuxt',
     'nuxt/schema',
     '@vue/shared',
-    '@unhead/vue'
-  ]
+    '@unhead/vue',
+  ],
 })

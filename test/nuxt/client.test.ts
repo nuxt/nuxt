@@ -9,15 +9,15 @@ const Client = defineComponent({
   setup () {
     const attrs = useAttrs()
     return () => h('div', {}, toDisplayString(attrs))
-  }
+  },
 })
 
 describe('createClient attribute inheritance', () => {
   it('should retrieve attributes with useAttrs()', async () => {
     const wrapper = await mountSuspended(createClientOnly(Client as ComponentOptions), {
       attrs: {
-        id: 'client'
-      }
+        id: 'client',
+      },
     })
 
     expect(wrapper.html()).toMatchInlineSnapshot(`

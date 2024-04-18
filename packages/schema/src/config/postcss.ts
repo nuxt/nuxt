@@ -26,8 +26,8 @@ export default defineUntypedSchema({
             return false
           }
           return {}
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  },
 })
