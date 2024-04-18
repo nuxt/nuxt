@@ -140,7 +140,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       ? router.resolve(to.value)?.href ?? null
       : (to.value && !props.external && !isAbsoluteUrl.value)
           ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-          : to.value
+          : to.value || null
     ))
 
     const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
