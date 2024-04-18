@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'pathe'
 import { loadNuxt } from './loader/nuxt'
-import {
-  findPath,
-  resolvePath,
-} from './resolve'
+import { findPath, resolvePath } from './resolve'
 import { defineNuxtModule } from './module/define'
 import { addTemplate } from './template'
 
