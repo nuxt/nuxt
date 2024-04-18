@@ -135,12 +135,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
 
     // Resolves `to` value if it's a route location object
-    // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
     const href = computed(() => (typeof to.value === 'object'
       ? router.resolve(to.value)?.href ?? null
       : (to.value && !props.external && !isAbsoluteUrl.value)
           ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-          : to.value || null
+          : to.value
     ))
 
     const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
@@ -388,7 +387,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           }
 
           return slots.default({
-            href: href.value,
+            // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+            href: href.value || null,
             navigate,
             get route () {
               if (!href.value) { return undefined }
