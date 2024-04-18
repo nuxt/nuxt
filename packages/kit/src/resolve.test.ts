@@ -23,7 +23,7 @@ const nuxt = await loadNuxt({
 
 describe('resolvePath', () => {
   it('should resolve paths correctly', async () => {
-    expect(await resolvePath('.nuxt/app.config')).toBe(resolve(nuxt.options.buildDir, 'app.config'))
+    expect(await resolvePath('.nuxt/app.config')).toBe(resolve(nuxt.options.buildDir, 'app.config.mjs'))
   })
 })
 
