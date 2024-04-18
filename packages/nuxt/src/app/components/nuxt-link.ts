@@ -138,8 +138,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const href = computed(() => (typeof to.value === 'object'
       ? router.resolve(to.value)?.href ?? null
       : (to.value && !props.external && !isAbsoluteUrl.value)
-          ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-          : to.value
+        ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
+        : to.value
     ))
 
     const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
@@ -387,8 +387,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           }
 
           return slots.default({
-            // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-            href: href.value || null,
+            href: href.value,
             navigate,
             get route () {
               if (!href.value) { return undefined }
@@ -415,7 +414,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           })
         }
 
-        return h('a', { ref: el, href: href.value, rel, target }, slots.default?.())
+        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+        return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
       }
     },
   }) as unknown as DefineComponent<NuxtLinkProps>
