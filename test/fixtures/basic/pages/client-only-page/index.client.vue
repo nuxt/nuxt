@@ -10,7 +10,7 @@ const state = useState('test', () => {
 
   return {
     hasAccessToWindow,
-    isServer: import.meta.server
+    isServer: import.meta.server,
   }
 })
 

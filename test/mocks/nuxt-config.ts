@@ -1,3 +1,3 @@
 export const nuxtLinkDefaults = {
-  componentName: 'NuxtLink'
+  componentName: 'NuxtLink',
 }

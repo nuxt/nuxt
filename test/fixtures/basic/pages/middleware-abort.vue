@@ -3,9 +3,9 @@ definePageMeta({
   middleware: () => {
     if (import.meta.server || useNuxtApp().isHydrating) { return }
     return abortNavigation({
-      fatal: true
+      fatal: true,
     })
-  }
+  },
 })
 const router = useRouter()
 onNuxtReady(() => router.push({ path: '/middleware-abort', force: true }))

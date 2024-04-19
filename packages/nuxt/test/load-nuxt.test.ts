@@ -16,9 +16,9 @@ describe('loadNuxt', () => {
         hooks: {
           ready () {
             hookRan = true
-          }
-        }
-      }
+          },
+        },
+      },
     })
     await nuxt.close()
     expect(hookRan).toBe(true)

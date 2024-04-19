@@ -4,7 +4,7 @@
 import { setResponseHeader } from 'h3'
 
 definePageMeta({
-  value: 'added in pages:extend'
+  value: 'added in pages:extend',
 })
 
 if (import.meta.server) {

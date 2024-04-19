@@ -18,7 +18,7 @@ export function server (ctx: WebpackConfigContext) {
     node,
     serverStandalone,
     serverPreset,
-    serverPlugins
+    serverPlugins,
   ])
 }
 
@@ -34,7 +34,7 @@ function serverPreset (ctx: WebpackConfigContext) {
 
   ctx.config.optimization = {
     splitChunks: false,
-    minimize: false
+    minimize: false,
   }
 }
 
@@ -51,9 +51,12 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '~',
     '@/',
     '#',
-    ...ctx.options.build.transpile
+    ...ctx.options.build.transpile,
   ]
   const external = ['#internal/nitro']
+  if (!ctx.nuxt.options.dev) {
+    external.push('#internal/nuxt/paths')
+  }
 
   if (!Array.isArray(ctx.config.externals)) { return }
   ctx.config.externals.push(({ request }, cb) => {
@@ -84,14 +87,14 @@ function serverPlugins (ctx: WebpackConfigContext) {
   if (ctx.userConfig.serverURLPolyfill) {
     ctx.config.plugins.push(new webpack.ProvidePlugin({
       URL: [ctx.userConfig.serverURLPolyfill, 'URL'],
-      URLSearchParams: [ctx.userConfig.serverURLPolyfill, 'URLSearchParams']
+      URLSearchParams: [ctx.userConfig.serverURLPolyfill, 'URLSearchParams'],
     }))
   }
 
   // Add type-checking
   if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
     ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-      logger
+      logger,
     }))
   }
 }

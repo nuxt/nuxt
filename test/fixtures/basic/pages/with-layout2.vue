@@ -1,6 +1,6 @@
 <script setup>
 definePageMeta({
-  layout: 'custom2'
+  layout: 'custom2',
 })
 
 if (import.meta.client) {

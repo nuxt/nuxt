@@ -45,7 +45,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []
@@ -60,7 +60,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-    vfs: nuxt.vfs
+    vfs: nuxt.vfs,
   })
 
   return uniqueBy(allRoutes, 'path')
@@ -84,7 +84,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       name: '',
       path: '',
       file: file.absolutePath,
-      children: []
+      children: [],
     }
 
     // Array where routes should be added, useful when adding child routes
@@ -175,7 +175,7 @@ async function getRouteMeta (contents: string, absolutePath: string): Promise<Pa
   const ast = parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',
-    ranges: true
+    ranges: true,
   }) as unknown as Program
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
   if (!pageMetaAST) {
@@ -287,7 +287,7 @@ function parseSegment (segment: string) {
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
               : SegmentTokenType.catchall,
-      value: buffer
+      value: buffer,
     })
 
     buffer = ''
@@ -425,7 +425,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         name: serializeRouteValue(page.name),
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
-        redirect: serializeRouteValue(page.redirect)
+        redirect: serializeRouteValue(page.redirect),
       }
 
       for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
@@ -444,8 +444,15 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+
+      if (page._sync) {
+        metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
+      }
+
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file, { interopDefault: true })
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
@@ -456,8 +463,8 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
           : page.mode === 'client'
-            ? `() => createClientPage(${genDynamicImport(file, { interopDefault: true })})`
-            : genDynamicImport(file, { interopDefault: true })
+            ? `() => createClientPage(${pageImport})`
+            : pageImport,
       }
 
       if (page.mode === 'server') {
@@ -517,7 +524,7 @@ async function createClientPage(loader) {
       }
 
       return metaRoute
-    }))
+    })),
   }
 }
 
@@ -531,4 +538,11 @@ export function pathToNitroGlob (path: string) {
   }
 
   return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
+}
+
+export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
+  return [
+    joinURL(parent, page.path),
+    ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
+  ]
 }

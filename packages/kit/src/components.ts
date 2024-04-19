@@ -48,7 +48,8 @@ export async function addComponent (opts: AddComponentOptions) {
     mode: 'all',
     shortPath: opts.filePath,
     priority: 0,
-    ...opts
+    meta: {},
+    ...opts,
   }
 
   nuxt.hook('components:extend', (components: Component[]) => {

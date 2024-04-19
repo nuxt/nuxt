@@ -15,8 +15,8 @@ export default defineNuxtComponent({
   async asyncData () {
     await nextTick()
     return {
-      hello: await $fetch('/api/hello')
+      hello: await $fetch('/api/hello'),
     }
-  }
+  },
 })
 </script>

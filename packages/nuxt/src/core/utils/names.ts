@@ -13,7 +13,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
 }
 
 export function hasSuffix (path: string, suffix: string) {
-  return basename(path).replace(extname(path), '').endsWith(suffix)
+  return basename(path, extname(path)).endsWith(suffix)
 }
 
 export function resolveComponentNameSegments (fileName: string, prefixParts: string[]) {

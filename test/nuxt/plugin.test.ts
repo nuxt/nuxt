@@ -7,7 +7,7 @@ vi.mock('#app', async (original) => {
     ...(await original<typeof import('#app')>()),
     applyPlugin: vi.fn(async (_nuxtApp, plugin) => {
       await plugin()
-    })
+    }),
   }
 })
 
@@ -20,7 +20,7 @@ function pluginFactory (name: string, dependsOn?: string[], sequence: string[], 
       await new Promise(resolve => setTimeout(resolve, 10))
       sequence.push(`end ${name}`)
     },
-    parallel
+    parallel,
   })
 }
 
@@ -30,7 +30,7 @@ describe('plugin dependsOn', () => {
     const sequence: string[] = []
     const plugins = [
       pluginFactory('A', undefined, sequence),
-      pluginFactory('B', ['A'], sequence)
+      pluginFactory('B', ['A'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -39,7 +39,7 @@ describe('plugin dependsOn', () => {
       'start A',
       'end A',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -49,7 +49,7 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence),
       pluginFactory('B', ['A'], sequence),
-      pluginFactory('C', ['A', 'B'], sequence)
+      pluginFactory('C', ['A', 'B'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -60,7 +60,7 @@ describe('plugin dependsOn', () => {
       'start B',
       'end B',
       'start C',
-      'end C'
+      'end C',
     ])
   })
 
@@ -77,8 +77,8 @@ describe('plugin dependsOn', () => {
           await new Promise(resolve => setTimeout(resolve, 5))
           sequence.push('end C')
         },
-        parallel: true
-      })
+        parallel: true,
+      }),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -89,7 +89,7 @@ describe('plugin dependsOn', () => {
       'end C',
       'end A',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -104,9 +104,9 @@ describe('plugin dependsOn', () => {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 50))
           sequence.push('end C')
-        }
+        },
       }),
-      pluginFactory('B', ['A'], sequence)
+      pluginFactory('B', ['A'], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -117,7 +117,7 @@ describe('plugin dependsOn', () => {
       'end A',
       'end C',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -129,7 +129,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', undefined, sequence, true),
       pluginFactory('E', ['B', 'C'], sequence, false),
       pluginFactory('B', undefined, sequence),
-      pluginFactory('D', ['C'], sequence, false)
+      pluginFactory('D', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -143,7 +143,7 @@ describe('plugin dependsOn', () => {
       'start E',
       'start D',
       'end E',
-      'end D'
+      'end D',
     ])
   })
 
@@ -155,7 +155,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('B', ['A', 'C'], sequence),
       pluginFactory('C', undefined, sequence, false),
       pluginFactory('D', undefined, sequence, false),
-      pluginFactory('E', ['C'], sequence, false)
+      pluginFactory('E', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -169,7 +169,7 @@ describe('plugin dependsOn', () => {
       'end B',
       'end D',
       'start E',
-      'end E'
+      'end E',
     ])
   })
 
@@ -181,7 +181,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('C', ['B', 'A'], sequence),
       pluginFactory('B', undefined, sequence, false),
       pluginFactory('E', ['D'], sequence, false),
-      pluginFactory('D', ['C'], sequence, false)
+      pluginFactory('D', ['C'], sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -195,7 +195,7 @@ describe('plugin dependsOn', () => {
       'start D',
       'end D',
       'start E',
-      'end E'
+      'end E',
     ])
   })
 
@@ -206,7 +206,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', ['B'], sequence),
       pluginFactory('B', ['C'], sequence),
       pluginFactory('C', ['D'], sequence),
-      pluginFactory('D', [], sequence)
+      pluginFactory('D', [], sequence),
     ]
 
     await applyPlugins(nuxtApp, plugins)
@@ -218,7 +218,7 @@ describe('plugin dependsOn', () => {
       'start B',
       'end B',
       'start A',
-      'end A'
+      'end A',
     ])
   })
 
@@ -231,7 +231,7 @@ describe('plugin dependsOn', () => {
         sequence.push('start C')
         sequence.push('end C')
       }),
-      pluginFactory('B', undefined, sequence, false)
+      pluginFactory('B', undefined, sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -241,7 +241,7 @@ describe('plugin dependsOn', () => {
       'end C',
       'start B',
       'end A',
-      'end B'
+      'end B',
     ])
   })
 
@@ -251,7 +251,7 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence, false),
       pluginFactory('B', ['A', 'C'], sequence, false),
-      pluginFactory('C', undefined, sequence, false)
+      pluginFactory('C', undefined, sequence, false),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -261,7 +261,7 @@ describe('plugin dependsOn', () => {
       'start C',
       'end C',
       'start B',
-      'end B'
+      'end B',
     ])
   })
 
@@ -270,7 +270,7 @@ describe('plugin dependsOn', () => {
     const sequence: string[] = []
     const plugins = [
       pluginFactory('B', undefined, sequence),
-      pluginFactory('C', ['A', 'B'], sequence)
+      pluginFactory('C', ['A', 'B'], sequence),
     ]
     await applyPlugins(nuxtApp, plugins)
 
@@ -278,7 +278,7 @@ describe('plugin dependsOn', () => {
       'start B',
       'end B',
       'start C',
-      'end C'
+      'end C',
     ])
   })
 })

@@ -25,6 +25,6 @@ export function devStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
       // When dev `<style>` is injected, remove the `<link>` styles from manifest
       const selectors = [joinURL(options.buildAssetsURL, moduleId), joinURL(options.buildAssetsURL, '@fs', moduleId)]
       return code + selectors.map(selector => `\ndocument.querySelectorAll(\`link[href="${selector}"]\`).forEach(i=>i.remove())`).join('')
-    }
+    },
   }
 }
