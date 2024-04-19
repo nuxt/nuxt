@@ -76,11 +76,11 @@ const { data } = await useFetch('/api/preview', {
 </template>
 ```
 
-Now you can generate your site and serve it
+Now you can generate your site and serve it:
 
 ```bash [Terminal]
 npx nuxi generate
-npx nuxi start
+npx nuxi preview
 ```
 
 Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once:
