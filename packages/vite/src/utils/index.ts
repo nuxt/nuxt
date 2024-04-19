@@ -1,11 +1,13 @@
 import { hash } from 'ohash'
 
+export { isVue } from '../../../nuxt/src/core/utils/plugins'
+
 export function uniq<T> (arr: T[]): T[] {
   return Array.from(new Set(arr))
 }
 
 // Copied from vue-bundle-renderer utils
-const IS_CSS_RE = /\.(?:css|scss|sass|postcss|less|stylus|styl)(\?[^.]+)?$/
+const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(\?[^.]+)?$/
 
 export function isCSS (file: string) {
   return IS_CSS_RE.test(file)

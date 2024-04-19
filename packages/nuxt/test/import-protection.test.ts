@@ -22,7 +22,7 @@ const testsToTriggerOn = [
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
   ['some-nuxt-module', 'components/Component.vue', true],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
-  ['src/server/api/test.ts', 'components/Component.vue', true]
+  ['src/server/api/test.ts', 'components/Component.vue', true],
 ] as const
 
 describe('import protection', () => {
@@ -44,9 +44,9 @@ const transformWithImportProtection = (id: string, importer: string) => {
       options: {
         modules: ['some-nuxt-module'],
         srcDir: '/root/src/',
-        serverDir: '/root/src/server'
-      } satisfies Partial<NuxtOptions> as NuxtOptions
-    })
+        serverDir: '/root/src/server',
+      } satisfies Partial<NuxtOptions> as NuxtOptions,
+    }),
   })
 
   return (plugin as any).resolveId(id, importer)

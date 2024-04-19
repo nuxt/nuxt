@@ -3,7 +3,7 @@ const islandProps = ref({
   bool: true,
   number: 100,
   str: 'helo world',
-  obj: { json: 'works' }
+  obj: { json: 'works' },
 })
 
 const showIslandSlot = ref(false)
@@ -20,10 +20,14 @@ const count = ref(0)
         name="PureComponent"
         :props="islandProps"
       />
-      <NuxtIsland
-        name="PureComponent"
-        :props="islandProps"
-      />
+      <div id="wrapped-client-only">
+        <ClientOnly>
+          <NuxtIsland
+            name="PureComponent"
+            :props="islandProps"
+          />
+        </ClientOnly>
+      </div>
     </div>
     <button
       id="increase-pure-component"
@@ -106,6 +110,7 @@ const count = ref(0)
       </div>
     </div>
     <ServerWithClient />
+    <ServerWithNestedClient />
   </div>
 </template>
 

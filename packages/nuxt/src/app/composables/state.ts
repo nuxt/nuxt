@@ -10,9 +10,9 @@ const useStateKeyPrefix = '$s'
  * @param key a unique key ensuring that data fetching can be properly de-duplicated across requests
  * @param init a function that provides initial value for the state when it's not initiated
  */
-export function useState <T> (key?: string, init?: (() => T | Ref<T>)): Ref<T>
-export function useState <T> (init?: (() => T | Ref<T>)): Ref<T>
-export function useState <T> (...args: any): Ref<T> {
+export function useState<T> (key?: string, init?: (() => T | Ref<T>)): Ref<T>
+export function useState<T> (init?: (() => T | Ref<T>)): Ref<T>
+export function useState<T> (...args: any): Ref<T> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [_key, init] = args as [string, (() => T | Ref<T>)]
@@ -24,13 +24,13 @@ export function useState <T> (...args: any): Ref<T> {
   }
   const key = useStateKeyPrefix + _key
 
-  const nuxt = useNuxtApp()
-  const state = toRef(nuxt.payload.state, key)
+  const nuxtApp = useNuxtApp()
+  const state = toRef(nuxtApp.payload.state, key)
   if (state.value === undefined && init) {
     const initialValue = init()
     if (isRef(initialValue)) {
       // vue will unwrap the ref for us
-      nuxt.payload.state[key] = initialValue
+      nuxtApp.payload.state[key] = initialValue
       return initialValue as Ref<T>
     }
     state.value = initialValue
@@ -40,7 +40,7 @@ export function useState <T> (...args: any): Ref<T> {
 
 /** @since 3.6.0 */
 export function clearNuxtState (
-  keys?: string | string[] | ((key: string) => boolean)
+  keys?: string | string[] | ((key: string) => boolean),
 ): void {
   const nuxtApp = useNuxtApp()
   const _allKeys = Object.keys(nuxtApp.payload.state)

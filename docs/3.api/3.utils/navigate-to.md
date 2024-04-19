@@ -8,11 +8,13 @@ links:
     size: xs
 ---
 
-::callout
+::note
 `navigateTo` is available on both server side and client side.
 ::
 
 ## Usage
+
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
 
 ### Within a Vue Component
 
@@ -68,7 +70,7 @@ await navigateTo('https://nuxt.com', {
 ```vue
 <script setup lang="ts">
 // will open 'https://nuxt.com' in a new tab
-await navigateTo('https://nuxt.com', {  
+await navigateTo('https://nuxt.com', {
   open: {
     target: '_blank',
     windowFeatures: {
@@ -93,7 +95,7 @@ interface NavigateToOptions {
 }
 ```
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
 ::
 
@@ -182,13 +184,13 @@ An object accepting the following properties:
     - `top` or `screenY` (optional)
 
       **Type**: `number`
-  
+
     - `noopener` (optional)
 
       **Type**: `boolean`
 
     - `noreferrer` (optional)
-  
+
       **Type**: `boolean`
 
     Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.

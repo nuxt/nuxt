@@ -21,8 +21,8 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     nuxtConfig: {
       builder: isWebpack ? 'webpack' : 'vite',
       buildDir: process.env.NITRO_BUILD_DIR,
-      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
-    }
+      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
+    },
   })
 
   describe('hmr', () => {
@@ -48,7 +48,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => page.title(),
-        'Basic fixture HMR'
+        'Basic fixture HMR',
       )
 
       // content HMR
@@ -72,7 +72,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     it('should detect new routes', async () => {
       await expectWithPolling(
         () => $fetch('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
-        true
+        true,
       )
 
       // write new page route
@@ -81,14 +81,14 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
-        true
+        true,
       )
     })
 
     it('should hot reload route rules', async () => {
       await expectWithPolling(
         () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'added in routeRules').catch(() => null),
-        true
+        true,
       )
 
       // write new page route
@@ -97,7 +97,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev').catch(() => null),
-        true
+        true,
       )
     })
 
@@ -114,7 +114,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       const triggerHmr = async () => fsp.writeFile(
         componentPath,
         (await fsp.readFile(componentPath, 'utf8'))
-          .replace(`ref(${hmrId++})`, `ref(${hmrId})`)
+          .replace(`ref(${hmrId++})`, `ref(${hmrId})`),
       )
 
       // initial state

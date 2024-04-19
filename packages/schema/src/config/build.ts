@@ -10,16 +10,16 @@ export default defineUntypedSchema({
    * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val, get) => {
+    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
       const map: Record<string, string> = {
         vite: '@nuxt/vite-builder',
-        webpack: '@nuxt/webpack-builder'
+        webpack: '@nuxt/webpack-builder',
       }
       return map[val] || val || (await get('vite') === false ? map.webpack : map.vite)
-    }
+    },
   },
 
   /**
@@ -27,15 +27,15 @@ export default defineUntypedSchema({
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
-    $resolve: async (val, get) => {
+    $resolve: async (val: boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' } | undefined, get) => {
       if (typeof val === 'boolean') {
         return { server: val, client: val }
       }
       return defu(val, {
         server: true,
-        client: await get('dev')
+        client: await get('dev'),
       })
-    }
+    },
   },
 
   /**
@@ -46,12 +46,12 @@ export default defineUntypedSchema({
    * @type {'silent' | 'info' | 'verbose'}
    */
   logLevel: {
-    $resolve: (val) => {
+    $resolve: (val: string | undefined) => {
       if (val && !['silent', 'info', 'verbose'].includes(val)) {
         consola.warn(`Invalid \`logLevel\` option: \`${val}\`. Must be one of: \`silent\`, \`info\`, \`verbose\`.`)
       }
       return val ?? (isTest ? 'silent' : 'info')
-    }
+    },
   },
 
   /**
@@ -71,7 +71,7 @@ export default defineUntypedSchema({
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
     transpile: {
-      $resolve: val => [].concat(val).filter(Boolean)
+      $resolve: (val: Array<string | RegExp | ((ctx: { isClient?: boolean, isServer?: boolean, isDev: boolean }) => string | RegExp | false)> | undefined) => (val || []).filter(Boolean),
     },
 
     /**
@@ -109,15 +109,15 @@ export default defineUntypedSchema({
      * @type {boolean | { enabled?: boolean } & ((0 extends 1 & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options ? {} : typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options) | typeof import('rollup-plugin-visualizer').PluginVisualizerOptions)}
      */
     analyze: {
-      $resolve: async (val, get) => {
-        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')])
+      $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
+        const [rootDir, analyzeDir] = await Promise.all([get('rootDir'), get('analyzeDir')]) as [string, string]
         return defu(typeof val === 'boolean' ? { enabled: val } : val, {
           template: 'treemap',
           projectRoot: rootDir,
-          filename: join(analyzeDir, '{name}.html')
+          filename: join(analyzeDir, '{name}.html'),
         })
-      }
-    }
+      },
+    },
   },
 
   /**
@@ -135,15 +135,17 @@ export default defineUntypedSchema({
      * @type {Array<{ name: string, source?: string | RegExp, argumentLength: number }>}
      */
     keyedComposables: {
-      $resolve: val => [
+      $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
+        { name: 'useId', argumentLength: 1 },
         { name: 'callOnce', argumentLength: 2 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
         { name: 'useAsyncData', argumentLength: 3 },
         { name: 'useLazyAsyncData', argumentLength: 3 },
-        { name: 'useLazyFetch', argumentLength: 3 }
-      ].concat(val).filter(Boolean)
+        { name: 'useLazyFetch', argumentLength: 3 },
+        ...val || [],
+      ].filter(Boolean),
     },
 
     /**
@@ -163,22 +165,22 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  vue: ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
-                  '#app': ['definePayloadReviver', 'definePageMeta']
-                }
-          )
+                  'vue': ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  '#app': ['definePayloadReviver', 'definePageMeta'],
+                },
+          ),
         },
         client: {
           $resolve: async (val, get) => defu(val || {},
             await get('dev')
               ? {}
               : {
-                  vue: ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-                  '#app': ['definePayloadReducer', 'definePageMeta']
-                }
-          )
-        }
-      }
+                  'vue': ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
+                  '#app': ['definePayloadReducer', 'definePageMeta'],
+                },
+          ),
+        },
+      },
     },
 
     /**
@@ -191,8 +193,8 @@ export default defineUntypedSchema({
       objectDefinitions: {
         defineNuxtComponent: ['asyncData', 'setup'],
         defineNuxtPlugin: ['setup'],
-        definePageMeta: ['middleware', 'validate']
-      }
-    }
-  }
+        definePageMeta: ['middleware', 'validate'],
+      },
+    },
+  },
 })

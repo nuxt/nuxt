@@ -19,14 +19,14 @@ export default defineUntypedSchema({
     typescriptBundlerResolution: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.typescriptBundlerResolution)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then(e => e?.typescriptBundlerResolution)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution')
+        const setting = await get('typescript.tsConfig.compilerOptions.moduleResolution') as string | undefined
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
         return true
-      }
+      },
     },
   },
   /**
@@ -43,13 +43,28 @@ export default defineUntypedSchema({
     inlineStyles: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        val = val ?? await get('experimental').then((e: Record<string, any>) => e?.inlineSSRStyles)
+        val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
         // Enabled by default for vite prod with ssr
         return val ?? true
-      }
+      },
+    },
+
+    /**
+     * Stream server logs to the client as you are developing. These logs can
+     * be handled in the `dev:ssr-logs` hook.
+     *
+     * If set to `silent`, the logs will not be printed to the browser console.
+     * @type {boolean | 'silent'}
+     */
+    devLogs: {
+      async $resolve (val, get) {
+        if (val !== undefined) { return val }
+        const [isDev, isTest] = await Promise.all([get('dev'), get('test')])
+        return isDev && !isTest
+      },
     },
 
     /**
@@ -59,8 +74,8 @@ export default defineUntypedSchema({
     noScripts: {
       async $resolve (val, get) {
         // TODO: remove in v3.10
-        return val ?? await get('experimental').then((e: Record<string, any>) => e?.noScripts) ?? false
-      }
+        return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
+      },
     },
   },
   experimental: {
@@ -68,7 +83,7 @@ export default defineUntypedSchema({
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {
-      $resolve: val => val ?? false
+      $resolve: val => val ?? false,
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
@@ -106,7 +121,7 @@ export default defineUntypedSchema({
           return 'automatic'
         }
         return val ?? 'automatic'
-      }
+      },
     },
 
     /**
@@ -171,8 +186,11 @@ export default defineUntypedSchema({
     writeEarlyHints: false,
 
     /**
-     * Experimental component islands support with <NuxtIsland> and .island.vue files.
-     * @type {true | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean }> | false}
+     * Experimental component islands support with `<NuxtIsland>` and `.island.vue` files.
+     *
+     * By default it is set to 'auto', which means it will be enabled only when there are islands,
+     * server components or server pages in your app.
+     * @type {true | 'auto' | 'local' | 'local+remote' | Partial<{ remoteIsland: boolean, selectiveClient: boolean | 'deep' }> | false}
      */
     componentIslands: {
       $resolve: (val) => {
@@ -182,8 +200,8 @@ export default defineUntypedSchema({
         if (val === 'local') {
           return true
         }
-        return val ?? false
-      }
+        return val ?? 'auto'
+      },
     },
 
     /**
@@ -213,11 +231,6 @@ export default defineUntypedSchema({
      * Use app manifests to respect route rules on client-side.
      */
     appManifest: true,
-
-    // This is enabled when `experimental.payloadExtraction` is set to `true`.
-    // appManifest: {
-    //   $resolve: (val, get) => val ?? get('experimental.payloadExtraction')
-    // },
 
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
@@ -262,12 +275,18 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     *
+     * This only works with static or strings/arrays rather than variables or conditional assignment.
+     *
+     * https://github.com/nuxt/nuxt/issues/24770
+     */
+    scanPageMeta: false,
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
      * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
      * data in different pages.
-     *
-     * Note that by default Nuxt will render pages concurrently, meaning this does not guarantee that data will
-     * not be fetched more than once.
      *
      * It is particularly important when enabling this feature to make sure that any unique key of your data
      * is always resolvable to the same data. For example, if you are using `useAsyncData` to fetch
@@ -285,8 +304,15 @@ export default defineUntypedSchema({
      * const { data } = await useAsyncData(route.params.slug, async () => {
      *   return await $fetch(`/api/my-page/${route.params.slug}`)
      * })
+     * ```
      */
     sharedPrerenderData: false,
+
+    /**
+     * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
+     * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
+     */
+    cookieStore: false,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
@@ -297,16 +323,16 @@ export default defineUntypedSchema({
     defaults: {
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
-        componentName: 'NuxtLink'
+        componentName: 'NuxtLink',
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true
+        deep: true,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
-      useFetch: {}
+      useFetch: {},
     },
 
     /**
@@ -323,5 +349,5 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
-  }
+  },
 })

@@ -86,6 +86,9 @@
     <NuxtLink to="/big-page-1">
       to big 1
     </NuxtLink>
+    <NuxtLink to="/server-page">
+      to server page
+    </NuxtLink>
   </div>
 </template>
 
@@ -109,12 +112,12 @@ definePageMeta({
   alias: '/some-alias',
   other: ref('test'),
   imported: importedValue,
-  something: importedRE.test('an imported regex')
+  something: importedRE.test('an imported regex'),
 })
 
 // reset title template example
 useHead({
-  titleTemplate: ''
+  titleTemplate: '',
 })
 
 const foo = useFoo()

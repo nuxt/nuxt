@@ -22,13 +22,13 @@ export function esbuild (ctx: WebpackConfigContext) {
         return !ctx.transpile.some(module => module.test(file))
       },
       resolve: {
-        fullySpecified: false
+        fullySpecified: false,
       },
       options: {
         target,
         ...ctx.nuxt.options.webpack.loaders.esbuild,
-        loader: 'ts'
-      }
+        loader: 'ts',
+      },
     },
     {
       test: /\.m?[jt]sx$/,
@@ -36,8 +36,8 @@ export function esbuild (ctx: WebpackConfigContext) {
       options: {
         target,
         ...ctx.nuxt.options.webpack.loaders.esbuild,
-        loader: 'tsx'
-      }
-    }
+        loader: 'tsx',
+      },
+    },
   )
 }

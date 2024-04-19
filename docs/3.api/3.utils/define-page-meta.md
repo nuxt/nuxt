@@ -33,6 +33,7 @@ interface PageMeta {
   alias?: string | string[]
   pageTransition?: boolean | TransitionProps
   layoutTransition?: boolean | TransitionProps
+  viewTransition?: boolean | 'always'
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
@@ -104,6 +105,14 @@ interface PageMeta {
 
     Set name of the transition to apply for current page. You can also set this value to `false` to disable the page transition.
 
+  **`viewTransition`**
+
+  - **Type**: `boolean | 'always'`
+
+    **Experimental feature, only available when [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental)**</br>
+    Enable/disable View Transitions for the current page.
+    If set to true, Nuxt will not apply the transition if the users browser matches `prefers-reduced-motion: reduce` (recommended). If set to `always`, Nuxt will always apply the transition.
+
   **`redirect`**
 
   - **Type**: [`RouteRecordRedirectOption`](https://router.vuejs.org/guide/essentials/redirect-and-alias.html#redirect-and-alias)
@@ -120,7 +129,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/guide/going-further/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 
@@ -191,7 +200,7 @@ The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug]
 
 To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
 
-```vue [pages/[postId]-[postSlug].vue]
+```vue [pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
   path: '/:postId(\\d+)-:postSlug' 

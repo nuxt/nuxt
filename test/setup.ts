@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { dirname, join } from 'node:path'
+import { dirname, join } from 'pathe'
 import fs from 'fs-extra'
 
 const dir = dirname(fileURLToPath(import.meta.url))
@@ -11,7 +11,7 @@ export async function setup () {
     await fs.remove(tempDir)
   }
   await fs.copy(fixtureDir, tempDir, {
-    filter: src => !src.includes('.cache')
+    filter: src => !src.includes('.cache'),
   })
 }
 

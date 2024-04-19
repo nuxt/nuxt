@@ -23,7 +23,7 @@ const orderPresets = {
   },
   autoprefixerAndCssnanoLast (names: string[]) {
     return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
-  }
+  },
 }
 
 export const getPostcssConfig = (nuxt: Nuxt) => {
@@ -47,18 +47,18 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       'postcss-import': {
         resolve: createResolver({
           alias: { ...nuxt.options.alias },
-          modules: nuxt.options.modulesDir
-        })
+          modules: nuxt.options.modulesDir,
+        }),
       },
 
       /**
        * https://github.com/postcss/postcss-url
        */
-      'postcss-url': {}
+      'postcss-url': {},
     },
     sourceMap: nuxt.options.webpack.cssSourceMap,
     // Array, String or Function
-    order: 'autoprefixerAndCssnanoLast'
+    order: 'autoprefixerAndCssnanoLast',
   })
 
   // Keep the order of default plugins
@@ -76,6 +76,6 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
   return {
     sourceMap: nuxt.options.webpack.cssSourceMap,
     ...nuxt.options.webpack.postcss,
-    postcssOptions
+    postcssOptions,
   }
 }

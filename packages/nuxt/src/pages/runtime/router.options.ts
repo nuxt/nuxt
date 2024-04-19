@@ -1,5 +1,4 @@
 import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
-import { nextTick } from 'vue'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
@@ -36,6 +35,8 @@ export default <RouterConfig> {
       if (to.hash) {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
       }
+      // The route isn't changing so keep current scroll position
+      return false
     }
 
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
@@ -43,21 +44,21 @@ export default <RouterConfig> {
     const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
-        await nextTick()
+        await new Promise(resolve => setTimeout(resolve, 0))
         if (to.hash) {
           position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
         }
         resolve(position)
       })
     })
-  }
+  },
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {
   try {
     const elem = document.querySelector(selector)
     if (elem) {
-      return parseFloat(getComputedStyle(elem).scrollMarginTop)
+      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop)
     }
   } catch {
     // ignore any errors parsing scrollMarginTop

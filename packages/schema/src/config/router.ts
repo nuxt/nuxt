@@ -25,7 +25,7 @@ export default defineUntypedSchema({
        * @type {typeof import('../src/types/router').RouterConfigSerializable['scrollBehaviorType']}
        * @default 'auto'
        */
-      scrollBehaviorType: 'auto'
-    }
-  }
+      scrollBehaviorType: 'auto',
+    },
+  },
 })

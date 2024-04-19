@@ -8,11 +8,11 @@ export default defineUntypedSchema({
    */
   nitro: {
     routeRules: {
-      $resolve: async (val, get) => ({
-        ...await get('routeRules'),
-        ...val
-      })
-    }
+      $resolve: async (val: Record<string, any> | undefined, get) => ({
+        ...await get('routeRules') as Record<string, any>,
+        ...val,
+      }),
+    },
   },
 
   /**
@@ -49,5 +49,5 @@ export default defineUntypedSchema({
    * @see https://nitro.unjs.io/guide/routing
    * @type {typeof import('nitropack')['NitroDevEventHandler'][]}
    */
-  devServerHandlers: []
+  devServerHandlers: [],
 })
