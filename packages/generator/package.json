@@ -15,7 +15,7 @@
     "chalk": "^4.1.2",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
-    "devalue": "^2.0.1",
+    "devalue": "^5.0.0",
     "fs-extra": "^10.1.0",
     "html-minifier": "^4.0.0",
     "node-html-parser": "^6.1.12",
