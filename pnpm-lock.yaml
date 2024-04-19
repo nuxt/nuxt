@@ -264,14 +264,14 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 20.12.7
       '@unhead/dom':
-        specifier: ^1.9.5
-        version: 1.9.5
+        specifier: ^1.9.7
+        version: 1.9.7
       '@unhead/ssr':
-        specifier: ^1.9.5
-        version: 1.9.5
+        specifier: ^1.9.7
+        version: 1.9.7
       '@unhead/vue':
-        specifier: ^1.9.5
-        version: 1.9.5(vue@3.4.23(typescript@5.4.5))
+        specifier: ^1.9.7
+        version: 1.9.7(vue@3.4.23(typescript@5.4.5))
       '@vue/shared':
         specifier: ^3.4.23
         version: 3.4.23
@@ -482,8 +482,8 @@ importers:
         specifier: 8.0.8
         version: 8.0.8
       '@unhead/schema':
-        specifier: 1.9.5
-        version: 1.9.5
+        specifier: 1.9.7
+        version: 1.9.7
       '@vitejs/plugin-vue':
         specifier: 5.0.4
         version: 5.0.4(vite@5.2.9(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))(vue@3.4.23(typescript@5.4.5))
@@ -877,7 +877,7 @@ importers:
         version: 3.4.23(typescript@5.4.5)
       vue-router:
         specifier: latest
-        version: 4.3.1(vue@3.4.23(typescript@5.4.5))
+        version: 4.3.2(vue@3.4.23(typescript@5.4.5))
 
   test/fixtures/minimal:
     dependencies:
@@ -2390,20 +2390,20 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/dom@1.9.5':
-    resolution: {integrity: sha512-t+JvAFX+Qkx+IEZFBQV5rZoj/6SKHd3tqXqxpsER588DWxU0J6dzvAVJrof/vRTMjJ1lM6B8SxKhZppSZ7H2iQ==}
+  '@unhead/dom@1.9.7':
+    resolution: {integrity: sha512-suZVi8apZCNEMKuasGboBB3njJJm+gd8G0NA89geVozJ0bz40FvLyLEJZ9LirbzpujmhgHhsUSvlq4QyslRqdQ==}
 
-  '@unhead/schema@1.9.5':
-    resolution: {integrity: sha512-n0upGPplBn5Y/4PIqKp7/tzOhz7USos5lFjf8UKvMNoOIitEa+avP2u7gRQ9yOhHmOAH9AXDeX7mhSvhO+Tqxw==}
+  '@unhead/schema@1.9.7':
+    resolution: {integrity: sha512-naQGY1gQqq8DmQCxVTOeeXIqaRwbqnLEgvQl12zPEDviYxmg7TCbmKyN9uT4ZarQbJ2WYT2UtYvdSrmTXcwlBw==}
 
-  '@unhead/shared@1.9.5':
-    resolution: {integrity: sha512-WN2T8th1wYn4A1bb6o8Z59wNVMPkD6YdNQIlmSbEP9zuSYyVEh3BIxqSdxWM/xl8atN8fNwVW06knaF51VmKXA==}
+  '@unhead/shared@1.9.7':
+    resolution: {integrity: sha512-srji+qaBkkGOTdtTmFxt3AebFYcpt1qQHeQva7X3dSm5nZJDoKj35BJJTZfBSRCjgvkTtsdVUT14f9p9/4BCMA==}
 
-  '@unhead/ssr@1.9.5':
-    resolution: {integrity: sha512-l9fqAKM3odX/8Ac8l7v7Nlot5f+e6ktINT/PjBuXf+pHHmPz7+eKWzNL95KVB/o0uxmJr2BVijDwCPYrgmjfjQ==}
+  '@unhead/ssr@1.9.7':
+    resolution: {integrity: sha512-3K0J9biCypPzJ5o4AgjhKboX2Sas4COj54wfT+ghSfyQ05Lp5IlWxw0FrXuxKPk54ObovskUwIf8eCa9ke0Vuw==}
 
-  '@unhead/vue@1.9.5':
-    resolution: {integrity: sha512-L3yDB6Mwm92gJNPqZApMwfGluS0agR0HIizkXCKKz3WkZ+ef/negMwTNGpTtd+uqh/+hSyG73Bl4yySuPsD4nA==}
+  '@unhead/vue@1.9.7':
+    resolution: {integrity: sha512-c5pcNvi3FwMfqd+lfD3XUyRKPDv/AVPrep84CFXaqB7ebb+2OQTgtxBiCoRsa8+DtdhYI50lYJ/yeVdfLI9XUw==}
     peerDependencies:
       vue: 3.4.23
 
@@ -6520,8 +6520,8 @@ packages:
   unenv@1.9.0:
     resolution: {integrity: sha512-QKnFNznRxmbOF1hDgzpqrlIf6NC5sbZ2OJ+5Wl3OX8uM+LUJXbj4TXvLJCtwbPTmbMHCLIz6JLKNinNsMShK9g==}
 
-  unhead@1.9.5:
-    resolution: {integrity: sha512-eBKDPO9IMltRze9mHNYIVdosjlqoNFbwJRbykGT/7z/S5uYR2QRCXmIhEsJT4crffy6KQyB5ywLPqjRPx0s57A==}
+  unhead@1.9.7:
+    resolution: {integrity: sha512-Kv7aU5l41qiq36t9qMks8Pgsj7adaTBm9aDS6USlmodTXioeqlJ5vEu9DI+8ZZPwRlmof3aDlo1kubyaXdSNmQ==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -6913,11 +6913,6 @@ packages:
 
   vue-resize@2.0.0-alpha.1:
     resolution: {integrity: sha512-7+iqOueLU7uc9NrMfrzbG8hwMqchfVfSzpVlCMeJQe4pyibqyoifDNbKTZvwxZKDvGkB+PdFeKvnGZMoEb8esg==}
-    peerDependencies:
-      vue: 3.4.23
-
-  vue-router@4.3.1:
-    resolution: {integrity: sha512-D0h3oyP6vp28BOvxv2hVpiqFTjTJizCf1BuMmCibc8UW0Ll/N80SWqDd/hqPMaZfzW1j+s2s+aTRyBIP9ElzOw==}
     peerDependencies:
       vue: 3.4.23
 
@@ -8716,31 +8711,31 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/dom@1.9.5':
+  '@unhead/dom@1.9.7':
     dependencies:
-      '@unhead/schema': 1.9.5
-      '@unhead/shared': 1.9.5
+      '@unhead/schema': 1.9.7
+      '@unhead/shared': 1.9.7
 
-  '@unhead/schema@1.9.5':
+  '@unhead/schema@1.9.7':
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
 
-  '@unhead/shared@1.9.5':
+  '@unhead/shared@1.9.7':
     dependencies:
-      '@unhead/schema': 1.9.5
+      '@unhead/schema': 1.9.7
 
-  '@unhead/ssr@1.9.5':
+  '@unhead/ssr@1.9.7':
     dependencies:
-      '@unhead/schema': 1.9.5
-      '@unhead/shared': 1.9.5
+      '@unhead/schema': 1.9.7
+      '@unhead/shared': 1.9.7
 
-  '@unhead/vue@1.9.5(vue@3.4.23(typescript@5.4.5))':
+  '@unhead/vue@1.9.7(vue@3.4.23(typescript@5.4.5))':
     dependencies:
-      '@unhead/schema': 1.9.5
-      '@unhead/shared': 1.9.5
+      '@unhead/schema': 1.9.7
+      '@unhead/shared': 1.9.7
       hookable: 5.5.3
-      unhead: 1.9.5
+      unhead: 1.9.7
       vue: 3.4.23(typescript@5.4.5)
 
   '@unocss/astro@0.58.6(rollup@4.14.3)(vite@5.2.9(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))':
@@ -13736,11 +13731,11 @@ snapshots:
       node-fetch-native: 1.6.4
       pathe: 1.1.2
 
-  unhead@1.9.5:
+  unhead@1.9.7:
     dependencies:
-      '@unhead/dom': 1.9.5
-      '@unhead/schema': 1.9.5
-      '@unhead/shared': 1.9.5
+      '@unhead/dom': 1.9.7
+      '@unhead/schema': 1.9.7
+      '@unhead/shared': 1.9.7
       hookable: 5.5.3
 
   unicode-emoji-modifier-base@1.0.0: {}
@@ -14231,11 +14226,6 @@ snapshots:
 
   vue-resize@2.0.0-alpha.1(vue@3.4.23(typescript@5.4.5)):
     dependencies:
-      vue: 3.4.23(typescript@5.4.5)
-
-  vue-router@4.3.1(vue@3.4.23(typescript@5.4.5)):
-    dependencies:
-      '@vue/devtools-api': 6.5.1
       vue: 3.4.23(typescript@5.4.5)
 
   vue-router@4.3.2(vue@3.4.23(typescript@5.4.5)):

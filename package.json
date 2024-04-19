@@ -89,7 +89,7 @@
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.13"
   },
-  "packageManager": "pnpm@9.0.2",
+  "packageManager": "pnpm@9.0.4",
   "engines": {
     "node": "^14.18.0 || >=16.10.0"
   },
