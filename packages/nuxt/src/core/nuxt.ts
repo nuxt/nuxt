@@ -454,11 +454,11 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
-  await nuxt.callHook('modules:done')
-
   // (Re)initialise ignore handler with resolved ignores from modules
   nuxt._ignore = ignore(nuxt.options.ignoreOptions)
   nuxt._ignore.add(resolveIgnorePatterns())
+
+  await nuxt.callHook('modules:done')
 
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
