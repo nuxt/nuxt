@@ -1,0 +1,28 @@
+{
+  "name": "nuxt",
+  "version": "0.0.0",
+  "description": "A blank schematics",
+  "keywords": [
+    "schematics"
+  ],
+  "license": "MIT",
+  "author": "",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest ./**/*spec.ts"
+  },
+  "dependencies": {
+    "@wandeljs/core": "^0.1.9",
+    "typescript": "~5.4.2",
+    "ts-morph": "22.0.0"
+  },
+  "devDependencies": {
+    "@wandeljs/cli": "^0.1.9",
+    "@types/jasmine": "~5.1.0",
+    "@types/node": "^18.18.0",
+    "jasmine": "^5.0.0"
+  },
+  "wandel": {
+    "migrations": "./migrations/migration.json"
+  }
+}
