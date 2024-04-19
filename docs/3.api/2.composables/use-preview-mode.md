@@ -13,9 +13,43 @@ You can use the built-in `usePreviewMode` composable to access and control previ
 const { enabled, state } = usePreviewMode()
 ```
 
+## Options
+
+### Custom `enable` check
+
+You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`). You can wrap the `usePreviewMode` into custom composable, to keep options consistent across usages and prevent any errors.
+
+```js
+export function useMyPreviewMode () {
+  return usePreviewMode({
+    shouldEnable: () => {
+      return !!route.query.customPreview
+    }
+  });
+}
+```
+
+### Modify default state
+
+`usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/api/composables/use-preview-mode) calls.
+
+```js
+const data1 = ref('data1')
+
+const { enabled, state } = usePreviewMode({
+  getState: (currentState) => {
+    return { data1, data2: 'data2' }
+  }
+})
+```
+
+::note
+The `getState` function will append returned values to current state, so be careful not to accidentally overwrite important state.
+::
+
 ## Example
 
-The example below creates a page where part of a content is rendered only in `Preview mode`.
+The example below creates a page where part of a content is rendered only in preview mode.
 
 ```vue [pages/some-page.vue]
 <script setup>
@@ -57,38 +91,4 @@ Then you can see your preview page by adding the query param `preview` to the en
 
 ::note
 `usePreviewMode` should be tested locally with `nuxi generate` and then `nuxi preview` rather than `nuxi dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
-::
-
-## Options
-
-### Custom `enable` check
-
-You can specify a custom way to enable preview mode. By default the `usePreviewMode` composable will enable preview mode if there is a `preview` param in url that is equal to `true` (for example, `http://localhost:3000?preview=true`). You can wrap the `usePreviewMode` into custom composable, to keep options consistent across usages and prevent any errors.
-
-```js
-export function useMyPreviewMode () {
-  return usePreviewMode({
-    shouldEnable: () => {
-      return !!route.query.customPreview
-    }
-  });
-}
-```
-
-### Modify default state
-
-`usePreviewMode` will try to store the value of a `token` param from url in state. You can modify this state and it will be available for all [`usePreviewMode`](/docs/api/composables/use-preview-mode) calls.
-
-```js
-const data1 = ref('data1')
-
-const { enabled, state } = usePreviewMode({
-  getState: (currentState) => {
-    return { data1, data2: 'data2' }
-  }
-})
-```
-
-::note
-The `getState` function will append returned values to current state, so be careful not to accidentally overwrite important state.
 ::
