@@ -1,6 +1,6 @@
 ---
 title: 'useFetch'
-description: 'Fetch data from an API endpoint with a SSR-friendly composable.'
+description: 'Fetch data from an API endpoint with an SSR-friendly composable.'
 links:
   - label: Source
     icon: i-simple-icons-github
