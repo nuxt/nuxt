@@ -20,8 +20,8 @@ export default (url: string) => defineComponent({
     return () => [
       h('div', 'Component Test Wrapper for ' + query.path),
       h('div', { id: 'nuxt-component-root' }, [
-        h(comp, { ...attrs, ...props, ...urlProps })
-      ])
+        h(comp, { ...attrs, ...props, ...urlProps }),
+      ]),
     ]
-  }
+  },
 })

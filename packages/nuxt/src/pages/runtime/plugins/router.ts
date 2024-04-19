@@ -6,19 +6,22 @@ import {
   createMemoryHistory,
   createRouter,
   createWebHashHistory,
-  createWebHistory
+  createWebHistory,
 } from '#vue-router'
 import { createError } from 'h3'
-import { isEqual, withoutBase } from 'ufo'
+import { isEqual, isSamePath, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
 import type { Plugin, RouteMiddleware } from '#app'
+import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
 import { navigateTo } from '#app/composables/router'
 
+// @ts-expect-error virtual file
+import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routes from '#build/routes'
 // @ts-expect-error virtual file
@@ -30,7 +33,7 @@ import { globalMiddleware, namedMiddleware } from '#build/middleware'
 function createCurrentLocation (
   base: string,
   location: Location,
-  renderedPath?: string
+  renderedPath?: string,
 ): string {
   const { pathname, search, hash } = location
   // allows hash bases like #, /#, #/, #!, #!/, /#!/, or even /folder#end
@@ -67,9 +70,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const routes = routerOptions.routes?.(_routes) ?? _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
-    const initialURL = import.meta.server
-      ? nuxtApp.ssrContext!.url
-      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
 
     const router = createRouter({
       ...routerOptions,
@@ -91,7 +91,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         }
       },
       history,
-      routes
+      routes,
     })
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
@@ -105,11 +105,15 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     Object.defineProperty(nuxtApp.vueApp.config.globalProperties, 'previousRoute', {
-      get: () => previousRoute.value
+      get: () => previousRoute.value,
     })
 
+    const initialURL = import.meta.server
+      ? nuxtApp.ssrContext!.url
+      : createCurrentLocation(routerBase, window.location, nuxtApp.payload.path)
+
     // Allows suspending the route object until page navigation completes
-    const _route = shallowRef(router.resolve(initialURL) as RouteLocation)
+    const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
     nuxtApp.hook('page:finish', syncCurrentRoute)
     router.afterEach((to, from) => {
@@ -124,7 +128,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     const route = {} as RouteLocation
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
-        get: () => _route.value[key as keyof RouteLocation]
+        get: () => _route.value[key as keyof RouteLocation],
       })
     }
 
@@ -132,21 +136,23 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
-      named: {}
+      named: {},
     }
-
-    const error = useError()
 
     try {
       if (import.meta.server) {
         await router.push(initialURL)
       }
-
       await router.isReady()
     } catch (error: any) {
       // We'll catch 404s here
       await nuxtApp.runWithContext(() => showError(error))
     }
+
+    const resolvedInitialRoute = import.meta.client && initialURL !== router.currentRoute.value.fullPath
+      ? router.resolve(initialURL)
+      : router.currentRoute.value
+    syncCurrentRoute()
 
     if (import.meta.server && nuxtApp.ssrContext?.islandContext) {
       // We're in an island context, and don't need to handle middleware or redirections
@@ -173,6 +179,20 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           }
         }
 
+        if (isAppManifestEnabled) {
+          const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+
+          if (routeRules.appMiddleware) {
+            for (const key in routeRules.appMiddleware) {
+              if (routeRules.appMiddleware[key]) {
+                middlewareEntries.add(key)
+              } else {
+                middlewareEntries.delete(key)
+              }
+            }
+          }
+        }
+
         for (const entry of middlewareEntries) {
           const middleware = typeof entry === 'string' ? nuxtApp._middleware.named[entry] || await namedMiddleware[entry]?.().then((r: any) => r.default || r) : entry
 
@@ -188,7 +208,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             if (result === false || result instanceof Error) {
               const error = result || createError({
                 statusCode: 404,
-                statusMessage: `Page Not Found: ${initialURL}`
+                statusMessage: `Page Not Found: ${initialURL}`,
               })
               await nuxtApp.runWithContext(() => showError(error))
               return false
@@ -208,6 +228,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
+    const error = useError()
     router.afterEach(async (to, _from, failure) => {
       delete nuxtApp._processingMiddleware
 
@@ -227,20 +248,23 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
           data: {
-            path: to.fullPath
-          }
+            path: to.fullPath,
+          },
         })))
-      } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {
       try {
+        // #4920, #4982
+        if ('name' in resolvedInitialRoute) {
+          resolvedInitialRoute.name = undefined
+        }
         await router.replace({
-          ...router.resolve(initialURL),
-          name: undefined, // #4920, #4982
-          force: true
+          ...resolvedInitialRoute,
+          force: true,
         })
         // reset scroll behavior to initial value
         router.options.scrollBehavior = routerOptions.scrollBehavior
@@ -251,7 +275,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     })
 
     return { provide: { router } }
-  }
+  },
 })
 
 export default plugin

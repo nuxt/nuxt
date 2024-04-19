@@ -1,5 +1,6 @@
 import { defu } from 'defu'
 import { defineUntypedSchema } from 'untyped'
+import type { VueLoaderOptions } from 'vue-loader'
 
 export default defineUntypedSchema({
   webpack: {
@@ -19,7 +20,7 @@ export default defineUntypedSchema({
       $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
         const value = typeof val === 'boolean' ? { enabled: val } : val
         return defu(value, await get('build.analyze') as { enabled?: boolean } | Record<string, unknown>)
-      }
+      },
     },
 
     /**
@@ -82,7 +83,7 @@ export default defineUntypedSchema({
      * Enables CSS source map support (defaults to `true` in development).
      */
     cssSourceMap: {
-      $resolve: async (val, get) => val ?? await get('dev')
+      $resolve: async (val, get) => val ?? await get('dev'),
     },
 
     /**
@@ -130,7 +131,7 @@ export default defineUntypedSchema({
       css: ({ isDev }: { isDev: boolean }) => isDev ? '[name].css' : 'css/[contenthash:7].css',
       img: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'img/[name].[contenthash:7].[ext]',
       font: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'fonts/[name].[contenthash:7].[ext]',
-      video: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]'
+      video: ({ isDev }: { isDev: boolean }) => isDev ? '[path][name].[ext]' : 'videos/[name].[contenthash:7].[ext]',
     },
 
     /**
@@ -141,7 +142,7 @@ export default defineUntypedSchema({
         const loaders: Record<string, any> = val && typeof val === 'object' ? val : {}
         const styleLoaders = [
           'css', 'cssModules', 'less',
-          'sass', 'scss', 'stylus', 'vueStyle'
+          'sass', 'scss', 'stylus', 'vueStyle',
         ]
         for (const name of styleLoaders) {
           const loader = loaders[name]
@@ -200,32 +201,33 @@ export default defineUntypedSchema({
        */
       vue: {
         transformAssetUrls: {
-          video: 'src',
-          source: 'src',
-          object: 'src',
-          embed: 'src'
+          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))) as VueLoaderOptions['transformAssetUrls'],
         },
-        compilerOptions: { $resolve: async (val, get) => val ?? (await get('vue.compilerOptions')) },
-        propsDestructure: { $resolve: async (val, get) => val ?? Boolean(await get('vue.propsDestructure')) },
-      },
+        compilerOptions: {
+          $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))) as VueLoaderOptions['compilerOptions'],
+        },
+        propsDestructure: {
+          $resolve: async (val, get) => Boolean(val ?? await get('vue.propsDestructure')),
+        },
+      } satisfies { [K in keyof VueLoaderOptions]: { $resolve: (val: unknown, get: (id: string) => Promise<unknown>) => Promise<VueLoaderOptions[K]> } },
 
       css: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => url[0] !== '/'
+          filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
-        esModule: false
+        esModule: false,
       },
 
       cssModules: {
         importLoaders: 0,
         url: {
-          filter: (url: string, _resourcePath: string) => url[0] !== '/'
+          filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
         esModule: false,
         modules: {
-          localIdentName: '[local]_[hash:base64:5]'
-        }
+          localIdentName: '[local]_[hash:base64:5]',
+        },
       },
 
       /**
@@ -247,8 +249,8 @@ export default defineUntypedSchema({
        */
       sass: {
         sassOptions: {
-          indentedSyntax: true
-        }
+          indentedSyntax: true,
+        },
       },
 
       /**
@@ -262,7 +264,7 @@ export default defineUntypedSchema({
        */
       stylus: {},
 
-      vueStyle: {}
+      vueStyle: {},
     },
 
     /**
@@ -294,7 +296,7 @@ export default defineUntypedSchema({
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
     optimizeCSS: {
-      $resolve: async (val, get) => val ?? (await get('build.extractCSS') ? {} : false)
+      $resolve: async (val, get) => val ?? (await get('build.extractCSS') ? {} : false),
     },
 
     /**
@@ -310,8 +312,8 @@ export default defineUntypedSchema({
       splitChunks: {
         chunks: 'all',
         automaticNameDelimiter: '/',
-        cacheGroups: {}
-      }
+        cacheGroups: {},
+      },
     },
 
     /**
@@ -322,12 +324,12 @@ export default defineUntypedSchema({
     postcss: {
       postcssOptions: {
         config: {
-          $resolve: async (val, get) => val ?? (await get('postcss.config'))
+          $resolve: async (val, get) => val ?? (await get('postcss.config')),
         },
         plugins: {
-          $resolve: async (val, get) => val ?? (await get('postcss.plugins'))
-        }
-      }
+          $resolve: async (val, get) => val ?? (await get('postcss.plugins')),
+        },
+      },
     },
 
     /**
@@ -335,7 +337,7 @@ export default defineUntypedSchema({
      * @type {typeof import('webpack-dev-middleware').Options<typeof import('http').IncomingMessage, typeof import('http').ServerResponse>}
      */
     devMiddleware: {
-      stats: 'none'
+      stats: 'none',
     },
 
     /**
@@ -359,6 +361,6 @@ export default defineUntypedSchema({
      * Configure [webpack experiments](https://webpack.js.org/configuration/experiments/)
      * @type {false | typeof import('webpack').Configuration['experiments']}
      */
-    experiments: {}
-  }
+    experiments: {},
+  },
 })

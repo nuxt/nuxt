@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::callout
+::note
 `reloadNuxtApp` will perform a hard reload of your app, re-requesting a page and its dependencies from the server.
 ::
 

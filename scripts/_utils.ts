@@ -7,8 +7,8 @@ import { execaSync } from 'execa'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
 export interface Dep {
-  name: string,
-  range: string,
+  name: string
+  range: string
   type: string
 }
 
@@ -37,7 +37,7 @@ export async function loadPackage (dir: string) {
     dir,
     data,
     save,
-    updateDeps
+    updateDeps,
   }
 }
 
@@ -95,7 +95,7 @@ export async function loadWorkspace (dir: string) {
     save,
     find,
     rename,
-    setVersion
+    setVersion,
   }
 }
 
@@ -122,12 +122,12 @@ export async function getContributors () {
   const rawCommits = await getGitDiff(latestTag)
   for (const commit of rawCommits) {
     if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
-    const { author } = await $fetch<{ author: { login: string, email: string }}>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
+    const { author } = await $fetch<{ author: { login: string, email: string } }>(`https://api.github.com/repos/nuxt/nuxt/commits/${commit.shortHash}`, {
       headers: {
         'User-Agent': 'nuxt/nuxt',
-        Accept: 'application/vnd.github.v3+json',
-        Authorization: `token ${process.env.GITHUB_TOKEN}`
-      }
+        'Accept': 'application/vnd.github.v3+json',
+        'Authorization': `token ${process.env.GITHUB_TOKEN}`,
+      },
     })
     if (!contributors.some(c => c.username === author.login)) {
       contributors.push({ name: commit.author.name, username: author.login })

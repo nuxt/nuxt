@@ -5,7 +5,7 @@ import { isCI, provider } from 'std-env'
 
 const isStackblitz = provider === 'stackblitz'
 
-export interface EnsurePackageInstalledOptions {
+interface EnsurePackageInstalledOptions {
   rootDir: string
   searchPaths?: string[]
   prompt?: boolean
@@ -26,7 +26,7 @@ async function promptToInstall (name: string, installCommand: () => Promise<void
     const confirm = await logger.prompt(`Do you want to install ${name} package?`, {
       type: 'confirm',
       name: 'confirm',
-      initial: true
+      initial: true,
     })
 
     if (!confirm) {
@@ -60,6 +60,6 @@ export function installNuxtModule (name: string, options?: EnsurePackageInstalle
 export function ensurePackageInstalled (name: string, options: EnsurePackageInstalledOptions) {
   return promptToInstall(name, () => addDependency(name, {
     cwd: options.rootDir,
-    dev: true
+    dev: true,
   }), options)
 }

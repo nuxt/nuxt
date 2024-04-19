@@ -14,11 +14,11 @@ Within your pages, components and plugins you can use `useCookie`, an SSR-friend
 const cookie = useCookie(name, options)
 ```
 
-::alert{icon=👉}
+::note
 `useCookie` only works in the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context).
 ::
 
-::callout
+::tip
 `useCookie` ref will automatically serialize and deserialize cookie value to JSON.
 ::
 
@@ -62,13 +62,13 @@ The given number will be converted to an integer by rounding down. By default, n
 By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and
 will delete it on a condition like exiting a web browser application.
 
-::callout
+::note
 The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and
 `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this,
 so if both are set, they should point to the same date and time!
 ::
 
-::callout
+::note
 If neither of `expires` and `maxAge` is set, the cookie will be session-only and removed when the user closes their browser.
 ::
 
@@ -77,7 +77,7 @@ If neither of `expires` and `maxAge` is set, the cookie will be session-only and
 Specifies the `boolean` value for the [`HttpOnly` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.6). When truthy,
 the `HttpOnly` attribute is set; otherwise it is not. By default, the `HttpOnly` attribute is not set.
 
-::callout
+::warning
 Be careful when setting this to `true`, as compliant clients will not allow client-side
 JavaScript to see the cookie in `document.cookie`.
 ::
@@ -87,7 +87,7 @@ JavaScript to see the cookie in `document.cookie`.
 Specifies the `boolean` value for the [`Secure` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.5). When truthy,
 the `Secure` attribute is set; otherwise it is not. By default, the `Secure` attribute is not set.
 
-::callout
+::warning
 Be careful when setting this to `true`, as compliant clients will not send the cookie back to
 the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors.
 ::
@@ -128,7 +128,7 @@ a previously encoded cookie value into a JavaScript string or other object.
 
 The default decoder is `decodeURIComponent` + [destr](https://github.com/unjs/destr).
 
-::callout
+::note
 If an error is thrown from this function, the original, non-decoded cookie value will
 be returned as the cookie's value.
 ::

@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::callout
+::note
 Route middleware are navigation guards stored in the [`middleware/`](/docs/guide/directory-structure/middleware) directory of your Nuxt application (unless [set otherwise](/docs/api/nuxt-config#middleware)).
 ::
 
@@ -36,7 +36,7 @@ The second argument is a function of type `RouteMiddleware`. Same as above, it p
 
 ### `options`
 
-- **Type:** `AddRouteMiddlewareOptions`  
+- **Type:** `AddRouteMiddlewareOptions`
 
 An optional `options` argument lets you set the value of `global` to `true` to indicate whether the router middleware is global or not (set to `false` by default).
 

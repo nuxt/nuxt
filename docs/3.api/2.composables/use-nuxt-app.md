@@ -51,7 +51,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   })
   nuxtApp.hook('vue:error', (..._args) => {
     console.log('vue:error')
-    // if (process.client) {
+    // if (import.meta.client) {
     //   console.log(..._args)
     // }
   })
@@ -120,7 +120,7 @@ Nuxt exposes the following properties through `ssrContext`:
   export const useColor = () => useState<string>('color', () => 'pink')
 
   export default defineNuxtPlugin((nuxtApp) => {
-    if (process.server) {
+    if (import.meta.server) {
       const color = useColor()
     }
   })
@@ -128,9 +128,9 @@ Nuxt exposes the following properties through `ssrContext`:
 
   It is also possible to use more advanced types, such as `ref`, `reactive`, `shallowRef`, `shallowReactive` and `NuxtError`.
 
-  Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own serializer/deserializer for types that are not supported by Nuxt.
+  Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 
-  In the example below, we define a serializer for the [Luxon](https://moment.github.io/luxon/#/) DateTime class.
+  In the example below, we define a reducer (or a serializer) and a reviver (or deserializer) for the [Luxon](https://moment.github.io/luxon/#/) DateTime class, using a payload plugin.
 
   ```ts [plugins/date-time-payload.ts]
   /**
@@ -159,7 +159,7 @@ export default defineComponent({
   setup (_props, { slots, emit }) {
     const nuxtApp = useNuxtApp()
     onErrorCaptured((err) => {
-      if (process.client && !nuxtApp.isHydrating) {
+      if (import.meta.client && !nuxtApp.isHydrating) {
         // ...
       }
     })
@@ -169,7 +169,7 @@ export default defineComponent({
 
 ### `runWithContext`
 
-::callout
+::note
 You are likely here because you got a "Nuxt instance unavailable" message. Please use this method sparingly, and report examples that are causing issues, so that it can ultimately be solved at the framework level.
 ::
 
@@ -186,7 +186,7 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     user = null
   }
   if (!user) {
-    // apply the correct Nuxt context to our `navigateTo` call.  
+    // apply the correct Nuxt context to our `navigateTo` call.
     return nuxtApp.runWithContext(() => navigateTo('/auth'))
   }
 })
@@ -254,7 +254,7 @@ The `unjs/unctx` transformation to automatically restore context seems buggy wit
 
 Using a new experimental feature, it is possible to enable native async context support using [Node.js `AsyncLocalStorage`](https://nodejs.org/api/async_context.html#class-asynclocalstorage) and new unctx support to make async context available **natively** to **any nested async composable** without needing a transform or manual passing/calling with context.
 
-::callout
+::tip
 Native async context support works currently in Bun and Node.
 ::
 

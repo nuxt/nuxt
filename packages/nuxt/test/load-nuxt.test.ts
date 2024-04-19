@@ -14,11 +14,11 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         hooks: {
-          ready() {
+          ready () {
             hookRan = true
-          }
-        }
-      }
+          },
+        },
+      },
     })
     await nuxt.close()
     expect(hookRan).toBe(true)

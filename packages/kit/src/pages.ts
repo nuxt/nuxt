@@ -51,13 +51,14 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
+        if (app.middleware[find].path === middleware.path) { continue }
         if (options.override === true) {
-          app.middleware[find] = middleware
+          app.middleware[find] = { ...middleware }
         } else {
           logger.warn(`'${middleware.name}' middleware already exists at '${app.middleware[find].path}'. You can set \`override: true\` to replace it.`)
         }
       } else {
-        app.middleware.push(middleware)
+        app.middleware.push({ ...middleware })
       }
     }
   })

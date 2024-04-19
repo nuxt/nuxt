@@ -23,6 +23,6 @@ export default defineNuxtPlugin({
     }
   },
   env: {
-    islands: false
-  }
+    islands: false,
+  },
 })

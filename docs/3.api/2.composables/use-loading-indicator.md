@@ -39,7 +39,7 @@ Set `isLoading` to true and start to increase the `progress` value.
 
 ### `finish()`
 
-Set the `progress` value to `100`, stop all timers and intervals then reset the loading state `500` ms later.
+Set the `progress` value to `100`, stop all timers and intervals then reset the loading state `500` ms later. `finish` accepts a `{ force: true }` option to skip the interval before the state is reset.
 
 ### `clear()`
 
@@ -47,7 +47,7 @@ Used by `finish()`. Clear all timers and intervals used by the composable.
 
 ## Example
 
-```ts
+```vue
 <script setup lang="ts">
   const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
     duration: 2000,

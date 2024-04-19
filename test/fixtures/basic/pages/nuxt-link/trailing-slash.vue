@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const LinkWithTrailingSlash = defineNuxtLink({
-  trailingSlash: 'append'
+  trailingSlash: 'append',
 })
 const LinkWithoutTrailingSlash = defineNuxtLink({
-  trailingSlash: 'remove'
+  trailingSlash: 'remove',
 })
 const links = [
   '/',
@@ -13,7 +13,7 @@ const links = [
   '/nuxt-link/trailing-slash/?test=true&thing=other/thing#thing-other',
   { name: 'nuxt-link-trailing-slash' },
   { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
-  { query: { 'without-state': 'true' } }
+  { query: { 'without-state': 'true' } },
 ] as const
 
 const route = useRoute()

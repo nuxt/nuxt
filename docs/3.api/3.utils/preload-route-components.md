@@ -10,7 +10,7 @@ links:
 
 Preloading routes loads the components of a given route that the user might navigate to in future. This ensures that the components are available earlier and less likely to block the navigation, improving performance.
 
-::callout{color="green" icon="i-ph-rocket-launch-duotone"}
+::tip{icon="i-ph-rocket-launch-duotone" color="gray"}
 Nuxt already automatically preloads the necessary routes if you're using the `NuxtLink` component.
 ::
 
@@ -36,6 +36,6 @@ const submit = async () => {
 
 :read-more{to="/docs/api/utils/navigate-to"}
 
-::callout
+::note
 On server, `preloadRouteComponents` will have no effect.
 ::

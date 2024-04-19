@@ -13,7 +13,7 @@ const reducers: Record<string, (data: any) => any> = {
   ShallowRef: data => isRef(data) && isShallow(data) && data.value,
   ShallowReactive: data => isReactive(data) && isShallow(data) && toRaw(data),
   Ref: data => isRef(data) && data.value,
-  Reactive: data => isReactive(data) && toRaw(data)
+  Reactive: data => isReactive(data) && toRaw(data),
 }
 
 if (componentIslands) {
@@ -26,5 +26,5 @@ export default defineNuxtPlugin({
     for (const reducer in reducers) {
       definePayloadReducer(reducer, reducers[reducer as keyof typeof reducers])
     }
-  }
+  },
 })

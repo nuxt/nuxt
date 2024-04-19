@@ -15,12 +15,12 @@ const getComponents = () => [{
   export: 'default',
   shortPath: '',
   prefetch: false,
-  preload: false
+  preload: false,
 }] as Component[]
 
 const pluginWebpack = islandsTransform.raw({
   getComponents,
-  selectiveClient: true
+  selectiveClient: true,
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
 const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
@@ -28,7 +28,7 @@ const viteTransform = async (source: string, id: string, isDev = false, selectiv
     getComponents,
     rootDir: '/root',
     isDev,
-    selectiveClient
+    selectiveClient,
   }, { framework: 'vite' }) as Plugin
 
   const result = await (vitePlugin.transform! as Function)(source, id)
@@ -58,15 +58,15 @@ describe('islandTransform - server and island components', () => {
       const someData = 'some data'
 
       </script>`
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
                 <NuxtTeleportSsrSlot name="default" :props="undefined"><slot /></NuxtTeleportSsrSlot>
 
-                <NuxtTeleportSsrSlot name="named" :props="[{ some-data: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
-                <NuxtTeleportSsrSlot name="other" :props="[{ some-data: someData }]"><slot
+                <NuxtTeleportSsrSlot name="named" :props="[{ [\`some-data\`]: someData }]"><slot name="named" :some-data="someData" /></NuxtTeleportSsrSlot>
+                <NuxtTeleportSsrSlot name="other" :props="[{ [\`some-data\`]: someData }]"><slot
                   name="other"
                   :some-data="someData"
                 /></NuxtTeleportSsrSlot>
@@ -94,12 +94,12 @@ describe('islandTransform - server and island components', () => {
       const someData = 'some data'
 
       </script>`
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
               <div>
-                <NuxtTeleportSsrSlot name="default" :props="[{ some-data: someData }]"><slot :some-data="someData"  /><template #fallback>
+                <NuxtTeleportSsrSlot name="default" :props="[{ [\`some-data\`]: someData }]"><slot :some-data="someData"/><template #fallback>
                   <div>fallback</div>
                 </template></NuxtTeleportSsrSlot>
               </div>
@@ -145,7 +145,7 @@ describe('islandTransform - server and island components', () => {
     const message = "Hello World";
     </script>
     `
-        , 'hello.server.vue')
+      , 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -158,7 +158,7 @@ describe('islandTransform - server and island components', () => {
                     <p>message: {{ message }}</p>
                     <p>Below is the slot I want to be hydrated on the client</p>
                     <div>
-                      <NuxtTeleportSsrSlot name="default" :props="undefined"><slot  /><template #fallback>
+                      <NuxtTeleportSsrSlot name="default" :props="undefined"><slot/><template #fallback>
                         This is the default content of the slot, I should not see this after
                         the client loading has completed.
                       </template></NuxtTeleportSsrSlot>
@@ -181,6 +181,33 @@ describe('islandTransform - server and island components', () => {
             const message = "Hello World";
             </script>
             "
+      `)
+    })
+
+    it('expect v-if/v-else/v-else-if to be set in teleport component wrapper', async () => {
+      const result = await viteTransform(`<script setup lang="ts">
+      const foo = true;
+      </script>
+      <template>
+      <slot v-if="foo" />
+      <slot v-else-if="test" />
+      <slot v-else />
+      </template>
+      `, 'WithVif.vue', false, true)
+
+      expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+        "<script setup lang="ts">
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
+              const foo = true;
+              </script>
+              <template>
+              <NuxtTeleportSsrSlot v-if="foo" name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              <NuxtTeleportSsrSlot v-else-if="test" name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              <NuxtTeleportSsrSlot v-else name="default" :props="undefined"><slot  /></NuxtTeleportSsrSlot>
+              </template>
+              "
       `)
     })
   })
@@ -351,7 +378,32 @@ describe('islandTransform - server and island components', () => {
 
               "
       `)
-        expect(result).toContain(`import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'`)
+        expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
+      })
+
+      it('should move v-if to the wrapper component', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+        <HelloWorld v-if="false" nuxt-client />
+        <HelloWorld v-else-if="true" nuxt-client />
+        <HelloWorld v-else nuxt-client />
+        </div>
+      </template>
+      `, 'hello.server.vue', false, true)
+
+        expect(result).toMatchInlineSnapshot(`
+          "<script setup>
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
+                  <div>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  </div>
+                </template>
+                "
+        `)
       })
     })
 

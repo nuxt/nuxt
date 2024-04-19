@@ -18,6 +18,6 @@ const event = useRequestEvent()
 const url = event?.path
 ```
 
-::callout
+::tip
 In the browser, `useRequestEvent` will return `undefined`.
 ::

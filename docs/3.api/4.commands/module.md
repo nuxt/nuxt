@@ -48,6 +48,6 @@ The command searches for Nuxt modules matching your query that are compatible wi
 
 **Example:**
 
-```base [Terminal]
+```bash [Terminal]
 npx nuxi module search pinia
 ```

@@ -1,28 +1,31 @@
-import type { Component } from 'vue'
-import { Teleport, defineComponent, h } from 'vue'
+import type { Component, InjectionKey } from 'vue'
+import { Teleport, defineComponent, h, inject, provide } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
 
 type ExtendedComponent = Component & {
-  __file: string,
+  __file: string
   __name: string
 }
+
+export const NuxtTeleportIslandSymbol = Symbol('NuxtTeleportIslandComponent') as InjectionKey<false | string>
 
 /**
  * component only used with componentsIsland
  * this teleport the component in SSR only if it needs to be hydrated on client
  */
+/* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandComponent',
   props: {
     to: {
       type: String,
-      required: true
+      required: true,
     },
     nuxtClient: {
       type: Boolean,
-      default: false
+      default: false,
     },
     /**
      * ONLY used in dev mode since we use build:manifest result in production
@@ -30,31 +33,33 @@ export default defineComponent({
      */
     rootDir: {
       type: String,
-      default: null
-    }
+      default: null,
+    },
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()
 
-    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient) { return () => slots.default!() }
+    // if there's already a teleport parent, we don't need to teleport or to render the wrapped component client side
+    if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient || inject(NuxtTeleportIslandSymbol, false)) { return () => slots.default?.() }
 
+    provide(NuxtTeleportIslandSymbol, props.to)
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
       const slot = slots.default!()[0]
-      const slotType = (slot.type as ExtendedComponent)
+      const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
 
       islandContext.components[props.to] = {
         chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
-        props: slot.props || {}
+        props: slot.props || {},
       }
 
       return [h('div', {
-        style: 'display: contents;',
+        'style': 'display: contents;',
         'data-island-uid': '',
-        'data-island-component': props.to
+        'data-island-component': props.to,
       }, []), h(Teleport, { to: props.to }, slot)]
     }
-  }
+  },
 })

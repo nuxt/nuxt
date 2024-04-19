@@ -6,26 +6,26 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     uid: {
-      type: String
+      type: String,
     },
     fallbackTag: {
       type: String,
-      default: () => 'div'
+      default: () => 'div',
     },
     fallback: {
       type: String,
-      default: () => ''
+      default: () => '',
     },
     placeholder: {
-      type: String
+      type: String,
     },
     placeholderTag: {
-      type: String
+      type: String,
     },
     keepFallback: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
   },
   emits: ['ssr-error'],
   setup (props, ctx) {
@@ -49,5 +49,5 @@ export default defineComponent({
       }
       return ctx.slots.default?.()
     }
-  }
+  },
 })

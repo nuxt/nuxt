@@ -24,7 +24,7 @@ showError({
 
 The error is set in the state using [`useError()`](/docs/api/composables/use-error) to create a reactive and SSR-friendly shared error state across components.
 
-::callout
+::tip
 `showError` calls the `app:error` hook.
 ::
 

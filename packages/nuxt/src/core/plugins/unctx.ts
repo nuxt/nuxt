@@ -17,7 +17,7 @@ export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPlugi
     name: 'unctx:transform',
     enforce: 'post',
     transformInclude (id) {
-      return isVue(id) || isJS(id)
+      return isVue(id, { type: ['template', 'script'] }) || isJS(id)
     },
     transform (code) {
       // TODO: needed for webpack - update transform in unctx/unplugin?
@@ -28,9 +28,9 @@ export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPlugi
           code: TRANSFORM_MARKER + result.code,
           map: options.sourcemap
             ? result.magicString.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
