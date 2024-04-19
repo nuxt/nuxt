@@ -5,7 +5,7 @@ description: "Use usePreviewMode to check and control preview mode in Nuxt"
 
 # `usePreviewMode`
 
-Preview Mode allows you to see how your changes would be displayed on a live site without revealing them to users.
+Preview mode allows you to see how your changes would be displayed on a live site without revealing them to users.
 
 You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) to rerender preview content.
 
@@ -27,6 +27,7 @@ const { data } = await useFetch('/api/preview', {
   }
 })
 </script>
+
 <template>
   <div>
     Some base content
@@ -55,7 +56,7 @@ Then you can see your preview page by adding the query param `preview` to the en
 ```
 
 ::note
-usePreviewMode should be tested locally with `nuxi generate` and then `nuxi start` rather than `nuxi dev`.
+`usePreviewMode` should be tested locally with `nuxi generate` and then `nuxi preview` rather than `nuxi dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
 ::
 
 ## Options
