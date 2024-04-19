@@ -1977,7 +1977,6 @@ describe('component islands', () => {
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
-        "state": {},
       }
     `)
   })
@@ -2036,7 +2035,6 @@ describe('component islands', () => {
             ],
           },
         },
-        "state": {},
       }
     `)
   })
@@ -2065,7 +2063,6 @@ describe('component islands', () => {
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
-        "state": {},
       }
     `)
   })
@@ -2092,7 +2089,6 @@ describe('component islands', () => {
           },
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
-          "state": {},
         }
       `)
       expect(teleportsEntries).toHaveLength(1)
@@ -2171,12 +2167,6 @@ describe('component islands', () => {
         },
         bool: false
       }</pre></div>"
-    `)
-
-    expect(result.state).toMatchInlineSnapshot(`
-      {
-        "$shasRouter": true,
-      }
     `)
   })
 
