@@ -18,10 +18,10 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
     imports: [
       {
         name: 'componentNames',
-        from: '#build/component-names'
-      }
+        from: '#build/component-names',
+      },
     ],
-    virtualImports: ['#components']
+    virtualImports: ['#components'],
   })
 
   function getComponentsImports (): Import[] {
@@ -37,13 +37,13 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         {
           as: c.pascalName,
           from: withMode(mode),
-          name: c.export || 'default'
+          name: c.export || 'default',
         },
         {
           as: 'Lazy' + c.pascalName,
           from: withMode([mode, 'async'].filter(Boolean).join(',')),
-          name: c.export || 'default'
-        }
+          name: c.export || 'default',
+        },
       ]
     })
   }
@@ -67,36 +67,36 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
           return {
             code: [
               'import { defineAsyncComponent } from "vue"',
-              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r[${JSON.stringify(componentExport)}] || r.default || r))`
+              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r[${JSON.stringify(componentExport)}] || r.default || r))`,
             ].join('\n'),
-            map: null
+            map: null,
           }
         } else if (mode === 'client') {
           return {
             code: [
               genImport(bare, [{ name: componentExport, as: '__component' }]),
               'import { createClientOnly } from "#app/components/client-only"',
-              `${exportWording} createClientOnly(__component)`
+              `${exportWording} createClientOnly(__component)`,
             ].join('\n'),
-            map: null
+            map: null,
           }
         } else if (mode === 'client,async') {
           return {
             code: [
               'import { defineAsyncComponent } from "vue"',
               'import { createClientOnly } from "#app/components/client-only"',
-              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r[${JSON.stringify(componentExport)}] || r.default || r)))`
+              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r[${JSON.stringify(componentExport)}] || r.default || r)))`,
             ].join('\n'),
-            map: null
+            map: null,
           }
         } else if (mode === 'server' || mode === 'server,async') {
           const name = query.nuxt_component_name
           return {
             code: [
               `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
-              `${exportWording} createServerComponent(${JSON.stringify(name)})`
+              `${exportWording} createServerComponent(${JSON.stringify(name)})`,
             ].join('\n'),
-            map: null
+            map: null,
           }
         } else {
           throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
@@ -118,8 +118,8 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         code: result.code,
         map: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
           ? result.s.generateMap({ hires: true })
-          : undefined
+          : undefined,
       }
-    }
+    },
   }))
 }

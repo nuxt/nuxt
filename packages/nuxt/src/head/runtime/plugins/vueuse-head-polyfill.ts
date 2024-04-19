@@ -6,5 +6,5 @@ export default defineNuxtPlugin({
   setup (nuxtApp) {
     // avoid breaking ecosystem dependencies using low-level @vueuse/head APIs
     polyfillAsVueUseHead(nuxtApp.vueApp._context.provides.usehead)
-  }
+  },
 })

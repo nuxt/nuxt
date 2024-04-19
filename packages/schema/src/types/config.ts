@@ -8,6 +8,7 @@ import type { SnakeCase } from 'scule'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
+
 export type { SchemaDefinition } from 'untyped'
 
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
@@ -23,9 +24,9 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
       : T[K] extends Record<string, unknown>
         ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
         : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
-      : K extends number
-        ? T[K]
-        : never
+    : K extends number
+      ? T[K]
+      : never
 }
 
 // Runtime Config
@@ -35,27 +36,27 @@ type RuntimeConfigNamespace = Record<string, unknown>
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
-    app: NitroRuntimeConfigApp
-    /** Only available on the server. */
-    nitro?: NitroRuntimeConfig['nitro']
-    public: PublicRuntimeConfig
+  app: NitroRuntimeConfigApp
+  /** Only available on the server. */
+  nitro?: NitroRuntimeConfig['nitro']
+  public: PublicRuntimeConfig
 }
 
 // User configuration in `nuxt.config` file
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'runtimeConfig'>> {
-    // Avoid DeepPartial for vite config interface (#4772)
-    vite?: ConfigSchema['vite']
-    runtimeConfig?: Overrideable<RuntimeConfig>
-    webpack?: DeepPartial<ConfigSchema['webpack']> & {
-        $client?: DeepPartial<ConfigSchema['webpack']>
-        $server?: DeepPartial<ConfigSchema['webpack']>
-    }
+  // Avoid DeepPartial for vite config interface (#4772)
+  vite?: ConfigSchema['vite']
+  runtimeConfig?: Overrideable<RuntimeConfig>
+  webpack?: DeepPartial<ConfigSchema['webpack']> & {
+    $client?: DeepPartial<ConfigSchema['webpack']>
+    $server?: DeepPartial<ConfigSchema['webpack']>
+  }
 
-    /**
-     * Experimental custom config schema
-     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
-     */
-    $schema?: SchemaDefinition
+  /**
+   * Experimental custom config schema
+   * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
+   */
+  $schema?: SchemaDefinition
 }
 
 // TODO: Expose ConfigLayer<T> from c12
@@ -65,7 +66,7 @@ interface ConfigLayer<T> {
   configFile: string
 }
 export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
-  srcDir: ConfigSchema['srcDir'],
+  srcDir: ConfigSchema['srcDir']
   rootDir: ConfigSchema['rootDir']
 }>
 

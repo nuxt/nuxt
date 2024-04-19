@@ -36,7 +36,7 @@ export default (nitroApp: NitroApp) => {
       // Pass along filename to allow the client to display more info about where log comes from
       filename: extractFilenameFromStack(stack),
       // Clean up file names in stack trace
-      stack: normalizeFilenames(stack)
+      stack: normalizeFilenames(stack),
     }
 
     // retain log to be include in the next render
@@ -84,7 +84,7 @@ function onConsoleLog (callback: (log: LogObject) => void) {
   consola.addReporter({
     log (logObj) {
       callback(logObj)
-    }
+    },
   })
   consola.wrapConsole()
 }

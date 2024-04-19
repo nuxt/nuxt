@@ -36,7 +36,7 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   if (generateRouteKey(to) !== generateRouteKey(from)) { return true }
 
   const areComponentsSame = to.matched.every((comp, index) =>
-    comp.components && comp.components.default === from.matched[index]?.components?.default
+    comp.components && comp.components.default === from.matched[index]?.components?.default,
   )
   if (areComponentsSame) {
     return false
@@ -44,7 +44,6 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
-// eslint-disable-next-line no-use-before-define
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
@@ -71,7 +70,7 @@ export function createBuffer () {
       if (isPromise(item) || (isArray(item) && item.hasAsync)) {
         buffer.hasAsync = true
       }
-    }
+    },
   }
 }
 
@@ -95,7 +94,7 @@ export function vforToArray (source: any): any[] {
   } else if (isObject(source)) {
     if (source[Symbol.iterator as any]) {
       return Array.from(source as Iterable<any>, item =>
-        item
+        item,
       )
     } else {
       const keys = Object.keys(source)

@@ -21,6 +21,6 @@ export default defineUntypedSchema({
      * This option is no longer used. Instead, use `nitro.prerender.ignore`.
      * @deprecated
      */
-    exclude: []
-  }
+    exclude: [],
+  },
 })

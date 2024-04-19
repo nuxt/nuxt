@@ -7,9 +7,9 @@ export default defineNuxtComponent({
 
     ctx.expose({ add, state })
     return {
-      state
+      state,
     }
-  }
+  },
 })
 </script>
 

@@ -12,12 +12,12 @@ export default defineNuxtPlugin({
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
       : createClientHead({
-        plugins: unheadPlugins
+        plugins: unheadPlugins,
       })
     // allow useHead to be used outside a Vue context but within a Nuxt context
     setHeadInjectionHandler(
       // need a fresh instance of the nuxt app to avoid parallel requests interfering with each other
-      () => useNuxtApp().vueApp._context.provides.usehead
+      () => useNuxtApp().vueApp._context.provides.usehead,
     )
     // nuxt.config appHead is set server-side within the renderer
     nuxtApp.vueApp.use(head)
@@ -41,5 +41,5 @@ export default defineNuxtPlugin({
       // unpause the DOM once the mount suspense is resolved
       nuxtApp.hooks.hook('app:suspense:resolve', syncHead)
     }
-  }
+  },
 })

@@ -17,24 +17,26 @@ export type _Transform<Input = any, Output = any> = (input: Input) => Output | P
 export type PickFrom<T, K extends Array<string>> = T extends Array<any>
   ? T
   : T extends Record<string, any>
-  ? keyof T extends K[number]
-  ? T // Exact same keys as the target, skip Pick
-  : K[number] extends never
-  ? T
-  : Pick<T, K[number]>
-  : T
+    ? keyof T extends K[number]
+      ? T // Exact same keys as the target, skip Pick
+      : K[number] extends never
+        ? T
+        : Pick<T, K[number]>
+    : T
 
 export type KeysOf<T> = Array<
   T extends T // Include all keys of union types, not just common keys
-  ? keyof T extends string
-  ? keyof T
-  : never
-  : never
+    ? keyof T extends string
+      ? keyof T
+      : never
+    : never
 >
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
 
 export type MultiWatchSources = (WatchSource<unknown> | object)[]
+
+export type NoInfer<T> = [T][T extends any ? 0 : never]
 
 export interface AsyncDataOptions<
   ResT,
@@ -61,7 +63,7 @@ export interface AsyncDataOptions<
    * A `null` or `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
    */
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT>
   /**
    * A function that can be used to alter handler function result after resolving.
    * Do not use it along with the `pick` option.
@@ -108,6 +110,9 @@ export interface AsyncDataExecuteOptions {
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
+  /**
+   * @deprecated Use `status` instead. This may be removed in a future major version.
+   */
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
@@ -223,8 +228,8 @@ export function useAsyncData<
 
         const promise = nuxtApp.runWithContext(_handler)
 
-      nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
-      return promise
+        nuxtApp.ssrContext!._sharedPrerenderCache!.set(key, promise)
+        return promise
       }
 
   // Used to get default values
@@ -257,7 +262,7 @@ export function useAsyncData<
       data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
-      status: ref('idle')
+      status: ref('idle'),
     }
   }
 
@@ -373,7 +378,9 @@ export function useAsyncData<
     const hasScope = getCurrentScope()
     if (options.watch) {
       const unsub = watch(options.watch, () => asyncData.refresh())
-      if (hasScope) {
+      if (instance) {
+        onUnmounted(unsub)
+      } else if (hasScope) {
         onScopeDispose(unsub)
       }
     }
@@ -382,7 +389,9 @@ export function useAsyncData<
         await asyncData.refresh()
       }
     })
-    if (hasScope) {
+    if (instance) {
+      onUnmounted(off)
+    } else if (hasScope) {
       onScopeDispose(off)
     }
   }
@@ -477,8 +486,8 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | null
         } else {
           nuxtApp.payload.data[key] = value
         }
-      }
-    })
+      },
+    }),
   }
 }
 

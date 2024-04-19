@@ -81,13 +81,13 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                           componentsToRemoveSet.add(nameToRemove)
                         }
                       }
-                    }
+                    },
                   })
                 }
               }
             }
           }
-        }
+        },
       })
 
       const componentsToRemove = [...componentsToRemoveSet]
@@ -107,10 +107,10 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
 
@@ -142,7 +142,7 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
           }
         }
       }
-    }
+    },
   })
 }
 
@@ -209,10 +209,10 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
                 // dev only with $setup or _ctx
                 found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
               }
-            }
+            },
           })
         }
-      }
+      },
     })
     if (!found) { return name }
   }
@@ -250,7 +250,7 @@ function removeVariableDeclarator (codeAst: Node, name: string, magicString: Mag
           }
         }
       }
-    }
+    },
   })
 }
 

@@ -18,10 +18,11 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
-  headers: Object.fromEntries(event.headers.entries())
+  headers: Object.fromEntries(event.headers.entries()),
 })))
 
 describe('app config', () => {
@@ -37,7 +38,7 @@ describe('app config', () => {
     updateAppConfig({
       new: 'value',
       // @ts-expect-error property does not exist
-      nuxt: { nested: 42 }
+      nuxt: { nested: 42 },
     })
     expect(appConfig).toMatchInlineSnapshot(`
       {
@@ -83,7 +84,7 @@ describe('composables', () => {
       'navigateTo',
       'abortNavigation',
       'setPageLayout',
-      'defineNuxtComponent'
+      'defineNuxtComponent',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -106,7 +107,7 @@ describe('composables', () => {
       'useRouter',
       'useSeoMeta',
       'useServerSeoMeta',
-      'usePreviewMode'
+      'usePreviewMode',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -315,7 +316,7 @@ describe('useFetch', () => {
   it('should timeout', async () => {
     const { status, error } = await useFetch(
       () => new Promise(resolve => setTimeout(resolve, 5000)),
-      { timeout: 1 }
+      { timeout: 1 },
     )
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
@@ -455,7 +456,7 @@ describe('useId', () => {
           const id = useId()
           vals.add(id)
           return () => h('div', id)
-        }
+        },
       }))
     }
     expect(vals.size).toBe(100)
@@ -466,7 +467,7 @@ describe('useId', () => {
       setup () {
         const id = useId()
         return () => h('div', id)
-      }
+      },
     })
 
     expect(mount(component).html()).not.toBe(mount(component).html())
@@ -572,7 +573,7 @@ describe('routing utilities: `navigateTo`', () => {
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
       ['data:alert("hi")', 'data'],
-      ['\0data:alert("hi")', 'data']
+      ['\0data:alert("hi")', 'data'],
     ]
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
@@ -592,7 +593,7 @@ describe('routing utilities: `useRoute`', () => {
       params: {},
       path: '/',
       query: {},
-      redirectedFrom: undefined
+      redirectedFrom: undefined,
     })
   })
 })
@@ -630,7 +631,7 @@ describe('routing utilities: `setPageLayout`', () => {
 describe('defineNuxtComponent', () => {
   it('should produce a Vue component', async () => {
     const wrapper = await mountSuspended(defineNuxtComponent({
-      render: () => h('div', 'hi there')
+      render: () => h('div', 'hi there'),
     }))
     expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
   })
@@ -642,7 +643,7 @@ describe('useCookie', () => {
   it('should watch custom cookie refs', () => {
     const user = useCookie('userInfo', {
       default: () => ({ score: -1 }),
-      maxAge: 60 * 60
+      maxAge: 60 * 60,
     })
     const computedVal = computed(() => user.value.score)
     expect(computedVal.value).toBe(-1)
@@ -655,7 +656,7 @@ describe('useCookie', () => {
       const user = useCookie('shallowUserInfo', {
         default: () => ({ score: -1 }),
         maxAge: 60 * 60,
-        watch: value
+        watch: value,
       })
       const computedVal = computed(() => user.value.score)
       expect(computedVal.value).toBe(-1)
@@ -693,5 +694,38 @@ describe('callOnce', () => {
     await execute('first')
     await execute('second')
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('route announcer', () => {
+  it('should create a route announcer with default politeness', () => {
+    const announcer = useRouteAnnouncer()
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create a route announcer with provided politeness', () => {
+    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
   })
 })

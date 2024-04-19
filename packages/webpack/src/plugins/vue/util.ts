@@ -14,7 +14,7 @@ export const validate = (compiler: Compiler) => {
   if (!compiler.options.externals) {
     logger.info(
       'It is recommended to externalize dependencies in the server build for ' +
-      'better build performance.'
+      'better build performance.',
     )
   }
 }

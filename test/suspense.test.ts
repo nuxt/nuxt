@@ -15,8 +15,8 @@ await setup({
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite',
     buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
-  }
+    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
+  },
 })
 
 describe('suspense multiple nav', () => {
@@ -37,7 +37,7 @@ describe('suspense multiple nav', () => {
     // So we click two navigations quickly, before the first one is resolved
     await Promise.all([
       page.locator('#btn-a').click(),
-      page.locator('#btn-b').click()
+      page.locator('#btn-b').click(),
     ])
 
     expect.soft(await page.locator('#content').textContent()).toContain('Hello b')

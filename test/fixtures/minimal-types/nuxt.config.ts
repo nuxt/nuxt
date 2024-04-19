@@ -1,3 +1,3 @@
 export default defineNuxtConfig({
-  experimental: { appManifest: true }
+  experimental: { appManifest: true },
 })

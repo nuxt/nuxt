@@ -7,7 +7,7 @@ definePageMeta({
       // trigger a loading error when navigated to via client-side navigation
       await import(/* webpackIgnore: true */ /* @vite-ignore */ `some-non-exis${''}ting-module`)
     }
-  }
+  },
 })
 const someValue = useState('val', () => 1)
 </script>

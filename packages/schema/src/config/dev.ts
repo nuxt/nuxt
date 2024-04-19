@@ -38,6 +38,6 @@ export default defineUntypedSchema({
      * Template to show a loading screen
      * @type {(data: { loading?: string }) => string}
      */
-    loadingTemplate
-  }
+    loadingTemplate,
+  },
 })

@@ -48,25 +48,25 @@ export default defineComponent({
   props: {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     lazy: Boolean,
     props: {
       type: Object,
-      default: () => undefined
+      default: () => undefined,
     },
     context: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     source: {
       type: String,
-      default: () => undefined
+      default: () => undefined,
     },
     dangerouslyLoadClientComponents: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
@@ -99,9 +99,9 @@ export default defineComponent({
           ...(import.meta.server && import.meta.prerender)
             ? {}
             : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
-          result: toRevive
+          result: toRevive,
         },
-        ...result
+        ...result,
       }
     }
 
@@ -168,7 +168,7 @@ export default defineComponent({
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined
+        props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers
@@ -219,7 +219,7 @@ export default defineComponent({
     }
 
     expose({
-      refresh: () => fetchComponent(true)
+      refresh: () => fetchComponent(true),
     })
 
     if (import.meta.hot) {
@@ -261,7 +261,7 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) })
+                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
                 )
               }
             }
@@ -275,7 +275,7 @@ export default defineComponent({
                       replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
                     }
                     teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
-                      default: () => [createStaticVNode(replaced, 1)]
+                      default: () => [createStaticVNode(replaced, 1)],
                     }))
                   }
                 }
@@ -286,9 +286,9 @@ export default defineComponent({
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                     default: () => {
-                      return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1)
+                      return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1),
                       ]))))]
-                    }
+                    },
                   })
                   teleports.push(vnode)
                 }
@@ -297,8 +297,8 @@ export default defineComponent({
           }
 
           return h(Fragment, teleports)
-        }, _cache, 1)
+        }, _cache, 1),
       ]
     }
-  }
+  },
 })
