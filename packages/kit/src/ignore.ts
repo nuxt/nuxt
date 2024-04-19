@@ -38,19 +38,17 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     return []
   }
 
-  if (!nuxt._ignorePatterns) {
-    nuxt._ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
+  const ignorePatterns = nuxt.options.ignore.flatMap(s => resolveGroupSyntax(s))
 
-    const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
-    if (existsSync(nuxtignoreFile)) {
-      const contents = readFileSync(nuxtignoreFile, 'utf-8')
-      nuxt._ignorePatterns.push(...contents.trim().split(/\r?\n/))
-    }
+  const nuxtignoreFile = join(nuxt.options.rootDir, '.nuxtignore')
+  if (existsSync(nuxtignoreFile)) {
+    const contents = readFileSync(nuxtignoreFile, 'utf-8')
+    ignorePatterns.push(...contents.trim().split(/\r?\n/))
   }
 
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
-    return nuxt._ignorePatterns.map((p) => {
+    return ignorePatterns.map((p) => {
       const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
       if (pattern[0] === '*') {
         return p
@@ -59,7 +57,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
     })
   }
 
-  return nuxt._ignorePatterns
+  return ignorePatterns
 }
 
 /**
