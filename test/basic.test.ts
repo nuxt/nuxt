@@ -771,6 +771,43 @@ describe('nuxt links', () => {
     await page.waitForFunction(() => window.scrollY === 0)
     await page.close()
   })
+
+  it('useLink works', async () => {
+    const html = await $fetch('/nuxt-link/use-link')
+    expect(html).toContain('<div>useLink in NuxtLink: true</div>')
+    expect(html).toContain('<div>route using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink2 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink3 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route3 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href3 using useLink: /nuxt-link/trailing-slash</div>')
+  })
+  it('useLink navigate importing NuxtLink works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button1').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button2').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveDynamicComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button3').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
