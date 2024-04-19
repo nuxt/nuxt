@@ -6,7 +6,7 @@ export const requestIdleCallback: Window['requestIdleCallback'] = import.meta.se
       const start = Date.now()
       const idleDeadline = {
         didTimeout: false,
-        timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
+        timeRemaining: () => Math.max(0, 50 - (Date.now() - start)),
       }
       return setTimeout(() => { cb(idleDeadline) }, 1)
     }))

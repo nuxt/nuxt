@@ -21,7 +21,7 @@ function vuePlugin (options: Options) {
   return {
     ..._vuePlugin(options),
     handleHotUpdate () {},
-    configureDevServer () {}
+    configureDevServer () {},
   }
 }
 
@@ -39,7 +39,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
       chunkName: '123',
       prefetch: false,
       preload: false,
-      mode: 'client'
+      mode: 'client',
     }, {
       pascalName: 'DotClientComponent',
       kebabName: 'dot-client-component',
@@ -49,9 +49,9 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
       chunkName: '123',
       prefetch: false,
       preload: false,
-      mode: 'client'
+      mode: 'client',
     }]
-  }
+  },
 }, { framework: 'rollup' }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
@@ -60,8 +60,8 @@ const treeshake = async (source: string): Promise<string> => {
       sourceType: 'module',
       ecmaVersion: 'latest',
       locations: true,
-      ...opts
-    })
+      ...opts,
+    }),
   }, source)
   return typeof result === 'string' ? result : result?.code
 }
@@ -69,16 +69,16 @@ const treeshake = async (source: string): Promise<string> => {
 async function SFCCompile (name: string, source: string, options: Options, ssr = false): Promise<string> {
   const result = await (vuePlugin({
     compiler: VueCompilerSFC,
-    ...options
+    ...options,
   }).transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
       sourceType: 'module',
       ecmaVersion: 'latest',
       locations: true,
-      ...opts
-    })
+      ...opts,
+    }),
   }, source, name, {
-    ssr
+    ssr,
   })
 
   return typeof result === 'string' ? result : result?.code
@@ -88,8 +88,8 @@ const stateToTest: { name: string, options: Partial<Options & { devServer: { con
   {
     name: 'prod',
     options: {
-      isProduction: true
-    }
+      isProduction: true,
+    },
   },
   {
     name: 'dev',
@@ -98,11 +98,11 @@ const stateToTest: { name: string, options: Partial<Options & { devServer: { con
       devServer: {
         config: {
           // trigger dev behavior
-          server: false
-        }
-      }
-    }
-  }
+          server: false,
+        },
+      },
+    },
+  },
 ]
 
 describe('treeshake client only in ssr', () => {
@@ -124,11 +124,11 @@ describe('treeshake client only in ssr', () => {
       expect(clientResult).toContain('should-be-treeshaken')
       expect(treeshaken).not.toContain('should-be-treeshaken')
 
-      expect(treeshaken).not.toContain("import HelloWorld from '../HelloWorld.vue'")
-      expect(clientResult).toContain("import HelloWorld from '../HelloWorld.vue'")
+      expect(treeshaken).not.toContain('import HelloWorld from \'../HelloWorld.vue\'')
+      expect(clientResult).toContain('import HelloWorld from \'../HelloWorld.vue\'')
 
-      expect(treeshaken).not.toContain("import { Treeshaken } from 'somepath'")
-      expect(clientResult).toContain("import { Treeshaken } from 'somepath'")
+      expect(treeshaken).not.toContain('import { Treeshaken } from \'somepath\'')
+      expect(clientResult).toContain('import { Treeshaken } from \'somepath\'')
 
       // remove resolved import
       expect(treeshaken).not.toContain('const _component_ResolvedImport =')
@@ -137,12 +137,12 @@ describe('treeshake client only in ssr', () => {
       // treeshake multi line variable declaration
       expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
       expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaken).not.toContain("return (await import('./../some.island.vue'))")
+      expect(treeshaken).not.toContain('return (await import(\'./../some.island.vue\'))')
       expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
 
       // treeshake object and array declaration
-      expect(treeshaken).not.toContain("const { ObjectPattern } = await import('nuxt.com')")
-      expect(treeshaken).not.toContain("const { ObjectPattern: ObjectPatternDeclaration } = await import('nuxt.com')")
+      expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
+      expect(treeshaken).not.toContain('const { ObjectPattern: ObjectPatternDeclaration } = await import(\'nuxt.com\')')
       expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
@@ -155,7 +155,7 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).not.toContain('import {  } from')
 
       // expect components used in setup to not be removed
-      expect(treeshaken).toContain("import DontRemoveThisSinceItIsUsedInSetup from './ComponentWithProps.vue'")
+      expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
 
       // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
       expect(treeshaken).not.toContain('ClientImport')

@@ -31,9 +31,9 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           code: s.toString(),
           map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

@@ -13,6 +13,6 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: ['override'],
-  validate: to => to.path !== '/forbidden'
+  validate: to => to.path !== '/forbidden',
 })
 </script>

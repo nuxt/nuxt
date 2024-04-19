@@ -9,7 +9,7 @@ import { debounce } from 'perfect-debounce'
 import { createResolver, defineNuxtModule, logger, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
-  resolveSchema as resolveUntypedSchema
+  resolveSchema as resolveUntypedSchema,
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
@@ -17,7 +17,7 @@ import jiti from 'jiti'
 
 export default defineNuxtModule({
   meta: {
-    name: 'nuxt-config-schema'
+    name: 'nuxt-config-schema',
   },
   async setup (_, nuxt) {
     if (!nuxt.options.experimental.configSchema) {
@@ -33,9 +33,9 @@ export default defineNuxtModule({
       requireCache: false,
       transformOptions: {
         babel: {
-          plugins: [untypedPlugin]
-        }
-      }
+          plugins: [untypedPlugin],
+        },
+      },
     })
 
     // Register module types
@@ -68,7 +68,7 @@ export default defineNuxtModule({
           const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
           for (const layer of nuxt.options._layers) {
             const subscription = await subscribe(layer.config.rootDir, onChange, {
-              ignore: ['!nuxt.schema.*']
+              ignore: ['!nuxt.schema.*'],
             })
             nuxt.hook('close', () => subscription.unsubscribe())
           }
@@ -78,11 +78,11 @@ export default defineNuxtModule({
       }
 
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
-        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*')
+        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
       ))
       const watcher = chokidar.watch(filesToWatch, {
         ...nuxt.options.watchers.chokidar,
-        ignoreInitial: true
+        ignoreInitial: true,
       })
       watcher.on('all', onChange)
       nuxt.hook('close', () => watcher.close())
@@ -108,7 +108,7 @@ export default defineNuxtModule({
             logger.warn(
               'Unable to load schema from',
               filePath,
-              err
+              err,
             )
             continue
           }
@@ -121,7 +121,7 @@ export default defineNuxtModule({
 
       // Resolve and merge schemas
       const schemas = await Promise.all(
-        schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef))
+        schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef)),
       )
 
       // Merge after normalization
@@ -140,13 +140,13 @@ export default defineNuxtModule({
       await writeFile(
         resolve(nuxt.options.buildDir, 'schema/nuxt.schema.json'),
         JSON.stringify(schema, null, 2),
-        'utf8'
+        'utf8',
       )
       const _types = generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
         partial: true,
-        allowExtraKeys: false
+        allowExtraKeys: false,
       })
       const types =
         _types +
@@ -168,10 +168,10 @@ declare module 'nuxt/schema' {
 `
       const typesPath = resolve(
         nuxt.options.buildDir,
-        'schema/nuxt.schema.d.ts'
+        'schema/nuxt.schema.d.ts',
       )
       await writeFile(typesPath, types, 'utf8')
       await nuxt.hooks.callHook('schema:written')
     }
-  }
+  },
 })

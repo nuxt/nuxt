@@ -8,7 +8,7 @@ export const setInterval = import.meta.client
       if (import.meta.dev) {
         throw createError({
           statusCode: 500,
-          message: intervalError
+          message: intervalError,
         })
       }
 

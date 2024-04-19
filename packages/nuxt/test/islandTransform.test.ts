@@ -15,12 +15,12 @@ const getComponents = () => [{
   export: 'default',
   shortPath: '',
   prefetch: false,
-  preload: false
+  preload: false,
 }] as Component[]
 
 const pluginWebpack = islandsTransform.raw({
   getComponents,
-  selectiveClient: true
+  selectiveClient: true,
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
 const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
@@ -28,7 +28,7 @@ const viteTransform = async (source: string, id: string, isDev = false, selectiv
     getComponents,
     rootDir: '/root',
     isDev,
-    selectiveClient
+    selectiveClient,
   }, { framework: 'vite' }) as Plugin
 
   const result = await (vitePlugin.transform! as Function)(source, id)
@@ -379,6 +379,31 @@ describe('islandTransform - server and island components', () => {
               "
       `)
         expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
+      })
+
+      it('should move v-if to the wrapper component', async () => {
+        const result = await viteTransform(`<template>
+        <div>
+        <HelloWorld v-if="false" nuxt-client />
+        <HelloWorld v-else-if="true" nuxt-client />
+        <HelloWorld v-else nuxt-client />
+        </div>
+      </template>
+      `, 'hello.server.vue', false, true)
+
+        expect(result).toMatchInlineSnapshot(`
+          "<script setup>
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
+                  <div>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  </div>
+                </template>
+                "
+        `)
       })
     })
 

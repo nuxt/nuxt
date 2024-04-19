@@ -10,5 +10,5 @@ export const viteNodeFetch = $fetch.create({
   // @ts-expect-error https://github.com/node-fetch/node-fetch#custom-agent
   agent: viteNodeOptions.baseURL.startsWith('https://')
     ? new HTTPSAgent({ rejectUnauthorized: false })
-    : null
+    : null,
 })
