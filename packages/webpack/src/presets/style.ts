@@ -8,14 +8,14 @@ export function style (ctx: WebpackConfigContext) {
   applyPresets(ctx, [
     loaders,
     extractCSS,
-    minimizer
+    minimizer,
   ])
 }
 
 function minimizer (ctx: WebpackConfigContext) {
   if (ctx.userConfig.optimizeCSS && Array.isArray(ctx.config.optimization!.minimizer)) {
     ctx.config.optimization!.minimizer.push(new CssMinimizerPlugin({
-      ...ctx.userConfig.optimizeCSS
+      ...ctx.userConfig.optimizeCSS,
     }))
   }
 }
@@ -26,7 +26,7 @@ function extractCSS (ctx: WebpackConfigContext) {
     ctx.config.plugins!.push(new MiniCssExtractPlugin({
       filename: fileName(ctx, 'css'),
       chunkFilename: fileName(ctx, 'css'),
-      ...ctx.userConfig.extractCSS === true ? {} : ctx.userConfig.extractCSS
+      ...ctx.userConfig.extractCSS === true ? {} : ctx.userConfig.extractCSS,
     }))
   }
 }
@@ -57,7 +57,7 @@ function loaders (ctx: WebpackConfigContext) {
 function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
   const styleLoaders = [
     createPostcssLoadersRule(ctx),
-    processorLoader
+    processorLoader,
   ].filter(Boolean)
 
   ctx.userConfig.loaders.css.importLoaders =
@@ -73,13 +73,13 @@ function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx
       // This matches <style module>
       {
         resourceQuery: /module/,
-        use: cssModuleLoaders.concat(styleLoaders)
+        use: cssModuleLoaders.concat(styleLoaders),
       },
       // This matches plain <style> or <style scoped>
       {
-        use: cssLoaders.concat(styleLoaders)
-      }
-    ]
+        use: cssLoaders.concat(styleLoaders),
+      },
+    ],
   }
 }
 
@@ -97,9 +97,9 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
 
     return [
       {
-        loader: MiniCssExtractPlugin.loader
+        loader: MiniCssExtractPlugin.loader,
       },
-      cssLoader
+      cssLoader,
     ]
   }
 
@@ -109,7 +109,7 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
     //   loader: 'vue-style-loader',
     //   options: options.webpack.loaders.vueStyle
     // },
-    cssLoader
+    cssLoader,
   ]
 }
 
@@ -124,6 +124,6 @@ function createPostcssLoadersRule (ctx: WebpackConfigContext) {
 
   return {
     loader: 'postcss-loader',
-    options: config
+    options: config,
   }
 }

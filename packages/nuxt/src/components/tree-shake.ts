@@ -81,13 +81,13 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
                           componentsToRemoveSet.add(nameToRemove)
                         }
                       }
-                    }
+                    },
                   })
                 }
               }
             }
           }
-        }
+        },
       })
 
       const componentsToRemove = [...componentsToRemoveSet]
@@ -107,10 +107,10 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
 
@@ -142,7 +142,7 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
           }
         }
       }
-    }
+    },
   })
 }
 
@@ -197,7 +197,7 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
     let found = false
     walk(codeAst, {
       enter (node) {
-        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && node.id?.name === '_sfc_ssrRender')) {
+        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
           // walk through the setup function node or the ssrRender function
           walk(node, {
             enter (node) {
@@ -209,10 +209,10 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
                 // dev only with $setup or _ctx
                 found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
               }
-            }
+            },
           })
         }
-      }
+      },
     })
     if (!found) { return name }
   }
@@ -220,7 +220,7 @@ function isComponentNotCalledInSetup (codeAst: Node, name: string): string | voi
 
 /**
  * retrieve the component identifier being used on ssrRender callExpression
- * @param {CallExpression} ssrRenderNode - ssrRender callExpression
+ * @param ssrRenderNode - ssrRender callExpression
  */
 function getComponentName (ssrRenderNode: AcornNode<CallExpression>): string {
   const componentCall = ssrRenderNode.arguments[0] as Identifier | MemberExpression | CallExpression
@@ -250,7 +250,7 @@ function removeVariableDeclarator (codeAst: Node, name: string, magicString: Mag
           }
         }
       }
-    }
+    },
   })
 }
 

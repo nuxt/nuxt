@@ -46,6 +46,6 @@ useSeoMeta({
 
 ## Parameters
 
-There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/src/metaFlat.ts).
+There are over 100 parameters. See the [full list of parameters in the source code](https://github.com/harlan-zw/zhead/blob/main/packages/zhead/src/metaFlat.ts#L1035).
 
 :read-more{to="/docs/getting-started/seo-meta"}

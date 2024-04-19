@@ -26,9 +26,6 @@ jobs:
       - name: Build (stub)
         run: pnpm dev:prepare
 
-      - name: Lint (code)
-        run: pnpm lint:fix
-
       - name: Test (unit)
         run: pnpm test:unit -u
 
@@ -51,5 +48,8 @@ jobs:
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
+
+      - name: Lint (code)
+        run: pnpm lint:fix
 
       - uses: autofix-ci/action@ea32e3a12414e6d3183163c3424a7d7a8631ad84

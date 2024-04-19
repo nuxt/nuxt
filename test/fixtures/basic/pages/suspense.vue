@@ -13,7 +13,7 @@ definePageMeta({
         to.meta.layout = to.query.layout
       }
     }
-  }
+  },
 })
 </script>
 

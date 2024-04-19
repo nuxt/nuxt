@@ -66,14 +66,14 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
           invalidateVirtualModules()
         }
       })
-    }
+    },
   }
 }
 
 export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
   addDevServerHandler({
     route: '/__nuxt_vite_node__/',
-    handler: createViteNodeApp(ctx).handler
+    handler: createViteNodeApp(ctx).handler,
   })
 }
 
@@ -86,14 +86,14 @@ function getManifest (ctx: ViteBuildContext) {
       file: '@vite/client',
       css,
       module: true,
-      isEntry: true
+      isEntry: true,
     },
     [ctx.entry]: {
       file: ctx.entry,
       isEntry: true,
       module: true,
-      resourceType: 'script'
-    }
+      resourceType: 'script',
+    },
   })
 
   return manifest
@@ -120,13 +120,13 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         inline: [
           /\/node_modules\/(.*\/)?(nuxt|nuxt3|nuxt-nightly)\//,
           /^#/,
-          ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev })
-        ]
+          ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
+        ],
       },
       transformMode: {
         ssr: [/.*/],
-        web: []
-      }
+        web: [],
+      },
     })
     const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
     node.shouldExternalize = async (id: string) => {
@@ -150,7 +150,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
           code: 'VITE_ERROR',
           id: moduleId,
           stack: '',
-          ...err
+          ...err,
         }
         throw createError({ data: errorData })
       })
@@ -174,7 +174,7 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
     baseURL: `${ctx.nuxt.options.devServer.url}__nuxt_vite_node__`,
     root: ctx.nuxt.options.srcDir,
     entryPath: ctx.entry,
-    base: ctx.ssrServer!.config.base || '/_nuxt/'
+    base: ctx.ssrServer!.config.base || '/_nuxt/',
   } satisfies ViteNodeServerOptions
   process.env.NUXT_VITE_NODE_OPTIONS = JSON.stringify(viteNodeServerOptions)
 
@@ -183,10 +183,10 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
 
   await fse.writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`
+    `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
   )
   await fse.writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
-    `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`
+    `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
   )
 }

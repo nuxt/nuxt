@@ -51,14 +51,14 @@ export default <RouterConfig> {
         resolve(position)
       })
     })
-  }
+  },
 }
 
 function _getHashElementScrollMarginTop (selector: string): number {
   try {
     const elem = document.querySelector(selector)
     if (elem) {
-      return parseFloat(getComputedStyle(elem).scrollMarginTop)
+      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop)
     }
   } catch {
     // ignore any errors parsing scrollMarginTop

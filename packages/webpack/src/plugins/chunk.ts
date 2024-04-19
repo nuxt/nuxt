@@ -21,8 +21,8 @@ export class ChunkErrorPlugin {
     compiler.hooks.thisCompilation.tap(pluginName, compilation =>
       compilation.mainTemplate.hooks.localVars.tap(
         { name: pluginName, stage: 1 },
-        source => source + script
-      )
+        source => source + script,
+      ),
     )
   }
 }

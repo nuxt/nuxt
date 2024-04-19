@@ -9,12 +9,12 @@ export {
   /** @deprecated Import `useSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
   useSeoMeta,
   /** @deprecated Import `useServerSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useServerSeoMeta
+  useServerSeoMeta,
 } from '@unhead/vue'
 
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
-export type { AsyncDataOptions, AsyncData } from './asyncData'
+export type { AsyncDataOptions, AsyncData, AsyncDataRequestStatus } from './asyncData'
 export { useHydration } from './hydrate'
 export { callOnce } from './once'
 export { useState, clearNuxtState } from './state'
@@ -35,4 +35,5 @@ export type { NuxtAppManifest, NuxtAppManifestMeta } from './manifest'
 export type { ReloadNuxtAppOptions } from './chunk'
 export { reloadNuxtApp } from './chunk'
 export { useRequestURL } from './url'
+export { usePreviewMode } from './preview'
 export { useId } from './id'

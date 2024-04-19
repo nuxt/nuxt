@@ -3,9 +3,9 @@ export default defineNuxtComponent({
   name: 'ClientOnlyScript',
   props: {
     foo: {
-      type: String
-    }
-  }
+      type: String,
+    },
+  },
 })
 </script>
 

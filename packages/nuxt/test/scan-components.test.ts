@@ -8,7 +8,7 @@ const fixtureDir = resolve(__dirname, 'fixture')
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({
-  isIgnored: () => false
+  isIgnored: () => false,
 }))
 
 const dirs: ComponentsDir[] = [
@@ -16,64 +16,64 @@ const dirs: ComponentsDir[] = [
     path: rFixture('components/islands'),
     enabled: true,
     extensions: [
-      'vue'
+      'vue',
     ],
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
+      '**/*.d.ts',
     ],
     transpile: false,
-    island: true
+    island: true,
   },
   {
     path: rFixture('components/global'),
     enabled: true,
     extensions: [
-      'vue'
+      'vue',
     ],
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
+      '**/*.d.ts',
     ],
     transpile: false,
-    global: true
+    global: true,
   },
   {
     path: rFixture('components'),
     enabled: true,
     extensions: [
-      'vue'
+      'vue',
     ],
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
+      '**/*.d.ts',
     ],
-    transpile: false
+    transpile: false,
   },
   {
     path: rFixture('components'),
     enabled: true,
     extensions: [
-      'vue'
+      'vue',
     ],
     pattern: '**/*.{vue,}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
+      '**/*.d.ts',
     ],
-    transpile: false
+    transpile: false,
   },
   {
     path: rFixture('components'),
     extensions: [
-      'vue'
+      'vue',
     ],
     prefix: 'nuxt',
     enabled: true,
@@ -81,10 +81,10 @@ const dirs: ComponentsDir[] = [
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
-      '**/*.d.ts'
+      '**/*.d.ts',
     ],
-    transpile: false
-  }
+    transpile: false,
+  },
 ]
 
 const expectedComponents = [
@@ -99,7 +99,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/islands/Isle.vue'
+    shortPath: 'components/islands/Isle.vue',
   },
   {
     chunkName: 'components/glob',
@@ -112,7 +112,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/global/Glob.vue'
+    shortPath: 'components/global/Glob.vue',
   },
   {
     mode: 'all',
@@ -125,7 +125,7 @@ const expectedComponents = [
     island: undefined,
     prefetch: false,
     preload: false,
-    priority: 1
+    priority: 1,
   },
   {
     mode: 'client',
@@ -138,7 +138,7 @@ const expectedComponents = [
     island: undefined,
     prefetch: false,
     preload: false,
-    priority: 1
+    priority: 1,
   },
   {
     mode: 'server',
@@ -151,7 +151,7 @@ const expectedComponents = [
     island: undefined,
     prefetch: false,
     preload: false,
-    priority: 1
+    priority: 1,
   },
   {
     chunkName: 'components/client-component-with-props',
@@ -164,7 +164,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/client/ComponentWithProps.vue'
+    shortPath: 'components/client/ComponentWithProps.vue',
   },
   {
     chunkName: 'components/client-with-client-only-setup',
@@ -177,7 +177,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/client/WithClientOnlySetup.vue'
+    shortPath: 'components/client/WithClientOnlySetup.vue',
   },
   {
     mode: 'server',
@@ -190,7 +190,7 @@ const expectedComponents = [
     island: undefined,
     prefetch: false,
     preload: false,
-    priority: 1
+    priority: 1,
   },
   {
     chunkName: 'components/same-name-same',
@@ -203,7 +203,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/same-name/same/Same.vue'
+    shortPath: 'components/same-name/same/Same.vue',
   },
   {
     chunkName: 'components/some-glob',
@@ -216,7 +216,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/some-glob.global.vue'
+    shortPath: 'components/some-glob.global.vue',
   },
   {
     chunkName: 'components/some-server',
@@ -229,8 +229,8 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
-    shortPath: 'components/some.island.vue'
-  }
+    shortPath: 'components/some.island.vue',
+  },
 ]
 
 const srcDir = rFixture('.')

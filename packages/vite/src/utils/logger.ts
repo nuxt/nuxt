@@ -11,14 +11,14 @@ let lastMsg: string | null = null
 export const logLevelMap: Record<NuxtOptions['logLevel'], vite.UserConfig['logLevel']> = {
   silent: 'silent',
   info: 'info',
-  verbose: 'info'
+  verbose: 'info',
 }
 
 const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, number> = {
   silent: 0,
   error: 1,
   warn: 2,
-  info: 3
+  info: 3,
 }
 
 export function createViteLogger (config: vite.InlineConfig): vite.Logger {
@@ -84,7 +84,7 @@ export function createViteLogger (config: vite.InlineConfig): vite.Logger {
     },
     hasErrorLogged (error) {
       return loggedErrors.has(error)
-    }
+    },
   }
 
   return viteLogger

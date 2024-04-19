@@ -45,7 +45,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []
@@ -60,7 +60,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-    vfs: nuxt.vfs
+    vfs: nuxt.vfs,
   })
 
   return uniqueBy(allRoutes, 'path')
@@ -84,17 +84,21 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       name: '',
       path: '',
       file: file.absolutePath,
-      children: []
+      children: [],
     }
 
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    if (segments[segments.length - 1].endsWith('.server')) {
-      segments[segments.length - 1] = segments[segments.length - 1].replace('.server', '')
+    const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith('.server')) {
+      segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
         route.mode = 'server'
       }
+    } else if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '')
+      route.mode = 'client'
     }
 
     for (let i = 0; i < segments.length; i++) {
@@ -171,7 +175,7 @@ async function getRouteMeta (contents: string, absolutePath: string): Promise<Pa
   const ast = parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',
-    ranges: true
+    ranges: true,
   }) as unknown as Program
   const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
   if (!pageMetaAST) {
@@ -283,7 +287,7 @@ function parseSegment (segment: string) {
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
               : SegmentTokenType.catchall,
-      value: buffer
+      value: buffer,
     })
 
     buffer = ''
@@ -395,7 +399,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
 }
 
 function serializeRouteValue (value: any, skipSerialisation = false) {
-  if (skipSerialisation || value === undefined) return undefined
+  if (skipSerialisation || value === undefined) { return undefined }
   return JSON.stringify(value)
 }
 
@@ -440,8 +444,15 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       const file = normalize(page.file)
-      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
+
+      if (page._sync) {
+        metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
+      }
+
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file, { interopDefault: true })
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
@@ -451,7 +462,9 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         redirect: `${metaImportName}?.redirect`,
         component: page.mode === 'server'
           ? `() => createIslandPage(${route.name})`
-          : genDynamicImport(file, { interopDefault: true })
+          : page.mode === 'client'
+            ? `() => createClientPage(${pageImport})`
+            : pageImport,
       }
 
       if (page.mode === 'server') {
@@ -461,6 +474,13 @@ async function createIslandPage (name) {
   _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
+      } else if (page.mode === 'client') {
+        metaImports.add(`
+let _createClientPage
+async function createClientPage(loader) {
+  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  return _createClientPage(loader);
+}`)
       }
 
       if (route.children != null) {
@@ -474,13 +494,13 @@ async function createIslandPage (name) {
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
           metaRoute[key] = route[key] ?? metaRoute[key]
         }
 
         // set to extracted value or delete if none extracted
         for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
-          if (markedDynamic.has(key)) continue
+          if (markedDynamic.has(key)) { continue }
 
           if (route[key] == null) {
             delete metaRoute[key]
@@ -504,7 +524,7 @@ async function createIslandPage (name) {
       }
 
       return metaRoute
-    }))
+    })),
   }
 }
 
@@ -518,4 +538,11 @@ export function pathToNitroGlob (path: string) {
   }
 
   return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
+}
+
+export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
+  return [
+    joinURL(parent, page.path),
+    ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
+  ]
 }

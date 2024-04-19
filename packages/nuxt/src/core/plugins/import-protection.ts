@@ -18,12 +18,12 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
-    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.')
+    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.'),
   ])
 
   patterns.push([
     /^((|~|~~|@|@@)\/)?nuxt\.config(\.|$)/,
-    'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.'
+    'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.',
   ])
 
   patterns.push([/(^|node_modules\/)@vue\/composition-api/])
@@ -31,7 +31,7 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   for (const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
     patterns.push([
       new RegExp(`^${escapeRE(mod as string)}$`),
-      'Importing directly from module entry-points is not allowed.'
+      'Importing directly from module entry-points is not allowed.',
     ])
   }
 
@@ -48,7 +48,7 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   if (!options.isNitro) {
     patterns.push([
       new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
-      'Importing from server is not allowed in the Vue part of your app.'
+      'Importing from server is not allowed in the Vue part of your app.',
     ])
   }
 
@@ -88,6 +88,6 @@ export const ImportProtectionPlugin = createUnplugin(function (options: ImportPr
         return _require.resolve('unenv/runtime/mock/proxy')
       }
       return null
-    }
+    },
   }
 })

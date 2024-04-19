@@ -11,5 +11,6 @@ exclude = [
   "https://twitter.nuxt.dev/",
   "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
-  "(https?:\/\/github\.com\/)(.*\/)(generate)",
+  # single-quotes are required for regexp
+  '(https?:\/\/github\.com\/)(.*\/)(generate)',
 ]
