@@ -771,6 +771,43 @@ describe('nuxt links', () => {
     await page.waitForFunction(() => window.scrollY === 0)
     await page.close()
   })
+
+  it('useLink works', async () => {
+    const html = await $fetch('/nuxt-link/use-link')
+    expect(html).toContain('<div>useLink in NuxtLink: true</div>')
+    expect(html).toContain('<div>route using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink2 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink3 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route3 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href3 using useLink: /nuxt-link/trailing-slash</div>')
+  })
+  it('useLink navigate importing NuxtLink works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button1').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button2').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveDynamicComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button3').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
@@ -1043,6 +1080,21 @@ describe('composables', () => {
     const clientOnlyClient = `<div><label for="${clientIds[0]}">Email</label><input id="${clientIds[0]}" name="email" type="email"><label for="${clientIds[1]}">Password</label><input id="${clientIds[1]}" name="password" type="password"></div>`
     expect(sanitiseHTML(clientHTML)).toEqual(`${renderedForm.join(clientOnlyClient)}`)
     expect(pageErrors).toEqual([])
+    await page.close()
+  })
+  it('`useRouteAnnouncer` should change message on route change', async () => {
+    const { page } = await renderPage('/route-announcer')
+    expect(await page.getByRole('alert').textContent()).toContain('First Page')
+    await page.getByRole('link').click()
+    await page.getByText('Second page content').waitFor()
+    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
+    await page.close()
+  })
+  it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
+    const { page } = await renderPage('/route-announcer')
+    await page.getByRole('button').click()
+    await page.waitForFunction(() => document.title.includes('Dynamically set title'))
+    expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
     await page.close()
   })
 })

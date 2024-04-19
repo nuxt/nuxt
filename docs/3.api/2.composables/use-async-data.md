@@ -1,6 +1,6 @@
 ---
 title: 'useAsyncData'
-description: useAsyncData provides access to data that resolves asynchronously in a SSR-friendly composable.
+description: useAsyncData provides access to data that resolves asynchronously in an SSR-friendly composable.
 links:
   - label: Source
     icon: i-simple-icons-github

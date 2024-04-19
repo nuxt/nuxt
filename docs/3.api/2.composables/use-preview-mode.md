@@ -5,6 +5,8 @@ description: "Use usePreviewMode to check and control preview mode in Nuxt"
 
 # `usePreviewMode`
 
+Preview mode allows you to see how your changes would be displayed on a live site without revealing them to users.
+
 You can use the built-in `usePreviewMode` composable to access and control preview state in Nuxt. If the composable detects preview mode it will automatically force any updates necessary for [`useAsyncData`](/docs/api/composables/use-async-data) and [`useFetch`](/docs/api/composables/use-fetch) to rerender preview content.
 
 ```js
@@ -47,15 +49,11 @@ The `getState` function will append returned values to current state, so be care
 
 ## Example
 
+The example below creates a page where part of a content is rendered only in preview mode.
+
 ```vue [pages/some-page.vue]
 <script setup>
-const route = useRoute()
-
-const { enabled, state } = usePreviewMode({
-  shouldEnable: () => {
-    return route.query.customPreview === 'true'
-  },
-})
+const { enabled, state } = usePreviewMode()
 
 const { data } = await useFetch('/api/preview', {
   query: {
@@ -67,12 +65,9 @@ const { data } = await useFetch('/api/preview', {
 <template>
   <div>
     Some base content
-
     <p v-if="enabled">
       Only preview content: {{ state.token }}
-
       <br>
-
       <button @click="enabled = false">
         disable preview mode
       </button>
@@ -80,3 +75,20 @@ const { data } = await useFetch('/api/preview', {
   </div>
 </template>
 ```
+
+Now you can generate your site and serve it:
+
+```bash [Terminal]
+npx nuxi generate
+npx nuxi preview
+```
+
+Then you can see your preview page by adding the query param `preview` to the end of the page you want to see once:
+
+```js
+?preview=true
+```
+
+::note
+`usePreviewMode` should be tested locally with `nuxi generate` and then `nuxi preview` rather than `nuxi dev`. (The [preview command](/docs/api/commands/preview) is not related to preview mode.)
+::

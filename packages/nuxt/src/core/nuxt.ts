@@ -1,7 +1,8 @@
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
+import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -326,6 +327,14 @@ async function initNuxt (nuxt: Nuxt) {
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator'),
   })
 
+  // Add <NuxtRouteAnnouncer>
+  addComponent({
+    name: 'NuxtRouteAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer'),
+    mode: 'client',
+  })
+
   // Add <NuxtClientFallback>
   if (nuxt.options.experimental.clientFallback) {
     addComponent({
@@ -444,6 +453,10 @@ async function initNuxt (nuxt: Nuxt) {
       await installModule(m, {})
     }
   }
+
+  // (Re)initialise ignore handler with resolved ignores from modules
+  nuxt._ignore = ignore(nuxt.options.ignoreOptions)
+  nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
 
