@@ -76,7 +76,7 @@
     "cookie-es": "^1.1.0",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
-    "devalue": "^4.3.2",
+    "devalue": "^5.0.0",
     "esbuild": "^0.20.2",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
