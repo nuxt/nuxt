@@ -77,7 +77,6 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  state: Record<string, any>
   head: {
     link: (Record<string, string>)[]
     style: ({ innerHTML: string, key: string })[]
@@ -496,7 +495,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       id: islandContext.id,
       head: islandHead,
       html: getServerComponentHTML(htmlContext.body),
-      state: ssrContext.payload.state,
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
     }
