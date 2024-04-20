@@ -33,58 +33,6 @@ export function defineNuxtModule<TOptions extends ModuleOptions> (definition?: M
   }
 }
 
-defineNuxtModule<{
-  option1?: 'abc' | 'def'
-  option2: number
-}>().with({
-  defaults: {
-    option1: 'abc',
-  },
-  setup: (resolvedOptions) => {
-    resolvedOptions.option1
-    resolvedOptions.option2
-  },
-})
-
-defineNuxtModule<{
-  option1?: string
-  option2?: number
-}>().with({
-  defaults: {
-    option1: 'abc',
-  },
-  setup: (resolvedOptions) => {
-    resolvedOptions.option1
-    resolvedOptions.option2
-  },
-})
-
-defineNuxtModule<{
-  option1: string
-  option2?: number
-}>().with({
-  defaults: {
-    option1: 'abc',
-  },
-  setup: (resolvedOptions) => {
-    resolvedOptions.option1
-    resolvedOptions.option2
-  },
-})
-
-defineNuxtModule<{
-  option1: string
-  option2: number
-}>().with({
-  defaults: {
-    option1: 'abc',
-  },
-  setup: (resolvedOptions) => {
-    resolvedOptions.option1
-    resolvedOptions.option2
-  },
-})
-
 function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> (definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>): NuxtModule<TOptions, TOptionsDefaults> {
   if (typeof definition === 'function') { return _defineNuxtModule<TOptions, TOptionsDefaults>({ setup: definition }) }
 
