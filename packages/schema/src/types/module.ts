@@ -42,15 +42,15 @@ type Awaitable<T> = T | Promise<T>
 
 export type ModuleSetupReturn = Awaitable<false | void | ModuleSetupInstallResult>
 
-export type ResolvedOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions> | undefined> = Defu<
+export type ResolvedOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> = Defu<
     Partial<TOptions>,
-    [Partial<TOptions> | undefined, TOptionsDefaults]
+    [Partial<TOptions>, TOptionsDefaults]
 >
 
 /** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
 export interface ModuleDefinition<
   TOptions extends ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> | undefined = Partial<TOptions>,
+  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
 > {
   meta?: ModuleMeta
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => TOptionsDefaults)
@@ -61,7 +61,7 @@ export interface ModuleDefinition<
 
 export interface NuxtModule<
   TOptions extends ModuleOptions = ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> | undefined = Partial<TOptions>,
+  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
 > {
   (this: void, resolvedOptions: ResolvedOptions<TOptions, TOptionsDefaults>, nuxt: Nuxt): ModuleSetupReturn
   getOptions?: (inlineOptions?: Partial<TOptions>, nuxt?: Nuxt) => Promise<ResolvedOptions<TOptions, TOptionsDefaults>>

@@ -16,7 +16,7 @@ import { compileTemplate, templateUtils } from '../internal/template'
 export function defineNuxtModule<TOptions extends ModuleOptions> (definition: ModuleDefinition<TOptions> | NuxtModule<TOptions>): NuxtModule<TOptions>
 
 export function defineNuxtModule<TOptions extends ModuleOptions> (): {
-  with: <TOptionsDefaults extends Partial<TOptions> | undefined> (
+  with: <TOptionsDefaults extends Partial<TOptions>> (
     definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>
   ) => NuxtModule<TOptions, TOptionsDefaults>
 }
@@ -27,13 +27,65 @@ export function defineNuxtModule<TOptions extends ModuleOptions> (definition?: M
   }
 
   return {
-    with: <TOptionsDefaults extends Partial<TOptions> | undefined>(
+    with: <TOptionsDefaults extends Partial<TOptions>>(
       definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>,
     ) => _defineNuxtModule(definition),
   }
 }
 
-function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions> | undefined> (definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>): NuxtModule<TOptions, TOptionsDefaults> {
+defineNuxtModule<{
+  option1?: 'abc' | 'def'
+  option2: number
+}>().with({
+  defaults: {
+    option1: 'abc',
+  },
+  setup: (resolvedOptions) => {
+    resolvedOptions.option1
+    resolvedOptions.option2
+  },
+})
+
+defineNuxtModule<{
+  option1?: string
+  option2?: number
+}>().with({
+  defaults: {
+    option1: 'abc',
+  },
+  setup: (resolvedOptions) => {
+    resolvedOptions.option1
+    resolvedOptions.option2
+  },
+})
+
+defineNuxtModule<{
+  option1: string
+  option2?: number
+}>().with({
+  defaults: {
+    option1: 'abc',
+  },
+  setup: (resolvedOptions) => {
+    resolvedOptions.option1
+    resolvedOptions.option2
+  },
+})
+
+defineNuxtModule<{
+  option1: string
+  option2: number
+}>().with({
+  defaults: {
+    option1: 'abc',
+  },
+  setup: (resolvedOptions) => {
+    resolvedOptions.option1
+    resolvedOptions.option2
+  },
+})
+
+function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> (definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>): NuxtModule<TOptions, TOptionsDefaults> {
   if (typeof definition === 'function') { return _defineNuxtModule<TOptions, TOptionsDefaults>({ setup: definition }) }
 
   // Normalize definition and meta
