@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
 import { dirname } from 'pathe'
-import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedNuxtTemplate, ResolvedOptions } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedModuleOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
 import { logger } from '../logger'
 import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
 import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
@@ -42,14 +42,14 @@ function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults exte
   module.meta.configKey ||= module.meta.name
 
   // Resolves module options from inline options, [configKey] in nuxt.config, defaults and schema
-  async function getOptions (inlineOptions?: Partial<TOptions>, nuxt: Nuxt = useNuxt()): Promise<ResolvedOptions<TOptions, TOptionsDefaults>> {
+  async function getOptions (inlineOptions?: Partial<TOptions>, nuxt: Nuxt = useNuxt()): Promise<ResolvedModuleOptions<TOptions, TOptionsDefaults>> {
     const nuxtConfigOptionsKey = module.meta.configKey || module.meta.name
 
     const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[<keyof NuxtOptions> nuxtConfigOptionsKey] : {}
 
     const optionsDefaults: TOptionsDefaults = module.defaults instanceof Function ? module.defaults(nuxt) : module.defaults ?? <TOptionsDefaults> {}
 
-    let options: ResolvedOptions<TOptions, TOptionsDefaults> = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
+    let options: ResolvedModuleOptions<TOptions, TOptionsDefaults> = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
     if (module.schema) {
       options = await applyDefaults(module.schema, options) as any
