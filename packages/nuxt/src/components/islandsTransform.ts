@@ -82,18 +82,13 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
             const { attributes, children, loc } = node
 
             const slotName = attributes.name ?? 'default'
-            let vfor: string | undefined
-            if (attributes['v-for']) {
-              vfor = attributes['v-for']
-            }
-            delete attributes['v-for']
 
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
               attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
             }
             const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes, vfor?.split(' in ').map((v: string) => v.trim()) as [string, string])
+            const bindings = getPropsToString(attributes)
             // add the wrapper
             s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
 
@@ -101,7 +96,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
               // pass slot fallback to NuxtTeleportSsrSlot fallback
               const attrString = attributeToString(attributes)
               const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${vfor ? wrapWithVForDiv(slice, vfor) : slice}</template>`)
+              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
             } else {
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
             }
@@ -164,9 +159,10 @@ function isBinding (attr: string): boolean {
   return attr.startsWith(':')
 }
 
-function getPropsToString (bindings: Record<string, string>, vfor?: [string, string]): string {
+function getPropsToString (bindings: Record<string, string>): string {
+  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && b[0] !== '_bind').map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
+  const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
   const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
