@@ -2167,9 +2167,6 @@ packages:
   '@types/eslint@8.56.10':
     resolution: {integrity: sha512-Shavhk87gCtY2fhXDctcfS3e6FdxWkCx1iUZ9eEUbh7rTqlZT0/IzOkCOVt0fCjcFuZ9FPYfuezTBImfHCDBGQ==}
 
-  '@types/eslint@8.56.9':
-    resolution: {integrity: sha512-W4W3KcqzjJ0sHg2vAq9vfml6OhsJ53TcUjUqfzzZf/EChUtwspszj/S0pzMxnfRcO55/iGq47dscXw71Fxc4Zg==}
-
   '@types/eslint__js@8.42.3':
     resolution: {integrity: sha512-alfG737uhmPdnvkrLdZLcEKJ/B8s9Y4hrZ+YAdzUeoArBlSUERA2E87ROfOaS4jd/C45fzOoZzidLc1IPwLqOw==}
 
@@ -8266,7 +8263,7 @@ snapshots:
 
   '@stylistic/eslint-plugin-js@1.7.2(eslint@9.1.0)':
     dependencies:
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       acorn: 8.11.3
       escape-string-regexp: 4.0.0
       eslint: 9.1.0
@@ -8276,14 +8273,14 @@ snapshots:
   '@stylistic/eslint-plugin-jsx@1.7.2(eslint@9.1.0)':
     dependencies:
       '@stylistic/eslint-plugin-js': 1.7.2(eslint@9.1.0)
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       eslint: 9.1.0
       estraverse: 5.3.0
       picomatch: 4.0.2
 
   '@stylistic/eslint-plugin-plus@1.7.2(eslint@9.1.0)(typescript@5.4.5)':
     dependencies:
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       '@typescript-eslint/utils': 6.21.0(eslint@9.1.0)(typescript@5.4.5)
       eslint: 9.1.0
     transitivePeerDependencies:
@@ -8293,7 +8290,7 @@ snapshots:
   '@stylistic/eslint-plugin-ts@1.7.2(eslint@9.1.0)(typescript@5.4.5)':
     dependencies:
       '@stylistic/eslint-plugin-js': 1.7.2(eslint@9.1.0)
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       '@typescript-eslint/utils': 6.21.0(eslint@9.1.0)(typescript@5.4.5)
       eslint: 9.1.0
     transitivePeerDependencies:
@@ -8306,7 +8303,7 @@ snapshots:
       '@stylistic/eslint-plugin-jsx': 1.7.2(eslint@9.1.0)
       '@stylistic/eslint-plugin-plus': 1.7.2(eslint@9.1.0)(typescript@5.4.5)
       '@stylistic/eslint-plugin-ts': 1.7.2(eslint@9.1.0)(typescript@5.4.5)
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       eslint: 9.1.0
     transitivePeerDependencies:
       - supports-color
@@ -8355,7 +8352,7 @@ snapshots:
 
   '@types/eslint-scope@3.7.6':
     dependencies:
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       '@types/estree': 1.0.5
 
   '@types/eslint@8.56.10':
@@ -8363,14 +8360,9 @@ snapshots:
       '@types/estree': 1.0.5
       '@types/json-schema': 7.0.15
 
-  '@types/eslint@8.56.9':
-    dependencies:
-      '@types/estree': 1.0.5
-      '@types/json-schema': 7.0.15
-
   '@types/eslint__js@8.42.3':
     dependencies:
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
 
   '@types/estree@1.0.5': {}
 
@@ -10240,7 +10232,7 @@ snapshots:
 
   eslint-flat-config-utils@0.2.3:
     dependencies:
-      '@types/eslint': 8.56.9
+      '@types/eslint': 8.56.10
       pathe: 1.1.2
 
   eslint-import-resolver-node@0.3.9:
