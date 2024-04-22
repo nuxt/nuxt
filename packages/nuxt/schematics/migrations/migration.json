@@ -1,0 +1,10 @@
+{
+  "$schema": "../../node_modules/@wandeljs/core/collection-schema.json",
+  "schematics": {
+    "nuxt-v4": {
+      "description": "All you ever wanted from Nuxt 4",
+      "version": "0.0.1",
+      "factory": "./4_0_0/index"
+    }
+  }
+}
