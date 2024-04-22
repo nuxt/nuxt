@@ -169,7 +169,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location: encodeURI(location) },
+          // do not encode as this would break some modules and some environments
+          headers: { location },
         }
         return response
       }
