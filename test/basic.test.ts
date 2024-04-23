@@ -446,7 +446,7 @@ describe('pages', () => {
     expect(html).not.toContain('<p></p>')
     expect(html).toContain('hi')
 
-    // aysnc setup
+    // async setup
     expect(html).toContain('Work with async setup')
 
     const { page, pageErrors } = await renderPage('/client-fallback')
