@@ -120,6 +120,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
             // Vue files can (also) be their own entrypoints as they are tracked separately
             if (isVue(moduleId)) {
               options.clientCSSMap[moduleId].add(moduleId)
+              const parent = moduleId.replace(/\?.+$/, '')
+              options.clientCSSMap[parent] ||= new Set()
+              options.clientCSSMap[parent].add(moduleId)
             }
             // This is required to track CSS in entry chunk
             if (isEntry) {
