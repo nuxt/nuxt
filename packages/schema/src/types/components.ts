@@ -53,7 +53,7 @@ export interface ScanDir {
    */
   pathPrefix?: boolean
   /**
-   * Ignore scanning this directory if set to `true`
+   * Ignore scanning this directory if set to `false`
    */
   enabled?: boolean
   /**
