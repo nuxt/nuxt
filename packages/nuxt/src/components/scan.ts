@@ -25,7 +25,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   // All scanned paths
   const scannedPaths: string[] = []
 
-  for (const dir of dirs.filter(d => d.enabled)) {
+  for (const dir of dirs.filter(d => d.enabled !== false)) {
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
