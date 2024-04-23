@@ -258,7 +258,7 @@ export function createNuxtApp (options: CreateOptions) {
       if (nuxtApp._scope.active) {
         return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
-      return callWithNuxt(nuxtApp, fn);
+      return callWithNuxt(nuxtApp, fn)
     },
     isHydrating: import.meta.client,
     deferHydration () {
