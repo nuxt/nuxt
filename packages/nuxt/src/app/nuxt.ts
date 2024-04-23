@@ -254,7 +254,12 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext: (fn: any) => nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn)),
+    runWithContext (fn: any) {
+      if (nuxtApp._scope.active) {
+        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
+      }
+      return callWithNuxt(nuxtApp, fn)
+    },
     isHydrating: import.meta.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
