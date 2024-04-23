@@ -121,7 +121,7 @@ describe('plugin dependsOn', () => {
     ])
   })
 
-  it('relying on plugin not registed yet', async () => {
+  it('relying on plugin not registered yet', async () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
     const plugins = [
