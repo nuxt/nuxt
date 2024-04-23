@@ -4,7 +4,7 @@ import consola from 'consola'
 import devalue from 'devalue'
 import fsExtra from 'fs-extra'
 import { defu } from 'defu'
-import htmlMinifier from 'html-minifier'
+import { minify as htmlMinifier } from 'html-minifier-terser'
 import { parse } from 'node-html-parser'
 import { withTrailingSlash, withoutTrailingSlash, decode } from 'ufo'
 
