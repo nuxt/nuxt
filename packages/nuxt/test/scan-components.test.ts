@@ -86,7 +86,7 @@ const dirs: ComponentsDir[] = [
     transpile: false,
   },
 ]
-const dirUnable = dirs.map(d=> {return {...d,enabled: false}})
+const dirUnable = dirs.map((d) => { return { ...d, enabled: false } })
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
