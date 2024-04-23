@@ -17,12 +17,12 @@ export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
 
 const message = Symbol('message')
 export type RuntimeValue<T, B extends string> = T & { [message]?: B }
-type Overridable<T extends Record<string, any>, Path extends string = ''> = {
+type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
   [K in keyof T]?: K extends string
     ? unknown extends T[K]
       ? unknown
       : T[K] extends Record<string, unknown>
-        ? RuntimeValue<Overridable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
+        ? RuntimeValue<Overrideable<T[K], `${Path}_${UpperSnakeCase<K>}`>, `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
         : RuntimeValue<T[K], `You can override this value at runtime with NUXT${Path}_${UpperSnakeCase<K>}`>
     : K extends number
       ? T[K]
@@ -46,7 +46,7 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'runtimeConfig'>> {
   // Avoid DeepPartial for vite config interface (#4772)
   vite?: ConfigSchema['vite']
-  runtimeConfig?: Overridable<RuntimeConfig>
+  runtimeConfig?: Overrideable<RuntimeConfig>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
     $server?: DeepPartial<ConfigSchema['webpack']>
