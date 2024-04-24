@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url'
 const testWithInlineVue = process.env.EXTERNAL_VUE === 'false'
 
 export default defineNuxtConfig({
+  future: { v4: process.env.TEST_V4 === 'true' },
   pages: false,
   experimental: {
     externalVue: !testWithInlineVue,

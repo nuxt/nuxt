@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   },
   future: {
     typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    v4: process.env.TEST_V4 === 'true',
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
