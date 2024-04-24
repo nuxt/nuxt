@@ -93,5 +93,8 @@
     "vue-jest": "4.0.1",
     "vue-tsc": "2.0.14"
   },
+  "resolutions": {
+    "tar": "6.2.1"
+  },
   "packageManager": "yarn@1.22.22"
 }
