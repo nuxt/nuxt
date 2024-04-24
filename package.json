@@ -37,10 +37,10 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "rollup": "^4.16.3",
+    "rollup": "^4.16.4",
     "nuxt": "workspace:*",
     "vite": "5.2.10",
-    "vue": "3.4.24",
+    "vue": "3.4.25",
     "magic-string": "^0.30.10"
   },
   "devDependencies": {
@@ -85,7 +85,7 @@
     "ufo": "1.5.3",
     "vitest": "1.4.0",
     "vitest-environment-nuxt": "1.0.0",
-    "vue": "3.4.24",
+    "vue": "3.4.25",
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.14"
   },
