@@ -19,7 +19,7 @@
     "@types/connect": "3.4.38",
     "@types/etag": "1.8.3",
     "@types/file-loader": "5.0.4",
-    "@types/html-minifier": "4.0.5",
+    "@types/html-minifier-terser": "7.0.2",
     "@types/less": "3.0.6",
     "@types/node": "^16",
     "@types/optimize-css-assets-webpack-plugin": "5.0.8",

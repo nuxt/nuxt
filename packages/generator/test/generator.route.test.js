@@ -1,12 +1,12 @@
 import consola from 'consola'
 import fsExtra from 'fs-extra'
-import htmlMinifier from 'html-minifier'
+import htmlMinifier from 'html-minifier-terser'
 
 import Generator from '../src/generator'
 import { createNuxt, hookCalls } from './__utils__'
 
 jest.mock('fs-extra')
-jest.mock('html-minifier')
+jest.mock('html-minifier-terser')
 jest.mock('@nuxt/utils')
 
 describe('generator: generate route', () => {
