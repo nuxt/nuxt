@@ -334,7 +334,7 @@ export default defineUntypedSchema({
         deep: {
           async $resolve (val, get) {
             return val ?? !((await get('future') as Record<string, unknown>).v4)
-          }
+          },
         },
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
