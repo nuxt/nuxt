@@ -6,6 +6,8 @@ export default defineUntypedSchema({
    * (possibly major) version of the framework.
    */
   future: {
+    /** Enable early access to Nuxt v4 features or flags. */
+    v4: false,
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
@@ -329,7 +331,11 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true,
+        deep: {
+          async $resolve (val, get) {
+            return val ?? !((await get('future') as Record<string, unknown>).v4)
+          }
+        },
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
