@@ -1,6 +1,6 @@
 import consola from 'consola'
 import fsExtra from 'fs-extra'
-import { minify as htmlMinifier } from 'html-minifier-terser'
+import htmlMinifier from 'html-minifier-terser'
 
 import Generator from '../src/generator'
 import { createNuxt, hookCalls } from './__utils__'
