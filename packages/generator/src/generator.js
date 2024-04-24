@@ -243,7 +243,7 @@ or disable the build step: \`generate({ build: false })\``)
     })
 
     try {
-      html = this.minifyHtml(html)
+      html = await this.minifyHtml(html)
     } catch (error) {
       consola.warn('HTML minification failed for SPA fallback')
     }
@@ -379,7 +379,7 @@ or disable the build step: \`generate({ build: false })\``)
     }
 
     try {
-      html = this.minifyHtml(html)
+      html = await this.minifyHtml(html)
     } catch (err) {
       const minifyErr = new Error(
         `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`
