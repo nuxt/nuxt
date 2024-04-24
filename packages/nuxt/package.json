@@ -112,7 +112,7 @@
     "unplugin-vue-router": "^0.7.0",
     "unstorage": "^1.10.2",
     "untyped": "^1.4.2",
-    "vue": "^3.4.24",
+    "vue": "^3.4.25",
     "vue-bundle-renderer": "^2.0.0",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.3.2"
