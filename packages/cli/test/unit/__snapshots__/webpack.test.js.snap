@@ -288,7 +288,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -297,6 +297,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -458,8 +462,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -470,8 +474,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -538,7 +542,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -747,7 +751,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -756,6 +760,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -917,8 +925,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -929,8 +937,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -997,7 +1005,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -1212,7 +1220,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1221,6 +1229,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1382,8 +1394,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -1394,8 +1406,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1462,7 +1474,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -1671,7 +1683,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1680,6 +1692,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1841,8 +1857,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -1853,8 +1869,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1921,7 +1937,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -2136,7 +2152,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2145,6 +2161,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2306,8 +2326,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -2318,8 +2338,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2386,7 +2406,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -2601,7 +2621,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2610,6 +2630,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2771,8 +2795,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -2783,8 +2807,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2851,7 +2875,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -3072,7 +3096,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3081,6 +3105,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3242,8 +3270,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -3254,8 +3282,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3322,7 +3350,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -3540,7 +3568,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3549,6 +3577,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3710,8 +3742,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -3722,8 +3754,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3790,7 +3822,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -4014,7 +4046,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4023,6 +4055,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4184,8 +4220,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -4196,8 +4232,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4264,7 +4300,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -4479,7 +4515,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4488,6 +4524,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4649,8 +4689,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -4661,8 +4701,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4729,7 +4769,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -4950,7 +4990,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4959,6 +4999,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -5120,8 +5164,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -5132,8 +5176,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -5200,7 +5244,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -5415,7 +5459,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
+                        "postcssPlugin": "postcss-color-functional-notation",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -5424,6 +5468,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -5585,8 +5633,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -5597,8 +5645,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -5665,7 +5713,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.33",
+                    "version": "8.4.38",
                   },
                 ],
               },
