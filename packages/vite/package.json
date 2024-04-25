@@ -39,7 +39,7 @@
     "autoprefixer": "^10.4.19",
     "clear": "^0.1.0",
     "consola": "^3.2.3",
-    "cssnano": "^6.1.2",
+    "cssnano": "^7.0.0",
     "defu": "^6.1.4",
     "esbuild": "^0.20.2",
     "escape-string-regexp": "^5.0.0",
