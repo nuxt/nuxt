@@ -94,7 +94,7 @@
     "vue-tsc": "2.0.14"
   },
   "resolutions": {
-    "tar": "6.2.1"
+    "tar": "7.0.1"
   },
   "packageManager": "yarn@1.22.22"
 }
