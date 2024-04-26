@@ -45,7 +45,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.1.1",
-    "@nuxt/eslint-config": "0.3.9",
+    "@nuxt/eslint-config": "0.3.10",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.12.1",
     "@nuxt/webpack-builder": "workspace:*",
