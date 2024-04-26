@@ -28,6 +28,7 @@ jobs:
       id-token: write
       contents: read
       actions: read
+    if: github.event_name == 'push' || github.repository == 'nuxt/nuxt'
 
     steps:
       - name: "Checkout code"
@@ -59,6 +60,7 @@ jobs:
       # format to the repository Actions tab.
       - name: "Upload artifact"
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        if: github.repository == 'nuxt/nuxt' && success()
         with:
           name: SARIF file
           path: results.sarif
@@ -67,5 +69,6 @@ jobs:
       # Upload the results to GitHub's code scanning dashboard.
       - name: "Upload to code-scanning"
         uses: github/codeql-action/upload-sarif@d39d31e687223d841ef683f52467bd88e9b21c14 # v3.25.3
+        if: github.repository == 'nuxt/nuxt' && success()
         with:
           sarif_file: results.sarif
