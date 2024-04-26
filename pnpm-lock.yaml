@@ -575,8 +575,8 @@ importers:
         specifier: ^3.2.3
         version: 3.2.3
       cssnano:
-        specifier: ^7.0.0
-        version: 7.0.0(postcss@8.4.38)
+        specifier: ^7.0.1
+        version: 7.0.1(postcss@8.4.38)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -693,8 +693,8 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0(webpack@5.91.0)
       cssnano:
-        specifier: ^7.0.0
-        version: 7.0.0(postcss@8.4.38)
+        specifier: ^7.0.1
+        version: 7.0.1(postcss@8.4.38)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -3368,8 +3368,8 @@ packages:
     peerDependencies:
       postcss: ^8.4.31
 
-  cssnano-preset-default@7.0.0:
-    resolution: {integrity: sha512-3YdcG6aHxALLdT0Gjq44zA45PcgW+qWuODq4XNtwpx1olR08cX+tozlXOU25IjeXeaYyqvTUxicIr2fcdJHRZg==}
+  cssnano-preset-default@7.0.1:
+    resolution: {integrity: sha512-Fumyr+uZMcjYQeuHssAZxn0cKj3cdQc5GcxkBcmEzISGB+UW9CLNlU4tBOJbJGcPukFDlicG32eFbrc8K9V5pw==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: ^8.4.31
@@ -3392,8 +3392,8 @@ packages:
     peerDependencies:
       postcss: ^8.4.31
 
-  cssnano@7.0.0:
-    resolution: {integrity: sha512-hhVRaaGbEDpb99AHBTaNJf6oXpnU4B7evBi7rt3ShiOh5JEnWsBWYsldywE9L0twVTLPBY9jT/zY6YODXP3TEg==}
+  cssnano@7.0.1:
+    resolution: {integrity: sha512-917Mej/4SdI7b55atsli3sU4MOJ9XDoKgnlCtQtXYj8XUFcM3riTuYHyqBBnnskawW+zWwp0KxJzpEUodlpqUg==}
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: ^8.4.31
@@ -5482,6 +5482,12 @@ packages:
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
+
+  postcss-calc@10.0.0:
+    resolution: {integrity: sha512-OmjhudoNTP0QleZCwl1i6NeBwN+5MZbY5ersLZz69mjJiDVv/p57RjRuKDkHeDWr4T+S97wQfsqRTNoDHB2e3g==}
+    engines: {node: ^18.12 || ^20.9 || >=22.0}
+    peerDependencies:
+      postcss: ^8.4.38
 
   postcss-calc@9.0.1:
     resolution: {integrity: sha512-TipgjGyzP5QzEhsOZUaIkeO5mKeMFpebWzRogWG/ysonUlnHcq5aJe0jOjpfzUU8PeSaBQnrE8ehR0QA5vs8PQ==}
@@ -10123,13 +10129,13 @@ snapshots:
       postcss-svgo: 6.0.3(postcss@8.4.38)
       postcss-unique-selectors: 6.0.4(postcss@8.4.38)
 
-  cssnano-preset-default@7.0.0(postcss@8.4.38):
+  cssnano-preset-default@7.0.1(postcss@8.4.38):
     dependencies:
       browserslist: 4.23.0
       css-declaration-sorter: 7.2.0(postcss@8.4.38)
       cssnano-utils: 5.0.0(postcss@8.4.38)
       postcss: 8.4.38
-      postcss-calc: 9.0.1(postcss@8.4.38)
+      postcss-calc: 10.0.0(postcss@8.4.38)
       postcss-colormin: 7.0.0(postcss@8.4.38)
       postcss-convert-values: 7.0.0(postcss@8.4.38)
       postcss-discard-comments: 7.0.0(postcss@8.4.38)
@@ -10171,9 +10177,9 @@ snapshots:
       lilconfig: 3.1.1
       postcss: 8.4.38
 
-  cssnano@7.0.0(postcss@8.4.38):
+  cssnano@7.0.1(postcss@8.4.38):
     dependencies:
-      cssnano-preset-default: 7.0.0(postcss@8.4.38)
+      cssnano-preset-default: 7.0.1(postcss@8.4.38)
       lilconfig: 3.1.1
       postcss: 8.4.38
 
@@ -12724,6 +12730,12 @@ snapshots:
   playwright-core@1.43.1: {}
 
   pluralize@8.0.0: {}
+
+  postcss-calc@10.0.0(postcss@8.4.38):
+    dependencies:
+      postcss: 8.4.38
+      postcss-selector-parser: 6.0.16
+      postcss-value-parser: 4.2.0
 
   postcss-calc@9.0.1(postcss@8.4.38):
     dependencies:
