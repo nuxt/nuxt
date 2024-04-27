@@ -48,7 +48,16 @@ export const defineNuxtComponent: typeof defineComponent =
       ...options,
       setup (props, ctx) {
         const nuxtApp = useNuxtApp()
-        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
+
+        let res: Promise<any> | {} = {}
+
+        if (setup) {
+          if (import.meta.client) {
+            res = Promise.resolve(setup(props, ctx)).then(r => r || {})
+          } else {
+            res = Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {})
+          }
+        }
 
         const promises: Promise<any>[] = []
         if (options.asyncData) {
