@@ -128,7 +128,7 @@ export async function ensureBuild (cmd) {
 }
 
 async function getNuxt (args, cmd) {
-  const config = await cmd.getNuxtConfig({ dev: false, ...args })
+  const config = await cmd.getNuxtConfig({ dev: false, ...args }, { shouldClearRequireCache: false })
 
   if (config.target === TARGETS.static) {
     config._export = true

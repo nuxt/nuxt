@@ -100,7 +100,7 @@ export default class NuxtCommand extends Hookable {
     return this._parsedArgv
   }
 
-  async getNuxtConfig (extraOptions = {}) {
+  async getNuxtConfig (extraOptions = {}, loadOptions = {}) {
     // Flag to indicate nuxt is running with CLI (not programmatic)
     extraOptions._cli = true
 
@@ -109,7 +109,7 @@ export default class NuxtCommand extends Hookable {
       dev: !!extraOptions.dev
     }
 
-    const config = await loadNuxtConfig(this.argv, context)
+    const config = await loadNuxtConfig(this.argv, context, loadOptions)
     const options = Object.assign(config, extraOptions)
 
     for (const name of Object.keys(this.cmd.options)) {
