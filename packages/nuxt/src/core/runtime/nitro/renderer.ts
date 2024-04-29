@@ -459,7 +459,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head)
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, process.env.NUXT_OMIT_LINE_BREAKS ? { omitLineBreaks: true } : undefined)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {

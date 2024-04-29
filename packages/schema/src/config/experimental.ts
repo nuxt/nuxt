@@ -77,6 +77,18 @@ export default defineUntypedSchema({
         return val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.noScripts) ?? false
       },
     },
+
+    /**
+     * Set `omitLineBreaks` to `true` if you prefer to render the head tags without line breaks.
+     *
+     * @type {boolean}
+     */
+    omitLineBreaks: {
+      $resolve (val) {
+        if (val === undefined) { return false }
+        return val
+      },
+    },
   },
   experimental: {
     /**
