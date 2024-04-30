@@ -9,7 +9,7 @@ import {
   createWebHistory,
 } from '#vue-router'
 import { createError } from 'h3'
-import { isEqual, decode, withoutBase, withoutTrailingSlash } from 'ufo'
+import { decode, isEqual, withoutBase, withoutTrailingSlash } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
@@ -280,7 +280,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
 const ENCODED_TRAILING_SLASH_RE = /%2F$/
 function isSamePath (initialURL: string, path: string) {
-  return withoutTrailingSlash(decode(initialURL).replace(ENCODED_TRAILING_SLASH_RE, '\/')) !== withoutTrailingSlash(decode(path).replace(ENCODED_TRAILING_SLASH_RE, '\/'))
+  return withoutTrailingSlash(decode(initialURL).replace(ENCODED_TRAILING_SLASH_RE, '/')) !== withoutTrailingSlash(decode(path).replace(ENCODED_TRAILING_SLASH_RE, '/'))
 }
 
 export default plugin
