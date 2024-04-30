@@ -198,6 +198,7 @@ jobs:
         builder: ["vite", "webpack"]
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
+        version: ["v4", "v3"]
         node: [18]
         exclude:
           - env: "dev"
@@ -234,6 +235,7 @@ jobs:
           TEST_BUILDER: ${{ matrix.builder }}
           TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
+          TEST_V4: ${{ matrix.version == 'v4' }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || runner.os == 'Windows' }}
 
       - uses: codecov/codecov-action@84508663e988701840491b86de86b666e8a86bed # v4.3.0

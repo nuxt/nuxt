@@ -324,7 +324,7 @@ export default defineNuxtModule({
       }
 
       nuxt.hook('builder:watch', async (event, relativePath) => {
-        const path = join(nuxt.options.srcDir, relativePath)
+        const path = resolve(nuxt.options.srcDir, relativePath)
         if (!(path in pageToGlobMap)) { return }
         if (event === 'unlink') {
           delete inlineRules[path]

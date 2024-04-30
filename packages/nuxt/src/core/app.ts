@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { compileTemplate as _compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -38,6 +38,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const templateContext = { utils: templateUtils, nuxt, app }
   const filteredTemplates = (app.templates as Array<ResolvedNuxtTemplate<any>>)
     .filter(template => !options.filter || options.filter(template))
+
+  const compileTemplate = nuxt.options.experimental.compileTemplate ? _compileTemplate : futureCompileTemplate
 
   const writes: Array<() => void> = []
   await Promise.allSettled(filteredTemplates
@@ -91,6 +93,24 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 }
 
 /** @internal */
+async function futureCompileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
+  delete ctx.utils
+
+  if (template.src) {
+    try {
+      return await fsp.readFile(template.src, 'utf-8')
+    } catch (err) {
+      logger.error(`[nuxt] Error reading template from \`${template.src}\``)
+      throw err
+    }
+  }
+  if (template.getContents) {
+    return template.getContents({ ...ctx, options: template.options! })
+  }
+
+  throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
+}
+
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {

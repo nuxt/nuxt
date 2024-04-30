@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -409,8 +409,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Trigger Nitro reload when SPA loading template changes
   const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
-  nuxt.hook('builder:watch', async (_event, path) => {
-    if (normalize(path) === spaLoadingTemplateFilePath) {
+  nuxt.hook('builder:watch', async (_event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (path === spaLoadingTemplateFilePath) {
       await nitro.hooks.callHook('rollup:reload')
     }
   })
