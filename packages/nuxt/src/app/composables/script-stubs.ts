@@ -13,10 +13,11 @@ function renderStubMessage (name: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScript<T extends Record<string | symbol, any>>(input: UseScriptInput, options?: Record<string, unknown>) {
+export function useScript<T extends Record<string | symbol, any>> (input: UseScriptInput, options?: Record<string, unknown>) {
   renderStubMessage('useScript')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function createScriptConsentTrigger (...args: unknown[]) {
   renderStubMessage('createScriptConsentTrigger')
 }

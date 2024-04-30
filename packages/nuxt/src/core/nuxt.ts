@@ -20,6 +20,7 @@ import importsModule from '../imports/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
+import { scriptsStubsPreset } from '../imports/presets'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -33,7 +34,6 @@ import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
-import { scriptsStubsPreset } from '../imports/presets'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -547,8 +547,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   if (!options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
     options.imports = defu(options.imports, {
-      presets: [scriptsStubsPreset]
-  })
+      presets: [scriptsStubsPreset],
+    })
   }
 
   // Nuxt Webpack Builder is currently opt-in
