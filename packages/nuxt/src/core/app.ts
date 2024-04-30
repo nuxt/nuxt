@@ -23,7 +23,7 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
 const postTemplates = [
   defaultTemplates.clientPluginTemplate.filename,
   defaultTemplates.serverPluginTemplate.filename,
-  defaultTemplates.pluginsDeclaration.filename
+  defaultTemplates.pluginsDeclaration.filename,
 ]
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
@@ -43,7 +43,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // in order to annotate templated plugins
   const filteredTemplates: Record<'pre' | 'post', Array<ResolvedNuxtTemplate<any>>> = {
     pre: [],
-    post: []
+    post: [],
   }
 
   for (const template of app.templates as Array<ResolvedNuxtTemplate<any>>) {
