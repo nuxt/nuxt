@@ -134,16 +134,12 @@ describe('resolveApp', () => {
       },
     ])
     const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
-    // TODO: support overriding named plugins
     expect(fixturePlugins).toMatchInlineSnapshot(`
       [
-        "<rootDir>/layer1/plugins/02.plugin.ts",
-        "<rootDir>/layer1/plugins/object-named.ts",
-        "<rootDir>/layer1/plugins/override-test.ts",
-        "<rootDir>/layer2/plugins/01.plugin.ts",
-        "<rootDir>/layer2/plugins/object-named.ts",
-        "<rootDir>/layer2/plugins/override-test.ts",
         "<rootDir>/plugins/00.plugin.ts",
+        "<rootDir>/layer2/plugins/01.plugin.ts",
+        "<rootDir>/layer1/plugins/02.plugin.ts",
+        "<rootDir>/layer2/plugins/override-test.ts",
         "<rootDir>/plugins/object-named.ts",
       ]
     `)
@@ -152,17 +148,20 @@ describe('resolveApp', () => {
   it('resolves layer middleware in correct order', async () => {
     const app = await getResolvedApp([
       // layer 1
+      'layer1/middleware/01.order.global.ts',
       'layer1/middleware/global.global.ts',
       'layer1/middleware/named-from-layer.ts',
       'layer1/middleware/named-override.ts',
       'layer1/nuxt.config.ts',
       // layer 2
+      'layer2/middleware/02.order.global.ts',
       'layer2/middleware/global.global.ts',
       'layer2/middleware/named-from-layer.ts',
       'layer2/middleware/named-override.ts',
       'layer2/plugins/override-test.ts',
       'layer2/nuxt.config.ts',
       // final (user) layer
+      'middleware/00.order.global.ts',
       'middleware/named-override.ts',
       'middleware/named.ts',
       {
@@ -171,9 +170,12 @@ describe('resolveApp', () => {
       },
     ])
     const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
-    // TODO: fix this
+
     expect(fixtureMiddleware).toMatchInlineSnapshot(`
       [
+        "<rootDir>/middleware/00.order.global.ts",
+        "<rootDir>/layer1/middleware/01.order.global.ts",
+        "<rootDir>/layer2/middleware/02.order.global.ts",
         "<rootDir>/layer2/middleware/global.global.ts",
         "<rootDir>/layer2/middleware/named-from-layer.ts",
         "<rootDir>/middleware/named-override.ts",

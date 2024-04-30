@@ -1,8 +1,9 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
+import { filename } from 'pathe/utils'
 import { defu } from 'defu'
 import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
-import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtMiddleware, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
@@ -174,9 +175,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  // Normalize and de-duplicate plugins and middleware and hoist (and sort)
+  // middleware/plugin files that begin with a number
+  app.middleware = sortMiddleware(uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse())
+  app.plugins = sortPlugins(uniquePlugins(await resolvePaths(app.plugins, 'src')))
 
   // Resolve app.config
   app.configs = []
@@ -254,4 +256,52 @@ export function checkForCircularDependencies (_plugins: Array<NuxtPlugin & Omit<
   for (const name in deps) {
     checkDeps(name)
   }
+}
+
+const ORDERED_FILE_RE = /^\d+\./
+
+function sortMiddleware (middleware: NuxtMiddleware[]) {
+  const orderedMiddleware: NuxtMiddleware[] = []
+  const unorderedMiddleware: NuxtMiddleware[] = []
+
+  for (const mw of middleware) {
+    const bucket = mw.global && ORDERED_FILE_RE.test(filename(mw.path)) ? orderedMiddleware : unorderedMiddleware
+    bucket.push(mw)
+  }
+
+  return [
+    ...orderedMiddleware.sort((l, r) => filename(l.path).localeCompare(filename(r.path))),
+    ...unorderedMiddleware
+  ]
+}
+
+function sortPlugins (plugins: NuxtPlugin[]) {
+  const orderedPlugins: NuxtPlugin[] = []
+  const unorderedPlugins: NuxtPlugin[] = []
+
+  for (const plugin of plugins) {
+    const bucket = ORDERED_FILE_RE.test(filename(plugin.src)) ? orderedPlugins : unorderedPlugins
+    bucket.push(plugin)
+  }
+
+  return [
+    ...orderedPlugins.sort((l, r) => filename(l.src).localeCompare(filename(r.src))),
+    ...unorderedPlugins
+  ]
+}
+
+function uniquePlugins (plugins: NuxtPlugin[]) {
+  const pluginFlags = new Set<string>()
+  const bucket: NuxtPlugin[] = []
+  for (const plugin of [...plugins].reverse()) {
+    const name = plugin.name ? plugin.name : filename(plugin.src)
+    const mode = plugin.mode ? plugin.mode : 'all'
+    const flag = `${name}.${mode}`
+    if (pluginFlags.has(flag)) {
+      continue
+    }
+    pluginFlags.add(flag)
+    bucket.push(plugin)
+  }
+  return bucket.reverse()
 }
