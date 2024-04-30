@@ -39,7 +39,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const filteredTemplates = (app.templates as Array<ResolvedNuxtTemplate<any>>)
     .filter(template => !options.filter || options.filter(template))
 
-  const compileTemplate = nuxt.options.future.v4 ? futureCompileTemplate : _compileTemplate
+  const compileTemplate = nuxt.options.future.compatibilityVersion === 4 ? futureCompileTemplate : _compileTemplate
 
   const writes: Array<() => void> = []
   await Promise.allSettled(filteredTemplates

@@ -6,8 +6,11 @@ export default defineUntypedSchema({
    * (possibly major) version of the framework.
    */
   future: {
-    /** Enable early access to Nuxt v4 features or flags. */
-    v4: false,
+    /**
+     * Enable early access to Nuxt v4 features or flags.
+     * @type {3 | 4}
+     */
+    compatibilityVersion: 3,
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
@@ -333,7 +336,7 @@ export default defineUntypedSchema({
       useAsyncData: {
         deep: {
           async $resolve (val, get) {
-            return val ?? !((await get('future') as Record<string, unknown>).v4)
+            return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
           },
         },
       },
