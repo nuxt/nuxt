@@ -1,10 +1,12 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
+import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import { sanitizeFilePath } from 'mlly'
+import defu from 'defu'
 import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
@@ -122,6 +124,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       viteConfig,
     ),
   }
+
+  ctx.config.vue = defu(ctx.config.vue, {
+    script: {
+      fs: {
+        fileExists: file => file in nuxt.vfs || existsSync(file),
+        readFile: file => nuxt.vfs[file] || readFileSync(file, 'utf-8'),
+        realpath: path => path in nuxt.vfs ? path : realpathSync(path),
+      },
+    },
+  } satisfies VuePluginOptions)
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
