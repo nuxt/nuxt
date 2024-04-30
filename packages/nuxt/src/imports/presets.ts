@@ -111,6 +111,11 @@ const granularAppPresets: InlinePreset[] = [
   },
 ]
 
+export const scriptsStubsPreset = {
+  imports: ['createScriptConsentTrigger', 'useAnalyticsPageEvent', 'useElementScriptTrigger', 'useScript'],
+  from: '#app/composables/script-stubs',
+} satisfies InlinePreset
+
 // This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
   imports: ['onBeforeRouteLeave', 'onBeforeRouteUpdate'],
