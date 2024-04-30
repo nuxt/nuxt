@@ -1,4 +1,4 @@
 export default defineNuxtConfig({
-  future: { v4: process.env.TEST_V4 === 'true' },
+  future: { compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3 },
   experimental: { appManifest: true },
 })
