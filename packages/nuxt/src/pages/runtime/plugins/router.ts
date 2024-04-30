@@ -251,7 +251,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             path: to.fullPath,
           },
         })))
-      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
+      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(initialURL, to.fullPath))) {
         await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
@@ -280,7 +280,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
 const ENCODED_TRAILING_SLASH_RE = /%2F$/
 function isSamePath (initialURL: string, path: string) {
-  return withoutTrailingSlash(decode(initialURL).replace(ENCODED_TRAILING_SLASH_RE, '/')) !== withoutTrailingSlash(decode(path).replace(ENCODED_TRAILING_SLASH_RE, '/'))
+  return withoutTrailingSlash(decode(initialURL).replace(ENCODED_TRAILING_SLASH_RE, '/')) === withoutTrailingSlash(decode(path).replace(ENCODED_TRAILING_SLASH_RE, '/'))
 }
 
 export default plugin
