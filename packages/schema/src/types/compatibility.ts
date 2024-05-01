@@ -17,13 +17,13 @@ export interface NuxtCompatibility {
    * Required using a compatible builder.
    *
    * - `vite`: compatible with `@nuxt/vite-builder` only
-   * - `esbuild`: compatible with `@nuxt/webpack-builder` only
+   * - `webpack`: compatible with `@nuxt/webpack-builder` only
    * - `all`: compatible with all builders
    */
   builder?: NuxtBuilder
 }
 
-export type NuxtBuilder = 'vite' | 'esbuild' | 'all'
+export type NuxtBuilder = 'vite' | 'webpack' | 'all'
 
 export interface NuxtCompatibilityIssue {
   name: string
