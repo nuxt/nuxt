@@ -1,5 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
-import { loading as loadingTemplate } from '@nuxt/ui-templates'
+import { template as loadingTemplate } from '../templates/loading.js'
 
 export default defineUntypedSchema({
   devServer: {

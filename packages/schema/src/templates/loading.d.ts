@@ -1,0 +1,1 @@
+../../../ui-templates/dist/templates/loading.d.ts
