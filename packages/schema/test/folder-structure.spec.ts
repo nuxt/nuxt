@@ -72,7 +72,6 @@ describe('nuxt folder structure', () => {
       }
     `)
   })
-
 })
 
 function getDirs (options: NuxtOptions) {
