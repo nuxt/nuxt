@@ -28,6 +28,7 @@ jobs:
             nuxt
             schema
             test-utils
+            ui-templates
             vite
             webpack
             deps
