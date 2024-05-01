@@ -20,10 +20,10 @@ export interface NuxtCompatibility {
    * - `webpack`: compatible with `@nuxt/webpack-builder` only
    * - `all`: compatible with all builders
    */
-  builder?: NuxtBuilder
+  builder?: NuxtBuilders
 }
 
-export type NuxtBuilder = 'vite' | 'webpack' | 'all'
+export type NuxtBuilders = 'vite' | 'webpack' | 'all'
 
 export interface NuxtCompatibilityIssue {
   name: string
