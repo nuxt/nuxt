@@ -1,1 +1,0 @@
-../../../ui-templates/dist/templates/loading.js

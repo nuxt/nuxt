@@ -17,7 +17,7 @@ import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
-import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon'
+import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 
 const logLevelMapReverse = {
