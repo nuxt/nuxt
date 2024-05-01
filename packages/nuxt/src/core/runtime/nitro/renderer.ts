@@ -117,7 +117,7 @@ const appRootTemplate = (s: string) =>
 const appTeleportTemplate = (s: string) =>
   // must have a valid tag and id
   (appTeleportTag && appTeleportId)
-    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttributes, id: appTeleportId })}>${s}</${appRootTag}>`
+    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttributes, id: appTeleportId })}>${s}</${appTeleportTag}>`
     : ''
 
 // -- SSR Renderer --
