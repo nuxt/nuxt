@@ -557,9 +557,9 @@ importers:
       '@types/html-minifier':
         specifier: 4.0.5
         version: 4.0.5
-      '@types/lodash.template':
-        specifier: 4.5.3
-        version: 4.5.3
+      '@types/lodash-es':
+        specifier: 4.17.12
+        version: 4.17.12
       '@unocss/reset':
         specifier: 0.59.4
         version: 0.59.4
@@ -2338,9 +2338,6 @@ packages:
 
   '@types/lodash-es@4.17.12':
     resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
-
-  '@types/lodash.template@4.5.3':
-    resolution: {integrity: sha512-Mo0UYKLu1oXgkV9TVoXZLlXXjyIXlW7ZQRxi/4gQJmzJr63dmicE8gG0OkPjYTKBrBic852q0JzqrtNUWLBIyA==}
 
   '@types/lodash@4.14.200':
     resolution: {integrity: sha512-YI/M/4HRImtNf3pJgbF+W6FrXovqj+T+/HpENLTooK9PnkacBsDpeP3IpHab40CClUfhNmdM2WTNP2sa2dni5Q==}
@@ -8971,10 +8968,6 @@ snapshots:
       '@types/node': 20.12.7
 
   '@types/lodash-es@4.17.12':
-    dependencies:
-      '@types/lodash': 4.14.200
-
-  '@types/lodash.template@4.5.3':
     dependencies:
       '@types/lodash': 4.14.200
 
