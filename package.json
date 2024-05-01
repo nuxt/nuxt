@@ -87,7 +87,7 @@
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.26",
     "vue-router": "4.3.2",
-    "vue-tsc": "2.0.15"
+    "vue-tsc": "2.0.16"
   },
   "packageManager": "pnpm@9.0.6",
   "engines": {

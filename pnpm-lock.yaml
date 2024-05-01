@@ -149,8 +149,8 @@ importers:
         specifier: 4.3.2
         version: 4.3.2(vue@3.4.26(typescript@5.4.5))
       vue-tsc:
-        specifier: 2.0.15
-        version: 2.0.15(typescript@5.4.5)
+        specifier: 2.0.16
+        version: 2.0.16(typescript@5.4.5)
 
   packages/kit:
     dependencies:
@@ -500,8 +500,8 @@ importers:
         specifier: 3.4.26
         version: 3.4.26
       '@vue/language-core':
-        specifier: 2.0.15
-        version: 2.0.15(typescript@5.4.5)
+        specifier: 2.0.16
+        version: 2.0.16(typescript@5.4.5)
       c12:
         specifier: 1.10.0
         version: 1.10.0
@@ -651,7 +651,7 @@ importers:
         version: 1.4.0(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0)
       vite-plugin-checker:
         specifier: ^0.6.4
-        version: 0.6.4(eslint@9.1.1)(optionator@0.9.3)(typescript@5.4.5)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.15(typescript@5.4.5))
+        version: 0.6.4(eslint@9.1.1)(optionator@0.9.3)(typescript@5.4.5)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.16(typescript@5.4.5))
       vue-bundle-renderer:
         specifier: ^2.0.0
         version: 2.0.0
@@ -729,8 +729,8 @@ importers:
         specifier: ^0.30.10
         version: 0.30.10
       memfs:
-        specifier: ^4.9.1
-        version: 4.9.1
+        specifier: ^4.9.2
+        version: 4.9.2
       mini-css-extract-plugin:
         specifier: ^2.9.0
         version: 2.9.0(webpack@5.91.0)
@@ -1652,8 +1652,20 @@ packages:
     peerDependencies:
       tslib: '2'
 
+  '@jsonjoy.com/json-pack@1.0.3':
+    resolution: {integrity: sha512-Q0SPAdmK6s5Fe3e1kcNvwNyk6e2+CxM8XZdGbf4abZG7nUO05KSie3/iX29loTBuY+75uVP6RixDSPVpotfzmQ==}
+    engines: {node: '>=10.0'}
+    peerDependencies:
+      tslib: '2'
+
   '@jsonjoy.com/util@1.1.0':
     resolution: {integrity: sha512-Yz+xITJ3Y/w0DBISwPkBETP5/cITHXscjgQNZIkfrVz1V7/ahJY8vw+T+LZy/KtXgKuUWqu4GALAQ3bhGt9J8A==}
+    engines: {node: '>=10.0'}
+    peerDependencies:
+      tslib: '2'
+
+  '@jsonjoy.com/util@1.1.2':
+    resolution: {integrity: sha512-HOGa9wtE6LEz2I5mMQ2pMSjth85PmD71kPbsecs02nEUq3/Kw0wRK3gmZn5BCEB8mFLXByqPxjHgApoMwIPMKQ==}
     engines: {node: '>=10.0'}
     peerDependencies:
       tslib: '2'
@@ -2548,17 +2560,17 @@ packages:
   '@volar/language-core@1.11.1':
     resolution: {integrity: sha512-dOcNn3i9GgZAcJt43wuaEykSluAuOkQgzni1cuxLxTV0nJKanQztp7FxyswdRILaKH+P2XZMPRp2S4MV/pElCw==}
 
-  '@volar/language-core@2.2.0-alpha.12':
-    resolution: {integrity: sha512-zgWof8q02kADyb4lalVzoqnvTs/wJRDul5qHl0VC2ZVXwes6j2ZYumjXqAW+8W1CQp8lfJkEn9Z6a5jvU6S7Jw==}
+  '@volar/language-core@2.2.0':
+    resolution: {integrity: sha512-a8WG9+4OdeNDW4ywABZIM6S6UN7em8uIlM/BZ2pWQUYrVmX+m8sj/X+QadvO+Li/t/LjAqbWJQtVgxdpEWLALQ==}
 
   '@volar/source-map@1.11.1':
     resolution: {integrity: sha512-hJnOnwZ4+WT5iupLRnuzbULZ42L7BWWPMmruzwtLhJfpDVoZLjNBxHDi2sY2bgZXCKlpU5XcsMFoYrsQmPhfZg==}
 
-  '@volar/source-map@2.2.0-alpha.12':
-    resolution: {integrity: sha512-d7vDWBE3Ijenff+f1GbWWvdXK4i0wsWsDnfry7G0Jwhbs2/q+NoQya27ZEc3Is0E5m7sOmgUOvRnLGLKEmWFBg==}
+  '@volar/source-map@2.2.0':
+    resolution: {integrity: sha512-HQlPRlHOVqCCHK8wI76ZldHkEwKsjp7E6idUc36Ekni+KJDNrqgSqPvyHQixybXPHNU7CI9Uxd9/IkxO7LuNBw==}
 
-  '@volar/typescript@2.2.0-alpha.12':
-    resolution: {integrity: sha512-Ie4/Pj7NcIZWss+kteREZUYRU0jjiAmWCNoUJ7ViYQsYCrtiLMgPthha09V9zAyhk1rUGErF7/TLtAAX1VuflA==}
+  '@volar/typescript@2.2.0':
+    resolution: {integrity: sha512-wC6l4zLiiCLxF+FGaHCbWlQYf4vMsnRxYhcI6WgvaNppOD6r1g+Ef1RKRJUApALWU46Yy/JDU/TbdV6w/X6Liw==}
 
   '@vue-macros/common@1.10.1':
     resolution: {integrity: sha512-uftSpfwdwitcQT2lM8aVxcfe5rKQBzC9jMrtJM5sG4hEuFyfIvnJihpPpnaWxY+X4p64k+YYXtBFv+1O5Bq3dg==}
@@ -2624,8 +2636,8 @@ packages:
       typescript:
         optional: true
 
-  '@vue/language-core@2.0.15':
-    resolution: {integrity: sha512-a2n5Oc+PkWPX5zhnTkddH/hzPCrQmwUz1EwmFje3mqd+c8Ux+yCVEnAE2XtGQZoELgSWvY7EmJfidRbs+nR19Q==}
+  '@vue/language-core@2.0.16':
+    resolution: {integrity: sha512-Bc2sexRH99pznOph8mLw2BlRZ9edm7tW51kcBXgx8adAoOcZUWJj3UNSsdQ6H9Y8meGz7BoazVrVo/jUukIsPw==}
     peerDependencies:
       typescript: '*'
     peerDependenciesMeta:
@@ -4853,6 +4865,10 @@ packages:
 
   memfs@4.9.1:
     resolution: {integrity: sha512-36cVYFMaa9HNEYyvkyKCwker8DBmOdjWLrfekE/cHEKJ806fCfKNVhOJNvoyV/CrGSZDtfQPbhn0Zid0gbH0Hw==}
+    engines: {node: '>= 4.0.0'}
+
+  memfs@4.9.2:
+    resolution: {integrity: sha512-f16coDZlTG1jskq3mxarwB+fGRrd0uXWt+o1WIhRfOwbXQZqUDsTVxQBFK9JjRQHblg8eAG2JSbprDXKjc7ijQ==}
     engines: {node: '>= 4.0.0'}
 
   memory-fs@0.5.0:
@@ -7110,8 +7126,8 @@ packages:
   vue-template-compiler@2.7.14:
     resolution: {integrity: sha512-zyA5Y3ArvVG0NacJDkkzJuPQDF8RFeRlzV2vLeSnhSpieO6LK2OVbdLPi5MPPs09Ii+gMO8nY4S3iKQxBxDmWQ==}
 
-  vue-tsc@2.0.15:
-    resolution: {integrity: sha512-R7qcN33tJcNvo59g7ZuoZN1bbIe3rkDz4YjaK5kH/WxeyOZV4ynqa2IsQO4sCHXdx9hFTVDEXWuUgbGPuCz49A==}
+  vue-tsc@2.0.16:
+    resolution: {integrity: sha512-/gHAWJa216PeEhfxtAToIbxdWgw01wuQzo48ZUqMYVEyNqDp+OYV9xMO5HaPS2P3Ls0+EsjguMZLY4cGobX4Ew==}
     hasBin: true
     peerDependencies:
       typescript: '*'
@@ -7919,9 +7935,21 @@ snapshots:
       thingies: 1.21.0(tslib@2.6.2)
       tslib: 2.6.2
 
+  '@jsonjoy.com/json-pack@1.0.3(tslib@2.6.2)':
+    dependencies:
+      '@jsonjoy.com/base64': 1.1.1(tslib@2.6.2)
+      '@jsonjoy.com/util': 1.1.2(tslib@2.6.2)
+      hyperdyperid: 1.2.0
+      thingies: 1.21.0(tslib@2.6.2)
+      tslib: 2.6.2
+
   '@jsonjoy.com/util@1.1.0(tslib@2.6.2)':
     dependencies:
       hyperdyperid: 1.2.0
+      tslib: 2.6.2
+
+  '@jsonjoy.com/util@1.1.2(tslib@2.6.2)':
+    dependencies:
       tslib: 2.6.2
 
   '@kwsites/file-exists@1.1.1':
@@ -9181,21 +9209,21 @@ snapshots:
     dependencies:
       '@volar/source-map': 1.11.1
 
-  '@volar/language-core@2.2.0-alpha.12':
+  '@volar/language-core@2.2.0':
     dependencies:
-      '@volar/source-map': 2.2.0-alpha.12
+      '@volar/source-map': 2.2.0
 
   '@volar/source-map@1.11.1':
     dependencies:
       muggle-string: 0.3.1
 
-  '@volar/source-map@2.2.0-alpha.12':
+  '@volar/source-map@2.2.0':
     dependencies:
       muggle-string: 0.4.1
 
-  '@volar/typescript@2.2.0-alpha.12':
+  '@volar/typescript@2.2.0':
     dependencies:
-      '@volar/language-core': 2.2.0-alpha.12
+      '@volar/language-core': 2.2.0
       path-browserify: 1.0.1
 
   '@vue-macros/common@1.10.1(rollup@4.17.2)(vue@3.4.26(typescript@5.4.5))':
@@ -9352,9 +9380,9 @@ snapshots:
     optionalDependencies:
       typescript: 5.4.5
 
-  '@vue/language-core@2.0.15(typescript@5.4.5)':
+  '@vue/language-core@2.0.16(typescript@5.4.5)':
     dependencies:
-      '@volar/language-core': 2.2.0-alpha.12
+      '@volar/language-core': 2.2.0
       '@vue/compiler-dom': 3.4.26
       '@vue/shared': 3.4.26
       computeds: 0.0.1
@@ -11912,6 +11940,13 @@ snapshots:
       sonic-forest: 1.0.0(tslib@2.6.2)
       tslib: 2.6.2
 
+  memfs@4.9.2:
+    dependencies:
+      '@jsonjoy.com/json-pack': 1.0.3(tslib@2.6.2)
+      '@jsonjoy.com/util': 1.1.2(tslib@2.6.2)
+      sonic-forest: 1.0.0(tslib@2.6.2)
+      tslib: 2.6.2
+
   memory-fs@0.5.0:
     dependencies:
       errno: 0.1.8
@@ -14330,7 +14365,7 @@ snapshots:
       - supports-color
       - terser
 
-  vite-plugin-checker@0.6.4(eslint@9.1.1)(optionator@0.9.3)(typescript@5.4.5)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.15(typescript@5.4.5)):
+  vite-plugin-checker@0.6.4(eslint@9.1.1)(optionator@0.9.3)(typescript@5.4.5)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.16(typescript@5.4.5)):
     dependencies:
       '@babel/code-frame': 7.24.2
       ansi-escapes: 4.3.2
@@ -14352,7 +14387,7 @@ snapshots:
       eslint: 9.1.1
       optionator: 0.9.3
       typescript: 5.4.5
-      vue-tsc: 2.0.15(typescript@5.4.5)
+      vue-tsc: 2.0.16(typescript@5.4.5)
 
   vite-plugin-inspect@0.8.3(@nuxt/kit@packages+kit)(rollup@4.17.2)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0)):
     dependencies:
@@ -14564,10 +14599,10 @@ snapshots:
       de-indent: 1.0.2
       he: 1.2.0
 
-  vue-tsc@2.0.15(typescript@5.4.5):
+  vue-tsc@2.0.16(typescript@5.4.5):
     dependencies:
-      '@volar/typescript': 2.2.0-alpha.12
-      '@vue/language-core': 2.0.15(typescript@5.4.5)
+      '@volar/typescript': 2.2.0
+      '@vue/language-core': 2.0.16(typescript@5.4.5)
       semver: 7.6.0
       typescript: 5.4.5
 
