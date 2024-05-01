@@ -8,7 +8,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter './packages/**' prepack",
+    "build": "pnpm --filter @nuxt/ui-templates prepack && pnpm --filter './packages/[^u]**' prepack",
     "build:stub": "pnpm dev:prepare",
     "cleanup": "rimraf 'packages/**/node_modules' 'playground/node_modules' 'node_modules'",
     "dev": "pnpm play",
