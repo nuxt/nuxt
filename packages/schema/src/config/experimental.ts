@@ -16,21 +16,23 @@ export default defineUntypedSchema({
      *
      * @example
      * ```ts
-     * future: {
-     *   compatibilityVersion: 4,
-     * },
-     * // To re-enable _all_ Nuxt v3 behaviour, set the following options:
-     * experimental: {
-     *   compileTemplate: true,
-     *   templateUtils: true,
-     *   relativeWatchPaths: true,
-     *   defaults: {
-     *     useAsyncData: {
-     *       deep: true
+     * export default defineNuxtConfig({
+     *   future: {
+     *     compatibilityVersion: 4,
+     *   },
+     *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
+     *   srcDir: '.',
+     *   experimental: {
+     *     compileTemplate: true,
+     *     templateUtils: true,
+     *     relativeWatchPaths: true,
+     *     defaults: {
+     *       useAsyncData: {
+     *         deep: true
+     *       }
      *     }
      *   }
-     * },
-     * srcDir: '.'
+     * })
      * ```
      * @type {3 | 4}
      */
@@ -289,7 +291,7 @@ export default defineUntypedSchema({
      * - Uses the hash hydration plugin to reduce initial hydration
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
-    headNext: false,
+    headNext: true,
 
     /**
      * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
@@ -341,7 +343,7 @@ export default defineUntypedSchema({
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
-    cookieStore: false,
+    cookieStore: true,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.

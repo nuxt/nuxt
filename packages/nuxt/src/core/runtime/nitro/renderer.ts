@@ -16,7 +16,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
-import { renderSSRHead } from '@unhead/ssr'
+import { propsToString, renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
@@ -29,7 +29,7 @@ import unheadPlugins from '#internal/unhead-plugins.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appRootId, appRootTag, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
+import { appHead, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -232,15 +232,15 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   return ctx
 }
 
-const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportId)
-const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag} id="${appTeleportId}">` : ''
+const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
+const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
 const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
 
-const APP_ROOT_OPEN_TAG = `<${appRootTag}${appRootId ? ` id="${appRootId}"` : ''}>`
+const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString(appRootAttrs)}>`
 const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
-const ROOT_NODE_REGEX = new RegExp(`^${APP_ROOT_OPEN_TAG}([\\s\\S]*)${APP_ROOT_CLOSE_TAG}$`)
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
@@ -470,7 +470,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
       componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
-      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
+      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],
   }
