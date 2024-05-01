@@ -10,10 +10,10 @@
   "type": "module",
   "exports": {
     "./templates/*": "./dist/templates/*",
-    ".": "./dist/index.mjs",
+    ".": "./dist/index.js",
     "./*": "./dist/*"
   },
-  "main": "./dist/index.mjs",
+  "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist/templates/*",
