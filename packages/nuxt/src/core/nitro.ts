@@ -219,7 +219,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       'process.env.NUXT_JSON_PAYLOADS': !!nuxt.options.experimental.renderJsonPayloads,
       'process.env.NUXT_ASYNC_CONTEXT': !!nuxt.options.experimental.asyncContext,
       'process.env.NUXT_SHARED_DATA': !!nuxt.options.experimental.sharedPrerenderData,
-      'process.env.NUXT_OMIT_LINE_BREAKS': !!nuxt.options.features.omitLineBreaks,
       'process.dev': nuxt.options.dev,
       '__VUE_PROD_DEVTOOLS__': false,
     },
