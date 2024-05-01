@@ -318,4 +318,14 @@ export default defineUntypedSchema({
   css: {
     $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c),
   },
+
+  meta: {
+    /**
+     * An object that will be passed to `renderSSRHead` to customize the output.
+     *
+     * @see https://unhead.unjs.io/setup/ssr/installation#options
+     * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
+     */
+    renderSSRHeadOptions: undefined,
+  },
 })
