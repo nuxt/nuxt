@@ -26,9 +26,9 @@
     "test:fixtures": "pnpm test:prepare && vitest run --dir test",
     "test:fixtures:dev": "TEST_ENV=dev pnpm test:fixtures",
     "test:fixtures:webpack": "TEST_BUILDER=webpack pnpm test:fixtures",
-    "test:runtime": "vitest -c vitest.nuxt.config.ts --coverage",
+    "test:runtime": "vitest -c vitest.nuxt.config.ts",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
-    "test:unit": "vitest run packages/ --coverage",
+    "test:unit": "vitest run packages/",
     "typecheck": "tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
