@@ -1,7 +1,7 @@
 import { join, resolve } from 'node:path'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
-import template from 'lodash.template'
+import { template } from 'lodash-es'
 import genericMessages from '../templates/messages.json'
 
 const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))

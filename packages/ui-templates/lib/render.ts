@@ -3,7 +3,7 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
-import template from 'lodash.template'
+import { template } from 'lodash-es'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
 import { camelCase } from 'scule'
