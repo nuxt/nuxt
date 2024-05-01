@@ -22,6 +22,9 @@ export default defineUntypedSchema({
      *   },
      *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
      *   srcDir: '.',
+     *   dir: {
+     *     app: 'app'
+     *   },
      *   experimental: {
      *     compileTemplate: true,
      *     templateUtils: true,
