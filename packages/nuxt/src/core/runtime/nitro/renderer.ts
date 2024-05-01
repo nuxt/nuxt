@@ -29,7 +29,7 @@ import unheadPlugins from '#internal/unhead-plugins.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appRootAttributes, appRootId, appRootTag, appTeleportAttributes, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
+import { appHead, appRootAttrs, appRootId, appRootTag, appTeleportAttrs, appTeleportId, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -112,12 +112,12 @@ const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
 const appRootTemplate = (s: string) =>
-  `<${appRootTag}${propsToString({ ...appRootAttributes, id: appRootId })}>${s}</${appRootTag}>`
+  `<${appRootTag}${propsToString({ ...appRootAttrs, id: appRootId })}>${s}</${appRootTag}>`
 
 const appTeleportTemplate = (s: string) =>
   // must have a valid tag and id
   (appTeleportTag && appTeleportId)
-    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttributes, id: appTeleportId })}>${s}</${appTeleportTag}>`
+    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttrs, id: appTeleportId })}>${s}</${appTeleportTag}>`
     : ''
 
 // -- SSR Renderer --
