@@ -16,7 +16,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
-import { renderSSRHead, tagToString } from '@unhead/ssr'
+import { propsToString, renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
@@ -111,31 +111,14 @@ const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r
 // @ts-expect-error file will be produced after app build
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
-function appRootTemplate (s: string) {
-  return tagToString({
-    tag: appRootTag,
-    props: {
-      ...appRootAttributes,
-      id: appRootId,
-    },
-    innerHTML: s,
-  })
-}
+const appRootTemplate = (s: string) =>
+  `<${appRootTag}${propsToString({ ...appRootAttributes, id: appRootId })}>${s}</${appRootTag}>`
 
-function appTeleportTemplate (s: string) {
+const appTeleportTemplate = (s: string) =>
   // must have a valid tag and id
-  if (!appTeleportTag || !appTeleportId) {
-    return ''
-  }
-  return tagToString({
-    tag: appTeleportTag,
-    props: {
-      ...appTeleportAttributes,
-      id: appTeleportId,
-    },
-    innerHTML: s,
-  })
-}
+  (appTeleportTag || appTeleportId)
+    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttributes, id: appTeleportId })}>${s}</${appRootTag}>`
+    : ''
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
