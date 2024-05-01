@@ -1,16 +1,18 @@
 import { promises as fsp } from 'fs'
-import { resolve, join, dirname, basename } from 'upath'
+import { resolve, join, dirname, basename } from 'pathe'
 import type { Plugin } from 'vite'
+// @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
 import template from 'lodash.template'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
 import { camelCase } from 'scule'
+
 import genericMessages from '../templates/messages.json'
 
 const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
 
-const replaceAll = (input, search, replace) => input.split(search).join(replace)
+const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
 
 export const RenderPlugin = () => {
   return <Plugin> {

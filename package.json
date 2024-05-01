@@ -35,6 +35,7 @@
   "resolutions": {
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
+    "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "rollup": "^4.17.2",
