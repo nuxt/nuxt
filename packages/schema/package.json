@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@nuxt/telemetry": "2.5.4",
+    "@nuxt/ui-templates": "1.3.3",
     "@types/file-loader": "5.0.4",
     "@types/pug": "2.0.10",
     "@types/sass-loader": "8.0.8",
@@ -43,7 +44,7 @@
     "@vitejs/plugin-vue-jsx": "3.1.0",
     "@vue/compiler-core": "3.4.26",
     "@vue/compiler-sfc": "3.4.26",
-    "@vue/language-core": "2.0.15",
+    "@vue/language-core": "2.0.16",
     "c12": "1.10.0",
     "esbuild-loader": "4.1.0",
     "h3": "1.11.1",
@@ -62,7 +63,6 @@
     "webpack-dev-middleware": "7.2.1"
   },
   "dependencies": {
-    "@nuxt/ui-templates": "^1.3.3",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "hookable": "^5.5.3",

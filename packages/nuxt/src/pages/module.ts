@@ -253,7 +253,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       // Add default layout for pages
-      if (app.mainComponent!.includes('@nuxt/ui-templates')) {
+      if (app.mainComponent === resolve(nuxt.options.appDir, 'components/welcome.vue')) {
         app.mainComponent = resolve(runtimeDir, 'app.vue')
       }
       app.middleware.unshift({
