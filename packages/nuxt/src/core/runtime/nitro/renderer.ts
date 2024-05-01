@@ -116,7 +116,7 @@ const appRootTemplate = (s: string) =>
 
 const appTeleportTemplate = (s: string) =>
   // must have a valid tag and id
-  (appTeleportTag || appTeleportId)
+  (appTeleportTag && appTeleportId)
     ? `<${appTeleportTag}${propsToString({ ...appTeleportAttributes, id: appTeleportId })}>${s}</${appRootTag}>`
     : ''
 
@@ -242,7 +242,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 }
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
-const ROOT_NODE_REGEX = new RegExp(`^<body[^>]*>\\s*<${appRootTag}[^>]*>([\\s\\S]*?)<\\/${appRootTag}>\\s*<\\/body>$`)
+const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*id\\s*=\\s*["']${appRootId}["'][^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
 
 const PRERENDER_NO_SSR_ROUTES = new Set(['/index.html', '/200.html', '/404.html'])
 
