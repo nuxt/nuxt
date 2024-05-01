@@ -29,21 +29,21 @@
     "test": "pnpm lint && pnpm build"
   },
   "devDependencies": {
-    "@types/html-minifier": "^4.0.5",
-    "@types/lodash.template": "^4.5.3",
-    "@unocss/reset": "^0.59.4",
+    "@types/html-minifier": "4.0.5",
+    "@types/lodash.template": "4.5.3",
+    "@unocss/reset": "0.59.4",
     "critters": "0.0.22",
-    "execa": "^8.0.1",
-    "globby": "^14.0.1",
-    "html-minifier": "^4.0.0",
-    "jiti": "^1.21.0",
-    "knitwork": "^1.1.0",
-    "lodash.template": "^4.5.0",
-    "pathe": "^1.1.2",
-    "prettier": "^3.2.5",
-    "scule": "^1.3.0",
-    "unocss": "^0.59.4",
-    "vite": "^5.2.10"
+    "execa": "8.0.1",
+    "globby": "14.0.1",
+    "html-minifier": "4.0.0",
+    "jiti": "1.21.0",
+    "knitwork": "1.1.0",
+    "lodash.template": "4.5.0",
+    "pathe": "1.1.2",
+    "prettier": "3.2.5",
+    "scule": "1.3.0",
+    "unocss": "0.59.4",
+    "vite": "5.2.10"
   },
   "publishConfig": {
     "access": "public"

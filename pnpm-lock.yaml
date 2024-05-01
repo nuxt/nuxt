@@ -555,46 +555,46 @@ importers:
   packages/ui-templates:
     devDependencies:
       '@types/html-minifier':
-        specifier: ^4.0.5
+        specifier: 4.0.5
         version: 4.0.5
       '@types/lodash.template':
-        specifier: ^4.5.3
+        specifier: 4.5.3
         version: 4.5.3
       '@unocss/reset':
-        specifier: ^0.59.4
+        specifier: 0.59.4
         version: 0.59.4
       critters:
         specifier: 0.0.22
         version: 0.0.22
       execa:
-        specifier: ^8.0.1
+        specifier: 8.0.1
         version: 8.0.1
       globby:
-        specifier: ^14.0.1
+        specifier: 14.0.1
         version: 14.0.1
       html-minifier:
-        specifier: ^4.0.0
+        specifier: 4.0.0
         version: 4.0.0
       jiti:
-        specifier: ^1.21.0
+        specifier: 1.21.0
         version: 1.21.0
       knitwork:
-        specifier: ^1.1.0
+        specifier: 1.1.0
         version: 1.1.0
       lodash.template:
-        specifier: ^4.5.0
+        specifier: 4.5.0
         version: 4.5.0
       pathe:
-        specifier: ^1.1.2
+        specifier: 1.1.2
         version: 1.1.2
       prettier:
-        specifier: ^3.2.5
+        specifier: 3.2.5
         version: 3.2.5
       scule:
-        specifier: ^1.3.0
+        specifier: 1.3.0
         version: 1.3.0
       unocss:
-        specifier: ^0.59.4
+        specifier: 0.59.4
         version: 0.59.4(postcss@8.4.38)(rollup@4.17.2)(vite@5.2.10(@types/node@20.12.7)(sass@1.69.4)(terser@5.27.0))
       vite:
         specifier: 5.2.10
