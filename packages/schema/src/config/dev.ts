@@ -1,5 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
-import { template as loadingTemplate } from '../templates/loading.js'
+import { template as loadingTemplate } from '../templates/loading'
 
 export default defineUntypedSchema({
   devServer: {
