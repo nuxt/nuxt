@@ -1,6 +1,6 @@
 import fsp from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
-import { beforeAll, describe, it, expect } from 'vitest'
+import { beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { format } from 'prettier'
 
@@ -9,13 +9,13 @@ const distDir = fileURLToPath(new URL('../dist/templates', import.meta.url))
 describe('template', () => {
   beforeAll(async () => {
     await execaCommand('pnpm build', {
-      cwd: fileURLToPath(new URL('..', import.meta.url))
+      cwd: fileURLToPath(new URL('..', import.meta.url)),
     })
   })
 
   function formatCss (css: string) {
     return format(css, {
-      parser: 'css'
+      parser: 'css',
     })
   }
 

@@ -1,5 +1,5 @@
-import { resolve } from 'path'
-import { readdirSync } from 'fs'
+import { resolve } from 'node:path'
+import { readdirSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
 import UnoCSS from 'unocss/vite'
@@ -16,21 +16,21 @@ export default defineConfig({
         ...Object.fromEntries(
           readdirSync(r('templates')).filter(dir => dir !== 'messages.json').map(dir => [
             dir,
-            r('templates', dir, 'index.html')
-          ])
+            r('templates', dir, 'index.html'),
+          ]),
         ),
-        index: r('index.html')
-      }
-    }
+        index: r('index.html'),
+      },
+    },
   },
   plugins: [
     UnoCSS(),
     DevRenderingPlugin(),
-    RenderPlugin()
+    RenderPlugin(),
   ],
   server: {
     fs: {
-      allow: ['./templates', __dirname]
-    }
-  }
+      allow: ['./templates', __dirname],
+    },
+  },
 })
