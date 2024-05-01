@@ -11,8 +11,19 @@ export interface NuxtCompatibility {
    * - `true`:  When using Nuxt 2, using bridge module is required.
    * - `false`: When using Nuxt 2, using bridge module is not supported.
    */
-  bridge?: boolean
+  bridge?: boolean,
+
+  /**
+   * Required using a compatible builder.
+   *
+   * - `vite`: compatible with `@nuxt/vite-builder` only
+   * - `esbuild`: compatible with `@nuxt/webpack-builder` only
+   * - `all`: compatible with all builders
+   */
+  builder?: NuxtBuilder
 }
+
+export type NuxtBuilder = 'vite' | 'esbuild' | 'all'
 
 export interface NuxtCompatibilityIssue {
   name: string

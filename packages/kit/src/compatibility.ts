@@ -38,6 +38,17 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
         message: 'Nuxt bridge is not supported',
       })
     }
+
+    // Builder compatibility check
+    if (constraints.builder && constraints.builder !== 'all') {
+      if ((constraints.builder === 'vite' && nuxt.options.builder !== '@nuxt/vite-builder') ||
+      (constraints.builder === 'webpack' && nuxt.options.builder !== '@nuxt/webpack-builder')) {
+        issues.push({
+          name: 'builder',
+          message: `Using compatible builder ${nuxt.options.builder}`
+        })
+      }
+    }
   }
 
   // Allow extending compatibility checks
