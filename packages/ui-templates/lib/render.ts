@@ -1,5 +1,5 @@
-import { promises as fsp } from 'fs'
-import { resolve, join, dirname, basename } from 'pathe'
+import { promises as fsp } from 'node:fs'
+import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
@@ -80,7 +80,7 @@ export const RenderPlugin = () => {
         const jsCode = [
           `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
           `const _render = ${template(html, { variable: '__var__', interpolate: /{{{?([\s\S]+?)}?}}/g }).toString().replace('__var__', '{ messages }')}`,
-          'const _template = (messages) => _render({ messages: { ..._messages, ...messages } })'
+          'const _template = (messages) => _render({ messages: { ..._messages, ...messages } })',
         ].join('\n').trim()
 
         const templateContent = html
@@ -89,7 +89,7 @@ export const RenderPlugin = () => {
           .replace(/messages\./g, '')
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
-          // eslint-disable-next-line no-template-curly-in-string
+
           .replace(/<([^>]+) ([a-z]+)="([^"]*)({{\s*(\w+?)\s*}})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
           .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-text="$1" />')
           .replace(/>{{{\s*(\w+?)\s*}}}<\/[\w-]*>/g, ' v-html="$1" />')
@@ -111,7 +111,7 @@ export const RenderPlugin = () => {
           .filter(i => !i.includes('const t=document.createElement("link")'))
         const props = genObjectFromRawEntries(Object.entries({ ...genericMessages, ...messages }).map(([key, value]) => [key, {
           type: typeof value === 'string' ? 'String' : typeof value === 'number' ? 'Number' : typeof value === 'boolean' ? 'Boolean' : 'undefined',
-          default: JSON.stringify(value)
+          default: JSON.stringify(value),
         }]))
         const vueCode = [
           '<script setup>',
@@ -120,7 +120,7 @@ export const RenderPlugin = () => {
           title && 'useHead(' + genObjectFromRawEntries([
             ['title', `\`${title}\``],
             ['script', inlineScripts.map(s => ({ children: `\`${s}\`` }))],
-            ['style', [{ children: `\`${globalStyles}\`` }]]
+            ['style', [{ children: `\`${globalStyles}\`` }]],
           ]) + ')',
           '</script>',
           '<template>',
@@ -128,21 +128,21 @@ export const RenderPlugin = () => {
           '</template>',
           '<style scoped>',
           styleContent.replace(globalStyles, ''),
-          '</style>'
+          '</style>',
         ].filter(Boolean).join('\n').trim()
 
         // Generate types
         const types = [
           `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
           'declare const template: (data: Partial<DefaultMessages>) => string',
-          'export { template }'
+          'export { template }',
         ].join('\n')
 
         // Register exports
         templateExports.push({
           exportName: camelCase(templateName),
           templateName,
-          types
+          types,
         })
 
         // Write new template
@@ -162,6 +162,6 @@ export const RenderPlugin = () => {
 
       await fsp.writeFile(r('dist/index.d.ts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
       await fsp.writeFile(r('dist/index.d.mts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
-    }
+    },
   }
 }

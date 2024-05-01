@@ -1,5 +1,5 @@
-import { resolve, join } from 'path'
-import { promises as fsp } from 'fs'
+import { join, resolve } from 'node:path'
+import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
 import template from 'lodash.template'
 import genericMessages from '../templates/messages.json'
@@ -23,10 +23,10 @@ export const DevRenderingPlugin = () => {
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
       return template(contents, {
-        interpolate: /{{{?([\s\S]+?)}?}}/g
+        interpolate: /{{{?([\s\S]+?)}?}}/g,
       })({
-        messages: { ...genericMessages, ...messages }
+        messages: { ...genericMessages, ...messages },
       })
-    }
+    },
   }
 }

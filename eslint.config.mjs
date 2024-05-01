@@ -20,6 +20,7 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         'packages/schema/schema/**',
+        'packages/nuxt/src/core/templates/spa-loading-icon.mjs',
       ],
     },
     {
@@ -205,6 +206,12 @@ export default createConfigForNuxt({
       },
       rules: {
         'perfectionist/sort-objects': 'error',
+      },
+    },
+    {
+      files: ['packages/nuxt/src/app/components/welcome.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off',
       },
     },
   )
