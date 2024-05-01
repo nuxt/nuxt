@@ -154,7 +154,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             baseURL: nuxt.options.app.buildAssetsDir,
           },
       ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
+        .map(layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
         .filter(dir => existsSync(dir))
         .map(dir => ({ dir })),
     ],
@@ -228,6 +228,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  console.log(nitroConfig.publicAssets)
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
@@ -570,9 +572,9 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
   }
 
-  const possiblePaths = nuxt.options._layers.map(layer => join(layer.config.srcDir, 'app/spa-loading-template.html'))
+  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
-  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

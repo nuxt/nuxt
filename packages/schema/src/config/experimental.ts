@@ -8,6 +8,30 @@ export default defineUntypedSchema({
   future: {
     /**
      * Enable early access to Nuxt v4 features or flags.
+     *
+     * Setting `compatibilityVersion` to `4` changes defaults throughout your
+     * Nuxt configuration, but you can granularly re-enable Nuxt v3 behaviour
+     * when testing (see example). Please file issues if so, so that we can
+     * address in Nuxt or in the ecosystem.
+     *
+     * @example
+     * ```ts
+     * future: {
+     *   compatibilityVersion: 4,
+     * },
+     * // To re-enable _all_ Nuxt v3 behaviour, set the following options:
+     * experimental: {
+     *   compileTemplate: true,
+     *   templateUtils: true,
+     *   relativeWatchPaths: true,
+     *   defaults: {
+     *     useAsyncData: {
+     *       deep: true
+     *     }
+     *   }
+     * },
+     * srcDir: '.'
+     * ```
      * @type {3 | 4}
      */
     compatibilityVersion: 3,
