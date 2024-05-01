@@ -195,6 +195,14 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Customize Nuxt root element id.
+     * @type {HTMLElement}
+     */
+    rootAttributes: {
+      $resolve: val => val || {},
+    },
+
+    /**
      * Customize Nuxt root element tag.
      */
     teleportTag: {
@@ -207,6 +215,14 @@ export default defineUntypedSchema({
      */
     teleportId: {
       $resolve: val => val === false ? false : (val || 'teleports'),
+    },
+
+    /**
+     * Customize Nuxt Teleport element attributes.
+     * @type {HTMLElement}
+     */
+    teleportAttributes: {
+      $resolve: val => val || {},
     },
   },
 
