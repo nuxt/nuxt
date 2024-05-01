@@ -8,6 +8,31 @@ export default defineUntypedSchema({
   future: {
     /**
      * Enable early access to Nuxt v4 features or flags.
+     *
+     * Setting `compatibilityVersion` to `4` changes defaults throughout your
+     * Nuxt configuration, but you can granularly re-enable Nuxt v3 behaviour
+     * when testing (see example). Please file issues if so, so that we can
+     * address in Nuxt or in the ecosystem.
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   future: {
+     *     compatibilityVersion: 4,
+     *   },
+     *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
+     *   experimental: {
+     *     compileTemplate: true,
+     *     templateUtils: true,
+     *     relativeWatchPaths: true,
+     *     defaults: {
+     *       useAsyncData: {
+     *         deep: true
+     *       }
+     *     }
+     *   }
+     * })
+     * ```
      * @type {3 | 4}
      */
     compatibilityVersion: 3,
@@ -265,7 +290,7 @@ export default defineUntypedSchema({
      * - Uses the hash hydration plugin to reduce initial hydration
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
-    headNext: false,
+    headNext: true,
 
     /**
      * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
