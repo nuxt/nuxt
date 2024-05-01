@@ -182,9 +182,10 @@ export default defineUntypedSchema({
     /**
      * Customize Nuxt root element id.
      * @type {string | false}
+     * @deprecated Prefer `rootAttrs.id` instead
      */
     rootId: {
-      $resolve: val => val === false ? false : val || '__nuxt',
+      $resolve: val => val === false ? false : (val || '__nuxt'),
     },
 
     /**
@@ -199,7 +200,12 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
     rootAttrs: {
-      $resolve: val => val || {},
+      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+        const rootId = await get('app.rootId')
+        return defu(val, {
+          id: rootId === false ? undefined : (rootId || '__nuxt'),
+        })
+      },
     },
 
     /**
@@ -212,6 +218,7 @@ export default defineUntypedSchema({
     /**
      * Customize Nuxt Teleport element id.
      * @type {string | false}
+     * @deprecated Prefer `teleportAttrs.id` instead
      */
     teleportId: {
       $resolve: val => val === false ? false : (val || 'teleports'),
@@ -222,7 +229,12 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
     teleportAttrs: {
-      $resolve: val => val || {},
+      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+        const teleportId = await get('app.teleportId')
+        return defu(val, {
+          id: teleportId === false ? undefined : (teleportId || 'teleports'),
+        })
+      },
     },
   },
 
