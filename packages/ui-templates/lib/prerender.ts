@@ -1,5 +1,5 @@
-import { resolve, join } from 'path'
-import { promises as fsp } from 'fs'
+import { join, resolve } from 'node:path'
+import { promises as fsp } from 'node:fs'
 import { globby } from 'globby'
 
 const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
@@ -10,12 +10,11 @@ async function main () {
     const { template } = await import(file)
     const updated = template({
       // messages: {},
-      name: '{{ name }}' // TODO
+      name: '{{ name }}', // TODO
     })
     await fsp.mkdir(file.replace('.mjs', ''))
     await fsp.writeFile(file.replace('.mjs', '/index.html'), updated)
   }
 }
 
-// eslint-disable-next-line no-console
 main().catch(console.error)

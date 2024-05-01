@@ -1,0 +1,1 @@
+../../../../ui-templates/dist/templates/spa-loading-icon.d.ts

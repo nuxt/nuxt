@@ -35,6 +35,7 @@
   },
   "devDependencies": {
     "@nuxt/telemetry": "2.5.4",
+    "@nuxt/ui-templates": "^1.3.3",
     "@types/file-loader": "5.0.4",
     "@types/pug": "2.0.10",
     "@types/sass-loader": "8.0.8",
@@ -62,7 +63,6 @@
     "webpack-dev-middleware": "7.2.1"
   },
   "dependencies": {
-    "@nuxt/ui-templates": "^1.3.3",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "hookable": "^5.5.3",
