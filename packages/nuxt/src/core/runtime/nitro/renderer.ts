@@ -111,15 +111,6 @@ const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r
 // @ts-expect-error file will be produced after app build
 const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise<string[]>>> => import('#build/dist/server/styles.mjs').then(r => r.default || r))
 
-const appRootTemplate = (s: string) =>
-  `<${appRootTag}${propsToString({ ...appRootAttrs, id: appRootId })}>${s}</${appRootTag}>`
-
-const appTeleportTemplate = (s: string) =>
-  // must have a valid tag and id
-  (appTeleportTag && appTeleportId)
-    ? `<${appTeleportTag}${propsToString({ ...appTeleportAttrs, id: appTeleportId })}>${s}</${appTeleportTag}>`
-    : ''
-
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
   // Load client manifest
@@ -145,7 +136,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
       renderer.rendererContext.updateManifest(await getClientManifest())
     }
-    return appRootTemplate(html)
+    return APP_ROOT_OPEN_TAG + html + APP_ROOT_CLOSE_TAG
   }
 
   return renderer
@@ -157,7 +148,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   // @ts-expect-error virtual file
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => appRootTemplate(r))
+    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
 
   const options = {
     manifest,
@@ -240,6 +231,13 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
   return ctx
 }
+
+const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportId)
+const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString({ ...appTeleportAttrs, id: appTeleportId })}>` : ''
+const APP_TELEPORT_CLOSE_TAG = HAS_APP_TELEPORTS ? `</${appTeleportTag}>` : ''
+
+const APP_ROOT_OPEN_TAG = `<${appRootTag}${propsToString({ ...appRootAttrs, id: appRootId })}>`
+const APP_ROOT_CLOSE_TAG = `</${appRootTag}>`
 
 const PAYLOAD_URL_RE = process.env.NUXT_JSON_PAYLOADS ? /\/_payload.json(\?.*)?$/ : /\/_payload.js(\?.*)?$/
 const ROOT_NODE_REGEX = new RegExp(`^<${appRootTag}[^>]*id\\s*=\\s*["']${appRootId}["'][^>]*>([\\s\\S]*)<\\/${appRootTag}>$`)
@@ -472,9 +470,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
       componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
-      appTeleportTemplate(
-        joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]),
-      ),
+      APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportId}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],
   }
