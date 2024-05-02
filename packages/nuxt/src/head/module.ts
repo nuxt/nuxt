@@ -1,5 +1,6 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { defu } from 'defu'
 import type { RenderSSRHeadOptions } from '@unhead/schema'
 import { distDir } from '../dirs'
 
@@ -77,11 +78,9 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
     addTemplate({
       filename: 'unhead.config.mjs',
       getContents (ctx) {
-        let renderSSRHeadOptions = options.renderSSRHeadOptions
-
-        if (!renderSSRHeadOptions) {
-          renderSSRHeadOptions = { omitLineBreaks: !(ctx.nuxt.options.dev || ctx.nuxt.options.test) }
-        }
+        const renderSSRHeadOptions = defu(options.renderSSRHeadOptions, {
+          omitLineBreaks: !(ctx.nuxt.options.dev || ctx.nuxt.options.test),
+        })
 
         return [
           `export const renderSSRHeadOptions = ${JSON.stringify(renderSSRHeadOptions)}`,
