@@ -34,7 +34,7 @@ export default defineNuxtModule({
       }
 
       for (const layer of nuxt.options._layers) {
-        const path = await findPath(resolve(layer.config.srcDir, 'app/router.options'))
+        const path = await findPath(resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'router.options'))
         if (path) { context.files.unshift({ path }) }
       }
 
@@ -86,8 +86,8 @@ export default defineNuxtModule({
     const restartPaths = nuxt.options._layers.flatMap((layer) => {
       const pagesDir = (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'
       return [
-        join(layer.config.srcDir || layer.cwd, 'app/router.options.ts'),
-        join(layer.config.srcDir || layer.cwd, pagesDir),
+        resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.app || 'app', 'router.options.ts'),
+        resolve(layer.config.srcDir || layer.cwd, pagesDir),
       ]
     })
 
@@ -228,9 +228,9 @@ export default defineNuxtModule({
     const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
       const dir = (l.config.rootDir === nuxt.options.rootDir ? nuxt.options : l.config).dir
       return [
-        join(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
-        join(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
-        join(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/',
+        resolve(l.config.srcDir || l.cwd, dir?.pages || 'pages') + '/',
+        resolve(l.config.srcDir || l.cwd, dir?.layouts || 'layouts') + '/',
+        resolve(l.config.srcDir || l.cwd, dir?.middleware || 'middleware') + '/',
       ]
     })
 

@@ -491,6 +491,12 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
 
+    // Restart Nuxt when new `app/` dir is added
+    if (event === 'addDir' && path === resolve(nuxt.options.srcDir, 'app')) {
+      logger.info(`\`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart', { hard: true })
+    }
+
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
     if (isFileChange && RESTART_RE.test(path)) {
