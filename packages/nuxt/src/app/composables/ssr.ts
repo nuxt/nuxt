@@ -72,7 +72,7 @@ export function prerenderRoutes (path: string | string[]) {
 const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
 
 /**
- * `onPrehydrate` is a composable that allows you to run a callback on the client immediately before
+ * `onPrehydrate` is a composable lifecycle hook that allows you to run a callback on the client immediately before
  * Nuxt hydrates the page. This is an advanced feature.
  *
  * The callback will be stringified and inlined in the HTML so it should not have any external
