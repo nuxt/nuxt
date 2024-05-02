@@ -1,6 +1,7 @@
 {
   "name": "@nuxt/ui-templates",
   "version": "1.3.3",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -8,23 +9,12 @@
   },
   "license": "CC-BY-ND-4.0",
   "type": "module",
-  "exports": {
-    "./templates/*": "./dist/templates/*",
-    ".": "./dist/index.js",
-    "./*": "./dist/*"
-  },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist/templates/*",
-    "dist/index.*"
-  ],
   "scripts": {
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint --ext .ts,.js .",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
-    "prepack": "pnpm build && true",
+    "prepack": "pnpm build",
     "prerender": "pnpm build && jiti ./lib/prerender",
     "test": "pnpm lint && pnpm build"
   },
@@ -43,9 +33,6 @@
     "prettier": "3.2.5",
     "scule": "1.3.0",
     "unocss": "0.59.4",
-    "vite": "5.2.10"
-  },
-  "publishConfig": {
-    "access": "public"
+    "vite": "5.2.11"
   }
 }
