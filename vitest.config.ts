@@ -14,7 +14,7 @@ export default defineConfig({
     },
   },
   ssr: {
-    noExternal: [/ui-templates/]
+    noExternal: [/ui-templates/],
   },
   test: {
     globalSetup: './test/setup.ts',
