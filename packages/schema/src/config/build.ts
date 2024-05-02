@@ -176,7 +176,7 @@ export default defineUntypedSchema({
               ? {}
               : {
                   'vue': ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-                  '#app': ['definePayloadReducer', 'definePageMeta'],
+                  '#app': ['definePayloadReducer', 'definePageMeta', 'onPrehydrate'],
                 },
           ),
         },
