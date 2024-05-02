@@ -13,15 +13,8 @@ export default defineConfig({
       '#app': resolve('./packages/nuxt/dist/app'),
     },
   },
-  optimizeDeps: {
-    include: [
-      resolve('./packages/ui-templates/dist/templates/error-404.js'),
-      resolve('./packages/ui-templates/dist/templates/error-500.js'),
-      resolve('./packages/ui-templates/dist/templates/error-dev.js'),
-      resolve('./packages/ui-templates/dist/templates/loading.js'),
-      resolve('./packages/ui-templates/dist/templates/spa-loading-icon.js'),
-      resolve('./packages/ui-templates/dist/templates/welcome.js'),
-    ]
+  ssr: {
+    noExternal: [/ui-templates/]
   },
   test: {
     globalSetup: './test/setup.ts',
