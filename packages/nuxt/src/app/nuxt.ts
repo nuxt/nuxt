@@ -1,4 +1,4 @@
-import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -101,7 +101,7 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
-  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  runWithContext: <T extends () => any>(fn: T, scope?: EffectScope) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
 
   [key: string]: unknown
 
@@ -254,9 +254,9 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext (fn: any) {
-      if (nuxtApp._scope.active) {
-        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
+    runWithContext (fn: any, scope = nuxtApp._scope) {
+      if (scope.active && !getCurrentScope()) {
+        return scope.run(() => callWithNuxt(nuxtApp, fn))
       }
       return callWithNuxt(nuxtApp, fn)
     },
