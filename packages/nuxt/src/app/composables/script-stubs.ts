@@ -18,16 +18,16 @@ export function useScript<T extends Record<string | symbol, any>> (input: UseScr
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function createScriptConsentTrigger (...args: unknown[]) {
+export function useElementScriptTrigger (...args: unknown[]) {
+  renderStubMessage('useElementScriptTrigger')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useConsentScriptTrigger (...args: unknown[]) {
   renderStubMessage('createScriptConsentTrigger')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useAnalyticsPageEvent (...args: unknown[]) {
   renderStubMessage('useAnalyticsPageEvent')
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useElementScriptTrigger (...args: unknown[]) {
-  renderStubMessage('useElementScriptTrigger')
 }
