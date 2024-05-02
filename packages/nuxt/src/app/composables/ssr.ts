@@ -93,7 +93,9 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
   if (vm && key) {
     vm.attrs[PREHYDRATE_ATTR_KEY] ||= ''
     key = ':' + key + ':'
-    vm.attrs[PREHYDRATE_ATTR_KEY] += key
+    if (!(vm.attrs[PREHYDRATE_ATTR_KEY] as string).includes(key)) {
+      vm.attrs[PREHYDRATE_ATTR_KEY] += key
+    }
   }
   const code = vm && key
     ? `document.querySelectorAll('[${PREHYDRATE_ATTR_KEY}*=${JSON.stringify(key)}]').forEach` + callback
