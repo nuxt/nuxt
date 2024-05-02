@@ -13,6 +13,9 @@ export default defineConfig({
       '#app': resolve('./packages/nuxt/dist/app'),
     },
   },
+  ssr: {
+    noExternal: [/ui-templates/],
+  },
   test: {
     globalSetup: './test/setup.ts',
     setupFiles: ['./test/setup-env.ts'],
