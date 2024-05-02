@@ -43,7 +43,7 @@
     "prettier": "3.2.5",
     "scule": "1.3.0",
     "unocss": "0.59.4",
-    "vite": "5.2.10"
+    "vite": "5.2.11"
   },
   "publishConfig": {
     "access": "public"
