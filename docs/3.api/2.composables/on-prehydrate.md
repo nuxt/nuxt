@@ -35,6 +35,8 @@ before Nuxt runtime initializes so it should not rely on the Nuxt or Vue context
 
 ```vue twoslash [app.vue]
 <script setup lang="ts">
+declare const window: Window
+// ---cut---
 // onPrehydrate is guaranteed to run before Nuxt hydrates
 onPrehydrate(() => {
   console.log(window)
