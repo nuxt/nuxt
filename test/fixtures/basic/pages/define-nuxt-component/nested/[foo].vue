@@ -1,14 +1,14 @@
 <script lang="ts">
 export default defineNuxtComponent({
   name: 'DefineNuxtComponentTest',
-  setup() {
+  setup () {
     const state = useState('define-nuxt-component-counter', () => 0)
     const watcher = useState('define-nuxt-component-watcher', () => 0)
     const router = useRouter()
 
-    //Should trigger once per page on state change
+    // Should trigger once per page on state change
     watch(state, () => {
-        watcher.value++
+      watcher.value++
     })
 
     state.value++
@@ -24,6 +24,11 @@ export default defineNuxtComponent({
 
 <template>
   <div>
-    <div data-testid="define-nuxt-component-state" @click="router.push('/define-nuxt-component')">{{ watcher }}</div>
+    <div
+      data-testid="define-nuxt-component-state"
+      @click="router.push('/define-nuxt-component')"
+    >
+      {{ watcher }}
+    </div>
   </div>
 </template>
