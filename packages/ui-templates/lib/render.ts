@@ -1,4 +1,4 @@
-import { promises as fsp } from 'node:fs'
+import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
@@ -6,6 +6,7 @@ import Critters from 'critters'
 import { template } from 'lodash-es'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
+import { globby } from 'globby'
 import { camelCase } from 'scule'
 
 import genericMessages from '../templates/messages.json'
@@ -21,7 +22,6 @@ export const RenderPlugin = () => {
     async writeBundle () {
       const distDir = r('dist')
       const critters = new Critters({ path: distDir })
-      const globby = await import('globby').then(r => r.globby)
       const htmlFiles = await globby(r('dist/templates/**/*.html'))
 
       const templateExports = []
@@ -34,7 +34,7 @@ export const RenderPlugin = () => {
         console.log('Processing', templateName)
 
         // Read source template
-        let html = await fsp.readFile(fileName, 'utf-8')
+        let html = readFileSync(fileName, 'utf-8')
         const isCompleteHTML = html.includes('<!DOCTYPE html>')
 
         if (html.includes('<html')) {
@@ -50,7 +50,7 @@ export const RenderPlugin = () => {
           .filter(src => src?.match(/\.svg$/))
 
         for (const src of svgSources) {
-          const svg = await fsp.readFile(r('dist', src), 'utf-8')
+          const svg = readFileSync(r('dist', src), 'utf-8')
           const base64Source = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
           html = replaceAll(html, src, base64Source)
         }
@@ -60,7 +60,7 @@ export const RenderPlugin = () => {
           .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
 
         for (const [scriptBlock, src] of scriptSources) {
-          let contents = await fsp.readFile(r('dist', src), 'utf-8')
+          let contents = readFileSync(r('dist', src), 'utf-8')
           contents = replaceAll(contents, '/* empty css               */', '').trim()
           html = html.replace(scriptBlock, contents.length ? `<script>${contents}</script>` : '')
         }
@@ -74,7 +74,7 @@ export const RenderPlugin = () => {
         }
 
         // Load messages
-        const messages = JSON.parse(await fsp.readFile(r(`templates/${templateName}/messages.json`), 'utf-8'))
+        const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
         const jsCode = [
@@ -146,21 +146,20 @@ export const RenderPlugin = () => {
         })
 
         // Write new template
-        await fsp.writeFile(fileName.replace('/index.html', '.js'), `${jsCode}\nexport const template = _template`)
-        await fsp.writeFile(fileName.replace('/index.html', '.vue'), vueCode)
-        await fsp.writeFile(fileName.replace('/index.html', '.d.ts'), `${types}`)
+        writeFileSync(fileName.replace('/index.html', '.js'), `${jsCode}\nexport const template = _template`)
+        writeFileSync(fileName.replace('/index.html', '.vue'), vueCode)
+        writeFileSync(fileName.replace('/index.html', '.d.ts'), `${types}`)
 
         // Remove original html file
-        await fsp.unlink(fileName)
-        await fsp.rmdir(dirname(fileName))
+        unlinkSync(fileName)
+        rmdirSync(dirname(fileName))
       }
 
       // Write an index file with named exports for each template
-      const contents = templateExports.map(exp => `export { template as ${exp.exportName} } from './templates/${exp.templateName}.mjs'`).join('\n')
-      await fsp.writeFile(r('dist/index.mjs'), contents, 'utf8')
+      const contents = templateExports.map(exp => `export { template as ${exp.exportName} } from './templates/${exp.templateName}.js'`).join('\n')
+      writeFileSync(r('dist/index.js'), contents, 'utf8')
 
-      await fsp.writeFile(r('dist/index.d.ts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
-      await fsp.writeFile(r('dist/index.d.mts'), replaceAll(contents, /\.mjs/g, ''), 'utf8')
+      writeFileSync(r('dist/index.d.ts'), replaceAll(contents, /\.js/g, ''), 'utf8')
     },
   }
 }
