@@ -112,7 +112,7 @@ const granularAppPresets: InlinePreset[] = [
 ]
 
 export const scriptsStubsPreset = {
-  imports: ['createScriptConsentTrigger', 'useAnalyticsPageEvent', 'useElementScriptTrigger', 'useScript'],
+  imports: ['useConsentScriptTrigger', 'useAnalyticsPageEvent', 'useElementScriptTrigger', 'useScript'],
   from: '#app/composables/script-stubs',
 } satisfies InlinePreset
 

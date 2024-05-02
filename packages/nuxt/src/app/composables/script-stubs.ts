@@ -24,7 +24,7 @@ export function useElementScriptTrigger (...args: unknown[]) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useConsentScriptTrigger (...args: unknown[]) {
-  renderStubMessage('createScriptConsentTrigger')
+  renderStubMessage('useConsentScriptTrigger')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
