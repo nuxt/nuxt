@@ -48,7 +48,6 @@ export const defineNuxtComponent: typeof defineComponent =
       ...options,
       setup (props, ctx) {
         const nuxtApp = useNuxtApp()
-
         const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
 
         const promises: Promise<any>[] = []
