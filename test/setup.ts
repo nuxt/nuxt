@@ -14,7 +14,7 @@ export async function setup () {
     await fs.remove('node_modules/.cache/jiti')
   }
   for (const file of fs.readdirSync('packages/ui-templates/dist/templates')) {
-    console.log(file, fs.readFileSync(file, 'utf-8'))
+    console.log(file, fs.readFileSync(join('packages/ui-templates/dist/templates', file), 'utf-8'))
   }
   await fs.copy(fixtureDir, tempDir, {
     filter: src => !src.includes('.cache'),
