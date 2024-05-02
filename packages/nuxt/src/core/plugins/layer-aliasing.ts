@@ -21,12 +21,13 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
     const srcDir = layer.config.srcDir || layer.cwd
     const rootDir = layer.config.rootDir || layer.cwd
 
-    aliases[srcDir] = {
-      '~': layer.config?.alias?.['~'] || srcDir,
-      '@': layer.config?.alias?.['@'] || srcDir,
-      '~~': layer.config?.alias?.['~~'] || rootDir,
-      '@@': layer.config?.alias?.['@@'] || rootDir,
-    }
+    // expose layer aliases
+    layer.config.alias ??= {}
+    layer.config.alias['~'] = layer.config.alias?.['~'] || srcDir
+    layer.config.alias['@'] = layer.config.alias?.['@'] || srcDir
+    layer.config.alias['~~'] = layer.config.alias?.['~~'] || rootDir
+    layer.config.alias['@@'] = layer.config.alias?.['@@'] || rootDir
+    aliases[srcDir] = { ...(layer.config.alias as Record<string, string>) }
   }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 

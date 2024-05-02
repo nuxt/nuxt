@@ -52,6 +52,11 @@ export default defineNuxtConfig({
         dir: '../custom-public',
         baseURL: '/custom',
       },
+      {
+        baseURL: 'subfolder',
+        dir: '~/public-alias/subfolder',
+        maxAge: 31536000,
+      },
     ],
     esbuild: {
       options: {
