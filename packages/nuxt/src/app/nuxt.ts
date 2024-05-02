@@ -101,7 +101,7 @@ interface _NuxtApp {
   hook: _NuxtApp['hooks']['hook']
   callHook: _NuxtApp['hooks']['callHook']
 
-  runWithContext: <T extends () => any>(fn: T, scope?: EffectScope) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
 
   [key: string]: unknown
 
@@ -254,9 +254,9 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext (fn: any, scope = nuxtApp._scope) {
-      if (scope.active && !getCurrentScope()) {
-        return scope.run(() => callWithNuxt(nuxtApp, fn))
+    runWithContext (fn: any) {
+      if (nuxtApp._scope.active && !(getCurrentScope() || getCurrentInstance())) {
+        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
       return callWithNuxt(nuxtApp, fn)
     },

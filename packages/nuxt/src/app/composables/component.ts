@@ -1,4 +1,4 @@
-import { getCurrentInstance, getCurrentScope, reactive, toRefs } from 'vue'
+import { getCurrentInstance, reactive, toRefs } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import type { NuxtApp } from '../nuxt'
@@ -48,9 +48,8 @@ export const defineNuxtComponent: typeof defineComponent =
       ...options,
       setup (props, ctx) {
         const nuxtApp = useNuxtApp()
-        const scope = getCurrentScope()
 
-        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx), scope)).then(r => r || {}) : {}
+        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
 
         const promises: Promise<any>[] = []
         if (options.asyncData) {
