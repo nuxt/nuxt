@@ -91,10 +91,12 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
 
   const vm = getCurrentInstance()
   if (vm && key) {
-    vm.attrs[PREHYDRATE_ATTR_KEY] = key
+    vm.attrs[PREHYDRATE_ATTR_KEY] ||= ''
+    key = ':' + key + ':'
+    vm.attrs[PREHYDRATE_ATTR_KEY] += key
   }
   const code = vm && key
-    ? `document.querySelectorAll('[${PREHYDRATE_ATTR_KEY}=${JSON.stringify(key)}]').forEach` + callback
+    ? `document.querySelectorAll('[${PREHYDRATE_ATTR_KEY}*=${JSON.stringify(key)}]').forEach` + callback
     : (callback + '()')
 
   useServerHead({
@@ -106,5 +108,5 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
     }],
   })
 
-  return key
+  return vm && key ? vm.attrs[PREHYDRATE_ATTR_KEY] as string : undefined
 }

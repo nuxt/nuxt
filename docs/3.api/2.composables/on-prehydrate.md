@@ -45,7 +45,7 @@ onPrehydrate(() => {
 // As long as it only has one root node, you can access the element
 onPrehydrate((el) => {
   console.log(el.outerHTML)
-  // <div data-v-inspector="app.vue:15:3" data-prehydrate-id="b3qlvSiBeH"> Hi there </div>
+  // <div data-v-inspector="app.vue:15:3" data-prehydrate-id=":b3qlvSiBeH:"> Hi there </div>
 })
 
 // For _very_ advanced use cases (such as not having a single root node) you
