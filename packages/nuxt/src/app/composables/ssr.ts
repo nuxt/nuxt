@@ -101,7 +101,7 @@ export function onPrehydrate (callback: string | ((el: HTMLElement) => void), ke
 
   useServerHead({
     script: [{
-      key: code,
+      key: vm && key ? key : code,
       tagPosition: 'bodyClose',
       tagPriority: -19,
       innerHTML: code,
