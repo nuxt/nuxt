@@ -1,4 +1,4 @@
-import { effectScope, getCurrentInstance, hasInjectionContext, reactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -255,7 +255,7 @@ export function createNuxtApp (options: CreateOptions) {
       data: {},
     },
     runWithContext (fn: any) {
-      if (nuxtApp._scope.active) {
+      if (nuxtApp._scope.active && !getCurrentScope()) {
         return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
       return callWithNuxt(nuxtApp, fn)
