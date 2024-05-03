@@ -20,11 +20,16 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
-import type { NuxtAppLiterals } from '#app'
+import { type NuxtAppLiterals } from '#app'
+// @ts-expect-error virtual import
+import { buildId } from '#build/nuxt.config.mjs'
 
-const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
-})
+/* @__NO_SIDE_EFFECTS__ */
+function getNuxtAppCtx (appName?: string) {
+  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+    asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
+  })
+}
 
 type HookResult = Promise<void> | void
 
@@ -447,6 +452,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
+  const nuxtAppCtx = getNuxtAppCtx()
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
@@ -458,31 +464,31 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 
 /* @__NO_SIDE_EFFECTS__ */
 /**
- * Returns the current Nuxt instance.
+ * Returns the Nuxt instance from the given app name if provided.
  *
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
-export function tryUseNuxtApp (): NuxtApp | null {
+export function tryUseNuxtApp (appName?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
+  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(appName).tryUse()
 
   return nuxtAppInstance || null
 }
 
 /* @__NO_SIDE_EFFECTS__ */
 /**
- * Returns the current Nuxt instance.
+ * Returns the Nuxt instance from the given app name if provided.
  *
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
-export function useNuxtApp (): NuxtApp {
-  const nuxtAppInstance = tryUseNuxtApp()
+export function useNuxtApp (appName?: string): NuxtApp {
+  const nuxtAppInstance = tryUseNuxtApp(appName)
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {

@@ -4,6 +4,7 @@ import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
+import { randomUUID } from 'uncrypto'
 import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
@@ -151,6 +152,13 @@ export default defineUntypedSchema({
    */
   buildDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => resolve(await get('rootDir') as string, val || '.nuxt'),
+  },
+
+  /**
+   * A unique identifier matching the build. This may contain the hash of the current state of the project.
+   */
+  buildId: {
+    $resolve: (val: string) => val ?? randomUUID(),
   },
 
   /**
