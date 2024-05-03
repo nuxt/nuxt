@@ -20,6 +20,7 @@ import importsModule from '../imports/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
+import { scriptsStubsPreset } from '../imports/presets'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -124,6 +125,14 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
+
+  // Prompt to install `@nuxt/scripts` if user has configured it
+  // @ts-expect-error scripts types are not present as the module is not installed
+  if (nuxt.options.scripts) {
+    if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+    }
+  }
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
@@ -548,6 +557,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
         options._modules.push('@nuxt/devtools')
       }
     }
+  }
+
+  if (!options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+    options.imports = defu(options.imports, {
+      presets: [scriptsStubsPreset],
+    })
   }
 
   // Nuxt Webpack Builder is currently opt-in
