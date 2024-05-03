@@ -2615,3 +2615,40 @@ describe('defineNuxtComponent watch duplicate', () => {
     expect(await page.getByTestId('define-nuxt-component-state').first().innerText()).toBe('2')
   })
 })
+
+describe('namespace access to useNuxtApp', () => {
+  it('should return the nuxt instance when used with correct buildId', async () => {
+    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
+
+    expect(pageErrors).toEqual([])
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    // Defaulting to buildId
+    await page.evaluate(() => window.useNuxtApp?.())
+    // Using correct configured buildId
+    await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
+
+    await page.close()
+  })
+
+  it('should throw an error when used with wrong buildId', async () => {
+    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
+
+    expect(pageErrors).toEqual([])
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    let error: unknown
+    try {
+      // Using wrong/unknown buildId
+      await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
+    } catch (err) {
+      error = err
+    }
+
+    expect(error).toBeTruthy()
+
+    await page.close()
+  })
+})
