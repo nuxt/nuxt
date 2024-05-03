@@ -319,12 +319,26 @@ export default defineUntypedSchema({
     $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c),
   },
 
+  /**
+   * An object that allows us to configure the `unhead` nuxt module.
+   */
   unhead: {
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *
      * @see https://unhead.unjs.io/setup/ssr/installation#options
      * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
+     *
+     * @example
+     * ```js
+     * export default {
+     *  unhead: {
+     *   renderSSRHeadOptions: {
+     *    omitLineBreaks: true
+     *   }
+     * }
+     * ```
+     *
      */
     renderSSRHeadOptions: undefined,
   },
