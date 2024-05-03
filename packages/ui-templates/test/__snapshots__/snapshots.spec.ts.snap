@@ -227,11 +227,8 @@ exports[`template > correctly outputs style blocks for error-404.vue 2`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -260,63 +257,37 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 h1,
 p {
   margin: 0;
 }
+:disabled {
+  cursor: default;
+}
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-backdrop-sepia:;
 }
 "
 `;
@@ -447,11 +418,8 @@ exports[`template > correctly outputs style blocks for error-500.vue 2`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -476,63 +444,37 @@ h1 {
   font-size: inherit;
   font-weight: inherit;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 h1,
 p {
   margin: 0;
 }
+:disabled {
+  cursor: default;
+}
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-backdrop-sepia:;
 }
 "
 `;
@@ -679,11 +621,8 @@ exports[`template > correctly outputs style blocks for error-dev.vue 2`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -722,64 +661,38 @@ pre {
   font-variation-settings: normal;
   font-size: 1em;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 h1,
 p,
 pre {
   margin: 0;
 }
+:disabled {
+  cursor: default;
+}
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-backdrop-sepia:;
 }
 "
 `;
@@ -860,11 +773,8 @@ exports[`template > correctly outputs style blocks for loading.vue 1`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -908,8 +818,28 @@ button {
   background-color: transparent;
   background-image: none;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 button {
   cursor: pointer;
+}
+:disabled {
+  cursor: default;
 }
 svg {
   display: block;
@@ -918,56 +848,10 @@ svg {
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-backdrop-sepia:;
 }
 .absolute {
   position: absolute;
@@ -1064,11 +948,8 @@ exports[`template > correctly outputs style blocks for loading.vue 2`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -1112,8 +993,28 @@ button {
   background-color: transparent;
   background-image: none;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 button {
   cursor: pointer;
+}
+:disabled {
+  cursor: default;
 }
 svg {
   display: block;
@@ -1122,56 +1023,10 @@ svg {
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-backdrop-sepia:;
 }
 "
 `;
@@ -1249,10 +1104,6 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
   border-color: transparent;
   border-radius: 12px;
   border-width: 1px;
-}
-.get-started-gradient-border:hover
-  > :is(.get-started-gradient-left, .get-started-gradient-right) {
-  opacity: 0.2;
 }
 .get-started-gradient-left,
 .get-started-gradient-right {
@@ -1465,9 +1316,6 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 }
 .min-h-screen {
   min-height: 100vh;
-}
-.w-\\[20\\%\\] {
-  width: 20%;
 }
 .w-full {
   width: 100%;
@@ -1794,6 +1642,7 @@ exports[`template > correctly outputs style blocks for welcome.vue 2`] = `
   0% {
     --gradient-angle: 0deg;
   }
+
   100% {
     --gradient-angle: 360deg;
   }
@@ -1806,11 +1655,8 @@ exports[`template > correctly outputs style blocks for welcome.vue 2`] = `
   border-style: solid;
   border-color: var(--un-default-border-color, #e5e7eb);
 }
-:before,
-:after {
-  --un-content: "";
-}
-html {
+html,
+:host {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
   -moz-tab-size: 4;
@@ -1841,6 +1687,23 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+:-moz-focusring {
+  outline: auto;
+}
+:-moz-ui-invalid {
+  box-shadow: none;
+}
+::-webkit-inner-spin-button,
+::-webkit-outer-spin-button {
+  height: auto;
+}
+::-webkit-search-decoration {
+  -webkit-appearance: none;
+}
+::-webkit-file-upload-button {
+  -webkit-appearance: button;
+  font: inherit;
+}
 h1,
 h2,
 h3,
@@ -1851,6 +1714,9 @@ ul {
   list-style: none;
   margin: 0;
   padding: 0;
+}
+:disabled {
+  cursor: default;
 }
 img,
 svg {
@@ -1864,56 +1730,26 @@ img {
 *,
 :before,
 :after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
   --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
   --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
   --un-shadow: 0 0 rgb(0 0 0 / 0);
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
   --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
+  --un-backdrop-sepia:;
+}
+::backdrop {
+  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-inset: ;
+  --un-ring-offset-width: 0px;
+  --un-ring-offset-color: #fff;
+  --un-ring-width: 0px;
+  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-backdrop-sepia:;
 }
 "
 `;

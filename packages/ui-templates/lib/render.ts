@@ -1,8 +1,8 @@
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
-// @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
-import Critters from 'critters'
+// @ts-expect-error Invalid types in beastcss
+import _BeastCSS from 'beastcss'
 import { template } from 'lodash-es'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
@@ -11,6 +11,7 @@ import { camelCase } from 'scule'
 
 import genericMessages from '../templates/messages.json'
 
+const BeastCSS = (_BeastCSS.default || _BeastCSS) as typeof import('beastcss')
 const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
 
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
@@ -21,7 +22,7 @@ export const RenderPlugin = () => {
     enforce: 'post',
     async writeBundle () {
       const distDir = r('dist')
-      const critters = new Critters({ path: distDir })
+      const beast = new BeastCSS({ path: distDir })
       const htmlFiles = await globby(r('dist/templates/**/*.html'))
 
       const templateExports = []
@@ -39,7 +40,7 @@ export const RenderPlugin = () => {
 
         if (html.includes('<html')) {
           // Apply critters to inline styles
-          html = await critters.process(html)
+          html = await beast.process(html)
         }
         // We no longer need references to external CSS
         html = html.replace(/<link[^>]*>/g, '')
