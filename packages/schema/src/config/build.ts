@@ -165,7 +165,7 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  'vue': ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onUpdated', 'onUnmounted', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
                   '#app': ['definePayloadReviver', 'definePageMeta'],
                 },
           ),
