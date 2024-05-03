@@ -319,7 +319,7 @@ export default defineUntypedSchema({
     $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c),
   },
 
-  meta: {
+  unhead: {
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *
