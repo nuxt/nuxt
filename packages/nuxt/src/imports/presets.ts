@@ -112,7 +112,29 @@ const granularAppPresets: InlinePreset[] = [
 ]
 
 export const scriptsStubsPreset = {
-  imports: ['useConsentScriptTrigger', 'useAnalyticsPageEvent', 'useElementScriptTrigger', 'useScript'],
+  imports: [
+    'useConsentScriptTrigger',
+    'useAnalyticsPageEvent',
+    'useElementScriptTrigger',
+    'useScript',
+    'useScriptGoogleAnalytics',
+    'useScriptPlausibleAnalytics',
+    'useScriptCloudflareWebAnalytics',
+    'useScriptFathomAnalytics',
+    'useScriptMatomoAnalytics',
+    'useScriptGoogleTagManager',
+    'useScriptSegment',
+    'useScriptFacebookPixel',
+    'useScriptXPixel',
+    'useScriptIntercom',
+    'useScriptHotjar',
+    'useScriptStripe',
+    'useScriptLemonSqueezy',
+    'useScriptVimeoPlayer',
+    'useScriptYouTubeIframe',
+    'useScriptGoogleMaps',
+    'useScriptNpm',
+  ],
   from: '#app/composables/script-stubs',
 } satisfies InlinePreset
 

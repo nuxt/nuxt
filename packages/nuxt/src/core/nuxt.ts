@@ -126,6 +126,14 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Prompt to install `@nuxt/scripts` if user has configured it
+  // @ts-expect-error scripts types are not present as the module is not installed
+  if (nuxt.options.scripts) {
+    if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+    }
+  }
+
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
