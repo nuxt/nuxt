@@ -110,6 +110,9 @@ export interface AsyncDataExecuteOptions {
 
 export interface _AsyncData<DataT, ErrorT> {
   data: Ref<DataT>
+  /**
+   * @deprecated Use `status` instead. This may be removed in a future major version.
+   */
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
@@ -375,7 +378,9 @@ export function useAsyncData<
     const hasScope = getCurrentScope()
     if (options.watch) {
       const unsub = watch(options.watch, () => asyncData.refresh())
-      if (hasScope) {
+      if (instance) {
+        onUnmounted(unsub)
+      } else if (hasScope) {
         onScopeDispose(unsub)
       }
     }
@@ -384,7 +389,9 @@ export function useAsyncData<
         await asyncData.refresh()
       }
     })
-    if (hasScope) {
+    if (instance) {
+      onUnmounted(off)
+    } else if (hasScope) {
       onScopeDispose(off)
     }
   }

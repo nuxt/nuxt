@@ -86,7 +86,7 @@ const dirs: ComponentsDir[] = [
     transpile: false,
   },
 ]
-
+const dirUnable = dirs.map((d) => { return { ...d, enabled: false } })
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
@@ -242,4 +242,9 @@ it('components:scanComponents', async () => {
     delete c.filePath
   }
   expect(scannedComponents).deep.eq(expectedComponents)
+})
+
+it('components:scanComponents:unable', async () => {
+  const scannedComponents = await scanComponents(dirUnable, srcDir)
+  expect(scannedComponents).deep.eq([])
 })

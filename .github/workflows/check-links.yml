@@ -25,10 +25,10 @@ jobs:
           restore-keys: cache-lychee-
 
       # check links with Lychee
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@1e92115388e88fdc331019d99c8ab8dfe97ddd13 # for v1.8.0
+        uses: lycheeverse/lychee-action@054a8e8c7a88ada133165c6633a49825a32174e2 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-

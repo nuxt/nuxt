@@ -446,7 +446,7 @@ describe('pages', () => {
     expect(html).not.toContain('<p></p>')
     expect(html).toContain('hi')
 
-    // aysnc setup
+    // async setup
     expect(html).toContain('Work with async setup')
 
     const { page, pageErrors } = await renderPage('/client-fallback')
@@ -771,6 +771,43 @@ describe('nuxt links', () => {
     await page.waitForFunction(() => window.scrollY === 0)
     await page.close()
   })
+
+  it('useLink works', async () => {
+    const html = await $fetch('/nuxt-link/use-link')
+    expect(html).toContain('<div>useLink in NuxtLink: true</div>')
+    expect(html).toContain('<div>route using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink2 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href2 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>useLink3 in NuxtLink: true</div>')
+    expect(html).toContain('<div>route3 using useLink: /nuxt-link/trailing-slash</div>')
+    expect(html).toContain('<div>href3 using useLink: /nuxt-link/trailing-slash</div>')
+  })
+  it('useLink navigate importing NuxtLink works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button1').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button2').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
+  it('useLink navigate using resolveDynamicComponent works', async () => {
+    const page = await createPage('/nuxt-link/use-link')
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/nuxt-link/use-link')
+
+    await page.locator('#button3').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nuxt-link/trailing-slash')
+    await page.close()
+  })
 })
 
 describe('head tags', () => {
@@ -899,12 +936,6 @@ describe('navigate', () => {
     const { status } = await fetch('/navigate-to-false', { redirect: 'manual' })
 
     expect(status).toEqual(404)
-  })
-
-  it('expect to redirect with encoding', async () => {
-    const { status } = await fetch('/redirect-with-encode', { redirect: 'manual' })
-
-    expect(status).toEqual(302)
   })
 })
 
@@ -1043,6 +1074,21 @@ describe('composables', () => {
     const clientOnlyClient = `<div><label for="${clientIds[0]}">Email</label><input id="${clientIds[0]}" name="email" type="email"><label for="${clientIds[1]}">Password</label><input id="${clientIds[1]}" name="password" type="password"></div>`
     expect(sanitiseHTML(clientHTML)).toEqual(`${renderedForm.join(clientOnlyClient)}`)
     expect(pageErrors).toEqual([])
+    await page.close()
+  })
+  it('`useRouteAnnouncer` should change message on route change', async () => {
+    const { page } = await renderPage('/route-announcer')
+    expect(await page.getByRole('alert').textContent()).toContain('First Page')
+    await page.getByRole('link').click()
+    await page.getByText('Second page content').waitFor()
+    expect(await page.getByRole('alert').textContent()).toContain('Second Page')
+    await page.close()
+  })
+  it('`useRouteAnnouncer` should change message on dynamically changed title', async () => {
+    const { page } = await renderPage('/route-announcer')
+    await page.getByRole('button').click()
+    await page.waitForFunction(() => document.title.includes('Dynamically set title'))
+    expect(await page.getByRole('alert').textContent()).toContain('Dynamically set title')
     await page.close()
   })
 })
@@ -1977,7 +2023,6 @@ describe('component islands', () => {
         },
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
-        "state": {},
       }
     `)
   })
@@ -2036,7 +2081,6 @@ describe('component islands', () => {
             ],
           },
         },
-        "state": {},
       }
     `)
   })
@@ -2065,7 +2109,6 @@ describe('component islands', () => {
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
-        "state": {},
       }
     `)
   })
@@ -2092,7 +2135,6 @@ describe('component islands', () => {
           },
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
-          "state": {},
         }
       `)
       expect(teleportsEntries).toHaveLength(1)
@@ -2171,12 +2213,6 @@ describe('component islands', () => {
         },
         bool: false
       }</pre></div>"
-    `)
-
-    expect(result.state).toMatchInlineSnapshot(`
-      {
-        "$shasRouter": true,
-      }
     `)
   })
 

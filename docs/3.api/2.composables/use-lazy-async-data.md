@@ -44,4 +44,4 @@ watch(count, (newCount) => {
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching#uselazyasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching"}

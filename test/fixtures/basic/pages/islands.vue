@@ -2,7 +2,7 @@
 const islandProps = ref({
   bool: true,
   number: 100,
-  str: 'helo world',
+  str: 'hello world',
   obj: { json: 'works' },
 })
 

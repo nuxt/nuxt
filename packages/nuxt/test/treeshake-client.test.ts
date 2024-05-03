@@ -146,7 +146,7 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
-      // treeshake object that has an assignement pattern
+      // treeshake object that has an assignment pattern
       expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
       expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
 
