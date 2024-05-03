@@ -1,6 +1,5 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
-import { defu } from 'defu'
 import type { RenderSSRHeadOptions } from '@unhead/schema'
 import { distDir } from '../dirs'
 
@@ -14,6 +13,13 @@ export default defineNuxtModule<HeadModuleOptions>({
   meta: {
     name: 'meta',
     configKey: 'unhead',
+  },
+  defaults (nuxt) {
+    return {
+      renderSSRHeadOptions: {
+        omitLineBreaks: !(nuxt.options.dev || nuxt.options.test),
+      },
+    }
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
@@ -77,13 +83,9 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
 
     addTemplate({
       filename: 'unhead.config.mjs',
-      getContents (ctx) {
-        const renderSSRHeadOptions = defu(options.renderSSRHeadOptions, {
-          omitLineBreaks: !(ctx.nuxt.options.dev || ctx.nuxt.options.test),
-        })
-
+      getContents () {
         return [
-          `export const renderSSRHeadOptions = ${JSON.stringify(renderSSRHeadOptions)}`,
+          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions)}`,
         ].join('\n')
       },
     })
