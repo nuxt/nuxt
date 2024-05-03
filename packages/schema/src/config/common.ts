@@ -105,6 +105,11 @@ export default defineUntypedSchema({
 
       const srcDir = resolve(rootDir, 'app')
       if (!existsSync(srcDir)) {
+        for (const file of ['app.vue', 'App.vue']) {
+          if (existsSync(resolve(rootDir, file))) {
+            return rootDir
+          }
+        }
         const keys = ['assets', 'layouts', 'middleware', 'pages', 'plugins'] as const
         const dirs = await Promise.all(keys.map(key => get(`dir.${key}`) as Promise<string>))
         for (const dir of dirs) {
