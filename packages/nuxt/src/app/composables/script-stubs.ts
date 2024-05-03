@@ -33,70 +33,70 @@ export function useAnalyticsPageEvent (...args: unknown[]) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptGoogleAnalytics(...args: unknown[]) {
+export function useScriptGoogleAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptGoogleAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptPlausibleAnalytics(...args: unknown[]) {
+export function useScriptPlausibleAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptPlausibleAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptCloudflareWebAnalytics(...args: unknown[]) {
+export function useScriptCloudflareWebAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptCloudflareWebAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptFathomAnalytics(...args: unknown[]) {
+export function useScriptFathomAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptFathomAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptMatomoAnalytics(...args: unknown[]) {
+export function useScriptMatomoAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptMatomoAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptGoogleTagManager(...args: unknown[]) {
+export function useScriptGoogleTagManager (...args: unknown[]) {
   renderStubMessage('useScriptGoogleTagManager')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptSegment(...args: unknown[]) {
+export function useScriptSegment (...args: unknown[]) {
   renderStubMessage('useScriptSegment')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptFacebookPixel(...args: unknown[]) {
+export function useScriptFacebookPixel (...args: unknown[]) {
   renderStubMessage('useScriptFacebookPixel')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptXPixel(...args: unknown[]) {
+export function useScriptXPixel (...args: unknown[]) {
   renderStubMessage('useScriptXPixel')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptIntercom(...args: unknown[]) {
+export function useScriptIntercom (...args: unknown[]) {
   renderStubMessage('useScriptIntercom')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptHotjar(...args: unknown[]) {
+export function useScriptHotjar (...args: unknown[]) {
   renderStubMessage('useScriptHotjar')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptStripe(...args: unknown[]) {
+export function useScriptStripe (...args: unknown[]) {
   renderStubMessage('useScriptStripe')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptLemonSqueezy(...args: unknown[]) {
+export function useScriptLemonSqueezy (...args: unknown[]) {
   renderStubMessage('useScriptLemonSqueezy')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptVimeoPlayer(...args: unknown[]) {
+export function useScriptVimeoPlayer (...args: unknown[]) {
   renderStubMessage('useScriptVimeoPlayer')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptYouTubeIframe(...args: unknown[]) {
+export function useScriptYouTubeIframe (...args: unknown[]) {
   renderStubMessage('useScriptYouTubeIframe')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptGoogleMaps(...args: unknown[]) {
+export function useScriptGoogleMaps (...args: unknown[]) {
   renderStubMessage('useScriptGoogleMaps')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptNpm(...args: unknown[]) {
+export function useScriptNpm (...args: unknown[]) {
   renderStubMessage('useScriptNpm')
 }
