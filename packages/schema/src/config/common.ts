@@ -39,7 +39,7 @@ export default defineUntypedSchema({
    * It is normally not needed to configure this option.
    */
   rootDir: {
-    $resolve: val => typeof val === 'string' ? resolve(val) : process.cwd(),
+    $resolve: val => (typeof val === 'string' ? resolve(val) : process.cwd()),
   },
 
   /**
@@ -52,8 +52,10 @@ export default defineUntypedSchema({
    */
   workspaceDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const rootDir = await get('rootDir') as string
-      return val ? resolve(rootDir, val) : await findWorkspaceDir(rootDir).catch(() => rootDir)
+      const rootDir = (await get('rootDir')) as string
+      return val
+        ? resolve(rootDir, val)
+        : await findWorkspaceDir(rootDir).catch(() => rootDir)
     },
   },
 
@@ -91,12 +93,14 @@ export default defineUntypedSchema({
   srcDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
       if (val) {
-        return resolve(await get('rootDir') as string, val)
+        return resolve((await get('rootDir')) as string, val)
       }
 
       const [rootDir, isV4] = await Promise.all([
         get('rootDir') as Promise<string>,
-        (get('future') as Promise<Record<string, unknown>>).then(r => r.compatibilityVersion === 4),
+        (get('future') as Promise<Record<string, unknown>>).then(
+          r => r.compatibilityVersion === 4,
+        ),
       ])
 
       if (!isV4) {
@@ -110,8 +114,16 @@ export default defineUntypedSchema({
             return rootDir
           }
         }
-        const keys = ['assets', 'layouts', 'middleware', 'pages', 'plugins'] as const
-        const dirs = await Promise.all(keys.map(key => get(`dir.${key}`) as Promise<string>))
+        const keys = [
+          'assets',
+          'layouts',
+          'middleware',
+          'pages',
+          'plugins',
+        ] as const
+        const dirs = await Promise.all(
+          keys.map(key => get(`dir.${key}`) as Promise<string>),
+        )
         for (const dir of dirs) {
           if (existsSync(resolve(rootDir, dir))) {
             return rootDir
@@ -131,9 +143,16 @@ export default defineUntypedSchema({
    */
   serverDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      const isV4 =
+        ((await get('future')) as Record<string, unknown>)
+          .compatibilityVersion === 4
 
-      return resolve(await get('rootDir') as string, (val || isV4) ? 'server' : resolve(await get('srcDir') as string, 'server'))
+      return resolve(
+        (await get('rootDir')) as string,
+        val || isV4
+          ? 'server'
+          : resolve((await get('srcDir')) as string, 'server'),
+      )
     },
   },
 
@@ -150,7 +169,8 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => resolve(await get('rootDir') as string, val || '.nuxt'),
+    $resolve: async (val: string | undefined, get): Promise<string> =>
+      resolve((await get('rootDir')) as string, val || '.nuxt'),
   },
 
   /**
@@ -170,11 +190,13 @@ export default defineUntypedSchema({
   modulesDir: {
     $default: ['node_modules'],
     $resolve: async (val: string[] | undefined, get): Promise<string[]> => {
-      const rootDir = await get('rootDir') as string
-      return [...new Set([
-        ...(val || []).map((dir: string) => resolve(rootDir, dir)),
-        resolve(rootDir, 'node_modules'),
-      ])]
+      const rootDir = (await get('rootDir')) as string
+      return [
+        ...new Set([
+          ...(val || []).map((dir: string) => resolve(rootDir, dir)),
+          resolve(rootDir, 'node_modules'),
+        ]),
+      ]
     },
   },
 
@@ -184,9 +206,10 @@ export default defineUntypedSchema({
    * If a relative path is specified, it will be relative to your `rootDir`.
    */
   analyzeDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => val
-      ? resolve(await get('rootDir') as string, val)
-      : resolve(await get('buildDir') as string, 'analyze'),
+    $resolve: async (val: string | undefined, get): Promise<string> =>
+      val
+        ? resolve((await get('rootDir')) as string, val)
+        : resolve((await get('buildDir')) as string, 'analyze'),
   },
 
   /**
@@ -245,7 +268,8 @@ export default defineUntypedSchema({
    * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
-    $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
+    $resolve: (val: string[] | undefined): string[] =>
+      (val || []).filter(Boolean),
   },
 
   /**
@@ -256,9 +280,11 @@ export default defineUntypedSchema({
   dir: {
     app: {
       $resolve: async (val: string | undefined, get) => {
-        const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+        const isV4 =
+          ((await get('future')) as Record<string, unknown>)
+            .compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('srcDir') as string, val || '.')
+          return resolve((await get('srcDir')) as string, val || '.')
         }
         return val || 'app'
       },
@@ -283,9 +309,11 @@ export default defineUntypedSchema({
      */
     modules: {
       $resolve: async (val: string | undefined, get) => {
-        const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+        const isV4 =
+          ((await get('future')) as Record<string, unknown>)
+            .compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('rootDir') as string, val || 'modules')
+          return resolve((await get('rootDir')) as string, val || 'modules')
         }
         return val || 'modules'
       },
@@ -307,17 +335,23 @@ export default defineUntypedSchema({
      */
     public: {
       $resolve: async (val: string | undefined, get) => {
-        const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+        const isV4 =
+          ((await get('future')) as Record<string, unknown>)
+            .compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('rootDir') as string, val || await get('dir.static') as string || 'public')
+          return resolve(
+            (await get('rootDir')) as string,
+            val || ((await get('dir.static')) as string) || 'public',
+          )
         }
-        return val || await get('dir.static') as string || 'public'
+        return val || ((await get('dir.static')) as string) || 'public'
       },
     },
 
     static: {
       $schema: { deprecated: 'use `dir.public` option instead' },
-      $resolve: async (val, get) => val || await get('dir.public') || 'public',
+      $resolve: async (val, get) =>
+        val || (await get('dir.public')) || 'public',
     },
   },
 
@@ -325,7 +359,10 @@ export default defineUntypedSchema({
    * The extensions that should be resolved by the Nuxt resolver.
    */
   extensions: {
-    $resolve: (val: string[] | undefined): string[] => ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue', ...val || []].filter(Boolean),
+    $resolve: (val: string[] | undefined): string[] =>
+      ['.js', '.jsx', '.mjs', '.ts', '.tsx', '.vue', ...(val || [])].filter(
+        Boolean,
+      ),
   },
 
   /**
@@ -369,8 +406,16 @@ export default defineUntypedSchema({
    * @type {Record<string, string>}
    */
   alias: {
-    $resolve: async (val: Record<string, string>, get): Promise<Record<string, string>> => {
-      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')]) as [string, string, string, string]
+    $resolve: async (
+      val: Record<string, string>,
+      get,
+    ): Promise<Record<string, string>> => {
+      const [srcDir, rootDir, assetsDir, publicDir] = (await Promise.all([
+        get('srcDir'),
+        get('rootDir'),
+        get('dir.assets'),
+        get('dir.public'),
+      ])) as [string, string, string, string]
       return {
         '~': srcDir,
         '@': srcDir,
@@ -397,8 +442,10 @@ export default defineUntypedSchema({
   ignoreOptions: undefined,
 
   /**
-   * Any file in `pages/`, `layouts/`, `middleware/` or `store/` will be ignored during
-   * building if its filename starts with the prefix specified by `ignorePrefix`.
+   * Any file in `pages/`, `layouts/`, `middleware/`, `store/`, and `public/` directories will be ignored during
+   * the build process if its filename starts with the prefix specified by `ignorePrefix`. This is intended to prevent
+   * certain files from being processed or served in the built application.
+   * By default, the `ignorePrefix` is set to '-', ignoring any files starting with '-'.
    */
   ignorePrefix: {
     $resolve: val => val ?? '-',
@@ -410,7 +457,12 @@ export default defineUntypedSchema({
    */
   ignore: {
     $resolve: async (val: string[] | undefined, get): Promise<string[]> => {
-      const [rootDir, ignorePrefix, analyzeDir, buildDir] = await Promise.all([get('rootDir'), get('ignorePrefix'), get('analyzeDir'), get('buildDir')]) as [string, string, string, string]
+      const [rootDir, ignorePrefix, analyzeDir, buildDir] = (await Promise.all([
+        get('rootDir'),
+        get('ignorePrefix'),
+        get('analyzeDir'),
+        get('buildDir'),
+      ])) as [string, string, string, string]
       return [
         '**/*.stories.{js,cts,mts,ts,jsx,tsx}', // ignore storybook files
         '**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}', // ignore tests
@@ -419,7 +471,7 @@ export default defineUntypedSchema({
         relative(rootDir, analyzeDir),
         relative(rootDir, buildDir),
         ignorePrefix && `**/${ignorePrefix}*.*`,
-        ...val || [],
+        ...(val || []),
       ].filter(Boolean)
     },
   },
@@ -434,7 +486,9 @@ export default defineUntypedSchema({
    */
   watch: {
     $resolve: (val: Array<unknown> | undefined) => {
-      return (val || []).filter((b: unknown) => typeof b === 'string' || b instanceof RegExp)
+      return (val || []).filter(
+        (b: unknown) => typeof b === 'string' || b instanceof RegExp,
+      )
     },
   },
 
@@ -516,8 +570,11 @@ export default defineUntypedSchema({
    * @type {typeof import('../src/types/config').RuntimeConfig}
    */
   runtimeConfig: {
-    $resolve: async (val: RuntimeConfig, get): Promise<Record<string, unknown>> => {
-      const app = await get('app') as Record<string, string>
+    $resolve: async (
+      val: RuntimeConfig,
+      get,
+    ): Promise<Record<string, unknown>> => {
+      const app = (await get('app')) as Record<string, string>
       provideFallbackValues(val)
       return defu(val, {
         public: {},
