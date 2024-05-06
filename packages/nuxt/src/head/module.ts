@@ -14,10 +14,11 @@ export default defineNuxtModule<HeadModuleOptions>({
     name: 'meta',
     configKey: 'unhead',
   },
-  defaults (nuxt) {
+  defaults () {
     return {
       renderSSRHeadOptions: {
-        omitLineBreaks: !(nuxt.options.dev || nuxt.options.test),
+        // TODO: set to `true` by default when production environment in Nuxt 4
+        omitLineBreaks: false,
       },
     }
   },
