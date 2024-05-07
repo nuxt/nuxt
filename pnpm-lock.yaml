@@ -557,9 +557,6 @@ importers:
       '@types/html-minifier':
         specifier: 4.0.5
         version: 4.0.5
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
       '@unocss/reset':
         specifier: 0.59.4
         version: 0.59.4
@@ -581,9 +578,6 @@ importers:
       knitwork:
         specifier: 1.1.0
         version: 1.1.0
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
       pathe:
         specifier: 1.1.2
         version: 1.1.2
