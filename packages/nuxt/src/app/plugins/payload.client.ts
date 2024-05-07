@@ -23,8 +23,8 @@ export default defineNuxtPlugin({
     onNuxtReady(() => {
       // Load payload into cache
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
-        const { protocol } = new URL(url, window.location.href)
-        if (!protocol) {
+        const { hostname } = new URL(url, window.location.href)
+        if (hostname === window.location.hostname) {
           await loadPayload(url)
         }
       })
