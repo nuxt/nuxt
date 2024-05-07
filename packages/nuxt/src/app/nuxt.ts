@@ -24,7 +24,6 @@ import { type NuxtAppLiterals } from '#app'
 // @ts-expect-error virtual import
 import { buildId } from '#build/nuxt.config.mjs'
 
-/* @__NO_SIDE_EFFECTS__ */
 function getNuxtAppCtx (appName?: string) {
   return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
