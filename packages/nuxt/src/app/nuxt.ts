@@ -98,6 +98,7 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
+  name: string
   vueApp: App<Element>
   globalName: string
   versions: Record<string, string>
@@ -242,6 +243,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
+    name: buildId,
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
@@ -452,7 +454,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  const nuxtAppCtx = getNuxtAppCtx()
+  const nuxtAppCtx = getNuxtAppCtx(nuxt.name)
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
