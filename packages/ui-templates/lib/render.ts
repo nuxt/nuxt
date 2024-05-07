@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
@@ -10,18 +11,20 @@ import { camelCase } from 'scule'
 
 import genericMessages from '../templates/messages.json'
 
-const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
-
+const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
 
 export const RenderPlugin = () => {
+  let outputDir: string
   return <Plugin> {
     name: 'render',
+    configResolved(config) {
+      outputDir = r(config.build.outDir)
+    },
     enforce: 'post',
-    async writeBundle () {
-      const distDir = r('dist')
-      const critters = new Critters({ path: distDir })
-      const htmlFiles = await globby(r('dist/templates/**/*.html'))
+    async writeBundle (options) {
+      const critters = new Critters({ path: outputDir })
+      const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
 
       const templateExports = []
 
@@ -49,7 +52,7 @@ export const RenderPlugin = () => {
           .filter(src => src?.match(/\.svg$/))
 
         for (const src of svgSources) {
-          const svg = readFileSync(r('dist', src), 'utf-8')
+          const svg = readFileSync(join(outputDir, src), 'utf-8')
           const base64Source = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
           html = replaceAll(html, src, base64Source)
         }
@@ -59,7 +62,7 @@ export const RenderPlugin = () => {
           .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
 
         for (const [scriptBlock, src] of scriptSources) {
-          let contents = readFileSync(r('dist', src), 'utf-8')
+          let contents = readFileSync(join(outputDir, src), 'utf-8')
           contents = replaceAll(contents, '/* empty css               */', '').trim()
           html = html.replace(scriptBlock, contents.length ? `<script>${contents}</script>` : '')
         }
