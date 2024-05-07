@@ -111,6 +111,33 @@ const granularAppPresets: InlinePreset[] = [
   },
 ]
 
+export const scriptsStubsPreset = {
+  imports: [
+    'useConsentScriptTrigger',
+    'useAnalyticsPageEvent',
+    'useElementScriptTrigger',
+    'useScript',
+    'useScriptGoogleAnalytics',
+    'useScriptPlausibleAnalytics',
+    'useScriptCloudflareWebAnalytics',
+    'useScriptFathomAnalytics',
+    'useScriptMatomoAnalytics',
+    'useScriptGoogleTagManager',
+    'useScriptSegment',
+    'useScriptFacebookPixel',
+    'useScriptXPixel',
+    'useScriptIntercom',
+    'useScriptHotjar',
+    'useScriptStripe',
+    'useScriptLemonSqueezy',
+    'useScriptVimeoPlayer',
+    'useScriptYouTubeIframe',
+    'useScriptGoogleMaps',
+    'useScriptNpm',
+  ],
+  from: '#app/composables/script-stubs',
+} satisfies InlinePreset
+
 // This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
   imports: ['onBeforeRouteLeave', 'onBeforeRouteUpdate'],
