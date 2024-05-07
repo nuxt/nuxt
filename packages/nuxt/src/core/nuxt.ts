@@ -20,6 +20,7 @@ import importsModule from '../imports/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
+import { scriptsStubsPreset } from '../imports/presets'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -33,6 +34,7 @@ import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
+import { prehydrateTransformPlugin } from './plugins/prehydrate'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -125,6 +127,14 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Prompt to install `@nuxt/scripts` if user has configured it
+  // @ts-expect-error scripts types are not present as the module is not installed
+  if (nuxt.options.scripts) {
+    if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+    }
+  }
+
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
@@ -140,6 +150,9 @@ async function initNuxt (nuxt: Nuxt) {
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+
+  // Add transform for `onPrehydrate` lifecycle hook
+  addBuildPlugin(prehydrateTransformPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -276,7 +289,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!,
+    filePath: resolve(nuxt.options.appDir, 'components/welcome'),
   })
 
   addComponent({
@@ -491,6 +504,12 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
 
+    // Restart Nuxt when new `app/` dir is added
+    if (event === 'addDir' && path === resolve(nuxt.options.srcDir, 'app')) {
+      logger.info(`\`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart', { hard: true })
+    }
+
     // Core Nuxt files: app.vue, error.vue and app.config.ts
     const isFileChange = ['add', 'unlink'].includes(event)
     if (isFileChange && RESTART_RE.test(path)) {
@@ -544,6 +563,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
+  if (!options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+    options.imports = defu(options.imports, {
+      presets: [scriptsStubsPreset],
+    })
+  }
+
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
     if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
@@ -567,7 +592,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
-    '@nuxt/ui-templates', // this exposes vue SFCs
     'std-env', // we need to statically replace process.env when used in runtime code
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')

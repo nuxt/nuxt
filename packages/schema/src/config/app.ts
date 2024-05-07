@@ -182,9 +182,10 @@ export default defineUntypedSchema({
     /**
      * Customize Nuxt root element id.
      * @type {string | false}
+     * @deprecated Prefer `rootAttrs.id` instead
      */
     rootId: {
-      $resolve: val => val === false ? false : val || '__nuxt',
+      $resolve: val => val === false ? false : (val || '__nuxt'),
     },
 
     /**
@@ -192,6 +193,19 @@ export default defineUntypedSchema({
      */
     rootTag: {
       $resolve: val => val || 'div',
+    },
+
+    /**
+     * Customize Nuxt root element id.
+     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     */
+    rootAttrs: {
+      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+        const rootId = await get('app.rootId')
+        return defu(val, {
+          id: rootId === false ? undefined : (rootId || '__nuxt'),
+        })
+      },
     },
 
     /**
@@ -204,9 +218,23 @@ export default defineUntypedSchema({
     /**
      * Customize Nuxt Teleport element id.
      * @type {string | false}
+     * @deprecated Prefer `teleportAttrs.id` instead
      */
     teleportId: {
       $resolve: val => val === false ? false : (val || 'teleports'),
+    },
+
+    /**
+     * Customize Nuxt Teleport element attributes.
+     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     */
+    teleportAttrs: {
+      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+        const teleportId = await get('app.teleportId')
+        return defu(val, {
+          id: teleportId === false ? undefined : (teleportId || 'teleports'),
+        })
+      },
     },
   },
 
@@ -317,5 +345,37 @@ export default defineUntypedSchema({
    */
   css: {
     $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c),
+  },
+
+  /**
+   * An object that allows us to configure the `unhead` nuxt module.
+   */
+  unhead: {
+    /**
+     * An object that will be passed to `renderSSRHead` to customize the output.
+     *
+     * @see https://unhead.unjs.io/setup/ssr/installation#options
+     * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   renderSSRHeadOptions: {
+     *    omitLineBreaks: true
+     *   }
+     * })
+     * ```
+     *
+     */
+    renderSSRHeadOptions: {
+      $resolve: async (val: Record<string, unknown> | undefined, get) => {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+
+        return defu(val, {
+          omitLineBreaks: isV4,
+        })
+      },
+    },
   },
 })

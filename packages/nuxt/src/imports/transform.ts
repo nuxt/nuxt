@@ -1,6 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
+import { tryUseNuxt } from '@nuxt/kit'
 import type { ImportsOptions } from 'nuxt/schema'
 import { isJS, isVue } from '../core/utils'
 
@@ -37,7 +38,11 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
         return
       }
 
-      const { s } = await ctx.injectImports(code, id, { autoImport: options.autoImport && !isNodeModule })
+      const { s, imports } = await ctx.injectImports(code, id, { autoImport: options.autoImport && !isNodeModule })
+      if (imports.some(i => i.from === '#app/composables/script-stubs') && tryUseNuxt()?.options.test === false) {
+        import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+      }
+
       if (s.hasChanged()) {
         return {
           code: s.toString(),

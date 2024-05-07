@@ -8,7 +8,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
@@ -392,7 +392,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             get route () {
               if (!href.value) { return undefined }
 
-              const url = parseURL(href.value)
+              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
