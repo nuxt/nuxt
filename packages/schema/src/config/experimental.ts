@@ -392,7 +392,7 @@ export default defineUntypedSchema({
      * Whether to use `lodash.template` to compile Nuxt templates.
      *
      * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+.
+     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
      */
     compileTemplate: {
       async $resolve (val, get) {
@@ -405,7 +405,7 @@ export default defineUntypedSchema({
      * `importName` and `importSources`) when compiling Nuxt templates.
      *
      * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+.
+     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
      */
     templateUtils: {
       async $resolve (val, get) {
@@ -417,7 +417,7 @@ export default defineUntypedSchema({
      * Whether to provide relative paths in the `builder:watch` hook.
      *
      * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+.
+     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
      */
     relativeWatchPaths: {
       async $resolve (val, get) {
