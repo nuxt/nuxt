@@ -18,7 +18,7 @@
     "jiti": "^1.21.0",
     "lodash": "^4.17.21",
     "proper-lockfile": "^4.1.2",
-    "semver": "^7.6.0",
+    "semver": "^7.6.1",
     "serialize-javascript": "^6.0.2",
     "signal-exit": "^4.1.0",
     "ua-parser-js": "^1.0.37",
