@@ -34,6 +34,7 @@ import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
+import { prehydrateTransformPlugin } from './plugins/prehydrate'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -149,6 +150,9 @@ async function initNuxt (nuxt: Nuxt) {
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+
+  // Add transform for `onPrehydrate` lifecycle hook
+  addBuildPlugin(prehydrateTransformPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases

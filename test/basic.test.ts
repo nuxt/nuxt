@@ -577,6 +577,33 @@ describe('nuxt composables', () => {
     await page.close()
   })
 
+  it('supports onPrehydrate', async () => {
+    const html = await $fetch('/composables/on-prehydrate') as string
+    /**
+     * Should look something like this:
+     *
+     * ```html
+     * <div data-prehydrate-id=":b3qlvSiBeH::df1mQEC9xH:"> onPrehydrate testing </div>
+     * <script>(()=>{console.log(window)})()</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(o=>{console.log(o.outerHTML)})</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(o=>{console.log("other",o.outerHTML)})</script>
+     * ```
+     */
+    const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
+    expect(id1).toBeTruthy()
+    const matches = [
+      html.match(/<script[^>]*>\(\(\)=>{console.log\(window\)}\)\(\)<\/script>/),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`)),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`)),
+    ]
+
+    // This tests we inject all scripts correctly, and only have one occurrence of multiple calls of a composable
+    expect(matches.every(s => s?.length === 1)).toBeTruthy()
+
+    // Check for hydration/syntax errors on client side
+    await expectNoClientErrors('/composables/on-prehydrate')
+  })
+
   it('respects preview mode with a token', async () => {
     const token = 'hehe'
     const page = await createPage(`/preview?preview=true&token=${token}`)

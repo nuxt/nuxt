@@ -100,6 +100,7 @@ describe('composables', () => {
       'preloadRouteComponents',
       'reloadNuxtApp',
       'refreshCookie',
+      'onPrehydrate',
       'useFetch',
       'useHead',
       'useLazyFetch',
