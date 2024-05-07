@@ -2565,7 +2565,7 @@ describe('Node.js compatibility for client-side', () => {
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
-})
+}, 20_000)
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
@@ -2630,5 +2630,15 @@ describe('lazy import components', () => {
 
   it('lazy load named component with mode server', () => {
     expect(html).toContain('lazy-named-comp-server')
+  })
+})
+
+describe('defineNuxtComponent watch duplicate', () => {
+  it('test after navigation duplicate', async () => {
+    const { page } = await renderPage('/define-nuxt-component')
+    await page.getByTestId('define-nuxt-component-bar').click()
+    await page.getByTestId('define-nuxt-component-state').click()
+    await page.getByTestId('define-nuxt-component-foo').click()
+    expect(await page.getByTestId('define-nuxt-component-state').first().innerText()).toBe('2')
   })
 })

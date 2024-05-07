@@ -378,9 +378,7 @@ export function useAsyncData<
     const hasScope = getCurrentScope()
     if (options.watch) {
       const unsub = watch(options.watch, () => asyncData.refresh())
-      if (instance) {
-        onUnmounted(unsub)
-      } else if (hasScope) {
+      if (hasScope) {
         onScopeDispose(unsub)
       }
     }
@@ -389,9 +387,7 @@ export function useAsyncData<
         await asyncData.refresh()
       }
     })
-    if (instance) {
-      onUnmounted(off)
-    } else if (hasScope) {
+    if (hasScope) {
       onScopeDispose(off)
     }
   }
