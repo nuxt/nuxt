@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -14,10 +14,10 @@ import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
-import { template as defaultSpaLoadingTemplate } from '@nuxt/ui-templates/templates/spa-loading-icon.mjs'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
+import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 
 const logLevelMapReverse = {
@@ -154,7 +154,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             baseURL: nuxt.options.app.buildAssetsDir,
           },
       ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
+        .map(layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
         .filter(dir => existsSync(dir))
         .map(dir => ({ dir })),
     ],
@@ -409,8 +409,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Trigger Nitro reload when SPA loading template changes
   const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
-  nuxt.hook('builder:watch', async (_event, path) => {
-    if (normalize(path) === spaLoadingTemplateFilePath) {
+  nuxt.hook('builder:watch', async (_event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (path === spaLoadingTemplateFilePath) {
       await nitro.hooks.callHook('rollup:reload')
     }
   })
@@ -569,9 +570,9 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
   }
 
-  const possiblePaths = nuxt.options._layers.map(layer => join(layer.config.srcDir, 'app/spa-loading-template.html'))
+  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
-  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {
