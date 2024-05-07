@@ -22,8 +22,8 @@ This is an advanced utility and should be used with care.
 
 ## Usage
 
-`onPrehydrate` can be called directly in the setup function of a Vue component, or in a plugin. It will only have an
-effect when it is called on the server, and it will not be included in your client build.
+`onPrehydrate` can be called directly in the setup function of a Vue component (for example, in `<script setup>`), or in a plugin.
+It will only have an effect when it is called on the server, and it will not be included in your client build.
 
 ## Parameters
 
