@@ -368,6 +368,14 @@ export default defineUntypedSchema({
      * ```
      *
      */
-    renderSSRHeadOptions: undefined,
+    renderSSRHeadOptions: {
+      $resolve: async (val: Record<string, unknown> | undefined, get) => {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+
+        return defu(val, {
+          omitLineBreaks: isV4,
+        })
+      },
+    },
   },
 })

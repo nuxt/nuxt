@@ -14,14 +14,6 @@ export default defineNuxtModule<HeadModuleOptions>({
     name: 'meta',
     configKey: 'unhead',
   },
-  defaults () {
-    return {
-      renderSSRHeadOptions: {
-        // TODO: set to `true` by default when production environment in Nuxt 4
-        omitLineBreaks: false,
-      },
-    }
-  },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
 
