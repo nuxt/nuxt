@@ -16,9 +16,9 @@ export default (url: string) => defineComponent({
     if (!path.startsWith(devRootDir)) {
       throw new Error(`[nuxt] Cannot access path outside of project root directory: \`${path}\`.`)
     }
-    const comp = await import(/* @vite-ignore */ query.path as string).then(r => r.default)
+    const comp = await import(/* @vite-ignore */ path as string).then(r => r.default)
     return () => [
-      h('div', 'Component Test Wrapper for ' + query.path),
+      h('div', 'Component Test Wrapper for ' + path),
       h('div', { id: 'nuxt-component-root' }, [
         h(comp, { ...attrs, ...props, ...urlProps }),
       ]),
