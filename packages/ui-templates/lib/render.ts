@@ -18,7 +18,7 @@ export const RenderPlugin = () => {
   let outputDir: string
   return <Plugin> {
     name: 'render',
-    configResolved(config) {
+    configResolved (config) {
       outputDir = r(config.build.outDir)
     },
     enforce: 'post',

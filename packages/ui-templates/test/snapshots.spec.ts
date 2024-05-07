@@ -12,8 +12,8 @@ describe('template', () => {
     await execaCommand('pnpm build', {
       cwd: fileURLToPath(new URL('..', import.meta.url)),
       env: {
-        OUTPUT_DIR: './node_modules/.temp/dist'
-      }
+        OUTPUT_DIR: './node_modules/.temp/dist',
+      },
     })
   })
   afterAll(() => rm(distDir, { force: true, recursive: true }))
