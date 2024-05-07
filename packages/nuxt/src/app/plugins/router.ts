@@ -193,7 +193,8 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
         }
       },
     }
-    const RouterLink = defineComponent({
+
+    nuxtApp.vueApp.component('RouterLink', defineComponent({
       functional: true,
       props: {
         to: {
@@ -216,9 +217,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
             : h('a', { href: props.to, onClick: (e: MouseEvent) => { e.preventDefault(); return navigate() } }, slots)
         }
       },
-    })
-
-    nuxtApp.vueApp.component('RouterLink', RouterLink)
+    }))
 
     if (import.meta.client) {
       window.addEventListener('popstate', (event) => {
