@@ -98,7 +98,7 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
-  /** @internal - may change */
+  /** @internal */
   _name: string
   vueApp: App<Element>
   globalName: string
