@@ -358,13 +358,13 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
      *
      * @example
-     * ```js
-     * export default {
+     * ```ts
+     * export default defineNuxtConfig({
      *  unhead: {
      *   renderSSRHeadOptions: {
      *    omitLineBreaks: true
      *   }
-     * }
+     * })
      * ```
      *
      */
