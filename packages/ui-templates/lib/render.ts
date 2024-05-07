@@ -22,7 +22,7 @@ export const RenderPlugin = () => {
       outputDir = r(config.build.outDir)
     },
     enforce: 'post',
-    async writeBundle (options) {
+    async writeBundle () {
       const critters = new Critters({ path: outputDir })
       const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
 
