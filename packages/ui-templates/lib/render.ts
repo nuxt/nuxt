@@ -1,9 +1,9 @@
+import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
-import { template } from 'lodash-es'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
 import { globby } from 'globby'
@@ -11,18 +11,20 @@ import { camelCase } from 'scule'
 
 import genericMessages from '../templates/messages.json'
 
-const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
-
+const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
 const replaceAll = (input: string, search: string | RegExp, replace: string) => input.split(search).join(replace)
 
 export const RenderPlugin = () => {
+  let outputDir: string
   return <Plugin> {
     name: 'render',
+    configResolved (config) {
+      outputDir = r(config.build.outDir)
+    },
     enforce: 'post',
     async writeBundle () {
-      const distDir = r('dist')
-      const critters = new Critters({ path: distDir })
-      const htmlFiles = await globby(r('dist/templates/**/*.html'))
+      const critters = new Critters({ path: outputDir })
+      const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
 
       const templateExports = []
 
@@ -50,7 +52,7 @@ export const RenderPlugin = () => {
           .filter(src => src?.match(/\.svg$/))
 
         for (const src of svgSources) {
-          const svg = readFileSync(r('dist', src), 'utf-8')
+          const svg = readFileSync(join(outputDir, src), 'utf-8')
           const base64Source = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
           html = replaceAll(html, src, base64Source)
         }
@@ -60,7 +62,7 @@ export const RenderPlugin = () => {
           .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
 
         for (const [scriptBlock, src] of scriptSources) {
-          let contents = readFileSync(r('dist', src), 'utf-8')
+          let contents = readFileSync(join(outputDir, src), 'utf-8')
           contents = replaceAll(contents, '/* empty css               */', '').trim()
           html = html.replace(scriptBlock, contents.length ? `<script>${contents}</script>` : '')
         }
@@ -77,11 +79,22 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
-        const jsCode = [
+        const chunks = html.split(/\{{2,3}\s*[^{}]+\s*\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        let templateString = chunks.shift()
+        for (const expression of html.matchAll(/\{{2,3}(\s*[^{}]+\s*)\}{2,3}/g)) {
+          templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
+        }
+        if (chunks.length > 0) {
+          templateString += ' + ' + chunks.join(' + ')
+        }
+        const functionalCode = [
+          `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
           `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
-          `const _render = ${template(html, { variable: '__var__', interpolate: /{{{?([\s\S]+?)}?}}/g }).toString().replace('__var__', '{ messages }')}`,
-          'const _template = (messages) => _render({ messages: { ..._messages, ...messages } })',
-        ].join('\n').trim()
+          'export const template = (messages: Partial<DefaultMessages>) => {',
+          '  messages = { ..._messages, ...messages }',
+          `  return ${templateString}`,
+          '}',
+        ].join('\n')
 
         const templateContent = html
           .match(/<body.*?>([\s\S]*)<\/body>/)?.[0]
@@ -146,20 +159,13 @@ export const RenderPlugin = () => {
         })
 
         // Write new template
-        writeFileSync(fileName.replace('/index.html', '.js'), `${jsCode}\nexport const template = _template`)
+        writeFileSync(fileName.replace('/index.html', '.ts'), functionalCode)
         writeFileSync(fileName.replace('/index.html', '.vue'), vueCode)
-        writeFileSync(fileName.replace('/index.html', '.d.ts'), `${types}`)
 
         // Remove original html file
         unlinkSync(fileName)
         rmdirSync(dirname(fileName))
       }
-
-      // Write an index file with named exports for each template
-      const contents = templateExports.map(exp => `export { template as ${exp.exportName} } from './templates/${exp.templateName}.js'`).join('\n')
-      writeFileSync(r('dist/index.js'), contents, 'utf8')
-
-      writeFileSync(r('dist/index.d.ts'), replaceAll(contents, /\.js/g, ''), 'utf8')
     },
   }
 }

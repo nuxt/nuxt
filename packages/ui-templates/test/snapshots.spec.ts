@@ -1,17 +1,22 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
-import { beforeAll, describe, expect, it } from 'vitest'
+import { rm } from 'node:fs/promises'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
 import { format } from 'prettier'
 
-const distDir = fileURLToPath(new URL('../dist/templates', import.meta.url))
+const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', import.meta.url))
 
 describe('template', () => {
   beforeAll(async () => {
     await execaCommand('pnpm build', {
       cwd: fileURLToPath(new URL('..', import.meta.url)),
+      env: {
+        OUTPUT_DIR: './node_modules/.temp/dist',
+      },
     })
   })
+  afterAll(() => rm(distDir, { force: true, recursive: true }))
 
   function formatCss (css: string) {
     return format(css, {
