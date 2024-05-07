@@ -342,7 +342,7 @@ describe('head', () => {
   })
   it('types head for defineNuxtComponent', () => {
     defineNuxtComponent({
-      head(nuxtApp) {
+      head (nuxtApp) {
         expectTypeOf(nuxtApp).not.toBeAny()
         return {
           title: 'Site Title',
@@ -352,7 +352,7 @@ describe('head', () => {
 
     defineNuxtComponent({
       // @ts-expect-error wrong return type for head function
-      head() {
+      head () {
         return {
           test: true,
         }
@@ -434,7 +434,7 @@ describe('composables', () => {
 
   it('supports asynchronous transform', () => {
     const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
-      async transform(data) {
+      async transform (data) {
         await Promise.resolve()
         return data.foo
       },
