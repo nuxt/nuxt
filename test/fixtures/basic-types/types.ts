@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref } from 'vue'
+import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
@@ -8,7 +8,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
+import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -342,7 +342,7 @@ describe('head', () => {
   })
   it('types head for defineNuxtComponent', () => {
     defineNuxtComponent({
-      head (nuxtApp) {
+      head(nuxtApp) {
         expectTypeOf(nuxtApp).not.toBeAny()
         return {
           title: 'Site Title',
@@ -352,7 +352,7 @@ describe('head', () => {
 
     defineNuxtComponent({
       // @ts-expect-error wrong return type for head function
-      head () {
+      head() {
         return {
           test: true,
         }
@@ -371,6 +371,9 @@ describe('components', () => {
     h(WithTypes, { aProp: '40' })
 
     // TODO: assert typed slots, exposed, generics, etc.
+  })
+  it('include fallback slot in server components', () => {
+    expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
 })
 
@@ -431,7 +434,7 @@ describe('composables', () => {
 
   it('supports asynchronous transform', () => {
     const { data } = useAsyncData('test', () => $fetch('/test') as Promise<{ foo: 'bar' }>, {
-      async transform (data) {
+      async transform(data) {
         await Promise.resolve()
         return data.foo
       },
