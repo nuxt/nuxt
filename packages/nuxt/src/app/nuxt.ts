@@ -98,7 +98,8 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
-  name: string
+  /** @internal - may change */
+  _name: string
   vueApp: App<Element>
   globalName: string
   versions: Record<string, string>
@@ -454,7 +455,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  const nuxtAppCtx = getNuxtAppCtx(nuxt.name)
+  const nuxtAppCtx = getNuxtAppCtx(nuxt._name)
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
@@ -466,11 +467,12 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 
 /* @__NO_SIDE_EFFECTS__ */
 /**
- * Returns the Nuxt instance from the given app name if provided.
+ * Returns the current Nuxt instance.
  *
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
+export function tryUseNuxtApp (): NuxtApp | null
 export function tryUseNuxtApp (appName?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
@@ -484,12 +486,14 @@ export function tryUseNuxtApp (appName?: string): NuxtApp | null {
 
 /* @__NO_SIDE_EFFECTS__ */
 /**
- * Returns the Nuxt instance from the given app name if provided.
+ * Returns the current Nuxt instance.
  *
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
+export function useNuxtApp (): NuxtApp
 export function useNuxtApp (appName?: string): NuxtApp {
+  // @ts-expect-error internal usage of appName
   const nuxtAppInstance = tryUseNuxtApp(appName)
 
   if (!nuxtAppInstance) {
