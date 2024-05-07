@@ -77,10 +77,11 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
-        const jsCode = [
+        const functionalCode = [
+          `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
           `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
           `const _render = ${template(html, { variable: '__var__', interpolate: /{{{?([\s\S]+?)}?}}/g }).toString().replace('__var__', '{ messages }')}`,
-          'const _template = (messages) => _render({ messages: { ..._messages, ...messages } })',
+          'export const template = (messages: Partial<DefaultMessages>) => _render({ messages: { ..._messages, ...messages } })',
         ].join('\n').trim()
 
         const templateContent = html
@@ -146,20 +147,13 @@ export const RenderPlugin = () => {
         })
 
         // Write new template
-        writeFileSync(fileName.replace('/index.html', '.js'), `${jsCode}\nexport const template = _template`)
+        writeFileSync(fileName.replace('/index.html', '.ts'), functionalCode)
         writeFileSync(fileName.replace('/index.html', '.vue'), vueCode)
-        writeFileSync(fileName.replace('/index.html', '.d.ts'), `${types}`)
 
         // Remove original html file
         unlinkSync(fileName)
         rmdirSync(dirname(fileName))
       }
-
-      // Write an index file with named exports for each template
-      const contents = templateExports.map(exp => `export { template as ${exp.exportName} } from './templates/${exp.templateName}.js'`).join('\n')
-      writeFileSync(r('dist/index.js'), contents, 'utf8')
-
-      writeFileSync(r('dist/index.d.ts'), replaceAll(contents, /\.js/g, ''), 'utf8')
     },
   }
 }
