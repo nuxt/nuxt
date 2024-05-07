@@ -20,7 +20,8 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
-import { type NuxtAppLiterals } from '#app'
+import type { NuxtAppLiterals } from '#app'
+
 // @ts-expect-error virtual import
 import { buildId } from '#build/nuxt.config.mjs'
 
