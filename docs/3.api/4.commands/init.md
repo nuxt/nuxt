@@ -26,7 +26,7 @@ Option        | Default          | Description
 `--prefer-offline` | `false` | Prefer offline mode (try local cache first to download templates).
 `--no-install` | `false` | Skip installing dependencies.
 `--git-init` | `false` | Initialize git repository.
-`--shell` | `false` | Start shell after installation in project directory.
+`--shell` | `false` | Start shell after installation in project directory (experimental).
 `--package-manager` | `npm` | Package manager choice (npm, pnpm, yarn, bun).
 `--dir` | | Project directory.
 
