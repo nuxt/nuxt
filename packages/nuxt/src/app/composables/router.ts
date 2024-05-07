@@ -140,7 +140,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath)
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
