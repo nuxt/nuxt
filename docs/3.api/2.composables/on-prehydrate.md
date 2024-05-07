@@ -17,7 +17,7 @@ This composable will be available in Nuxt v3.12+ or in [the nightly release chan
 Nuxt hydrates the page.
 
 ::note
-This is an advanced utility and should be used with care.
+This is an advanced utility and should be used with care. For example, [`nuxt-time`](https://github.com/danielroe/nuxt-time/pull/251) and [`@nuxtjs/color-mode`](https://github.com/nuxt-modules/color-mode/blob/main/src/script.js) manipulate the DOM to avoid hydration mismatches.
 ::
 
 ## Usage
