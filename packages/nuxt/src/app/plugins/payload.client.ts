@@ -1,4 +1,3 @@
-import { parseURL } from 'ufo'
 import { defineNuxtPlugin } from '../nuxt'
 import { loadPayload } from '../composables/payload'
 import { onNuxtReady } from '../composables/ready'
@@ -24,7 +23,8 @@ export default defineNuxtPlugin({
     onNuxtReady(() => {
       // Load payload into cache
       nuxtApp.hooks.hook('link:prefetch', async (url) => {
-        if (!parseURL(url).protocol) {
+        const { protocol } = new URL(url, window.location.href)
+        if (!protocol) {
           await loadPayload(url)
         }
       })

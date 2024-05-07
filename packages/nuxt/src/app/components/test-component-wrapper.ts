@@ -1,4 +1,3 @@
-import { parseURL } from 'ufo'
 import { defineComponent, h } from 'vue'
 import { parseQuery } from 'vue-router'
 import { resolve } from 'pathe'
@@ -10,7 +9,7 @@ export default (url: string) => defineComponent({
   name: 'NuxtTestComponentWrapper',
 
   async setup (props, { attrs }) {
-    const query = parseQuery(parseURL(url).search)
+    const query = parseQuery(new URL(url, 'http://localhost').search)
     const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
     const path = resolve(query.path as string)
     if (!path.startsWith(devRootDir)) {
