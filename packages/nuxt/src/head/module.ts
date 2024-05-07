@@ -1,15 +1,11 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
-import type { RenderSSRHeadOptions } from '@unhead/schema'
+import type { NuxtOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
-
-interface HeadModuleOptions {
-  renderSSRHeadOptions?: RenderSSRHeadOptions
-}
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
-export default defineNuxtModule<HeadModuleOptions>({
+export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'meta',
     configKey: 'unhead',
