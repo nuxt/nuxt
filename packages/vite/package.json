@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "unbuild": "latest",
-    "vue": "3.4.26"
+    "vue": "3.4.27"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -41,7 +41,7 @@
     "consola": "^3.2.3",
     "cssnano": "^7.0.1",
     "defu": "^6.1.4",
-    "esbuild": "^0.20.2",
+    "esbuild": "^0.21.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
