@@ -34,6 +34,11 @@ export default defineUntypedSchema({
      *         deep: true
      *       }
      *     }
+     *   },
+     *   unhead: {
+     *     renderSSRHeadOptions: {
+     *       omitLineBreaks: false
+     *     }
      *   }
      * })
      * ```
