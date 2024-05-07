@@ -2654,6 +2654,7 @@ describe('namespace access to useNuxtApp', () => {
     // Defaulting to buildId
     await page.evaluate(() => window.useNuxtApp?.())
     // Using correct configured buildId
+    // @ts-expect-error not public API yet
     await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
 
     await page.close()
@@ -2669,6 +2670,7 @@ describe('namespace access to useNuxtApp', () => {
     let error: unknown
     try {
       // Using wrong/unknown buildId
+      // @ts-expect-error not public API yet
       await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
     } catch (err) {
       error = err
