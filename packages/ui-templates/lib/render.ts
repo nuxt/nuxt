@@ -3,7 +3,6 @@ import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
-import { template } from 'lodash-es'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
 import { globby } from 'globby'
@@ -77,12 +76,22 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
+        const chunks = html.split(/\{{2,3}\s*[^{}]+\s*\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        let templateString = chunks.shift()
+        for (const expression of html.matchAll(/\{{2,3}(\s*[^{}]+\s*)\}{2,3}/g)) {
+          templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
+        }
+        if (chunks.length > 0) {
+          templateString += ' + ' + chunks.join(' + ')
+        }
         const functionalCode = [
-          `export type DefaultMessages = Record<${Object.keys(messages).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
+          `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
           `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
-          `const _render = ${template(html, { variable: '__var__', interpolate: /{{{?([\s\S]+?)}?}}/g }).toString().replace('__var__', '{ messages }')}`,
-          'export const template = (messages: Partial<DefaultMessages>) => _render({ messages: { ..._messages, ...messages } })',
-        ].join('\n').trim()
+          'export const template = (messages: Partial<DefaultMessages>) => {',
+          '  messages = { ..._messages, ...messages }',
+          `  return ${templateString}`,
+          '}',
+        ].join('\n')
 
         const templateContent = html
           .match(/<body.*?>([\s\S]*)<\/body>/)?.[0]
