@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
-import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
+import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
@@ -45,7 +45,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     })
   }
 
-  const url = parseURL(fullPath.toString())
+  const url = new URL(fullPath.toString(), import.meta.client ? window.location.href : 'http://localhost')
   return {
     path: url.pathname,
     fullPath,

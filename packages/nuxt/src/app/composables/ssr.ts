@@ -1,5 +1,8 @@
 import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders } from 'h3'
+import { getCurrentInstance } from 'vue'
+import { useServerHead } from '@unhead/vue'
+
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -64,4 +67,48 @@ export function prerenderRoutes (path: string | string[]) {
 
   const paths = toArray(path)
   appendHeader(useRequestEvent()!, 'x-nitro-prerender', paths.map(p => encodeURIComponent(p)).join(', '))
+}
+
+const PREHYDRATE_ATTR_KEY = 'data-prehydrate-id'
+
+/**
+ * `onPrehydrate` is a composable lifecycle hook that allows you to run a callback on the client immediately before
+ * Nuxt hydrates the page. This is an advanced feature.
+ *
+ * The callback will be stringified and inlined in the HTML so it should not have any external
+ * dependencies (such as auto-imports) or refer to variables defined outside the callback.
+ *
+ * The callback will run before Nuxt runtime initializes so it should not rely on the Nuxt or Vue context.
+ * @since 3.12.0
+ */
+export function onPrehydrate (callback: (el: HTMLElement) => void): void
+export function onPrehydrate (callback: string | ((el: HTMLElement) => void), key?: string): undefined | string {
+  if (import.meta.client) { return }
+
+  if (typeof callback !== 'string') {
+    throw new TypeError('[nuxt] To transform a callback into a string, `onPrehydrate` must be processed by the Nuxt build pipeline. If it is called in a third-party library, make sure to add the library to `build.transpile`.')
+  }
+
+  const vm = getCurrentInstance()
+  if (vm && key) {
+    vm.attrs[PREHYDRATE_ATTR_KEY] ||= ''
+    key = ':' + key + ':'
+    if (!(vm.attrs[PREHYDRATE_ATTR_KEY] as string).includes(key)) {
+      vm.attrs[PREHYDRATE_ATTR_KEY] += key
+    }
+  }
+  const code = vm && key
+    ? `document.querySelectorAll('[${PREHYDRATE_ATTR_KEY}*=${JSON.stringify(key)}]').forEach` + callback
+    : (callback + '()')
+
+  useServerHead({
+    script: [{
+      key: vm && key ? key : code,
+      tagPosition: 'bodyClose',
+      tagPriority: 'critical',
+      innerHTML: code,
+    }],
+  })
+
+  return vm && key ? vm.attrs[PREHYDRATE_ATTR_KEY] as string : undefined
 }

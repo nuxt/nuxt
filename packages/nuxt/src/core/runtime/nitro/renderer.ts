@@ -26,6 +26,8 @@ import { useNitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
+// @ts-expect-error virtual file
+import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
@@ -459,7 +461,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head)
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {

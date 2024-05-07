@@ -11,7 +11,7 @@ links:
 ---
 
 ::important
-This composable will be available in Nuxt v3.12.
+This composable will be available in Nuxt v3.12 or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
 ::
 
 ## Description
