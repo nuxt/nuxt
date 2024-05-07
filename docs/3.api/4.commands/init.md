@@ -19,15 +19,15 @@ The `init` command initializes a fresh Nuxt project using [unjs/giget](https://g
 Option        | Default          | Description
 -------------------------|-----------------|------------------
 `--cwd` | | Current working directory
-`--logLevel` | | Log level
+`--log-level` | | Log level
 `--template, -t` | `v3` | Specify template name or git repository to use as a template. Format is `gh:org/name` to use a custom github template.
 `--force, -f` | `false` | Force clone to any existing directory.
 `--offline` | `false` | Force offline mode.
-`--preferOffline` | `false` | Prefer offline mode.
+`--prefer-offline` | `false` | Prefer offline mode.
 `--no-install` | `false` | Skip installing dependencies.
-`--gitInit` | `false` | Initialize git repository.
+`--git-init` | `false` | Initialize git repository.
 `--shell` | `false` | Start shell after installation in project directory.
-`--packageManager` | `npm` | Package manager choice (npm, pnpm, yarn, bun).
+`--package-manager` | `npm` | Package manager choice (npm, pnpm, yarn, bun).
 `--dir` | | Project directory.
 
 ## Environment variables
