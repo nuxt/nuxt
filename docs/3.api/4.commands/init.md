@@ -22,8 +22,8 @@ Option        | Default          | Description
 `--log-level` | | Log level
 `--template, -t` | `v3` | Specify template name or git repository to use as a template. Format is `gh:org/name` to use a custom github template.
 `--force, -f` | `false` | Force clone to any existing directory.
-`--offline` | `false` | Force offline mode.
-`--prefer-offline` | `false` | Prefer offline mode.
+`--offline` | `false` | Force offline mode (do not attempt to download template from GitHub and only use local cache).
+`--prefer-offline` | `false` | Prefer offline mode (try local cache first to download templates).
 `--no-install` | `false` | Skip installing dependencies.
 `--git-init` | `false` | Initialize git repository.
 `--shell` | `false` | Start shell after installation in project directory.
