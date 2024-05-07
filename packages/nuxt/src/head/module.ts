@@ -73,7 +73,7 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
       filename: 'unhead.config.mjs',
       getContents () {
         return [
-          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions)}`,
+          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
         ].join('\n')
       },
     })
