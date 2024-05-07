@@ -8,7 +8,6 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'meta',
-    configKey: 'unhead',
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
