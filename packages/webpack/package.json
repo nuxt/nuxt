@@ -29,7 +29,7 @@
     "@nuxt/kit": "workspace:*",
     "autoprefixer": "^10.4.19",
     "css-loader": "^7.1.1",
-    "css-minimizer-webpack-plugin": "^6.0.0",
+    "css-minimizer-webpack-plugin": "^7.0.0",
     "cssnano": "^7.0.1",
     "defu": "^6.1.4",
     "esbuild-loader": "^4.1.0",
