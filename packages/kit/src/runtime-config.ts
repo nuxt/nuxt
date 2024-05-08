@@ -3,8 +3,8 @@ import destr from 'destr'
 import { snakeCase } from 'scule'
 import { klona } from 'klona'
 
-import { useNuxt } from './context'
 import defu from 'defu'
+import { useNuxt } from './context'
 import { useNitro } from './nitro'
 
 /**
@@ -12,7 +12,7 @@ import { useNitro } from './nitro'
  *
  * This mirrors the runtime behavior of Nitro.
  */
-export function useRuntimeConfig() {
+export function useRuntimeConfig () {
   const nuxt = useNuxt()
   return applyEnv(klona(nuxt.options.nitro.runtimeConfig!), {
     prefix: 'NITRO_',
@@ -24,7 +24,7 @@ export function useRuntimeConfig() {
 /**
  * Update Nuxt runtime configuration.
  */
-export function updateRuntimeConfig(runtimeConfig: Record<string, unknown>) {
+export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
   const nuxt = useNuxt()
   Object.assign(nuxt.options.nitro.runtimeConfig as Record<string, unknown>, defu(runtimeConfig, nuxt.options.nitro.runtimeConfig))
 
@@ -69,15 +69,13 @@ function applyEnv (
       if (_isObject(envValue)) {
         obj[key] = { ...(obj[key] as any), ...(envValue as any) }
         applyEnv(obj[key], opts, subKey)
-      }
-      // If envValue is undefined
-      // Then proceed to nested properties
-      else if (envValue === undefined) {
+      } else if (envValue === undefined) {
+        // If envValue is undefined
+        // Then proceed to nested properties
         applyEnv(obj[key], opts, subKey)
-      }
-      // If envValue is a primitive other than undefined
-      // Then set objValue and ignore the nested properties
-      else {
+      } else {
+        // If envValue is a primitive other than undefined
+        // Then set objValue and ignore the nested properties
         obj[key] = envValue ?? obj[key]
       }
     } else {

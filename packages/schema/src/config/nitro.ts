@@ -24,7 +24,7 @@ export default defineUntypedSchema({
             ...runtimeConfig.nitro,
           },
         }
-      }
+      },
     },
     routeRules: {
       $resolve: async (val: Record<string, any> | undefined, get) => ({
