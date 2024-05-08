@@ -12,7 +12,7 @@ import { defu } from 'defu'
 import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
-import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
@@ -27,8 +27,6 @@ const logLevelMapReverse = {
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
-  const _nitroConfig = ((nuxt.options as any).nitro || {}) as NitroConfig
-
   const excludePaths = nuxt.options._layers
     .flatMap(l => [
       l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
@@ -48,7 +46,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       .map(m => m.entryPath),
   )
 
-  const nitroConfig: NitroConfig = defu(_nitroConfig, {
+  const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
@@ -57,7 +55,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     buildDir: nuxt.options.buildDir,
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
-      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || _nitroConfig.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
+      typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.nitro.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
     },
     framework: {
       name: 'nuxt',
@@ -109,20 +107,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
-    },
-    runtimeConfig: {
-      ...nuxt.options.runtimeConfig,
-      app: {
-        ...nuxt.options.runtimeConfig.app,
-        baseURL: nuxt.options.runtimeConfig.app.baseURL.startsWith('./')
-          ? nuxt.options.runtimeConfig.app.baseURL.slice(1)
-          : nuxt.options.runtimeConfig.app.baseURL,
-      },
-      nitro: {
-        envPrefix: 'NUXT_',
-        // TODO: address upstream issue with defu types...?
-        ...nuxt.options.runtimeConfig.nitro satisfies RuntimeConfig['nitro'] as any,
-      },
     },
     appConfig: nuxt.options.appConfig,
     appConfigFiles: nuxt.options._layers.map(

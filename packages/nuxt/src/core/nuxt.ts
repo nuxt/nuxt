@@ -4,7 +4,7 @@ import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
@@ -599,6 +599,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
   }
+
+  // Ensure we share runtime config between Nuxt and Nitro
+  options.runtimeConfig = options.nitro.runtimeConfig as RuntimeConfig
 
   const nuxt = createNuxt(options)
 
