@@ -3,7 +3,6 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
-import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
@@ -17,7 +16,7 @@ import type { Nuxt, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
-import { template as defaultSpaLoadingTemplate } from './templates/spa-loading-icon.js'
+import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 
 const logLevelMapReverse = {
@@ -154,7 +153,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             baseURL: nuxt.options.app.buildAssetsDir,
           },
       ...nuxt.options._layers
-        .map(layer => join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
+        .map(layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
         .filter(dir => existsSync(dir))
         .map(dir => ({ dir })),
     ],
@@ -237,7 +236,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.appManifest) {
     // @ts-expect-error untyped nuxt property
     const buildId = nuxt.options.appConfig.nuxt!.buildId ||=
-      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : randomUUID())
+      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : nuxt.options.buildId)
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
@@ -570,9 +569,9 @@ async function spaLoadingTemplatePath (nuxt: Nuxt) {
     return resolve(nuxt.options.srcDir, nuxt.options.spaLoadingTemplate)
   }
 
-  const possiblePaths = nuxt.options._layers.map(layer => join(layer.config.srcDir, 'app/spa-loading-template.html'))
+  const possiblePaths = nuxt.options._layers.map(layer => resolve(layer.config.srcDir, layer.config.dir?.app || 'app', 'spa-loading-template.html'))
 
-  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, 'app/spa-loading-template.html')
+  return await findPath(possiblePaths) ?? resolve(nuxt.options.srcDir, nuxt.options.dir?.app || 'app', 'spa-loading-template.html')
 }
 
 async function spaLoadingTemplate (nuxt: Nuxt) {

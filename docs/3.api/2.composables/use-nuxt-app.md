@@ -18,6 +18,14 @@ const nuxtApp = useNuxtApp()
 
 If runtime context is unavailable in your scope, `useNuxtApp` will throw an exception when called. You can use [`tryUseNuxtApp`](#tryusenuxtapp) instead for composables that do not require `nuxtApp`, or to simply check if context is available or not without an exception.
 
+<!--
+note
+By default, the shared runtime context of Nuxt is namespaced under the [`buildId`](/docs/api/nuxt-config#buildid) option. It allows the support of multiple runtime contexts.
+
+## Params
+
+- `appName`: an optional application name. If you do not provide it, the Nuxt `buildId` option is used. Otherwise, it must match with an existing `buildId`. -->
+
 ## Methods
 
 ### `provide (name, value)`
@@ -278,3 +286,7 @@ export function useStandType() {
   }
 }
 ```
+
+<!-- ### Params
+
+- `appName`: an optional application name. If you do not provide it, the Nuxt `buildId` option is used. Otherwise, it must match with an existing `buildId`. -->

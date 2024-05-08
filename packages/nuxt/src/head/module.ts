@@ -1,10 +1,11 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import type { NuxtOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
-export default defineNuxtModule({
+export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'meta',
   },
@@ -68,9 +69,19 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
       },
     })
 
+    addTemplate({
+      filename: 'unhead.config.mjs',
+      getContents () {
+        return [
+          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
+        ].join('\n')
+      },
+    })
+
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
       config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins']
+      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config']
     })
 
     // Add library-specific plugin

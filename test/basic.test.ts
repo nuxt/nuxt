@@ -577,6 +577,33 @@ describe('nuxt composables', () => {
     await page.close()
   })
 
+  it('supports onPrehydrate', async () => {
+    const html = await $fetch('/composables/on-prehydrate') as string
+    /**
+     * Should look something like this:
+     *
+     * ```html
+     * <div data-prehydrate-id=":b3qlvSiBeH::df1mQEC9xH:"> onPrehydrate testing </div>
+     * <script>(()=>{console.log(window)})()</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":b3qlvSiBeH:"]').forEach(o=>{console.log(o.outerHTML)})</script>
+     * <script>document.querySelectorAll('[data-prehydrate-id*=":df1mQEC9xH:"]').forEach(o=>{console.log("other",o.outerHTML)})</script>
+     * ```
+     */
+    const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
+    expect(id1).toBeTruthy()
+    const matches = [
+      html.match(/<script[^>]*>\(\(\)=>{console.log\(window\)}\)\(\)<\/script>/),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`)),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`)),
+    ]
+
+    // This tests we inject all scripts correctly, and only have one occurrence of multiple calls of a composable
+    expect(matches.every(s => s?.length === 1)).toBeTruthy()
+
+    // Check for hydration/syntax errors on client side
+    await expectNoClientErrors('/composables/on-prehydrate')
+  })
+
   it('respects preview mode with a token', async () => {
     const token = 'hehe'
     const page = await createPage(`/preview?preview=true&token=${token}`)
@@ -2538,7 +2565,7 @@ describe('Node.js compatibility for client-side', () => {
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
-})
+}, 20_000)
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
@@ -2603,5 +2630,54 @@ describe('lazy import components', () => {
 
   it('lazy load named component with mode server', () => {
     expect(html).toContain('lazy-named-comp-server')
+  })
+})
+
+describe('defineNuxtComponent watch duplicate', () => {
+  it('test after navigation duplicate', async () => {
+    const { page } = await renderPage('/define-nuxt-component')
+    await page.getByTestId('define-nuxt-component-bar').click()
+    await page.getByTestId('define-nuxt-component-state').click()
+    await page.getByTestId('define-nuxt-component-foo').click()
+    expect(await page.getByTestId('define-nuxt-component-state').first().innerText()).toBe('2')
+  })
+})
+
+describe('namespace access to useNuxtApp', () => {
+  it('should return the nuxt instance when used with correct buildId', async () => {
+    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
+
+    expect(pageErrors).toEqual([])
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    // Defaulting to buildId
+    await page.evaluate(() => window.useNuxtApp?.())
+    // Using correct configured buildId
+    // @ts-expect-error not public API yet
+    await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
+
+    await page.close()
+  })
+
+  it('should throw an error when used with wrong buildId', async () => {
+    const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
+
+    expect(pageErrors).toEqual([])
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+
+    let error: unknown
+    try {
+      // Using wrong/unknown buildId
+      // @ts-expect-error not public API yet
+      await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
+    } catch (err) {
+      error = err
+    }
+
+    expect(error).toBeTruthy()
+
+    await page.close()
   })
 })

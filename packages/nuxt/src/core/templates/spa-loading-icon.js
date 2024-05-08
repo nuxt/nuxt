@@ -1,1 +1,0 @@
-../../../../ui-templates/dist/templates/spa-loading-icon.js

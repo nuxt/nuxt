@@ -66,7 +66,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = import.meta.dev ? await import('./error-dev.js') : await import('./error-500.js')
+    const { template } = import.meta.dev ? await import('./error-dev') : await import('./error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message
