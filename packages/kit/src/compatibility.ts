@@ -1,9 +1,15 @@
 import satisfies from 'semver/functions/satisfies.js' // npm/node-semver#381
+import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
 export function normalizeSemanticVersion (version: string) {
   return version.replace(/-[0-9]+\.[0-9a-f]+/, '') // Remove edge prefix
+}
+
+const builderMap = {
+  '@nuxt/vite-builder': 'vite',
+  '@nuxt/webpack-builder': 'webpack',
 }
 
 /**
@@ -38,15 +44,27 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
         message: 'Nuxt bridge is not supported',
       })
     }
+  }
 
-    // Builder compatibility check
-    if (constraints.builder && constraints.builder !== 'all') {
-      if ((constraints.builder === 'vite' && nuxt.options.builder !== '@nuxt/vite-builder') ||
-      (constraints.builder === 'webpack' && nuxt.options.builder !== '@nuxt/webpack-builder')) {
+  // Builder compatibility check
+  if (constraints.builder && typeof nuxt.options.builder === 'string') {
+    const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
+    if (currentBuilder in constraints.builder) {
+      const constraint = constraints.builder[currentBuilder]!
+      if (constraint === false) {
         issues.push({
           name: 'builder',
-          message: `Using compatible builder ${nuxt.options.builder}`
+          message: `Not compatible with \`${nuxt.options.builder}\`.`
         })
+      }
+      else {
+        const builderVersion = await readPackageJSON(nuxt.options.builder, { url: nuxt.options.modulesDir }).then(r => r.version).catch(() => undefined)
+        if (builderVersion && !satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
+          issues.push({
+            name: 'builder',
+            message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`
+          })
+        }
       }
     }
   }

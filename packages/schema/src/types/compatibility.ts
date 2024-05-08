@@ -20,10 +20,8 @@ export interface NuxtCompatibility {
    * - `webpack`: compatible with `@nuxt/webpack-builder` only
    * - `all`: compatible with all builders
    */
-  builder?: NuxtBuilders
+  builder?: Partial<Record<'vite' | 'webpack' | (string & {}), false | string>>
 }
-
-export type NuxtBuilders = 'vite' | 'webpack' | 'all'
 
 export interface NuxtCompatibilityIssue {
   name: string
