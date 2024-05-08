@@ -54,15 +54,14 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
       if (constraint === false) {
         issues.push({
           name: 'builder',
-          message: `Not compatible with \`${nuxt.options.builder}\`.`
+          message: `Not compatible with \`${nuxt.options.builder}\`.`,
         })
-      }
-      else {
+      } else {
         const builderVersion = await readPackageJSON(nuxt.options.builder, { url: nuxt.options.modulesDir }).then(r => r.version).catch(() => undefined)
         if (builderVersion && !satisfies(normalizeSemanticVersion(builderVersion), constraint, { includePrerelease: true })) {
           issues.push({
             name: 'builder',
-            message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`
+            message: `Not compatible with \`${builderVersion}\` of \`${currentBuilder}\`. This module requires \`${constraint}\`.`,
           })
         }
       }
