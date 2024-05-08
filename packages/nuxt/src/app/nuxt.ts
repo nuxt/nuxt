@@ -22,9 +22,14 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 
 import type { NuxtAppLiterals } from '#app'
 
-const nuxtAppCtx = /* @__PURE__ */ getContext<NuxtApp>('nuxt-app', {
-  asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
-})
+// @ts-expect-error virtual import
+import { buildId } from '#build/nuxt.config.mjs'
+
+function getNuxtAppCtx (appName?: string) {
+  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+    asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
+  })
+}
 
 type HookResult = Promise<void> | void
 
@@ -93,6 +98,8 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
+  /** @internal */
+  _name: string
   vueApp: App<Element>
   globalName: string
   versions: Record<string, string>
@@ -237,6 +244,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
+    name: buildId,
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
@@ -447,6 +455,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
+  const nuxtAppCtx = getNuxtAppCtx(nuxt._name)
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
@@ -463,13 +472,14 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
-export function tryUseNuxtApp (): NuxtApp | null {
+export function tryUseNuxtApp (): NuxtApp | null
+export function tryUseNuxtApp (appName?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || nuxtAppCtx.tryUse()
+  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(appName).tryUse()
 
   return nuxtAppInstance || null
 }
@@ -481,8 +491,10 @@ export function tryUseNuxtApp (): NuxtApp | null {
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
-export function useNuxtApp (): NuxtApp {
-  const nuxtAppInstance = tryUseNuxtApp()
+export function useNuxtApp (): NuxtApp
+export function useNuxtApp (appName?: string): NuxtApp {
+  // @ts-expect-error internal usage of appName
+  const nuxtAppInstance = tryUseNuxtApp(appName)
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {

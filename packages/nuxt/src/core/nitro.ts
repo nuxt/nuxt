@@ -3,7 +3,6 @@ import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
-import { randomUUID } from 'uncrypto'
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
@@ -237,7 +236,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (nuxt.options.experimental.appManifest) {
     // @ts-expect-error untyped nuxt property
     const buildId = nuxt.options.appConfig.nuxt!.buildId ||=
-      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : randomUUID())
+      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : nuxt.options.buildId)
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')

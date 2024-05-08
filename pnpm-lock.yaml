@@ -463,6 +463,9 @@ importers:
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
+      uncrypto:
+        specifier: ^0.1.3
+        version: 0.1.3
       unimport:
         specifier: ^3.7.1
         version: 3.7.1(rollup@4.17.2)
