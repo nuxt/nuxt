@@ -65,7 +65,7 @@
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.10.0",
     "eslint-typegen": "0.2.4",
-    "execa": "8.0.1",
+    "execa": "9.0.0",
     "fs-extra": "11.2.0",
     "globby": "14.0.1",
     "h3": "1.11.1",
