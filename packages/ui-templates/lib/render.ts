@@ -80,6 +80,7 @@ export const RenderPlugin = () => {
 
         // Serialize into a js function
         const chunks = html.split(/\{{2,3}\s*[^{}]+\s*\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        let hasMessages = chunks.length > 1
         let templateString = chunks.shift()
         for (const expression of html.matchAll(/\{{2,3}(\s*[^{}]+\s*)\}{2,3}/g)) {
           templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
@@ -88,10 +89,10 @@ export const RenderPlugin = () => {
           templateString += ' + ' + chunks.join(' + ')
         }
         const functionalCode = [
-          `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >`,
-          `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}`,
-          'export const template = (messages: Partial<DefaultMessages>) => {',
-          '  messages = { ..._messages, ...messages }',
+          hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
+          hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
+          `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
+          hasMessages ? '  messages = { ..._messages, ...messages }' : '',
           `  return ${templateString}`,
           '}',
         ].join('\n')
