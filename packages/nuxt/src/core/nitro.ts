@@ -588,7 +588,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
   }
 
   if (nuxt.options.spaLoadingTemplate === true) {
-    return defaultSpaLoadingTemplate({})
+    return defaultSpaLoadingTemplate()
   }
 
   if (nuxt.options.spaLoadingTemplate) {
