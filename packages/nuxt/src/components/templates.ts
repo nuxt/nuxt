@@ -102,14 +102,20 @@ export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
-    const componentTypes = app.components.filter(c => !c.island).map(c => [
-      c.pascalName,
-      `typeof ${genDynamicImport(isAbsolute(c.filePath)
+    const componentTypes = app.components.filter(c => !c.island).map((c) => {
+      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
         ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/(?<=\w)\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`,
-    ])
+        : c.filePath.replace(/(?<=\w)\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+      return [
+        c.pascalName,
+        c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
+      ]
+    })
 
+    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
     return `
+import type { DefineComponent, SlotsType } from 'vue'
+${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
