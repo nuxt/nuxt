@@ -14,11 +14,25 @@ export interface NuxtCompatibility {
   bridge?: boolean,
 
   /**
-   * Required using a compatible builder.
+   * Mark a builder as incompatible, or require a particular version.
    *
-   * - `vite`: compatible with `@nuxt/vite-builder` only
-   * - `webpack`: compatible with `@nuxt/webpack-builder` only
-   * - `all`: compatible with all builders
+   * @example
+   * ```ts
+   * export default defineNuxtModule({
+   *   meta: {
+   *     name: 'my-module',
+   *     compatibility: {
+   *       builder: {
+   *         // marking as incompatible
+   *         webpack: false,
+   *         // you can require a (semver-compatible) version
+   *         vite: '^5'
+   *       }
+   *     }
+   *   }
+   *   // ...
+   * })
+   * ```
    */
   builder?: Partial<Record<'vite' | 'webpack' | (string & {}), false | string>>
 }
