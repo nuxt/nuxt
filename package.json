@@ -80,7 +80,7 @@
     "pathe": "1.1.2",
     "playwright-core": "1.44.0",
     "rimraf": "5.0.5",
-    "semver": "7.6.0",
+    "semver": "7.6.1",
     "std-env": "3.7.0",
     "typescript": "5.4.5",
     "ufo": "1.5.3",
