@@ -117,7 +117,7 @@
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
-    "@nuxt/ui-templates": "link:../ui-templates",
+    "@nuxt/ui-templates": "workspace:*",
     "@parcel/watcher": "2.4.1",
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",

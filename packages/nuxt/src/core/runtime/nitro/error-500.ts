@@ -1,1 +1,1 @@
-export * from '@nuxt/ui-templates/dist/templates/error-500'
+export * from '../../../../../ui-templates/dist/templates/error-dev'
