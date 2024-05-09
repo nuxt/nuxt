@@ -13,6 +13,7 @@ import type { NuxtIslandResponse } from '#app'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
+const isV4 = process.env.TEST_V4 === 'true'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -21,6 +22,7 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
+    future: { compatibilityVersion: isV4 ? 4 : 3 },
     builder: isWebpack ? 'webpack' : 'vite',
     buildDir: process.env.NITRO_BUILD_DIR,
     nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
@@ -884,7 +886,7 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
   })
 
-  it('legacy vueuse/head works', async () => {
+  it.skipIf(isV4)('legacy vueuse/head works', async () => {
     const headHtml = await $fetch('/vueuse-head')
     expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
