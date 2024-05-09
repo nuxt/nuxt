@@ -320,11 +320,7 @@ export default defineUntypedSchema({
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
-    scanPageMeta: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
+    scanPageMeta: true,
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
