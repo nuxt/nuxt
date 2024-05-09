@@ -208,6 +208,8 @@ jobs:
             payload: "js"
           - context: "default"
             payload: "js"
+          - os: windows-latest
+            payload: "js"
           - env: "dev"
             builder: "webpack"
           - manifest: "manifest-off"
