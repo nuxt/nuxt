@@ -92,7 +92,7 @@
   },
   "packageManager": "pnpm@9.1.0",
   "engines": {
-    "node": "^14.18.0 || >=16.10.0"
+    "node": "^16.10.0 || >=18.0.0"
   },
   "version": ""
 }
