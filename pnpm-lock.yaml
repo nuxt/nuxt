@@ -403,8 +403,8 @@ importers:
         specifier: 3.4.27
         version: 3.4.27(typescript@5.4.5)
       vue-bundle-renderer:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.1.0
+        version: 2.1.0
       vue-devtools-stub:
         specifier: ^0.1.0
         version: 0.1.0
@@ -540,8 +540,8 @@ importers:
         specifier: 3.4.27
         version: 3.4.27(typescript@5.4.5)
       vue-bundle-renderer:
-        specifier: 2.0.0
-        version: 2.0.0
+        specifier: 2.1.0
+        version: 2.1.0
       vue-loader:
         specifier: 17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.4.27)(vue@3.4.27(typescript@5.4.5))(webpack@5.91.0)
@@ -699,8 +699,8 @@ importers:
         specifier: ^0.6.4
         version: 0.6.4(eslint@9.2.0)(optionator@0.9.3)(typescript@5.4.5)(vite@5.2.11(@types/node@20.12.11)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.16(typescript@5.4.5))
       vue-bundle-renderer:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.1.0
+        version: 2.1.0
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -829,8 +829,8 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.91.0))(webpack@5.91.0)
       vue-bundle-renderer:
-        specifier: ^2.0.0
-        version: 2.0.0
+        specifier: ^2.1.0
+        version: 2.1.0
       vue-loader:
         specifier: ^17.4.2
         version: 17.4.2(@vue/compiler-sfc@3.4.27)(vue@3.4.27(typescript@5.4.5))(webpack@5.91.0)
@@ -7143,8 +7143,8 @@ packages:
   vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
 
-  vue-bundle-renderer@2.0.0:
-    resolution: {integrity: sha512-oYATTQyh8XVkUWe2kaKxhxKVuuzK2Qcehe+yr3bGiaQAhK3ry2kYE4FWOfL+KO3hVFwCdLmzDQTzYhTi9C+R2A==}
+  vue-bundle-renderer@2.1.0:
+    resolution: {integrity: sha512-uZ+5ZJdZ/b43gMblWtcpikY6spJd0nERaM/1RtgioXNfWFbjKlUwrS8HlrddN6T2xtptmOouWclxLUkpgcVX3Q==}
 
   vue-component-type-helpers@2.0.6:
     resolution: {integrity: sha512-qdGXCtoBrwqk1BT6r2+1Wcvl583ZVkuSZ3or7Y1O2w5AvWtlvvxwjGhmz5DdPJS9xqRdDlgTJ/38ehWnEi0tFA==}
@@ -14713,7 +14713,7 @@ snapshots:
 
   vscode-uri@3.0.8: {}
 
-  vue-bundle-renderer@2.0.0:
+  vue-bundle-renderer@2.1.0:
     dependencies:
       ufo: 1.5.3
 
