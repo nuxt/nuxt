@@ -347,7 +347,7 @@ export default defineUntypedSchema({
      */
     sharedPrerenderData: {
       async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
       },
     },
 
