@@ -357,7 +357,7 @@ export default defineUntypedSchema({
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
-    scanPageMeta: true,
+    scanPageMeta: false,
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
