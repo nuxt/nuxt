@@ -1,1 +1,1 @@
-../../../../../ui-templates/dist/templates/error-500.ts
+export * from '@nuxt/ui-templates/dist/templates/error-500'
