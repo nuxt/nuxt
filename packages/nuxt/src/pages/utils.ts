@@ -58,18 +58,26 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
   const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
-    shouldExtractBuildMeta: nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages,
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
-    vfs: nuxt.vfs,
   })
 
-  return uniqueBy(allRoutes, 'path')
+  const pages = uniqueBy(allRoutes, 'path')
+
+  if ((nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages) && nuxt.vfs) {
+    augmentPages(pages, nuxt.vfs)
+  }
+
+  await nuxt.callHook('pages:extend', pages)
+
+  if ((nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages) && nuxt.vfs) {
+    augmentPages(pages, nuxt.vfs)
+  }
+
+  return pages
 }
 
 type GenerateRoutesFromFilesOptions = {
-  shouldExtractBuildMeta?: boolean
   shouldUseServerComponents?: boolean
-  vfs?: Record<string, string>
 }
 
 export async function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): Promise<NuxtPage[]> {
@@ -124,15 +132,23 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       }
     }
 
-    if (options.shouldExtractBuildMeta && options.vfs) {
-      const fileContent = file.absolutePath in options.vfs ? options.vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
-      Object.assign(route, await getRouteMeta(fileContent, file.absolutePath))
-    }
-
     parent.push(route)
   }
 
   return prepareRoutes(routes)
+}
+
+async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>) {
+  for (const route of routes) {
+    if (route.file) {
+      const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(route.file, 'utf-8')
+      Object.assign(route, await getRouteMeta(fileContent, route.file))
+    }
+
+    if (route.children && route.children.length > 0) {
+      await augmentPages(route.children, vfs)
+    }
+  }
 }
 
 const SFC_SCRIPT_RE = /<script[^>]*>([\s\S]*?)<\/script[^>]*>/i
