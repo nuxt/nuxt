@@ -45,14 +45,12 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
  */
 
 type EnvOptions = {
-  env?: Record<string, unknown>
   prefix?: string
   altPrefix?: string
   envExpansion?: boolean
 }
 
-function getEnv (key: string, opts: EnvOptions) {
-  const env = opts.env ?? process.env
+function getEnv (key: string, opts: EnvOptions, env = process.env) {
   const envKey = snakeCase(key).toUpperCase()
   return destr(
     env[opts.prefix + envKey] ?? env[opts.altPrefix + envKey],
@@ -90,7 +88,7 @@ function applyEnv (
     }
     // Experimental env expansion
     if (opts.envExpansion && typeof obj[key] === 'string') {
-      obj[key] = _expandFromEnv(obj[key], opts.env)
+      obj[key] = _expandFromEnv(obj[key])
     }
   }
   return obj
