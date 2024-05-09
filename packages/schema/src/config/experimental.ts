@@ -136,8 +136,18 @@ export default defineUntypedSchema({
     /**
      * Tree shakes contents of client-only components from server bundle.
      * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
+     * @deprecated This feature will be removed in Nuxt v4.
      */
-    treeshakeClientOnly: true,
+    treeshakeClientOnly: {
+      async $resolve (val, get) {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        if (isV4 && val === false) {
+          console.warn('Enabling `experimental.treeshakeClientOnly` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
+          return true
+        }
+        return val ?? true
+      },
+    },
 
     /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
@@ -247,7 +257,16 @@ export default defineUntypedSchema({
      * Config schema support
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
      */
-    configSchema: true,
+    configSchema: {
+      async $resolve (val, get) {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        if (isV4 && val === false) {
+          console.warn('Enabling `experimental.configSchema` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
+          return true
+        }
+        return val ?? true
+      },
+    },
 
     /**
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
@@ -255,10 +274,28 @@ export default defineUntypedSchema({
      *
      * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
      */
-    polyfillVueUseHead: false,
+    polyfillVueUseHead: {
+      async $resolve (val, get) {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        if (isV4 && val === true) {
+          console.warn('Disabling `experimental.polyfillVueUseHead` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
+          return false
+        }
+        return val ?? false
+      },
+    },
 
     /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
-    respectNoSSRHeader: false,
+    respectNoSSRHeader: {
+      async $resolve (val, get) {
+        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        if (isV4 && val === true) {
+          console.warn('Disabling `experimental.respectNoSSRHeader` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
+          return false
+        }
+        return val ?? false
+      },
+    },,
 
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
