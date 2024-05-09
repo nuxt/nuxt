@@ -256,6 +256,7 @@ export default defineUntypedSchema({
     /**
      * Config schema support
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
+     * @deprecated This feature will be removed in Nuxt v4.
      */
     configSchema: {
       async $resolve (val, get) {
@@ -272,7 +273,8 @@ export default defineUntypedSchema({
      * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
      * `@vueuse/head` API.
      *
-     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
+     * This is disabled to reduce the client-side bundle by ~0.5kb.
+     * @deprecated This feature will be removed in Nuxt v4.
      */
     polyfillVueUseHead: {
       async $resolve (val, get) {
@@ -285,7 +287,10 @@ export default defineUntypedSchema({
       },
     },
 
-    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
+    /**
+     * Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header.
+     * @deprecated This feature will be removed in Nuxt v4.
+     */
     respectNoSSRHeader: {
       async $resolve (val, get) {
         const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
