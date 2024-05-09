@@ -87,7 +87,7 @@
     "rollup-plugin-license": "3.3.1",
     "sass": "1.77.0",
     "sass-loader": "^10.4.1",
-    "semver": "7.6.1",
+    "semver": "7.6.2",
     "sort-package-json": "2.10.0",
     "typescript": "5.4.5",
     "vue-jest": "4.0.1",
