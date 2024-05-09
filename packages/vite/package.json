@@ -54,7 +54,7 @@
     "ohash": "^1.1.3",
     "pathe": "^1.1.2",
     "perfect-debounce": "^1.0.0",
-    "pkg-types": "^1.1.0",
+    "pkg-types": "^1.1.1",
     "postcss": "^8.4.38",
     "rollup-plugin-visualizer": "^5.12.0",
     "std-env": "^3.7.0",
