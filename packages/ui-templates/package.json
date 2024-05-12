@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@types/html-minifier": "4.0.5",
-    "@unocss/reset": "0.60.0",
+    "@unocss/reset": "0.60.1",
     "critters": "0.0.22",
     "execa": "9.0.2",
     "globby": "14.0.1",
@@ -30,7 +30,7 @@
     "pathe": "1.1.2",
     "prettier": "3.2.5",
     "scule": "1.3.0",
-    "unocss": "0.60.0",
+    "unocss": "0.60.1",
     "vite": "5.2.11"
   }
 }
