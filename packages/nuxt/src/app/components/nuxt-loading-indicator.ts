@@ -37,7 +37,7 @@ export default defineComponent({
     })
 
     expose({
-      progress, isLoading, start, finish, clear,
+      progress, isLoading, error, start, finish, clear,
     })
 
     return () => h('div', {
