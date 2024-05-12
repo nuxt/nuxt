@@ -26,7 +26,7 @@ Because the data inside `useState` will be serialized to JSON, it is important t
 ::
 
 ::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=mv0WcBABcIk" target="_blank"}
-Watch a video from Alexander Lichter about why and when to use `useState()`
+Watch a video from Alexander Lichter about why and when to use `useState()`.
 ::
 
 ## Using `shallowRef`
