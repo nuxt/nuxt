@@ -179,7 +179,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = []
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
-    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
+    const middlewareFiles = await resolveFiles(config.srcDir, [
+      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
+      ...nuxt.options.future.compatibilityVersion === 4
+        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
+        : [],
+    ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
       if (!name) {
@@ -200,7 +205,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
           `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`, // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
         ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
