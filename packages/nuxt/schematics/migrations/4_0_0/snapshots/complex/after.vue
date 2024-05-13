@@ -1,9 +1,11 @@
 <script setup lang="ts">
 const pending = 'something-else'
-const { data, status } = await useAsyncData(async () => {
+const status = 'something-else'
+const { data,status: dataStatus } = await useAsyncData(async () => {
   // do something
 });
-const testididi = computed(() => status.value === 'pending' || status.value === 'idle')
+const testididi = computed(() => dataStatus.value === 'pending' || dataStatus.value === 'idle');
+
 </script>
 
 <template>
@@ -20,6 +22,3 @@ const testididi = computed(() => status.value === 'pending' || status.value === 
   font-family: 'Inter var';
 }
 </style>
-
-
-

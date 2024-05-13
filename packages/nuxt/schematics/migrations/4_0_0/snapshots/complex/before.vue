@@ -1,9 +1,9 @@
 <script setup lang="ts">
 const pending = 'something-else'
+const status = 'something-else'
 const { data, pending: testididi } = await useAsyncData(async () => {
   // do something
-  console.log('testididi')
-})
+});
 </script>
 
 <template>

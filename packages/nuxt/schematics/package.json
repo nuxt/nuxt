@@ -18,9 +18,7 @@
   },
   "devDependencies": {
     "@wandeljs/cli": "^0.1.9",
-    "@types/jasmine": "~5.1.0",
-    "@types/node": "^18.18.0",
-    "jasmine": "^5.0.0"
+    "@types/node": "^18.18.0"
   },
   "wandel": {
     "migrations": "./migrations/migration.json"

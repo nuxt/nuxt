@@ -7,12 +7,11 @@ import update from './index'
 describe('Schematics Migration 4_0_0', () => {
   let tree: Tree
 
-  function setup () {
+  beforeEach(() => {
     tree = new UnitTestTree(Tree.empty())
-  }
+  })
 
   it('should convert basic scenario successfully', () => {
-    setup()
     const t = update(tree)
     const file = fs.readFileSync(path.resolve(__dirname, './snapshots/basic/before.vue'))
     tree.create('test.vue', file)
@@ -22,7 +21,6 @@ describe('Schematics Migration 4_0_0', () => {
   })
 
   it('should convert complex scenario successfully', () => {
-    setup()
     const t = update(tree)
     const file = fs.readFileSync(path.resolve(__dirname, './snapshots/complex/before.vue'))
     tree.create('test.vue', file)
@@ -32,7 +30,6 @@ describe('Schematics Migration 4_0_0', () => {
   })
 
   it('should not make any changes if not necessary', () => {
-    setup()
     const t = update(tree)
     const file = fs.readFileSync(path.resolve(__dirname, './snapshots/no-edit/before.vue'))
     tree.create('test.vue', file)
