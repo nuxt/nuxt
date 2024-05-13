@@ -81,8 +81,8 @@ importers:
         specifier: 0.2.4
         version: 0.2.4(eslint@9.2.0)
       execa:
-        specifier: 9.0.2
-        version: 9.0.2
+        specifier: 9.1.0
+        version: 9.1.0
       fs-extra:
         specifier: 11.2.0
         version: 11.2.0
@@ -573,8 +573,8 @@ importers:
         specifier: 0.0.22
         version: 0.0.22
       execa:
-        specifier: 9.0.2
-        version: 9.0.2
+        specifier: 9.1.0
+        version: 9.1.0
       globby:
         specifier: 14.0.1
         version: 14.0.1
@@ -4062,8 +4062,8 @@ packages:
     resolution: {integrity: sha512-VyhnebXciFV2DESc+p6B+y0LjSm0krU4OgJN44qFAhBY0TJ+1V61tYD2+wHusZ6F9n5K+vl8k0sTy7PEfV4qpg==}
     engines: {node: '>=16.17'}
 
-  execa@9.0.2:
-    resolution: {integrity: sha512-oO281GF7ksH/Ogv1xyDf1prvFta/6/XkGKxRUvA3IB2MU1rCJGlFs86HRZhdooow1ISkR0Np0rOxUCIJVw36Rg==}
+  execa@9.1.0:
+    resolution: {integrity: sha512-lSgHc4Elo2m6bUDhc3Hl/VxvUDJdQWI40RZ4KMY9bKRc+hgMOT7II/JjbNDhI8VnMtrCb7U/fhpJIkLORZozWw==}
     engines: {node: '>=18'}
 
   exponential-backoff@3.1.1:
@@ -10981,7 +10981,7 @@ snapshots:
       signal-exit: 4.1.0
       strip-final-newline: 3.0.0
 
-  execa@9.0.2:
+  execa@9.1.0:
     dependencies:
       '@sindresorhus/merge-streams': 4.0.0
       cross-spawn: 7.0.3
