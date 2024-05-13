@@ -65,7 +65,7 @@
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.10.0",
     "eslint-typegen": "0.2.4",
-    "execa": "9.0.2",
+    "execa": "9.1.0",
     "fs-extra": "11.2.0",
     "globby": "14.0.1",
     "h3": "1.11.1",
@@ -90,7 +90,7 @@
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.17"
   },
-  "packageManager": "pnpm@9.1.0",
+  "packageManager": "pnpm@9.1.1",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
