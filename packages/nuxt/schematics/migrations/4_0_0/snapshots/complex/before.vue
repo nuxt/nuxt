@@ -3,7 +3,7 @@ const pending = 'something-else'
 const status = 'something-else'
 const { data, pending: testididi } = await useAsyncData(async () => {
   // do something
-});
+})
 </script>
 
 <template>
