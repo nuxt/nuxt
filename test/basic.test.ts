@@ -2188,7 +2188,6 @@ describe('component islands', () => {
     result.html = result.html.replace(/ data-island-uid="([^"]*)"/g, '')
 
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates'))
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
         link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
@@ -2214,11 +2213,6 @@ describe('component islands', () => {
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
-            {
-              "href": "/_nuxt/components/SharedComponent.vue?vue&type=style&index=0&scoped=3ee84738&lang.css",
-              "key": "island-link",
-              "rel": "stylesheet",
-            },
             {
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "key": "island-link",
