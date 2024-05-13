@@ -236,7 +236,8 @@ export default defineUntypedSchema({
    *
    * Nuxt tries to resolve each item in the modules array using node require path
    * (in `node_modules`) and then will be resolved from project `srcDir` if `~` alias is used.
-   * @note Modules are executed sequentially so the order is important.
+   * @note Modules are executed sequentially so the order is important. First, the modules defined in `nuxt.config.ts` are loaded. Then, modules found in the `modules/`
+   * directory are executed, and they load in alphabetical order.
    * @example
    * ```js
    * modules: [
