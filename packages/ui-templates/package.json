@@ -22,7 +22,7 @@
     "@types/html-minifier": "4.0.5",
     "@unocss/reset": "0.60.2",
     "critters": "0.0.22",
-    "execa": "9.0.2",
+    "execa": "9.1.0",
     "globby": "14.0.1",
     "html-minifier": "4.0.0",
     "jiti": "1.21.0",
