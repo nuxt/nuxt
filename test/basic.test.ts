@@ -22,7 +22,6 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
-    future: { compatibilityVersion: isV4 ? 4 : 3 },
     builder: isWebpack ? 'webpack' : 'vite',
     buildDir: process.env.NITRO_BUILD_DIR,
     nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
