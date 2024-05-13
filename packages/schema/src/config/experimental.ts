@@ -387,11 +387,7 @@ export default defineUntypedSchema({
      * })
      * ```
      */
-    sharedPrerenderData: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-      },
-    },
+    sharedPrerenderData: false,
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
