@@ -58,7 +58,14 @@ describe('server api', () => {
 
 describe('route rules', () => {
   it('should enable spa mode', async () => {
-    const { script, attrs } = parseData(await $fetch('/route-rules/spa'))
+    const headHtml = await $fetch('/route-rules/spa')
+
+    // SPA should render appHead tags
+    expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
+    expect(headHtml).toContain('<meta charset="utf-8">')
+    expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
+
+    const { script, attrs } = parseData(headHtml)
     expect(script.serverRendered).toEqual(false)
     if (isRenderingJson) {
       expect(attrs['data-ssr']).toEqual('false')
@@ -877,7 +884,7 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
-  it('SPA should render appHead tags', async () => {
+  it.skipIf(isV4)('SPA should render appHead tags', async () => {
     const headHtml = await $fetch('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
 
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
