@@ -136,7 +136,7 @@ export default defineUntypedSchema({
     /**
      * Tree shakes contents of client-only components from server bundle.
      * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
-     * @deprecated This feature will be removed in Nuxt v4.
+     * @deprecated This option will no longer be configurable in Nuxt v4
      */
     treeshakeClientOnly: {
       async $resolve (val, get) {
@@ -256,7 +256,7 @@ export default defineUntypedSchema({
     /**
      * Config schema support
      * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
-     * @deprecated This feature will be removed in Nuxt v4.
+     * @deprecated This option will no longer be configurable in Nuxt v4
      */
     configSchema: {
       async $resolve (val, get) {
