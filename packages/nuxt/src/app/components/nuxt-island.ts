@@ -278,7 +278,6 @@ export default defineComponent({
                   teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
                     default: () => [createStaticVNode(replaced, 1)],
                   }))
-                  }
                 }
               } else if (canLoadClientComponent.value && payloads.components) {
                 for (const id in payloads.components) {
