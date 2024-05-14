@@ -3,6 +3,6 @@ export default defineNuxtConfig({
     function (_options, nuxt) {
       // @ts-expect-error not valid nuxt option
       nuxt.options.__installed_layer = true
-    }
+    },
   ],
 })
