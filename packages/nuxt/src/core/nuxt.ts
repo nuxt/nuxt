@@ -63,6 +63,11 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
+const keyDependencies = [
+  '@nuxt/kit',
+  '@nuxt/schema'
+]
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
@@ -605,6 +610,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
+  await Promise.all(keyDependencies.map((dependency) => checkDependencyVersion(dependency, nuxt._version)))
+
   // We register hooks layer-by-layer so any overrides need to be registered separately
   if (opts.overrides?.hooks) {
     nuxt.hooks.addHooks(opts.overrides.hooks)
@@ -619,6 +626,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   return nuxt
+}
+
+async function checkDependencyVersion(name: string, nuxtVersion: string): Promise<void> {
+  const path = await resolvePath(name).catch(() => null)
+
+  if (!path) return
+  const { version } = await readPackageJSON(path)
+
+  if (version !== nuxtVersion) {
+    console.error(`Version mismatch for ${name} and nuxt: expected ${nuxtVersion} (nuxt) but got ${version}`)
+  }
 }
 
 const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i
