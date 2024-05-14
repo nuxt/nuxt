@@ -155,7 +155,7 @@ function isBinding (attr: string): boolean {
 function getPropsToString (bindings: Record<string, string>): string {
   const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  let content = []
+  let content: string | string[] = []
   for (const b in bindings) {
     if (b && (b !== '_bind' && b !== 'v-for')) {
       const value = bindings[b]
