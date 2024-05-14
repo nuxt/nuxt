@@ -18,7 +18,7 @@ function compareDirByPathLength ({ path: pathA }: { path: string }, { path: path
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
 }
 
-const DEFAULT_COMPONENTS_DIRS_RE = /\/components(\/global|\/islands)?$/
+const DEFAULT_COMPONENTS_DIRS_RE = /\/components\/(?:global|islands)?$/
 
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 

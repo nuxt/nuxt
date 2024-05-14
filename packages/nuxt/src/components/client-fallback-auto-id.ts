@@ -10,7 +10,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
   rootDir: string
 }
-const CLIENT_FALLBACK_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/
+const CLIENT_FALLBACK_RE = /<(?:NuxtClientFallback|nuxt-client-fallback)(?: [^>]*)?>/
 const CLIENT_FALLBACK_GLOBAL_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/g
 export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []

@@ -58,7 +58,7 @@ export const RenderPlugin = () => {
         }
 
         // Inline our scripts
-        const scriptSources = Array.from(html.matchAll(/<script[^>]*src="(.*)"[^>]*>[\s\S]*?<\/script>/g))
+        const scriptSources = Array.from(html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g))
           .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
 
         for (const [scriptBlock, src] of scriptSources) {
@@ -98,8 +98,8 @@ export const RenderPlugin = () => {
         ].join('\n')
 
         const templateContent = html
-          .match(/<body.*?>([\s\S]*)<\/body>/)?.[0]
-          .replace(/(?<=<|<\/)body/g, 'div')
+          .match(/<body[^>]*>([\s\S]*)<\/body>/)?.[0]
+          .replace(/(?<=<\/|<)body/g, 'div')
           .replace(/messages\./g, '')
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
@@ -109,7 +109,7 @@ export const RenderPlugin = () => {
           .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
-        const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
+        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1].replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
