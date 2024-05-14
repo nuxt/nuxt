@@ -71,7 +71,7 @@ ${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then
           }
         } else if (mode === 'client') {
           return {
-            code: `import __component from ${JSON.stringify(bare)}
+            code: `${genImport(bare, [{ name: componentExport, as: '__component' }])}
 import { createClientOnly } from "#app/components/client-only"
 ${exportWording} createClientOnly(__component)`,
             map: null
