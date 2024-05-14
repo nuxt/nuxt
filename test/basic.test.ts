@@ -600,7 +600,7 @@ describe('nuxt composables', () => {
     const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
     expect(id1).toBeTruthy()
     const matches = [
-      html.match(/<script[^>]*>\(\(\)=>{console.log\(window\)}\)\(\)<\/script>/),
+      html.match(/<script[^>]*>\(\(\)=>\{console.log\(window\)\}\)\(\)<\/script>/),
       html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`)),
       html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`)),
     ]
@@ -1911,7 +1911,7 @@ describe('public directories', () => {
 describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
     }
@@ -1920,11 +1920,11 @@ describe.skipIf(isDev())('dynamic paths', () => {
   // webpack injects CSS differently
   it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
-    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
+    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
     expect(cssURL).toBeDefined()
     const css: string = await $fetch(cssURL!)
-    const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
+    const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.'))
     expect(imageUrls).toMatchInlineSnapshot(`
         [
           "./logo.svg",
@@ -1944,7 +1944,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('/foo/_other/') ||
@@ -1965,7 +1965,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('./_nuxt/') ||
@@ -1999,7 +1999,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('https://example.com/_cdn/') ||
@@ -2198,7 +2198,7 @@ describe('component islands', () => {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
         link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-        link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
+        link.key = link.key.replace(/-[a-z0-9]+$/i, '')
       }
       result.head.link.sort((a, b) => b.href.localeCompare(a.href))
     }
@@ -2580,7 +2580,7 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
       style: result.head.style.map(s => ({
         ...s,
         innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
-        key: s.key.replace(/-[a-zA-Z0-9]+$/, ''),
+        key: s.key.replace(/-[a-z0-9]+$/i, ''),
       })),
     },
   }

@@ -94,7 +94,7 @@ function applyEnv (
   return obj
 }
 
-const envExpandRx = /{{(.*?)}}/g
+const envExpandRx = /\{\{(.*?)\}\}/g
 
 function _expandFromEnv (value: string, env: Record<string, any> = process.env) {
   return value.replace(envExpandRx, (match, key) => {
