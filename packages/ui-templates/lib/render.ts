@@ -79,10 +79,10 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
-        const chunks = html.split(/\{{2,3}\s*[^{}]+\s*\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let templateString = chunks.shift()
-        for (const expression of html.matchAll(/\{{2,3}(\s*[^{}]+\s*)\}{2,3}/g)) {
+        for (const expression of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
           templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
         }
         if (chunks.length > 0) {
@@ -104,22 +104,22 @@ export const RenderPlugin = () => {
           .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
 
-          .replace(/<([^>]+) ([a-z]+)="([^"]*)({{\s*(\w+?)\s*}})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
-          .replace(/>{{\s*(\w+?)\s*}}<\/[\w-]*>/g, ' v-text="$1" />')
-          .replace(/>{{{\s*(\w+?)\s*}}}<\/[\w-]*>/g, ' v-html="$1" />')
+          .replace(/<([^>]+) ([a-z]+)="([^"]*)(\{\{\s*(\w+)\s*\}\})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
+          .replace(/>\{\{\s*(\w+)\s*\}\}<\/[\w-]*>/g, ' v-text="$1" />')
+          .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
-        const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/{{([\s\S]+?)}}/g, (r) => {
+        const title = html.match(/<title.*?>([\s\S]*)<\/title>/)?.[1].replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
-        const globalStyles = styleContent.replace(/(\.[^{\d][^{]*?\{[^}]*?\})+.?/g, (r) => {
+        const globalStyles = styleContent.replace(/(\.[^{\d][^{]*\{[^}]*\})+.?/g, (r) => {
           const lastChar = r[r.length - 1]
           if (lastChar && !['}', '.', '@', '*', ':'].includes(lastChar)) {
             return ';' + lastChar
           }
           return lastChar
-        }).replace(/@media[^{]*?\{\}/g, '')
+        }).replace(/@media[^{]*\{\}/g, '')
         const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
           .map(block => block[1])
           .filter(i => !i.includes('const t=document.createElement("link")'))

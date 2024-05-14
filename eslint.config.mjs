@@ -219,7 +219,7 @@ export default createConfigForNuxt({
     },
 
     // @ts-ignore types misaligned
-    regex.configs['flat/recommended']
+    regex.configs['flat/recommended'],
   )
 
   // Generate type definitions for the eslint config
