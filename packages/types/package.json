@@ -26,7 +26,7 @@
     "@types/pug": "2.0.10",
     "@types/serve-static": "1.15.7",
     "@types/terser-webpack-plugin": "4.2.1",
-    "@types/webpack": "^4.41.38",
+    "@types/webpack": "^5.28.5",
     "@types/webpack-bundle-analyzer": "3.9.5",
     "@types/webpack-hot-middleware": "2.25.5"
   },
