@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Component } from 'vue'
 import Helloworld from '../components/Helloworld.vue'
+
 const count = ref(0)
 
 const compTemplate = computed(() => `
@@ -9,37 +10,36 @@ const compTemplate = computed(() => `
     <div>This component template is in a computed refreshed on count</div>
     count: <span class="count">${count.value}</span>.
     I dont recommend you to do this for performance issue, prefer passing props for mutable data.
-</div>`
+</div>`,
 )
 
 const ComponentDefinedInSetup = computed(() => h({
-  template: compTemplate.value
+  template: compTemplate.value,
 }) as Component)
 
 const { data, pending } = await useAsyncData('templates', async () => {
   const [interactiveComponent, templateString] = await Promise.all([
     $fetch('/api/full-component'),
-    $fetch('/api/template')
+    $fetch('/api/template'),
   ])
 
   return {
     interactiveComponent,
-    templateString
+    templateString,
   }
 }, {})
 
 const Interactive = h({
   template: data.value?.interactiveComponent.template,
   setup (props) {
-    // eslint-disable-next-line no-new-func
     return new Function(
       'ref',
       'computed',
       'props',
-      data.value?.interactiveComponent.setup ?? ''
+      data.value?.interactiveComponent.setup ?? '',
     )(ref, computed, props)
   },
-  props: data.value?.interactiveComponent.props
+  props: data.value?.interactiveComponent.props,
 }) as Component
 </script>
 

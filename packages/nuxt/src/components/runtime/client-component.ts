@@ -11,9 +11,9 @@ export const createClientPage = (loader: AsyncComponentLoader) => {
     setup (_, { attrs }) {
       return () => h('div', [
         h(ClientOnly, undefined, {
-          default: () => h(page, attrs)
-        })
+          default: () => h(page, attrs),
+        }),
       ])
-    }
+    },
   })
 }

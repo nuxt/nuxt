@@ -2,8 +2,8 @@
 const islandProps = ref({
   bool: true,
   number: 100,
-  str: 'helo world',
-  obj: { json: 'works' }
+  str: 'hello world',
+  obj: { json: 'works' },
 })
 
 const showIslandSlot = ref(false)

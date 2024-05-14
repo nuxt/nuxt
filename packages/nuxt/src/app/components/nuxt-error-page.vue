@@ -6,14 +6,14 @@
 import { defineAsyncComponent } from 'vue'
 
 const props = defineProps({
-  error: Object
+  error: Object,
 })
 
 // Deliberately prevent reactive update when error is cleared
 const _error = props.error
 
 // TODO: extract to a separate utility
-let stacktrace = ''
+let stacktrace = []
 if (_error.stack) {
   const stackArray = _error.stack.split('\n').splice(1)
   for (const stk of stackArray) {
@@ -24,9 +24,9 @@ if (_error.stack) {
     const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
           text.includes('internal') ||
           text.includes('new Promise')
-    stacktrace += `<span class="stack${internal ? ' internal' : ''}">${text}</span>\n`
+    stacktrace.push(`<span class="stack${internal ? ' internal' : ''}">${text}</span>`)
   }
-  stacktrace = stacktrace.slice(0, -1)
+  stacktrace = stacktrace.join("\n")
 }
 
 // Error page props
@@ -38,10 +38,10 @@ const description = _error.message || _error.toString()
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 
 // TODO: Investigate side-effect issue with imports
-const _Error404 = defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-404.vue').then(r => r.default || r))
+const _Error404 = defineAsyncComponent(() => import('./error-404.vue').then(r => r.default || r))
 const _Error = import.meta.dev
-  ? defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-dev.vue').then(r => r.default || r))
-  : defineAsyncComponent(() => import('@nuxt/ui-templates/templates/error-500.vue').then(r => r.default || r))
+  ? defineAsyncComponent(() => import('./error-dev.vue').then(r => r.default || r))
+  : defineAsyncComponent(() => import('./error-500.vue').then(r => r.default || r))
 
 const ErrorTemplate = is404 ? _Error404 : _Error
 </script>

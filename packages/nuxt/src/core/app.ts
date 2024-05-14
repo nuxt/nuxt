@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils, tryResolveModule } from '@nuxt/kit'
+import { compileTemplate as _compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -16,9 +16,15 @@ export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp 
     extensions: nuxt.options.extensions,
     plugins: [],
     components: [],
-    templates: []
+    templates: [],
   } as unknown as NuxtApp) as NuxtApp
 }
+
+const postTemplates = [
+  defaultTemplates.clientPluginTemplate.filename,
+  defaultTemplates.serverPluginTemplate.filename,
+  defaultTemplates.pluginsDeclaration.filename,
+]
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
   // Resolve app
@@ -33,57 +39,73 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
 
+  // compile plugins first as they are needed within the nuxt.vfs
+  // in order to annotate templated plugins
+  const filteredTemplates: Record<'pre' | 'post', Array<ResolvedNuxtTemplate<any>>> = {
+    pre: [],
+    post: [],
+  }
+
+  for (const template of app.templates as Array<ResolvedNuxtTemplate<any>>) {
+    if (options.filter && !options.filter(template)) { continue }
+    const key = template.filename && postTemplates.includes(template.filename) ? 'post' : 'pre'
+    filteredTemplates[key].push(template)
+  }
+
   // Compile templates into vfs
   // TODO: remove utils in v4
   const templateContext = { utils: templateUtils, nuxt, app }
-  const filteredTemplates = (app.templates as Array<ResolvedNuxtTemplate<any>>)
-    .filter(template => !options.filter || options.filter(template))
+  const compileTemplate = nuxt.options.experimental.compileTemplate ? _compileTemplate : futureCompileTemplate
 
   const writes: Array<() => void> = []
-  await Promise.allSettled(filteredTemplates
-    .map(async (template) => {
-      const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
-      const mark = performance.mark(fullPath)
-      const oldContents = nuxt.vfs[fullPath]
-      const contents = await compileTemplate(template, templateContext).catch((e) => {
-        logger.error(`Could not compile template \`${template.filename}\`.`)
-        logger.error(e)
-        throw e
+  const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
+
+  async function processTemplate (template: ResolvedNuxtTemplate) {
+    const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
+    const mark = performance.mark(fullPath)
+    const oldContents = nuxt.vfs[fullPath]
+    const contents = await compileTemplate(template, templateContext).catch((e) => {
+      logger.error(`Could not compile template \`${template.filename}\`.`)
+      logger.error(e)
+      throw e
+    })
+
+    template.modified = oldContents !== contents
+    if (template.modified) {
+      nuxt.vfs[fullPath] = contents
+
+      const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
+      nuxt.vfs[aliasPath] = contents
+
+      // In case a non-normalized absolute path is called for on Windows
+      if (process.platform === 'win32') {
+        nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+      }
+
+      changedTemplates.push(template)
+    }
+
+    const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
+    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+
+    if (nuxt.options.debug || setupTime > 500) {
+      logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
+    }
+
+    if (template.modified && template.write) {
+      writes.push(() => {
+        mkdirSync(dirname(fullPath), { recursive: true })
+        writeFileSync(fullPath, contents, 'utf8')
       })
+    }
+  }
 
-      template.modified = oldContents !== contents
-      if (template.modified) {
-        nuxt.vfs[fullPath] = contents
-
-        const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
-        nuxt.vfs[aliasPath] = contents
-
-        // In case a non-normalized absolute path is called for on Windows
-        if (process.platform === 'win32') {
-          nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
-        }
-      }
-
-      const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
-      const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
-
-      if (nuxt.options.debug || setupTime > 500) {
-        logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
-      }
-
-      if (template.modified && template.write) {
-        writes.push(() => {
-          mkdirSync(dirname(fullPath), { recursive: true })
-          writeFileSync(fullPath, contents, 'utf8')
-        })
-      }
-    }))
+  await Promise.allSettled(filteredTemplates.pre.map(processTemplate))
+  await Promise.allSettled(filteredTemplates.post.map(processTemplate))
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
   for (const write of writes) { write() }
-
-  const changedTemplates = filteredTemplates.filter(t => t.modified)
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
@@ -91,18 +113,36 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 }
 
 /** @internal */
+async function futureCompileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
+  delete ctx.utils
+
+  if (template.src) {
+    try {
+      return await fsp.readFile(template.src, 'utf-8')
+    } catch (err) {
+      logger.error(`[nuxt] Error reading template from \`${template.src}\``)
+      throw err
+    }
+  }
+  if (template.getContents) {
+    return template.getContents({ ...ctx, options: template.options! })
+  }
+
+  throw new Error('[nuxt] Invalid template. Templates must have either `src` or `getContents`: ' + JSON.stringify(template))
+}
+
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
   if (!app.mainComponent) {
     app.mainComponent = await findPath(
       nuxt.options._layers.flatMap(layer => [
         join(layer.config.srcDir, 'App'),
-        join(layer.config.srcDir, 'app')
-      ])
+        join(layer.config.srcDir, 'app'),
+      ]),
     )
   }
   if (!app.mainComponent) {
-    app.mainComponent = (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir)) ?? '@nuxt/ui-templates/templates/welcome.vue'
+    app.mainComponent = resolve(nuxt.options.appDir, 'components/welcome.vue')
   }
 
   // Resolve root component
@@ -113,7 +153,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve error component
   if (!app.errorComponent) {
     app.errorComponent = (await findPath(
-      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error'))
+      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
     )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
   }
 
@@ -139,7 +179,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = []
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
-    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
+    const middlewareFiles = await resolveFiles(config.srcDir, [
+      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
+      ...nuxt.options.future.compatibilityVersion === 4
+        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
+        : [],
+    ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
       if (!name) {
@@ -160,9 +205,9 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
           `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}` // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
         ])
-        : []
+        : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
 
@@ -200,7 +245,7 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
     if (!item[key]) { return item }
     return {
       ...item,
-      [key]: await resolvePath(resolveAlias(item[key]))
+      [key]: await resolvePath(resolveAlias(item[key])),
     }
   }))
 }
@@ -214,7 +259,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
-        ...plugin
+        ...plugin,
       })
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)

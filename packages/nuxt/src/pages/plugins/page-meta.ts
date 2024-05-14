@@ -54,7 +54,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
             code: s.toString(),
             map: options.sourcemap
               ? s.generateMap({ hires: true })
-              : undefined
+              : undefined,
           }
         }
       }
@@ -106,7 +106,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         for (const name of [
           parsed.defaultImport,
           ...Object.values(parsed.namedImports || {}),
-          parsed.namespacedImport
+          parsed.namespacedImport,
         ].filter(Boolean) as string[]) {
           importMap.set(name, i)
         }
@@ -114,7 +114,7 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
       walk(this.parse(code, {
         sourceType: 'module',
-        ecmaVersion: 'latest'
+        ecmaVersion: 'latest',
       }) as Node, {
         enter (_node) {
           if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
@@ -146,11 +146,11 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
                 const node = _node as Identifier & { start: number, end: number }
                 addImport(node.name)
               }
-            }
+            },
           })
 
           s.overwrite(0, code.length, contents)
-        }
+        },
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
@@ -168,9 +168,9 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
           if (index !== -1) {
             modules.splice(index, 1)
           }
-        }
-      }
-    }
+        },
+      },
+    },
   }
 })
 

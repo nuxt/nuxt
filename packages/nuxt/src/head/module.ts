@@ -1,12 +1,13 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import type { NuxtOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
 
-export default defineNuxtModule({
+export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
-    name: 'meta'
+    name: 'meta',
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
@@ -24,14 +25,14 @@ export default defineNuxtModule({
         // built-in that we do not expect the user to override
         priority: 10,
         // kebab case version of these tags is not valid
-        kebabName: componentName
+        kebabName: componentName,
       })
     }
 
     // allow @unhead/vue server composables to be tree-shaken from the client bundle
     if (!nuxt.options.dev) {
       nuxt.options.optimization.treeShake.composables.client['@unhead/vue'] = [
-        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe'
+        'useServerHead', 'useServerSeoMeta', 'useServerHeadSafe',
       ]
     }
 
@@ -45,8 +46,8 @@ export default defineNuxtModule({
         'useHeadSafe',
         'useServerHead',
         'useServerSeoMeta',
-        'useServerHeadSafe'
-      ]
+        'useServerHeadSafe',
+      ],
     })
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
@@ -65,15 +66,25 @@ export default defineNuxtModule({
         }
         return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
 export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
-      }
+      },
+    })
+
+    addTemplate({
+      filename: 'unhead.config.mjs',
+      getContents () {
+        return [
+          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
+        ].join('\n')
+      },
     })
 
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
       config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins']
+      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config']
     })
 
     // Add library-specific plugin
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead') })
-  }
+  },
 })

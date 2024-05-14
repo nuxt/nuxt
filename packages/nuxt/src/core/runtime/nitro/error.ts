@@ -11,11 +11,11 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
-  let errorStr = ''
-  let consoleStr = ''
+  let errorStr = []
+  let consoleStr = []
   for (const i of stack) {
-    errorStr += `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>\n`
-    consoleStr += '  ' + i.text + '  \n'
+    errorStr.push(`<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`)
+    consoleStr.push('  ' + i.text)
   }
   // Create an error object
   const errorObject = {
@@ -24,19 +24,22 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     statusMessage,
     message,
     stack: import.meta.dev && statusCode !== 404
-      ? `<pre>${errorStr.slice(0, -1)}</pre>`
+      ? `<pre>${errorStr.join('\n')}</pre>`
       : '',
     // TODO: check and validate error.data for serialisation into query
-    data: error.data as any
+    data: error.data as any,
   } satisfies Partial<NuxtPayload['error']> & { url: string }
 
   // Console output
   if (error.unhandled || error.fatal) {
-    const tags = '[nuxt] [request error]' +
-        (error.unhandled ? ' [unhandled]' : '') +
-        (error.fatal ? ' [fatal]' : '') +
-        (Number(errorObject.statusCode) !== 200 ? ` [${errorObject.statusCode}]` : '')
-    console.error(tags, errorObject.message + '\n' + consoleStr.slice(0, -3))
+    const tags = [
+      '[nuxt]',
+      '[request error]',
+      error.unhandled && '[unhandled]',
+      error.fatal && '[fatal]',
+      Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
+    ].filter(Boolean).join(' ')
+    console.error(tags, errorObject.message + '\n' + consoleStr.join('  \n'))
   }
 
   if (event.handled) { return }
@@ -63,17 +66,13 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       withQuery(joinURL(useRuntimeConfig(event).app.baseURL, '/__nuxt_error'), errorObject),
       {
         headers: { ...reqHeaders, 'x-nuxt-error': 'true' },
-        redirect: 'manual'
-      }
+        redirect: 'manual',
+      },
     ).catch(() => null)
 
   // Fallback to static rendered error page
   if (!res) {
-    const { template } = import.meta.dev
-      // @ts-expect-error TODO: add legacy type support for subpath imports
-      ? await import('@nuxt/ui-templates/templates/error-dev.mjs')
-      // @ts-expect-error TODO: add legacy type support for subpath imports
-      : await import('@nuxt/ui-templates/templates/error-500.mjs')
+    const { template } = import.meta.dev ? await import('./error-dev') : await import('./error-500')
     if (import.meta.dev) {
       // TODO: Support `message` in template
       (errorObject as any).description = errorObject.message

@@ -1,5 +1,5 @@
 import { describe, expectTypeOf, it } from 'vitest'
-import type { Ref } from 'vue'
+import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
@@ -8,7 +8,7 @@ import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
-import { NuxtLayout, NuxtLink, NuxtPage, WithTypes } from '#components'
+import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
 interface TestResponse { message: string }
@@ -114,8 +114,8 @@ describe('middleware', () => {
         '/nonexistent': { appMiddleware: 'nonexistent' },
         // @ts-expect-error ignore global middleware
         '/global': { appMiddleware: 'global' },
-        '/named': { appMiddleware: 'named' }
-      }
+        '/named': { appMiddleware: 'named' },
+      },
     })
   })
   it('handles adding middleware', () => {
@@ -139,11 +139,11 @@ describe('middleware', () => {
         if (0) {
           return createError({
             statusCode: 404,
-            statusMessage: 'resource-type-not-found'
+            statusMessage: 'resource-type-not-found',
           })
         }
         return true
-      }
+      },
     })
   })
 })
@@ -257,10 +257,10 @@ describe('plugins', () => {
   it('dependsOn is strongly typed', () => {
     defineNuxtPlugin({
       // @ts-expect-error invalid plugin name
-      dependsOn: ['something']
+      dependsOn: ['something'],
     })
     defineNuxtPlugin({
-      dependsOn: ['nuxt:router']
+      dependsOn: ['nuxt:router'],
     })
   })
 })
@@ -287,9 +287,9 @@ describe('runtimeConfig', () => {
         public: {
           // @ts-expect-error this should be a number
           testConfig: 'test',
-          ids: [1, 2]
-        }
-      }
+          ids: [1, 2],
+        },
+      },
     })
     expectTypeOf(val.runtimeConfig!.public!.testConfig).toEqualTypeOf<undefined | RuntimeValue<number, 'You can override this value at runtime with NUXT_PUBLIC_TEST_CONFIG'>>()
     expectTypeOf(val.runtimeConfig!.privateConfig).toEqualTypeOf<undefined | RuntimeValue<string, 'You can override this value at runtime with NUXT_PRIVATE_CONFIG'>>()
@@ -322,9 +322,9 @@ describe('head', () => {
       app: {
         head: {
           meta: [{ key: 'key', name: 'description', content: 'some description ' }],
-          titleTemplate: 'test %s'
-        }
-      }
+          titleTemplate: 'test %s',
+        },
+      },
     })
   })
   it('types useHead', () => {
@@ -333,11 +333,11 @@ describe('head', () => {
       link: computed(() => []),
       meta: [
         { key: 'key', name: 'description', content: 'some description ' },
-        () => ({ key: 'key', name: 'description', content: 'some description ' })
+        () => ({ key: 'key', name: 'description', content: 'some description ' }),
       ],
       titleTemplate: (titleChunk) => {
         return titleChunk ? `${titleChunk} - Site Title` : 'Site Title'
-      }
+      },
     })
   })
   it('types head for defineNuxtComponent', () => {
@@ -345,18 +345,18 @@ describe('head', () => {
       head (nuxtApp) {
         expectTypeOf(nuxtApp).not.toBeAny()
         return {
-          title: 'Site Title'
+          title: 'Site Title',
         }
-      }
+      },
     })
 
     defineNuxtComponent({
       // @ts-expect-error wrong return type for head function
       head () {
         return {
-          test: true
+          test: true,
         }
-      }
+      },
     })
   })
 })
@@ -371,6 +371,9 @@ describe('components', () => {
     h(WithTypes, { aProp: '40' })
 
     // TODO: assert typed slots, exposed, generics, etc.
+  })
+  it('include fallback slot in server components', () => {
+    expectTypeOf(ServerComponent.slots).toEqualTypeOf<SlotsType<{ fallback: { error: unknown } }> | undefined>()
   })
 })
 
@@ -434,7 +437,7 @@ describe('composables', () => {
       async transform (data) {
         await Promise.resolve()
         return data.foo
-      }
+      },
     })
     expectTypeOf(data).toEqualTypeOf<Ref<'bar' | null>>()
   })
@@ -478,10 +481,10 @@ describe('composables', () => {
 
   it('uses types compatible between useRequestHeaders and useFetch', () => {
     useFetch('/api/hey', {
-      headers: useRequestHeaders()
+      headers: useRequestHeaders(),
     })
     useFetch('/api/hey', {
-      headers: useRequestHeaders(['test'])
+      headers: useRequestHeaders(['test']),
     })
     const { test } = useRequestHeaders(['test'])
     expectTypeOf(test).toEqualTypeOf<string | undefined>()
@@ -490,11 +493,11 @@ describe('composables', () => {
   it('allows passing reactive values in useFetch', () => {
     useFetch('/api/hey', {
       headers: {
-        key: ref('test')
+        key: ref('test'),
       },
       query: {
-        param: computed(() => 'thing')
-      }
+        param: computed(() => 'thing'),
+      },
     })
   })
 
@@ -512,6 +515,20 @@ describe('composables', () => {
     expectTypeOf(notTypedData.value!.content).toEqualTypeOf<string[]>()
     expectTypeOf(notTypedData.value!.untypedKey).toEqualTypeOf<any>()
   })
+
+  it('correctly types returns when using with getCachedData', () => {
+    expectTypeOf(useAsyncData('test', () => Promise.resolve({ foo: 1 }), {
+      getCachedData: key => useNuxtApp().payload.data[key],
+    }).data).toEqualTypeOf<Ref<{ foo: number } | null>>()
+    useAsyncData('test', () => Promise.resolve({ foo: 1 }), {
+      // @ts-expect-error cached data should return the same as value of fetcher
+      getCachedData: () => ({ bar: 2 }),
+    })
+    useAsyncData<{ foo: number }, unknown, { foo: number }>('test', () => Promise.resolve({ foo: 1 }), {
+      // @ts-expect-error cached data should return the same as asserted type of `useAsyncData`
+      getCachedData: () => ({ bar: 2 }),
+    })
+  })
 })
 
 describe('app config', () => {
@@ -525,7 +542,7 @@ describe('app config', () => {
       }
       userConfig: 123 | 456
       someThing?: {
-        value?: string | false,
+        value?: string | false
       }
       [key: string]: unknown
     }

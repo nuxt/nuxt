@@ -2,9 +2,8 @@ import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -85,8 +84,7 @@ const isProcessingMiddleware = () => {
       return true
     }
   } catch {
-    // Within an async middleware
-    return true
+    return false
   }
   return false
 }
@@ -99,10 +97,10 @@ export type OpenWindowFeatures = {
   popup?: boolean
   noopener?: boolean
   noreferrer?: boolean
-} & XOR<{width?: number}, {innerWidth?: number}>
-  & XOR<{height?: number}, {innerHeight?: number}>
-  & XOR<{left?: number}, {screenX?: number}>
-  & XOR<{top?: number}, {screenY?: number}>
+} & XOR<{ width?: number }, { innerWidth?: number }>
+  & XOR<{ height?: number }, { innerHeight?: number }>
+  & XOR<{ left?: number }, { screenX?: number }>
+  & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
   target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
@@ -125,19 +123,18 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
 
   // Early open handler
-  if (options?.open) {
-    if (import.meta.client) {
-      const { target = '_blank', windowFeatures = {} } = options.open
+  if (import.meta.client && options?.open) {
+    const { target = '_blank', windowFeatures = {} } = options.open
 
-      let features = ''
+      let features = []
       for (const feature in windowFeatures) {
         const value = windowFeatures[feature as keyof typeof windowFeatures]
         if (value !== undefined) {
-          features += `${feature.toLowerCase()}=${value}, `
+          features.push(`${feature.toLowerCase()}=${value}`)
         }
       }
 
-      open(toPath, target, features.slice(0, -2))
+      open(toPath, target, features.join(', '))
       return Promise.resolve()
     }
   }
@@ -147,7 +144,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -176,7 +173,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location }
+          // do not encode as this would break some modules and some environments
+          headers: { location },
         }
         return response
       }

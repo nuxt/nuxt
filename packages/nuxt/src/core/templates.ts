@@ -29,35 +29,29 @@ export const vueShim: NuxtTemplate = {
 // TODO: Use an alias
 export const appComponentTemplate: NuxtTemplate = {
   filename: 'app-component.mjs',
-  getContents: ctx => genExport(ctx.app.mainComponent!, ['default'])
+  getContents: ctx => genExport(ctx.app.mainComponent!, ['default']),
 }
 // TODO: Use an alias
 export const rootComponentTemplate: NuxtTemplate = {
   filename: 'root-component.mjs',
   // TODO: fix upstream in vite - this ensures that vite generates a module graph for islands
   // but should not be necessary (and has a warmup performance cost). See https://github.com/nuxt/nuxt/pull/24584.
-  getContents: ctx => (ctx.nuxt.options.dev ? "import '#build/components.islands.mjs';\n" : '') + genExport(ctx.app.rootComponent!, ['default'])
+  getContents: ctx => (ctx.nuxt.options.dev ? 'import \'#build/components.islands.mjs\';\n' : '') + genExport(ctx.app.rootComponent!, ['default']),
 }
 // TODO: Use an alias
 export const errorComponentTemplate: NuxtTemplate = {
   filename: 'error-component.mjs',
-  getContents: ctx => genExport(ctx.app.errorComponent!, ['default'])
+  getContents: ctx => genExport(ctx.app.errorComponent!, ['default']),
 }
 // TODO: Use an alias
 export const testComponentWrapperTemplate: NuxtTemplate = {
   filename: 'test-component-wrapper.mjs',
-  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default'])
+  getContents: ctx => genExport(resolve(ctx.nuxt.options.appDir, 'components/test-component-wrapper'), ['default']),
 }
 
 export const cssTemplate: NuxtTemplate = {
   filename: 'css.mjs',
-  getContents: (ctx) => {
-    let cssList = ''
-    for (const i of ctx.nuxt.options.css) {
-      cssList += genImport(i) + '\n'
-    }
-    return cssList.slice(0, -1)
-  }
+  getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
@@ -66,14 +60,15 @@ export const clientPluginTemplate: NuxtTemplate = {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
-    let imports: string = ''
+    let imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
-      imports += genImport(plugin.src, variable) + '\n'
+      imports.push(genImport(plugin.src, variable))
     }
-    return imports + `export default ${genArrayFromRaw(exports)}`
+    return `${imports.join('\n')}
+export default ${genArrayFromRaw(exports)}`
   }
 }
 
@@ -83,14 +78,15 @@ export const serverPluginTemplate: NuxtTemplate = {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
-    let imports: string = ''
+    let imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
       exports.push(variable)
-      imports += genImport(plugin.src, variable) + '\n'
+      imports.push(genImport(plugin.src, variable))
     }
-    return imports + `export default ${genArrayFromRaw(exports)}`
+    return `${imports.join('\n')}
+export default ${genArrayFromRaw(exports)}`
   }
 }
 
@@ -147,7 +143,7 @@ declare module 'vue' {
 
 export { }
 `
-  }
+  },
 }
 
 const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
@@ -156,16 +152,16 @@ export const schemaTemplate: NuxtTemplate = {
   getContents: async ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    let moduleInfoStr = ''
-    let modulesStr = ''
+    let moduleInfoStr: string[] = []
+    let modulesStr: string[] = []
     for (const m of nuxt.options._installedModules) {
       const meta = m.meta
       const impName = m.entryPath || meta?.name
       if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
         const configKey = genString(meta.configKey)
         const importName = getImportName(impName)
-        moduleInfoStr += ` [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>\n`
-        modulesStr += `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>] | `
+        moduleInfoStr.push(` [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`)
+        modulesStr.push(`[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`)
       }
     }
     const privateRuntimeConfig = Object.create(null)
@@ -175,11 +171,11 @@ export const schemaTemplate: NuxtTemplate = {
       }
     }
     return [
-      "import { NuxtModule, RuntimeConfig } from 'nuxt/schema'",
-      "declare module 'nuxt/schema' {",
+      'import { NuxtModule, RuntimeConfig } from \'nuxt/schema\'',
+      'declare module \'nuxt/schema\' {',
       '  interface NuxtConfig {',
-      moduleInfoStr.slice(0, -1),
-      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.slice(0, -3)})[],` : '',
+      moduleInfoStr.join('\n'),
+      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],` : '',
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
@@ -187,7 +183,7 @@ export const schemaTemplate: NuxtTemplate = {
           addExport: false,
           addDefaults: false,
           allowExtraKeys: false,
-          indentation: 2
+          indentation: 2,
         }),
       generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
@@ -195,16 +191,16 @@ export const schemaTemplate: NuxtTemplate = {
           addExport: false,
           addDefaults: false,
           allowExtraKeys: false,
-          indentation: 2
+          indentation: 2,
         }),
       '}',
       `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }
-      }`
+      }`,
     ].join('\n')
-  }
+  },
 }
 
 // Add layouts template
@@ -236,15 +232,15 @@ export const middlewareTemplate: NuxtTemplate = {
     }
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
     const globalMiddlewareObject = []
-    let globalMiddlewareImport = ''
+    let globalMiddlewareImport: string[] = []
     for (const mw of globalMiddleware) {
       const variableName = genSafeVariableName(mw.name)
       globalMiddlewareObject.push(variableName)
-      globalMiddlewareImport += genImport(mw.path, variableName) + '\n'
+      globalMiddlewareImport.push(genImport(mw.path, variableName))
     }
-    return globalMiddlewareImport +
-      `export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}\n` +
-      `export const namedMiddleware = ${namedMiddlewareObject}`
+    return `${globalMiddlewareImport.join('\n')}
+export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}
+export const namedMiddleware = ${namedMiddlewareObject}`
   }
 }
 
@@ -281,14 +277,14 @@ declare module 'nitropack' {
   }
 }
 `
-  }
+  },
 }
 
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
 export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
-`
+`,
 }
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {
@@ -324,7 +320,7 @@ declare module '@nuxt/schema' {
   interface AppConfig extends MergedAppConfig<ResolvedAppConfig, CustomAppConfig> { }
 }
 `
-  }
+  },
 }
 
 export const appConfigTemplate: NuxtTemplate = {
@@ -348,7 +344,7 @@ ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from $
 
 export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
 `
-  }
+  },
 }
 
 export const publicPathTemplate: NuxtTemplate = {
@@ -376,9 +372,9 @@ export const publicPathTemplate: NuxtTemplate = {
       'if (import.meta.client) {',
       '  globalThis.__buildAssetsURL = buildAssetsURL',
       '  globalThis.__publicAssetsURL = publicAssetsURL',
-      '}'
+      '}',
     ].filter(Boolean).join('\n')
-  }
+  },
 }
 
 export const dollarFetchTemplate: NuxtTemplate = {
@@ -401,17 +397,17 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const fetchDefaults = {
       ...ctx.nuxt.options.experimental.defaults.useFetch,
       baseURL: undefined,
-      headers: undefined
+      headers: undefined,
     }
     const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
       ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
-    let contents = ''
+    let contents: string[] = []
     for (const k in ctx.nuxt.options.app) {
-      contents += `export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k as keyof typeof ctx.nuxt.options.app])}\n\n`
+      contents.push(`export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k as keyof typeof ctx.nuxt.options.app])}`)
     }
-    return contents +
-      `export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n
+    return `${contents.join('\n\n')}\n\n
+export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n
 export const componentIslands = ${shouldEnableComponentIslands}\n\n
 export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}\n\n
 export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}\n\n

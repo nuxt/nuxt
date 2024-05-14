@@ -1,24 +1,31 @@
 import type { UseHeadInput } from '@unhead/vue'
-import type { LogObject } from 'consola'
 import type { NuxtApp, useNuxtApp } from '../nuxt'
-
-interface NuxtStaticBuildFlags {
-  browser: boolean
-  client: boolean
-  dev: boolean
-  server: boolean
-  test: boolean
-}
 
 declare global {
   namespace NodeJS {
-    interface Process extends NuxtStaticBuildFlags {}
+    interface Process {
+      /** @deprecated Use `import.meta.browser` instead. This may be removed in Nuxt v5 or a future major version. */
+      browser: boolean
+      /** @deprecated Use `import.meta.client` instead. This may be removed in Nuxt v5 or a future major version. */
+      client: boolean
+      /** @deprecated Use `import.meta.dev` instead. This may be removed in Nuxt v5 or a future major version. */
+      dev: boolean
+      /** @deprecated Use `import.meta.server` instead. This may be removed in Nuxt v5 or a future major version. */
+      server: boolean
+      /** @deprecated Use `import.meta.test` instead. This may be removed in Nuxt v5 or a future major version. */
+      test: boolean
+    }
   }
 
-  interface ImportMeta extends NuxtStaticBuildFlags {}
+  interface ImportMeta extends NuxtStaticBuildFlags {
+    browser: boolean
+    client: boolean
+    dev: boolean
+    server: boolean
+    test: boolean
+  }
 
   interface Window {
-    __NUXT_LOGS__?: LogObject[]
     __NUXT__?: Record<string, any>
     useNuxtApp?: typeof useNuxtApp
   }

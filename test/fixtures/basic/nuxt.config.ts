@@ -11,6 +11,7 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
+  future: { compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3 },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -22,47 +23,48 @@ export default defineNuxtConfig({
       meta: [
         { name: 'viewport', content: 'width=1024, initial-scale=1' },
         { charset: 'utf-8' },
-        { name: 'description', content: 'Nuxt Fixture' }
-      ]
+        { name: 'description', content: 'Nuxt Fixture' },
+      ],
     },
     keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage']
-    }
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
+    },
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
+  buildId: 'nuxt-app-basic',
   build: {
     transpile: [
       (ctx) => {
         if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
         return false
-      }
-    ]
+      },
+    ],
   },
   css: ['~/assets/global.css'],
   // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
   theme: './extends/bar',
   extends: [
-    './extends/node_modules/foo'
+    './extends/node_modules/foo',
   ],
   nitro: {
     publicAssets: [
       {
         dir: '../custom-public',
-        baseURL: '/custom'
-      }
+        baseURL: '/custom',
+      },
     ],
     esbuild: {
       options: {
         // in order to test bigint serialization
-        target: 'es2022'
-      }
+        target: 'es2022',
+      },
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true }
+      '/no-scripts': { experimentalNoScripts: true },
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
@@ -70,24 +72,24 @@ export default defineNuxtConfig({
         '/random/a',
         '/random/b',
         '/random/c',
-        '/prefetch/server-components'
-      ]
-    }
+        '/prefetch/server-components',
+      ],
+    },
   },
   optimization: {
     keyedComposables: [
       {
         name: 'useCustomKeyedComposable',
         source: '~/other-composables-folder/custom-keyed-composable',
-        argumentLength: 1
-      }
-    ]
+        argumentLength: 1,
+      },
+    ],
   },
   runtimeConfig: {
     public: {
       needsFallback: undefined,
-      testConfig: 123
-    }
+      testConfig: 123,
+    },
   },
   modules: [
     '~/modules/subpath',
@@ -105,7 +107,7 @@ export default defineNuxtConfig({
         },
         load (id) {
           if (id === 'virtual.css') { return ':root { --virtual: red }' }
-        }
+        },
       }))
       addBuildPlugin(plugin)
     },
@@ -113,7 +115,7 @@ export default defineNuxtConfig({
       nuxt.hook('pages:extend', (pages) => {
         pages.push({
           path: '/manual-redirect',
-          redirect: '/'
+          redirect: '/',
         })
       })
     },
@@ -127,8 +129,8 @@ export default defineNuxtConfig({
         meta: {
           ...page.meta,
           layout: undefined,
-          _layout: page.meta?.layout
-        }
+          _layout: page.meta?.layout,
+        },
       })
       nuxt.hook('pages:extend', (pages) => {
         const newPages = []
@@ -142,13 +144,13 @@ export default defineNuxtConfig({
       })
     },
     // To test falsy module values
-    undefined
+    undefined,
   ],
   vite: {
     logLevel: 'silent',
     build: {
-      assetsInlineLimit: 100 // keep SVG as assets URL
-    }
+      assetsInlineLimit: 100, // keep SVG as assets URL
+    },
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
@@ -156,7 +158,7 @@ export default defineNuxtConfig({
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
         const esbuildRules = config.module!.rules!.filter(
-          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader'
+          rule => typeof rule === 'object' && rule && 'loader' in rule && rule.loader === 'esbuild-loader',
         )
         for (const rule of esbuildRules) {
           if (typeof rule === 'object' && typeof rule.options === 'object') {
@@ -169,7 +171,7 @@ export default defineNuxtConfig({
       addComponent({
         name: 'CustomComponent',
         export: 'namedExport',
-        filePath: '~/other-components-folder/named-export'
+        filePath: '~/other-components-folder/named-export',
       })
     },
     'components:extend' (components) {
@@ -198,19 +200,19 @@ export default defineNuxtConfig({
             }
             next()
           })
-        }
+        },
       })
-    }
+    },
   },
   vue: {
     compilerOptions: {
       isCustomElement: (tag) => {
         return tag === 'custom-component'
-      }
-    }
+      },
+    },
   },
   features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue')
+    inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
     typedPages: true,
@@ -220,18 +222,19 @@ export default defineNuxtConfig({
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
-      selectiveClient: 'deep'
+      selectiveClient: 'deep',
     },
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     headNext: true,
-    inlineRouteRules: true
+    inlineRouteRules: true,
   },
   appConfig: {
     fromNuxtConfig: true,
     nested: {
-      val: 1
-    }
-  }
+      val: 1,
+    },
+  },
 })

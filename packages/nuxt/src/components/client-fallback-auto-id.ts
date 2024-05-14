@@ -4,9 +4,10 @@ import MagicString from 'magic-string'
 import { isAbsolute, relative } from 'pathe'
 import { hash } from 'ohash'
 import { isVue } from '../core/utils'
+
 interface LoaderOptions {
   sourcemap?: boolean
-  transform?: ComponentsOptions['transform'],
+  transform?: ComponentsOptions['transform']
   rootDir: string
 }
 const CLIENT_FALLBACK_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/
@@ -45,9 +46,9 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

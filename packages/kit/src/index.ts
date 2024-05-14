@@ -10,6 +10,7 @@ export * from './loader/nuxt'
 
 // Utils
 export * from './imports'
+export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
 export * from './build'
 export * from './compatibility'
 export * from './components'
@@ -30,7 +31,7 @@ export {
   requireModule,
   importModule,
   tryImportModule,
-  tryRequireModule
+  tryRequireModule,
 } from './internal/cjs'
 export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
 export { tryResolveModule } from './internal/esm'

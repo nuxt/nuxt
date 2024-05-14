@@ -36,7 +36,7 @@ function _loadAsyncComponent (component: Component) {
 }
 
 /** @since 3.0.0 */
-export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>; _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
+export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
   if (import.meta.server) { return }
 
   const { path, matched } = router.resolve(to)

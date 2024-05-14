@@ -13,11 +13,11 @@ describe('imports:transform', () => {
   const imports: Import[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
     { name: 'computed', as: 'computed', from: 'bar' },
-    { name: 'foo', as: 'foo', from: 'excluded' }
+    { name: 'foo', as: 'foo', from: 'excluded' },
   ]
 
   const ctx = createUnimport({
-    imports
+    imports,
   })
 
   const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' }) as Plugin
@@ -73,7 +73,6 @@ describe('imports:nuxt', () => {
     }
   } catch (e) {
     it('should import composables', () => {
-      // eslint-disable-next-line no-console
       console.error(e)
       expect(false).toBe(true)
     })
@@ -181,7 +180,7 @@ const excludedVueHelpers = [
   'DeprecationTypes',
   'ErrorCodes',
   'TrackOpTypes',
-  'TriggerOpTypes'
+  'TriggerOpTypes',
 ]
 
 describe('imports:vue', () => {

@@ -13,19 +13,20 @@ import { defaultPresets } from './presets'
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
     name: 'imports',
-    configKey: 'imports'
+    configKey: 'imports',
   },
   defaults: {
     autoImport: true,
+    scan: true,
     presets: defaultPresets,
     global: false,
     imports: [],
     dirs: [],
     transform: {
       include: [],
-      exclude: undefined
+      exclude: undefined,
     },
-    virtualImports: ['#imports']
+    virtualImports: ['#imports'],
   },
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
@@ -42,44 +43,50 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       ...options,
       addons: {
         vueTemplate: options.autoImport,
-        ...options.addons
+        ...options.addons,
       },
-      presets
+      presets,
     })
 
     await nuxt.callHook('imports:context', ctx)
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
-    for (const layer of nuxt.options._layers) {
-      composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
-      composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
-      for (const dir of (layer.config.imports?.dirs ?? [])) {
-        if (!dir) {
+    if (options.scan) {
+      for (const layer of nuxt.options._layers) {
+        // Layer disabled scanning for itself
+        if (layer.config?.imports?.scan === false) {
           continue
         }
-        composablesDirs.push(resolve(layer.config.srcDir, dir))
+        composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
+        composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+        for (const dir of (layer.config.imports?.dirs ?? [])) {
+          if (!dir) {
+            continue
+          }
+          composablesDirs.push(resolve(layer.config.srcDir, dir))
+        }
       }
+
+      await nuxt.callHook('imports:dirs', composablesDirs)
+      composablesDirs = composablesDirs.map(dir => normalize(dir))
+
+      // Restart nuxt when composable directories are added/removed
+      nuxt.hook('builder:watch', (event, relativePath) => {
+        if (event !== 'addDir' && event !== 'unlinkDir') { return }
+
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        if (composablesDirs.includes(path)) {
+          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+          return nuxt.callHook('restart')
+        }
+      })
     }
-
-    await nuxt.callHook('imports:dirs', composablesDirs)
-    composablesDirs = composablesDirs.map(dir => normalize(dir))
-
-    // Restart nuxt when composable directories are added/removed
-    nuxt.hook('builder:watch', (event, relativePath) => {
-      if (event !== 'addDir' && event !== 'unlinkDir') { return }
-
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (composablesDirs.includes(path)) {
-        logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
-        return nuxt.callHook('restart')
-      }
-    })
 
     // Support for importing from '#imports'
     addTemplate({
       filename: 'imports.mjs',
-      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }'
+      getContents: async () => toExports(await ctx.getImports()) + '\nif (import.meta.dev) { console.warn("[nuxt] `#imports` should be transformed with real imports. There seems to be something wrong with the imports plugin.") }',
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
@@ -93,7 +100,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       return [
         '/types/imports.d.ts',
         '/imports.d.ts',
-        '/imports.mjs'
+        '/imports.mjs',
       ].some(i => template.filename.endsWith(i))
     }
 
@@ -101,21 +108,25 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
         imports.length = 0
-        // Scan `composables/`
-        const composableImports = await scanDirExports(composablesDirs, {
-          fileFilter: file => !isIgnored(file)
-        })
-        for (const i of composableImports) {
-          i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+
+        // Scan for `composables/` and `utils/` directories
+        if (options.scan) {
+          const scannedImports = await scanDirExports(composablesDirs, {
+            fileFilter: file => !isIgnored(file),
+          })
+          for (const i of scannedImports) {
+            i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          }
+          imports.push(...scannedImports)
         }
-        imports.push(...composableImports)
+
         // Modules extending
         await nuxt.callHook('imports:extend', imports)
         return imports
       })
 
       await updateTemplates({
-        filter: isImportsTemplate
+        filter: isImportsTemplate,
       })
     }
 
@@ -127,7 +138,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Watch composables/ directory
     nuxt.hook('builder:watch', async (_, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
-      if (composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+      if (options.scan && composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
         await regenerateImports()
       }
     })
@@ -139,7 +150,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         await regenerateImports()
       }
     })
-  }
+  },
 })
 
 function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions>) {
@@ -182,7 +193,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   addTypeTemplate({
     filename: 'imports.d.ts',
-    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true)
+    getContents: async ({ nuxt }) => toExports(await ctx.getImports(), nuxt.options.buildDir, true),
   })
 
   addTypeTemplate({
@@ -195,6 +206,6 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           ? await ctx.generateTypeDeclarations({ resolvePath: r })
           : '// Implicit auto importing is disabled, you can use explicitly import from `#imports` instead.'
       )
-    }
+    },
   })
 }

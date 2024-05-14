@@ -46,7 +46,7 @@ export async function installModule (moduleToInstall: string | NuxtModule, inlin
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
     timings: res.timings,
-    entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
+    entryPath: typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined,
   })
 }
 
