@@ -23,7 +23,7 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 import type { NuxtAppLiterals } from '#app'
 
 // @ts-expect-error virtual import
-import { buildId, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { buildId } from '#build/nuxt.config.mjs'
 
 function getNuxtAppCtx (appName?: string) {
   return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
