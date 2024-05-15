@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it, vi, afterEach } from 'vitest'
-import { version } from "../package.json"
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { loadNuxt } from '../src'
 import { readPackageJSON } from 'pkg-types'
+import { loadNuxt } from '../src'
+import { version } from '../package.json'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
@@ -45,9 +45,9 @@ describe('loadNuxt', () => {
 })
 
 describe('dependency mismatch', () => {
-  it('expect mismatched dependency to log a warning',async  () => {
+  it('expect mismatched dependency to log a warning', async () => {
     vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
-      version: '3.0.0'
+      version: '3.0.0',
     }))
 
     const nuxt = await loadNuxt({
@@ -56,13 +56,13 @@ describe('dependency mismatch', () => {
 
     expect(console.error).toHaveBeenCalledWith(`Version mismatch for @nuxt/kit and nuxt: expected ${version} (nuxt) but got 3.0.0`)
     expect(console.error).toHaveBeenCalledWith(`Version mismatch for @nuxt/schema and nuxt: expected ${version} (nuxt) but got 3.0.0`)
-    
+
     vi.mocked(readPackageJSON).mockRestore()
     await nuxt.close()
   })
-  it('expect no warning when dependency version matches',async  () => {
+  it('expect no warning when dependency version matches', async () => {
     vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
-      version
+      version,
     }))
 
     const nuxt = await loadNuxt({
