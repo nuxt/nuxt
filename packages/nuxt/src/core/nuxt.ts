@@ -639,4 +639,4 @@ async function checkDependencyVersion(name: string, nuxtVersion: string): Promis
   }
 }
 
-const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i
+const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
