@@ -92,6 +92,14 @@ export default defineNuxtConfig({
     },
   },
   modules: [
+    function (_options, nuxt) {
+      nuxt.hook('modules:done', () => {
+        // @ts-expect-error not valid nuxt option
+        if (!nuxt.options.__installed_layer) {
+          throw new Error('layer in layers/ directory was not auto-registered')
+        }
+      })
+    },
     '~/modules/subpath',
     './modules/test',
     '~/modules/example',
