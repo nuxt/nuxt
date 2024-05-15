@@ -257,7 +257,6 @@ export function createNuxtApp (options: CreateOptions) {
       state: reactive({}),
       once: new Set<string>(),
       _errors: shallowReactive({}),
-      error: undefined,
     }),
     static: {
       data: {},
