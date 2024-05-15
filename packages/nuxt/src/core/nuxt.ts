@@ -10,7 +10,7 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
-import { withoutLeadingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
 import pagesModule from '../pages/module'
@@ -70,6 +70,17 @@ async function initNuxt (nuxt: Nuxt) {
       nuxt.hooks.addHooks(config.hooks)
     }
   }
+
+  // Restart Nuxt when layer directories are added or removed
+  const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
+  nuxt.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (event === 'addDir' || event === 'unlinkDir') {
+      if (path.startsWith(layersDir)) {
+        return nuxt.callHook('restart', { hard: true })
+      }
+    }
+  })
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
