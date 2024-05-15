@@ -42,7 +42,7 @@ async function main () {
     currentPR?.body.replace(/## 👉 Changelog[\s\S]*$/, '') || `> ${newVersion} is the next ${bumpType} release.\n>\n> **Timetable**: to be announced.`,
     '## 👉 Changelog',
     changelog
-      .replace(/^## v.*?\n/, '')
+      .replace(/^## v.*\n/, '')
       .replace(`...${releaseBranch}`, `...v${newVersion}`)
       .replace(/### ❤️ Contributors[\s\S]*$/, ''),
     '### ❤️ Contributors',
