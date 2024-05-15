@@ -23,7 +23,7 @@ export default defineNuxtPlugin(async () => {
 
 // Implementation
 
-const OPTIONAL_PARAM_RE = /^\/?:.*(\?|\(\.\*\)\*)$/
+const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 function processRoutes (routes: RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {
   for (const route of routes) {

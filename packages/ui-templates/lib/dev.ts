@@ -23,7 +23,7 @@ export const DevRenderingPlugin = () => {
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
       return template(contents, {
-        interpolate: /{{{?([\s\S]+?)}?}}/g,
+        interpolate: /\{\{\{?([\s\S]+?)\}?\}\}/g,
       })({
         messages: { ...genericMessages, ...messages },
       })

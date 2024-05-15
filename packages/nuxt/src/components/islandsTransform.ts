@@ -25,7 +25,7 @@ interface ComponentChunkOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
-const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
+const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
 const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''

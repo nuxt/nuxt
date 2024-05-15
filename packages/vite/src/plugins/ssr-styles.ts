@@ -21,7 +21,7 @@ interface SSRStylePluginOptions {
   mode: 'server' | 'client'
 }
 
-const SUPPORTED_FILES_RE = /\.(vue|((c|m)?j|t)sx?)$/
+const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
