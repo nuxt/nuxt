@@ -57,8 +57,9 @@ function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
-  const hash = opts.hash || (opts.fresh ? Date.now() : (useAppConfig().nuxt as any)?.buildId)
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
+  const config = useRuntimeConfig()
+  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  return joinURL(config.app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
 async function _importPayload (payloadURL: string) {

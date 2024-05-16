@@ -25,9 +25,7 @@ function fetchManifest () {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  // @ts-expect-error private property
-  const buildId = useAppConfig().nuxt?.buildId
-  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${buildId}.json`))
+  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`))
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
   })
