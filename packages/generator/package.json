@@ -16,7 +16,7 @@
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "devalue": "^2.0.1",
-    "fs-extra": "^10.1.0",
+    "fs-extra": "^11.2.0",
     "html-minifier-terser": "^7.2.0",
     "node-html-parser": "^6.1.13",
     "ufo": "^1.5.3"
