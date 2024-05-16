@@ -20,9 +20,9 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
-let appId = ''
-
 import type { NuxtAppLiterals } from '#app'
+
+let appId = ''
 
 function getNuxtAppCtx (appName = appId || 'nuxt-app') {
   return getContext<NuxtApp>(appName, {
