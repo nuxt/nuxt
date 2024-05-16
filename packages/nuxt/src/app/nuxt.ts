@@ -376,7 +376,7 @@ export function createNuxtApp (options: CreateOptions) {
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
 
-  nuxtApp.name = runtimeConfig.app.id || 'nuxt-app'
+  nuxtApp._name = runtimeConfig.app.id || 'nuxt-app'
 
   return nuxtApp
 }
