@@ -20,10 +20,12 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
+let appId = ''
+
 import type { NuxtAppLiterals } from '#app'
 
-function getNuxtAppCtx (appName?: string) {
-  return getContext<NuxtApp>(appName || 'nuxt-app', {
+function getNuxtAppCtx (appName = appId || 'nuxt-app') {
+  return getContext<NuxtApp>(appName, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -376,7 +378,7 @@ export function createNuxtApp (options: CreateOptions) {
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
 
-  nuxtApp._name = runtimeConfig.app.id || 'nuxt-app'
+  appId = nuxtApp._name = runtimeConfig.app.id || 'nuxt-app'
 
   return nuxtApp
 }
