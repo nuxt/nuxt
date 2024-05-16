@@ -3,7 +3,6 @@ import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
-import { useAppConfig } from '../config'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
