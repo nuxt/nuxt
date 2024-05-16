@@ -22,11 +22,8 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 
 import type { NuxtAppLiterals } from '#app'
 
-// @ts-expect-error virtual import
-import { buildId } from '#build/nuxt.config.mjs'
-
 function getNuxtAppCtx (appName?: string) {
-  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+  return getContext<NuxtApp>(appName || 'nuxt-app', {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -244,7 +241,6 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    name: buildId,
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
@@ -379,6 +375,8 @@ export function createNuxtApp (options: CreateOptions) {
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
+
+  nuxtApp.name = runtimeConfig.app.id || 'nuxt-app'
 
   return nuxtApp
 }
