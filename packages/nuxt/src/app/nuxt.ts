@@ -1,4 +1,4 @@
-import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -252,12 +252,11 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version },
     },
-    payload: reactive({
-      data: {},
-      state: {},
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: reactive({}),
       once: new Set<string>(),
-      _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
+      _errors: shallowReactive({}),
     }),
     static: {
       data: {},
@@ -288,10 +287,31 @@ export function createNuxtApp (options: CreateOptions) {
       }
     },
     _asyncDataPromises: {},
-    _asyncData: {},
+    _asyncData: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
+
+  if (import.meta.server) {
+    nuxtApp.payload.serverRendered = true
+  }
+
+  // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
+  if (import.meta.client && window.__NUXT__) {
+    for (const key in window.__NUXT__) {
+      switch (key) {
+        case 'data':
+        case 'state':
+        case '_errors':
+          // Preserve reactivity for non-rich payload support
+          Object.assign(nuxtApp.payload[key], window.__NUXT__[key])
+          break
+
+        default:
+          nuxtApp.payload[key] = window.__NUXT__[key]
+      }
+    }
+  }
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
