@@ -107,7 +107,7 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = document.getElementById(`__NUXT_DATA__${appId}`)
+  const el = document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement
   if (!el) {
     return {} as Partial<NuxtPayload>
   }

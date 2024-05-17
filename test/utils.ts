@@ -114,7 +114,7 @@ export function parseData (html: string, appId = 'nuxt-app') {
       attrs: {},
     }
   }
-  const { script, attrs = '' } = html.match(new RegExp(`<script type="application\\/json" id="__NUXT_DATA__${appId}"(?<attrs>[^>]+)>(?<script>.*?)<\\/script>`))?.groups || {}
+  const { script, attrs = '' } = html.match(new RegExp(`<script type="application\\/json" data-nuxt-data="${appId}"(?<attrs>[^>]+)>(?<script>.*?)<\\/script>`))?.groups || {}
   const _attrs: Record<string, string> = {}
   for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)="(?<value>[^"]+)"/g)) {
     _attrs[attr!.groups!.key!] = attr!.groups!.value!

@@ -428,10 +428,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: `__NUXT_DATA__${appId}`, ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: 'nuxt-data', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
           : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: `__NUXT_DATA__${appId}`, ssrContext, data: ssrContext.payload })
+          ? renderPayloadJsonScript({ id: 'nuxt-data', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
     }, {
       ...headEntryOptions,
@@ -591,7 +591,7 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
   const payload: Script = {
     'type': 'application/json',
-    'id': opts.id,
+    [`data-${opts.id}`]: appId,
     'innerHTML': contents,
     'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
   }
