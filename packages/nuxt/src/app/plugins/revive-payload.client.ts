@@ -5,7 +5,7 @@ import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
-import { componentIslands } from '#build/nuxt.config.mjs'
+import { appId, componentIslands } from '#build/nuxt.config.mjs'
 
 const revivers: Record<string, (data: any) => any> = {
   NuxtError: data => createError(data),

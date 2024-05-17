@@ -287,9 +287,12 @@ declare module 'nitropack/types' {
 
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
-  getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
-`,
+  getContents: ({ nuxt }) => {
+    const appId = JSON.stringify(nuxt.options.appId)
+    return `
+export const useRuntimeConfig = () => window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config || {}
+`
+  },
 }
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {

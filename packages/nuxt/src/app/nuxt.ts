@@ -304,18 +304,18 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
-  if (import.meta.client && window.__NUXT__) {
-    for (const key in window.__NUXT__) {
+  if (import.meta.client && window.__NUXT__?.[nuxtApp._name]) {
+    for (const key in window.__NUXT__[nuxtApp._name]) {
       switch (key) {
         case 'data':
         case 'state':
         case '_errors':
           // Preserve reactivity for non-rich payload support
-          Object.assign(nuxtApp.payload[key], window.__NUXT__[key])
+          Object.assign(nuxtApp.payload[key], window.__NUXT__[nuxtApp._name][key])
           break
 
         default:
-          nuxtApp.payload[key] = window.__NUXT__[key]
+          nuxtApp.payload[key] = window.__NUXT__[nuxtApp._name][key]
       }
     }
   }
