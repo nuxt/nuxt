@@ -105,7 +105,7 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = document.getElementById(`__NUXT_DATA__#${appId}`)
+  const el = document.getElementById(`__NUXT_DATA__${appId}`)
   if (!el) {
     return {}
   }
