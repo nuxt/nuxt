@@ -20,9 +20,10 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
-import type { NuxtAppLiterals } from '#app'
+// @ts-expect-error virtual file
+import { appId } from '#build/nuxt.config.mjs'
 
-let appId = ''
+import type { NuxtAppLiterals } from '#app'
 
 function getNuxtAppCtx (appName = appId || 'nuxt-app') {
   return getContext<NuxtApp>(appName, {
@@ -378,7 +379,7 @@ export function createNuxtApp (options: CreateOptions) {
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
 
-  appId = nuxtApp._name = runtimeConfig.app.id || 'nuxt-app'
+  nuxtApp._name = runtimeConfig.app.id || appId || 'nuxt-app'
 
   return nuxtApp
 }
