@@ -535,12 +535,11 @@ export default defineUntypedSchema({
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get): Promise<Record<string, unknown>> => {
-      const [app, appId, buildId] = await Promise.all([get('app') as Promise<Record<string, string>>, get('appId') as Promise<string>, get('buildId') as Promise<string>])
+      const [app, buildId] = await Promise.all([get('app') as Promise<Record<string, string>>, get('buildId') as Promise<string>])
       provideFallbackValues(val)
       return defu(val, {
         public: {},
         app: {
-          id: appId,
           buildId,
           baseURL: app.baseURL,
           buildAssetsDir: app.buildAssetsDir,

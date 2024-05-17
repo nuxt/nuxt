@@ -244,6 +244,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
+    _name: appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
@@ -378,8 +379,6 @@ export function createNuxtApp (options: CreateOptions) {
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
   nuxtApp.provide('config', runtimeConfig)
-
-  nuxtApp._name = runtimeConfig.app.id || appId || 'nuxt-app'
 
   return nuxtApp
 }
