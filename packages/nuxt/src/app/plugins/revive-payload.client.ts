@@ -5,7 +5,7 @@ import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 
 // @ts-expect-error Virtual file.
-import { componentIslands } from '#build/nuxt.config.mjs'
+import { appId, componentIslands } from '#build/nuxt.config.mjs'
 
 const revivers: Record<string, (data: any) => any> = {
   NuxtError: data => createError(data),
@@ -50,6 +50,7 @@ export default defineNuxtPlugin({
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
     // For backwards compatibility - TODO: remove later
-    window.__NUXT__ = nuxtApp.payload
+    window.__NUXT__ = window.__NUXT__ || {}
+    window.__NUXT__[appId] = nuxtApp.payload
   },
 })
