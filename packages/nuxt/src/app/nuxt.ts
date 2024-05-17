@@ -20,13 +20,13 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
+// @ts-expect-error virtual file
+import { appId } from '#build/nuxt.config.mjs'
+
 import type { NuxtAppLiterals } from '#app'
 
-// @ts-expect-error virtual import
-import { buildId } from '#build/nuxt.config.mjs'
-
-function getNuxtAppCtx (appName?: string) {
-  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+function getNuxtAppCtx (appName = appId || 'nuxt-app') {
+  return getContext<NuxtApp>(appName, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -244,7 +244,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    name: buildId,
+    _name: appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',

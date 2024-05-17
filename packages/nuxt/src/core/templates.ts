@@ -397,7 +397,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
-      `export const buildId = ${JSON.stringify(ctx.nuxt.options.buildId)}`,
+      `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
     ].join('\n\n')
   },
 }

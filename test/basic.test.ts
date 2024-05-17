@@ -2028,15 +2028,9 @@ describe('app config', () => {
       fromLayer: true,
       userConfig: 123,
     }
-    if (isTestingAppManifest) {
-      expectedAppConfig.nuxt.buildId = 'test'
-    }
-    expect.soft(html.replace(/"nuxt":\{"buildId":"[^"]+"\}/, '"nuxt":{"buildId":"test"}')).toContain(JSON.stringify(expectedAppConfig))
+    expect.soft(html).toContain(JSON.stringify(expectedAppConfig))
 
     const serverAppConfig = await $fetch('/api/app-config')
-    if (isTestingAppManifest) {
-      serverAppConfig.appConfig.nuxt.buildId = 'test'
-    }
     expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })
@@ -2649,23 +2643,23 @@ describe('defineNuxtComponent watch duplicate', () => {
 })
 
 describe('namespace access to useNuxtApp', () => {
-  it('should return the nuxt instance when used with correct buildId', async () => {
+  it('should return the nuxt instance when used with correct appId', async () => {
     const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
 
     expect(pageErrors).toEqual([])
 
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
-    // Defaulting to buildId
+    // Defaulting to appId
     await page.evaluate(() => window.useNuxtApp?.())
-    // Using correct configured buildId
+    // Using correct configured appId
     // @ts-expect-error not public API yet
     await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
 
     await page.close()
   })
 
-  it('should throw an error when used with wrong buildId', async () => {
+  it('should throw an error when used with wrong appId', async () => {
     const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
 
     expect(pageErrors).toEqual([])
@@ -2674,7 +2668,7 @@ describe('namespace access to useNuxtApp', () => {
 
     let error: unknown
     try {
-      // Using wrong/unknown buildId
+      // Using wrong/unknown appId
       // @ts-expect-error not public API yet
       await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
     } catch (err) {

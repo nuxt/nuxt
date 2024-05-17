@@ -30,9 +30,7 @@ describe('app config', () => {
     const appConfig = useAppConfig()
     expect(appConfig).toMatchInlineSnapshot(`
       {
-        "nuxt": {
-          "buildId": "override",
-        },
+        "nuxt": {},
       }
     `)
     updateAppConfig({
@@ -44,7 +42,6 @@ describe('app config', () => {
       {
         "new": "value",
         "nuxt": {
-          "buildId": "override",
           "nested": 42,
         },
       }

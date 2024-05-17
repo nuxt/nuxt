@@ -51,7 +51,7 @@ describe('config typings', () => {
   it('appConfig', () => {
     expectTypeOf(useAppConfig().foo).toEqualTypeOf<unknown>()
     expectTypeOf(useAppConfig()).toEqualTypeOf<{
-      nuxt: { buildId: string }
+      nuxt: {}
       [key: string]: unknown
     }>()
   })
