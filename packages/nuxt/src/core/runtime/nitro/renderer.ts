@@ -428,10 +428,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: `__NUXT_DATA__#${appId}`, ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: `__NUXT_DATA__${appId}`, ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
           : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: `__NUXT_DATA__#${appId}`, ssrContext, data: ssrContext.payload })
+          ? renderPayloadJsonScript({ id: `__NUXT_DATA__${appId}`, ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
     }, {
       ...headEntryOptions,

@@ -77,7 +77,7 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__#${appId}">${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
+      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__${appId}">${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
       console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.`)
