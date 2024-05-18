@@ -27,17 +27,13 @@ const logLevelMapReverse = {
 
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
-  let excludePaths = []
-  for (const l of nuxt.options._layers) {
-    const match1 = l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1]
-    const match2 = l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1]
-    if (match1) {
-      excludePaths.push(escapeRE(match1))
-    }
-    if (match2) {
-      excludePaths.push(escapeRE(match2))
-    }
-  }
+  const excludePaths = nuxt.options._layers
+    .flatMap(l => [
+      l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
+      l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1],
+    ])
+    .filter((dir): dir is string => Boolean(dir))
+    .map(dir => escapeRE(dir))
   const excludePattern = excludePaths.length
     ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
     : [/node_modules/]
