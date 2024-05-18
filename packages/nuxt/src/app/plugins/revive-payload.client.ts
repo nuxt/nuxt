@@ -50,7 +50,7 @@ export default defineNuxtPlugin({
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
     // For backwards compatibility - TODO: remove later
-    window.__NUXT__ = window.__NUXT__ || {}
+    window.__NUXT__ ||= {}
     window.__NUXT__[appId] = nuxtApp.payload
   },
 })
