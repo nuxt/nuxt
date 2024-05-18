@@ -182,7 +182,7 @@ describe('treeshake client only in ssr', () => {
         expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
         expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
       }
-      expect(treeshaken.replace(/data-v-[\d\w]{8}/g, 'data-v-one-hash').replace(/scoped=[\d\w]{8}/g, 'scoped=one-hash')).toMatchSnapshot()
+      expect(treeshaken.replace(/data-v-\w{8}/g, 'data-v-one-hash').replace(/scoped=\w{8}/g, 'scoped=one-hash')).toMatchSnapshot()
     })
   }
 

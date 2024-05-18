@@ -41,6 +41,7 @@ export default defineUntypedSchema({
           'ofetch',
           // Key nuxt dependencies
           '@unhead/vue',
+          '@nuxt/devtools',
           'vue',
           '@vue/runtime-core',
           '@vue/compiler-sfc',

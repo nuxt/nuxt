@@ -600,7 +600,7 @@ describe('nuxt composables', () => {
     const { id1, id2 } = html.match(/<div[^>]* data-prehydrate-id=":(?<id1>[^:]+)::(?<id2>[^:]+):"> onPrehydrate testing <\/div>/)?.groups || {}
     expect(id1).toBeTruthy()
     const matches = [
-      html.match(/<script[^>]*>\(\(\)=>{console.log\(window\)}\)\(\)<\/script>/),
+      html.match(/<script[^>]*>\(\(\)=>\{console.log\(window\)\}\)\(\)<\/script>/),
       html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`)),
       html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`)),
     ]
@@ -1911,7 +1911,7 @@ describe('public directories', () => {
 describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
     }
@@ -1920,11 +1920,11 @@ describe.skipIf(isDev())('dynamic paths', () => {
   // webpack injects CSS differently
   it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch('/assets')
-    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)).map(m => m[2] || m[3])
+    const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
     expect(cssURL).toBeDefined()
     const css: string = await $fetch(cssURL!)
-    const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.][\w]{8}\./g, '.'))
+    const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.'))
     expect(imageUrls).toMatchInlineSnapshot(`
         [
           "./logo.svg",
@@ -1944,7 +1944,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('/foo/_other/') ||
@@ -1965,7 +1965,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('./_nuxt/') ||
@@ -1999,7 +1999,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     })
 
     const html = await $fetch('/foo/assets')
-    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*?)\)/g)) {
+    for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
       expect(
         url.startsWith('https://example.com/_cdn/') ||
@@ -2028,15 +2028,9 @@ describe('app config', () => {
       fromLayer: true,
       userConfig: 123,
     }
-    if (isTestingAppManifest) {
-      expectedAppConfig.nuxt.buildId = 'test'
-    }
-    expect.soft(html.replace(/"nuxt":\{"buildId":"[^"]+"\}/, '"nuxt":{"buildId":"test"}')).toContain(JSON.stringify(expectedAppConfig))
+    expect.soft(html).toContain(JSON.stringify(expectedAppConfig))
 
     const serverAppConfig = await $fetch('/api/app-config')
-    if (isTestingAppManifest) {
-      serverAppConfig.appConfig.nuxt.buildId = 'test'
-    }
     expect(serverAppConfig).toMatchObject({ appConfig: expectedAppConfig })
   })
 })
@@ -2198,7 +2192,7 @@ describe('component islands', () => {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
         link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-        link.key = link.key.replace(/-[a-zA-Z0-9]+$/, '')
+        link.key = link.key.replace(/-[a-z0-9]+$/i, '')
       }
       result.head.link.sort((a, b) => b.href.localeCompare(a.href))
     }
@@ -2580,7 +2574,7 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
       style: result.head.style.map(s => ({
         ...s,
         innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
-        key: s.key.replace(/-[a-zA-Z0-9]+$/, ''),
+        key: s.key.replace(/-[a-z0-9]+$/i, ''),
       })),
     },
   }
@@ -2649,23 +2643,23 @@ describe('defineNuxtComponent watch duplicate', () => {
 })
 
 describe('namespace access to useNuxtApp', () => {
-  it('should return the nuxt instance when used with correct buildId', async () => {
+  it('should return the nuxt instance when used with correct appId', async () => {
     const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
 
     expect(pageErrors).toEqual([])
 
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
-    // Defaulting to buildId
+    // Defaulting to appId
     await page.evaluate(() => window.useNuxtApp?.())
-    // Using correct configured buildId
+    // Using correct configured appId
     // @ts-expect-error not public API yet
     await page.evaluate(() => window.useNuxtApp?.('nuxt-app-basic'))
 
     await page.close()
   })
 
-  it('should throw an error when used with wrong buildId', async () => {
+  it('should throw an error when used with wrong appId', async () => {
     const { page, pageErrors } = await renderPage('/namespace-nuxt-app')
 
     expect(pageErrors).toEqual([])
@@ -2674,7 +2668,7 @@ describe('namespace access to useNuxtApp', () => {
 
     let error: unknown
     try {
-      // Using wrong/unknown buildId
+      // Using wrong/unknown appId
       // @ts-expect-error not public API yet
       await page.evaluate(() => window.useNuxtApp?.('nuxt-app-unknown'))
     } catch (err) {

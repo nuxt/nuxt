@@ -30,9 +30,7 @@ describe('app config', () => {
     const appConfig = useAppConfig()
     expect(appConfig).toMatchInlineSnapshot(`
       {
-        "nuxt": {
-          "buildId": "override",
-        },
+        "nuxt": {},
       }
     `)
     updateAppConfig({
@@ -44,7 +42,6 @@ describe('app config', () => {
       {
         "new": "value",
         "nuxt": {
-          "buildId": "override",
           "nested": 42,
         },
       }
@@ -512,6 +509,22 @@ describe('loading state', () => {
     expect(isLoading.value).toBeTruthy()
     finish()
     expect(isLoading.value).toBeFalsy()
+  })
+})
+
+describe('loading state', () => {
+  it('expect error from loading state to be changed by finish({ error: true })', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { error, start, finish } = useLoadingIndicator()
+    expect(error.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    start()
+    finish({ error: true })
+    expect(error.value).toBeTruthy()
+    start()
+    expect(error.value).toBeFalsy()
+    finish()
   })
 })
 

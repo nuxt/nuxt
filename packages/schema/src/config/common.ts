@@ -155,6 +155,13 @@ export default defineUntypedSchema({
   },
 
   /**
+   * For multi-app projects, the unique name of the Nuxt application.
+   */
+  appId: {
+    $resolve: (val: string) => val ?? 'nuxt-app',
+  },
+
+  /**
    * A unique identifier matching the build. This may contain the hash of the current state of the project.
    */
   buildId: {
@@ -528,11 +535,12 @@ export default defineUntypedSchema({
    */
   runtimeConfig: {
     $resolve: async (val: RuntimeConfig, get): Promise<Record<string, unknown>> => {
-      const app = await get('app') as Record<string, string>
+      const [app, buildId] = await Promise.all([get('app') as Promise<Record<string, string>>, get('buildId') as Promise<string>])
       provideFallbackValues(val)
       return defu(val, {
         public: {},
         app: {
+          buildId,
           baseURL: app.baseURL,
           buildAssetsDir: app.buildAssetsDir,
           cdnURL: app.cdnURL,
