@@ -86,7 +86,7 @@ export const NoScript = defineComponent({
   setup: setupForUseMeta((props, { slots }) => {
     const noscript = { ...props }
     const slotVnodes = slots.default?.()
-    const textContent: string[] = []
+    const textContent = []
     if (slotVnodes) {
       for (const { children } of slotVnodes) {
         if (children) {
