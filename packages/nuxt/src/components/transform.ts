@@ -61,36 +61,42 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         const query = parseQuery(search)
         const mode = query.nuxt_component
         const bare = id.replace(/\?.*/, '')
-        const stringifiedBare = JSON.stringify(bare)
         const componentExport = query.nuxt_component_export as string || 'default'
-        const stringifiedExport = JSON.stringify(componentExport)
         const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
         if (mode === 'async') {
           return {
-            code: `import { defineAsyncComponent } from "vue"
-${exportWording} defineAsyncComponent(() => import(${stringifiedBare}).then(r => r[${stringifiedExport}] || r.default || r))`,
-            map: null
+            code: [
+              'import { defineAsyncComponent } from "vue"',
+              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => r[${JSON.stringify(componentExport)}] || r.default || r))`,
+            ].join('\n'),
+            map: null,
           }
         } else if (mode === 'client') {
           return {
-            code: `${genImport(bare, [{ name: componentExport, as: '__component' }])}
-import { createClientOnly } from "#app/components/client-only"
-${exportWording} createClientOnly(__component)`,
-            map: null
+            code: [
+              genImport(bare, [{ name: componentExport, as: '__component' }]),
+              'import { createClientOnly } from "#app/components/client-only"',
+              `${exportWording} createClientOnly(__component)`,
+            ].join('\n'),
+            map: null,
           }
         } else if (mode === 'client,async') {
           return {
-            code: `import { defineAsyncComponent } from "vue"
-import { createClientOnly } from "#app/components/client-only"
-${exportWording} defineAsyncComponent(() => import(${stringifiedBare}).then(r => createClientOnly(r[${stringifiedExport}] || r.default || r)))`,
-            map: null
+            code: [
+              'import { defineAsyncComponent } from "vue"',
+              'import { createClientOnly } from "#app/components/client-only"',
+              `${exportWording} defineAsyncComponent(() => import(${JSON.stringify(bare)}).then(r => createClientOnly(r[${JSON.stringify(componentExport)}] || r.default || r)))`,
+            ].join('\n'),
+            map: null,
           }
         } else if (mode === 'server' || mode === 'server,async') {
           const name = query.nuxt_component_name
           return {
-            code: `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}
-${exportWording} createServerComponent(${JSON.stringify(name)})`,
-            map: null
+            code: [
+              `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
+              `${exportWording} createServerComponent(${JSON.stringify(name)})`,
+            ].join('\n'),
+            map: null,
           }
         } else {
           throw new Error(`Unknown component mode: ${mode}, this might be an internal bug of Nuxt.`)
