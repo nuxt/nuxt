@@ -23,7 +23,7 @@ export const vueShim: NuxtTemplate = {
   const component: DefineComponent<{}, {}, any>
   export default component
 }`
-  }
+  },
 }
 
 // TODO: Use an alias
@@ -60,7 +60,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = []
-    let imports: string[] = []
+    const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
@@ -69,7 +69,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
-  }
+  },
 }
 
 export const serverPluginTemplate: NuxtTemplate = {
@@ -78,7 +78,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = []
-    let imports: string[] = []
+    const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
@@ -87,7 +87,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
-  }
+  },
 }
 
 export const pluginsDeclaration: NuxtTemplate = {
@@ -206,7 +206,7 @@ export const layoutTemplate: NuxtTemplate = {
     }
     const layoutsObject = genObjectFromRawEntries(entries)
     return `export default ${layoutsObject}`
-  }
+  },
 }
 
 // Add middleware template
@@ -233,7 +233,7 @@ export const middlewareTemplate: NuxtTemplate = {
     return `${globalMiddlewareImport.join('\n')}
 export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}
 export const namedMiddleware = ${namedMiddlewareObject}`
-  }
+  },
 }
 
 export const nitroSchemaTemplate: NuxtTemplate = {
@@ -379,7 +379,7 @@ if (!globalThis.$fetch) {
     baseURL: baseURL()
   })
 }`
-  }
+  },
 }
 
 // Allow direct access to specific exposed nuxt.config
@@ -415,5 +415,5 @@ export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n
 export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n
 export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n
 export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`
-  }
+  },
 }

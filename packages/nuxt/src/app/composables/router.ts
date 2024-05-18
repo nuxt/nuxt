@@ -126,7 +126,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   if (import.meta.client && options?.open) {
     const { target = '_blank', windowFeatures = {} } = options.open
 
-    let features = []
+    const features = []
     for (const feature in windowFeatures) {
       const value = windowFeatures[feature as keyof typeof windowFeatures]
       if (value !== undefined) {

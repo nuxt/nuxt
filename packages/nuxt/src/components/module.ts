@@ -68,7 +68,7 @@ export default defineNuxtModule<ComponentsOptions>({
           dirs.push({
             priority: options?.priority || 0,
             ..._dir,
-            path: resolve(cwd, resolveAlias(_dir.path))
+            path: resolve(cwd, resolveAlias(_dir.path)),
           })
         }
       }

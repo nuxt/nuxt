@@ -47,7 +47,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
   const modules = await resolveNuxtModule(rootDirWithSlash,
-    moduleEntries
+    moduleEntries,
   )
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
@@ -146,13 +146,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
           },
-      ...nuxt.options._layers.reduce<{dir: string}[]>((layers, layer) => {
+      ...nuxt.options._layers.reduce<{ dir: string }[]>((layers, layer) => {
         const layerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
         if (existsSync(layerDir)) {
           layers.push({ dir: layerDir })
         }
         return layers
-      }, [])
+      }, []),
     ],
     prerender: {
       failOnError: true,

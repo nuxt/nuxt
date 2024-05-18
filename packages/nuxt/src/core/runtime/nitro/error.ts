@@ -11,8 +11,8 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
-  let errorStr = []
-  let consoleStr = []
+  const errorStr = []
+  const consoleStr = []
   for (const i of stack) {
     errorStr.push(`<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`)
     consoleStr.push('  ' + i.text)

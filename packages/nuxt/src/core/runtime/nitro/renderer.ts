@@ -466,11 +466,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
-        crossorigin: ''
+        crossorigin: '',
       })
     }
     head.push({
-      script: headScript
+      script: headScript,
     }, headEntryOptions)
   }
 
@@ -643,14 +643,14 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${payloadData})}`
-      }
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${payloadData})}`,
+      },
     ]
   }
   return [
     {
-      innerHTML: `window.__NUXT__=${payloadData}`
-    }
+      innerHTML: `window.__NUXT__=${payloadData}`,
+    },
   ]
 }
 

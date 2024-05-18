@@ -284,7 +284,7 @@ async function initNuxt (nuxt: Nuxt) {
     const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
       `${modulesDir}/*{${extensions}}`,
-      `${modulesDir}/*/index{${extensions}}`
+      `${modulesDir}/*/index{${extensions}}`,
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -601,8 +601,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
-      include: layers
-    }
+      include: layers,
+    },
   }])
   options._modules.push(schemaModule)
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
