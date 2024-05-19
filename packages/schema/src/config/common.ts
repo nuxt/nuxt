@@ -166,7 +166,7 @@ export default defineUntypedSchema({
    */
   buildId: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      if (typeof val === 'string') return val
+      if (typeof val === 'string') { return val }
 
       const [isDev, isTest] = await Promise.all([get('dev') as Promise<boolean>, get('test') as Promise<boolean>])
       return isDev ? 'dev' : isTest ? 'test' : randomUUID()
