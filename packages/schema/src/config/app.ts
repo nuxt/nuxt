@@ -48,7 +48,9 @@ export default defineUntypedSchema({
      * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
      * @example
      * ```bash
-     * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
+     * app: {
+     *    baseURL: "/prefix/"
+     * }
      * ```
      */
     baseURL: {
@@ -66,7 +68,9 @@ export default defineUntypedSchema({
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
      * @example
      * ```bash
-     * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
+     * app: {
+     *    cdnURL: "https://mycdn.org/"
+     * }
      * ```
      */
     cdnURL: {
