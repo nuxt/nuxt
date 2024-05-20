@@ -3,9 +3,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { readPackageJSON } from 'pkg-types'
+import { inc } from 'semver'
 import { loadNuxt } from '../src'
 import { version } from '../package.json'
-import { inc } from "semver"
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
@@ -35,7 +35,7 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         hooks: {
-          ready() {
+          ready () {
             hookRan = true
           },
         },
@@ -65,15 +65,13 @@ describe('dependency mismatch', () => {
   it.each([
     {
       name: 'nuxt version is lower',
-      nuxtVersion: version,
-      depVersion: inc(version, "minor"),
+      depVersion: inc(version, 'minor'),
     },
     {
       name: 'version matches',
-      nuxtVersion: version,
       depVersion: version,
-    }
-  ])('expect no warning when $name.', async ({ nuxtVersion, depVersion }) => {
+    },
+  ])('expect no warning when $name.', async ({ depVersion }) => {
     vi.mocked(readPackageJSON).mockReturnValue(Promise.resolve({
       depVersion,
     }))
