@@ -972,6 +972,12 @@ describe('navigate', () => {
 
     expect(status).toEqual(404)
   })
+
+  it('expect to redirect with encoding', async () => {
+    const { status } = await fetch('/redirect-with-encode', { redirect: 'manual' })
+
+    expect(status).toEqual(302)
+  })
 })
 
 describe('preserves current instance', () => {
