@@ -45,12 +45,12 @@
     "vue": "3.4.27"
   },
   "devDependencies": {
-    "@eslint/js": "9.2.0",
+    "@eslint/js": "9.3.0",
     "@nuxt/eslint-config": "0.3.13",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.12.1",
     "@nuxt/webpack-builder": "workspace:*",
-    "@testing-library/vue": "8.0.3",
+    "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.12.12",
@@ -61,7 +61,7 @@
     "changelogen": "0.5.5",
     "consola": "3.2.3",
     "devalue": "5.0.0",
-    "eslint": "9.2.0",
+    "eslint": "9.3.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.10.0",
     "eslint-typegen": "0.2.4",
