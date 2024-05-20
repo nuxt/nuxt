@@ -56,8 +56,8 @@ describe('dependency mismatch', () => {
       cwd: repoRoot,
     })
 
-    expect(console.warn).toHaveBeenCalledWith(`Version mismatch for @nuxt/kit and nuxt: expected ${version} (nuxt) but got 3.0.0. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-    expect(console.warn).toHaveBeenCalledWith(`Version mismatch for @nuxt/schema and nuxt: expected ${version} (nuxt) but got 3.0.0. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
+    expect(console.warn).toHaveBeenCalledWith(`[nuxt] Expected \`@nuxt/kit\` to be at least \`${version}\` but got \`3.0.0\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
+    expect(console.warn).toHaveBeenCalledWith(`[nuxt] Expected \`@nuxt/schema\` to be at least \`${version}\` but got \`3.0.0\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
 
     vi.mocked(readPackageJSON).mockRestore()
     await nuxt.close()
