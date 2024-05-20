@@ -64,7 +64,6 @@
     "eslint": "9.2.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.10.0",
-    "eslint-plugin-regexp": "2.5.0",
     "eslint-typegen": "0.2.4",
     "execa": "9.1.0",
     "fs-extra": "11.2.0",
