@@ -1,7 +1,6 @@
 import type { MatcherExport, RouteMatcher } from 'radix3'
 import { createMatcherFromExport, createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { defu } from 'defu'
-import { useAppConfig } from '../config'
 import { useRuntimeConfig } from '../nuxt'
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
@@ -25,9 +24,7 @@ function fetchManifest () {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  // @ts-expect-error private property
-  const buildId = useAppConfig().nuxt?.buildId
-  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${buildId}.json`))
+  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`))
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
   })

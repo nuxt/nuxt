@@ -25,7 +25,7 @@ jobs:
           restore-keys: cache-lychee-
 
       # check links with Lychee
-      - uses: actions/checkout@44c2b7a8a4ea60a981eaca3cf939b5f4305c123b # v4.1.5
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
 
       - name: Lychee link checker
         uses: lycheeverse/lychee-action@054a8e8c7a88ada133165c6633a49825a32174e2 # for v1.8.0
