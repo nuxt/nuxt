@@ -31,6 +31,5 @@ export default defineBuildConfig({
     'nuxt/schema',
     '@vue/shared',
     '@unhead/vue',
-    'semver',
   ],
 })
