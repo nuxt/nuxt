@@ -21,7 +21,7 @@ interface SSRStylePluginOptions {
   mode: 'server' | 'client'
 }
 
-const SUPPORTED_FILES_RE = /\.(vue|((c|m)?j|t)sx?)$/
+const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
@@ -120,6 +120,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
             // Vue files can (also) be their own entrypoints as they are tracked separately
             if (isVue(moduleId)) {
               options.clientCSSMap[moduleId].add(moduleId)
+              const parent = moduleId.replace(/\?.+$/, '')
+              options.clientCSSMap[parent] ||= new Set()
+              options.clientCSSMap[parent].add(moduleId)
             }
             // This is required to track CSS in entry chunk
             if (isEntry) {

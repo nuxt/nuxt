@@ -269,7 +269,7 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
-${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
+${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/\b\.\w+$/g, ''))}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
@@ -397,6 +397,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
+      `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
     ].join('\n\n')
   },
 }

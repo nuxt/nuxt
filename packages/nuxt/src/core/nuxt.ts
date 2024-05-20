@@ -1,15 +1,16 @@
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
+import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtOptions } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
-import { withoutLeadingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
 import pagesModule from '../pages/module'
@@ -19,6 +20,7 @@ import importsModule from '../imports/module'
 
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
+import { scriptsStubsPreset } from '../imports/presets'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -32,6 +34,7 @@ import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
+import { prehydrateTransformPlugin } from './plugins/prehydrate'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -67,6 +70,17 @@ async function initNuxt (nuxt: Nuxt) {
       nuxt.hooks.addHooks(config.hooks)
     }
   }
+
+  // Restart Nuxt when layer directories are added or removed
+  const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
+  nuxt.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (event === 'addDir' || event === 'unlinkDir') {
+      if (path.startsWith(layersDir)) {
+        return nuxt.callHook('restart', { hard: true })
+      }
+    }
+  })
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
@@ -124,6 +138,14 @@ async function initNuxt (nuxt: Nuxt) {
     }
   })
 
+  // Prompt to install `@nuxt/scripts` if user has configured it
+  // @ts-expect-error scripts types are not present as the module is not installed
+  if (nuxt.options.scripts) {
+    if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+    }
+  }
+
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
@@ -139,6 +161,9 @@ async function initNuxt (nuxt: Nuxt) {
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+
+  // Add transform for `onPrehydrate` lifecycle hook
+  addBuildPlugin(prehydrateTransformPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -275,7 +300,7 @@ async function initNuxt (nuxt: Nuxt) {
   addComponent({
     name: 'NuxtWelcome',
     priority: 10, // built-in that we do not expect the user to override
-    filePath: (await tryResolveModule('@nuxt/ui-templates/templates/welcome.vue', nuxt.options.modulesDir))!,
+    filePath: resolve(nuxt.options.appDir, 'components/welcome'),
   })
 
   addComponent({
@@ -324,6 +349,14 @@ async function initNuxt (nuxt: Nuxt) {
     name: 'NuxtLoadingIndicator',
     priority: 10, // built-in that we do not expect the user to override
     filePath: resolve(nuxt.options.appDir, 'components/nuxt-loading-indicator'),
+  })
+
+  // Add <NuxtRouteAnnouncer>
+  addComponent({
+    name: 'NuxtRouteAnnouncer',
+    priority: 10, // built-in that we do not expect the user to override
+    filePath: resolve(nuxt.options.appDir, 'components/nuxt-route-announcer'),
+    mode: 'client',
   })
 
   // Add <NuxtClientFallback>
@@ -445,6 +478,10 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // (Re)initialise ignore handler with resolved ignores from modules
+  nuxt._ignore = ignore(nuxt.options.ignoreOptions)
+  nuxt._ignore.add(resolveIgnorePatterns())
+
   await nuxt.callHook('modules:done')
 
   if (nuxt.options.experimental.appManifest) {
@@ -476,6 +513,12 @@ async function initNuxt (nuxt: Nuxt) {
       if (layerRelativePaths.some(p => pattern.test(p))) {
         return nuxt.callHook('restart')
       }
+    }
+
+    // Restart Nuxt when new `app/` dir is added
+    if (event === 'addDir' && path === resolve(nuxt.options.srcDir, 'app')) {
+      logger.info(`\`${path}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+      return nuxt.callHook('restart', { hard: true })
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
@@ -531,6 +574,12 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
+  if (!options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
+    options.imports = defu(options.imports, {
+      presets: [scriptsStubsPreset],
+    })
+  }
+
   // Nuxt Webpack Builder is currently opt-in
   if (options.builder === '@nuxt/webpack-builder') {
     if (!await import('./features').then(r => r.ensurePackageInstalled('@nuxt/webpack-builder', {
@@ -554,7 +603,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   options.modulesDir.push(resolve(options.workspaceDir, 'node_modules'))
   options.modulesDir.push(resolve(pkgDir, 'node_modules'))
   options.build.transpile.push(
-    '@nuxt/ui-templates', // this exposes vue SFCs
     'std-env', // we need to statically replace process.env when used in runtime code
   )
   options.alias['vue-demi'] = resolve(options.appDir, 'compat/vue-demi')
@@ -562,6 +610,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   if (options.telemetry !== false && !process.env.NUXT_TELEMETRY_DISABLED) {
     options._modules.push('@nuxt/telemetry')
   }
+
+  // Ensure we share runtime config between Nuxt and Nitro
+  options.runtimeConfig = options.nitro.runtimeConfig as RuntimeConfig
 
   const nuxt = createNuxt(options)
 
@@ -581,4 +632,4 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i
+const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i

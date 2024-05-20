@@ -1,4 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
+import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
   /**
@@ -7,6 +8,24 @@ export default defineUntypedSchema({
    * @type {typeof import('nitropack')['NitroConfig']}
    */
   nitro: {
+    runtimeConfig: {
+      $resolve: async (val: Record<string, any> | undefined, get) => {
+        const runtimeConfig = await get('runtimeConfig') as RuntimeConfig
+        return {
+          ...runtimeConfig,
+          app: {
+            ...runtimeConfig.app,
+            baseURL: runtimeConfig.app.baseURL.startsWith('./')
+              ? runtimeConfig.app.baseURL.slice(1)
+              : runtimeConfig.app.baseURL,
+          },
+          nitro: {
+            envPrefix: 'NUXT_',
+            ...runtimeConfig.nitro,
+          },
+        }
+      },
+    },
     routeRules: {
       $resolve: async (val: Record<string, any> | undefined, get) => ({
         ...await get('routeRules') as Record<string, any>,

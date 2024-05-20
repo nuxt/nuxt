@@ -1,5 +1,5 @@
 <script setup lang="ts">
-useLifecyleLogs('not-keepalive')
+useLifecycleLogs('not-keepalive')
 </script>
 
 <template>

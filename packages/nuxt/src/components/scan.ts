@@ -26,6 +26,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
+    if (dir.enabled === false) {
+      continue
+    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
@@ -80,8 +83,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
-      const island = /\.(island)(\.global)?$/.test(fileName) || dir.island
-      const global = /\.(global)(\.island)?$/.test(fileName) || dir.global
+      const island = /\.island(?:\.global)?$/.test(fileName) || dir.island
+      const global = /\.global(?:\.island)?$/.test(fileName) || dir.global
       const mode = island ? 'server' : (fileName.match(/(?<=\.)(client|server)(\.global|\.island)*$/)?.[1] || 'all') as 'client' | 'server' | 'all'
       fileName = fileName.replace(/(\.(client|server))?(\.global|\.island)*$/, '')
 

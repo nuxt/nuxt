@@ -25,6 +25,10 @@ Because the data inside `useState` will be serialized to JSON, it is important t
 `useState` is a reserved function name transformed by the compiler, so you should not name your own function `useState`.
 ::
 
+::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=mv0WcBABcIk" target="_blank"}
+Watch a video from Alexander Lichter about why and when to use `useState()`.
+::
+
 ## Using `shallowRef`
 
 If you don't need your state to be deeply reactive, you can combine `useState` with [`shallowRef`](https://vuejs.org/api/reactivity-advanced.html#shallowref). This can improve performance when your state contains large objects and arrays.
