@@ -35,6 +35,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { gte } from 'semver'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -634,7 +635,7 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
   if (!path) { return }
   const { version } = await readPackageJSON(path)
 
-  if (version !== nuxtVersion) {
+  if (version && gte(nuxtVersion, version)) {
     console.warn(`Version mismatch for ${name} and nuxt: expected ${nuxtVersion} (nuxt) but got ${version}. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
   }
 }
