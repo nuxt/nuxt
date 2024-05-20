@@ -16,7 +16,7 @@ export default defineVitestConfig({
           runtimeConfig: {
             app: {
               buildId: 'override',
-            }
+            },
           },
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
