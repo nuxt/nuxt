@@ -635,7 +635,7 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
   const { version } = await readPackageJSON(path)
 
   if (version !== nuxtVersion) {
-    console.error(`Version mismatch for ${name} and nuxt: expected ${nuxtVersion} (nuxt) but got ${version}`)
+    console.warn(`Version mismatch for ${name} and nuxt: expected ${nuxtVersion} (nuxt) but got ${version}. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
   }
 }
 

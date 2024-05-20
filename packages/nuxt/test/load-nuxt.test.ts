@@ -11,6 +11,7 @@ const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../
 vi.stubGlobal('console', {
   ...console,
   error: vi.fn(console.error),
+  warn: vi.fn(console.warn),
 })
 
 vi.mock('pkg-types', async (og) => {
@@ -54,8 +55,8 @@ describe('dependency mismatch', () => {
       cwd: repoRoot,
     })
 
-    expect(console.error).toHaveBeenCalledWith(`Version mismatch for @nuxt/kit and nuxt: expected ${version} (nuxt) but got 3.0.0`)
-    expect(console.error).toHaveBeenCalledWith(`Version mismatch for @nuxt/schema and nuxt: expected ${version} (nuxt) but got 3.0.0`)
+    expect(console.warn).toHaveBeenCalledWith(`Version mismatch for @nuxt/kit and nuxt: expected ${version} (nuxt) but got 3.0.0. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
+    expect(console.warn).toHaveBeenCalledWith(`Version mismatch for @nuxt/schema and nuxt: expected ${version} (nuxt) but got 3.0.0. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
 
     vi.mocked(readPackageJSON).mockRestore()
     await nuxt.close()
@@ -69,7 +70,7 @@ describe('dependency mismatch', () => {
       cwd: repoRoot,
     })
 
-    expect(console.error).not.toHaveBeenCalled()
+    expect(console.warn).not.toHaveBeenCalled()
 
     await nuxt.close()
     vi.mocked(readPackageJSON).mockRestore()
