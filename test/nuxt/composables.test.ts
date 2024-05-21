@@ -21,7 +21,7 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaultValue, asyncDataDefaultErrorValue, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -129,7 +129,7 @@ describe('useAsyncData', () => {
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(asyncDataDefaultValue)
+    expect(res.data.value).toBe(asyncDataDefaults.value)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -141,7 +141,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(asyncDataDefaultValue)
+    expect(nonimmediate.data.value).toBe(asyncDataDefaults.value)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -166,9 +166,9 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => ({}), { immediate: false })
-    expect(error.value).toBe(asyncDataDefaultErrorValue)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
     await execute()
-    expect(error.value).toBe(asyncDataDefaultErrorValue)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -209,9 +209,9 @@ describe('useAsyncData', () => {
 
     clear()
 
-    // TODO: update to asyncDataDefaultValue in v4
+    // TODO: update to asyncDataDefaults.value in v4
     expect(data.value).toBeUndefined()
-    expect(error.value).toBe(asyncDataDefaultErrorValue)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
   })

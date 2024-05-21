@@ -8,7 +8,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults, asyncDataDefaultValue, asyncDataDefaultErrorValue } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataValue, DefaultAsyncDataErrorValue } from '#app/defaults'
@@ -236,7 +236,7 @@ export function useAsyncData<
       }
 
   // Used to get default values
-  const getDefault = () => asyncDataDefaultValue
+  const getDefault = () => asyncDataDefaults.value
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
@@ -258,7 +258,7 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
-    nuxtApp.payload._errors[key] ??= asyncDataDefaultErrorValue
+    nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
 
     const _ref = options.deep ? ref : shallowRef
 
@@ -311,7 +311,7 @@ export function useAsyncData<
         nuxtApp.payload.data[key] = result
 
         asyncData.data.value = result
-        asyncData.error.value = asyncDataDefaultErrorValue
+        asyncData.error.value = asyncDataDefaults.errorValue
         asyncData.status.value = 'success'
       })
       .catch((error: any) => {
@@ -472,7 +472,7 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | Defa
 
   // Initialize value when key is not already set
   if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = asyncDataDefaultValue
+    nuxtApp.payload.data[key] = asyncDataDefaults.value
   }
 
   return {
@@ -524,12 +524,12 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = asyncDataDefaultErrorValue
+    nuxtApp.payload._errors[key] = asyncDataDefaults.errorValue
   }
 
   if (nuxtApp._asyncData[key]) {
     nuxtApp._asyncData[key]!.data.value = undefined
-    nuxtApp._asyncData[key]!.error.value = asyncDataDefaultErrorValue
+    nuxtApp._asyncData[key]!.error.value = asyncDataDefaults.errorValue
     nuxtApp._asyncData[key]!.pending.value = false
     nuxtApp._asyncData[key]!.status.value = 'idle'
   }
