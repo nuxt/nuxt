@@ -45,12 +45,20 @@ export default defineUntypedSchema({
     /**
      * The base path of your Nuxt application.
      *
-     * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     baseURL: '/prefix/'
+     *   }
+     * })
+     * ```
+     *
+     * This can also be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
      * @example
      * ```bash
-     * app: {
-     *    baseURL: "/prefix/"
-     * }
+     * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
      * ```
      */
     baseURL: {
@@ -65,12 +73,20 @@ export default defineUntypedSchema({
     /**
      * An absolute URL to serve the public folder from (production-only).
      *
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     cdnURL: 'https://mycdn.org/'
+     *   }
+     * })
+     * ```
+     *
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
      * @example
      * ```bash
-     * app: {
-     *    cdnURL: "https://mycdn.org/"
-     * }
+     * NUXT_APP_CDN_URL=https://mycdn.org/ node .output/server/index.mjs
      * ```
      */
     cdnURL: {
