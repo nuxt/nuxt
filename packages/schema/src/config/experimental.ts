@@ -415,6 +415,18 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
+        /** @type {'undefined' | 'null'} */
+        value: {
+          async $resolve (val, get) {
+            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+          },
+        },
+        /** @type {'undefined' | 'null'} */
+        errorValue: {
+          async $resolve (val, get) {
+            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+          },
+        },
         deep: {
           async $resolve (val, get) {
             return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
