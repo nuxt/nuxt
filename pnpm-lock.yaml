@@ -369,6 +369,9 @@ importers:
       scule:
         specifier: ^1.3.0
         version: 1.3.0
+      semver:
+        specifier: ^7.6.2
+        version: 7.6.2
       std-env:
         specifier: ^3.7.0
         version: 3.7.0
