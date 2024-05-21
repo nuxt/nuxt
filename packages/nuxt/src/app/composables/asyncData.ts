@@ -13,6 +13,9 @@ import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
+// TODO: temporary module for backwards compatibility
+import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
 export type _Transform<Input = any, Output = any> = (input: Input) => Output | Promise<Output>

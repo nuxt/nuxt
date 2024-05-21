@@ -11,6 +11,9 @@ import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom }
 import { useAsyncData } from './asyncData'
 import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
+// TODO: temporary module for backwards compatibility
+import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+
 // @ts-expect-error virtual file
 import { fetchDefaults } from '#build/nuxt.config.mjs'
 
