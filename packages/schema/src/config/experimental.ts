@@ -46,6 +46,11 @@ export default defineUntypedSchema({
      */
     compatibilityVersion: 3,
     /**
+     * This enables early access to the experimental multi-app support.
+     * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
+     */
+    multiApp: false,
+    /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
      *
