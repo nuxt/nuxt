@@ -13,7 +13,7 @@ import fse from 'fs-extra'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
-import { gte } from 'semver'
+import { gt } from 'semver'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -646,7 +646,7 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
   if (!path) { return }
   const { version } = await readPackageJSON(path)
 
-  if (version && !gte(nuxtVersion, version)) {
+  if (version && gt(nuxtVersion, version)) {
     console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
   }
 }
