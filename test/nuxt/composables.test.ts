@@ -126,6 +126,7 @@ describe('useAsyncData', () => {
         "execute",
         "refresh",
         "clear",
+        "reset",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()

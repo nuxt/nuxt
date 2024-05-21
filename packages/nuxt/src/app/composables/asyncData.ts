@@ -11,7 +11,7 @@ import { onNuxtReady } from './ready'
 import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
 
 // TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataValue, DefaultAsyncDataErrorValue } from '#app/defaults'
+import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 

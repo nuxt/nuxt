@@ -21,6 +21,7 @@
 
 <script setup lang="ts">
 import { asyncDataDefaults } from '#build/nuxt.config.mjs'
+
 const { data, execute } = await useAsyncData('immediateFalse', () => $fetch('/api/random'), { immediate: false })
 
 if (data.value !== asyncDataDefaults.errorValue) {

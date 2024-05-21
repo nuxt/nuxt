@@ -498,6 +498,6 @@ export default defineUntypedSchema({
       async $resolve (val, get) {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
       },
-    }
+    },
   },
 })

@@ -12,7 +12,7 @@ import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#com
 import { useRouter } from '#imports'
 
 // TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataValue, DefaultAsyncDataErrorValue } from '#app/defaults'
+import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 interface TestResponse { message: string }
 
