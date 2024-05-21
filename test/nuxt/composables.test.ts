@@ -21,7 +21,7 @@ import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaultValue, asyncDataDefaultErrorValue } from '#build/nuxt.config.mjs'
+import { asyncDataDefaultValue, asyncDataDefaultErrorValue, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -349,13 +349,12 @@ describe('errors', () => {
   })
 
   it('global nuxt errors', () => {
-    const err = useError()
-    expect(err.value).toBeUndefined()
+    const error = useError()
+    expect(error.value).toBeUndefined()
     showError('new error')
-    expect(err.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
-    // TODO: should this return to being undefined?
-    expect(err.value).toBeNull()
+    expect(error.value).toBe(nuxtDefaultErrorValue)
   })
 })
 
@@ -620,7 +619,7 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
     expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
-    expect(error.value).toBeFalsy()
+    expect(error.value).toBe(nuxtDefaultErrorValue)
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')

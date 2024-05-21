@@ -133,6 +133,7 @@ declare module '#app' {
 declare module '#app/defaults' {
   type DefaultAsyncDataErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
   type DefaultAsyncDataValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
+  type DefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
 }
 
 declare module 'vue' {
@@ -401,6 +402,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const asyncDataDefaultValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
       `export const asyncDataDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
+      `export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
