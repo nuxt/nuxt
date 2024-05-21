@@ -20,10 +20,10 @@
 </template>
 
 <script setup lang="ts">
-import { asyncDataDefaultValue } from '#build/nuxt.config.mjs'
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 const { data, execute } = await useAsyncData('immediateFalse', () => $fetch('/api/random'), { immediate: false })
 
-if (data.value !== asyncDataDefaultValue) {
-  throw new Error(`Initial data should be ${asyncDataDefaultValue}: ` + data.value)
+if (data.value !== asyncDataDefaults.errorValue) {
+  throw new Error(`Initial data should be ${asyncDataDefaults.errorValue}: ` + data.value)
 }
 </script>
