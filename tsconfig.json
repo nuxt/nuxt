@@ -45,6 +45,6 @@
     "**/docs/**",
     "**/playground/**",
     "**/test/fixtures/**",
-    "test/nuxt/**"
+    "**/test/fixtures-temp/**"
   ]
 }
