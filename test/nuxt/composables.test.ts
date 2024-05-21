@@ -20,6 +20,9 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
+// @ts-expect-error virtual file
+import { asyncDataDefaultValue, asyncDataDefaultErrorValue } from '#build/nuxt.config.mjs'
+
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
@@ -126,7 +129,7 @@ describe('useAsyncData', () => {
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(null)
+    expect(res.data.value).toBe(asyncDataDefaultValue)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -138,7 +141,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(null)
+    expect(nonimmediate.data.value).toBe(asyncDataDefaultValue)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -163,9 +166,9 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => ({}), { immediate: false })
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(asyncDataDefaultErrorValue)
     await execute()
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(asyncDataDefaultErrorValue)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -206,8 +209,9 @@ describe('useAsyncData', () => {
 
     clear()
 
+    // TODO: update to asyncDataDefaultValue in v4
     expect(data.value).toBeUndefined()
-    expect(error.value).toBeNull()
+    expect(error.value).toBe(asyncDataDefaultErrorValue)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
   })
