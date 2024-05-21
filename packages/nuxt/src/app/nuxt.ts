@@ -122,10 +122,12 @@ interface _NuxtApp {
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
   _asyncData: Record<string, {
-    data: Ref<any>
+    data: Ref<unknown>
     pending: Ref<boolean>
     error: Ref<Error | DefaultAsyncDataErrorValue>
     status: Ref<AsyncDataRequestStatus>
+    /** @internal */
+    _default: () => unknown
   } | undefined>
 
   /** @internal */

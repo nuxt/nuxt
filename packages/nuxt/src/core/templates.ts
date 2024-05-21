@@ -404,6 +404,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
         value: ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
         errorValue: ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
       })}`,
+      `export const resetAsyncDataToUndefined = ${ctx.nuxt.options.experimental.resetAsyncDataToUndefined}`,
       `export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
