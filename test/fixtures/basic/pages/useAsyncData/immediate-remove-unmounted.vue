@@ -2,7 +2,7 @@
   <div>
     <div>immediate-remove-unmounted.vue</div>
     <div id="immediate-data">
-      {{ data === null ? "null" : data }}
+      {{ data === null ? "null" : (data === undefined ? 'undefined' : data) }}
     </div>
     <button
       id="execute-btn"

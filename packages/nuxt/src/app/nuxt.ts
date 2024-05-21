@@ -23,6 +23,8 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 // @ts-expect-error virtual file
 import { appId } from '#build/nuxt.config.mjs'
 
+// TODO: temporary module for backwards compatibility
+import type { DefaultAsyncDataErrorValue } from '#app/defaults'
 import type { NuxtAppLiterals } from '#app'
 
 function getNuxtAppCtx (appName = appId || 'nuxt-app') {
@@ -93,7 +95,7 @@ export interface NuxtPayload {
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
   error?: NuxtError | null
-  _errors: Record<string, NuxtError | null>
+  _errors: Record<string, NuxtError | DefaultAsyncDataErrorValue>
   [key: string]: unknown
 }
 
@@ -122,7 +124,7 @@ interface _NuxtApp {
   _asyncData: Record<string, {
     data: Ref<any>
     pending: Ref<boolean>
-    error: Ref<Error | null>
+    error: Ref<Error | DefaultAsyncDataErrorValue>
     status: Ref<AsyncDataRequestStatus>
   } | undefined>
 
