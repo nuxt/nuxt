@@ -3,7 +3,8 @@ import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
 import { isVue } from '../../core/utils'
 
-const INJECTION_RE = /\b_ctx\.\$route\b/g
+const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
+const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
 const INJECTION_SINGLE_RE = /\b_ctx\.\$route\b/
 
 export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
@@ -14,14 +15,21 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       return isVue(id, { type: ['template', 'script'] })
     },
     transform (code) {
-      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol')) { return }
+      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
 
       let replaced = false
       const s = new MagicString(code)
-      s.replace(INJECTION_RE, () => {
+      // handles `$route` in template
+      s.replace(INJECTION_RE_TEMPLATE, () => {
         replaced = true
         return '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)'
       })
+      // handles `this.$route` in script
+      s.replace(INJECTION_RE_SCRIPT, () => {
+        replaced = true
+        return '(this._.provides[__nuxt_route_symbol] || this.$route)'
+      })
+
       if (replaced) {
         s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
       }
