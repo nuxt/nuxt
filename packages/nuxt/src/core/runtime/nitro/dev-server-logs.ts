@@ -6,11 +6,11 @@ import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
 import { getContext } from 'unctx'
 
+import { isVNode } from 'vue'
 import type { NitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
-import { isVNode } from 'vue'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
