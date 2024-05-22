@@ -164,8 +164,10 @@ export function useFetch<
      * @see https://github.com/unjs/ofetch/blob/bb2d72baa5d3f332a2185c20fc04e35d2c3e258d/src/fetch.ts#L152
      */
     const timeoutLength = toValue(opts.timeout)
+    let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      setTimeout(() => controller.abort(), timeoutLength)
+      timeoutId = setTimeout(() => controller.abort(), timeoutLength)
+      controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
     let _$fetch = opts.$fetch || globalThis.$fetch
@@ -178,7 +180,7 @@ export function useFetch<
       }
     }
 
-    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any) as Promise<_ResT>
+    return _$fetch(_request.value, { signal: controller.signal, ..._fetchOptions } as any).finally(() => { clearTimeout(timeoutId) }) as Promise<_ResT>
   }, _asyncDataOptions)
 
   return asyncData
