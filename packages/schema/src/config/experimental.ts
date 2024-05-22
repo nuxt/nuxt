@@ -29,6 +29,7 @@ export default defineUntypedSchema({
      *     compileTemplate: true,
      *     templateUtils: true,
      *     relativeWatchPaths: true,
+     *     resetAsyncDataToUndefined: true,
      *     defaults: {
      *       useAsyncData: {
      *         deep: true
@@ -484,6 +485,16 @@ export default defineUntypedSchema({
      * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
      */
     relativeWatchPaths: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+      },
+    },
+
+    /**
+     * Whether `clear` and `clearNuxtData` should reset async data to its _default_ value or update
+     * it to `null`/`undefined`.
+     */
+    resetAsyncDataToUndefined: {
       async $resolve (val, get) {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
       },
