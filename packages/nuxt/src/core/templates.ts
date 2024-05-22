@@ -414,6 +414,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
   },
 }
 
+const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
   getContents ({ app }) {
@@ -424,12 +425,11 @@ export const buildTypeTemplate: NuxtTemplate = {
         continue
       }
 
-      const typeFilenames = [
-        file.filename.replace(/\.([cm])?[jt]s$/, '.d.$1ts'),
-        file.filename.replace(/\.([cm])?[jt]s$/, '.d.ts'),
-      ]
-      if (app.templates.some(f => f.filename && typeFilenames.includes(f.filename))) {
-        continue
+      if (TYPE_FILENAME_RE.test(file.filename)) {
+        const typeFilenames = new Set([file.filename.replace(TYPE_FILENAME_RE, '.d.$1ts'), file.filename.replace(TYPE_FILENAME_RE, '.d.ts')])
+        if (app.templates.some(f => f.filename && typeFilenames.has(f.filename))) {
+          continue
+        }
       }
 
       if (!file.filename.endsWith('.d.ts')) {
