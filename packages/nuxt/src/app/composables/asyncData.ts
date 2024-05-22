@@ -9,7 +9,6 @@ import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
