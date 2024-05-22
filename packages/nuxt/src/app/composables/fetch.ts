@@ -5,7 +5,6 @@ import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
 
 // TODO: temporary module for backwards compatibility
-
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
