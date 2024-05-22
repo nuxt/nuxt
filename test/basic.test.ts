@@ -76,7 +76,7 @@ describe('route rules', () => {
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
     expect(headHtml.match(/<meta name="viewport" content="width=1024, initial-scale=1">/g)).toHaveLength(1)
 
-    const { script, attrs } = parseData(headHtml, 'nuxt-app-basic')
+    const { script, attrs } = parseData(headHtml)
     expect(script.serverRendered).toEqual(false)
     if (isRenderingJson) {
       expect(attrs['data-ssr']).toEqual('false')
@@ -957,7 +957,7 @@ describe('legacy async data', () => {
     expect(html).toContain('<div>Hello API</div>')
     expect(html).toContain('<div>fooChild</div>')
     expect(html).toContain('<div>fooParent</div>')
-    const { script } = parseData(html, 'nuxt-app-basic')
+    const { script } = parseData(html)
     expect(script.data['options:asyncdata:hello'].hello).toBe('Hello API')
     expect(Object.values(script.data)).toMatchInlineSnapshot(`
       [

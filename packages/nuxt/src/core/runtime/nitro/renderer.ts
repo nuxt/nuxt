@@ -30,7 +30,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands } from '#internal/nuxt.config.mjs'
+import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -425,13 +425,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
     // 4. Payloads
+    const nuxtDataId = !multiApp ? '__NUXT_DATA__' : 'nuxt-data'
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: 'nuxt-data', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: nuxtDataId, ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
           : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: 'nuxt-data', ssrContext, data: ssrContext.payload })
+          ? renderPayloadJsonScript({ id: nuxtDataId, ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
     }, {
       ...headEntryOptions,
@@ -589,19 +590,23 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
 
 function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
+  const selector = !multiApp ? ({ id: opts.id }) : ({ [`data-${opts.id}`]: appId })
   const payload: Script = {
     'type': 'application/json',
-    [`data-${opts.id}`]: appId,
     'innerHTML': contents,
+    ...selector,
     'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
   }
   if (opts.src) {
     payload['data-src'] = opts.src
   }
+  const config = uneval(opts.ssrContext.config)
+  const singleAppPayload = `window.__NUXT__={};window.__NUXT__.config=${config}`
+  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
   return [
     payload,
     {
-      innerHTML: `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${uneval(opts.ssrContext.config)}}`,
+      innerHTML: !multiApp ? singleAppPayload : multiAppPayload,
     },
   ]
 }
@@ -609,17 +614,22 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
 function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const nuxtData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
+    const singleAppPayload = `import p from "${opts.src}";window.__NUXT__={...p,...(${nuxtData})}`
+    const multiAppPayload = `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${nuxtData})}`
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={...p,...(${devalue(opts.data)})}`,
+        innerHTML: !multiApp ? singleAppPayload : multiAppPayload,
       },
     ]
   }
+  const singleAppPayload = `window.__NUXT__=${nuxtData}`
+  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${nuxtData}`
   return [
     {
-      innerHTML: `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${devalue(opts.data)}`,
+      innerHTML: !multiApp ? singleAppPayload : multiAppPayload,
     },
   ]
 }

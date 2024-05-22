@@ -7,7 +7,7 @@ import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
 
 // @ts-expect-error virtual file
-import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
+import { devLogs, devRootDir, multiApp } from '#build/nuxt.config.mjs'
 
 const devRevivers: Record<string, (data: any) => any> = import.meta.server
   ? {}
@@ -40,7 +40,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   }
 
   if (typeof window !== 'undefined') {
-    const content = document.querySelector(`[data-nuxt-logs="${nuxtApp._name}"]`)?.textContent
+    const nuxtLogsElement = !multiApp ? document.getElementById('__NUXT_LOGS__') : document.querySelector(`[data-nuxt-logs="${nuxtApp._name}"]`)
+      const content = nuxtLogsElement?.textContent
     const logs = content ? parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[] : []
     await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
   }

@@ -105,7 +105,7 @@ const revivers = {
 export function parsePayload (payload: string) {
   return parse(payload || '', revivers)
 }
-export function parseData (html: string, appId = 'nuxt-app') {
+export function parseData (html: string, appId = 'nuxt-app', runningMultiApp = false) {
   if (!isRenderingJson) {
     const { script = '' } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
     const _script = new Script(script)
@@ -114,7 +114,9 @@ export function parseData (html: string, appId = 'nuxt-app') {
       attrs: {},
     }
   }
-  const { script, attrs = '' } = html.match(new RegExp(`<script type="application\\/json" data-nuxt-data="${appId}"(?<attrs>[^>]+)>(?<script>.*?)<\\/script>`))?.groups || {}
+
+  const regexp = !runningMultiApp ? /<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/ : new RegExp(`<script type="application\\/json" data-nuxt-data="${appId}"(?<attrs>[^>]+)>(?<script>.*?)<\\/script>`)
+  const { script, attrs = '' } = html.match(regexp)?.groups || {}
   const _attrs: Record<string, string> = {}
   for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)="(?<value>[^"]+)"/g)) {
     _attrs[attr!.groups!.key!] = attr!.groups!.value!
