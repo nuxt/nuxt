@@ -415,13 +415,14 @@ export const nuxtConfigTemplate: NuxtTemplate = {
 }
 
 const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+const DECLARATION_RE = /\.d\.[cm]?ts$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
   getContents ({ app }) {
     let declarations = ''
 
     for (const file of app.templates) {
-      if (file.write || !file.filename || file.filename.endsWith('.d.ts')) {
+      if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
         continue
       }
 
