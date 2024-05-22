@@ -40,7 +40,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "magic-string": "^0.30.10",
     "nuxt": "workspace:*",
-    "rollup": "^4.17.2",
+    "rollup": "^4.18.0",
     "vite": "5.2.11",
     "vue": "3.4.27"
   },
@@ -90,7 +90,7 @@
     "vue-router": "4.3.2",
     "vue-tsc": "2.0.19"
   },
-  "packageManager": "pnpm@9.1.1",
+  "packageManager": "pnpm@9.1.2",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
