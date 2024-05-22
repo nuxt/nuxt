@@ -9,7 +9,6 @@ import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
