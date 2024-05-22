@@ -12,7 +12,7 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
   function resolveFromPublicAssets (id: string) {
     for (const dir of nitro.options.publicAssets) {
       if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
-      const path = id.replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
+      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
       if (existsSync(path)) {
         return id
       }
