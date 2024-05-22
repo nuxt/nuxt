@@ -129,6 +129,8 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+    // Add shims for `#build/*` imports that do not already have matching types
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
