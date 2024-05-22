@@ -119,9 +119,7 @@ export interface _AsyncData<DataT, ErrorT> {
   pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
-  /** @deprecated prefer using `reset()` instead to reset value, as it is more accurate */
   clear: () => void
-  reset: () => void
   error: Ref<ErrorT | DefaultAsyncDataErrorValue>
   status: Ref<AsyncDataRequestStatus>
 }
@@ -339,7 +337,7 @@ export function useAsyncData<
     return nuxtApp._asyncDataPromises[key]!
   }
 
-  asyncData.reset = asyncData.clear = () => clearNuxtDataByKey(nuxtApp, key)
+  asyncData.clear = () => clearNuxtDataByKey(nuxtApp, key)
 
   const initialFetch = () => asyncData.refresh({ _initial: true })
 
