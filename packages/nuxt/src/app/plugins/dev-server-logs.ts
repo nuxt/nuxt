@@ -1,4 +1,4 @@
-import { consola, createConsola } from 'consola'
+import { createConsola } from 'consola'
 import type { LogObject } from 'consola'
 import { parse } from 'devalue'
 
@@ -29,32 +29,11 @@ export default defineNuxtPlugin((nuxtApp) => {
         date: true,
       },
     })
-    const hydrationLogs = new Set<string>()
-    consola.wrapConsole()
-    consola.addReporter({
-      log (logObj) {
-        try {
-          hydrationLogs.add(JSON.stringify(logObj.args))
-        } catch {
-          // silently ignore - the worst case is a user gets log twice
-        }
-      },
-    })
     nuxtApp.hook('dev:ssr-logs', (logs) => {
       for (const log of logs) {
-        // deduplicate so we don't print out things that are logged on client
-        try {
-          if (!hydrationLogs.size || !hydrationLogs.has(JSON.stringify(log.args))) {
-            logger.log(normalizeServerLog({ ...log }))
-          }
-        } catch {
-          logger.log(normalizeServerLog({ ...log }))
-        }
+        logger.log(normalizeServerLog({ ...log }))
       }
     })
-
-    nuxtApp.hooks.hook('app:suspense:resolve', () => consola.restoreAll())
-    nuxtApp.hooks.hookOnce('dev:ssr-logs', () => hydrationLogs.clear())
   }
 
   // pass SSR logs after hydration
