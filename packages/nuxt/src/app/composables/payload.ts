@@ -8,7 +8,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appId, appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -96,6 +96,14 @@ export async function isPrerendered (url = useRoute().path) {
 }
 
 let payloadCache: any = null
+
+function getNuxtDataElement () {
+  if (!multiApp) {
+    return document.getElementById('__NUXT_DATA__')
+  }
+  return document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement
+}
+
 /** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
@@ -105,7 +113,7 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement
+  const el = getNuxtDataElement()
   if (!el) {
     return {}
   }
@@ -117,7 +125,7 @@ export async function getNuxtClientPayload () {
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__![appId],
+    ...(!multiApp ? window.__NUXT__ : window.__NUXT__![appId]),
   }
 
   return payloadCache
