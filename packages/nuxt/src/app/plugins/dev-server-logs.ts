@@ -6,11 +6,10 @@ import { defineNuxtPlugin } from '../nuxt'
 
 // @ts-expect-error virtual file
 import { devLogs, devRootDir } from '#build/nuxt.config.mjs'
-import { defineComponent, h } from 'vue'
+import { h } from 'vue'
 
 const devRevivers: Record<string, (data: any) => any> = import.meta.server ? {} : {
   VNode: data => h(data.type, data.props),
-  Component: data => defineComponent(data),
 }
 
 export default defineNuxtPlugin((nuxtApp) => {

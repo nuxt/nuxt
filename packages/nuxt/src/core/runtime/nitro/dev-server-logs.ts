@@ -14,8 +14,6 @@ import { isVNode } from 'vue'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
-  Component: data => data && typeof data === 'object' && '$slots' in data ? {
-  } : undefined,
 }
 
 interface NuxtDevAsyncContext {
