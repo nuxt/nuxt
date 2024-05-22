@@ -416,7 +416,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
 
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
-  getContents({ app }) {
+  getContents ({ app }) {
     let declarations = ''
 
     for (const file of app.templates) {
@@ -426,7 +426,7 @@ export const buildTypeTemplate: NuxtTemplate = {
 
       const typeFilenames = [
         file.filename.replace(/\.([cm])?[jt]s$/, '.d.$1ts'),
-        file.filename.replace(/\.([cm])?[jt]s$/, '.d.ts')
+        file.filename.replace(/\.([cm])?[jt]s$/, '.d.ts'),
       ]
       if (app.templates.some(f => f.filename && typeFilenames.includes(f.filename))) {
         continue
@@ -438,5 +438,5 @@ export const buildTypeTemplate: NuxtTemplate = {
     }
 
     return declarations
-  }
+  },
 }
