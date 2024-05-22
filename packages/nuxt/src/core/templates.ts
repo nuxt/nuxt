@@ -432,9 +432,7 @@ export const buildTypeTemplate: NuxtTemplate = {
         }
       }
 
-      if (!file.filename.endsWith('.d.ts')) {
-        declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
-      }
+      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
     }
 
     return declarations
