@@ -1,7 +1,7 @@
 // TODO: temporary module for backwards compatibility
 
-export type DefaultAsyncDataErrorValue = undefined
-export type DefaultAsyncDataValue = undefined
-export type DefaultErrorValue = undefined
+export type DefaultAsyncDataErrorValue = null
+export type DefaultAsyncDataValue = null
+export type DefaultErrorValue = null
 
 export {}
