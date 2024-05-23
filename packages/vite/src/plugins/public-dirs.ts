@@ -6,8 +6,9 @@ import { dirname, relative } from 'pathe'
 import MagicString from 'magic-string'
 
 const PREFIX = 'virtual:public?'
+const CSS_URL_RE = /url\((\/[^)]+)\)/g
 
-export const VitePublicDirsPlugin = createUnplugin(() => {
+export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boolean }) => {
   const { resolveFromPublicAssets } = useResolveFromPublicAssets()
 
   return {
@@ -88,5 +89,3 @@ export function useResolveFromPublicAssets () {
 
   return { resolveFromPublicAssets }
 }
-
-const CSS_URL_RE = /url\((\/[^)]+)\)/g
