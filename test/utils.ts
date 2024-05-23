@@ -6,7 +6,7 @@ import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
 
-export const isRenderingJson = true
+export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
 export async function renderPage (path = '/') {
   const ctx = useTestContext()
@@ -116,7 +116,7 @@ export function parseData (html: string) {
   }
   const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
   const _attrs: Record<string, string> = {}
-  for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)+="(?<value>[^"]+)"/g)) {
+  for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)="(?<value>[^"]+)"/g)) {
     _attrs[attr!.groups!.key] = attr!.groups!.value
   }
   return {

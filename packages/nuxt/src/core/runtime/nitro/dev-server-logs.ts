@@ -70,8 +70,8 @@ function getStack () {
   return stack.stack?.replace(EXCLUDE_TRACE_RE, '').replace(/^Error.*\n/, '') || ''
 }
 
-const FILENAME_RE = /at.*\(([^:)]+)[):]/
-const FILENAME_RE_GLOBAL = /at.*\(([^)]+)\)/g
+const FILENAME_RE = /at[^(]*\(([^:)]+)[):]/
+const FILENAME_RE_GLOBAL = /at[^(]*\(([^)]+)\)/g
 function extractFilenameFromStack (stacktrace: string) {
   return stacktrace.match(FILENAME_RE)?.[1].replace(withTrailingSlash(rootDir), '')
 }

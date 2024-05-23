@@ -18,6 +18,10 @@ import { getAppManifest, getRouteRules } from '#app/composables/manifest'
 import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
+
+// @ts-expect-error virtual file
+import { asyncDataDefaults, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -29,9 +33,7 @@ describe('app config', () => {
     const appConfig = useAppConfig()
     expect(appConfig).toMatchInlineSnapshot(`
       {
-        "nuxt": {
-          "buildId": "override",
-        },
+        "nuxt": {},
       }
     `)
     updateAppConfig({
@@ -43,7 +45,6 @@ describe('app config', () => {
       {
         "new": "value",
         "nuxt": {
-          "buildId": "override",
           "nested": 42,
         },
       }
@@ -99,6 +100,7 @@ describe('composables', () => {
       'preloadRouteComponents',
       'reloadNuxtApp',
       'refreshCookie',
+      'onPrehydrate',
       'useFetch',
       'useHead',
       'useLazyFetch',
@@ -127,7 +129,7 @@ describe('useAsyncData', () => {
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(null)
+    expect(res.data.value).toBe(asyncDataDefaults.value)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -139,7 +141,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(null)
+    expect(nonimmediate.data.value).toBe(asyncDataDefaults.value)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -164,9 +166,9 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => ({}), { immediate: false })
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
     await execute()
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -207,8 +209,9 @@ describe('useAsyncData', () => {
 
     clear()
 
+    // TODO: update to asyncDataDefaults.value in v4
     expect(data.value).toBeUndefined()
-    expect(error.value).toBeNull()
+    expect(error.value).toBe(asyncDataDefaults.errorValue)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
   })
@@ -346,13 +349,12 @@ describe('errors', () => {
   })
 
   it('global nuxt errors', () => {
-    const err = useError()
-    expect(err.value).toBeUndefined()
+    const error = useError()
+    expect(error.value).toBeUndefined()
     showError('new error')
-    expect(err.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
-    // TODO: should this return to being undefined?
-    expect(err.value).toBeNull()
+    expect(error.value).toBe(nuxtDefaultErrorValue)
   })
 })
 
@@ -513,6 +515,22 @@ describe('loading state', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect error from loading state to be changed by finish({ error: true })', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { error, start, finish } = useLoadingIndicator()
+    expect(error.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    start()
+    finish({ error: true })
+    expect(error.value).toBeTruthy()
+    start()
+    expect(error.value).toBeFalsy()
+    finish()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -601,7 +619,7 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
     expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
-    expect(error.value).toBeFalsy()
+    expect(error.value).toBe(nuxtDefaultErrorValue)
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
@@ -693,5 +711,38 @@ describe('callOnce', () => {
     await execute('first')
     await execute('second')
     expect(fn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('route announcer', () => {
+  it('should create a route announcer with default politeness', () => {
+    const announcer = useRouteAnnouncer()
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create a route announcer with provided politeness', () => {
+    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
   })
 })

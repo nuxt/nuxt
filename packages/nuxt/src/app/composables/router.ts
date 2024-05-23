@@ -2,7 +2,7 @@ import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
@@ -140,7 +140,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -169,7 +169,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location },
+          headers: { location: encodeURI(location) },
         }
         return response
       }

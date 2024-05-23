@@ -55,7 +55,7 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
   }
 
   if (typeof fileName === 'string' && ctx.options.dev) {
-    const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
+    const hash = /\[(chunkhash|contenthash|hash)(?::\d+)?\]/.exec(fileName)
     if (hash) {
       logger.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
     }
