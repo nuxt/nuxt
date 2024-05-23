@@ -129,7 +129,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   }) as any
 
   if (clientConfig.server && clientConfig.server.hmr !== false) {
-    const hmrPortDefault = 24678 // Vite's default HMR port
+    const hmrPortDefault = clientConfig.server.hmr.port || 24678 // Vite's default HMR port
     const hmrPort = await getPort({
       port: hmrPortDefault,
       ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
