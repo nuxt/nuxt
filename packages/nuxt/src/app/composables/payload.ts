@@ -1,7 +1,7 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, onServerPrefetch } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
 import { useRoute } from './router'
@@ -16,9 +16,9 @@ interface LoadPayloadOptions {
 }
 
 /** @since 3.0.0 */
-export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
+export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadURL = _getPayloadURL(url, opts)
+  const payloadURL = await _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
   if (payloadURL in cache) {
@@ -39,26 +39,34 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   return cache[payloadURL]
 }
 /** @since 3.0.0 */
-export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
-  const payloadURL = _getPayloadURL(url, opts)
-  useHead({
-    link: [
-      { rel: 'modulepreload', href: payloadURL },
-    ],
+export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
+  const nuxtApp = useNuxtApp()
+  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
+    nuxtApp.runWithContext(() => useHead({
+      link: [
+        { rel: 'modulepreload', href: payloadURL },
+      ],
+    }))
   })
+  if (import.meta.server) {
+    onServerPrefetch(() => promise)
+  }
+  return promise
 }
 
 // --- Internal ---
 
 const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
-function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
   const config = useRuntimeConfig()
   const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
-  return joinURL(config.app.baseURL, u.pathname, filename + (hash ? `?${hash}` : ''))
+  const cdnURL = config.app.cdnURL
+  const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
+  return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
 async function _importPayload (payloadURL: string) {
