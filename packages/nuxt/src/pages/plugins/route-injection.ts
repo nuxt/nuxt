@@ -1,8 +1,8 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
-import { isVue } from '../../core/utils'
 import { stripLiteral } from 'strip-literal'
+import { isVue } from '../../core/utils'
 
 const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
 const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
