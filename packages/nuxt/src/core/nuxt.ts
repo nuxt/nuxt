@@ -13,7 +13,7 @@ import fse from 'fs-extra'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
-import { gt } from 'semver'
+import { gt, satisfies } from 'semver'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -129,6 +129,8 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+    // Add shims for `#build/*` imports that do not already have matching types
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -555,6 +557,12 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
+
+  // Show compatibility version banner when Nuxt is running with a compatibility version
+  // that is different from the current major version
+  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+    console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
   await nuxt.callHook('ready', nuxt)

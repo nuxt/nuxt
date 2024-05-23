@@ -413,3 +413,29 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     ].join('\n\n')
   },
 }
+
+const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+const DECLARATION_RE = /\.d\.[cm]?ts$/
+export const buildTypeTemplate: NuxtTemplate = {
+  filename: 'types/build.d.ts',
+  getContents ({ app }) {
+    let declarations = ''
+
+    for (const file of app.templates) {
+      if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
+        continue
+      }
+
+      if (TYPE_FILENAME_RE.test(file.filename)) {
+        const typeFilenames = new Set([file.filename.replace(TYPE_FILENAME_RE, '.d.$1ts'), file.filename.replace(TYPE_FILENAME_RE, '.d.ts')])
+        if (app.templates.some(f => f.filename && typeFilenames.has(f.filename))) {
+          continue
+        }
+      }
+
+      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+    }
+
+    return declarations
+  },
+}
