@@ -39,7 +39,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   return cache[payloadURL]
 }
 /** @since 3.0.0 */
-export async function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
+export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
   const promise = _getPayloadURL(url, opts).then((payloadURL) => {
     nuxtApp.runWithContext(() => useHead({
