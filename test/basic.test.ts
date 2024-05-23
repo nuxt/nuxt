@@ -1920,7 +1920,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     if (isWebpack) {
       // TODO: webpack does not yet support dynamic static paths
       expect(publicFiles).toContain(file)
-      return
+      return true
     }
 
     expect(file).toMatch(new RegExp(`^${base.replace(/\//g, '\\/')}`))
