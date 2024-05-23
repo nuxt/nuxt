@@ -40,12 +40,13 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
 }
 /** @since 3.0.0 */
 export async function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
+  const nuxtApp = useNuxtApp()
   const payloadURL = await _getPayloadURL(url, opts)
-  useHead({
+  nuxtApp.runWithContext(() => useHead({
     link: [
       { rel: 'modulepreload', href: payloadURL },
     ],
-  })
+  }))
 }
 
 // --- Internal ---
