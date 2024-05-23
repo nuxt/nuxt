@@ -14,7 +14,7 @@ const devRevivers: Record<string, (data: any) => any> = import.meta.server
       VNode: data => h(data.type, data.props),
     }
 
-export default defineNuxtPlugin((nuxtApp) => {
+export default defineNuxtPlugin(async (nuxtApp) => {
   if (import.meta.test) { return }
 
   if (import.meta.server) {
@@ -37,14 +37,11 @@ export default defineNuxtPlugin((nuxtApp) => {
     })
   }
 
-  // pass SSR logs after hydration
-  nuxtApp.hooks.hook('app:suspense:resolve', async () => {
-    if (typeof window !== 'undefined') {
-      const content = document.getElementById('__NUXT_LOGS__')?.textContent
-      const logs = content ? parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[] : []
-      await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
-    }
-  })
+  if (typeof window !== 'undefined') {
+    const content = document.getElementById('__NUXT_LOGS__')?.textContent
+    const logs = content ? parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[] : []
+    await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
+  }
 })
 
 function normalizeFilenames (stack?: string) {
