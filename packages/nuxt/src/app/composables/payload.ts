@@ -1,7 +1,7 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, onServerPrefetch } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 
 import { useRoute } from './router'
@@ -39,14 +39,19 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   return cache[payloadURL]
 }
 /** @since 3.0.0 */
-export async function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
+export async function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
   const nuxtApp = useNuxtApp()
-  const payloadURL = await _getPayloadURL(url, opts)
-  nuxtApp.runWithContext(() => useHead({
-    link: [
-      { rel: 'modulepreload', href: payloadURL },
-    ],
-  }))
+  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
+    nuxtApp.runWithContext(() => useHead({
+      link: [
+        { rel: 'modulepreload', href: payloadURL },
+      ],
+    }))
+  })
+  if (import.meta.server) {
+    onServerPrefetch(() => promise)
+  }
+  return promise
 }
 
 // --- Internal ---
