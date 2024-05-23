@@ -8,7 +8,7 @@ import { buildAssetsURL } from '#internal/nuxt/paths'
 import { outdatedBuildInterval } from '#build/nuxt.config.mjs'
 
 export default defineNuxtPlugin((nuxtApp) => {
-  if (import.meta.test || !outdatedBuildInterval) { return }
+  if (import.meta.test) { return }
 
   let timeout: NodeJS.Timeout
 

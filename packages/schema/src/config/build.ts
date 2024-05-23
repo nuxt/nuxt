@@ -118,14 +118,6 @@ export default defineUntypedSchema({
         })
       },
     },
-
-    /**
-     * Set the time interval (in ms) to check for new builds.
-     *
-     * Set to `false` to disable.
-     * @type {number | false}
-     */
-    checkOutdatedBuildInterval: 1000 * 60 * 60,
   },
 
   /**
