@@ -6,19 +6,10 @@ import { dirname, relative } from 'pathe'
 import MagicString from 'magic-string'
 
 const PREFIX = 'virtual:public?'
+const CSS_URL_RE = /url\((\/[^)]+)\)/g
 
 export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boolean }) => {
-  const nitro = useNitro()
-
-  function resolveFromPublicAssets (id: string) {
-    for (const dir of nitro.options.publicAssets) {
-      if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
-      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
-      if (existsSync(path)) {
-        return id
-      }
-    }
-  }
+  const { resolveFromPublicAssets } = useResolveFromPublicAssets()
 
   return {
     name: 'nuxt:vite-public-dir-resolution',
@@ -83,4 +74,18 @@ export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boole
   }
 })
 
-const CSS_URL_RE = /url\((\/[^)]+)\)/g
+export function useResolveFromPublicAssets () {
+  const nitro = useNitro()
+
+  function resolveFromPublicAssets (id: string) {
+    for (const dir of nitro.options.publicAssets) {
+      if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
+      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
+      if (existsSync(path)) {
+        return id
+      }
+    }
+  }
+
+  return { resolveFromPublicAssets }
+}
