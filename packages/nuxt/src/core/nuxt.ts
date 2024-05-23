@@ -560,7 +560,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
   if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    console.info(`running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
+    console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
   await nuxt.callHook('ready', nuxt)
