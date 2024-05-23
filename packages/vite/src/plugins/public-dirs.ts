@@ -7,17 +7,7 @@ import { dirname, relative } from 'pathe'
 const PREFIX = 'virtual:public?'
 
 export const VitePublicDirsPlugin = createUnplugin(() => {
-  const nitro = useNitro()
-
-  function resolveFromPublicAssets (id: string) {
-    for (const dir of nitro.options.publicAssets) {
-      if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
-      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
-      if (existsSync(path)) {
-        return id
-      }
-    }
-  }
+  const { resolveFromPublicAssets } = useResolveFromPublicAssets()
 
   return {
     name: 'nuxt:vite-public-dir-resolution',
@@ -62,3 +52,19 @@ export const VitePublicDirsPlugin = createUnplugin(() => {
     },
   }
 })
+
+export function useResolveFromPublicAssets () {
+  const nitro = useNitro()
+
+  function resolveFromPublicAssets (id: string) {
+    for (const dir of nitro.options.publicAssets) {
+      if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
+      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
+      if (existsSync(path)) {
+        return id
+      }
+    }
+  }
+
+  return { resolveFromPublicAssets }
+}
