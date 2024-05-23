@@ -9,7 +9,7 @@ import {
   createWebHistory,
 } from '#vue-router'
 import { createError } from 'h3'
-import { isEqual, isSamePath, withoutBase } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
@@ -139,6 +139,36 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       named: {},
     }
 
+    const error = useError()
+    if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+      router.afterEach(async (to, _from, failure) => {
+        delete nuxtApp._processingMiddleware
+
+        if (import.meta.client && !nuxtApp.isHydrating && error.value) {
+          // Clear any existing errors
+          await nuxtApp.runWithContext(clearError)
+        }
+        if (failure) {
+          await nuxtApp.callHook('page:loading:end')
+        }
+        if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+          return
+        }
+        if (to.matched.length === 0) {
+          await nuxtApp.runWithContext(() => showError(createError({
+            statusCode: 404,
+            fatal: false,
+            statusMessage: `Page not found: ${to.fullPath}`,
+            data: {
+              path: to.fullPath,
+            },
+          })))
+        } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+          await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
+        }
+      })
+    }
+
     try {
       if (import.meta.server) {
         await router.push(initialURL)
@@ -226,34 +256,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
       await nuxtApp.callHook('page:loading:end')
-    })
-
-    const error = useError()
-    router.afterEach(async (to, _from, failure) => {
-      delete nuxtApp._processingMiddleware
-
-      if (import.meta.client && !nuxtApp.isHydrating && error.value) {
-        // Clear any existing errors
-        await nuxtApp.runWithContext(clearError)
-      }
-      if (failure) {
-        await nuxtApp.callHook('page:loading:end')
-      }
-      if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
-        return
-      }
-      if (to.matched.length === 0) {
-        await nuxtApp.runWithContext(() => showError(createError({
-          statusCode: 404,
-          fatal: false,
-          statusMessage: `Page not found: ${to.fullPath}`,
-          data: {
-            path: to.fullPath,
-          },
-        })))
-      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
-        await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
-      }
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {

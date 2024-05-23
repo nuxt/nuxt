@@ -34,7 +34,7 @@ export function isVue (id: string, opts: { type?: Array<'template' | 'script' | 
   return true
 }
 
-const JS_RE = /\.((c|m)?j|t)sx?$/
+const JS_RE = /\.(?:[cm]?j|t)sx?$/
 
 export function isJS (id: string) {
   // JavaScript files

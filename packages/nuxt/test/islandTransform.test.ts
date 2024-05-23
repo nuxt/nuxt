@@ -23,11 +23,9 @@ const pluginWebpack = islandsTransform.raw({
   selectiveClient: true,
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
-const viteTransform = async (source: string, id: string, isDev = false, selectiveClient = false) => {
+const viteTransform = async (source: string, id: string, selectiveClient = false) => {
   const vitePlugin = islandsTransform.raw({
     getComponents,
-    rootDir: '/root',
-    isDev,
     selectiveClient,
   }, { framework: 'vite' }) as Plugin
 
@@ -193,7 +191,7 @@ describe('islandTransform - server and island components', () => {
       <slot v-else-if="test" />
       <slot v-else />
       </template>
-      `, 'WithVif.vue', false, true)
+      `, 'WithVif.vue', true)
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<script setup lang="ts">
@@ -214,12 +212,10 @@ describe('islandTransform - server and island components', () => {
 
   describe('nuxt-client', () => {
     describe('vite', () => {
-      it('test transform with vite in dev', async () => {
+      it('test transform with vite', async () => {
         const result = await viteTransform(`<template>
         <div>
-          <!-- should not be wrapped by NuxtTeleportIslandComponent -->
           <HelloWorld />
-          <!-- should be wrapped by NuxtTeleportIslandComponent with a rootDir attr -->
           <HelloWorld nuxt-client />
         </div>
       </template>
@@ -227,15 +223,13 @@ describe('islandTransform - server and island components', () => {
       <script setup lang="ts">
       import HelloWorld from './HelloWorld.vue'
       </script>
-      `, 'hello.server.vue', true, true)
+      `, 'hello.server.vue', true)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
                   <div>
-                    <!-- should not be wrapped by NuxtTeleportIslandComponent -->
                     <HelloWorld />
-                    <!-- should be wrapped by NuxtTeleportIslandComponent with a rootDir attr -->
-                    <NuxtTeleportIslandComponent to="HelloWorld-ZsRS8qEyqK" root-dir="/root" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -247,42 +241,6 @@ describe('islandTransform - server and island components', () => {
                 </script>
                 "
         `)
-        // root-dir prop should never be used in production
-        expect(result).toContain('root-dir="/root"')
-      })
-
-      it('test transform with vite in prod', async () => {
-        const result = await viteTransform(`<template>
-        <div>
-          <HelloWorld />
-          <HelloWorld nuxt-client />
-        </div>
-      </template>
-
-      <script setup lang="ts">
-      import HelloWorld from './HelloWorld.vue'
-      </script>
-      `, 'hello.server.vue', false, true)
-
-        expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
-          "<template>
-                  <div>
-                    <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA"  :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
-                  </div>
-                </template>
-
-                <script setup lang="ts">
-          import { vforToArray as __vforToArray } from '#app/components/utils'
-          import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
-          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
-                import HelloWorld from './HelloWorld.vue'
-                </script>
-                "
-        `)
-
-        // root-dir prop should never be used in production
-        expect(result).not.toContain('root-dir="')
       })
 
       it('test dynamic nuxt-client', async () => {
@@ -298,13 +256,13 @@ describe('islandTransform - server and island components', () => {
 
       const nuxtClient = false
       </script>
-      `, 'hello.server.vue', false, true)
+      `, 'hello.server.vue', true)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV"  :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV" :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -333,7 +291,7 @@ describe('islandTransform - server and island components', () => {
 
       const nuxtClient = false
       </script>
-      `, 'hello.server.vue', false, false)
+      `, 'hello.server.vue', false)
 
         expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
           "<template>
@@ -363,21 +321,21 @@ describe('islandTransform - server and island components', () => {
         </div>
       </template>
 
-      `, 'hello.server.vue', false, true)
+      `, 'hello.server.vue', true)
 
         expect(result).toMatchInlineSnapshot(`
-        "<script setup>
-        import { vforToArray as __vforToArray } from '#app/components/utils'
-        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
-        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
-                <div>
-                  <HelloWorld />
-                  <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA"  :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
-                </div>
-              </template>
+          "<script setup>
+          import { vforToArray as __vforToArray } from '#app/components/utils'
+          import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+          import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
+                  <div>
+                    <HelloWorld />
+                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                  </div>
+                </template>
 
-              "
-      `)
+                "
+        `)
         expect(result).toContain('import NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'')
       })
 
@@ -389,7 +347,7 @@ describe('islandTransform - server and island components', () => {
         <HelloWorld v-else nuxt-client />
         </div>
       </template>
-      `, 'hello.server.vue', false, true)
+      `, 'hello.server.vue', true)
 
         expect(result).toMatchInlineSnapshot(`
           "<script setup>
@@ -397,9 +355,9 @@ describe('islandTransform - server and island components', () => {
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
-                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O"  :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
                 "

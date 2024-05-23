@@ -20,6 +20,9 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         'packages/schema/schema/**',
+        'packages/nuxt/src/app/components/welcome.vue',
+        'packages/nuxt/src/app/components/error-*.vue',
+        'packages/nuxt/src/core/runtime/nitro/error-*',
       ],
     },
     {
@@ -205,6 +208,12 @@ export default createConfigForNuxt({
       },
       rules: {
         'perfectionist/sort-objects': 'error',
+      },
+    },
+    {
+      files: ['packages/nuxt/src/app/components/welcome.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off',
       },
     },
   )

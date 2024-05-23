@@ -1,5 +1,5 @@
 <template>
   <div>
-    {{ useOverrideableComposable() }}
+    {{ useOverridableComposable() }}
   </div>
 </template>

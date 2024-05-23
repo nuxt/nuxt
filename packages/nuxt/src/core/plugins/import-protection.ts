@@ -22,7 +22,7 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   ])
 
   patterns.push([
-    /^((|~|~~|@|@@)\/)?nuxt\.config(\.|$)/,
+    /^((~|~~|@|@@)?\/)?nuxt\.config(\.|$)/,
     'Importing directly from a `nuxt.config` file is not allowed. Instead, use runtime config or a module.',
   ])
 

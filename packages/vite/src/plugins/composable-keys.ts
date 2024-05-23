@@ -18,8 +18,8 @@ interface ComposableKeysOptions {
 }
 
 const stringTypes = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/(nuxt|nuxt3|nuxt-nightly)\//
-const SUPPORTED_EXT_RE = /\.(m?[jt]sx?|vue)/
+const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
+const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
   const composableMeta: Record<string, any> = {}
@@ -40,7 +40,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
     },
     transform (code, id) {
       if (!KEYED_FUNCTIONS_RE.test(code)) { return }
-      const { 0: script = code, index: codeIndex = 0 } = code.match(/(?<=<script[^>]*>)[\S\s.]*?(?=<\/script>)/) || { index: 0, 0: code }
+      const { 0: script = code, index: codeIndex = 0 } = code.match(/(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/) || { index: 0, 0: code }
       const s = new MagicString(code)
       // https://github.com/unjs/unplugin/issues/90
       let imports: Set<string> | undefined

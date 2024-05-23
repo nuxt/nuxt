@@ -59,13 +59,10 @@ Use these options to set the expiration of the cookie.
 The given number will be converted to an integer by rounding down. By default, no maximum age is set.
 
 `expires`: Specifies the `Date` object to be the value for the [`Expires` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.1).
-By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and
-will delete it on a condition like exiting a web browser application.
+By default, no expiration is set. Most clients will consider this a "non-persistent cookie" and will delete it on a condition like exiting a web browser application.
 
 ::note
-The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and
-`maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this,
-so if both are set, they should point to the same date and time!
+The [cookie storage model specification](https://tools.ietf.org/html/rfc6265#section-5.3) states that if both `expires` and `maxAge` is set, then `maxAge` takes precedence, but not all clients may obey this, so if both are set, they should point to the same date and time!
 ::
 
 ::note
@@ -74,22 +71,29 @@ If neither of `expires` and `maxAge` is set, the cookie will be session-only and
 
 ### `httpOnly`
 
-Specifies the `boolean` value for the [`HttpOnly` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.6). When truthy,
-the `HttpOnly` attribute is set; otherwise it is not. By default, the `HttpOnly` attribute is not set.
+Specifies the `boolean` value for the [`HttpOnly` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.6). When truthy, the `HttpOnly` attribute is set; otherwise it is not. By default, the `HttpOnly` attribute is not set.
 
 ::warning
-Be careful when setting this to `true`, as compliant clients will not allow client-side
-JavaScript to see the cookie in `document.cookie`.
+Be careful when setting this to `true`, as compliant clients will not allow client-side JavaScript to see the cookie in `document.cookie`.
 ::
 
 ### `secure`
 
-Specifies the `boolean` value for the [`Secure` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.5). When truthy,
-the `Secure` attribute is set; otherwise it is not. By default, the `Secure` attribute is not set.
+Specifies the `boolean` value for the [`Secure` `Set-Cookie` attribute](https://tools.ietf.org/html/rfc6265#section-5.2.5). When truthy, the `Secure` attribute is set; otherwise it is not. By default, the `Secure` attribute is not set.
 
 ::warning
-Be careful when setting this to `true`, as compliant clients will not send the cookie back to
-the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors.
+Be careful when setting this to `true`, as compliant clients will not send the cookie back to the server in the future if the browser does not have an HTTPS connection. This can lead to hydration errors.
+::
+
+### `partitioned`
+
+Specifies the `boolean` value for the [`Partitioned` `Set-Cookie`](https://datatracker.ietf.org/doc/html/draft-cutler-httpbis-partitioned-cookies#section-2.1) attribute. When truthy, the `Partitioned` attribute is set, otherwise it is not. By default, the `Partitioned` attribute is not set.
+
+::note
+This is an attribute that has not yet been fully standardized, and may change in the future.
+This also means many clients may ignore this attribute until they understand it.
+
+More information can be found in the [proposal](https://github.com/privacycg/CHIPS).
 ::
 
 ### `domain`
@@ -114,23 +118,18 @@ More information about the different enforcement levels can be found in [the spe
 
 ### `encode`
 
-Specifies a function that will be used to encode a cookie's value. Since the value of a cookie
-has a limited character set (and must be a simple string), this function can be used to encode
-a value into a string suited for a cookie's value.
+Specifies a function that will be used to encode a cookie's value. Since the value of a cookie has a limited character set (and must be a simple string), this function can be used to encode a value into a string suited for a cookie's value.
 
 The default encoder is the `JSON.stringify` + `encodeURIComponent`.
 
 ### `decode`
 
-Specifies a function that will be used to decode a cookie's value. Since the value of a cookie
-has a limited character set (and must be a simple string), this function can be used to decode
-a previously encoded cookie value into a JavaScript string or other object.
+Specifies a function that will be used to decode a cookie's value. Since the value of a cookie has a limited character set (and must be a simple string), this function can be used to decode a previously encoded cookie value into a JavaScript string or other object.
 
 The default decoder is `decodeURIComponent` + [destr](https://github.com/unjs/destr).
 
 ::note
-If an error is thrown from this function, the original, non-decoded cookie value will
-be returned as the cookie's value.
+If an error is thrown from this function, the original, non-decoded cookie value will be returned as the cookie's value.
 ::
 
 ### `default`

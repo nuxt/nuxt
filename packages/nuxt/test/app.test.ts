@@ -30,7 +30,7 @@ describe('resolveApp', () => {
           ".vue",
         ],
         "layouts": {},
-        "mainComponent": "@nuxt/ui-templates/dist/templates/welcome.vue",
+        "mainComponent": "<repoRoot>/packages/nuxt/src/app/components/welcome.vue",
         "middleware": [
           {
             "global": true,

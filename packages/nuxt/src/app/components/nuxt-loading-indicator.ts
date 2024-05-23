@@ -20,20 +20,24 @@ export default defineComponent({
       type: [String, Boolean],
       default: 'repeating-linear-gradient(to right,#00dc82 0%,#34cdfe 50%,#0047e1 100%)',
     },
+    errorColor: {
+      type: String,
+      default: 'repeating-linear-gradient(to right,#f87171 0%,#ef4444 100%)',
+    },
     estimatedProgress: {
       type: Function as unknown as () => (duration: number, elapsed: number) => number,
       required: false,
     },
   },
   setup (props, { slots, expose }) {
-    const { progress, isLoading, start, finish, clear } = useLoadingIndicator({
+    const { progress, isLoading, error, start, finish, clear } = useLoadingIndicator({
       duration: props.duration,
       throttle: props.throttle,
       estimatedProgress: props.estimatedProgress,
     })
 
     expose({
-      progress, isLoading, start, finish, clear,
+      progress, isLoading, error, start, finish, clear,
     })
 
     return () => h('div', {
@@ -47,7 +51,7 @@ export default defineComponent({
         width: 'auto',
         height: `${props.height}px`,
         opacity: isLoading.value ? 1 : 0,
-        background: props.color || undefined,
+        background: error.value ? props.errorColor : props.color || undefined,
         backgroundSize: `${(100 / progress.value) * 100}% auto`,
         transform: `scaleX(${progress.value}%)`,
         transformOrigin: 'left',
