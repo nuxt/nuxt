@@ -35,7 +35,7 @@ export function createViteLogger (config: vite.InlineConfig): vite.Logger {
       // Hide sourcemap warnings related to node_modules
       if (msg.startsWith('Sourcemap') && msg.includes('node_modules')) { return }
       // Hide warnings about externals produced by https://github.com/vitejs/vite/blob/v5.2.11/packages/vite/src/node/plugins/css.ts#L350-L355
-      if (msg.includes("didn't resolve at build time, it will remain unchanged to be resolved at runtime")) {
+      if (msg.includes('didn\'t resolve at build time, it will remain unchanged to be resolved at runtime')) {
         const id = msg.trim().match(/^([^ ]+) referenced in/m)?.[1]
         if (id && resolveFromPublicAssets(id)) { return }
       }
