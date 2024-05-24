@@ -5,7 +5,7 @@ import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
-import { withoutLeadingSlash, withTrailingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 import defu from 'defu'
@@ -140,7 +140,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   ctx.config.vue = defu(ctx.config.vue, {
     script: {
       fs: {
-        fileExists(file) {
+        fileExists (file) {
           if (file.endsWith('/tsconfig.json') && layerPrefixes.some(l => file.startsWith(l))) {
             return false
           }
@@ -148,8 +148,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
         readFile: file => readFileSync(file, 'utf-8'),
         realpath: file => realpathSync(file),
-      }
-    }
+      },
+    },
   } satisfies VuePluginOptions)
 
   if (nuxt.options.dev) {
