@@ -327,7 +327,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Whether we are prerendering route
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR && !isRenderingIsland
-  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+  const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, url, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + ssrContext.runtimeConfig.app.buildId : undefined
   if (import.meta.prerender) {
     ssrContext.payload.prerenderedAt = Date.now()
   }
