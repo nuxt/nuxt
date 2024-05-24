@@ -7,7 +7,7 @@ import { isVue } from '../../core/utils'
 const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
 const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
 
-const INJECTION_RE_SINGLE = /(\bthis\.\$route\b|\b_ctx\.\$route\b)/
+const INJECTION_SINGLE_RE = /(?:\bthis\.\$route\b|\b_ctx\.\$route\b)/
 
 export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
@@ -17,7 +17,7 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       return isVue(id, { type: ['template', 'script'] })
     },
     transform (code) {
-      if (!INJECTION_RE_SINGLE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
+      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
 
       let replaced = false
       const s = new MagicString(code)
