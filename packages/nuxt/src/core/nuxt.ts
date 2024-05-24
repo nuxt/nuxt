@@ -272,6 +272,9 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
   )
 
+  // Ensure we can resolve dependencies within layers
+  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
+
   // Init user modules
   await nuxt.callHook('modules:before')
   const modulesToInstall = []
