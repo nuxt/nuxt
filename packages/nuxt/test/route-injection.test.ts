@@ -1,22 +1,22 @@
 import { describe, expect, it } from 'vitest'
-import { compileTemplate, compileScript, parse } from '@vue/compiler-sfc'
+import { compileScript, compileTemplate, parse } from '@vue/compiler-sfc'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 
 import { RouteInjectionPlugin } from '../src/pages/plugins/route-injection'
 
 describe('route-injection:transform', () => {
-  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } }} as Nuxt).raw({}, { framework: 'rollup' }) as Plugin
+  const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as Plugin
 
   const transform = async (source: string) => {
     const result = await (injectionPlugin.transform! as Function).call({ error: null, warn: null } as any, source, 'test.vue')
     const code: string = typeof result === 'string' ? result : result?.code
     let depth = 0
-    return code.split('\n').map(l => {
+    return code.split('\n').map((l) => {
       l = l.trim()
-      if (l.match(/^[\}\]]/)) depth--
+      if (l.match(/^[}\]]/)) { depth-- }
       const res = ''.padStart(depth * 2, ' ') + l
-      if (l.match(/[\{\[]$/)) depth++
+      if (l.match(/[{[]$/)) { depth++ }
       return res
     }).join('\n')
   }
@@ -26,7 +26,7 @@ describe('route-injection:transform', () => {
     const res = compileTemplate({
       filename: 'test.vue',
       id: 'test.vue',
-      source: sfc
+      source: sfc,
     })
     const transformResult = await transform(res.code)
     expect(transformResult).toMatchInlineSnapshot(`
