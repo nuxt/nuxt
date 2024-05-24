@@ -14,6 +14,7 @@ import { rootDir } from '#internal/dev-server-logs-options'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
+  URL: data => data instanceof URL ? data.toString() : undefined,
 }
 
 interface NuxtDevAsyncContext {
