@@ -7,7 +7,7 @@ import { isVue } from '../../core/utils'
 const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
 const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
 
-const INJECTION_SINGLE_RE = /(?:\bthis\.\$route\b|\b_ctx\.\$route\b)/
+const INJECTION_SINGLE_RE = /\bthis\.\$route\b|\b_ctx\.\$route\b/
 
 export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
