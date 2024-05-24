@@ -1,13 +1,15 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
-import { withoutLeadingSlash } from 'ufo'
+import { withoutLeadingSlash, withTrailingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
+import defu from 'defu'
+import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
@@ -129,6 +131,26 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.server!.watch = undefined
     ctx.config.build!.watch = undefined
   }
+
+  // Provide a custom fs implementation for the Vue compiler to ignore layer
+  // tsconfigs in favour of top-level Nuxt tsconfig.json
+  const rootDirS = withTrailingSlash(nuxt.options.rootDir)
+  const layerPrefixes = nuxt.options._layers.filter(l => l.cwd !== nuxt.options.rootDir && l.cwd.startsWith(rootDirS)).map(l => withTrailingSlash(l.cwd))
+
+  ctx.config.vue = defu(ctx.config.vue, {
+    script: {
+      fs: {
+        fileExists(file) {
+          if (file.endsWith('/tsconfig.json') && layerPrefixes.some(l => file.startsWith(l))) {
+            return false
+          }
+          return existsSync(file)
+        },
+        readFile: file => readFileSync(file, 'utf-8'),
+        realpath: file => realpathSync(file),
+      }
+    }
+  } satisfies VuePluginOptions)
 
   if (nuxt.options.dev) {
     // Identify which layers will need to have an extra resolve step.
