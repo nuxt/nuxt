@@ -124,6 +124,7 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
+      baseUrl: '.',
       forceConsistentCasingInFileNames: true,
       jsx: 'preserve',
       jsxImportSource: 'vue',
