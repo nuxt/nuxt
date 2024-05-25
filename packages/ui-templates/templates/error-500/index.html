@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
+    <script type="module" src="/styles.ts"></script>
+    <style>
+      .spotlight {
+        background: linear-gradient(45deg, #00DC82 0%, #36E4DA 50%, #0047E1 100%);
+        filter: blur(20vh);
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased bg-white dark:bg-black text-black dark:text-white grid min-h-screen place-content-center overflow-hidden ">
+    <div class="fixed -bottom-1/2 left-0 right-0 h-1/2 spotlight"></div>
+    <div class="max-w-520px text-center">
+      <h1 class="text-8xl sm:text-10xl font-medium mb-8">{{ messages.statusCode }}</h1>
+      <p class="text-xl px-8 sm:px-0 sm:text-4xl font-light mb-16 leading-tight">{{ messages.description }}</p>
+    </div>
+  </body>
+</html>

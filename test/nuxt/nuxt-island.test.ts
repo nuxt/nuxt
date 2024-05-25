@@ -37,7 +37,7 @@ beforeEach(() => {
 })
 
 describe('runtime server component', () => {
-  it('expect no data-v- attrbutes #23051', () => {
+  it('expect no data-v- attributes #23051', () => {
     // @ts-expect-error mock
     vi.mocked(h).mockImplementation(() => null)
 
