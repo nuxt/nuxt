@@ -72,7 +72,7 @@
     "h3": "1.11.1",
     "happy-dom": "14.11.0",
     "jiti": "1.21.0",
-    "markdownlint-cli": "0.40.0",
+    "markdownlint-cli": "0.41.0",
     "nitropack": "2.9.6",
     "nuxi": "3.11.1",
     "nuxt": "workspace:*",
