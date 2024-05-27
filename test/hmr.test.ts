@@ -71,7 +71,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
     it('should detect new routes', async () => {
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
+        () => $fetch<string>('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
         true,
       )
 
@@ -80,7 +80,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
 
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
+        () => $fetch<string>('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
         true,
       )
     })
