@@ -65,15 +65,15 @@ export async function buildClient (ctx: ViteBuildContext) {
       entries: [ctx.entry],
       include: [],
       // We exclude Vue and Nuxt common dependencies from optimization
-      // as they already ships ESM.
+      // as they already ship ESM.
       //
       // This will help to reduce the chance for users to encounter
       // common chunk conflicts that causing browser reloads.
-      // We should also encourage module authors to include their deps
-      // to `exclude` if they ships bundled ESM.
+      // We should also encourage module authors to add their deps to
+      // `exclude` if they ships bundled ESM.
       //
-      // Also because `exclude` is inert, it's safe to always include
-      // all possible deps even if they are not used
+      // Also since `exclude` is inert, it's safe to always include
+      // all possible deps even if they are not used yet.
       //
       // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
       exclude: [
