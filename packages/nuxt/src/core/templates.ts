@@ -272,10 +272,13 @@ export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
+    const typesDir = join(nuxt.options.buildDir, 'types')
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(/\b\.\w+$/g, ''))
+
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
-${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/\b\.\w+$/g, ''))}`).join('\n')}
+${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
