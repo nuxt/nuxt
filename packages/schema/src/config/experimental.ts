@@ -343,8 +343,10 @@ export default defineUntypedSchema({
 
     /**
      * Use new experimental head optimisations:
+     *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
+     *
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
     headNext: true,
@@ -393,7 +395,11 @@ export default defineUntypedSchema({
      * })
      * ```
      */
-    sharedPrerenderData: false,
+    sharedPrerenderData: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.

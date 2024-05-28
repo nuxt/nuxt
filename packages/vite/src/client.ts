@@ -63,6 +63,48 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     optimizeDeps: {
       entries: [ctx.entry],
+      include: [],
+      // We exclude Vue and Nuxt common dependencies from optimization
+      // as they already ship ESM.
+      //
+      // This will help to reduce the chance for users to encounter
+      // common chunk conflicts that causing browser reloads.
+      // We should also encourage module authors to add their deps to
+      // `exclude` if they ships bundled ESM.
+      //
+      // Also since `exclude` is inert, it's safe to always include
+      // all possible deps even if they are not used yet.
+      //
+      // @see https://github.com/antfu/nuxt-better-optimize-deps#how-it-works
+      exclude: [
+        // Vue
+        'vue',
+        '@vue/runtime-core',
+        '@vue/runtime-dom',
+        '@vue/reactivity',
+        '@vue/shared',
+        '@vue/devtools-api',
+        'vue-router',
+        'vue-demi',
+
+        // Nuxt
+        'nuxt',
+        'nuxt/app',
+
+        // Nuxt Deps
+        '@unhead/vue',
+        'consola',
+        'defu',
+        'devalue',
+        'h3',
+        'hookable',
+        'klona',
+        'ofetch',
+        'pathe',
+        'ufo',
+        'unctx',
+        'unenv',
+      ],
     },
     resolve: {
       alias: {
@@ -161,6 +203,10 @@ export async function buildClient (ctx: ViteBuildContext) {
   )
 
   await ctx.nuxt.callHook('vite:configResolved', clientConfig, { isClient: true, isServer: false })
+
+  // Prioritize `optimizeDeps.exclude`. If same dep is in `include` and `exclude`, remove it from `include`
+  clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
+    .filter(dep => !clientConfig.optimizeDeps!.exclude!.includes(dep))
 
   if (ctx.nuxt.options.dev) {
     // Dev

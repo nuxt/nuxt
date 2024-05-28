@@ -1915,11 +1915,24 @@ describe('public directories', () => {
 
 // TODO: dynamic paths in dev
 describe.skipIf(isDev())('dynamic paths', () => {
+  const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
+  const isPublicFile = (base = '/', file: string) => {
+    if (isWebpack) {
+      // TODO: webpack does not yet support dynamic static paths
+      expect(publicFiles).toContain(file)
+      return true
+    }
+
+    expect(file).toMatch(new RegExp(`^${base.replace(/\//g, '\\/')}`))
+    expect(publicFiles).toContain(file.replace(base, '/'))
+    return true
+  }
+
   it('should work with no overrides', async () => {
     const html: string = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
-      expect(url.startsWith('/_nuxt/') || url === '/public.svg').toBeTruthy()
+      expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
 
@@ -1929,16 +1942,14 @@ describe.skipIf(isDev())('dynamic paths', () => {
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
     const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
     expect(cssURL).toBeDefined()
-    const css: string = await $fetch<string>(cssURL!)
-    const imageUrls = Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.'))
-    expect(imageUrls).toMatchInlineSnapshot(`
-        [
-          "./logo.svg",
-          "../public.svg",
-          "../public.svg",
-          "../public.svg",
-        ]
-      `)
+    const css = await $fetch<string>(cssURL!)
+    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.')))
+    expect([...imageUrls]).toMatchInlineSnapshot(`
+      [
+        "./logo.svg",
+        "../public.svg",
+      ]
+    `)
   })
 
   it('should allow setting base URL and build assets directory', async () => {
@@ -1952,12 +1963,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
-      expect(
-        url.startsWith('/foo/_other/') ||
-        url === '/foo/public.svg' ||
-        // TODO: webpack does not yet support dynamic static paths
-        (isWebpack && url === '/public.svg'),
-      ).toBeTruthy()
+      expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
     expect(await $fetch<string>('/foo/url')).toContain('path: /foo/url')
@@ -1973,12 +1979,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     const html = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
-      expect(
-        url.startsWith('./_nuxt/') ||
-        url === './public.svg' ||
-        // TODO: webpack does not yet support dynamic static paths
-        (isWebpack && url === '/public.svg'),
-      ).toBeTruthy()
+      expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
   })
@@ -2007,12 +2008,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
       const url = match[2] || match[3]
-      expect(
-        url.startsWith('https://example.com/_cdn/') ||
-        url === 'https://example.com/public.svg' ||
-        // TODO: webpack does not yet support dynamic static paths
-        (isWebpack && url === '/public.svg'),
-      ).toBeTruthy()
+      expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
   })
 
