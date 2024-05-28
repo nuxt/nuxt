@@ -138,7 +138,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
   return prepareRoutes(routes)
 }
 
-async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>) {
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>) {
   for (const route of routes) {
     if (route.file) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(route.file, 'utf-8')
