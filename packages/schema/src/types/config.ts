@@ -115,7 +115,7 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   /**
    * Use environment variables or top level `server` options to configure Nuxt server.
    */
-  server?: Omit<ViteServerOptions, 'host'> & Partial<Pick<ViteServerOptions, 'port'>>
+  server?: Omit<ViteServerOptions, 'port' | 'host'>
   /**
    * Directly configuring the `vite.publicDir` option is not supported. Instead, set `dir.public`.
    *

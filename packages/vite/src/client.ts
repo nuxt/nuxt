@@ -3,7 +3,7 @@ import { join, resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import type { BuildOptions, HmrOptions, ServerOptions } from 'vite'
+import type { BuildOptions, ServerOptions } from 'vite'
 import { logger } from '@nuxt/kit'
 import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
@@ -171,18 +171,22 @@ export async function buildClient (ctx: ViteBuildContext) {
   }) as any
 
   if (clientConfig.server && clientConfig.server.hmr !== false) {
-    const hmrPortDefault = (clientConfig.server.hmr as HmrOptions)?.port || 24678 // Vite's default HMR port
-    const hmrPort = await getPort({
-      port: hmrPortDefault,
-      ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
-    })
-    clientConfig.server = defu(clientConfig.server, <ServerOptions> {
-      https: ctx.nuxt.options.devServer.https,
+    const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
       hmr: {
-        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',
-        port: hmrPort,
-      },
-    })
+        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws'
+      }
+    }
+    if (typeof clientConfig.server.hmr !== 'object' || !clientConfig.server.hmr.server) {
+      const hmrPortDefault = 24678 // Vite's default HMR port
+      serverDefaults.hmr!.port = await getPort({
+        port: hmrPortDefault,
+        ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
+      })
+    }
+    if (ctx.nuxt.options.devServer.https) {
+      serverDefaults.https = ctx.nuxt.options.devServer.https === true ? {} : ctx.nuxt.options.devServer.https
+    }
+    clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
   }
 
   // Add analyze plugin if needed
