@@ -173,8 +173,8 @@ export async function buildClient (ctx: ViteBuildContext) {
   if (clientConfig.server && clientConfig.server.hmr !== false) {
     const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
       hmr: {
-        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws'
-      }
+        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',
+      },
     }
     if (typeof clientConfig.server.hmr !== 'object' || !clientConfig.server.hmr.server) {
       const hmrPortDefault = 24678 // Vite's default HMR port
