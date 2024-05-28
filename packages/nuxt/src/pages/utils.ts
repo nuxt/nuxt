@@ -80,7 +80,7 @@ type GenerateRoutesFromFilesOptions = {
   shouldUseServerComponents?: boolean
 }
 
-export async function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): Promise<NuxtPage[]> {
+export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
   for (const file of files) {

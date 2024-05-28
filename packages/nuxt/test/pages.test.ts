@@ -568,7 +568,7 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          result = await generateRoutesFromFiles(test.files.map(file => ({
+          result = generateRoutesFromFiles(test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
