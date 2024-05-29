@@ -12,6 +12,29 @@ export interface NuxtCompatibility {
    * - `false`: When using Nuxt 2, using bridge module is not supported.
    */
   bridge?: boolean
+
+  /**
+   * Mark a builder as incompatible, or require a particular version.
+   *
+   * @example
+   * ```ts
+   * export default defineNuxtModule({
+   *   meta: {
+   *     name: 'my-module',
+   *     compatibility: {
+   *       builder: {
+   *         // marking as incompatible
+   *         webpack: false,
+   *         // you can require a (semver-compatible) version
+   *         vite: '^5'
+   *       }
+   *     }
+   *   }
+   *   // ...
+   * })
+   * ```
+   */
+  builder?: Partial<Record<'vite' | 'webpack' | (string & {}), false | string>>
 }
 
 export interface NuxtCompatibilityIssue {

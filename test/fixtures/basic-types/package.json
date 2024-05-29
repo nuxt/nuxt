@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "ofetch": "latest",
-    "vitest": "1.0.2",
-    "vue-router": "latest",
-    "vue": "latest"
+    "vitest": "1.5.3",
+    "vue": "latest",
+    "vue-router": "latest"
   }
 }

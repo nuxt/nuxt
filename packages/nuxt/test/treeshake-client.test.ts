@@ -146,7 +146,7 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
       expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
-      // treeshake object that has an assignement pattern
+      // treeshake object that has an assignment pattern
       expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
       expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
 
@@ -182,7 +182,7 @@ describe('treeshake client only in ssr', () => {
         expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
         expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
       }
-      expect(treeshaken.replace(/data-v-[\d\w]{8}/g, 'data-v-one-hash').replace(/scoped=[\d\w]{8}/g, 'scoped=one-hash')).toMatchSnapshot()
+      expect(treeshaken.replace(/data-v-\w{8}/g, 'data-v-one-hash').replace(/scoped=\w{8}/g, 'scoped=one-hash')).toMatchSnapshot()
     })
   }
 

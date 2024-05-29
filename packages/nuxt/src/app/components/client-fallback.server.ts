@@ -41,9 +41,10 @@ const NuxtClientFallbackServer = defineComponent({
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
     const nuxtApp = useNuxtApp()
+    const error = useState<boolean | undefined>(`${props.uid}`)
 
     onErrorCaptured((err) => {
-      useState(`${props.uid}`, () => true)
+      error.value = true
       ssrFailed.value = true
       ctx.emit('ssr-error', err)
       return false

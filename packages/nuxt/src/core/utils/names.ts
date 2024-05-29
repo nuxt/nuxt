@@ -18,7 +18,7 @@ export function hasSuffix (path: string, suffix: string) {
 
 export function resolveComponentNameSegments (fileName: string, prefixParts: string[]) {
   /**
-   * Array of fileName parts splitted by case, / or -
+   * Array of fileName parts split by case, / or -
    * @example third-component -> ['third', 'component']
    * @example AwesomeComponent -> ['Awesome', 'Component']
    */

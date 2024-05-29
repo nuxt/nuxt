@@ -1,4 +1,4 @@
-import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
@@ -37,7 +37,7 @@ export default defineComponent({
       default: null,
     },
   },
-  setup (props, { attrs, expose }) {
+  setup (props, { attrs, slots, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -120,7 +120,7 @@ export default defineComponent({
               default: () => {
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
-                  vnode: routeProps.Component,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,

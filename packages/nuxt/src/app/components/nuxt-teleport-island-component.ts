@@ -27,14 +27,6 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
-    /**
-     * ONLY used in dev mode since we use build:manifest result in production
-     * do not pass any value in production
-     */
-    rootDir: {
-      type: String,
-      default: null,
-    },
   },
   setup (props, { slots }) {
     const nuxtApp = useNuxtApp()

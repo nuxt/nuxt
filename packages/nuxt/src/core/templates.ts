@@ -130,6 +130,12 @@ declare module '#app' {
   }
 }
 
+declare module '#app/defaults' {
+  type DefaultAsyncDataErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
+  type DefaultAsyncDataValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
+  type DefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
+}
+
 declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
@@ -266,10 +272,13 @@ export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
+    const typesDir = join(nuxt.options.buildDir, 'types')
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(/\b\.\w+$/g, ''))
+
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
-${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/(?<=\w)\.\w+$/g, ''))}`).join('\n')}
+${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
@@ -393,10 +402,43 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
+      `export const asyncDataDefaults = ${JSON.stringify({
+        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
+        value: ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
+        errorValue: ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
+      })}`,
+      `export const resetAsyncDataToUndefined = ${ctx.nuxt.options.experimental.resetAsyncDataToUndefined}`,
+      `export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
+      `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
     ].join('\n\n')
+  },
+}
+
+const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+const DECLARATION_RE = /\.d\.[cm]?ts$/
+export const buildTypeTemplate: NuxtTemplate = {
+  filename: 'types/build.d.ts',
+  getContents ({ app }) {
+    let declarations = ''
+
+    for (const file of app.templates) {
+      if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
+        continue
+      }
+
+      if (TYPE_FILENAME_RE.test(file.filename)) {
+        const typeFilenames = new Set([file.filename.replace(TYPE_FILENAME_RE, '.d.$1ts'), file.filename.replace(TYPE_FILENAME_RE, '.d.ts')])
+        if (app.templates.some(f => f.filename && typeFilenames.has(f.filename))) {
+          continue
+        }
+      }
+
+      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+    }
+
+    return declarations
   },
 }

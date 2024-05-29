@@ -20,7 +20,7 @@ jobs:
     name: Semantic pull request
     steps:
       - name: Validate PR title
-        uses: amannn/action-semantic-pull-request@e9fabac35e210fea40ca5b14c0da95a099eff26f # v5.4.0
+        uses: amannn/action-semantic-pull-request@cfb60706e18bc85e8aec535e3c577abe8f70378e # v5.5.2
         with:
           scopes: |
             kit
@@ -28,6 +28,7 @@ jobs:
             nuxt
             schema
             test-utils
+            ui-templates
             vite
             webpack
             deps
