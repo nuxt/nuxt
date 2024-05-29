@@ -2,11 +2,12 @@ import { addTypeTemplate } from 'nuxt/kit'
 
 export default defineNuxtConfig({
   experimental: {
-    typedPages: true,
+    typedPages: true, // this is now tested only with bundler
     appManifest: true,
   },
   future: {
-    typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    // TODO: temporary
+    typescriptBundlerResolution: true,
     compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3,
   },
   buildDir: process.env.NITRO_BUILD_DIR,
