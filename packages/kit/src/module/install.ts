@@ -1,5 +1,6 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtModule } from '@nuxt/schema'
+import type { NuxtConfig } from 'nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { isNuxt2 } from '../compatibility'
@@ -14,7 +15,7 @@ const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 /** Installs a module on a Nuxt instance. */
 export async function installModule<
   T extends string | NuxtModule,
-  Config extends Extract<NonNullable<import('nuxt/schema').NuxtConfig['modules']>[number], [T, any]>,
+  Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
 > (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
