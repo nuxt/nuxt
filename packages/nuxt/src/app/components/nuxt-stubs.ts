@@ -1,17 +1,17 @@
-import { createError } from "../composables/error";
+import { createError } from '../composables/error'
 
-function renderStubMessage(name: string) {
+function renderStubMessage (name: string) {
   throw createError({
     fatal: true,
     status: 500,
     message: `${name} is provided by @nuxt/image. Check your console to install it or run 'npx nuxi@latest module add @nuxt/image'`,
-  });
+  })
 }
 
 export const NuxtImg = {
-  setup: () => renderStubMessage("<NuxtImg>"),
-};
+  setup: () => renderStubMessage('<NuxtImg>'),
+}
 
 export const NuxtPicture = {
-  setup: () => renderStubMessage("<NuxtPicture>"),
-};
+  setup: () => renderStubMessage('<NuxtPicture>'),
+}

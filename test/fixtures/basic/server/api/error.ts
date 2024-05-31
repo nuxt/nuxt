@@ -1,3 +1,3 @@
 export default defineEventHandler(() => {
-  throw createError({ status: 400 });
-});
+  throw createError({ status: 400 })
+})

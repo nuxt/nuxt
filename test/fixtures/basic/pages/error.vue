@@ -6,21 +6,14 @@
 </template>
 
 <script setup>
-const { data, error } = await useAsyncData(
-  () => {
-    throw new Error("some error");
-  },
-  { server: true }
-);
+const { data, error } = await useAsyncData(() => {
+  throw new Error('some error')
+}, { server: true })
 
 if (error.value) {
-  useCookie("some-error").value = "was set";
-  throw createError({
-    status: 422,
-    fatal: true,
-    message: "This is a custom error",
-  });
+  useCookie('some-error').value = 'was set'
+  throw createError({ status: 422, fatal: true, message: 'This is a custom error' })
 }
 
-const state = ref({ attr: "Hello World" });
+const state = ref({ attr: 'Hello World' })
 </script>

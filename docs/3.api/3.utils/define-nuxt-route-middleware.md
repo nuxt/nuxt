@@ -38,10 +38,10 @@ You can use route middleware to throw errors and show helpful error messages:
 
 ```ts [middleware/error.ts]
 export default defineNuxtRouteMiddleware((to) => {
-  if (to.params.id === "1") {
-    throw createError({ status: 404, message: "Page Not Found" });
+  if (to.params.id === '1') {
+    throw createError({ status: 404, message: 'Page Not Found' })
   }
-});
+})
 ```
 
 The above route middleware will redirect a user to the custom error page defined in the `~/error.vue` file, and expose the error message and code passed from the middleware.
@@ -52,16 +52,16 @@ Use [`useState`](/docs/api/composables/use-state) in combination with `navigateT
 
 ```ts [middleware/auth.ts]
 export default defineNuxtRouteMiddleware((to, from) => {
-  const auth = useState("auth");
-
+  const auth = useState('auth')
+  
   if (!auth.value.isAuthenticated) {
-    return navigateTo("/login");
+    return navigateTo('/login')
   }
 
-  if (to.path !== "/dashboard") {
-    return navigateTo("/dashboard");
+  if (to.path !== '/dashboard') {
+    return navigateTo('/dashboard')
   }
-});
+})
 ```
 
 Both [navigateTo](/docs/api/utils/navigate-to) and [abortNavigation](/docs/api/utils/abort-navigation) are globally available helper functions that you can use inside `defineNuxtRouteMiddleware`.

@@ -1,5 +1,5 @@
 ---
-title: "createError"
+title: 'createError'
 description: Create an error object with additional metadata.
 links:
   - label: Source
@@ -23,12 +23,12 @@ If you throw an error created with `createError`:
 
 ### Example
 
-```vue [pages/movies/[slug].vue]
+```vue [pages/movies/[slug\\].vue]
 <script setup lang="ts">
-const route = useRoute();
-const { data } = await useFetch(`/api/movies/${route.params.slug}`);
+const route = useRoute()
+const { data } = await useFetch(`/api/movies/${route.params.slug}`)
 if (!data.value) {
-  throw createError({ status: 404, message: "Page Not Found" });
+  throw createError({ status: 404, message: 'Page Not Found' })
 }
 </script>
 ```
@@ -43,9 +43,9 @@ Use `createError` to trigger error handling in server API routes.
 export default eventHandler(() => {
   throw createError({
     status: 404,
-    message: "Page Not Found",
-  });
-});
+    message: 'Page Not Found'
+  })
+})
 ```
 
 :read-more{to="/docs/getting-started/error-handling"}
