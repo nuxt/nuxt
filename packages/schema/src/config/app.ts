@@ -45,7 +45,17 @@ export default defineUntypedSchema({
     /**
      * The base path of your Nuxt application.
      *
-     * This can be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     baseURL: '/prefix/'
+     *   }
+     * })
+     * ```
+     *
+     * This can also be set at runtime by setting the NUXT_APP_BASE_URL environment variable.
      * @example
      * ```bash
      * NUXT_APP_BASE_URL=/prefix/ node .output/server/index.mjs
@@ -62,6 +72,16 @@ export default defineUntypedSchema({
 
     /**
      * An absolute URL to serve the public folder from (production-only).
+     *
+     * For example:
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *   app: {
+     *     cdnURL: 'https://mycdn.org/'
+     *   }
+     * })
+     * ```
      *
      * This can be set to a different value at runtime by setting the `NUXT_APP_CDN_URL` environment variable.
      * @example
@@ -241,6 +261,7 @@ export default defineUntypedSchema({
   /**
    * Boolean or a path to an HTML file with the contents of which will be inserted into any HTML page
    * rendered with `ssr: false`.
+   *
    * - If it is unset, it will use `~/app/spa-loading-template.html` file in one of your layers, if it exists.
    * - If it is false, no SPA loading indicator will be loaded.
    * - If true, Nuxt will look for `~/app/spa-loading-template.html` file in one of your layers, or a

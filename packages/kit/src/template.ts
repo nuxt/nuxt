@@ -202,7 +202,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     } else {
       const path = stats?.isFile()
         // remove extension
-        ? relativePath.replace(/(?<=\w)\.\w+$/g, '')
+        ? relativePath.replace(/\b\.\w+$/g, '')
         // non-existent file probably shouldn't be resolved
         : aliases[alias]
 
@@ -230,7 +230,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
       if (!isAbsolute(path)) { return path }
       const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/(?<=\w)\.\w+$/g, '') /* remove extension */ : path)
+      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
     }))
   }
 

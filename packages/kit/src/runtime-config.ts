@@ -36,12 +36,12 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
 }
 
 /**
- * @internal
- *
  * https://github.com/unjs/nitro/blob/main/src/runtime/utils.env.ts.
- *
+*
  * These utils will be replaced by util exposed from nitropack. See https://github.com/unjs/nitro/pull/2404
  * for more context and future plans.)
+ *
+ * @internal
  */
 
 type EnvOptions = {
@@ -94,7 +94,7 @@ function applyEnv (
   return obj
 }
 
-const envExpandRx = /{{(.*?)}}/g
+const envExpandRx = /\{\{(.*?)\}\}/g
 
 function _expandFromEnv (value: string, env: Record<string, any> = process.env) {
   return value.replace(envExpandRx, (match, key) => {

@@ -26,6 +26,11 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 - **type**: `Ref<boolean>`
 - **description**: The loading state
 
+### `error`
+
+- **type**: `Ref<boolean>`
+- **description**: The error state
+
 ### `progress`
 
 - **type**: `Ref<number>`
@@ -39,7 +44,7 @@ Set `isLoading` to true and start to increase the `progress` value.
 
 ### `finish()`
 
-Set the `progress` value to `100`, stop all timers and intervals then reset the loading state `500` ms later. `finish` accepts a `{ force: true }` option to skip the interval before the state is reset.
+Set the `progress` value to `100`, stop all timers and intervals then reset the loading state `500` ms later. `finish` accepts a `{ force: true }` option to skip the interval before the state is reset, and `{ error: true }` to change the loading bar color and set the error property to true.
 
 ### `clear()`
 

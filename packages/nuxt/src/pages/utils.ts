@@ -135,7 +135,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
   return prepareRoutes(routes)
 }
 
-const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
+const SFC_SCRIPT_RE = /<script[^>]*>([\s\S]*?)<\/script[^>]*>/i
 export function extractScriptContent (html: string) {
   const match = html.match(SFC_SCRIPT_RE)
 
@@ -146,7 +146,7 @@ export function extractScriptContent (html: string) {
   return null
 }
 
-const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
+const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
@@ -261,7 +261,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
   }, '/')
 }
 
-const PARAM_CHAR_RE = /[\w\d_.]/
+const PARAM_CHAR_RE = /[\w.]/
 
 function parseSegment (segment: string) {
   let state: SegmentParserState = SegmentParserState.initial
@@ -537,7 +537,7 @@ export function pathToNitroGlob (path: string) {
     return null
   }
 
-  return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
+  return path.replace(/\/[^:/]*:\w.*$/, '/**')
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {

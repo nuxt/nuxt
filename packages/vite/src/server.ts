@@ -51,7 +51,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       'XMLHttpRequest': 'undefined',
     },
     optimizeDeps: {
-      entries: ctx.nuxt.options.ssr ? [ctx.entry] : [],
+      noDiscovery: true,
     },
     resolve: {
       alias: {

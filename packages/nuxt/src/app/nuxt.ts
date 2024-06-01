@@ -1,4 +1,4 @@
-import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
 import type { RouteLocationNormalizedLoaded } from '#vue-router'
 import type { HookCallback, Hookable } from 'hookable'
@@ -20,13 +20,15 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
+// @ts-expect-error virtual file
+import { appId } from '#build/nuxt.config.mjs'
+
+// TODO: temporary module for backwards compatibility
+import type { DefaultAsyncDataErrorValue, DefaultErrorValue } from '#app/defaults'
 import type { NuxtAppLiterals } from '#app'
 
-// @ts-expect-error virtual import
-import { buildId } from '#build/nuxt.config.mjs'
-
-function getNuxtAppCtx (appName?: string) {
-  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+function getNuxtAppCtx (appName = appId || 'nuxt-app') {
+  return getContext<NuxtApp>(appName, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -92,8 +94,8 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | null
-  _errors: Record<string, NuxtError | null>
+  error?: NuxtError | DefaultErrorValue
+  _errors: Record<string, NuxtError | DefaultAsyncDataErrorValue>
   [key: string]: unknown
 }
 
@@ -120,10 +122,12 @@ interface _NuxtApp {
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
   _asyncData: Record<string, {
-    data: Ref<any>
+    data: Ref<unknown>
     pending: Ref<boolean>
-    error: Ref<Error | null>
+    error: Ref<Error | DefaultAsyncDataErrorValue>
     status: Ref<AsyncDataRequestStatus>
+    /** @internal */
+    _default: () => unknown
   } | undefined>
 
   /** @internal */
@@ -244,7 +248,7 @@ export interface CreateOptions {
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    name: buildId,
+    _name: appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
@@ -252,12 +256,11 @@ export function createNuxtApp (options: CreateOptions) {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version },
     },
-    payload: reactive({
-      data: {},
-      state: {},
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: reactive({}),
       once: new Set<string>(),
-      _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
+      _errors: shallowReactive({}),
     }),
     static: {
       data: {},
@@ -288,10 +291,31 @@ export function createNuxtApp (options: CreateOptions) {
       }
     },
     _asyncDataPromises: {},
-    _asyncData: {},
+    _asyncData: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
+
+  if (import.meta.server) {
+    nuxtApp.payload.serverRendered = true
+  }
+
+  // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
+  if (import.meta.client && window.__NUXT__) {
+    for (const key in window.__NUXT__) {
+      switch (key) {
+        case 'data':
+        case 'state':
+        case '_errors':
+          // Preserve reactivity for non-rich payload support
+          Object.assign(nuxtApp.payload[key], window.__NUXT__[key])
+          break
+
+        default:
+          nuxtApp.payload[key] = window.__NUXT__[key]
+      }
+    }
+  }
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook

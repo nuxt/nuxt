@@ -4,7 +4,7 @@ import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/sch
 import { useNuxt } from './context'
 
 export function normalizeSemanticVersion (version: string) {
-  return version.replace(/-[0-9]+\.[0-9a-f]+/, '') // Remove edge prefix
+  return version.replace(/-\d+\.[0-9a-f]+/, '') // Remove edge prefix
 }
 
 const builderMap = {

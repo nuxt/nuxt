@@ -7,7 +7,7 @@ export function uniq<T> (arr: T[]): T[] {
 }
 
 // Copied from vue-bundle-renderer utils
-const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(\?[^.]+)?$/
+const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
 
 export function isCSS (file: string) {
   return IS_CSS_RE.test(file)

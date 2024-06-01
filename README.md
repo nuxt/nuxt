@@ -33,6 +33,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - ❤️  [Contribute](#contribute)
 - 🏠 [Local Development](#local-development)
 - ⛰️ [Nuxt 2](#nuxt-2)
+- 🛟 [Professional Support](#professional-support)
 - 🔗 [Follow us](#follow-us)
 - ⚖️ [License](#license)
 
@@ -103,6 +104,13 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 ## <a name="nuxt-2">⛰️ Nuxt 2</a>
 
 You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [v2.nuxt.com](https://v2.nuxt.com).
+
+If you expect to be using Nuxt 2 beyond the EOL (End of Life) date (June 30, 2024), and still need a maintained version that can satisfy security and browser compatibility requirements, make sure to check out [HeroDevs’ NES (Never-Ending Support) Nuxt 2](https://www.herodevs.com/support/nuxt-nes?utm_source=nuxt-github&utm_medium=nuxt-readme).
+
+## <a name="professional-support">🛟 Professional Support</a>
+
+- Technical audit & consulting: [Nuxt Experts](https://nuxt.com/enterprise/support)
+- Custom development & more: [Nuxt Agencies Partners](https://nuxt.com/enterprise/agencies)
 
 ## <a name="follow-us">🔗 Follow us</a>
 

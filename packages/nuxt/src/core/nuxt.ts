@@ -10,9 +10,10 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
-import { withoutLeadingSlash } from 'ufo'
+import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
+import { gt, satisfies } from 'semver'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -63,6 +64,11 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
+const keyDependencies = [
+  '@nuxt/kit',
+  '@nuxt/schema',
+]
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
@@ -70,6 +76,17 @@ async function initNuxt (nuxt: Nuxt) {
       nuxt.hooks.addHooks(config.hooks)
     }
   }
+
+  // Restart Nuxt when layer directories are added or removed
+  const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
+  nuxt.hook('builder:watch', (event, relativePath) => {
+    const path = resolve(nuxt.options.srcDir, relativePath)
+    if (event === 'addDir' || event === 'unlinkDir') {
+      if (path.startsWith(layersDir)) {
+        return nuxt.callHook('restart', { hard: true })
+      }
+    }
+  })
 
   // Set nuxt instance for useNuxt
   nuxtCtx.set(nuxt)
@@ -112,6 +129,8 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.typescript.shim) {
       opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/vue-shim.d.ts') })
     }
+    // Add shims for `#build/*` imports that do not already have matching types
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/build.d.ts') })
     // Add module augmentations directly to NuxtConfig
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/schema.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app.config.d.ts') })
@@ -252,6 +271,9 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.options.build.transpile.push(
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
   )
+
+  // Ensure we can resolve dependencies within layers
+  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -540,6 +562,12 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
   }
 
+  // Show compatibility version banner when Nuxt is running with a compatibility version
+  // that is different from the current major version
+  if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+    console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
+  }
+
   await nuxt.callHook('ready', nuxt)
 }
 
@@ -605,6 +633,8 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
+  await Promise.all(keyDependencies.map(dependency => checkDependencyVersion(dependency, nuxt._version)))
+
   // We register hooks layer-by-layer so any overrides need to be registered separately
   if (opts.overrides?.hooks) {
     nuxt.hooks.addHooks(opts.overrides.hooks)
@@ -621,4 +651,15 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-const RESTART_RE = /^(app|error|app\.config)\.(js|ts|mjs|jsx|tsx|vue)$/i
+async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
+  const path = await resolvePath(name).catch(() => null)
+
+  if (!path) { return }
+  const { version } = await readPackageJSON(path)
+
+  if (version && gt(nuxtVersion, version)) {
+    console.warn(`[nuxt] Expected \`${name}\` to be at least \`${nuxtVersion}\` but got \`${version}\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
+  }
+}
+
+const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i

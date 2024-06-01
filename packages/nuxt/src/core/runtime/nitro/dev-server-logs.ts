@@ -6,10 +6,16 @@ import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
 import { getContext } from 'unctx'
 
+import { isVNode } from 'vue'
 import type { NitroApp } from '#internal/nitro/app'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
+
+const devReducers: Record<string, (data: any) => any> = {
+  VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
+  URL: data => data instanceof URL ? data.toString() : undefined,
+}
 
 interface NuxtDevAsyncContext {
   logs: LogObject[]
@@ -54,9 +60,10 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__">${stringify(ctx.logs, ctx.event.context._payloadReducers)}</script>`)
+      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__">${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
     } catch (e) {
-      console.warn('[nuxt] Failed to stringify dev server logs. You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.', e)
+      const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
+      console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.`)
     }
   })
 }
@@ -70,8 +77,8 @@ function getStack () {
   return stack.stack?.replace(EXCLUDE_TRACE_RE, '').replace(/^Error.*\n/, '') || ''
 }
 
-const FILENAME_RE = /at.*\(([^:)]+)[):]/
-const FILENAME_RE_GLOBAL = /at.*\(([^)]+)\)/g
+const FILENAME_RE = /at[^(]*\(([^:)]+)[):]/
+const FILENAME_RE_GLOBAL = /at[^(]*\(([^)]+)\)/g
 function extractFilenameFromStack (stacktrace: string) {
   return stacktrace.match(FILENAME_RE)?.[1].replace(withTrailingSlash(rootDir), '')
 }
