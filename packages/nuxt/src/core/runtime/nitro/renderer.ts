@@ -260,8 +260,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   if (ssrError && !('__unenv__' in event.node.req) /* allow internal fetch */) {
     throw createError({
-      statusCode: 404,
-      statusMessage: 'Page Not Found: /__nuxt_error',
+      status: 404,
+      message: 'Page Not Found: /__nuxt_error',
     })
   }
 

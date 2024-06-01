@@ -28,7 +28,7 @@ If you throw an error created with `createError`:
 const route = useRoute()
 const { data } = await useFetch(`/api/movies/${route.params.slug}`)
 if (!data.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Page Not Found' })
+  throw createError({ status: 404, message: 'Page Not Found' })
 }
 </script>
 ```
