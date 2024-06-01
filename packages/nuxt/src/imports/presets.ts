@@ -135,6 +135,7 @@ export const scriptsStubsPreset = {
     'useScriptGoogleMaps',
     'useScriptNpm',
   ],
+  priority: -1,
   from: '#app/composables/script-stubs',
 } satisfies InlinePreset
 
