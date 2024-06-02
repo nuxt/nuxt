@@ -165,7 +165,7 @@ export async function _generateTypes (nuxt: Nuxt) {
           dirs.push(join(relative(nuxt.options.buildDir, srcOrCwd), '**/*'))
         }
         return dirs
-      }, [])
+      }, []),
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
       ...modulesInclude,
     ],
