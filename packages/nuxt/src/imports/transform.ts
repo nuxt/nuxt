@@ -26,6 +26,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
       if (isVue(id, { type: ['script', 'template'] })) {
         return true
       }
+      
       // JavaScript files
       return isJS(id)
     },
