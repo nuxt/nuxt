@@ -26,8 +26,8 @@ if (_error.stack) {
           text.includes('new Promise')
     stacktrace.push(`<span class="stack${internal ? ' internal' : ''}">${text}</span>`)
   }
-  stacktrace = stacktrace.join('\n')
 }
+stacktrace = stacktrace.join('\n')
 
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
