@@ -496,7 +496,7 @@ declare module ${composableModule} {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
         getContents: () => {
-          return `import type { ComputedRef, MaybeRef } from vue
+          return `import type { ComputedRef, MaybeRef } from 'vue'
 declare module ${composableModule} {
   interface PageMeta {
     viewTransition?: boolean | 'always'
