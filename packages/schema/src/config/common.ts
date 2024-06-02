@@ -165,7 +165,12 @@ export default defineUntypedSchema({
    * A unique identifier matching the build. This may contain the hash of the current state of the project.
    */
   buildId: {
-    $resolve: (val: string) => val ?? randomUUID(),
+    $resolve: async (val: string | undefined, get): Promise<string> => {
+      if (typeof val === 'string') { return val }
+
+      const [isDev, isTest] = await Promise.all([get('dev') as Promise<boolean>, get('test') as Promise<boolean>])
+      return isDev ? 'dev' : isTest ? 'test' : randomUUID()
+    },
   },
 
   /**

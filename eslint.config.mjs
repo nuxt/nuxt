@@ -5,7 +5,6 @@ import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
 // @ts-expect-error missing types
 import perfectionist from 'eslint-plugin-perfectionist'
-import regex from 'eslint-plugin-regexp'
 
 export default createConfigForNuxt({
   features: {
@@ -217,9 +216,6 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
-
-    // @ts-ignore types misaligned
-    regex.configs['flat/recommended'],
   )
 
   // Generate type definitions for the eslint config

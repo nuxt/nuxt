@@ -174,6 +174,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt3/dist',
         'nuxt-nightly/dist',
         distDir,
+        // Ensure app config files have auto-imports injected even if they are pure .js files
+        ...nuxt.options._layers.map(layer => resolve(layer.config.srcDir, 'app.config')),
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
@@ -231,8 +233,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
-    const buildId = nuxt.options.runtimeConfig.app.buildId ||=
-      (nuxt.options.dev ? 'dev' : nuxt.options.test ? 'test' : nuxt.options.buildId)
+    const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
     const buildTimestamp = Date.now()
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')

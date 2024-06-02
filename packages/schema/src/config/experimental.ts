@@ -29,6 +29,7 @@ export default defineUntypedSchema({
      *     compileTemplate: true,
      *     templateUtils: true,
      *     relativeWatchPaths: true,
+     *     resetAsyncDataToUndefined: true,
      *     defaults: {
      *       useAsyncData: {
      *         deep: true
@@ -45,6 +46,11 @@ export default defineUntypedSchema({
      * @type {3 | 4}
      */
     compatibilityVersion: 3,
+    /**
+     * This enables early access to the experimental multi-app support.
+     * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
+     */
+    multiApp: false,
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
@@ -337,8 +343,10 @@ export default defineUntypedSchema({
 
     /**
      * Use new experimental head optimisations:
+     *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
+     *
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
     headNext: true,
@@ -387,7 +395,11 @@ export default defineUntypedSchema({
      * })
      * ```
      */
-    sharedPrerenderData: false,
+    sharedPrerenderData: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
@@ -410,6 +422,18 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
+        /** @type {'undefined' | 'null'} */
+        value: {
+          async $resolve (val, get) {
+            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+          },
+        },
+        /** @type {'undefined' | 'null'} */
+        errorValue: {
+          async $resolve (val, get) {
+            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+          },
+        },
         deep: {
           async $resolve (val, get) {
             return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
@@ -467,6 +491,16 @@ export default defineUntypedSchema({
      * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
      */
     relativeWatchPaths: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+      },
+    },
+
+    /**
+     * Whether `clear` and `clearNuxtData` should reset async data to its _default_ value or update
+     * it to `null`/`undefined`.
+     */
+    resetAsyncDataToUndefined: {
       async $resolve (val, get) {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
       },
