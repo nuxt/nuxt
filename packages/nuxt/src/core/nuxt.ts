@@ -104,7 +104,8 @@ async function initNuxt (nuxt: Nuxt) {
       const nightly = nightlies[pkg as keyof typeof nightlies]
       const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
       if (path) {
-        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+        const dirPath = dirname(path)
+        return [[pkg, [dirPath]], [nightly, [dirPath]]]
       }
     }
 
