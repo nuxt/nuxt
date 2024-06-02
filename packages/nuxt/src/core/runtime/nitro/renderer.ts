@@ -194,20 +194,20 @@ const getSPARenderer = lazyCachedFunction(async () => {
 const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
-const sharedCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:shared') : null
+const sharedCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? useStorage('internal:nuxt:prerender:shared') : null
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
       get<T = unknown> (key: string): Promise<T> | undefined {
         if (sharedPrerenderKeys.has(key)) {
-          return sharedPrerenderPromises!.get(key) ?? sharedCache.getItem(key) as Promise<T>
+          return sharedPrerenderPromises!.get(key) ?? sharedCache!.getItem(key) as Promise<T>
         }
       },
       async set<T> (key: string, value: Promise<T>): Promise<void> {
         sharedPrerenderKeys.add(key)
         sharedPrerenderPromises!.set(key, value)
-        sharedCache.setItem(key, await value as any)
+        sharedCache!.setItem(key, await value as any)
         // free up memory after the promise is resolved
           .finally(() => sharedPrerenderPromises!.delete(key))
       },
