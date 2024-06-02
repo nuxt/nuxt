@@ -156,8 +156,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     },
     include: [
       './nuxt.d.ts',
-      join(nuxtBuildRootDir), '.config/nuxt.*'),
-      join(nuxtBuildRootDir), '**/*'),
+      join(nuxtBuildRootDir, '.config/nuxt.*'),
+      join(nuxtBuildRootDir, '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
       ...nuxt.options._layers.reduce<string[]>((dirs, layer) => {
         const srcOrCwd = layer.config.srcDir ?? layer.cwd
