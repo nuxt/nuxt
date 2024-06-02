@@ -116,12 +116,21 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modulePaths = await resolveNuxtModule(rootDirWithSlash,
-    nuxt.options._installedModules
-      .filter(m => m.entryPath)
-      .map(m => getDirectory(m.entryPath)),
-  )
-
+  const modules: string[] = []
+  for (const m of nuxt.options._installedModules) {
+    if (m.entryPath) {
+      modules.push(getDirectory(m.entryPath))
+    }
+  }
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash, modules)
+  const nuxtBuildRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
+  const modulesInclude: string[] = []
+  const modulesExclude: string[] = []
+  for (const m of modulePaths) {
+    const relative = relativeWithDot(nuxt.options.buildDir, m)
+    modulesInclude.push(join(relative, 'runtime'))
+    modulesExclude.push(join(relative, 'runtime/server')
+  }
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       forceConsistentCasingInFileNames: true,
@@ -147,18 +156,22 @@ export async function _generateTypes (nuxt: Nuxt) {
     },
     include: [
       './nuxt.d.ts',
-      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '.config/nuxt.*'),
-      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
+      join(nuxtBuildRootDir), '.config/nuxt.*'),
+      join(nuxtBuildRootDir), '**/*'),
       ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
-      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
-        .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
-        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
+      ...nuxt.options._layers.reduce<string[]>((dirs, layer) => {
+        const srcOrCwd = layer.config.srcDir ?? layer.cwd
+        if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules')) {
+          dirs.push(join(relative(nuxt.options.buildDir, srcOrCwd), '**/*'))
+        }
+        return dirs
+      }, [])
       ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime')),
+      ...modulesInclude,
     ],
     exclude: [
       ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+      ...modulesExclude,
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
       relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
     ],
@@ -279,7 +292,11 @@ export async function writeTypes (nuxt: Nuxt) {
 }
 
 function renderAttrs (obj: Record<string, string>) {
-  return Object.entries(obj).map(e => renderAttr(e[0], e[1])).join(' ')
+  const attrs: string[] = []
+  for (const key in obj) {
+    attrs.push(renderAttr(key, obj[key]))
+  }
+  return attrs.join(' ')
 }
 
 function renderAttr (key: string, value: string) {
