@@ -74,28 +74,26 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (lazy) {
             if (modifier) {
               switch (modifier) {
-                case "Visible":
-                case "visible-":
+                case 'Visible':
+                case 'visible-':
                   imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
                   identifier += '_delayedIO'
                   imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
-                  break;
-                case "Idle":
-                case "idle-":
+                  break
+                case 'Idle':
+                case 'idle-':
                   imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkClientPage' }]))
                   identifier += '_delayedNetwork'
                   imports.add(`const ${identifier} = createLazyNetworkClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
-                  break;
+                  break
               }
-              
-            }
-            else {
+            } else {
               imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               identifier += '_lazy'
               imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
-            }          
+            }
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
