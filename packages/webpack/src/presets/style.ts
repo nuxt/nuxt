@@ -21,12 +21,14 @@ function minimizer (ctx: WebpackConfigContext) {
 }
 
 function extractCSS (ctx: WebpackConfigContext) {
+  const extract = ctx.userConfig.extractCSS
+  const filename = fileName(ctx, 'css')
   // CSS extraction
-  if (ctx.userConfig.extractCSS) {
+  if (extract) {
     ctx.config.plugins!.push(new MiniCssExtractPlugin({
-      filename: fileName(ctx, 'css'),
-      chunkFilename: fileName(ctx, 'css'),
-      ...ctx.userConfig.extractCSS === true ? {} : ctx.userConfig.extractCSS,
+      filename: filename,
+      chunkFilename: filename,
+      ...extract === true ? {} : extract,
     }))
   }
 }
