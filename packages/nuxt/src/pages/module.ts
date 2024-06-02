@@ -115,7 +115,7 @@ export default defineNuxtModule({
       addTemplate({
         filename: 'pages.mjs',
         getContents: () => `export { useRoute } from '#app/composables/router'
-export const START_LOCATION = Symbol('router:start-location')`
+export const START_LOCATION = Symbol('router:start-location')`,
       })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
@@ -124,7 +124,7 @@ export const START_LOCATION = Symbol('router:start-location')`
     appMiddleware?: string | string[] | Record<string, boolean>
   }
 }
-export {}`
+export {}`,
       })
       addComponent({
         name: 'NuxtPage',
@@ -502,7 +502,7 @@ declare module ${composableModule} {
     viewTransition?: boolean | 'always'
   }
 }`
-        }
+        },
       })
     }
 
