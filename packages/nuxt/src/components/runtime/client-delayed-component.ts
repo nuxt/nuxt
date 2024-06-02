@@ -1,5 +1,5 @@
 import { createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { Component, Ref, VNode } from 'vue'
+import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useObserver } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
