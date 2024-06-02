@@ -2638,8 +2638,8 @@ describe('lazy import components', () => {
   it('lazy load delayed hydration comps at the right time', async () => {
     expect(html).not.toContain('This shouldn\'t be visible at first!')
     const { page } = await renderPage('/lazy-import-components')
-    //expect(await page.locator('body').getByText('This should be visible at first with network!').all()).toHaveLength(1)
-    //expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(0)
+    // expect(await page.locator('body').getByText('This should be visible at first with network!').all()).toHaveLength(1)
+    // expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(0)
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This should be visible at first with network!').all()).toHaveLength(0)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
