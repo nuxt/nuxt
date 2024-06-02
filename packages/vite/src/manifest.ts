@@ -56,7 +56,7 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
         const key = relative(ctx.config.root!, ctx.entry)
         clientManifest[key].css ||= []
         clientManifest[key].css!.push(val.file)
-        break;
+        break
       }
     }
   }

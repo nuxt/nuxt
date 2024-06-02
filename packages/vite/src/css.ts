@@ -14,16 +14,16 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
   const cssPlugins = []
   for (const plugin of Object.entries(nuxt.options.postcss.plugins)
     .sort((a, b) => lastPlugins.indexOf(a[0]) - lastPlugins.indexOf(b[0]))) {
-      const [name, opts] = plugin
-      if (opts) {
-        const plugin = requireModule(name, {
-          paths: [
-            ...nuxt.options.modulesDir,
-            distDir
-          ]
-        })
-        cssPlugins.push(plugin(opts))
-      }
+    const [name, opts] = plugin
+    if (opts) {
+      const plugin = requireModule(name, {
+        paths: [
+          ...nuxt.options.modulesDir,
+          distDir,
+        ],
+      })
+      cssPlugins.push(plugin(opts))
+    }
   }
   css.postcss.plugins = cssPlugins
 

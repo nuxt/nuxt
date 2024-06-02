@@ -26,7 +26,7 @@ function extractCSS (ctx: WebpackConfigContext) {
   // CSS extraction
   if (extract) {
     ctx.config.plugins!.push(new MiniCssExtractPlugin({
-      filename: filename,
+      filename,
       chunkFilename: filename,
       ...extract === true ? {} : extract,
     }))
