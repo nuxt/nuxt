@@ -72,7 +72,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
       let vnode: VNode | null = null
-      if (import.meta.client && nuxt.isHydrating && instance.vnode?.el) {
+      if (nuxt.isHydrating && instance.vnode?.el) {
         vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)
       }
       const isIdle = ref(false)
@@ -90,7 +90,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
           idleHandle = null
         }
       })
-      return () => isIdle.value ? h(componentLoader, attrs) : vnode
+      return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
     },
   })
 }
