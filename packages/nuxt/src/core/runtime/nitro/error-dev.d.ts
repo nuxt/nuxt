@@ -1,1 +1,0 @@
-../../../../../ui-templates/dist/templates/error-dev.d.ts

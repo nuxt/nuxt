@@ -14,12 +14,6 @@ import { isVue } from '../core/utils'
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
   /**
-   * passed down to `NuxtTeleportIslandComponent`
-   * should be done only in dev mode as we use build:manifest result in production
-   */
-  rootDir?: string
-  isDev?: boolean
-  /**
    * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
@@ -31,7 +25,7 @@ interface ComponentChunkOptions {
 }
 
 const SCRIPT_RE = /<script[^>]*>/g
-const HAS_SLOT_OR_CLIENT_RE = /(<slot[^>]*>)|(nuxt-client)/
+const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
 const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
@@ -43,7 +37,6 @@ function wrapWithVForDiv (code: string, vfor: string): string {
 
 export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
-  const { isDev, rootDir } = options
   return {
     name: 'server-only-component-transform',
     enforce: 'pre',
@@ -115,7 +108,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
                 startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
               }
 
-              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" ${rootDir && isDev ? `root-dir="${rootDir}"` : ''} :nuxt-client="${attributeValue}">`)
+              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" :nuxt-client="${attributeValue}">`)
               s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
               s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
             }

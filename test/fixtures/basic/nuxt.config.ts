@@ -32,6 +32,7 @@ export default defineNuxtConfig({
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
+  appId: 'nuxt-app-basic',
   build: {
     transpile: [
       (ctx) => {
@@ -91,6 +92,14 @@ export default defineNuxtConfig({
     },
   },
   modules: [
+    function (_options, nuxt) {
+      nuxt.hook('modules:done', () => {
+        // @ts-expect-error not valid nuxt option
+        if (!nuxt.options.__installed_layer) {
+          throw new Error('layer in layers/ directory was not auto-registered')
+        }
+      })
+    },
     '~/modules/subpath',
     './modules/test',
     '~/modules/example',
@@ -226,6 +235,7 @@ export default defineNuxtConfig({
     treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     headNext: true,
     inlineRouteRules: true,
   },

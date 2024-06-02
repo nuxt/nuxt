@@ -1,4 +1,5 @@
 import { defineUntypedSchema } from 'untyped'
+import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
   /**
@@ -7,6 +8,24 @@ export default defineUntypedSchema({
    * @type {typeof import('nitropack')['NitroConfig']}
    */
   nitro: {
+    runtimeConfig: {
+      $resolve: async (val: Record<string, any> | undefined, get) => {
+        const runtimeConfig = await get('runtimeConfig') as RuntimeConfig
+        return {
+          ...runtimeConfig,
+          app: {
+            ...runtimeConfig.app,
+            baseURL: runtimeConfig.app.baseURL.startsWith('./')
+              ? runtimeConfig.app.baseURL.slice(1)
+              : runtimeConfig.app.baseURL,
+          },
+          nitro: {
+            envPrefix: 'NUXT_',
+            ...runtimeConfig.nitro,
+          },
+        }
+      },
+    },
     routeRules: {
       $resolve: async (val: Record<string, any> | undefined, get) => ({
         ...await get('routeRules') as Record<string, any>,
@@ -27,11 +46,13 @@ export default defineUntypedSchema({
    * Nitro server handlers.
    *
    * Each handler accepts the following options:
+   *
    * - handler: The path to the file defining the handler.
    * - route: The route under which the handler is available. This follows the conventions of https://github.com/unjs/radix3.
    * - method: The HTTP method of requests that should be handled.
    * - middleware: Specifies whether it is a middleware handler.
    * - lazy: Specifies whether to use lazy loading to import the handler.
+   *
    * @see https://nuxt.com/docs/guide/directory-structure/server
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    * @example
