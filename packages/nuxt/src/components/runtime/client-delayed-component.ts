@@ -64,6 +64,11 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
+      if (import.meta.server) {
+        return () => h('div', {}, [
+          h(componentLoader, attrs),
+        ])
+      }
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
       let vnode: VNode | null = null
