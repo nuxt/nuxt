@@ -429,7 +429,7 @@ export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVers
 export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n
 export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n
 export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n
-export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}\n\n`
+export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`
   },
 }
 
