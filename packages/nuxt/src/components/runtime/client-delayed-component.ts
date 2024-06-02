@@ -71,10 +71,6 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       }
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      let vnode: VNode | null = null
-      if (nuxt.isHydrating && instance.vnode?.el) {
-        vnode = createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)
-      }
       const isIdle = ref(false)
       let idleHandle: number | null = null
       onMounted(() => {
