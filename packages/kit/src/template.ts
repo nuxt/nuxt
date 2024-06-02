@@ -129,7 +129,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   for (const m of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, m)
     modulesInclude.push(join(relative, 'runtime'))
-    modulesExclude.push(join(relative, 'runtime/server')
+    modulesExclude.push(join(relative, 'runtime/server'))
   }
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
