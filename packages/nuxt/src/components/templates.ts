@@ -121,9 +121,13 @@ export const componentsTypeTemplate = {
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
     const syncComponents: string[] = []
     const asyncComponents: string[] = []
+    const syncComponentsExport: string[] = []
+    const asyncComponentsExport: string[] = []
     for (const [pascalName, type] of componentTypes) {
       syncComponents.push(`'${pascalName}': ${type}`)
       asyncComponents.push(`'Lazy${pascalName}': ${type}`)
+      syncComponentsExport.push(`${pascalName}: ${type}`)
+      asyncComponentsExport.push(`Lazy${pascalName}: ${type}`)
     }
     return `
 import type { DefineComponent, SlotsType } from 'vue'
@@ -145,8 +149,8 @@ declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
 
-export const ${syncComponents.join('\nexport const')}
-export const ${asyncComponents.join('\nexport const')}
+export const ${syncComponentsExport.join('\nexport const')}
+export const ${asyncComponentsExport.join('\nexport const')}
 
 export const componentNames: string[]
 `
