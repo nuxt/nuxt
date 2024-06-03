@@ -253,8 +253,7 @@ function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_
 
     const unwrapped: Record<string, string> = {}
     for (const key in obj) {
-      const value = obj[key]
-      unwrapped[toValue(key)] = toValue(value)
+      unwrapped[toValue(key)] = toValue(obj[key])
     }
     segments.push(unwrapped)
   }
