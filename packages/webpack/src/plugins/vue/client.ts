@@ -34,31 +34,30 @@ export default class VueSSRClientPlugin {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
       const stats = compilation.getStats().toJson()
 
-      const allFiles = uniq(stats.assets!
-        .map(a => a.name))
-        .filter(file => !isHotUpdate(file))
+      const allFiles = uniq(stats.assets!.reduce<string[]>((assets, asset) => {
+        if (!isHotUpdate(asset.name)) {
+          assets.push(asset.name)
+        }
+        return assets
+      },[]))
 
       const initialFiles = uniq(Object.keys(stats.entrypoints!)
         .map(name => stats.entrypoints![name].assets!)
         .reduce((files, entryAssets) => files.concat(entryAssets.map(entryAsset => entryAsset.name)), [] as string[])
-        .filter(file => isJS(file) || isCSS(file)))
-        .filter(file => !isHotUpdate(file))
+        .filter(file => (isJS(file) || isCSS(file)) && !isHotUpdate(file)))
 
-      const asyncFiles = allFiles
-        .filter(file => isJS(file) || isCSS(file))
-        .filter(file => !initialFiles.includes(file))
-        .filter(file => !isHotUpdate(file))
+      const asyncFiles = allFiles.filter(file => (isJS(file) || isCSS(file)) && !initialFiles.includes(file) && !isHotUpdate(file))
 
       const assetsMapping: Record<string, string[]> = {}
       stats.assets!
-        .filter(({ name }) => isJS(name))
-        .filter(({ name }) => !isHotUpdate(name))
         .forEach(({ name, chunkNames = [] }) => {
-          const componentHash = hash(chunkNames.join('|'))
-          if (!assetsMapping[componentHash]) {
-            assetsMapping[componentHash] = []
+          if (isJS(name) && !isHotUpdate(name)) {
+            const componentHash = hash(chunkNames.join('|'))
+            if (!assetsMapping[componentHash]) {
+              assetsMapping[componentHash] = []
+            }
+            assetsMapping[componentHash].push(name)
           }
-          assetsMapping[componentHash].push(name)
         })
 
       const webpackManifest = {
