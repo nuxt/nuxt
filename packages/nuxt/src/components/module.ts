@@ -44,7 +44,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
       if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
+        return dir.flatMap(dir => normalizeDirs(dir, cwd, options)).sort(compareDirByPathLength)
       }
       if (dir === true || dir === undefined) {
         return [
@@ -78,9 +78,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
-      const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
-        .flat()
+      const allDirs = nuxt.options._layers.flatMap(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
 
       await nuxt.callHook('components:dirs', allDirs)
 
