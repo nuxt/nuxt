@@ -41,13 +41,13 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const imports = new Set<string>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
-
+      const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?(Idle|Visible|idle-|visible-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install && tryUseNuxt()?.options.test === false) {
+          if (component._internal_install && nuxt?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
@@ -72,7 +72,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           }
 
           if (lazy) {
-            if (modifier) {
+            if (nuxt?.options.experimental.componentLazyHydration === true && modifier) {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
