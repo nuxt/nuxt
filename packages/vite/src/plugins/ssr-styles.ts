@@ -95,7 +95,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       // TODO: remove css from vite preload arrays
       const styleArray: [string, string][] = []
       for (const key in emitted) {
-        styleArray.push([key, `() => import('./${this.getFileName(emitted[key])}').then(interopDefault)`]
+        styleArray.push([key, `() => import('./${this.getFileName(emitted[key])}').then(interopDefault)`])
       }
       
       this.emitFile({
