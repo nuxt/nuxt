@@ -145,15 +145,24 @@ function extractAttributes (attributes: Record<string, string>, names: string[])
 }
 
 function attributeToString (attributes: Record<string, string>) {
-  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+  const attrs: string[] = []
+  for (const name in attributes) {
+    const value = attributes[name]
+    attrs.push(value ? ` ${name}="${value}"` : ` ${name}`)
+  }
+  return attrs.join('')
 }
 
 function isBinding (attr: string): boolean {
-  return attr.startsWith(':')
+  return attr[0] === ':'
 }
 
 function getPropsToString (bindings: Record<string, string>): string {
-  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
+  const vForExpr = bindings['v-for']?.split(' in ')
+  let vfor : [string, string] | undefined
+  if (vForExpr?.length) {
+    vfor = [vForExpr[0].trim(), vForExpr[1].trim()]
+  }
   if (Object.keys(bindings).length === 0) { return 'undefined' }
   let content: string | string[] = []
   for (const b in bindings) {
