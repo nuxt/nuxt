@@ -79,6 +79,7 @@ export default defineComponent({
     const nuxtApp = useNuxtApp()
     const filteredProps = computed(() => {
       if (props.props) {
+        const filteredObj = Object.create(null)
         for (const key in props.props) {
           if (!key.startsWith('data-v-')) {
             filteredObj[key] = props.props[key]
