@@ -88,7 +88,7 @@ export default defineComponent({
         return filteredObj
       }
       return {}
-    }) 
+    })
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()

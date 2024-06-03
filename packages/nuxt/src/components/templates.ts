@@ -107,7 +107,7 @@ export const componentsTypeTemplate = {
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes: [string, string][] = []
-    for (const c of app.components){
+    for (const c of app.components) {
       if (!c.island) {
         const type = `typeof ${genDynamicImport((isAbsolute(c.filePath) ? relative(buildDir, c.filePath) : c.filePath)
           .replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
