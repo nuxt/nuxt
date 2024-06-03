@@ -21,7 +21,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
 // @ts-expect-error virtual file
-import { appId, multiApp } from '#build/nuxt.config.mjs'
+import { appId, runningMultiApp } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -304,7 +304,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = !multiApp ? window.__NUXT__ : window.__NUXT__?.[nuxtApp._name]
+    const __NUXT__ = !runningMultiApp ? window.__NUXT__ : window.__NUXT__?.[nuxtApp._name]
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {

@@ -442,7 +442,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
-      `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
+      `export const runningMultiApp = ${!!ctx.nuxt.options.future.multiApp}`,
     ].join('\n\n')
   },
 }
