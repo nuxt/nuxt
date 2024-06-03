@@ -39,7 +39,7 @@ export default class VueSSRClientPlugin {
           assets.push(asset.name)
         }
         return assets
-      },[]))
+      }, []))
 
       const initialFiles = uniq(Object.keys(stats.entrypoints!)
         .map(name => stats.entrypoints![name].assets!)
