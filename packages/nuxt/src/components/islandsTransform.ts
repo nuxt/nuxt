@@ -159,7 +159,7 @@ function isBinding (attr: string): boolean {
 
 function getPropsToString (bindings: Record<string, string>): string {
   const vForExpr = bindings['v-for']?.split(' in ')
-  let vfor : [string, string] | undefined
+  let vfor: [string, string] | undefined
   if (vForExpr?.length) {
     vfor = [vForExpr[0].trim(), vForExpr[1].trim()]
   }
