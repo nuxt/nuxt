@@ -77,7 +77,17 @@ export default defineComponent({
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
-    const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
+    const filteredProps = computed(() => {
+      if (props.props) {
+        for (const key in props.props) {
+          if (!key.startsWith('data-v-')) {
+            filteredObj[key] = props.props[key]
+          }
+        }
+        return filteredObj
+      }
+      return {}
+    }) 
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
@@ -284,11 +294,16 @@ export default defineComponent({
                   const info = payloads.components[id]
                   const { props, slots } = info
                   const component = components!.get(id)!
+                  const mappedSlots = Object.create(null)
+                  if (slots) {
+                    for (const k in slots) {
+                      mappedSlots[k] = () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${slots[k]}</div>`, 1)
+                    }
+                  }
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                     default: () => {
-                      return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1),
-                      ]))))]
+                      return [h(component, props, mappedSlots)]
                     },
                   })
                   teleports.push(vnode)
