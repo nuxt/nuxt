@@ -1,0 +1,6 @@
+src/app/components/error-404.vue
+src/app/components/error-500.vue
+src/app/components/error-dev.vue
+src/app/components/welcome.vue
+src/core/runtime/nitro/error-500.ts
+src/core/runtime/nitro/error-dev.ts
