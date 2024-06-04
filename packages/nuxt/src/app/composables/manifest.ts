@@ -27,6 +27,9 @@ function fetchManifest () {
   manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`))
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
+  }).catch((err) => {
+    console.error('[nuxt] Error while fetching app manifest:', err)
+    throw err
   })
   return manifest
 }
@@ -48,5 +51,9 @@ export async function getRouteRules (url: string) {
     return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(url).reverse())
   }
   await getAppManifest()
+  if (!matcher) {
+    console.error('[nuxt] Error creating app manifest matcher.', matcher)
+    return {}
+  }
   return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
 }
