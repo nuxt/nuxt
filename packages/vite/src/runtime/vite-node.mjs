@@ -49,8 +49,9 @@ function createRunner () {
         let _err
         try {
           const { message, stack } = formatViteError(errorData, id)
+          // The createError utility in h3 has already removed statusMessage
           _err = createError({
-            statusMessage: 'Vite Error',
+            // statusMessage: 'Vite Error',
             message,
             stack,
           })
@@ -58,8 +59,9 @@ function createRunner () {
           consola.warn('Internal nuxt error while formatting vite-node error. Please report this!', formatError)
           const message = `[vite-node] [TransformError] ${errorData?.message || '-'}`
           consola.error(message, errorData)
+          // The createError utility in h3 has already removed statusMessage
           throw createError({
-            message: 'Vite Error',
+            // message: 'Vite Error',
             message,
             stack: `${message}\nat ${id}\n` + (errorData?.stack || ''),
           })
