@@ -66,7 +66,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
   const nitroPaths = resolve(distDir, 'core/runtime/nitro/paths')
   const renderer = resolve(distDir, 'core/runtime/nitro/renderer')
-  const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -124,7 +123,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#spa-template': () => `export const template = ${JSON.stringify(spaLoadingTemplate)}`,
+      '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
@@ -409,6 +408,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const nitro = await createNitro(nitroConfig)
 
   // Trigger Nitro reload when SPA loading template changes
+  const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
   nuxt.hook('builder:watch', async (_event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     if (path === spaLoadingTemplateFilePath) {
