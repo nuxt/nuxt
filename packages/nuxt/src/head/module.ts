@@ -72,9 +72,7 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
     addTemplate({
       filename: 'unhead.config.mjs',
       getContents () {
-        return [
-          `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`,
-        ].join('\n')
+        return `export const renderSSRHeadOptions = ${JSON.stringify(options.renderSSRHeadOptions || {})}`
       },
     })
 
