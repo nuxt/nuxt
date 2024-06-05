@@ -51,7 +51,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   )
   const distDir2 = resolve(nuxt.options.rootDir, 'dist')
   const scanDirs: string[] = []
-  const assetDir: {dir: string}[] = []
+  const assetDir: { dir: string }[] = []
   const configExternals: string[] = []
   for (const layer of nuxt.options._layers) {
     configExternals.push(resolve(layer.config.srcDir, 'app.config'))
