@@ -703,15 +703,14 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
 }
 
 function getComponentSlotTeleport (teleports: Record<string, string>) {
-  const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 
-  for (const [key, value] of entries) {
+  for (const key in teleports) {
     const match = key.match(SSR_CLIENT_SLOT_MARKER)
     if (match) {
       const [, slot] = match
       if (!slot) { continue }
-      slots[slot] = value
+      slots[slot] = teleports[key]
     }
   }
   return slots
