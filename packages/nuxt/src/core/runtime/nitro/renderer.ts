@@ -528,8 +528,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       },
     } satisfies RenderResponse
     if (import.meta.prerender) {
-      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
+      const islandKey = `/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`
+      await islandCache!.setItem(islandKey, response)
+      await islandPropCache!.setItem(islandKey, event.path)
     }
     return response
   }
