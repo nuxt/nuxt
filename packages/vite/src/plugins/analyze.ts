@@ -19,8 +19,8 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
           const originalEntries = []
           for (const moduleId in bundle.modules) {
             const module = bundle.modules[moduleId]
-            originalEntries.push(transform(module.code || '', { minify: true }).then(result => {
-              return [moduleId, { ...module, code: result.code }];
+            originalEntries.push(transform(module.code || '', { minify: true }).then((result) => {
+              return [moduleId, { ...module, code: result.code }]
             }))
           }
           const minifiedEntries = await Promise.all(originalEntries)
