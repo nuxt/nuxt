@@ -211,10 +211,8 @@ export default defineComponent({
         payloads.slots = res.slots || {}
         payloads.components = res.components || {}
 
-        if (selectiveClient && import.meta.client) {
-          if (canLoadClientComponent.value && res.components) {
-            await loadComponents(props.source, res.components)
-          }
+        if (selectiveClient && import.meta.client && canLoadClientComponent.value && res.components) {
+          await loadComponents(props.source, res.components)
         }
 
         if (import.meta.client) {
