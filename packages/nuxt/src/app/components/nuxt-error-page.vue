@@ -15,7 +15,7 @@ const _error = props.error
 // TODO: extract to a separate utility
 const stacktrace = []
 if (_error.stack) {
-  for (const stk of _error.stack.split('\n').splice(1)) {
+  for (const line of _error.stack.split('\n').splice(1)) {
     const text = line
       .replace('webpack:/', '')
       .replace('.vue', '.js') // TODO: Support sourcemap
