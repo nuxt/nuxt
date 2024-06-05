@@ -66,16 +66,12 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
     // Map postcss plugins into instances on object mode once
     const cjs = createCommonJS(import.meta.url)
     const plugins = []
-    for (const pluginName of sortPlugins(postcssOptions)) {
+   postcssOptions.plugins = sortPlugins(postcssOptions).map((pluginName: string) => {
       const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions || typeof pluginFn !== 'function') { return null }
-      const finalPlugin = pluginFn(pluginOptions)
-      if (finalPlugin) {
-        plugins.push(finalPlugin)
-      }
-    }
-    postcssOptions.plugins = plugins
+      return pluginFn(pluginOptions)
+    }).filter(Boolean)
   }
 
   return {
