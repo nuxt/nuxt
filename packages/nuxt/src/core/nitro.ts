@@ -50,6 +50,22 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     moduleEntries,
   )
   const distDir2 = resolve(nuxt.options.rootDir, 'dist')
+  const scanDirs: string[] = []
+  const assetDir: {dir: string}[] = []
+  const configExternals: string[] = []
+  for (const layer of nuxt.options._layers) {
+    configExternals.push(resolve(layer.config.srcDir, 'app.config'))
+    const assetsLayerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
+    if (existsSync(assetsLayerDir)) {
+      assetDir.push({ dir: assetsLayerDir })
+    }
+    const scanLayerDir = (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))
+    if (scanLayerDir) {
+      scanDirs.push(scanLayerDir)
+    }
+  }
+  const nitroPaths = resolve(distDir, 'core/runtime/nitro/paths')
+  const renderer = resolve(distDir, 'core/runtime/nitro/renderer')
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -71,12 +87,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         {
           as: '__buildAssetsURL',
           name: 'buildAssetsURL',
-          from: resolve(distDir, 'core/runtime/nitro/paths'),
+          from: nitroPaths,
         },
         {
           as: '__publicAssetsURL',
           name: 'publicAssetsURL',
-          from: resolve(distDir, 'core/runtime/nitro/paths'),
+          from: nitroPaths,
         },
         {
           // TODO: Remove after https://github.com/unjs/nitro/issues/1049
@@ -98,14 +114,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           filename: join(nuxt.options.analyzeDir, '{name}.html'),
         }
       : false,
-    scanDirs: nuxt.options._layers.reduce<string[]>((dirs, layer) => {
-      const layerDir = (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))
-      if (layerDir) {
-        dirs.push(layerDir)
-      }
-      return dirs
-    }, []),
-    renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
+    scanDirs,
+    renderer,
     errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
@@ -119,9 +129,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '/__nuxt_error': { cache: false },
     },
     appConfig: nuxt.options.appConfig,
-    appConfigFiles: nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, 'app.config'),
-    ),
+    appConfigFiles: configExternals,
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -146,13 +154,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
             maxAge: 31536000 /* 1 year */,
             baseURL: nuxt.options.app.buildAssetsDir,
           },
-      ...nuxt.options._layers.reduce<{ dir: string }[]>((layers, layer) => {
-        const layerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
-        if (existsSync(layerDir)) {
-          layers.push({ dir: layerDir })
-        }
-        return layers
-      }, []),
+      ...assetDir,
     ],
     prerender: {
       failOnError: true,
@@ -175,7 +177,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         'nuxt-nightly/dist',
         distDir,
         // Ensure app config files have auto-imports injected even if they are pure .js files
-        ...nuxt.options._layers.map(layer => resolve(layer.config.srcDir, 'app.config')),
+        ...configExternals,
       ],
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
@@ -204,7 +206,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       '@vue/devtools-api': 'vue-devtools-stub',
 
       // Paths
-      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
+      '#internal/nuxt/paths': nitroPaths,
 
       // Nuxt aliases
       ...nuxt.options.alias,
@@ -238,7 +240,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
     const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
-
+    const metaDir = join(tempDir, 'meta')
+    const buildJson = join(tempDir, `meta/${buildId}.json`)
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
     nitroConfig.prerender.ignore.push(manifestPrefix)
@@ -246,7 +249,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nitroConfig.publicAssets!.unshift(
       // build manifest
       {
-        dir: join(tempDir, 'meta'),
+        dir: metaDir,
         maxAge: 31536000 /* 1 year */,
         baseURL: joinURL(manifestPrefix, 'meta'),
       },
@@ -258,7 +261,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       },
     )
 
-    nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+    nuxt.options.alias['#app-manifest'] = buildJson
 
     nuxt.hook('nitro:config', (config) => {
       const rules = config.routeRules
@@ -327,12 +330,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           prerendered: nuxt.options.dev ? [] : [...prerenderedRoutes],
         }
 
-        await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
+        await fsp.mkdir(metaDir, { recursive: true })
         await fsp.writeFile(join(tempDir, 'latest.json'), JSON.stringify({
           id: buildId,
           timestamp: buildTimestamp,
         }))
-        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify(manifest))
+        await fsp.writeFile(buildJson, JSON.stringify(manifest))
       })
     })
   }
@@ -475,7 +478,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitro.options.handlers.unshift({
     route: '/__nuxt_error',
     lazy: true,
-    handler: resolve(distDir, 'core/runtime/nitro/renderer'),
+    handler: renderer,
   })
 
   if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
