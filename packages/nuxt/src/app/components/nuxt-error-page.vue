@@ -16,13 +16,13 @@ const _error = props.error
 const stacktrace = []
 if (_error.stack) {
   for (const stk of _error.stack.split('\n').splice(1)) {
-    const text = stk
+    const text = line
       .replace('webpack:/', '')
       .replace('.vue', '.js') // TODO: Support sourcemap
       .trim()
-    const internal = (text.includes('node_modules') && !text.includes('.cache')) ||
-          text.includes('internal') ||
-          text.includes('new Promise')
+    const internal = (line.includes('node_modules') && !line.includes('.cache')) ||
+          line.includes('internal') ||
+          line.includes('new Promise')
     stacktrace.push(`<span class="stack${internal ? ' internal' : ''}">${text}</span>`)
   }
 }
