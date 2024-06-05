@@ -280,8 +280,7 @@ export default defineComponent({
             if (selectiveClient) {
               if (import.meta.server && payloads.components) {
                 for (const id in payloads.components) {
-                  const info = payloads.components[id]
-                  const { html, slots } = info
+                  const { html, slots } = payloads.components[id]
                   let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
                   for (const slot in slots) {
                     replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
@@ -292,8 +291,7 @@ export default defineComponent({
                 }
               } else if (canLoadClientComponent.value && payloads.components) {
                 for (const id in payloads.components) {
-                  const info = payloads.components[id]
-                  const { props, slots } = info
+                  const { props, slots } = payloads.components[id]
                   const component = components!.get(id)!
                   const mappedSlots = Object.create(null)
                   if (slots) {
