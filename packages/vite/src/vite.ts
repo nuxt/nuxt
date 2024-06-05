@@ -103,7 +103,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             composables: nuxt.options.optimization.keyedComposables,
           }),
           replace({
-            ...Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`])),
+            ';global.': ';globalThis.',
+            '(global.': '(globalThis.',
+            '{global.': '{globalThis.',
+            '}global.': '}globalThis.',
+            ' global.': ' globalThis.',
+            '\tglobal'`: '\tglobalThis.',
+            '\nglobal'`: '\nglobalThis.',
             preventAssignment: true,
           }),
           virtual(nuxt.vfs),
@@ -164,9 +170,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   await nuxt.callHook('vite:extend', ctx)
 
   nuxt.hook('vite:extendConfig', (config) => {
+    const pluginsReplace = Object.create(null)
+    for (const key in config.define!) {
+      if (key.startsWith('import.meta.')) {
+        pluginsReplace[key] = config.define![key]
+      }
+    }
     config.plugins!.push(replace({
       preventAssignment: true,
-      ...Object.fromEntries(Object.entries(config.define!).filter(([key]) => key.startsWith('import.meta.'))),
+      ...pluginsReplace,
     }))
   })
 
