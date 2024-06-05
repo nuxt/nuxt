@@ -395,9 +395,9 @@ export {}`,
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
-
+      const nuxtApps = Object.values(nuxt.apps)
       for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+        if (manifest[key].src && nuxtApps.some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
           delete manifest[key]
           continue
         }
