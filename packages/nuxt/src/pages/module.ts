@@ -434,9 +434,11 @@ export {}`,
       getContents: async () => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions()
-
-        const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
-          .map(([key, value]) => [key, genString(value as string)]))
+        const rawOptions = []
+        for (const key in nuxt.options.router.options) {
+          rawOptions.push([key, genString(nuxt.options.router.options[key] as string)]
+        }
+        const configRouterOptions = genObjectFromRawEntries(rawOptions)
 
         return [
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
