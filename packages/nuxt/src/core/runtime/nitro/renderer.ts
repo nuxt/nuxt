@@ -578,11 +578,7 @@ function joinAttrs (chunks: string[]) {
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
-  return '<!DOCTYPE html>' +
-    `<html${joinAttrs(html.htmlAttrs)}>` +
-    `<head>${joinTags(html.head)}</head>` +
-    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
-    '</html>'
+  return `<!DOCTYPE html><html${joinAttrs(html.htmlAttrs)}><head>${joinTags(html.head)}</head><body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body></html>`
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
