@@ -96,6 +96,7 @@ export const componentsIslandsTemplate: NuxtTemplate = {
     ].join('\n')
   },
 }
+
 export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
@@ -118,15 +119,19 @@ interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
 }
+
 declare module '@vue/runtime-core' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
+
 declare module '@vue/runtime-dom' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
+
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
+
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
 
