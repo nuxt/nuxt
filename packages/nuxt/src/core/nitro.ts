@@ -55,7 +55,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const configExternals: string[] = []
   for (const layer of nuxt.options._layers) {
     configExternals.push(resolve(layer.config.srcDir, 'app.config'))
-    const assetsLayerDir = join(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
+    const assetsLayerDir = resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public'))
     if (existsSync(assetsLayerDir)) {
       assetDir.push({ dir: assetsLayerDir })
     }
