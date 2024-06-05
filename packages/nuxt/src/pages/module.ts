@@ -436,7 +436,7 @@ export {}`,
         const routerOptionsFiles = await resolveRouterOptions()
         const rawOptions = []
         for (const key in nuxt.options.router.options) {
-          rawOptions.push([key, genString(nuxt.options.router.options[key] as string)]
+          rawOptions.push([key, genString(nuxt.options.router.options[key] as string)])
         }
         const configRouterOptions = genObjectFromRawEntries(rawOptions)
 
