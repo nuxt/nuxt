@@ -49,7 +49,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const modules = await resolveNuxtModule(rootDirWithSlash,
     moduleEntries,
   )
-  const distDir2 = resolve(nuxt.options.rootDir, 'dist')
+  const nuxtDistDir = resolve(nuxt.options.rootDir, 'dist')
   const scanDirs: string[] = []
   const assetDir: { dir: string }[] = []
   const configExternals: string[] = []
@@ -142,7 +142,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         exclude: [
           ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
           // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
-          relativeWithDot(nuxt.options.buildDir, distDir2),
+          relativeWithDot(nuxt.options.buildDir, nuxtDistDir),
         ],
       },
     },
@@ -537,8 +537,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await build(nitro)
       logger.wrapAll()
 
-      if (nitro.options.static && !existsSync(distDir2)) {
-        await fsp.symlink(nitro.options.output.publicDir, distDir2, 'junction').catch(() => {})
+      if (nitro.options.static && !existsSync(nuxtDistDir)) {
+        await fsp.symlink(nitro.options.output.publicDir, nuxtDistDir, 'junction').catch(() => {})
       }
     }
   })
