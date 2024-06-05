@@ -434,7 +434,7 @@ export {}`,
       getContents: async () => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions()
-        const rawOptions = []
+        const rawOptions: [string, string][] = []
         for (const key in nuxt.options.router.options) {
           rawOptions.push([key, genString(nuxt.options.router.options[key as keyof typeof nuxt.options.router.options] as string)])
         }
