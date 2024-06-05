@@ -189,7 +189,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
         ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
-          ? [ ...moduleTraceInclude, ]
+          ? [...moduleTraceInclude]
           : [],
       ],
     },
