@@ -64,7 +64,13 @@ export default defineNuxtPlugin({
 export const componentNamesTemplate: NuxtTemplate = {
   filename: 'component-names.mjs',
   getContents ({ app }) {
-    return `export const componentNames = ${JSON.stringify(app.components.filter(c => !c.island).map(c => c.pascalName))}`
+    const componentNames: string[] = []
+    for (const c of app.components) {
+      if (!c.island) {
+        componentNames.push(c.pascalName)
+      }
+    }
+    return `export const componentNames = ${JSON.stringify(componentNames)}`
   },
 }
 
@@ -102,9 +108,7 @@ export const componentsTypeTemplate = {
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
-      const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(buildDir, c.filePath).replace(/\b\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+      const type = `typeof ${genDynamicImport((isAbsolute(c.filePath) ? relative(buildDir, c.filePath) : c.filePath).replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
       return [
         c.pascalName,
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
