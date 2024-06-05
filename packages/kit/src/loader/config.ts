@@ -10,7 +10,12 @@ import defu from 'defu'
 export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
 
 const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
-const layerSchema = Object.fromEntries(Object.entries(NuxtConfigSchema).filter(([key]) => layerSchemaKeys.includes(key)))
+const layerSchema = Object.create(null)
+for (const key in NuxtConfigSchema) {
+  if (layerSchemaKeys.includes(key)) {
+    layerSchema[key] = NuxtConfigSchema[key]
+  }
+}
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
