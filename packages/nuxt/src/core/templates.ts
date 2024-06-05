@@ -105,8 +105,7 @@ export const pluginsDeclaration: NuxtTemplate = {
     }
 
     const pluginsName: string[] = []
-    const annoPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins)
-    for (const p of annoPlugins) {
+    for (const p of await annotatePlugins(ctx.nuxt, ctx.app.plugins)) {
       if (p.name) {
         pluginsName.push(`'${p.name}'`)
       }
@@ -173,7 +172,7 @@ export const schemaTemplate: NuxtTemplate = {
       'declare module \'nuxt/schema\' {',
       '  interface NuxtConfig {',
       moduleInfoStr.join('\n'),
-      modulesStr.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],` : '',
+      modulesStr.length ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],` : '',
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
