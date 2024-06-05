@@ -64,6 +64,13 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       scanDirs.push(scanLayerDir)
     }
   }
+  const moduleExclude: string[] = []
+  const moduleTraceInclude: string[] = []
+  for (const m of nuxt.options.modulesDir) {
+    moduleExclude.push(relativeWithDot(nuxt.options.buildDir, m))
+    const serverRendererPath = resolve(m, 'vue/server-renderer/index.js')
+    if (existsSync(serverRendererPath)) { moduleTraceInclude.push(serverRendererPath) }
+  }
   const nitroPaths = resolve(distDir, 'core/runtime/nitro/paths')
   const renderer = resolve(distDir, 'core/runtime/nitro/renderer')
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
@@ -140,7 +147,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
         ],
         exclude: [
-          ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
+          ...moduleExclude,
           // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
           relativeWithDot(nuxt.options.buildDir, nuxtDistDir),
         ],
@@ -182,13 +189,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       traceInclude: [
         // force include files used in generated code from the runtime-compiler
         ...(nuxt.options.vue.runtimeCompiler && !nuxt.options.experimental.externalVue)
-          ? [
-              ...nuxt.options.modulesDir.reduce<string[]>((targets, path) => {
-                const serverRendererPath = resolve(path, 'vue/server-renderer/index.js')
-                if (existsSync(serverRendererPath)) { targets.push(serverRendererPath) }
-                return targets
-              }, []),
-            ]
+          ? [ ...moduleTraceInclude, ]
           : [],
       ],
     },
