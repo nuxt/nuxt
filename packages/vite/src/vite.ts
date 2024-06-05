@@ -110,7 +110,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             ' global.': ' globalThis.',
             '\tglobal.': '\tglobalThis.',
             '\nglobal.': '\nglobalThis.',
-            preventAssignment: true,
+            'preventAssignment': true,
           }),
           virtual(nuxt.vfs),
         ],
