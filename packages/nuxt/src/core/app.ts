@@ -209,7 +209,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
   }
-  
+
   // Add back plugins not specified in layers or user config
   for (const p of [...nuxt.options.plugins].reverse()) {
     const plugin = normalizePlugin(p)
