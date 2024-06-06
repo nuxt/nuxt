@@ -12,7 +12,7 @@
     "build:stub": "pnpm dev:prepare",
     "cleanup": "rimraf 'packages/**/node_modules' 'playground/node_modules' 'node_modules'",
     "dev": "pnpm play",
-    "dev:prepare": "pnpm --filter './packages/**' prepack --stub",
+    "dev:prepare": "pnpm --filter './packages/**' prepack --stub && pnpm --filter './packages/ui-templates' build",
     "lint": "eslint . --cache",
     "lint:fix": "eslint . --cache --fix",
     "lint:docs": "markdownlint ./docs && case-police 'docs/**/*.md' *.md",
