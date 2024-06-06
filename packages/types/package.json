@@ -4,7 +4,8 @@
   "description": "Nuxt types",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/types"
   },
   "license": "MIT",
   "main": "index.js",

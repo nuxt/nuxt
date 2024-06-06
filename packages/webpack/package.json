@@ -3,7 +3,8 @@
   "version": "2.17.3",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/webpack"
   },
   "license": "MIT",
   "main": "dist/webpack.js",
@@ -11,13 +12,13 @@
     "dist"
   ],
   "dependencies": {
-    "@babel/core": "^7.24.6",
+    "@babel/core": "^7.24.7",
     "@nuxt/babel-preset-app": "2.17.3",
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/utils": "2.17.3",
     "babel-loader": "^8.3.0",
     "cache-loader": "^4.1.0",
-    "caniuse-lite": "^1.0.30001623",
+    "caniuse-lite": "^1.0.30001629",
     "consola": "^3.2.3",
     "css-loader": "^5.2.7",
     "cssnano": "^6.1.2",

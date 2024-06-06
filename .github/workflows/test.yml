@@ -19,13 +19,8 @@ concurrency:
 
 jobs:
   setup:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
-
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -51,14 +46,10 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
   lint:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -76,18 +67,14 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: lint
         run: yarn test:lint
     needs: setup
 
   typecheck:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -105,7 +92,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: test types
         run: yarn test:types
@@ -115,11 +102,7 @@ jobs:
     needs: setup
 
   audit:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -137,19 +120,14 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: audit
         run: yarn run audit
     needs: setup
 
   test-unit:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -167,7 +145,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: test unit
         run: yarn test:unit --coverage
@@ -180,12 +158,7 @@ jobs:
     needs: setup
 
   build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
@@ -206,7 +179,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: build
         run: yarn test:fixtures -i
@@ -214,16 +187,12 @@ jobs:
       - name: Save fixtures
         uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          name: fixtures-${{ matrix.os }}-node-v18
+          name: fixtures-ubuntu-latest-node-v18
           path: test/fixtures
     needs: setup
 
   lint-app:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -241,12 +210,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
-          name: fixtures-${{ matrix.os }}-node-v18
+          name: fixtures-ubuntu-latest-node-v18
           path: test/fixtures
 
       - name: lint app
@@ -254,12 +223,7 @@ jobs:
     needs: build
 
   test-dev:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -277,12 +241,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
-          name: fixtures-${{ matrix.os }}-node-v18
+          name: fixtures-ubuntu-latest-node-v18
           path: test/fixtures
 
       - name: test dev
@@ -290,12 +254,7 @@ jobs:
     needs: build
 
   test-e2e:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      matrix:
-        # os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [ubuntu-latest]
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
@@ -313,12 +272,12 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
         uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
-          name: fixtures-${{ matrix.os }}-node-v18
+          name: fixtures-ubuntu-latest-node-v18
           path: test/fixtures
 
       - name: test e2e
@@ -326,18 +285,15 @@ jobs:
     needs: build
 
   release-commit:
+    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
+    needs: [lint-app, test-dev, test-unit, test-e2e]
+    runs-on: ubuntu-latest
     permissions:
       id-token: write
-    if: github.event_name == 'push' && contains(github.event.head_commit.message, '[release]')
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest]
 
     steps:
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
-          ref: "refs/heads/dev"
           fetch-depth: 0 # All history
 
       - name: fetch tags
@@ -351,7 +307,7 @@ jobs:
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
 
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
@@ -372,4 +328,45 @@ jobs:
           ref: ${{ github.ref }}
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
+
+  release-nightly:
+    if: github.repository_owner == 'nuxt' && github.event_name == 'push'
     needs: [lint-app, test-dev, test-unit, test-e2e]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+        with:
+          fetch-depth: 0 # All history
+
+      - name: fetch tags
+        run: git fetch --depth=1 origin "+refs/tags/*:refs/tags/*"
+
+      - name: restore workspace cache
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+            distributions/*/node_modules
+            packages/*/dist
+          key: ubuntu-latest-node-v18-nuxt-${{ github.sha }}
+
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        with:
+          node-version: 18
+          cache: "yarn"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: bump version
+        run: yarn lerna version --yes --no-changelog --no-git-tag-version --no-push --force-publish "*" --loglevel verbose
+
+      - name: build
+        run: PACKAGE_SUFFIX=edge yarn build
+
+      - name: publish
+        run: ./scripts/workspace-run npm publish -q
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true

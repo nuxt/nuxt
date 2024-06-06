@@ -130,7 +130,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/scroll-to-top/scroll-to-top-true')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBe(0)
-    page.close()
+    await page.close()
   })
 
   test('/scroll-to-top with scrollToTop set to false', async () => {
@@ -139,7 +139,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/scroll-to-top/scroll-to-top-false')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
-    page.close()
+    await page.close()
   })
 
   test('/scroll-to-top in the same page', async () => {
@@ -148,7 +148,7 @@ describe('basic browser', () => {
     await page.nuxt.navigate('/scroll-to-top?test=1')
     const pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
-    page.close()
+    await page.close()
   })
 
   test('/scroll-to-top in the same page with watchQuery: true', async () => {
@@ -160,7 +160,7 @@ describe('basic browser', () => {
     await page.nuxt.go(-1)
     pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
-    page.close()
+    await page.close()
   })
 
   test('/scroll-to-top in the same page with watchQuery array', async () => {
@@ -178,7 +178,7 @@ describe('basic browser', () => {
     await page.nuxt.go(-1)
     pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBeGreaterThan(0)
-    page.close()
+    await page.close()
   })
 
   test('/scroll-to-top in the same page with watchQuery function', async () => {
@@ -196,7 +196,7 @@ describe('basic browser', () => {
     await page.nuxt.go(-1)
     pageYOffset = await page.evaluate(() => window.pageYOffset)
     expect(pageYOffset).toBe(0)
-    page.close()
+    await page.close()
   })
 
   test('/validate should display a 404', async () => {
@@ -259,12 +259,9 @@ describe('basic browser', () => {
     // New page for redirecting to external link.
     const page = await browser.page(url('/'))
 
-    await page.nuxt.navigate('/redirect-external', false)
-
-    await page.waitForFunction(
-      () => window.location.href === 'https://example.com/test/'
-    )
-    page.close()
+    await page.evaluate($nuxt => $nuxt.$router.push('/redirect-external'), page.$nuxt)
+    await page.waitForFunction(() => window.location.href === 'https://example.com/test/')
+    await page.close()
   })
 
   test('/redirect-name', async () => {
@@ -308,6 +305,7 @@ describe('basic browser', () => {
 
     const p = await page.$text('p')
     expect(p).toBe('Nuxt')
+    await page.close()
   })
 
   test('/refresh-page-data', async () => {
@@ -317,12 +315,13 @@ describe('basic browser', () => {
     await page.evaluate($nuxt => $nuxt.refresh(), page.$nuxt)
     h1 = await page.$text('h1')
     expect(h1).toContain('Hello from client')
-    page.close()
+    await page.close()
   })
 
   test('/redirection/no loop', async () => {
     const page = await browser.page(url('/redirection/no loop'))
     expect(await page.$text('h1')).toContain('Redirected page')
+    await page.close()
   })
 
   // Close server and ask nuxt to stop listening to file changes
@@ -332,7 +331,6 @@ describe('basic browser', () => {
 
   // Stop browser
   afterAll(async () => {
-    await page.close()
     await browser.close()
   })
 })
