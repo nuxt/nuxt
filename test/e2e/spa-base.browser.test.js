@@ -6,7 +6,6 @@ const browser = new Browser()
 const url = route => 'http://127.0.0.1:' + port + route
 
 let nuxt = null
-let page = null
 
 describe('spa router base browser', () => {
   beforeAll(async () => {
@@ -24,7 +23,7 @@ describe('spa router base browser', () => {
   })
 
   test('Open /app (router base)', async () => {
-    page = await browser.page(url('/app'))
+    const page = await browser.page(url('/app'))
 
     expect(await page.evaluate(() => location.href)).toBe(url('/app/'))
 
@@ -34,28 +33,32 @@ describe('spa router base browser', () => {
       const headings = document.evaluate("//div[text()='Hello SPA!']", document, null, XPathResult.ANY_TYPE, null)
       return headings.iterateNext()
     })).not.toBe(null)
+    await page.close()
   })
 
   test('Open /app/ (router base with trailing slash)', async () => {
-    page = await browser.page(url('/app/'))
+    const page = await browser.page(url('/app/'))
 
     expect(await page.evaluate(() => location.href)).toBe(url('/app/'))
 
     expect(await page.html()).not.toContain('This page could not be found')
+    await page.close()
   })
 
   test('Open /app/mounted', async () => {
-    page = await browser.page(url('/app/mounted'))
+    const page = await browser.page(url('/app/mounted'))
 
     expect(await page.$text('h1')).toMatch('Test: updated')
+    await page.close()
   })
 
   test('/app/unknown', async () => {
-    page = await browser.page(url('/app/unknown'))
+    const page = await browser.page(url('/app/unknown'))
 
     expect(await page.evaluate(() => location.href)).toBe(url('/app/unknown'))
 
     expect(await page.html()).toContain('This page could not be found')
+    await page.close()
   })
 
   // Close server and ask nuxt to stop listening to file changes
@@ -65,7 +68,6 @@ describe('spa router base browser', () => {
 
   // Stop browser
   afterAll(async () => {
-    await page.close()
     await browser.close()
   })
 })

@@ -99,6 +99,7 @@ describe('basic browser', () => {
     ])
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
+    await page.close()
   })
 
   test('ssr: /nested', async () => {
@@ -112,6 +113,7 @@ describe('basic browser', () => {
       'ie0'
     ])
     expect(await page.$text('button')).toContain('has fetch')
+    await page.close()
   })
 
   test('ssr: /nested/child', async () => {
@@ -127,12 +129,13 @@ describe('basic browser', () => {
     expect(team.includes('Atinux'))
     expect(await page.$text('div')).toContain('foo-bar-baz')
     expect(await page.$text('div')).toContain('fizz-buzz')
+    await page.close()
   })
 
   test('ssr: /fetch-root', async () => {
     const page = await browser.page(url('/fetch-root'))
     expect(await page.$text('button')).toContain('has fetch')
-    page.close()
+    await page.close()
   })
 
   test('ssr: /fetch-client', async () => {
@@ -140,13 +143,13 @@ describe('basic browser', () => {
     expect(await page.$text('p')).toContain('Fetching...')
     await page.waitForSelector('pre')
     expect(await page.$text('pre')).toContain('pi0')
-    page.close()
+    await page.close()
   })
 
   test('ssr: /fetch-conditional', async () => {
     const page = await browser.page(url('/fetch-conditional'))
     expect(await page.$text('pre')).toContain('galvez')
-    page.close()
+    await page.close()
   })
 
   test('ssr: /fetch-conditional?fetch_client=true', async () => {
@@ -154,13 +157,13 @@ describe('basic browser', () => {
     expect(await page.$text('p')).toContain('Fetching...')
     await page.waitForSelector('pre')
     expect(await page.$text('pre')).toContain('pimlie')
-    page.close()
+    await page.close()
   })
 
   test('ssr: /fetch-error', async () => {
     const page = await browser.page(url('/fetch-error'))
     expect(await page.$text('#error')).toContain('fetch-error')
-    page.close()
+    await page.close()
   })
 
   test('ssr: /fetch-deep', async () => {
@@ -200,7 +203,7 @@ describe('basic browser', () => {
       async2: 'data2fetch'
     })
 
-    page.close()
+    await page.close()
   })
 
   // Close server and ask nuxt to stop listening to file changes
@@ -210,7 +213,6 @@ describe('basic browser', () => {
 
   // Stop browser
   afterAll(async () => {
-    await page.close()
     await browser.close()
   })
 })
