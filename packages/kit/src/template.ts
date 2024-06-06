@@ -129,7 +129,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   let count = 0
   for (const m of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, m)
-    modulesInclude[count] = join(relative, 'runtime'))
+    modulesInclude[count] = join(relative, 'runtime')
     modulesExclude[count] = join(relative, 'runtime/server')
     count++
   }
