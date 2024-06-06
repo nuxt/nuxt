@@ -29,9 +29,6 @@ function fetchManifest () {
   })
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
-  }).catch((err) => {
-    console.error('[nuxt] Error while fetching app manifest:', err)
-    throw err
   })
   return manifest
 }
