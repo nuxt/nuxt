@@ -202,7 +202,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 }
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
-  const files: string[] = [] 
+  const files: string[] = []
   for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
     const p = resolve(path, file)
     if (!isIgnored(p)) {
