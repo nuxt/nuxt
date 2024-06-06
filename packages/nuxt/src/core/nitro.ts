@@ -55,7 +55,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const configExternals: string[] = new Array(nuxt.options._layers.length)
   let configCount = 0
   for (const layer of nuxt.options._layers) {
-    configExternals[configCount] = resolve(layer.config.srcDir, 'app.config')
+    configExternals[configCount++] = resolve(layer.config.srcDir, 'app.config')
     const assetsLayerDir = resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.public || 'public')
     if (existsSync(assetsLayerDir)) {
       assetDir.push({ dir: assetsLayerDir })
@@ -64,16 +64,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     if (scanLayerDir) {
       scanDirs.push(scanLayerDir)
     }
-    configCount++
   }
   const moduleExclude: string[] = new Array(nuxt.options.modulesDir.length)
   const moduleTraceInclude: string[] = []
   let moduleCount = 0
   for (const m of nuxt.options.modulesDir) {
-    moduleExclude[moduleCount] = relativeWithDot(nuxt.options.buildDir, m)
+    moduleExclude[moduleCount++] = relativeWithDot(nuxt.options.buildDir, m)
     const serverRendererPath = resolve(m, 'vue/server-renderer/index.js')
     if (existsSync(serverRendererPath)) { moduleTraceInclude.push(serverRendererPath) }
-    moduleCount++
   }
   const nitroPaths = resolve(distDir, 'core/runtime/nitro/paths')
   const renderer = resolve(distDir, 'core/runtime/nitro/renderer')
