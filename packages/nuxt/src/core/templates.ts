@@ -78,8 +78,8 @@ export const serverPluginTemplate: NuxtTemplate = {
   async getContents (ctx): Promise<string> {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
-    const exports: string[] = new Array(clientPlugins.length)
-    const imports: string[] = new Array(clientPlugins.length)
+    const exports: string[] = new Array(serverPlugins.length)
+    const imports: string[] = new Array(serverPlugins.length)
     let count = 0
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
