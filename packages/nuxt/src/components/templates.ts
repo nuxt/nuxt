@@ -125,15 +125,17 @@ export const componentsTypeTemplate = {
 
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
 
-    const globalSyncComponents: string[] = []
-    const globalAsyncComponents: string[] = []
-    const globalSyncComponentsExport: string[] = []
-    const globalAsyncComponentsExport: string[] = []
+    const globalSyncComponents: string[] = new Array(componentTypes.length)
+    const globalAsyncComponents: string[] = new Array(componentTypes.length)
+    const globalSyncComponentsExport: string[] = new Array(componentTypes.length)
+    const globalAsyncComponentsExport: string[] = new Array(componentTypes.length)
+    let count = 0
     for (const [pascalName, type] of componentTypes) {
-      globalSyncComponents.push(`    '${pascalName}': ${type}`)
-      globalAsyncComponents.push(`    'Lazy${pascalName}': ${type}`)
-      globalSyncComponentsExport.push(`export const ${pascalName}: ${type}`)
-      globalAsyncComponentsExport.push(`export const Lazy${pascalName}: ${type}`)
+      globalSyncComponents[count] = `    '${pascalName}': ${type}`
+      globalAsyncComponents[count] = `    'Lazy${pascalName}': ${type}`
+      globalSyncComponentsExport[count] = `export const ${pascalName}: ${type}`
+      globalAsyncComponentsExport[count] = `export const Lazy${pascalName}: ${type}`
+      count++
     }
     return `
 import type { DefineComponent, SlotsType } from 'vue'
