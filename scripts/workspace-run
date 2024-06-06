@@ -3,6 +3,9 @@ set -e
 
 for dir in packages/* distributions/* ; do
  # echo "$dir"
+ if [[ $dir == *"node_modules"* ]]; then
+   continue
+ fi
  pushd $dir > /dev/null
   $@
  popd > /dev/null

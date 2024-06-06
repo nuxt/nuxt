@@ -26,14 +26,15 @@ describe('config: options', () => {
     jest.spyOn(path, 'resolve').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
     jest.spyOn(path, 'join').mockImplementation((...args) => args.join('/').replace(/\\+/, '/'))
 
-    expect(getNuxtConfig({
+    const config = getNuxtConfig({
       createRequire: jest.fn(),
       generate: {
         staticAssets: {
           version: 'x'
         }
       }
-    })).toMatchSnapshot()
+    })
+    expect(config).toMatchSnapshot()
 
     process.cwd.mockRestore()
     path.resolve.mockRestore()
@@ -114,7 +115,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 
@@ -128,7 +130,8 @@ describe('config: options', () => {
       allowedSources: ['/nuxt/*'],
       policies: undefined,
       reportOnly: false,
-      test: true
+      test: true,
+      generateNonce: false
     })
   })
 

@@ -3,8 +3,8 @@ import chalk from 'chalk'
 import consola from 'consola'
 import devalue from 'devalue'
 import fsExtra from 'fs-extra'
-import defu from 'defu'
-import htmlMinifier from 'html-minifier'
+import { defu } from 'defu'
+import htmlMinifier from 'html-minifier-terser'
 import { parse } from 'node-html-parser'
 import { withTrailingSlash, withoutTrailingSlash, decode } from 'ufo'
 
@@ -121,7 +121,7 @@ or disable the build step: \`generate({ build: false })\``)
         )
       } catch (e) {
         consola.error('Could not resolve routes')
-        throw e // eslint-disable-line no-unreachable
+        throw e
       }
     }
     let routes = []
@@ -243,7 +243,7 @@ or disable the build step: \`generate({ build: false })\``)
     })
 
     try {
-      html = this.minifyHtml(html)
+      html = await this.minifyHtml(html)
     } catch (error) {
       consola.warn('HTML minification failed for SPA fallback')
     }
@@ -379,7 +379,7 @@ or disable the build step: \`generate({ build: false })\``)
     }
 
     try {
-      html = this.minifyHtml(html)
+      html = await this.minifyHtml(html)
     } catch (err) {
       const minifyErr = new Error(
         `HTML minification failed. Make sure the route generates valid HTML. Failed HTML:\n ${html}`

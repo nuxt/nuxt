@@ -573,7 +573,7 @@ export default class Builder {
     // Check plugins exist then set alias to their real path
     return Promise.all(this.plugins.map(async (p) => {
       const ext = '{?(.+([^.])),/index.+([^.])}'
-      const pluginFiles = await glob(`${p.src}${ext}`)
+      const pluginFiles = await glob(upath.normalize(`${p.src}${ext}`))
 
       if (!pluginFiles || pluginFiles.length === 0) {
         throw new Error(`Plugin not found: ${p.src}`)

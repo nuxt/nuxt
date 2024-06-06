@@ -1,8 +1,11 @@
 import klawSync from 'klaw-sync'
-import got from 'got'
+import { got } from 'got'
+
+// eslint-disable-next-line
+import getPort from 'get-port'
 
 export { getNuxtConfig } from '../../packages/config'
-export { default as getPort } from 'get-port'
+export { getPort }
 
 export * from './nuxt'
 export * from './resource-size'

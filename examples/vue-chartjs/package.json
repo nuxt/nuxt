@@ -4,7 +4,7 @@
     "@nuxt/http": "^0.4.0",
     "chart.js": "^2.9.3",
     "moment": "^2.24.0",
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "vue-chartjs": "^3.5.0"
   },
   "scripts": {

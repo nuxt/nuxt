@@ -17,9 +17,9 @@
 
 ## Nuxt 3
 
-The evolution of Nuxt powered by Vite and Vue 3 is currently in beta and available on:
+The evolution of Nuxt powered by Vite and Vue 3 available on:
 - GitHub: [nuxt/framework](https://github.com/nuxt/framework)
-- Documentation: [v3.nuxtjs.org](https://v3.nuxtjs.org)
+- Documentation: [nuxt.com](https://nuxt.com/)
 
 ## Links
 
@@ -74,6 +74,23 @@ Learn more at https://nuxtjs.org/guide/commands#production-deployment
 
 Get help with that tough bug or make sure your Nuxt app is ready to deploy. For $250 an hour, get technical support, advice and code reviews from the Nuxt core team: support@nuxtlabs.com
 
+## Agency Network
+
+When in need for more broad or long-term consulting, reach out for one of our [agency partner](https://nuxtjs.org/partners):
+
+
+<p align="center">
+  <a href="https://nuxtjs.org/partners/ship-shape"><img src="https://nuxtjs.org/img/companies/square/light/shipshape.webp" style="margin: 1rem" height="80px" alt="Ship Shape"></a>
+  <a href="https://nuxtjs.org/partners/64robots"><img src="https://nuxtjs.org/img/companies/square/light/64robots.svg" style="margin: 1rem" height="80px" alt="64 Robots"></a>
+  <a href="https://nuxtjs.org/partners/passionate-people"><img src="https://nuxtjs.org/img/companies/square/light/passionate-people.jpeg" style="margin: 1rem" height="80px" alt="Passionate people"></a>
+  <a href="https://nuxtjs.org/partners/curotec"><img src="https://nuxtjs.org/img/companies/square/light/curotec.jpeg" style="margin: 1rem" height="80px" alt="Curotec"></a>
+  <a href="https://nuxtjs.org/partners/mirahi"><img src="https://nuxtjs.org/img/companies/square/light/mirahi.svg" style="margin: 1rem" height="80px" alt="Mirahi"></a>
+  <a href="https://nuxtjs.org/partners/webreinvent"><img src="https://nuxtjs.org/img/companies/square/light/webreinvent.svg" style="margin: 1rem" height="80px" alt="Web Reinvent"></a>
+  <a href="https://nuxtjs.org/partners/software-things"><img src="https://nuxtjs.org/img/companies/square/light/software-things.svg" style="margin: 1rem" height="80px" alt="Software things"></a>
+  <a href="https://nuxtjs.org/partners/zen-architects"><img src="https://nuxtjs.org/img/companies/square/light/zen-architects.svg" style="margin: 1rem" height="80px" alt="Zen Architects"></a>
+  <a href="https://nuxtjs.org/partners/funkhaus"><img src="https://nuxtjs.org/img/companies/square/light/funkhaus.svg" style="margin: 1rem" height="80px" alt="Funkhaus"></a>
+</p>
+
 ## Supporting Nuxt
 
 Nuxt is an MIT-licensed open source project with its ongoing development made possible entirely by the support of these awesome backers.
@@ -81,21 +98,7 @@ Funds donated via OpenCollective are managed with transparent expenses and will 
 
 Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/nuxtjs#contribute)]
 
-### Platinum Sponsors
-
 [![Open Collective Platinum Sponsors][platinum-sponsors-src]][platinum-sponsors-href]
-
-### Gold Sponsors
-
-[![Open Collective Gold Sponsors][gold-sponsors-src]][gold-sponsors-href]
-
-### Silver Sponsors
-
-[![Open Collective Silver Sponsors][silver-sponsors-src]][silver-sponsors-href]
-
-### Bronze Sponsors
-
-[![Open Collective Bronze Sponsors][bronze-sponsors-src]][bronze-sponsors-href]
 
 ## Contributors
 
@@ -111,15 +114,11 @@ Please refer to our [Contribution Guide](https://nuxtjs.org/contribution-guide/)
 
 ## Cross-browser testing
 
-Thanks to [BrowserStack](http://browserstack.com)!
-
-<a href="http://browserstack.com"><img height="70" src="https://nuxtjs.org/browserstack.svg" alt="BrowserStack"></a>
+<a href="https://browserstack.com"><img height="30" align="center" src=".github/icons/browserstack.svg" alt="BrowserStack"></a> Thanks to [BrowserStack](http://browserstack.com)!
 
 ## Automated testing
 
-Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
-
-<a href="https://saucelabs.com"><img height="70" src="https://nuxtjs.org/saucelabs.svg" alt="SauceLabs"></a>
+<a href="https://saucelabs.com"><img height="30" align="center" src=".github/icons/saucelabs.svg" alt="SauceLabs"></a> Thanks to [SauceLabs](https://saucelabs.com) for supporting Open Source <3
 
 ## Security
 

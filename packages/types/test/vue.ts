@@ -2,8 +2,9 @@
  * Test extended type definitions of Vue interfaces
  * @nuxt/types/app/vue.d.ts
  */
+/* eslint-disable vue/one-component-per-file */
 
-import Vue from 'vue'
+import Vue, { defineComponent } from 'vue'
 import type { Middleware } from '..'
 
 const options: Vue.ComponentOptions<Vue> = {}
@@ -61,9 +62,9 @@ options.loading = true
 
 const middlewares: Middleware[] = [
   'foo',
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   () => {},
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
+
   async () => {}
 ]
 
@@ -110,3 +111,169 @@ vm.$nuxt.$loading.start()
 
 vm.$nuxt.isOffline = true
 vm.$nuxt.isOnline = true
+
+// component options - defineComponent
+
+defineComponent({
+  name: 'WithNoProps',
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})
+
+defineComponent({
+  name: 'WithObjectProps',
+  props: {
+    boolProperty: {
+      type: Boolean,
+      required: true
+    }
+  },
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    boolPropertyGetter (): boolean {
+      return this.boolProperty
+    },
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})
+
+defineComponent({
+  name: 'WithArrayProps',
+  // eslint-disable-next-line vue/require-prop-types
+  props: ['boolProperty'],
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    boolPropertyGetter (): boolean {
+      // Typed as "any"
+      return this.boolProperty
+    },
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})
+
+// component options - Vue.extend
+
+Vue.extend({
+  name: 'WithNoProps',
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})
+
+Vue.extend({
+  name: 'WithObjectProps',
+  props: {
+    boolProperty: {
+      type: Boolean,
+      required: true
+    }
+  },
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    boolPropertyGetter (): boolean {
+      return this.boolProperty
+    },
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})
+
+Vue.extend({
+  name: 'WithArrayProps',
+  // eslint-disable-next-line vue/require-prop-types
+  props: ['boolProperty'],
+  asyncData (context) {
+    return {
+      asyncDataProperty: context.base
+    }
+  },
+  data () {
+    return {
+      normalDataProperty: 123
+    }
+  },
+  computed: {
+    boolPropertyGetter (): boolean {
+      // Typed as "any"
+      return this.boolProperty
+    },
+    dataPropertyGetter (): number {
+      return this.normalDataProperty
+    },
+    asyncPropertyGetter (): string {
+      return this.asyncDataProperty
+    }
+  }
+})

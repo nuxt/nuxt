@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import defu from 'defu'
+import { defu } from 'defu'
 import consola from 'consola'
 import dotenv from 'dotenv'
 import { clearRequireCache, createRequire, scanRequireTree } from '@nuxt/utils'

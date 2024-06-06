@@ -1,5 +1,5 @@
-import { resolve } from 'path'
 import { existsSync } from 'fs'
+import { resolve } from 'upath'
 import jsdom from 'jsdom'
 import Glob from 'glob'
 import pify from 'pify'
@@ -8,7 +8,7 @@ import { getPort, loadFixture, Nuxt, rp } from '../utils'
 const glob = pify(Glob)
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 let nuxt = null
 
@@ -19,7 +19,7 @@ describe('with-config', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('client source map generated', async () => {

@@ -12,7 +12,7 @@
     "post-update": "yarn upgrade --latest"
   },
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "devDependencies": {
     "babel-eslint": "^8.2.6",

@@ -1,7 +1,7 @@
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 const startCspServer = async (csp, isProduction = true) => {
   const options = await loadFixture('basic', {
@@ -216,6 +216,26 @@ describe('basic ssr csp', () => {
         expect(headers[cspHeader]).toMatch(/script-src 'sha256-.*' 'self' 'unsafe-inline'$/)
       }
     )
+
+    test('Contain nonce on ssr links and scripts', async () => {
+      nuxt = await startCspServer({
+        generateNonce: true
+      })
+
+      const { body, headers } = await rp(url('/stateless'))
+
+      expect(headers[cspHeader]).toMatch(/script-src .* 'nonce-.*'/)
+
+      const nonceValue = headers[cspHeader].match(/'nonce-(.*?)'/)[1]
+
+      for (const link of body.match(/<link[^>]+?>/g)) {
+        expect(link).toContain(`nonce="${nonceValue}"`)
+      }
+
+      for (const script of body.match(/<script[^>]+?>/g)) {
+        expect(script).toContain(`nonce="${nonceValue}"`)
+      }
+    })
 
     // TODO: Remove this test in Nuxt 3, we will stop supporting this typo (more on: https://github.com/nuxt/nuxt.js/pull/6583)
     test(

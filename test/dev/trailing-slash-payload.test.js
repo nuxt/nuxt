@@ -6,7 +6,7 @@ import { Builder, Generator, getPort, loadFixture, Nuxt } from '../utils'
 import renderAndGetWindow from '../../packages/server/src/jsdom'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 let builder
 let server = null

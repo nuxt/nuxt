@@ -23,7 +23,7 @@ const resourceLoader = new ProxyLoader()
 
 let port
 let nuxt
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 describe('basic ssr', () => {
   beforeAll(async () => {

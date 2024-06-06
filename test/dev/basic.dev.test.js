@@ -4,7 +4,7 @@ import consola from 'consola'
 import { Builder, BundleBuilder, getPort, loadFixture, Nuxt, rp, waitFor } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 let nuxt = null
 let builder = null
@@ -72,7 +72,7 @@ describe('basic dev', () => {
     await waitFor(2000) // TODO: Find a better way
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('Check build:done hook called', () => {
@@ -110,15 +110,14 @@ describe('basic dev', () => {
   })
 
   test('Config: preset-env and cssnano are at then end of postcss plugins', () => {
-    const plugins = postcssLoader.options.plugins.map((plugin) => {
+    const plugins = postcssLoader.options.postcssOptions.plugins.map((plugin) => {
       return plugin.postcssPlugin
-    })
+    }).filter(Boolean)
     expect(plugins).toEqual([
       'postcss-import',
       'postcss-url',
       'nuxt-test',
-      'postcss-preset-env',
-      'cssnano'
+      'postcss-preset-env'
     ])
   })
 

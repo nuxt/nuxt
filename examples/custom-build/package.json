@@ -2,7 +2,7 @@
   "name": "example-custom-build",
   "description": "",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",

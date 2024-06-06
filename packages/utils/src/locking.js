@@ -3,7 +3,8 @@ import consola from 'consola'
 import hash from 'hash-sum'
 import fs from 'fs-extra'
 import properlock from 'proper-lockfile'
-import onExit from 'signal-exit'
+// eslint-disable-next-line import/namespace
+import { onExit } from 'signal-exit'
 
 export const lockPaths = new Set()
 

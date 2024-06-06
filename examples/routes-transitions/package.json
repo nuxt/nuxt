@@ -1,7 +1,7 @@
 {
   "name": "example-routes-transitions",
   "dependencies": {
-    "nuxt": "latest"
+    "nuxt": "2.x"
   },
   "scripts": {
     "dev": "nuxt",

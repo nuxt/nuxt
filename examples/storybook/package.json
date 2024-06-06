@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "chart.js": "^2.7.1",
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "vue-chartjs": "^3.1.1",
     "vuetify": "1.2.6"
   },

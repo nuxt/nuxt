@@ -1,7 +1,7 @@
 {
   "name": "example-persisted-state",
   "dependencies": {
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "vuex-persistedstate": "^2.0.0"
   },
   "scripts": {

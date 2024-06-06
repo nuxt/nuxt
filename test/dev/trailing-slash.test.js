@@ -10,7 +10,7 @@ function runTest (name, expectations) {
       nuxt = new Nuxt(options)
       await nuxt.ready()
       port = await getPort()
-      await nuxt.server.listen(port, 'localhost')
+      await nuxt.server.listen(port, '127.0.0.1')
     })
 
     for (const route in expectations) {

@@ -1,7 +1,7 @@
 
 import { isPlainObject } from 'lodash'
 import consola from 'consola'
-import Hookable from 'hable'
+import Hookable from 'hookable'
 
 import { defineAlias } from '@nuxt/utils'
 import { getNuxtConfig } from '@nuxt/config'
@@ -22,6 +22,10 @@ export default class Nuxt extends Hookable {
     // Create instance of core components
     this.resolver = new Resolver(this)
     this.moduleContainer = new ModuleContainer(this)
+
+    // Add legacy methods for backwards compatibility
+    this.clearHooks = this.removeHooks.bind(this)
+    this.clearHook = this.removeHook.bind(this)
 
     // Deprecated hooks
     this.deprecateHooks({

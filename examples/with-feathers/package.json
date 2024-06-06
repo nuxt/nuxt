@@ -33,7 +33,7 @@
     "feathers-rest": "^1.6.0",
     "feathers-socketio": "^1.4.2",
     "nedb": "^1.8.0",
-    "nuxt": "latest",
+    "nuxt": "2.x",
     "passport": "^0.3.2",
     "winston": "^2.3.0"
   },

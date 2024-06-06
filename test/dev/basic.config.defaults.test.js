@@ -1,4 +1,4 @@
-import { resolve } from 'path'
+import { normalize, resolve } from 'upath'
 import consola from 'consola'
 import Glob from 'glob'
 import pify from 'pify'
@@ -15,7 +15,7 @@ describe('basic config defaults', () => {
   test('modulesDir uses /node_modules as default if not set', () => {
     const options = getNuxtConfig({})
     const currentNodeModulesDir = resolve(__dirname, '..', '..', 'node_modules')
-    expect(options.modulesDir).toContain(currentNodeModulesDir)
+    expect(options.modulesDir.map(d => normalize(d))).toContain(currentNodeModulesDir)
   })
 
   test('client source map not generated', async () => {
