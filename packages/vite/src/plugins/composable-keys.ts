@@ -26,7 +26,7 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
   const composableLength: number[] = new Array(options.composables.length)
   const composableKeyed: string[] = new Array(options.composables.length)
   let composableCount = 0
-  for (const { name, ...meta, argumentLength } of options.composables) {
+  for (const { name, argumentLength, ...meta } of options.composables) {
     composableMeta[name] = meta
     composableLength[composableCount] = argumentLength
     composableKeyed[composableCount++] = name
