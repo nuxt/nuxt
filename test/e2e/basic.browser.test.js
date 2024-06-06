@@ -259,10 +259,7 @@ describe('basic browser', () => {
     // New page for redirecting to external link.
     const page = await browser.page(url('/'))
 
-    await Promise.all([
-      page.nuxt.navigate('/redirect-external', false),
-      page.waitForNavigation()
-    ])
+    await page.evaluate($nuxt => $nuxt.$router.push('/redirect-external'), page.$nuxt)
     await page.waitForFunction(() => window.location.href === 'https://example.com/test/')
     await page.close()
   })
