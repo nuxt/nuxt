@@ -82,19 +82,19 @@ export const RenderPlugin = () => {
         // Serialize into a js function
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
-        let templateString = chunks.shift()
+        let templateString = [chunks.shift()]
         for (const expression of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
-          templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
+          templateString.push(` + (${expression[1].trim()}) + ${chunks.shift()}`)
         }
         if (chunks.length > 0) {
-          templateString += ' + ' + chunks.join(' + ')
+          templateString.push(' + ' + chunks.join(' + '))
         }
         const functionalCode = [
           hasMessages ? `export type DefaultMessages = Record<${Object.keys({ ...genericMessages, ...messages }).map(a => `"${a}"`).join(' | ') || 'string'}, string | boolean | number >` : '',
           hasMessages ? `const _messages = ${JSON.stringify({ ...genericMessages, ...messages })}` : '',
           `export const template = (${hasMessages ? 'messages: Partial<DefaultMessages>' : ''}) => {`,
           hasMessages ? '  messages = { ..._messages, ...messages }' : '',
-          `  return ${templateString}`,
+          `  return ${templateString.join('')}`,
           '}',
         ].join('\n')
 
