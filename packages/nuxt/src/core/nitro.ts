@@ -35,8 +35,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     .filter((dir): dir is string => Boolean(dir))
     .map(dir => escapeRE(dir))
   const excludePattern = excludePaths.length
-    ? [new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)]
-    : [/node_modules/]
+    ? new RegExp(`node_modules\\/(?!${excludePaths.join('|')})`)
+    : /node_modules/
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
@@ -111,10 +111,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           priority: -1,
         },
       ],
-      exclude: [...excludePattern, /[\\/]\.git[\\/]/],
+      exclude: [excludePattern, /[\\/]\.git[\\/]/],
     },
     esbuild: {
-      options: { exclude: excludePattern },
+      options: { exclude: [excludePattern] },
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {
