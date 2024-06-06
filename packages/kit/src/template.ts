@@ -124,12 +124,14 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
   const modulePaths = await resolveNuxtModule(rootDirWithSlash, modules)
   const nuxtBuildRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
-  const modulesInclude: string[] = []
-  const modulesExclude: string[] = []
+  const modulesInclude: string[] = new Array(modulePaths.length)
+  const modulesExclude: string[] = new Array(modulePaths.length)
+  let count = 0
   for (const m of modulePaths) {
     const relative = relativeWithDot(nuxt.options.buildDir, m)
-    modulesInclude.push(join(relative, 'runtime'))
-    modulesExclude.push(join(relative, 'runtime/server'))
+    modulesInclude[count] = join(relative, 'runtime'))
+    modulesExclude[count] = join(relative, 'runtime/server')
+    count++
   }
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
