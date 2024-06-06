@@ -42,14 +42,13 @@ export default class VueSSRClientPlugin {
       }, []))
 
       const initialFilesBeforeDedupe: Array<string> = []
-      for (const name in stats.entrypoints!)
-      {
+      for (const name in stats.entrypoints!) {
         const entryAssets = stats.entrypoints![name].assets!
-        entryAssets.forEach(asset => {
-            const file = asset.name;
-            if ((isJS(file) || isCSS(file)) && !isHotUpdate(file)) {
-                initialFilesBeforeDedupe.push(file);
-            }
+        entryAssets.forEach((asset) => {
+          const file = asset.name
+          if ((isJS(file) || isCSS(file)) && !isHotUpdate(file)) {
+            initialFilesBeforeDedupe.push(file)
+          }
         })
       }
       const initialFiles = uniq(initialFilesBeforeDedupe)
