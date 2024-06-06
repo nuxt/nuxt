@@ -3,7 +3,7 @@ import consola from 'consola'
 import { loadFixture, getPort, Nuxt } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 let nuxt = null
 // let logSpy
@@ -15,7 +15,7 @@ describe('error', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
 
     consola.wrapConsole()
   })

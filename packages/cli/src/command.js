@@ -2,7 +2,7 @@
 import path from 'path'
 import consola from 'consola'
 import minimist from 'minimist'
-import Hookable from 'hable'
+import Hookable from 'hookable'
 import { name, version } from '../package.json'
 import { forceExit } from './utils'
 import { loadNuxtConfig } from './utils/config'

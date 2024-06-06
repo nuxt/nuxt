@@ -23,7 +23,8 @@ type DefaultMethods<V> = { [key: string]: (this: V, ...args: any[]) => any }
 type DefaultComputed = { [key: string]: any }
 type DefaultAsyncData = ((this: never, context: Context) => Promise<object | void> | object | void)
 
-declare module 'vue/types' {
+// Extend built-in defineComponent with variants that support inferring asyncData return value.
+declare module 'vue/types/v3-define-component' {
   /**
    * overload 1: object format with no props
    */

@@ -7,6 +7,15 @@ on:
   pull_request:
     branches:
       - 2.x
+      - "!v[0-9]*"
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   setup:
@@ -16,28 +25,27 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [16]
 
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: install
         run: yarn --check-files --frozen-lockfile --non-interactive
 
       - name: cache workspace
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
   test-unit:
     runs-on: ${{ matrix.os }}
@@ -45,28 +53,27 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: test unit
         run: yarn test:unit --testPathIgnorePatterns=packages/cli
@@ -79,36 +86,35 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: build
         run: yarn test:fixtures
 
       - name: Save fixtures
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
     needs: setup
 
@@ -118,33 +124,32 @@ jobs:
     strategy:
       matrix:
         os: [windows-latest]
-        node: [16]
 
     env:
       NODE_OPTIONS: "--max_old_space_size=4096"
 
     steps:
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       - run: corepack enable
-      - uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
-          node-version: ${{ matrix.node }}
+          node-version: 18
           cache: "yarn"
 
       - name: restore workspace cache
-        uses: actions/cache@88522ab9f39a2ea568f7027eddc7d8d8bc9d59c8 # v3.3.1
+        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
         with:
           path: |
             node_modules
             packages/*/node_modules
             distributions/*/node_modules
             packages/*/dist
-          key: ${{ matrix.os }}-node-v${{ matrix.node }}-nuxt-${{ github.sha }}
+          key: ${{ matrix.os }}-node-v18-nuxt-${{ github.sha }}
 
       - name: restore fixtures
-        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         with:
-          name: fixtures-${{ matrix.os }}-node-v${{ matrix.node }}
+          name: fixtures-${{ matrix.os }}-node-v18
           path: test/fixtures
 
       - name: test dev

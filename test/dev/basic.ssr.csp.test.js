@@ -1,7 +1,7 @@
 import { getPort, loadFixture, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 const startCspServer = async (csp, isProduction = true) => {
   const options = await loadFixture('basic', {

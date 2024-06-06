@@ -124,66 +124,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -192,6 +133,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -199,6 +141,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -269,8 +215,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -290,19 +268,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -310,7 +276,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -352,6 +346,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -359,21 +379,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -421,8 +462,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -433,8 +474,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -501,7 +542,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -546,66 +587,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -614,6 +596,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -621,6 +604,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -691,8 +678,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -712,19 +731,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -732,7 +739,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -774,6 +809,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -781,21 +842,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -843,8 +925,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -855,8 +937,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -923,7 +1005,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -974,66 +1056,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -1042,6 +1065,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1049,6 +1073,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -1119,8 +1147,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -1140,19 +1200,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1160,7 +1208,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1202,6 +1278,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -1209,21 +1311,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1271,8 +1394,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -1283,8 +1406,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1351,7 +1474,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -1396,66 +1519,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -1464,6 +1528,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1471,6 +1536,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -1541,8 +1610,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -1562,19 +1663,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1582,7 +1671,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -1624,6 +1741,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -1631,21 +1774,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1693,8 +1857,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -1705,8 +1869,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -1773,7 +1937,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -1824,66 +1988,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -1892,6 +1997,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -1899,6 +2005,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -1969,8 +2079,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -1990,19 +2132,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2010,7 +2140,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2052,6 +2210,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -2059,21 +2243,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2121,8 +2326,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -2133,8 +2338,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2201,7 +2406,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -2252,66 +2457,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -2320,6 +2466,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -2327,6 +2474,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -2397,8 +2548,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -2418,19 +2601,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2438,7 +2609,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2480,6 +2679,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -2487,21 +2712,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2549,8 +2795,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -2561,8 +2807,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2629,7 +2875,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -2686,66 +2932,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -2754,6 +2941,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -2761,6 +2949,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -2831,8 +3023,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -2852,19 +3076,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2872,7 +3084,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -2914,6 +3154,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -2921,21 +3187,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -2983,8 +3270,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -2995,8 +3282,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3063,7 +3350,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -3117,66 +3404,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -3185,6 +3413,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -3192,6 +3421,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -3262,8 +3495,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -3283,19 +3548,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3303,7 +3556,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3345,6 +3626,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -3352,21 +3659,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3414,8 +3742,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -3426,8 +3754,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3494,7 +3822,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -3554,66 +3882,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -3622,6 +3891,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -3629,6 +3899,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -3699,8 +3973,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -3720,19 +4026,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3740,7 +4034,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -3782,6 +4104,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -3789,21 +4137,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3851,8 +4220,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -3863,8 +4232,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -3931,7 +4300,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -3982,66 +4351,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -4050,6 +4360,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -4057,6 +4368,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -4127,8 +4442,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -4148,19 +4495,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4168,7 +4503,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4210,6 +4573,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -4217,21 +4606,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4279,8 +4689,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -4291,8 +4701,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4359,7 +4769,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -4416,66 +4826,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -4484,6 +4835,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -4491,6 +4843,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -4561,8 +4917,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -4582,19 +4970,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4602,7 +4978,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -4644,6 +5048,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -4651,21 +5081,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4713,8 +5164,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -4725,8 +5176,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -4793,7 +5244,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },
@@ -4844,66 +5295,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                   Object {
                     "plugins": Array [
                       Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-clamp",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-function",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-normalize-display-values",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "clear": [Function makeTransform],
-                          "float": [Function makeTransform],
-                        },
-                        "postcssPlugin": "postcss-logical-float-and-clear",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-ic-unit",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "resize": [Function anonymous],
-                        },
-                        "postcssPlugin": "postcss-logical-resize",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-logical-viewport-units",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-nested-calc",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-oklab-function",
-                      },
-                      Object {
-                        "Declaration": Object {
-                          "opacity": [Function opacity],
-                        },
-                        "postcssPlugin": "postcss-opacity-percentage",
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-text-decoration-shorthand",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-unset-value",
-                      },
-                      Object {
                         "postcssPlugin": "postcss-custom-media",
-                        "prepare": [Function prepare],
-                      },
-                      Object {
-                        "postcssPlugin": "postcss-custom-properties",
                         "prepare": [Function prepare],
                       },
                       Object {
@@ -4912,6 +5304,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "AtRule": Object {
+                          "custom-media": [Function custom-media],
                           "media": [Function media],
                         },
                         "postcssPlugin": "postcss-media-minmax",
@@ -4919,6 +5312,10 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       Object {
                         "AtRule": [Function AtRule],
                         "postcssPlugin": "postcss-media-queries-aspect-ratio-number-values",
+                      },
+                      Object {
+                        "Rule": [Function Rule],
+                        "postcssPlugin": "postcss-nesting",
                       },
                       Object {
                         "postcssPlugin": "postcss-pseudo-class-any-link",
@@ -4989,8 +5386,40 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                           "padding-inline-end": [Function anonymous],
                           "padding-inline-start": [Function anonymous],
                           "text-align": [Function anonymous],
+                          "transition": [Function transition],
                         },
                         "postcssPlugin": "postcss-logical",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "clear": [Function makeTransform],
+                          "float": [Function makeTransform],
+                        },
+                        "postcssPlugin": "postcss-logical-float-and-clear",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overflow-block": [Function overflow-block],
+                          "overflow-inline": [Function overflow-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overflow",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "overscroll-behavior-block": [Function overscroll-behavior-block],
+                          "overscroll-behavior-inline": [Function overscroll-behavior-inline],
+                        },
+                        "postcssPlugin": "postcss-logical-overscroll-behavior",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "resize": [Function anonymous],
+                        },
+                        "postcssPlugin": "postcss-logical-resize",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-logical-viewport-units",
                       },
                       Object {
                         "postcssPlugin": "postcss-dir-pseudo-class",
@@ -5010,19 +5439,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-functional-notation",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-double-position-gradients",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-color-hex-alpha",
-                      },
-                      Object {
-                        "Declaration": [Function Declaration],
-                        "postcssPlugin": "postcss-hwb-function",
+                        "postcssPlugin": "postcss-relative-color-syntax",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -5030,7 +5447,35 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-oklab-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-hwb-function",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-functional-notation",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-color-rebeccapurple",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-color-hex-alpha",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-light-dark-function",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-double-position-gradients",
                       },
                       Object {
                         "Declaration": [Function Declaration],
@@ -5072,6 +5517,32 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                       },
                       Object {
                         "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-font-format-keywords",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-normalize-display-values",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-ic-unit",
+                      },
+                      Object {
+                        "Declaration": Object {
+                          "opacity": [Function opacity],
+                        },
+                        "postcssPlugin": "postcss-opacity-percentage",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-text-decoration-shorthand",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-unset-value",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
                         "postcssPlugin": "postcss-stepped-value-functions",
                       },
                       Object {
@@ -5079,21 +5550,42 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-trigonometric-functions",
                       },
                       Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-exponential-functions",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-clamp",
+                      },
+                      Object {
+                        "Declaration": [Function Declaration],
+                        "postcssPlugin": "postcss-nested-calc",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
                         "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-cascade-layers",
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-progressive-custom-properties",
+                        "prepare": [Function prepare],
+                      },
+                      Object {
+                        "postcssPlugin": "postcss-gamut-mapping",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "browsers": undefined,
                         "info": [Function info],
                         "options": Object {
+                          "env": undefined,
                           "overrideBrowserslist": undefined,
                         },
                         "postcssPlugin": "autoprefixer",
                         "prepare": [Function prepare],
-                      },
-                      Object {
-                        "RuleExit": [Function RuleExit],
-                        "postcssPlugin": "postcss-progressive-custom-properties",
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -5141,8 +5633,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-calc",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-convert-values",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "postcssPlugin": "postcss-ordered-values",
@@ -5153,8 +5645,8 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "postcss-minify-selectors",
                       },
                       Object {
-                        "OnceExit": [Function OnceExit],
                         "postcssPlugin": "postcss-minify-params",
+                        "prepare": [Function prepare],
                       },
                       Object {
                         "OnceExit": [Function OnceExit],
@@ -5221,7 +5713,7 @@ exports[`webpack nuxt webpack module.rules 1`] = `
                         "postcssPlugin": "cssnano-util-raw-cache",
                       },
                     ],
-                    "version": "8.4.23",
+                    "version": "8.4.38",
                   },
                 ],
               },

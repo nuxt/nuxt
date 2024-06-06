@@ -1,7 +1,10 @@
 {
   "name": "@nuxt/config",
-  "version": "2.16.3",
-  "repository": "nuxt/nuxt.js",
+  "version": "2.17.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/config.js",
   "typings": "index.d.ts",
@@ -10,15 +13,15 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.16.3",
-    "consola": "^3.1.0",
-    "defu": "^6.1.2",
-    "destr": "^1.2.2",
-    "dotenv": "^16.1.4",
+    "@nuxt/utils": "2.17.3",
+    "consola": "^3.2.3",
+    "defu": "^6.1.4",
+    "destr": "^2.0.3",
+    "dotenv": "^16.4.5",
     "lodash": "^4.17.21",
-    "rc9": "^2.1.0",
-    "std-env": "^3.3.3",
-    "ufo": "^1.1.2"
+    "rc9": "^2.1.2",
+    "std-env": "^3.7.0",
+    "ufo": "^1.5.3"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

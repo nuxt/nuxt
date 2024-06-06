@@ -3,10 +3,11 @@ import consola from 'consola'
 import spawn from 'cross-spawn'
 import { existsSync, readJSONSync, writeFile, copy, remove } from 'fs-extra'
 import _ from 'lodash'
+// eslint-disable-next-line import/named
 import { rollup, watch } from 'rollup'
 import _glob from 'glob'
 import pify from 'pify'
-import sortPackageJson from 'sort-package-json'
+import { sortPackageJson } from 'sort-package-json'
 
 import rollupConfig from './rollup.config'
 import { builtins } from './builtins'

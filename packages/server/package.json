@@ -1,30 +1,33 @@
 {
   "name": "@nuxt/server",
-  "version": "2.16.3",
-  "repository": "nuxt/nuxt.js",
+  "version": "2.17.3",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.js.git"
+  },
   "license": "MIT",
   "main": "dist/server.js",
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.16.3",
-    "@nuxt/vue-renderer": "2.16.3",
+    "@nuxt/utils": "2.17.3",
+    "@nuxt/vue-renderer": "2.17.3",
     "@nuxtjs/youch": "^4.2.3",
     "compression": "^1.7.4",
     "connect": "^3.7.0",
-    "consola": "^3.1.0",
+    "consola": "^3.2.3",
     "etag": "^1.8.1",
     "fresh": "^0.5.2",
-    "fs-extra": "^10.1.0",
-    "ip": "^1.1.8",
-    "launch-editor-middleware": "^2.6.0",
+    "fs-extra": "^11.2.0",
+    "ip": "^2.0.1",
+    "launch-editor-middleware": "^2.6.1",
     "on-headers": "^1.0.2",
     "pify": "^5.0.0",
     "serve-placeholder": "^2.0.1",
     "serve-static": "^1.15.0",
     "server-destroy": "^1.0.1",
-    "ufo": "^1.1.2"
+    "ufo": "^1.5.3"
   },
   "engines": {
     "node": "^14.18.0 || >=16.10.0"

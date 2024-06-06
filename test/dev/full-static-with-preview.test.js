@@ -5,7 +5,7 @@ import finalhandler from 'finalhandler'
 import { Builder, Generator, getPort, loadFixture, Nuxt, waitFor } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 const rootDir = resolve(__dirname, '..', 'fixtures/full-static-with-preview')
 const distDir = resolve(rootDir, '.nuxt-generate')
 

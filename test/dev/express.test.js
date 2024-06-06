@@ -2,7 +2,7 @@ import express from 'express'
 import { loadFixture, getPort, Nuxt, rp } from '../utils'
 
 let port
-const url = route => 'http://localhost:' + port + route
+const url = route => 'http://127.0.0.1:' + port + route
 
 let nuxt
 let app

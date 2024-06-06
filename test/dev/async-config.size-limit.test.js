@@ -33,7 +33,7 @@ describe('nuxt basic resources size limit', () => {
   it('should stay within the size limit range in modern mode', async () => {
     const modernResourcesSize = await getResourcesSize(distDir, 'modern', { gzip: true, brotli: true })
 
-    const MODERN_JS_RESOURCES_KB_SIZE = 210
+    const MODERN_JS_RESOURCES_KB_SIZE = 215
     expect(modernResourcesSize.uncompressed).toBeWithinSize(MODERN_JS_RESOURCES_KB_SIZE)
 
     const MODERN_JS_RESOURCES_GZIP_KB_SIZE = 77

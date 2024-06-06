@@ -520,17 +520,6 @@ export function getNuxtConfig (_options) {
     options.build.indicator = false
   }
 
-  // Monkey patch crypto.createHash in dev/build to upgrade hashing fnction
-  if (parseInt(process.versions.node.slice(0, 2)) > 16 && !options.buildModules.some(m => m.name === 'patchMD4')) {
-    options.buildModules.push(function patchMD4 () {
-      const crypto = require('crypto')
-      const _createHash = crypto.createHash
-      crypto.createHash = function (algorithm, options) {
-        return _createHash(algorithm === 'md4' ? 'md5' : algorithm, options)
-      }
-    })
-  }
-
   // Components Module
   if (!options._start && getPKG('@nuxt/components')) {
     options._modules.push('@nuxt/components')

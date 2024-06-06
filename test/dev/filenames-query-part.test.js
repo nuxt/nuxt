@@ -29,7 +29,7 @@ describe('build filenames with query part', () => {
     await nuxt.ready()
 
     port = await getPort()
-    await nuxt.server.listen(port, 'localhost')
+    await nuxt.server.listen(port, '127.0.0.1')
   })
 
   test('server manifest files exist', () => {

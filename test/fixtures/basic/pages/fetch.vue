@@ -13,7 +13,7 @@
 
 <script>
 const name = process.server ? 'server' : 'client'
-const baseURL = 'http://localhost:3000/api'
+const baseURL = 'http://127.0.0.1:3000/api'
 const getData = () => fetch(`${baseURL}/test`)
   .then(r => r.text())
   .then(r => r + ` (From ${name})`)
