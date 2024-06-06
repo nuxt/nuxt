@@ -4,7 +4,8 @@
   "description": "babel-preset-app for nuxt",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/babel-preset-app"
   },
   "license": "MIT",
   "author": "Evan You",

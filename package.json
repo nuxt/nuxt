@@ -3,7 +3,7 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git"
   },
   "workspaces": [
     "packages/*",

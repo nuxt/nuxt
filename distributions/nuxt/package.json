@@ -18,7 +18,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "distributions/nuxt"
   },
   "license": "MIT",
   "main": "dist/nuxt.js",
