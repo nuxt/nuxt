@@ -41,10 +41,18 @@ export default class VueSSRClientPlugin {
         return assets
       }, []))
 
-      const initialFiles = uniq(Object.keys(stats.entrypoints!)
-        .map(name => stats.entrypoints![name].assets!)
-        .reduce((files, entryAssets) => files.concat(entryAssets.map(entryAsset => entryAsset.name)), [] as string[])
-        .filter(file => (isJS(file) || isCSS(file)) && !isHotUpdate(file)))
+      const initialFilesBeforeDedupe: Array<string> = []
+      for (const name in stats.entrypoints!)
+      {
+        const entryAssets = stats.entrypoints![name].assets!)
+        entryAssets.forEach(asset => {
+            const file = asset.name;
+            if ((isJS(file) || isCSS(file)) && !isHotUpdate(file)) {
+                initialFilesBeforeDedupe.push(file);
+            }
+        })
+      }
+      const initialFiles = uniq(initialFilesBeforeDedupe)
 
       const asyncFiles = allFiles.filter(file => (isJS(file) || isCSS(file)) && !initialFiles.includes(file) && !isHotUpdate(file))
 
