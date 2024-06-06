@@ -82,7 +82,7 @@ export const RenderPlugin = () => {
         // Serialize into a js function
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
-        let templateString = [chunks.shift()]
+        const templateString = [chunks.shift()]
         for (const expression of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
           templateString.push(` + (${expression[1].trim()}) + ${chunks.shift()}`)
         }
