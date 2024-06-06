@@ -52,7 +52,7 @@
     "@vue/vue2-jest": "29.2.6",
     "babel-jest": "29.7.0",
     "changelogen": "0.5.5",
-    "chrome-launcher": "0.15.2",
+    "chrome-launcher": "1.1.1",
     "consola": "3.2.3",
     "create-require": "1.1.1",
     "cross-spawn": "7.0.3",
