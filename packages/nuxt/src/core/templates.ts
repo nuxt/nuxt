@@ -59,13 +59,14 @@ export const clientPluginTemplate: NuxtTemplate = {
   async getContents (ctx): Promise<string> {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
+    const exports: string[] = new Array(clientPlugins.length)
+    const imports: string[] = new Array(clientPlugins.length)
+    let count = 0
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      exports[count] = variable
+      imports[count++] = genImport(plugin.src, variable)
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
@@ -77,13 +78,14 @@ export const serverPluginTemplate: NuxtTemplate = {
   async getContents (ctx): Promise<string> {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
+    const exports: string[] = new Array(clientPlugins.length)
+    const imports: string[] = new Array(clientPlugins.length)
+    let count = 0
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      exports[count] = variable
+      imports[count++] = genImport(plugin.src, variable)
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
@@ -228,12 +230,13 @@ export const middlewareTemplate: NuxtTemplate = {
       }
     }
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
-    const globalMiddlewareObject = []
-    const globalMiddlewareImport: string[] = []
+    const globalMiddlewareObject = new Array(globalMiddleware.length)
+    const globalMiddlewareImport: string[] = new Array(globalMiddleware.length)
+    let count = 0
     for (const mw of globalMiddleware) {
       const variableName = genSafeVariableName(mw.name)
-      globalMiddlewareObject.push(variableName)
-      globalMiddlewareImport.push(genImport(mw.path, variableName))
+      globalMiddlewareObject[count] = variableName
+      globalMiddlewareImport[count++] = genImport(mw.path, variableName)
     }
     return `${globalMiddlewareImport.join('\n')}
 export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}
@@ -437,7 +440,7 @@ const DECLARATION_RE = /\.d\.[cm]?ts$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
   getContents ({ app }) {
-    let declarations = ''
+    const declarations: string[] = []
 
     for (const file of app.templates) {
       if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
@@ -451,9 +454,9 @@ export const buildTypeTemplate: NuxtTemplate = {
         }
       }
 
-      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+      declarations.push('declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n')
     }
 
-    return declarations
+    return declarations.join('')
   },
 }
