@@ -28,11 +28,11 @@ export async function buildClient (ctx: ViteBuildContext) {
         },
       }
     : { alias: {}, define: {} }
-
+  const buildAssetsDir = ctx.nuxt.options.app.buildAssetsDir
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
-      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
+      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', buildAssetsDir)
       : './',
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {
@@ -130,7 +130,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     plugins: [
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
-        buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
+        buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, buildAssetsDir),
       }),
       runtimePathsPlugin({
         sourcemap: !!ctx.nuxt.options.sourcemap.client,
@@ -163,10 +163,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // We want to respect users' own rollup output options
+  const fileNames = withoutLeadingSlash(join(buildAssetsDir, '[hash].js'))
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
-      chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
-      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
+      chunkFileNames: ctx.nuxt.options.dev ? undefined : fileNames,
+      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : fileNames,
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
