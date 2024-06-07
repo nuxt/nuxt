@@ -27,7 +27,11 @@ export const RenderPlugin = () => {
       const critters = new Critters({ path: outputDir })
       const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
 
-      const templateExports = []
+      const templateExports: Array<{
+          exportName: string
+          templateName: string
+          types: string
+        }> = []
 
       for (const fileName of htmlFiles) {
         // Infer template name
@@ -48,9 +52,13 @@ export const RenderPlugin = () => {
         html = html.replace(/<link[^>]*>/g, '')
 
         // Inline SVGs
-        const svgSources = Array.from(html.matchAll(/src="([^"]+)"|url([^)]+)/g))
-          .map(m => m[1])
-          .filter(src => src?.match(/\.svg$/))
+        const svgSources: string[] = []
+
+        for (const [src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
+          if (src?.match(/\.svg$/)) {
+            svgSources.push(src)
+          }
+        }
 
         for (const src of svgSources) {
           const svg = readFileSync(join(outputDir, src), 'utf-8')
@@ -59,8 +67,13 @@ export const RenderPlugin = () => {
         }
 
         // Inline our scripts
-        const scriptSources = Array.from(html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g))
-          .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
+        const scriptSources: [string, string][] = []
+
+        for (const [block, src] of html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g)) {
+          if (src?.match(/^\/.*\.js$/)) {
+            scriptSources.push([block, src])
+          }
+        }
 
         for (const [scriptBlock, src] of scriptSources) {
           let contents = readFileSync(join(outputDir, src), 'utf-8')
@@ -83,8 +96,10 @@ export const RenderPlugin = () => {
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let templateString = chunks.shift()
-        for (const expression of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
-          templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
+        for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+          if (expression) {
+            templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
+          }
         }
         if (chunks.length > 0) {
           templateString += ' + ' + chunks.join(' + ')
@@ -110,7 +125,7 @@ export const RenderPlugin = () => {
           .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
-        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1].replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
+        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1]?.replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
@@ -119,7 +134,7 @@ export const RenderPlugin = () => {
           if (lastChar && !['}', '.', '@', '*', ':'].includes(lastChar)) {
             return ';' + lastChar
           }
-          return lastChar
+          return lastChar || ''
         }).replace(/@media[^{]*\{\}/g, '')
         const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
           .map(block => block[1])
