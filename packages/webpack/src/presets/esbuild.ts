@@ -16,10 +16,10 @@ export function esbuild (ctx: WebpackConfigContext) {
       loader: 'esbuild-loader',
       exclude: (file) => {
         // Not exclude files outside node_modules
-        const lastSegment = file.split('node_modules', 2)[1]
-        if (!lastSegment) { return false }
+        file = file.split('node_modules', 2)[1]
+        if (!file) { return false }
 
-        return !ctx.transpile.some(module => module.test(lastSegment))
+        return !ctx.transpile.some(module => module.test(file))
       },
       resolve: {
         fullySpecified: false,

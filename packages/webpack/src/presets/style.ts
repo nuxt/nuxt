@@ -21,15 +21,14 @@ function minimizer (ctx: WebpackConfigContext) {
 }
 
 function extractCSS (ctx: WebpackConfigContext) {
-  const config = ctx.userConfig.extractCSS
-  if (!config) return
   // CSS extraction
-  const filename = fileName(ctx, 'css')
-  ctx.config.plugins!.push(new MiniCssExtractPlugin({
-    filename,
-    chunkFilename: filename,
-    ...config === true ? {} : config,
-  }))
+  if (ctx.userConfig.extractCSS) {
+    ctx.config.plugins!.push(new MiniCssExtractPlugin({
+      filename: fileName(ctx, 'css'),
+      chunkFilename: fileName(ctx, 'css'),
+      ...ctx.userConfig.extractCSS === true ? {} : ctx.userConfig.extractCSS,
+    }))
+  }
 }
 
 function loaders (ctx: WebpackConfigContext) {
