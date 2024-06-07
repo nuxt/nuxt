@@ -675,7 +675,7 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
-function deduplicateArray <T = unknown>(maybeArray: T): T {
+function deduplicateArray<T = unknown> (maybeArray: T): T {
   if (!Array.isArray(maybeArray)) { return maybeArray }
 
   const fresh = []

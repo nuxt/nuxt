@@ -6,6 +6,6 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=1024, initial-scale=1' },
         { charset: 'utf-8' },
       ],
-    }
-  }
+    },
+  },
 })
