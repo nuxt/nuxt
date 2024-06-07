@@ -40,11 +40,17 @@ export type ModuleSetupInstallResult = {
 
 type Awaitable<T> = T | Promise<T>
 
+type Prettify<T> = {
+  [K in keyof T]: T[K];
+} & {}
+
 export type ModuleSetupReturn = Awaitable<false | void | ModuleSetupInstallResult>
 
-export type ResolvedModuleOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> = Defu<
-    Partial<TOptions>,
-    [Partial<TOptions>, TOptionsDefaults]
+export type ResolvedModuleOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> = Prettify<
+    Defu<
+        Partial<TOptions>,
+        [Partial<TOptions>, TOptionsDefaults]
+    >
 >
 
 /** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
