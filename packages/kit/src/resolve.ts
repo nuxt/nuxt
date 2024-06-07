@@ -165,7 +165,7 @@ export async function resolveNuxtModule (base: string, paths: string[]) {
   const resolved = new Array(paths.length)
   const resolver = createResolver(base)
 
-  for (let i = 0; i < paths.length; i++){
+  for (let i = 0; i < paths.length; i++) {
     const path = paths[i]
     if (path.startsWith(base)) {
       resolved[i] = path.split('/index.ts')[0]
