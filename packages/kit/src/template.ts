@@ -126,9 +126,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   const nuxtBuildRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
   const modulesInclude: string[] = new Array(modulePaths.length)
   const modulesExclude: string[] = new Array(modulePaths.length)
-  let count = 0
-  for (const m of modulePaths) {
-    const relative = relativeWithDot(nuxt.options.buildDir, m)
+  for (let i = 0; i < modulePaths.length; i++) {
+    const relative = relativeWithDot(nuxt.options.buildDir, modulePaths[i])
     modulesInclude[count] = join(relative, 'runtime')
     modulesExclude[count++] = join(relative, 'runtime/server')
   }
