@@ -24,9 +24,13 @@ function fetchManifest () {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`))
+  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
+    responseType: 'json',
+  })
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
+  }).catch((e) => {
+    console.error('[nuxt] Error fetching app manifest.', e)
   })
   return manifest
 }
@@ -48,5 +52,14 @@ export async function getRouteRules (url: string) {
     return defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(url).reverse())
   }
   await getAppManifest()
-  return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
+  if (!matcher) {
+    console.error('[nuxt] Error creating app manifest matcher.', matcher)
+    return {}
+  }
+  try {
+    return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
+  } catch (e) {
+    console.error('[nuxt] Error matching route rules.', e)
+    return {}
+  }
 }

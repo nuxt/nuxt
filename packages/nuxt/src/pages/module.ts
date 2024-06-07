@@ -422,11 +422,6 @@ export default defineNuxtModule({
       getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
     })
 
-    // Optimize vue-router to ensure we share the same injection symbol
-    nuxt.options.vite.optimizeDeps = nuxt.options.vite.optimizeDeps || {}
-    nuxt.options.vite.optimizeDeps.include = nuxt.options.vite.optimizeDeps.include || []
-    nuxt.options.vite.optimizeDeps.include.push('vue-router')
-
     nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
     nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
     nuxt.options.vite.resolve.dedupe.push('vue-router')

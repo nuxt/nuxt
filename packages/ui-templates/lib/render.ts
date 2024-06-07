@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
+import { copyFile } from 'node:fs/promises'
 import { basename, dirname, join, resolve } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
@@ -166,6 +167,15 @@ export const RenderPlugin = () => {
         // Remove original html file
         unlinkSync(fileName)
         rmdirSync(dirname(fileName))
+      }
+
+      // we manually copy files across rather than using symbolic links for better windows support
+      const nuxtRoot = r('../nuxt')
+      for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
+      }
+      for (const file of ['error-500.ts', 'error-dev.ts']) {
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro', file))
       }
     },
   }
