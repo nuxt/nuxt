@@ -25,11 +25,11 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
   const composableMeta: Record<string, any> = {}
   const composableLength: number[] = new Array(options.composables.length)
   const composableKeyed: string[] = new Array(options.composables.length)
-  let composableCount = 0
-  for (const { name, argumentLength, ...meta } of options.composables) {
+  for (let i = 0; i < options.composables.length; i++){
+    const { name, argumentLength, ...meta } = options.composables[i]
     composableMeta[name] = meta
-    composableLength[composableCount] = argumentLength
-    composableKeyed[composableCount++] = name
+    composableLength[i] = argumentLength
+    composableKeyed[i] = name
   }
 
   const maxLength = Math.max(...composableLength)
