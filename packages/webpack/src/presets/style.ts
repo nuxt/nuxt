@@ -22,7 +22,7 @@ function minimizer (ctx: WebpackConfigContext) {
 
 function extractCSS (ctx: WebpackConfigContext) {
   const config = ctx.userConfig.extractCSS
-  if (!config) return
+  if (!config) { return }
   // CSS extraction
   const filename = fileName(ctx, 'css')
   ctx.config.plugins!.push(new MiniCssExtractPlugin({
