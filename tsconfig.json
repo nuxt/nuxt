@@ -44,7 +44,8 @@
     "**/examples/**",
     "**/docs/**",
     "**/playground/**",
+    "**/test/nuxt/**",
     "**/test/fixtures/**",
-    "test/nuxt/**"
+    "**/test/fixtures-temp/**"
   ]
 }

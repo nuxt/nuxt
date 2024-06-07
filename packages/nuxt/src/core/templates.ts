@@ -413,6 +413,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
+      `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
     ].join('\n\n')
   },
 }
