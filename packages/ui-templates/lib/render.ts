@@ -28,10 +28,10 @@ export const RenderPlugin = () => {
       const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
 
       const templateExports: Array<{
-          exportName: string
-          templateName: string
-          types: string
-        }> = []
+        exportName: string
+        templateName: string
+        types: string
+      }> = []
 
       for (const fileName of htmlFiles) {
         // Infer template name
