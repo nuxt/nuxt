@@ -923,17 +923,20 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
+      '@unhead/dom':
+        specifier: latest
+        version: 1.9.12
       '@unhead/shared':
         specifier: latest
         version: 1.9.12
       '@vue/devtools-api':
-        specifier: ^6.6.3
+        specifier: latest
         version: 6.6.3
       '@vue/shared':
         specifier: latest
         version: 3.4.27
       iron-webcrypto:
-        specifier: ^1.2.1
+        specifier: latest
         version: 1.2.1
       ufo:
         specifier: latest
