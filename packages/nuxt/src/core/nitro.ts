@@ -67,7 +67,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
   const moduleExclude: string[] = new Array(nuxt.options.modulesDir.length)
   const moduleTraceInclude: string[] = []
-  let moduleCount = 0
   for (let i = 0; i < nuxt.options.modulesDir.length; i++) {
     const m = nuxt.options.modulesDir[i]
     moduleExclude[i] = relativeWithDot(nuxt.options.buildDir, m)
