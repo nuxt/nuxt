@@ -555,7 +555,7 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   const lastKey = keys.pop()
   return new Proxy(runtimeConfig, {
     get (target, p: string, receiver) {
-      if (p !== 'public' && !(p in target)) {
+      if (p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See \`https://nuxt.com/docs/guide/going-further/runtime-config\` for more information.`)
       }
       return Reflect.get(target, p, receiver)
