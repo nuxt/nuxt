@@ -277,7 +277,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = new Set<string | NuxtModule | [string | NuxtModule, Record<string, any>]>()
+  const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
   const watchedPaths = new Set<string>()
   const specifiedModules = new Set<string>()
@@ -300,15 +300,18 @@ async function initNuxt (nuxt: Nuxt) {
       watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
-      modulesToInstall.add(mod)
+      modulesToInstall.set(mod, {})
     }
   }
 
   // Register user and then ad-hoc modules
   for (const key of ['modules', '_modules'] as const) {
-    for (const item of nuxt.options[key]) {
+    for (const item of nuxt.options[key as 'modules']) {
       if (item) {
-        modulesToInstall.add(item)
+        const [key, options = {}] = Array.isArray(item) ? item : [item]
+        if (!modulesToInstall.has(key)) {
+          modulesToInstall.set(key, options)
+        }
       }
     }
   }
@@ -487,12 +490,8 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
   }
 
-  for (const m of modulesToInstall) {
-    if (Array.isArray(m)) {
-      await installModule(m[0], m[1])
-    } else {
-      await installModule(m, {})
-    }
+  for (const [key, options] of modulesToInstall) {
+    await installModule(key, options)
   }
 
   // (Re)initialise ignore handler with resolved ignores from modules
