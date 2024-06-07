@@ -4,7 +4,7 @@ import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 
@@ -277,7 +277,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = []
+  const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
   const watchedPaths = new Set<string>()
   const specifiedModules = new Set<string>()
@@ -300,12 +300,21 @@ async function initNuxt (nuxt: Nuxt) {
       watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
-      modulesToInstall.push(mod)
+      modulesToInstall.set(mod, {})
     }
   }
 
   // Register user and then ad-hoc modules
-  modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
+  for (const key of ['modules', '_modules'] as const) {
+    for (const item of nuxt.options[key as 'modules']) {
+      if (item) {
+        const [key, options = {}] = Array.isArray(item) ? item : [item]
+        if (!modulesToInstall.has(key)) {
+          modulesToInstall.set(key, options)
+        }
+      }
+    }
+  }
 
   // Add <NuxtWelcome>
   addComponent({
@@ -481,12 +490,8 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
   }
 
-  for (const m of modulesToInstall) {
-    if (Array.isArray(m)) {
-      await installModule(m[0], m[1])
-    } else {
-      await installModule(m, {})
-    }
+  for (const [key, options] of modulesToInstall) {
+    await installModule(key, options)
   }
 
   // (Re)initialise ignore handler with resolved ignores from modules
