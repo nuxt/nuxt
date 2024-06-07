@@ -382,7 +382,7 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
-  nuxtApp.provide('config', runtimeConfig)
+  nuxtApp.provide('config', import.meta.client && import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
 
   return nuxtApp
 }
@@ -544,4 +544,21 @@ function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>,
 /** @since 3.0.0 */
 export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
+}
+
+/**
+ * Configure error getter on runtime secret property access that doesn't exist on the client side
+ */
+function wrappedConfig (runtimeConfig: Record<string, unknown>) {
+  if (!import.meta.dev || import.meta.server) { return runtimeConfig }
+  const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
+  const lastKey = keys.pop()
+  return new Proxy(runtimeConfig, {
+    get (target, p: string, receiver) {
+      if (p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
+        console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See \`https://nuxt.com/docs/guide/going-further/runtime-config\` for more information.`)
+      }
+      return Reflect.get(target, p, receiver)
+    },
+  })
 }
