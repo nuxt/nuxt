@@ -53,6 +53,9 @@ importers:
       '@unhead/schema':
         specifier: 1.9.12
         version: 1.9.12
+      '@vitejs/plugin-vue':
+        specifier: 5.0.4
+        version: 5.0.4(vite@5.2.12(@types/node@20.14.2)(sass@1.69.4)(terser@5.27.0))(vue@3.4.27(typescript@5.4.5))
       '@vitest/coverage-v8':
         specifier: 1.6.0
         version: 1.6.0(vitest@1.6.0(@types/node@20.14.2)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))
