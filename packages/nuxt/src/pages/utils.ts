@@ -109,9 +109,10 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
-
+      
       // ex: parent.vue + parent/child.vue
-      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
+      const routePathFromTokens = getRoutePath(tokens)
+      const path = withLeadingSlash(joinURL(route.path, routePathFromTokens.replace(/\/index$/, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
@@ -120,7 +121,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
       } else if (segmentName === 'index' && !route.path) {
         route.path += '/'
       } else if (segmentName !== 'index') {
-        route.path += getRoutePath(tokens)
+        route.path += routePathFromTokens
       }
     }
 
@@ -541,8 +542,9 @@ export function pathToNitroGlob (path: string) {
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
+  const joinedUrl = joinURL(parent, page.path)
   return [
-    joinURL(parent, page.path),
-    ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
+    joinedUrl,
+    ...page.children?.flatMap(child => resolveRoutePaths(child, joinedUrl)) || [],
   ]
 }
