@@ -410,7 +410,6 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     for (const k in ctx.nuxt.options.app) {
       contents.push(`export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k as keyof typeof ctx.nuxt.options.app])}`)
     }
-    const ctxAsyncData = experimental.defaults.useAsyncData
     return `${contents.join('\n\n')}\n\n
 export const renderJsonPayloads = ${!!experimental.renderJsonPayloads}\n\n
 export const componentIslands = ${shouldEnableComponentIslands}\n\n
