@@ -61,12 +61,12 @@ export const clientPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = new Array(clientPlugins.length)
     const imports: string[] = new Array(clientPlugins.length)
-    let count = 0
-    for (const plugin of clientPlugins) {
+    for (let i = 0; i < clientPlugins.length; i++){
+      const plugin = clientPlugins[i]
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports[count] = variable
-      imports[count++] = genImport(plugin.src, variable)
+      exports[i] = variable
+      imports[i] = genImport(plugin.src, variable)
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
@@ -80,12 +80,12 @@ export const serverPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = new Array(serverPlugins.length)
     const imports: string[] = new Array(serverPlugins.length)
-    let count = 0
-    for (const plugin of serverPlugins) {
+    for (let i = 0; i < serverPlugins.length; i++){
+      const plugin = serverPlugins[i]
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports[count] = variable
-      imports[count++] = genImport(plugin.src, variable)
+      exports[i] = variable
+      imports[i] = genImport(plugin.src, variable)
     }
     return `${imports.join('\n')}
 export default ${genArrayFromRaw(exports)}`
@@ -232,11 +232,11 @@ export const middlewareTemplate: NuxtTemplate = {
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
     const globalMiddlewareObject = new Array(globalMiddleware.length)
     const globalMiddlewareImport: string[] = new Array(globalMiddleware.length)
-    let count = 0
-    for (const mw of globalMiddleware) {
+    for (let i = 0; i < globalMiddleware.length; i++){
+      const mw = globalMiddleware[i]
       const variableName = genSafeVariableName(mw.name)
-      globalMiddlewareObject[count] = variableName
-      globalMiddlewareImport[count++] = genImport(mw.path, variableName)
+      globalMiddlewareObject[i] = variableName
+      globalMiddlewareImport[i] = genImport(mw.path, variableName)
     }
     return `${globalMiddlewareImport.join('\n')}
 export const globalMiddleware = ${genArrayFromRaw(globalMiddlewareObject)}
