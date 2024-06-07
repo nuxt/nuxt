@@ -82,18 +82,18 @@ export default defineNuxtModule<ComponentsOptions>({
 
       await nuxt.callHook('components:dirs', allDirs)
 
-      for (const dir of allDirs){
+      for (const dir of allDirs) {
         if (isPureObjectOrString(dir)) {
           const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
           const dirPath = resolveAlias(dirOptions.path)
           const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
           const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
-  
+
           const present = isDirectory(dirPath)
           if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
             logger.warn('Components directory not found: `' + dirPath + '`')
           }
-  
+
           const comp: ComponentsDir = {
             global: componentOptions.global,
             ...dirOptions,
