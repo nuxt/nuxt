@@ -13,10 +13,10 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 
   const errorStr: string[] = new Array(stack.length)
   const consoleStr: string[] = new Array(stack.length)
-  let count = 0
-  for (const i of stack) {
+  for (let count = 0; count < stack.length; count++)
+    const i = stack[count]
     errorStr[count] = `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`
-    consoleStr[count++] = '  ' + i.text
+    consoleStr[count] = '  ' + i.text
   }
   // Create an error object
   const errorObject = {
