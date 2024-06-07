@@ -20,12 +20,12 @@ export default defineNuxtConfig({
       // @ts-expect-error Promises are not allowed
       title: Promise.resolve('Nuxt Fixture'),
       // @ts-expect-error Functions are not allowed
-      titleTemplate: (title) => 'test'
+      titleTemplate: title => 'test',
     },
     pageTransition: {
       // @ts-expect-error Functions are not allowed
       onBeforeEnter: el => console.log(el),
-    }
+    },
   },
   runtimeConfig: {
     baseURL: '',
