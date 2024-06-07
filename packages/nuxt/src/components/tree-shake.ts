@@ -16,7 +16,7 @@ interface TreeShakeTemplatePluginOptions {
 type AcornNode<N extends Node> = N & { start: number, end: number }
 
 const SSR_RENDER_RE = /ssrRenderComponent/
-const PLACEHOLDER_EXACT_RE = /^(fallback|placeholder)$/
+const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
 const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
 

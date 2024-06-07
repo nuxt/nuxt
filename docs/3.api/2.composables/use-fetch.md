@@ -1,6 +1,6 @@
 ---
 title: 'useFetch'
-description: 'Fetch data from an API endpoint with a SSR-friendly composable.'
+description: 'Fetch data from an API endpoint with an SSR-friendly composable.'
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -66,6 +66,10 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
 
+::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
+Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
+::
+
 :link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
 
 :read-more{to="/docs/getting-started/data-fetching"}
@@ -83,6 +87,8 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
   - `timeout`: Milliseconds to automatically abort request
+  - `cache`: Handles cache control according to [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache)
+    - You can pass boolean to disable the cache or you can pass one of the following values: `default`, `no-store`, `reload`, `no-cache`, `force-cache`, and `only-if-cached`.
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -97,7 +103,7 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   - `transform`: a function that can be used to alter `handler` function result after resolving
   - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
-  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
+  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`. (You can [see an example here](/docs/getting-started/data-fetching#watch) of using `watch`.)
   - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
@@ -105,6 +111,10 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
 
 ::note
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
+::
+
+::note
+If you use `useFetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
 ::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}

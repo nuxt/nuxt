@@ -22,16 +22,16 @@ jobs:
 
     steps:
       - name: Ensure action is by maintainer
-        uses: octokit/request-action@21d174fc38ff59af9cf4d7e07347d29df6dbaa99 # v2.3.0
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d # v2.3.1
         id: check_role
         with:
           route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
-          ref: refs/pull/${{ github.event.issue.number }}/merge
+          ref: ${{ github.event.issue.pull_request.head.sha }}
           fetch-depth: 0
 
       - run: corepack enable

@@ -7,6 +7,7 @@ export default defineNuxtConfig({
   },
   future: {
     typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
+    compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3,
   },
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
@@ -14,6 +15,18 @@ export default defineNuxtConfig({
   extends: [
     './extends/node_modules/foo',
   ],
+  app: {
+    head: {
+      // @ts-expect-error Promises are not allowed
+      title: Promise.resolve('Nuxt Fixture'),
+      // @ts-expect-error Functions are not allowed
+      titleTemplate: title => 'test',
+    },
+    pageTransition: {
+      // @ts-expect-error Functions are not allowed
+      onBeforeEnter: el => console.log(el),
+    },
+  },
   runtimeConfig: {
     baseURL: '',
     baseAPIToken: '',

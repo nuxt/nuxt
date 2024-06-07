@@ -17,6 +17,12 @@ export interface ResolvePathOptions {
 
   /** The file extensions to try. Default is Nuxt configured extensions. */
   extensions?: string[]
+
+  /**
+   * Whether to resolve files that exist in the Nuxt VFS (for example, as a Nuxt template).
+   * @default false
+   */
+  virtual?: boolean
 }
 
 /**
@@ -30,8 +36,13 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   path = normalize(path)
 
   // Fast return if the path exists
-  if (isAbsolute(path) && existsSync(path) && !(await isDirectory(path))) {
-    return path
+  if (isAbsolute(path)) {
+    if (opts?.virtual && existsInVFS(path)) {
+      return path
+    }
+    if (existsSync(path) && !(await isDirectory(path))) {
+      return path
+    }
   }
 
   // Use current nuxt options
@@ -49,6 +60,10 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Check if resolvedPath is a file
+  if (opts?.virtual && existsInVFS(path, nuxt)) {
+    return path
+  }
+
   let _isDir = false
   if (existsSync(path)) {
     _isDir = await isDirectory(path)
@@ -61,11 +76,17 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   for (const ext of extensions) {
     // path.[ext]
     const pathWithExt = path + ext
+    if (opts?.virtual && existsInVFS(pathWithExt, nuxt)) {
+      return pathWithExt
+    }
     if (existsSync(pathWithExt)) {
       return pathWithExt
     }
     // path/index.[ext]
     const pathWithIndex = join(path, 'index' + ext)
+    if (opts?.virtual && existsInVFS(pathWithIndex, nuxt)) {
+      return pathWithIndex
+    }
     if (_isDir && existsSync(pathWithIndex)) {
       return pathWithIndex
     }
@@ -85,8 +106,17 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
  * Try to resolve first existing file in paths
  */
 export async function findPath (paths: string | string[], opts?: ResolvePathOptions, pathType: 'file' | 'dir' = 'file'): Promise<string | null> {
+  const nuxt = opts?.virtual ? tryUseNuxt() : undefined
+
   for (const path of toArray(paths)) {
     const rPath = await resolvePath(path, opts)
+
+    // Check VFS
+    if (opts?.virtual && existsInVFS(rPath, nuxt)) {
+      return rPath
+    }
+
+    // Check file system
     if (await existsSensitive(rPath)) {
       const _isDir = await isDirectory(rPath)
       if (!pathType || (pathType === 'file' && !_isDir) || (pathType === 'dir' && _isDir)) {
@@ -158,6 +188,17 @@ async function existsSensitive (path: string) {
 // Usage note: We assume path existence is already ensured
 async function isDirectory (path: string) {
   return (await fsp.lstat(path)).isDirectory()
+}
+
+function existsInVFS (path: string, nuxt = tryUseNuxt()) {
+  if (!nuxt) { return false }
+
+  if (path in nuxt.vfs) {
+    return true
+  }
+
+  const templates = nuxt.apps.default?.templates ?? nuxt.options.build.templates
+  return templates.some(template => template.dst === path)
 }
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
