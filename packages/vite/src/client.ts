@@ -29,6 +29,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       }
     : { alias: {}, define: {} }
   const buildAssetsDir = ctx.nuxt.options.app.buildAssetsDir
+  const clientSourcemap = ctx.nuxt.options.sourcemap.client
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
     base: ctx.nuxt.options.dev
@@ -44,7 +45,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     },
     css: {
-      devSourcemap: !!ctx.nuxt.options.sourcemap.client,
+      devSourcemap: !!clientSourcemap,
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
@@ -120,7 +121,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
-      sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.client : false,
+      sourcemap: clientSourcemap ? ctx.config.build?.sourcemap ?? clientSourcemap : false,
       manifest: 'manifest.json',
       outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
       rollupOptions: {
@@ -133,7 +134,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, buildAssetsDir),
       }),
       runtimePathsPlugin({
-        sourcemap: !!ctx.nuxt.options.sourcemap.client,
+        sourcemap: !!clientSourcemap,
       }),
       viteNodePlugin(ctx),
     ],
@@ -153,7 +154,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
   if (ctx.nuxt.options.experimental.emitRouteChunkError) {
-    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!clientSourcemap }))
   }
 
   // Inject an h3-based CORS handler in preference to vite's
@@ -197,7 +198,7 @@ export async function buildClient (ctx: ViteBuildContext) {
 
   // Add type checking client panel
   if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!clientSourcemap }))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
