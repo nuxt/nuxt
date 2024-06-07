@@ -9,7 +9,12 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
+    "@unhead/shared": "latest",
+    "@vue/devtools-api": "^6.6.3",
+    "@vue/shared": "latest",
+    "iron-webcrypto": "^1.2.1",
     "ufo": "latest",
+    "unhead": "latest",
     "unplugin": "latest",
     "vue": "latest"
   }
