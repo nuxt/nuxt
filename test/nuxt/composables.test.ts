@@ -20,7 +20,6 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
-// @ts-expect-error virtual file
 import { asyncDataDefaults, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
@@ -38,7 +37,6 @@ describe('app config', () => {
     `)
     updateAppConfig({
       new: 'value',
-      // @ts-expect-error property does not exist
       nuxt: { nested: 42 },
     })
     expect(appConfig).toMatchInlineSnapshot(`

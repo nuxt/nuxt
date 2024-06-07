@@ -75,7 +75,6 @@ describe('plugin sanity checking', () => {
       },
       {
         name: 'B',
-        // @ts-expect-error strongly typed `dependsOn`
         dependsOn: ['D'],
         src: '',
       },
@@ -93,19 +92,16 @@ describe('plugin sanity checking', () => {
     checkForCircularDependencies([
       {
         name: 'A',
-        // @ts-expect-error strongly typed `dependsOn`
         dependsOn: ['B'],
         src: '',
       },
       {
         name: 'B',
-        // @ts-expect-error strongly typed `dependsOn`
         dependsOn: ['C'],
         src: '',
       },
       {
         name: 'C',
-        // @ts-expect-error strongly typed `dependsOn`
         dependsOn: ['A'],
         src: '',
       },
