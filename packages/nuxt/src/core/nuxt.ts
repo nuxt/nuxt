@@ -74,7 +74,7 @@ async function initNuxt (nuxt: Nuxt) {
   const cwds: string[] = []
   const optsReferences: string[] = []
   const layerModules: string[] = new Array(nuxt.options._layers.length)
-  for (let i = 0; i < nuxt.options._layers.length) {
+  for (let i = 0; i < nuxt.options._layers.length; i++) {
     const layer = nuxt.options._layers[i]
     configs[i] = layer.config
     layerModules[i] = resolve(layer.cwd, 'node_modules')
