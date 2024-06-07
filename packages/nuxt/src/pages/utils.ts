@@ -109,7 +109,7 @@ export async function generateRoutesFromFiles (files: ScannedFile[], options: Ge
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
-      
+
       // ex: parent.vue + parent/child.vue
       const routePathFromTokens = getRoutePath(tokens)
       const path = withLeadingSlash(joinURL(route.path, routePathFromTokens.replace(/\/index$/, '/')))

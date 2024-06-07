@@ -54,7 +54,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
 
     for (const _file of files) {
       const filePath = join(dir.path, _file)
-      
+
       // Avoid duplicate paths
       if (scannedPaths.find(d => filePath.startsWith(withTrailingSlash(d))) || isIgnored(filePath) || filePaths.has(filePath)) {
         continue

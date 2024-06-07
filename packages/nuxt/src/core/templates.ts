@@ -61,7 +61,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = new Array(clientPlugins.length)
     const imports: string[] = new Array(clientPlugins.length)
-    for (let i = 0; i < clientPlugins.length; i++){
+    for (let i = 0; i < clientPlugins.length; i++) {
       const plugin = clientPlugins[i]
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
@@ -80,7 +80,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = new Array(serverPlugins.length)
     const imports: string[] = new Array(serverPlugins.length)
-    for (let i = 0; i < serverPlugins.length; i++){
+    for (let i = 0; i < serverPlugins.length; i++) {
       const plugin = serverPlugins[i]
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
@@ -232,7 +232,7 @@ export const middlewareTemplate: NuxtTemplate = {
     const namedMiddlewareObject = genObjectFromRawEntries(namedMiddleware.map(mw => [mw.name, genDynamicImport(mw.path)]))
     const globalMiddlewareObject = new Array(globalMiddleware.length)
     const globalMiddlewareImport: string[] = new Array(globalMiddleware.length)
-    for (let i = 0; i < globalMiddleware.length; i++){
+    for (let i = 0; i < globalMiddleware.length; i++) {
       const mw = globalMiddleware[i]
       const variableName = genSafeVariableName(mw.name)
       globalMiddlewareObject[i] = variableName
