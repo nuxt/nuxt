@@ -9,6 +9,10 @@
     "vue": "latest"
   },
   "devDependencies": {
-    "typescript": "latest"
+    "@unhead/shared": "latest",
+    "@vue/devtools-api": "latest",
+    "@vue/shared": "latest",
+    "typescript": "latest",
+    "unhead": "latest"
   }
 }
