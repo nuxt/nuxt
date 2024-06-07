@@ -397,40 +397,42 @@ if (!globalThis.$fetch) {
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
   getContents: (ctx) => {
+    const experimental = ctx.nuxt.options.experimental
     const fetchDefaults = {
-      ...ctx.nuxt.options.experimental.defaults.useFetch,
+      ...experimental.defaults.useFetch,
       baseURL: undefined,
       headers: undefined,
     }
-    const shouldEnableComponentIslands = ctx.nuxt.options.experimental.componentIslands && (
-      ctx.nuxt.options.dev || ctx.nuxt.options.experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
+    const shouldEnableComponentIslands = experimental.componentIslands && (
+      ctx.nuxt.options.dev || experimental.componentIslands !== 'auto' || ctx.app.pages?.some(p => p.mode === 'server') || ctx.app.components?.some(c => c.mode === 'server' && !ctx.app.components.some(other => other.pascalName === c.pascalName && other.mode === 'client'))
     )
     const contents: string[] = []
     for (const k in ctx.nuxt.options.app) {
       contents.push(`export const ${camelCase('app-' + k)} = ${JSON.stringify(ctx.nuxt.options.app[k as keyof typeof ctx.nuxt.options.app])}`)
     }
+    const ctxAsyncData = experimental.defaults.useAsyncData
     return `${contents.join('\n\n')}\n\n
-export const renderJsonPayloads = ${!!ctx.nuxt.options.experimental.renderJsonPayloads}\n\n
+export const renderJsonPayloads = ${!!experimental.renderJsonPayloads}\n\n
 export const componentIslands = ${shouldEnableComponentIslands}\n\n
-export const payloadExtraction = ${!!ctx.nuxt.options.experimental.payloadExtraction}\n\n
-export const cookieStore = ${!!ctx.nuxt.options.experimental.cookieStore}\n\n
-export const appManifest = ${!!ctx.nuxt.options.experimental.appManifest}\n\n
-export const remoteComponentIslands = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && ctx.nuxt.options.experimental.componentIslands.remoteIsland}\n\n
-export const selectiveClient = ${typeof ctx.nuxt.options.experimental.componentIslands === 'object' && Boolean(ctx.nuxt.options.experimental.componentIslands.selectiveClient)}\n\n
+export const payloadExtraction = ${!!experimental.payloadExtraction}\n\n
+export const cookieStore = ${!!experimental.cookieStore}\n\n
+export const appManifest = ${!!experimental.appManifest}\n\n
+export const remoteComponentIslands = ${typeof experimental.componentIslands === 'object' && experimental.componentIslands.remoteIsland}\n\n
+export const selectiveClient = ${typeof experimental.componentIslands === 'object' && Boolean(experimental.componentIslands.selectiveClient)}\n\n
 export const devPagesDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.dir.pages) : 'null'}\n\n
 export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}\n\n
 export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}\n\n
-export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}\n\n
+export const nuxtLinkDefaults = ${JSON.stringify(experimental.defaults.nuxtLink)}\n\n
 export const asyncDataDefaults = ${JSON.stringify({
-  ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-  value: ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
-  errorValue: ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
+  ...experimental.defaults.useAsyncData,
+  value: experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
+  errorValue: experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
 })}\n\n
-export const resetAsyncDataToUndefined = ${ctx.nuxt.options.experimental.resetAsyncDataToUndefined}\n\n
+export const resetAsyncDataToUndefined = ${experimental.resetAsyncDataToUndefined}\n\n
 export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}\n\n
 export const fetchDefaults = ${JSON.stringify(fetchDefaults)}\n\n
 export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}\n\n
-export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}\n\n
+export const viewTransition = ${experimental.viewTransition}\n\n
 export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`
   },
 }
