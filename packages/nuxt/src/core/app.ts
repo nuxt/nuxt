@@ -85,8 +85,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
-    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+    const perf = performance.measure(fullPath, mark.name)
+    const setupTime = Math.round((perf.duration * 100)) / 100
 
     if (nuxt.options.debug || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)

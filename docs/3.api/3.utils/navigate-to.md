@@ -52,6 +52,18 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### External URL
 
+The `external` parameter in `navigateTo` influences how navigating to URLs is handled:
+
+- **Without `external: true`**:
+  - Internal URLs navigate as expected.
+  - External URLs throw an error.
+
+- **With `external: true`**:
+  - Internal URLs navigate with a full-page reload.
+  - External URLs navigate as expected.
+
+#### Example
+
 ```vue
 <script setup lang="ts">
 // will throw an error;

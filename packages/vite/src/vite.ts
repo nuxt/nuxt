@@ -71,10 +71,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             'abort-controller': 'unenv/runtime/mock/empty',
           },
         },
-        optimizeDeps: {
-          include: ['vue'],
-          exclude: ['nuxt/app'],
-        },
         css: resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),

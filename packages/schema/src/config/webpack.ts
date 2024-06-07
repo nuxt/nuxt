@@ -157,7 +157,11 @@ export default defineUntypedSchema({
        * See https://github.com/esbuild-kit/esbuild-loader
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
-      esbuild: {},
+      esbuild: {
+        jsxFactory: 'h',
+        jsxFragment: 'Fragment',
+        tsconfigRaw: '{}',
+      },
 
       /**
        * See: https://github.com/webpack-contrib/file-loader#options

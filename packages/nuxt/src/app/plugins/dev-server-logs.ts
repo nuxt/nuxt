@@ -12,6 +12,7 @@ const devRevivers: Record<string, (data: any) => any> = import.meta.server
   ? {}
   : {
       VNode: data => h(data.type, data.props),
+      URL: data => new URL(data),
     }
 
 export default defineNuxtPlugin(async (nuxtApp) => {
