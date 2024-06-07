@@ -29,6 +29,8 @@ function fetchManifest () {
   })
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
+  }).catch(e => {
+    console.error('[nuxt] Error fetching app manifest.', e)
   })
   return manifest
 }
@@ -54,5 +56,10 @@ export async function getRouteRules (url: string) {
     console.error('[nuxt] Error creating app manifest matcher.', matcher)
     return {}
   }
-  return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
+  try {
+    return defu({} as Record<string, any>, ...matcher.matchAll(url).reverse())
+  } catch (e) {
+    console.error('[nuxt] Error matching route rules.', e)
+    return {}
+  }
 }
