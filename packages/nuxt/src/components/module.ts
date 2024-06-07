@@ -116,18 +116,17 @@ export default defineNuxtModule<ComponentsOptions>({
       }
 
       const nodeComponents = []
-      const noNodeComponents = []
       for (const dir of componentDirs) {
         if (dir.transpile) {
           if (dir.path.includes('node_modules')) {
             nodeComponents.push(dir.path)
           } else {
-            noNodeComponents.push(dir.path)
+            nuxt.options.build!.transpile!.push(dir.path)
           }
         }
       }
 
-      nuxt.options.build!.transpile!.push(...noNodeComponents, ...nodeComponents)
+      nuxt.options.build!.transpile!.push(...nodeComponents)
     })
 
     // components.d.ts
