@@ -146,7 +146,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       lib: [
         'es2022',
         'dom',
-        'dom.iterable'
+        'dom.iterable',
       ],
       /* JSX support for Vue */
       jsx: 'preserve',
