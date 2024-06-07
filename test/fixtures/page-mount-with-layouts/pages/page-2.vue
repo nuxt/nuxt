@@ -17,6 +17,7 @@ export default {
 
   mounted () {
     window.mountedCount = (window.mountedCount || 0) + 1
+    console.log('mount page-2', window.mountedCount)
   }
 }
 </script>

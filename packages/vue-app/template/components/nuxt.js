@@ -74,8 +74,9 @@ export default {
     Vue.util.defineReactive(this, 'nuxt', this.$root.$options.nuxt)
   },
   render (h) {
-    // if there is no error
-    if (!this.nuxt.err) {
+    // if there is no error or
+    // error page has not been loaded yet on client
+    if (!this.nuxt.err || (process.client && !this.nuxt.errPageReady)) {
       // Directly return nuxt child
       return h('NuxtChild', {
         key: this.routerViewKey,

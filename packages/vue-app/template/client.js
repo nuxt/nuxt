@@ -676,6 +676,12 @@ function setLayoutForNextPage(to) {
   const layout = routeMap.get(to)
   routeMap.delete(to)
 
+  const prevPageIsError = this._hadError && this._dateLastError === this.$options.nuxt.dateErr
+
+  if (prevPageIsError) {
+    this.$options.nuxt.err = null
+  }
+
   this.setLayout(layout)
 }
 <% } %>
@@ -946,6 +952,7 @@ async function mountApp (__app) {
   _app.$loading = {} // To avoid error while _app.$nuxt does not exist
   if (NUXT.error) {
     _app.error(NUXT.error)
+    _app.nuxt.errPageReady = true
   }
 
   // Add beforeEach router hooks
