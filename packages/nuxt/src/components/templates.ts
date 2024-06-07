@@ -129,12 +129,12 @@ export const componentsTypeTemplate = {
     const globalAsyncComponents: string[] = new Array(componentTypes.length)
     const globalSyncComponentsExport: string[] = new Array(componentTypes.length)
     const globalAsyncComponentsExport: string[] = new Array(componentTypes.length)
-    let count = 0
-    for (const [pascalName, type] of componentTypes) {
-      globalSyncComponents[count] = `    '${pascalName}': ${type}`
-      globalAsyncComponents[count] = `    'Lazy${pascalName}': ${type}`
-      globalSyncComponentsExport[count] = `export const ${pascalName}: ${type}`
-      globalAsyncComponentsExport[count++] = `export const Lazy${pascalName}: ${type}`
+    for (let i = 0; i < componentTypes.length; i++ ) {
+      const [pascalName, type] = componentTypes[i]
+      globalSyncComponents[i] = `    '${pascalName}': ${type}`
+      globalAsyncComponents[i] = `    'Lazy${pascalName}': ${type}`
+      globalSyncComponentsExport[i] = `export const ${pascalName}: ${type}`
+      globalAsyncComponentsExport[i] = `export const Lazy${pascalName}: ${type}`
     }
     return `
 import type { DefineComponent, SlotsType } from 'vue'
