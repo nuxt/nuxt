@@ -320,6 +320,7 @@ describe('runtimeConfig', () => {
 
 describe('head', () => {
   it('correctly types nuxt.config options', () => {
+    // @ts-expect-error invalid head option
     defineNuxtConfig({ app: { head: { titleTemplate: () => 'test' } } })
     defineNuxtConfig({
       app: {

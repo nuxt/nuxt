@@ -263,12 +263,12 @@ describe('client components', () => {
     const componentId = 'ClientWithSlot-12345'
 
     vi.doMock(mockPath, () => ({
-      default: {
+      default: defineComponent({
         name: 'ClientWithSlot',
         setup (_, { slots }) {
-          return () => h('div', { class: 'client-component' }, slots.default())
+          return () => h('div', { class: 'client-component' }, slots.default?.())
         },
-      },
+      }),
     }))
 
     const stubFetch = vi.fn(() => {
