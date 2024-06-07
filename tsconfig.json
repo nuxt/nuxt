@@ -1,20 +1,29 @@
 {
+  // https://www.totaltypescript.com/tsconfig-cheat-sheet
   "compilerOptions": {
-    "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
+    /* Base options: */
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "noImplicitAny": true,
+    "target": "es2022",
     "allowJs": true,
-    "noEmit": true,
-    "noUnusedLocals": true,
     "resolveJsonModule": true,
-    "types": [
-      "node"
+    "moduleDetection": "force",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    /* Strictness */
+    "strict": true,
+    // TODO: enable noUncheckedIndexedAccess
+    // "noUncheckedIndexedAccess": true,
+    "forceConsistentCasingInFileNames": true,
+    "noImplicitOverride": true,
+    /* If NOT transpiling with TypeScript: */
+    "module": "preserve",
+    "noEmit": true,
+    /* If your code runs in the DOM: */
+    "lib": [
+      "es2022",
+      "dom",
+      "dom.iterable"
     ],
     "paths": {
       "#app": [
