@@ -161,7 +161,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
       checkPropConflicts(props, 'to', 'href')
       const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
-      if (isExternal.value) { return path}
+      if (isExternal.value) { return path }
       return resolveTrailingSlashBehavior(path, router.resolve)
     })
 
