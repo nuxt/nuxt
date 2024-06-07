@@ -999,6 +999,19 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
+    devDependencies:
+      '@unhead/shared':
+        specifier: latest
+        version: 1.9.12
+      '@vue/devtools-api':
+        specifier: latest
+        version: 6.6.3
+      '@vue/shared':
+        specifier: latest
+        version: 3.4.27
+      unhead:
+        specifier: latest
+        version: 1.9.12
 
   test/fixtures/suspense:
     dependencies:
@@ -1009,9 +1022,21 @@ importers:
         specifier: 3.4.27
         version: 3.4.27(typescript@5.4.5)
     devDependencies:
+      '@unhead/shared':
+        specifier: latest
+        version: 1.9.12
+      '@vue/devtools-api':
+        specifier: latest
+        version: 6.6.3
+      '@vue/shared':
+        specifier: latest
+        version: 3.4.27
       typescript:
         specifier: latest
         version: 5.4.5
+      unhead:
+        specifier: latest
+        version: 1.9.12
 
 packages:
 
