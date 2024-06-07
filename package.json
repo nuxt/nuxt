@@ -56,6 +56,8 @@
     "@types/fs-extra": "11.0.4",
     "@types/node": "20.14.2",
     "@types/semver": "7.5.8",
+    "@unhead/schema": "1.9.12",
+    "@vitejs/plugin-vue": "5.0.4",
     "@vitest/coverage-v8": "1.6.0",
     "@vue/test-utils": "2.4.6",
     "case-police": "0.6.1",
