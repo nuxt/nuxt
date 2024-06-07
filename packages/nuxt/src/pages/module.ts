@@ -268,14 +268,14 @@ export {}`,
         })
       }
     })
-
+    const composablesLoc = resolve(runtimeDir, 'composables')
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
-        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
+        { name: 'definePageMeta', as: 'definePageMeta', from: composablesLoc },
         { name: 'useLink', as: 'useLink', from: '#vue-router' },
       )
       if (nuxt.options.experimental.inlineRouteRules) {
-        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
+        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: composablesLoc })
       }
     })
 
@@ -450,7 +450,7 @@ export {}`,
         ].join('\n')
       },
     })
-    const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
+    const composablesFile = relative(join(nuxt.options.buildDir, 'types'), composablesLoc)
     const composableModule = genString(composablesFile)
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
