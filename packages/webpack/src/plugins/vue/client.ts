@@ -17,10 +17,6 @@ interface PluginOptions {
   nuxt: Nuxt
 }
 
-function uniq<T> (items: T[]) {
-  return [...new Set(items)]
-}
-
 export default class VueSSRClientPlugin {
   options: PluginOptions
 
@@ -34,44 +30,45 @@ export default class VueSSRClientPlugin {
     compiler.hooks.afterEmit.tap('VueSSRClientPlugin', async (compilation: Compilation) => {
       const stats = compilation.getStats().toJson()
 
-      const allFiles = uniq(stats.assets!.reduce<string[]>((assets, asset) => {
-        if (!isHotUpdate(asset.name)) {
-          assets.push(asset.name)
-        }
-        return assets
-      }, []))
-
-      const initialFilesBeforeDedupe: Array<string> = []
+      const initialFiles = new Set<string>()
       for (const name in stats.entrypoints!) {
-        const entryAssets = stats.entrypoints![name].assets!
-        entryAssets.forEach((asset) => {
+        const entryAssets = stats.entrypoints![name]!.assets!
+        for (const asset of entryAssets) {
           const file = asset.name
           if ((isJS(file) || isCSS(file)) && !isHotUpdate(file)) {
-            initialFilesBeforeDedupe.push(file)
+            initialFiles.add(file)
           }
-        })
+        }
       }
-      const initialFiles = uniq(initialFilesBeforeDedupe)
 
-      const asyncFiles = allFiles.filter(file => (isJS(file) || isCSS(file)) && !initialFiles.includes(file) && !isHotUpdate(file))
+      const allFiles = new Set<string>()
+      const asyncFiles = new Set<string>()
+
+      for (const asset of stats.assets!) {
+        const file = asset.name
+        if (!isHotUpdate(file)) {
+          allFiles.add(file)
+          if (initialFiles.has(file)) { continue }
+          if (isJS(file) || isCSS(file)) {
+            asyncFiles.add(file)
+          }
+        }
+      }
 
       const assetsMapping: Record<string, string[]> = {}
-      stats.assets!
-        .forEach(({ name, chunkNames = [] }) => {
-          if (isJS(name) && !isHotUpdate(name)) {
-            const componentHash = hash(chunkNames.join('|'))
-            if (!assetsMapping[componentHash]) {
-              assetsMapping[componentHash] = []
-            }
-            assetsMapping[componentHash].push(name)
-          }
-        })
+      for (const { name, chunkNames = [] } of stats.assets!) {
+        if (isJS(name) && !isHotUpdate(name)) {
+          const componentHash = hash(chunkNames.join('|'))
+          const map = assetsMapping[componentHash] ||= []
+          map.push(name)
+        }
+      }
 
       const webpackManifest = {
         publicPath: stats.publicPath,
-        all: allFiles,
-        initial: initialFiles,
-        async: asyncFiles,
+        all: [...allFiles],
+        initial: [...initialFiles],
+        async: [...asyncFiles],
         modules: { /* [identifier: string]: Array<index: number> */ } as Record<string, number[]>,
         assetsMapping,
       }
@@ -84,7 +81,7 @@ export default class VueSSRClientPlugin {
         if (m.chunks!.length === 1) {
           const [cid] = m.chunks!
           const chunk = stats.chunks!.find(c => c.id === cid)
-          if (!chunk || !chunk.files) {
+          if (!chunk || !chunk.files || !cid) {
             return
           }
           const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
