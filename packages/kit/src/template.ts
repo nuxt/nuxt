@@ -136,7 +136,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       verbatimModuleSyntax: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
-      noUncheckedIndexedAccess: nuxt.options.future.compatibilityVersion === 4,
+      noUncheckedIndexedAccess: nuxt.options.future?.compatibilityVersion === 4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
       /* If NOT transpiling with TypeScript: */
