@@ -409,10 +409,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   // Init nitro
-  const nitro = await createNitro(nitroConfig)
+  const [nitro, spaLoadingTemplateFilePath] = await Promise.all([
+    createNitro(nitroConfig),
+    spaLoadingTemplatePath(nuxt),
+  ])
 
   // Trigger Nitro reload when SPA loading template changes
-  const spaLoadingTemplateFilePath = await spaLoadingTemplatePath(nuxt)
   nuxt.hook('builder:watch', async (_event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     if (path === spaLoadingTemplateFilePath) {
