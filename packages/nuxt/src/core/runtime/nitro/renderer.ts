@@ -155,11 +155,12 @@ const getSSRRenderer = lazyCachedFunction(async () => {
 
 // -- SPA Renderer --
 const getSPARenderer = lazyCachedFunction(async () => {
-  const manifest = await getClientManifest()
-
-  // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
+  const [manifest, spaTemplate] = await Promise.all([
+    getClientManifest(),
+    // @ts-expect-error virtual file
+    import('#spa-template').then(r => r.template).catch(() => '')
+    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG),
+  ])
 
   const options = {
     manifest,
