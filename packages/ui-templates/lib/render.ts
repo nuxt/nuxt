@@ -54,7 +54,7 @@ export const RenderPlugin = () => {
         // Inline SVGs
         const svgSources: string[] = []
 
-        for (const [src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
+        for (const [_, src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
           if (src?.match(/\.svg$/)) {
             svgSources.push(src)
           }
