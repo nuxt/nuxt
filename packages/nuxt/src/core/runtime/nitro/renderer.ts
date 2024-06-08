@@ -159,7 +159,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
     getClientManifest(),
     // @ts-expect-error virtual file
     import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG),
+      .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG),
   ])
 
   const options = {
