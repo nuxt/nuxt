@@ -125,11 +125,11 @@ const getSSRRenderer = lazyCachedFunction(async () => {
   // Load client manifest and server bundle
   const [manifest, createSSRApp] = await Promise.all([
     getClientManifest(),
-    getServerEntry()
+    getServerEntry(),
   ])
-  
+
   if (!manifest) { throw new Error('client.manifest is not available') }
-  
+
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
 
   const options = {
