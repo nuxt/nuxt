@@ -141,10 +141,10 @@ describe('runtime server component', () => {
         const vnode = h(createServerComponent('dummyName'))
         popScopeId()
         return vnode
-      }
+      },
     }))
-    
-    expect(wrapper.getComponent(NuxtIsland).props().props).toMatchObject({"data-v-654e2b21": ""})
+
+    expect(wrapper.getComponent(NuxtIsland).props().props).toMatchObject({ 'data-v-654e2b21': '' })
   })
 })
 

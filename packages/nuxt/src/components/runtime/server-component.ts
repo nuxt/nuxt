@@ -16,13 +16,13 @@ export const createServerComponent = (name: string) => {
       expose({
         refresh: () => islandRef.value?.refresh(),
       })
-      
-      function getIslandProps() {
+
+      function getIslandProps () {
         const scopeId = getCurrentInstance()?.vnode.scopeId
-        if (scopeId) return { ...attrs, [scopeId]: '' }
+        if (scopeId) { return { ...attrs, [scopeId]: '' } }
         return attrs
       }
-      
+
       return () => {
         return h(NuxtIsland, {
           name,
