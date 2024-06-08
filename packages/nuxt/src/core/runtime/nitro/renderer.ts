@@ -122,12 +122,14 @@ const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
-  // Load client manifest
-  const manifest = await getClientManifest()
+  // Load client manifest and server bundle
+  const [manifest, createSSRApp] = await Promise.all([
+    getClientManifest(),
+    getServerEntry()
+  ])
+  
   if (!manifest) { throw new Error('client.manifest is not available') }
-
-  // Load server bundle
-  const createSSRApp = await getServerEntry()
+  
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
 
   const options = {
