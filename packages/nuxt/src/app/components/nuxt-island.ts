@@ -34,7 +34,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   for (const component in paths) {
     if (!(components!.has(component))) {
       const chunkSource = join(source, paths[component].chunk)
-      promises.push(import(/* @vite-ignore */ chunkSource).then(m => m.default || m).then(c=>components!.set(component, c)))
+      promises.push(import(/* @vite-ignore */ chunkSource).then(m => m.default || m).then(c => components!.set(component, c)))
     }
   }
   await Promise.all(promises)
