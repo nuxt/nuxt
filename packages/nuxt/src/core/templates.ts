@@ -169,6 +169,10 @@ export const schemaTemplate: NuxtTemplate = {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
+    const [privateConfigSchema, publicConfigSchema] = await Promise.all([
+      resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+      resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+    ])
     return [
       'import { NuxtModule, RuntimeConfig } from \'nuxt/schema\'',
       'declare module \'nuxt/schema\' {',
@@ -176,7 +180,7 @@ export const schemaTemplate: NuxtTemplate = {
       moduleInfoStr.join('\n'),
       modulesStr.length ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],` : '',
       '  }',
-      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
+      generateTypes(privateConfigSchema,
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,
@@ -184,7 +188,7 @@ export const schemaTemplate: NuxtTemplate = {
           allowExtraKeys: false,
           indentation: 2,
         }),
-      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
+      generateTypes(publicConfigSchema,
         {
           interfaceName: 'PublicRuntimeConfig',
           addExport: false,
