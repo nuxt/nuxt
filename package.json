@@ -91,7 +91,7 @@
     "sort-package-json": "2.10.0",
     "typescript": "5.4.5",
     "vue-jest": "4.0.1",
-    "vue-tsc": "2.0.19"
+    "vue-tsc": "2.0.20"
   },
   "resolutions": {
     "tar": "6.2.1"
