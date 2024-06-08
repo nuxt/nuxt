@@ -1,4 +1,4 @@
-import { defineComponent, h, ref } from 'vue'
+import { defineComponent, getCurrentInstance, h, ref } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered } from '#app/composables/payload'
@@ -16,12 +16,18 @@ export const createServerComponent = (name: string) => {
       expose({
         refresh: () => islandRef.value?.refresh(),
       })
-
+      
+      function getIslandProps() {
+        const scopeId = getCurrentInstance()?.vnode.scopeId
+        if (scopeId) return { ...attrs, [scopeId]: '' }
+        return attrs
+      }
+      
       return () => {
         return h(NuxtIsland, {
           name,
           lazy: props.lazy,
-          props: attrs,
+          props: getIslandProps(),
           ref: islandRef,
           onError: (err) => {
             emit('error', err)
