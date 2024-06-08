@@ -11,6 +11,7 @@ export const createServerComponent = (name: string) => {
     props: { lazy: Boolean },
     emits: ['error'],
     setup (props, { attrs, slots, expose, emit }) {
+      const vm = getCurrentInstance()
       const islandRef = ref<null | typeof NuxtIsland>(null)
 
       expose({
@@ -18,8 +19,7 @@ export const createServerComponent = (name: string) => {
       })
 
       function getIslandProps () {
-        const scopeId = getCurrentInstance()?.vnode.scopeId
-        if (scopeId) { return { ...attrs, [scopeId]: '' } }
+        if (vm?.vnode.scopeId) { return { ...attrs, [vm.vnode.scopeId]: '' } }
         return attrs
       }
 
