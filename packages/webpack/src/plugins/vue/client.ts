@@ -50,12 +50,12 @@ export default class VueSSRClientPlugin {
         allFiles.add(file)
         const isFileJS = isJS(file)
         if (!initialFiles.has(file) && (isFileJS || isCSS(file))) {
-          asyncFiles.add(file);
+          asyncFiles.add(file)
         }
         if (isFileJS) {
-          const componentHash = hash(chunkNames.join('|'));
-          const map = assetsMapping[componentHash] ||= [];
-          map.push(file);
+          const componentHash = hash(chunkNames.join('|'))
+          const map = assetsMapping[componentHash] ||= []
+          map.push(file)
         }
       }
 
