@@ -72,25 +72,23 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           }
 
           if (lazy) {
+            imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             if (nuxt?.options.experimental.componentLazyHydration === true && modifier) {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
-                  imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
                   identifier += '_delayedIO'
                   imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
                 case 'Idle':
                 case 'idle-':
-                  imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkClientPage' }]))
                   identifier += '_delayedNetwork'
                   imports.add(`const ${identifier} = createLazyNetworkClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
               }
             } else {
-              imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
               identifier += '_lazy'
               imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
             }
