@@ -38,7 +38,7 @@ const id = useId()
 - `key`: An optional string parameter.
 
 ::warning
-If `key` is not a string then you will be thrown a **TypeError** showing `[nuxt] [useId] key must be a string`.
+If `key` is set and *not a string* then you will be thrown a **TypeError** showing `[nuxt] [useId] key must be a string`.
 ::
 
 ## Returns
