@@ -94,7 +94,7 @@ export default defineUntypedSchema({
           get('ssr'),
           get('builder'),
         ])
-        if (val === false || (dev || ssr === false || builder === '@nuxt/webpack-builder') {
+        if (val === false || dev || ssr === false || builder === '@nuxt/webpack-builder') {
           return false
         }
         // Enabled by default for vite prod with ssr
