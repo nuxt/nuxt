@@ -86,8 +86,8 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
           idleHandle = null
         }
       })
-      return () => h('div', {}, [ 
-        isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
+      return () => h('div', {}, [
+        isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null,
       ])
     },
   })
