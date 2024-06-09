@@ -89,7 +89,12 @@ export default defineUntypedSchema({
       async $resolve (val, get) {
         // TODO: remove in v3.10
         val = val ?? await (get('experimental') as Promise<Record<string, any>>).then((e: Record<string, any>) => e?.inlineSSRStyles)
-        if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
+        const [dev, ssr, builder] = await Promise.all([
+          get('dev'),
+          get('ssr'),
+          get('builder'),
+        ])
+        if (val === false || (dev || ssr === false || builder === '@nuxt/webpack-builder') {
           return false
         }
         // Enabled by default for vite prod with ssr
