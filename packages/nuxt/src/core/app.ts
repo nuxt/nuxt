@@ -219,8 +219,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  const [resolvedMiddlewarePre, resolvedPluginsPre] = await Promise.all([
+    resolvePaths([...app.middleware].reverse(), 'path'),
+    resolvePaths(app.plugins, 'src')
+  ])
+  app.middleware = uniqueBy(resolvedMiddlewarePre, 'name').reverse()
+  app.plugins = uniqueBy(resolvedPluginsPre, 'src')
 
   // Resolve app.config
   app.configs = []
@@ -235,8 +239,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  const [resolvedMiddlewarePost, resolvedPluginsPost] = await Promise.all([
+    resolvePaths(app.middleware, 'path'),
+    resolvePaths(app.plugins, 'src')
+  ])
+  app.middleware = uniqueBy(resolvedMiddlewarePost, 'name')
+  app.plugins = uniqueBy(resolvedPluginsPost, 'src')
 }
 
 function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
