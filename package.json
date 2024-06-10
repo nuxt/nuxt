@@ -90,10 +90,10 @@
     "vitest": "1.6.0",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.27",
-    "vue-router": "4.3.2",
+    "vue-router": "4.3.3",
     "vue-tsc": "2.0.21"
   },
-  "packageManager": "pnpm@9.2.0",
+  "packageManager": "pnpm@9.3.0",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
