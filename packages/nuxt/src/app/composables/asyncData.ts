@@ -11,7 +11,7 @@ import { onNuxtReady } from './ready'
 import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
 
 // TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+import type { DedupeOption, DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -99,7 +99,6 @@ export interface AsyncDataOptions<
 
 export interface AsyncDataExecuteOptions {
   _initial?: boolean
-  // TODO: remove boolean option in Nuxt 4
   /**
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
@@ -108,7 +107,7 @@ export interface AsyncDataExecuteOptions {
    * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
    * Boolean values will be removed in a future release.
    */
-  dedupe?: boolean | 'cancel' | 'defer'
+  dedupe?: DedupeOption
 }
 
 export interface _AsyncData<DataT, ErrorT> {
