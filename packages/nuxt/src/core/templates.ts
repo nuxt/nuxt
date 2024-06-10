@@ -136,7 +136,7 @@ declare module '#app/defaults' {
   type DefaultAsyncDataErrorValue = ${isV4 ? 'undefined' : 'null'}
   type DefaultAsyncDataValue = ${isV4 ? 'undefined' : 'null'}
   type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
-  type DedupeOption = ${isV4 ? "'cancel' | 'defer'" : "boolean | 'cancel' | 'defer'"}
+  type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
 }
 
 declare module 'vue' {
