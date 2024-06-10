@@ -387,7 +387,7 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
-/** @since 4.0.0 */
+/** @since 3.12.0 */
 export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
