@@ -15,6 +15,7 @@ function pluginFactory (name: string, dependsOn?: string[], sequence: string[], 
   return defineNuxtPlugin({
     name,
     dependsOn,
+    hooks,
     async setup () {
       sequence.push(`start ${name}`)
       await new Promise(resolve => setTimeout(resolve, 10))
@@ -279,6 +280,36 @@ describe('plugin dependsOn', () => {
       'end B',
       'start C',
       'end C',
+    ])
+  })
+})
+
+describe('plugin hooks', () => {
+  it('registers hooks before executing plugins', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup () {
+          sequence.push('start A')
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        hooks: {
+          'a:setup': () => {
+            sequence.push('listen B')
+          },
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start A',
+      'listen B',
     ])
   })
 })
