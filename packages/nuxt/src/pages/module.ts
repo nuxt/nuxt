@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
@@ -344,6 +344,7 @@ export default defineNuxtModule({
     }
 
     if (nuxt.options.experimental.appManifest) {
+      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
@@ -358,7 +359,7 @@ export default defineNuxtModule({
           routes.push({
             _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: resolve(runtimeDir, 'component-stub'),
+            file: componentStubPath,
           })
         }
       })
