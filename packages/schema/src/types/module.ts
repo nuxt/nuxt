@@ -1,4 +1,3 @@
-import type { Defu } from 'defu'
 import type { NuxtHooks } from './hooks'
 import type { Nuxt } from './nuxt'
 import type { NuxtCompatibility } from './compatibility'
@@ -27,7 +26,8 @@ export interface ModuleMeta {
 /** The options received.  */
 export type ModuleOptions = Record<string, any>
 
-export type ModuleSetupInstallResult = {
+/** Optional result for nuxt modules */
+export interface ModuleSetupReturn {
   /**
    * Timing information for the initial setup
    */
@@ -39,37 +39,19 @@ export type ModuleSetupInstallResult = {
 }
 
 type Awaitable<T> = T | Promise<T>
+type _ModuleSetupReturn = Awaitable<void | false | ModuleSetupReturn>
 
-type Prettify<T> = {
-  [K in keyof T]: T[K];
-} & {}
-
-export type ModuleSetupReturn = Awaitable<false | void | ModuleSetupInstallResult>
-
-export type ResolvedModuleOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> = Prettify<
-    Defu<
-        Partial<TOptions>,
-        [Partial<TOptions>, TOptionsDefaults]
-    >
->
-
-/** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
-export interface ModuleDefinition<
-  TOptions extends ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
-> {
+/** Input module passed to defineNuxtModule. */
+export interface ModuleDefinition<T extends ModuleOptions = ModuleOptions> {
   meta?: ModuleMeta
-  defaults?: TOptionsDefaults | ((nuxt: Nuxt) => TOptionsDefaults)
-  schema?: TOptions
+  defaults?: T | ((nuxt: Nuxt) => T)
+  schema?: T
   hooks?: Partial<NuxtHooks>
-  setup?: (this: void, resolvedOptions: ResolvedModuleOptions<TOptions, TOptionsDefaults>, nuxt: Nuxt) => ModuleSetupReturn
+  setup?: (this: void, resolvedOptions: T, nuxt: Nuxt) => _ModuleSetupReturn
 }
 
-export interface NuxtModule<
-  TOptions extends ModuleOptions = ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
-> {
-  (this: void, resolvedOptions: ResolvedModuleOptions<TOptions, TOptionsDefaults>, nuxt: Nuxt): ModuleSetupReturn
-  getOptions?: (inlineOptions?: Partial<TOptions>, nuxt?: Nuxt) => Promise<ResolvedModuleOptions<TOptions, TOptionsDefaults>>
+export interface NuxtModule<T extends ModuleOptions = ModuleOptions> {
+  (this: void, inlineOptions: T, nuxt: Nuxt): _ModuleSetupReturn
+  getOptions?: (inlineOptions?: T, nuxt?: Nuxt) => Promise<T>
   getMeta?: () => Promise<ModuleMeta>
 }
