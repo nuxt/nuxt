@@ -5,6 +5,7 @@ import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSRefe
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
+import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'
@@ -122,28 +123,50 @@ export async function _generateTypes (nuxt: Nuxt) {
       .map(m => getDirectory(m.entryPath)),
   )
 
+  const isV4 = nuxt.options.future?.compatibilityVersion === 4
+
+  const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
+    .then(r => r?.version && gte(r.version, '5.4.0'))
+    .catch(() => isV4)
+
+  // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
+      /* Base options: */
+      esModuleInterop: true,
+      skipLibCheck: true,
+      target: 'ESNext',
+      allowJs: true,
+      resolveJsonModule: true,
+      moduleDetection: 'force',
+      isolatedModules: true,
+      verbatimModuleSyntax: true,
+      /* Strictness */
+      strict: nuxt.options.typescript?.strict ?? true,
+      noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
+      noImplicitOverride: true,
+      /* If NOT transpiling with TypeScript: */
+      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
+      noEmit: true,
+      /* If your code runs in the DOM: */
+      lib: [
+        'ESNext',
+        'dom',
+        'dom.iterable',
+      ],
+      /* JSX support for Vue */
       jsx: 'preserve',
       jsxImportSource: 'vue',
-      target: 'ESNext',
-      module: 'ESNext',
-      moduleDetection: 'force',
-      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
-      skipLibCheck: true,
-      isolatedModules: true,
-      useDefineForClassFields: true,
-      strict: nuxt.options.typescript?.strict ?? true,
-      noImplicitThis: true,
-      esModuleInterop: true,
+      /* remove auto-scanning for types */
       types: [],
-      verbatimModuleSyntax: true,
-      allowJs: true,
-      noEmit: true,
-      resolveJsonModule: true,
-      allowSyntheticDefaultImports: true,
+      /* add paths object for filling-in later */
       paths: {},
+      /* Possibly consider removing the following in future */
+      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
+      useDefineForClassFields: true, /* implied by target: es2022+ */
+      noImplicitThis: true, /* enabled with `strict` */
+      allowSyntheticDefaultImports: true,
     },
     include: [
       './nuxt.d.ts',

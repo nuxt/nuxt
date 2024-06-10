@@ -320,6 +320,14 @@ export default defineUntypedSchema({
     appManifest: true,
 
     /**
+     * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
+     *
+     * Set to `false` to disable.
+     * @type {number | false}
+     */
+    checkOutdatedBuildInterval: 1000 * 60 * 60,
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
      * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
@@ -370,7 +378,7 @@ export default defineUntypedSchema({
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
-    scanPageMeta: false,
+    scanPageMeta: true,
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
