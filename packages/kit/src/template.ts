@@ -122,28 +122,44 @@ export async function _generateTypes (nuxt: Nuxt) {
       .map(m => getDirectory(m.entryPath)),
   )
 
+  // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
+      /* Base options: */
+      esModuleInterop: true,
+      skipLibCheck: true,
+      target: 'es2022',
+      allowJs: true,
+      resolveJsonModule: true,
+      moduleDetection: 'force',
+      isolatedModules: true,
+      verbatimModuleSyntax: true,
+      /* Strictness */
+      strict: nuxt.options.typescript?.strict ?? true,
+      noUncheckedIndexedAccess: nuxt.options.future?.compatibilityVersion === 4,
       forceConsistentCasingInFileNames: true,
+      noImplicitOverride: true,
+      /* If NOT transpiling with TypeScript: */
+      module: 'preserve',
+      noEmit: true,
+      /* If your code runs in the DOM: */
+      lib: [
+        'es2022',
+        'dom',
+        'dom.iterable',
+      ],
+      /* JSX support for Vue */
       jsx: 'preserve',
       jsxImportSource: 'vue',
-      target: 'ESNext',
-      module: 'ESNext',
-      moduleDetection: 'force',
-      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node',
-      skipLibCheck: true,
-      isolatedModules: true,
-      useDefineForClassFields: true,
-      strict: nuxt.options.typescript?.strict ?? true,
-      noImplicitThis: true,
-      esModuleInterop: true,
+      /* remove auto-scanning for types */
       types: [],
-      verbatimModuleSyntax: true,
-      allowJs: true,
-      noEmit: true,
-      resolveJsonModule: true,
-      allowSyntheticDefaultImports: true,
+      /* add paths object for filling-in later */
       paths: {},
+      /* Possibly consider removing the following in future */
+      moduleResolution: nuxt.options.future?.typescriptBundlerResolution || (nuxt.options.experimental as any)?.typescriptBundlerResolution ? 'Bundler' : 'Node', /* implied by module: preserve */
+      useDefineForClassFields: true, /* implied by target: es2022+ */
+      noImplicitThis: true, /* enabled with `strict` */
+      allowSyntheticDefaultImports: true,
     },
     include: [
       './nuxt.d.ts',

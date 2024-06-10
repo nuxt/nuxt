@@ -11,9 +11,10 @@ vi.mock('#app', async (original) => {
   }
 })
 
-function pluginFactory (name: string, dependsOn?: string[], sequence: string[], parallel = true) {
+function pluginFactory (name: string, dependsOn: string[] | undefined, sequence: string[], parallel = true) {
   return defineNuxtPlugin({
     name,
+    // @ts-expect-error we have a strong type for plugin names
     dependsOn,
     async setup () {
       sequence.push(`start ${name}`)
@@ -71,7 +72,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', undefined, sequence),
       pluginFactory('B', ['A'], sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 5))
@@ -99,7 +100,7 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 50))

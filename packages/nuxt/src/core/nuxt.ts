@@ -4,9 +4,10 @@ import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { hash } from 'ohash'
 
 import escapeRE from 'escape-string-regexp'
 import fse from 'fs-extra'
@@ -277,7 +278,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Init user modules
   await nuxt.callHook('modules:before')
-  const modulesToInstall = []
+  const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
   const watchedPaths = new Set<string>()
   const specifiedModules = new Set<string>()
@@ -300,12 +301,21 @@ async function initNuxt (nuxt: Nuxt) {
       watchedPaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
-      modulesToInstall.push(mod)
+      modulesToInstall.set(mod, {})
     }
   }
 
   // Register user and then ad-hoc modules
-  modulesToInstall.push(...nuxt.options.modules, ...nuxt.options._modules)
+  for (const key of ['modules', '_modules'] as const) {
+    for (const item of nuxt.options[key as 'modules']) {
+      if (item) {
+        const [key, options = {}] = Array.isArray(item) ? item : [item]
+        if (!modulesToInstall.has(key)) {
+          modulesToInstall.set(key, options)
+        }
+      }
+    }
+  }
 
   // Add <NuxtWelcome>
   addComponent({
@@ -481,12 +491,8 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
   }
 
-  for (const m of modulesToInstall) {
-    if (Array.isArray(m)) {
-      await installModule(m[0], m[1])
-    } else {
-      await installModule(m, {})
-    }
+  for (const [key, options] of modulesToInstall) {
+    await installModule(key, options)
   }
 
   // (Re)initialise ignore handler with resolved ignores from modules
@@ -502,7 +508,9 @@ async function initNuxt (nuxt: Nuxt) {
       global: true,
     })
 
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+    if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+    }
   }
 
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
@@ -577,6 +585,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
   options._majorVersion = 3
+
+  // De-duplicate key arrays
+  for (const key in options.app.head || {}) {
+    options.app.head[key as 'link'] = deduplicateArray(options.app.head[key as 'link'])
+  }
 
   // Nuxt DevTools only works for Vite
   if (options.builder === '@nuxt/vite-builder') {
@@ -663,3 +676,18 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
 }
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
+
+function deduplicateArray<T = unknown> (maybeArray: T): T {
+  if (!Array.isArray(maybeArray)) { return maybeArray }
+
+  const fresh = []
+  const hashes = new Set<string>()
+  for (const item of maybeArray) {
+    const _hash = hash(item)
+    if (!hashes.has(_hash)) {
+      hashes.add(_hash)
+      fresh.push(item)
+    }
+  }
+  return fresh as T
+}
