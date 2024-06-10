@@ -64,6 +64,7 @@ describe('route rules', () => {
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
     expect(headHtml).toContain('<meta charset="utf-8">')
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
+    expect(headHtml.match(/<meta name="viewport" content="width=1024, initial-scale=1">/g)).toHaveLength(1)
 
     const { script, attrs } = parseData(headHtml)
     expect(script.serverRendered).toEqual(false)
