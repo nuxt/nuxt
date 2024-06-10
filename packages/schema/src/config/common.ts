@@ -5,7 +5,6 @@ import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import { randomUUID } from 'uncrypto'
-import { formatDate } from 'compatx'
 import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
