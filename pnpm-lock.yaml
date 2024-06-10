@@ -597,7 +597,7 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       jiti:
-        specifier: ^1.21.6
+        specifier: 1.21.6
         version: 1.21.6
       knitwork:
         specifier: 1.1.0
