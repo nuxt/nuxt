@@ -23,6 +23,13 @@ export interface ResolvePathOptions {
    * @default false
    */
   virtual?: boolean
+
+  /**
+   * Whether to fallback to the original path if the resolved path does not exist instead of returning the normalized input path.
+   *
+   * @default false
+   */
+  fallbackToOriginal?: boolean
 }
 
 /**
