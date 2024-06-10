@@ -106,7 +106,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Return normalized input
-  return path
+  return opts.fallbackToOriginal ? _path : path
 }
 
 /**
