@@ -15,7 +15,6 @@ function pluginFactory (name: string, dependsOn?: string[], sequence: string[], 
   return defineNuxtPlugin({
     name,
     dependsOn,
-    hooks,
     async setup () {
       sequence.push(`start ${name}`)
       await new Promise(resolve => setTimeout(resolve, 10))
