@@ -2,7 +2,7 @@ import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
-import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
+import { logger, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -142,7 +142,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<NuxtPage>()) {
   for (const route of routes) {
     if (!augmentedPages.has(route) && route.file) {
-      const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(route.file, 'utf-8')
+      const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
       Object.assign(route, await getRouteMeta(fileContent, route.file))
     }
 
