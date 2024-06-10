@@ -63,14 +63,15 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
 
   const pages = uniqueBy(allRoutes, 'path')
 
-  if ((nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages) && nuxt.vfs) {
-    augmentPages(pages, nuxt.vfs)
-  }
+  const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
-  await nuxt.callHook('pages:extend', pages)
-
-  if ((nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages) && nuxt.vfs) {
-    augmentPages(pages, nuxt.vfs)
+  if (shouldAugment) {
+    const augmentedPages = await augmentPages(pages, nuxt.vfs)
+    await nuxt.callHook('pages:extend', pages)
+    await augmentPages(pages, nuxt.vfs, augmentedPages)
+    augmentedPages.clear()
+  } else {
+    await nuxt.callHook('pages:extend', pages)
   }
 
   return pages
@@ -138,9 +139,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
   return prepareRoutes(routes)
 }
 
-export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>) {
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<NuxtPage>()) {
   for (const route of routes) {
-    if (route.file) {
+    if (!augmentedPages.has(route) && route.file) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(route.file, 'utf-8')
       Object.assign(route, await getRouteMeta(fileContent, route.file))
     }
@@ -149,6 +150,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       await augmentPages(route.children, vfs)
     }
   }
+  return augmentedPages
 }
 
 const SFC_SCRIPT_RE = /<script[^>]*>([\s\S]*?)<\/script[^>]*>/i
