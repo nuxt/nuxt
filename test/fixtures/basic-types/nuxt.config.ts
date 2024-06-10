@@ -1,4 +1,4 @@
-import { addTypeTemplate } from 'nuxt/kit'
+import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
   experimental: {
@@ -54,6 +54,15 @@ export default defineNuxtConfig({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
       })
+      function _test () {
+        installModule('~/modules/example', {
+          typeTest (val) {
+            // @ts-expect-error module type defines val as boolean
+            const b: string = val
+            return !!b
+          },
+        })
+      }
     },
     './modules/test',
     [
