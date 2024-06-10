@@ -136,7 +136,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (props.scopeId) {
-        html = html.replace(/^<[^>\ ]*/, (full) => full + ' ' + props.scopeId)
+        html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
       }
 
       if (import.meta.client && !canLoadClientComponent.value) {
