@@ -26,7 +26,7 @@ export default class VueSSRServerPlugin {
       }, (assets: any, cb: any) => {
         const stats = compilation.getStats().toJson()
         const [entryName] = Object.keys(stats.entrypoints!)
-        const entryInfo = stats.entrypoints![entryName]
+        const entryInfo = stats.entrypoints![entryName!]
 
         if (!entryInfo) {
           // #5553
