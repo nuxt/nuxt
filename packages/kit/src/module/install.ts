@@ -84,7 +84,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     let error: unknown
     for (const path of paths) {
       try {
-        const src = await resolvePath(path)
+        const src = await resolvePath(path, { fallbackToOriginal: true })
         // Prefer ESM resolution if possible
         nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
 
