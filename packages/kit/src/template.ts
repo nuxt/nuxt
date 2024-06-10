@@ -135,7 +135,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       /* Base options: */
       esModuleInterop: true,
       skipLibCheck: true,
-      target: 'es2022',
+      target: 'ESNext',
       allowJs: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
@@ -147,11 +147,11 @@ export async function _generateTypes (nuxt: Nuxt) {
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
       /* If NOT transpiling with TypeScript: */
-      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'es2022',
+      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
-        'es2022',
+        'ESNext',
         'dom',
         'dom.iterable',
       ],
