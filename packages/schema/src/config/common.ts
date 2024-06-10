@@ -5,6 +5,7 @@ import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 import { randomUUID } from 'uncrypto'
+import { formatDate } from 'compatx'
 import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
@@ -19,6 +20,18 @@ export default defineUntypedSchema({
    * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
+
+  /**
+   * Specify a compatibility date for your app.
+   *
+   * This is used to control the behavior of presets in Nitro, Nuxt Image
+   * and other modules that may change behavior without a major version bump.
+   *
+   * We plan to improve the tooling around this feature in the future.
+   *
+   * @type {string | Record<string, string>}
+   */
+  compatibilityDate: formatDate(new Date()),
 
   /**
    * Extend project from a local or remote source.
