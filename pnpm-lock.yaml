@@ -102,8 +102,8 @@ importers:
         specifier: 14.12.0
         version: 14.12.0
       jiti:
-        specifier: 1.21.0
-        version: 1.21.0
+        specifier: 1.21.6
+        version: 1.21.6
       markdownlint-cli:
         specifier: 0.41.0
         version: 0.41.0
@@ -186,8 +186,8 @@ importers:
         specifier: ^5.3.1
         version: 5.3.1
       jiti:
-        specifier: ^1.21.0
-        version: 1.21.0
+        specifier: ^1.21.6
+        version: 1.21.6
       klona:
         specifier: ^2.0.6
         version: 2.0.6
@@ -331,8 +331,8 @@ importers:
         specifier: ^5.3.1
         version: 5.3.1
       jiti:
-        specifier: ^1.21.0
-        version: 1.21.0
+        specifier: ^1.21.6
+        version: 1.21.6
       klona:
         specifier: ^2.0.6
         version: 2.0.6
@@ -597,8 +597,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       jiti:
-        specifier: 1.21.0
-        version: 1.21.0
+        specifier: 1.21.6
+        version: 1.21.6
       knitwork:
         specifier: 1.1.0
         version: 1.1.0
@@ -4974,8 +4974,8 @@ packages:
     resolution: {integrity: sha512-eIz2msL/EzL9UFTFFx7jBTkeZfku0yUAyZZZmJ93H2TYEiroIx2PQjEXcwYtYl8zXCxb+PAmA2hLIt/6ZEkPHw==}
     engines: {node: ^14.15.0 || ^16.10.0 || >=18.0.0}
 
-  jiti@1.21.0:
-    resolution: {integrity: sha512-gFqAIbuKyyso/3G2qhiO2OM6shY6EPP/R0+mkDbyspxKazh8BXDC5FiFsUjlczgdNz/vfra0da2y+aHrusLG/Q==}
+  jiti@1.21.6:
+    resolution: {integrity: sha512-2yTgeWTWzMWkHu6Jp9NKgePDaYHbntiwvYuuJLbbN9vl7DC9DvXKOB2BC3ZZ92D3cvV/aflH0osDfwpHepQ53w==}
     hasBin: true
 
   js-beautify@1.14.9:
@@ -8690,7 +8690,7 @@ snapshots:
       dotenv: 16.4.5
       git-url-parse: 14.0.0
       is-docker: 3.0.0
-      jiti: 1.21.0
+      jiti: 1.21.6
       mri: 1.2.0
       nanoid: 5.0.7
       ofetch: 1.3.4
@@ -10296,7 +10296,7 @@ snapshots:
       defu: 6.1.4
       dotenv: 16.4.5
       giget: 1.2.1
-      jiti: 1.21.0
+      jiti: 1.21.6
       mlly: 1.7.1
       ohash: 1.1.3
       pathe: 1.1.2
@@ -12105,7 +12105,7 @@ snapshots:
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
-  jiti@1.21.0: {}
+  jiti@1.21.6: {}
 
   js-beautify@1.14.9:
     dependencies:
@@ -12218,7 +12218,7 @@ snapshots:
       get-port-please: 3.1.2
       h3: 1.11.1
       http-shutdown: 1.2.2
-      jiti: 1.21.0
+      jiti: 1.21.6
       mlly: 1.7.1
       node-forge: 1.3.1
       pathe: 1.1.2
@@ -12806,7 +12806,7 @@ snapshots:
       esbuild: 0.18.20
       fs-extra: 11.2.0
       globby: 13.2.2
-      jiti: 1.21.0
+      jiti: 1.21.6
       mlly: 1.7.1
       mri: 1.2.0
       pathe: 1.1.2
@@ -12885,7 +12885,7 @@ snapshots:
       httpxy: 0.1.5
       ioredis: 5.3.2
       is-primitive: 3.0.1
-      jiti: 1.21.0
+      jiti: 1.21.6
       klona: 2.0.6
       knitwork: 1.1.0
       listhen: 1.7.2
@@ -13394,7 +13394,7 @@ snapshots:
   postcss-loader@8.1.1(postcss@8.4.38)(typescript@5.4.5)(webpack@5.91.0):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.4.5)
-      jiti: 1.21.0
+      jiti: 1.21.6
       postcss: 8.4.38
       semver: 7.6.2
     optionalDependencies:
@@ -14469,7 +14469,7 @@ snapshots:
       esbuild: 0.19.11
       globby: 13.2.2
       hookable: 5.5.3
-      jiti: 1.21.0
+      jiti: 1.21.6
       magic-string: 0.30.10
       mkdist: 1.3.0(sass@1.69.4)(typescript@5.4.5)
       mlly: 1.7.1
@@ -14490,7 +14490,7 @@ snapshots:
     dependencies:
       '@antfu/utils': 0.7.8
       defu: 6.1.4
-      jiti: 1.21.0
+      jiti: 1.21.6
 
   uncrypto@0.1.3: {}
 
@@ -14679,7 +14679,7 @@ snapshots:
       '@babel/standalone': 7.23.9
       '@babel/types': 7.24.5
       defu: 6.1.4
-      jiti: 1.21.0
+      jiti: 1.21.6
       mri: 1.2.0
       scule: 1.3.0
     transitivePeerDependencies:
