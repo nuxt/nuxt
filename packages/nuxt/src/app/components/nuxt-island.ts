@@ -59,6 +59,10 @@ export default defineComponent({
       type: Object,
       default: () => ({}),
     },
+    scopeId: {
+      type: String,
+      default: () => undefined,
+    },
     source: {
       type: String,
       default: () => undefined,
@@ -130,6 +134,10 @@ export default defineComponent({
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
+
+      if (props.scopeId) {
+        html = html.replace(/^<[^>\ ]*/, (full) => full + ' ' + props.scopeId)
+      }
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {

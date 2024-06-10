@@ -18,16 +18,12 @@ export const createServerComponent = (name: string) => {
         refresh: () => islandRef.value?.refresh(),
       })
 
-      function getIslandProps () {
-        if (vm?.vnode.scopeId) { return { ...attrs, [vm.vnode.scopeId]: '' } }
-        return attrs
-      }
-
       return () => {
         return h(NuxtIsland, {
           name,
           lazy: props.lazy,
-          props: getIslandProps(),
+          props: attrs,
+          scopeId: vm?.vnode.scopeId,
           ref: islandRef,
           onError: (err) => {
             emit('error', err)

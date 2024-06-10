@@ -144,7 +144,7 @@ describe('runtime server component', () => {
       },
     }))
 
-    expect(wrapper.getComponent(NuxtIsland).props().props).toMatchObject({ 'data-v-654e2b21': '' })
+    expect(wrapper.find('*').attributes()).toHaveProperty('data-v-654e2b21')
   })
 })
 
