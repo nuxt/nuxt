@@ -291,8 +291,9 @@ describe('plugin hooks', () => {
     const plugins = [
       defineNuxtPlugin({
         name: 'A',
-        setup () {
+        setup (nuxt) {
           sequence.push('start A')
+          nuxt.callHook('a:setup')
         },
       }),
       defineNuxtPlugin({
