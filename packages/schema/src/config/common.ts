@@ -21,6 +21,18 @@ export default defineUntypedSchema({
   extends: null,
 
   /**
+   * Specify a compatibility date for your app.
+   *
+   * This is used to control the behavior of presets in Nitro, Nuxt Image
+   * and other modules that may change behavior without a major version bump.
+   *
+   * We plan to improve the tooling around this feature in the future.
+   *
+   * @type {typeof import('compatx').DateString | Record<string, typeof import('compatx').DateString>}
+   */
+  compatibilityDate: undefined,
+
+  /**
    * Extend project from a local or remote source.
    *
    * Value should be a string pointing to source directory or config path relative to current config.
