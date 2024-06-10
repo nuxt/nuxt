@@ -29,9 +29,9 @@ export default defineUntypedSchema({
    *
    * We plan to improve the tooling around this feature in the future.
    *
-   * @type {string | Record<string, string>}
+   * @type {typeof import('compatx').DateString | Record<string, typeof import('compatx').DateString>}
    */
-  compatibilityDate: formatDate(new Date()),
+  compatibilityDate: undefined,
 
   /**
    * Extend project from a local or remote source.
