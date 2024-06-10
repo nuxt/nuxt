@@ -6,21 +6,18 @@ import { defu } from 'defu'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
+const ensureItemIsLast = (item: string) => (arr: string[]) => {
+  const index = arr.indexOf(item)
+  if (index !== -1) {
+    arr.splice(index, 1)
+    arr.push(item)
+  }
+  return arr
+}
+
 const orderPresets = {
-  cssnanoLast (names: string[]) {
-    const nanoIndex = names.indexOf('cssnano')
-    if (nanoIndex !== names.length - 1) {
-      names.push(names.splice(nanoIndex, 1)[0])
-    }
-    return names
-  },
-  autoprefixerLast (names: string[]) {
-    const nanoIndex = names.indexOf('autoprefixer')
-    if (nanoIndex !== names.length - 1) {
-      names.push(names.splice(nanoIndex, 1)[0])
-    }
-    return names
-  },
+  cssnanoLast: ensureItemIsLast('cssnano'),
+  autoprefixerLast: ensureItemIsLast('autoprefixer'),
   autoprefixerAndCssnanoLast (names: string[]) {
     return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
   },

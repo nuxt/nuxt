@@ -76,7 +76,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "devalue": "^5.0.0",
-    "esbuild": "^0.21.4",
+    "esbuild": "^0.21.5",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "fs-extra": "^11.2.0",
@@ -123,8 +123,9 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "5.0.4",
+    "@vue/compiler-sfc": "3.4.27",
     "unbuild": "latest",
-    "vite": "5.2.12",
+    "vite": "5.2.13",
     "vitest": "1.6.0"
   },
   "peerDependencies": {

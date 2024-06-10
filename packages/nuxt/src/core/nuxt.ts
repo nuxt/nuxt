@@ -508,7 +508,9 @@ async function initNuxt (nuxt: Nuxt) {
       global: true,
     })
 
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+    if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
+      addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+    }
   }
 
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {

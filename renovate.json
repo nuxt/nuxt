@@ -31,6 +31,8 @@
         "main"
       ],
       "ignoreDeps": [
+        "jiti",
+        "@vitejs/plugin-vue",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
