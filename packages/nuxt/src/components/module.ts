@@ -1,13 +1,13 @@
 import fs, { statSync } from 'node:fs'
 import { join, normalize, relative, resolve } from 'pathe'
-import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
-import { loaderPlugin } from './loader'
+import { loadTransformedPlugin, loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
 import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
@@ -166,7 +166,9 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
-
+    addBuildPlugin(loadTransformedPlugin({
+      getComponents,
+    }))
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
       const newComponents = await scanComponents(componentDirs, nuxt.options.srcDir!)

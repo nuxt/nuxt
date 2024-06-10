@@ -1,5 +1,6 @@
 <script setup>
 prerenderRoutes(['/some/url/from/server-only/component'])
+console.log('should not be in client bundle')
 </script>
 
 <template>

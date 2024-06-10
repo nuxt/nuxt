@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
@@ -6,6 +7,7 @@ import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
+import { parseQuery, parseURL } from 'ufo'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -16,6 +18,30 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
 }
+
+export const loadTransformedPlugin = (options: LoaderOptions) => createUnplugin(() => {
+  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
+  return {
+    name: 'nuxt:components-transformed-loader',
+    enforce: 'pre',
+    resolveId (id) {
+      const components = options.getComponents()
+      const component = components.find(c => c.filePath === id) 
+      if (component && (component.island || component.mode === 'server')) { 
+        return id + '?nuxt_server_component=' + component.pascalName
+      }
+    },
+    load (id) {
+      const { search } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+      const query = parseQuery(search)
+ 
+      if (query.nuxt_server_component) {
+        console.log('query.nuxt_server_component', query.nuxt_server_component)
+        return `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)};export default createServerComponent("${JSON.stringify(query.nuxt_server_component)}");`
+      }
+    },
+  }
+})
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []
@@ -34,6 +60,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       }
       return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
     },
+
     transform (code) {
       const components = options.getComponents()
 

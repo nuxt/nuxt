@@ -94,6 +94,7 @@
 
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
+import ServerOnlyComponent from '../components/ServerOnlyComponent.server.vue'
 import { useRuntimeConfig } from '#imports'
 import { importedRE, importedValue } from '~/some-exports'
 
