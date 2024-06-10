@@ -31,7 +31,7 @@ jobs:
 
       - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
         with:
-          ref: refs/pull/${{ github.event.issue.number }}/merge
+          ref: ${{ github.event.issue.pull_request.head.sha }}
           fetch-depth: 0
 
       - run: corepack enable
