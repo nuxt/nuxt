@@ -387,11 +387,15 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
-/** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+/** @since 3.12.0 */
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
+}
+
+/** @since 3.0.0 */
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -436,6 +440,11 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
         await promise
       }
     }
+  }
+
+  for (const plugin of plugins) {
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    registerPluginHooks(nuxtApp, plugin)
   }
 
   for (const plugin of plugins) {
