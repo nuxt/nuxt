@@ -5,6 +5,7 @@ import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Rout
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtConfig } from 'nuxt/config'
+import { defineNuxtModule } from 'nuxt/kit'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -241,6 +242,23 @@ describe('modules', () => {
     defineNuxtConfig({ sampleModule: { other: false } })
     // @ts-expect-error we want to ensure we throw type error on invalid key
     defineNuxtConfig({ undeclaredKey: { other: false } })
+  })
+
+  it('correctly typed resolved options in defineNuxtModule setup using `.with()`', () => {
+    defineNuxtModule<{
+      foo?: string
+      baz: number
+    }>().with({
+      defaults: {
+        foo: 'bar',
+      },
+      setup: (resolvedOptions) => {
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{
+          foo: string
+          baz?: number | undefined
+        }>()
+      },
+    })
   })
 })
 

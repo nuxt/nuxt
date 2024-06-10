@@ -31,7 +31,7 @@ export async function installModule<
     isNuxt2()
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
       ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
-      : await nuxtModule(inlineOptions, nuxt)
+      : await nuxtModule(inlineOptions || {}, nuxt)
   ) ?? {}
   if (res === false /* setup aborted */) {
     return
