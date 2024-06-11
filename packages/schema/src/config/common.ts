@@ -28,7 +28,7 @@ export default defineUntypedSchema({
    *
    * We plan to improve the tooling around this feature in the future.
    *
-   * @type {typeof import('compatx').CompatibilityDateSpec>}
+   * @type {typeof import('compatx').CompatibilityDateSpec}
    */
   compatibilityDate: undefined,
 
