@@ -255,6 +255,7 @@ declare module 'nitropack' {
   }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
+    headEntryOptions?: HeadEntryOptions
     ssr?: boolean
     experimentalNoScripts?: boolean
   }

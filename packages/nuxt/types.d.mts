@@ -3,6 +3,7 @@
 import type { DefineNuxtConfig } from 'nuxt/config'
 import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
+import type { HeadEntryOptions } from 'unhead'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from './dist/app/types.js'
 
@@ -21,6 +22,7 @@ declare module 'nitropack' {
   }
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
+    headEntryOptions?: HeadEntryOptions
     ssr?: boolean
     experimentalNoScripts?: boolean
   }

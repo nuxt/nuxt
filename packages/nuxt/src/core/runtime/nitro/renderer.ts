@@ -460,7 +460,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
         crossorigin: '',
       })),
-    }, headEntryOptions)
+    }, { ...headEntryOptions, ...(routeOptions?.headEntryOptions ?? {}) })
   }
 
   // remove certain tags for nuxt islands
