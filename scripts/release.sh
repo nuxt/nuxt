@@ -16,7 +16,7 @@ for PKG in packages/* ; do
   if [[ $PKG == "packages/test-utils" ]] ; then
     continue
   fi
-  if [[ $p == "packages/ui-templates" ]] ; then
+  if [[ $PKG == "packages/ui-templates" ]] ; then
     continue
   fi
   pushd $PKG

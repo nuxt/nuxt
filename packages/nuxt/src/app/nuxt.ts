@@ -387,11 +387,15 @@ export function createNuxtApp (options: CreateOptions) {
   return nuxtApp
 }
 
-/** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+/** @since 3.12.0 */
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
+}
+
+/** @since 3.0.0 */
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -436,6 +440,11 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
         await promise
       }
     }
+  }
+
+  for (const plugin of plugins) {
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    registerPluginHooks(nuxtApp, plugin)
   }
 
   for (const plugin of plugins) {
@@ -557,8 +566,8 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   }
   const lastKey = keys.pop()
   return new Proxy(runtimeConfig, {
-    get (target, p: string, receiver) {
-      if (p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
+    get (target, p, receiver) {
+      if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
         console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See \`https://nuxt.com/docs/guide/going-further/runtime-config\` for more information.`)
       }
       return Reflect.get(target, p, receiver)

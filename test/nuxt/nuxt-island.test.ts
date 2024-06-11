@@ -1,6 +1,6 @@
 import { beforeEach } from 'node:test'
 import { describe, expect, it, vi } from 'vitest'
-import { h, nextTick } from 'vue'
+import { defineComponent, h, nextTick, popScopeId, pushScopeId } from 'vue'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { createServerComponent } from '../../packages/nuxt/src/components/runtime/server-component'
 import { createSimpleRemoteIslandProvider } from '../fixtures/remote-provider'
@@ -133,6 +133,19 @@ describe('runtime server component', () => {
     expect(wrapper.emitted('error')).toHaveLength(1)
     vi.mocked(fetch).mockReset()
   })
+
+  it('expect NuxtIsland to have parent scopeId', async () => {
+    const wrapper = await mountSuspended(defineComponent({
+      render () {
+        pushScopeId('data-v-654e2b21')
+        const vnode = h(createServerComponent('dummyName'))
+        popScopeId()
+        return vnode
+      },
+    }))
+
+    expect(wrapper.find('*').attributes()).toHaveProperty('data-v-654e2b21')
+  })
 })
 
 describe('client components', () => {
@@ -186,7 +199,7 @@ describe('client components', () => {
     expect(fetch).toHaveBeenCalledOnce()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="4">hello<div data-island-uid="4" data-island-component="Client-12345">
+      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="Client-12345">
           <div>client component</div>
         </div>
       </div>
@@ -212,7 +225,7 @@ describe('client components', () => {
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="4">hello<div>
+      "<div data-island-uid="5">hello<div>
           <div>fallback</div>
         </div>
       </div>"
@@ -305,7 +318,7 @@ describe('client components', () => {
     })
     expect(fetch).toHaveBeenCalledOnce()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="6">hello<div data-island-uid="6" data-island-component="ClientWithSlot-12345">
+      "<div data-island-uid="7">hello<div data-island-uid="7" data-island-component="ClientWithSlot-12345">
           <div class="client-component">
             <div style="display: contents" data-island-uid="" data-island-slot="default">
               <div>slot in client component</div>

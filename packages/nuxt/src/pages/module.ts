@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import type { NuxtApp, NuxtPage } from 'nuxt/schema'
@@ -61,8 +61,12 @@ export default defineNuxtModule({
       }
 
       const pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', pages)
-      if (pages.length) { return true }
+      if (pages.length) {
+        if (nuxt.apps.default) {
+          nuxt.apps.default.pages = pages
+        }
+        return true
+      }
 
       return false
     }
@@ -75,7 +79,6 @@ export default defineNuxtModule({
 
     nuxt.hook('app:templates', async (app) => {
       app.pages = await resolvePagesRoutes()
-      await nuxt.callHook('pages:extend', app.pages)
 
       if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
         logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
@@ -149,10 +152,9 @@ export {}`,
         logs: nuxt.options.debug,
         async beforeWriteFiles (rootPage) {
           rootPage.children.forEach(child => child.delete())
-          let pages = nuxt.apps.default?.pages
-          if (!pages) {
-            pages = await resolvePagesRoutes()
-            await nuxt.callHook('pages:extend', pages)
+          const pages = nuxt.apps.default?.pages || await resolvePagesRoutes()
+          if (nuxt.apps.default) {
+            nuxt.apps.default.pages = pages
           }
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
             // @ts-expect-error TODO: either fix types upstream or figure out another
@@ -338,6 +340,7 @@ export {}`,
     }
 
     if (nuxt.options.experimental.appManifest) {
+      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
@@ -352,7 +355,7 @@ export {}`,
           routes.push({
             _sync: true,
             path: path.replace(/\/[^/]*\*\*/, '/:pathMatch(.*)'),
-            file: resolve(runtimeDir, 'component-stub'),
+            file: componentStubPath,
           })
         }
       })
