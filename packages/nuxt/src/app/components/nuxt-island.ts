@@ -146,7 +146,7 @@ export default defineComponent({
       if (props.scopeId) {
         html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
       }
-      
+
       if (import.meta.client && !canLoadClientComponent.value && payloads.components) {
         for (const key in payloads.components) {
           const value = payloads.components[key]
