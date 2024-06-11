@@ -16,9 +16,15 @@ export default defineNuxtModule({
       }, {
         path: '/big-page-1',
         file: resolver.resolve('./pages/big-page.vue'),
+        meta: {
+          layout: false
+        }
       }, {
         path: '/big-page-2',
         file: resolver.resolve('./pages/big-page.vue'),
+        meta: {
+          layout: false
+        }
       })
     })
   },
