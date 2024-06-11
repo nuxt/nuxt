@@ -25,9 +25,9 @@ export default defineNuxtConfig({
         {
           // Allows unknown property
           property: 'og:thing',
-          content: '1234567890'
-        }
-      ]
+          content: '1234567890',
+        },
+      ],
     },
     pageTransition: {
       // @ts-expect-error Functions are not allowed
