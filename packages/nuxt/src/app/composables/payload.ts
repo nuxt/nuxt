@@ -122,16 +122,6 @@ export async function getNuxtClientPayload () {
     ...window.__NUXT__,
   }
 
-  for (const key in ['_errors', 'data']) {
-    if (payloadCache?.[key] && !isReactive(payloadCache[key])) {
-      payloadCache[key] = shallowReactive(payloadCache[key])
-    }
-  }
-
-  if (payloadCache?.state && !isReactive(payloadCache.state)) {
-    payloadCache.state = reactive(payloadCache.state)
-  }
-
   return payloadCache
 }
 
