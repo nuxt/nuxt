@@ -4,8 +4,8 @@ import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
-import { defineNuxtConfig } from 'nuxt/config'
 import { defineNuxtModule } from 'nuxt/kit'
+import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -244,19 +244,13 @@ describe('modules', () => {
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
 
-  it('correctly typed resolved options in defineNuxtModule setup using `.with()`', () => {
-    defineNuxtModule<{
-      foo?: string
-      baz: number
-    }>().with({
+  it('preserves options in defineNuxtModule setup without `.with()`', () => {
+    defineNuxtModule<{ foo?: string, baz: number }>({
       defaults: {
-        foo: 'bar',
+        baz: 100,
       },
       setup: (resolvedOptions) => {
-        expectTypeOf(resolvedOptions).toEqualTypeOf<{
-          foo: string
-          baz?: number | undefined
-        }>()
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{ foo?: string, baz: number }>()
       },
     })
   })
