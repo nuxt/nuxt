@@ -500,7 +500,7 @@ export async function refreshNuxtData (keys?: string | string[]): Promise<void> 
     return Promise.resolve()
   }
 
-  await new Promise<IdleDeadline>(resolve => onNuxtReady(resolve))
+  await new Promise<void>(resolve => onNuxtReady(resolve))
 
   const _keys = keys ? toArray(keys) : undefined
   await useNuxtApp().hooks.callHookParallel('app:data:refresh', _keys)
