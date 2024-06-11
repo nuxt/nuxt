@@ -1,8 +1,9 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance, onServerPrefetch } from 'vue'
+import { getCurrentInstance, isReactive, onServerPrefetch, reactive, shallowReactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtPayload } from '../nuxt'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -95,11 +96,12 @@ export async function isPrerendered (url = useRoute().path) {
   return !!rules.prerender && !rules.redirect
 }
 
-let payloadCache: any = null
+let payloadCache: NuxtPayload | null = null
+
 /** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
-    return
+    return null
   }
   if (payloadCache) {
     return payloadCache
@@ -107,7 +109,7 @@ export async function getNuxtClientPayload () {
 
   const el = document.getElementById('__NUXT_DATA__')
   if (!el) {
-    return {}
+    return {} as Partial<NuxtPayload>
   }
 
   const inlineData = await parsePayload(el.textContent || '')
@@ -118,6 +120,16 @@ export async function getNuxtClientPayload () {
     ...inlineData,
     ...externalData,
     ...window.__NUXT__,
+  }
+
+  for (const key in ['_errors', 'data']) {
+    if (payloadCache?.[key] && !isReactive(payloadCache[key])) {
+      payloadCache[key] = shallowReactive(payloadCache[key])
+    }
+  }
+
+  if (payloadCache?.state && !isReactive(payloadCache.state)) {
+    payloadCache.state = reactive(payloadCache.state)
   }
 
   return payloadCache
