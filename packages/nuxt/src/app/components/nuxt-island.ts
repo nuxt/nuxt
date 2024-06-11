@@ -1,4 +1,4 @@
-import type { Component } from 'vue'
+import type { Component, PropType } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -58,6 +58,10 @@ export default defineComponent({
     context: {
       type: Object,
       default: () => ({}),
+    },
+    scopeId: {
+      type: String as PropType<string | undefined | null>,
+      default: () => undefined,
     },
     source: {
       type: String,
@@ -130,6 +134,10 @@ export default defineComponent({
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
+
+      if (props.scopeId) {
+        html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
+      }
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {

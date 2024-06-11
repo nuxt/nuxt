@@ -5,6 +5,7 @@ import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSRefe
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
+import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
 import { tryResolveModule } from './internal/esm'
@@ -122,13 +123,19 @@ export async function _generateTypes (nuxt: Nuxt) {
       .map(m => getDirectory(m.entryPath)),
   )
 
+  const isV4 = nuxt.options.future?.compatibilityVersion === 4
+
+  const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
+    .then(r => r?.version && gte(r.version, '5.4.0'))
+    .catch(() => isV4)
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
       /* Base options: */
       esModuleInterop: true,
       skipLibCheck: true,
-      target: 'es2022',
+      target: 'ESNext',
       allowJs: true,
       resolveJsonModule: true,
       moduleDetection: 'force',
@@ -136,15 +143,15 @@ export async function _generateTypes (nuxt: Nuxt) {
       verbatimModuleSyntax: true,
       /* Strictness */
       strict: nuxt.options.typescript?.strict ?? true,
-      noUncheckedIndexedAccess: nuxt.options.future?.compatibilityVersion === 4,
+      noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
       /* If NOT transpiling with TypeScript: */
-      module: 'preserve',
+      module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
-        'es2022',
+        'ESNext',
         'dom',
         'dom.iterable',
       ],
