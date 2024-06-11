@@ -144,6 +144,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
     if (!augmentedPages.has(route) && route.file) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
       Object.assign(route, await getRouteMeta(fileContent, route.file))
+      augmentedPages.add(route)
     }
 
     if (route.children && route.children.length > 0) {
