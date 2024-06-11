@@ -3,6 +3,7 @@ import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
 import { getCurrentInstance, onServerPrefetch } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtPayload } from '../nuxt'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
@@ -95,11 +96,12 @@ export async function isPrerendered (url = useRoute().path) {
   return !!rules.prerender && !rules.redirect
 }
 
-let payloadCache: any = null
+let payloadCache: NuxtPayload | null = null
+
 /** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
-    return
+    return null
   }
   if (payloadCache) {
     return payloadCache
@@ -107,7 +109,7 @@ export async function getNuxtClientPayload () {
 
   const el = document.getElementById('__NUXT_DATA__')
   if (!el) {
-    return {}
+    return {} as Partial<NuxtPayload>
   }
 
   const inlineData = await parsePayload(el.textContent || '')
