@@ -10,7 +10,7 @@ links:
 ---
 
 ::important
-This composable will be available in Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
+This composable is available in Nuxt v3.12+.
 ::
 
 `onPrehydrate` is a composable lifecycle hook that allows you to run a callback on the client immediately before

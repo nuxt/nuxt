@@ -455,6 +455,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
+        // if we are rendering script tag payloads that import an async payload
+        // we need to ensure this resolves before executing the Nuxt entry
+        tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
         crossorigin: '',
       })),
     }, headEntryOptions)
