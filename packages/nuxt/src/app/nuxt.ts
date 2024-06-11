@@ -21,7 +21,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
 // @ts-expect-error virtual file
-import { appId } from '#build/nuxt.config.mjs'
+import { appId, runningMultiApp } from '#build/nuxt.config.mjs'
 
 // TODO: temporary module for backwards compatibility
 import type { DefaultAsyncDataErrorValue, DefaultErrorValue } from '#app/defaults'
@@ -300,19 +300,22 @@ export function createNuxtApp (options: CreateOptions) {
     nuxtApp.payload.serverRendered = true
   }
 
-  // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
-  if (import.meta.client && window.__NUXT__) {
-    for (const key in window.__NUXT__) {
-      switch (key) {
-        case 'data':
-        case 'state':
-        case '_errors':
-          // Preserve reactivity for non-rich payload support
-          Object.assign(nuxtApp.payload[key], window.__NUXT__[key])
-          break
+  if (import.meta.client) {
+    const __NUXT__ = !runningMultiApp ? window.__NUXT__ : window.__NUXT__?.[nuxtApp._name]
+    // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
+    if (__NUXT__) {
+      for (const key in __NUXT__) {
+        switch (key) {
+          case 'data':
+          case 'state':
+          case '_errors':
+            // Preserve reactivity for non-rich payload support
+            Object.assign(nuxtApp.payload[key], __NUXT__[key])
+            break
 
-        default:
-          nuxtApp.payload[key] = window.__NUXT__[key]
+          default:
+            nuxtApp.payload[key] = __NUXT__[key]
+        }
       }
     }
   }
