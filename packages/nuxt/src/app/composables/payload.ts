@@ -1,7 +1,7 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance, isReactive, onServerPrefetch, reactive, shallowReactive } from 'vue'
+import { getCurrentInstance, onServerPrefetch } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 
