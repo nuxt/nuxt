@@ -98,7 +98,7 @@ export const serverPluginTemplate: NuxtTemplate = {
 
 export const appDefaults: NuxtTypeTemplate = {
   filename: 'types/app-defaults.d.ts',
-  getContents: ctx => {
+  getContents: (ctx) => {
     const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
     return `
 declare module '#app/defaults' {
@@ -107,7 +107,7 @@ declare module '#app/defaults' {
   type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
   type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
 }`
-  }
+  },
 }
 
 export const pluginsDeclaration: NuxtTemplate = {
