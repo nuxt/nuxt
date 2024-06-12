@@ -46,30 +46,55 @@ type Prettify<T> = {
 
 export type ModuleSetupReturn = Awaitable<false | void | ModuleSetupInstallResult>
 
-export type ResolvedModuleOptions<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> = Prettify<
+export type ResolvedModuleOptions<
+  TOptions extends ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions>,
+> =
+  Prettify<
     Defu<
-        Partial<TOptions>,
-        [Partial<TOptions>, TOptionsDefaults]
+      Partial<TOptions>,
+      [Partial<TOptions>, TOptionsDefaults]
     >
->
+  >
 
 /** Module definition passed to 'defineNuxtModule(...)' or 'defineNuxtModule().with(...)'. */
 export interface ModuleDefinition<
   TOptions extends ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
+  TOptionsDefaults extends Partial<TOptions>,
+  TWith extends boolean,
 > {
   meta?: ModuleMeta
   defaults?: TOptionsDefaults | ((nuxt: Nuxt) => TOptionsDefaults)
   schema?: TOptions
   hooks?: Partial<NuxtHooks>
-  setup?: (this: void, resolvedOptions: ResolvedModuleOptions<TOptions, TOptionsDefaults>, nuxt: Nuxt) => ModuleSetupReturn
+  setup?: (
+    this: void,
+    resolvedOptions: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt
+  ) => ModuleSetupReturn
 }
 
 export interface NuxtModule<
-  TOptions extends ModuleOptions = ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
+  TOptions extends ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions>,
+  TWith extends boolean,
 > {
-  (this: void, resolvedOptions: ResolvedModuleOptions<TOptions, TOptionsDefaults>, nuxt: Nuxt): ModuleSetupReturn
-  getOptions?: (inlineOptions?: Partial<TOptions>, nuxt?: Nuxt) => Promise<ResolvedModuleOptions<TOptions, TOptionsDefaults>>
+  (
+    this: void,
+    resolvedOptions: TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions,
+    nuxt: Nuxt
+  ): ModuleSetupReturn
+  getOptions?: (
+    inlineOptions?: Partial<TOptions>,
+    nuxt?: Nuxt
+  ) => Promise<
+    TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions
+  >
   getMeta?: () => Promise<ModuleMeta>
 }

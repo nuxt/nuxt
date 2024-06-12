@@ -13,48 +13,71 @@ import { compileTemplate, templateUtils } from '../internal/template'
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
  * any hooks that are provided, and calling an optional setup function for full control.
  */
-export function defineNuxtModule<TOptions extends ModuleOptions> (definition: ModuleDefinition<TOptions> | NuxtModule<TOptions>): NuxtModule<TOptions>
+export function defineNuxtModule<TOptions extends ModuleOptions> (
+  definition: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>
+): NuxtModule<TOptions, TOptions, false>
 
 export function defineNuxtModule<TOptions extends ModuleOptions> (): {
   with: <TOptionsDefaults extends Partial<TOptions>> (
-    definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>
-  ) => NuxtModule<TOptions, TOptionsDefaults>
+    definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>
+  ) => NuxtModule<TOptions, TOptionsDefaults, true>
 }
 
-export function defineNuxtModule<TOptions extends ModuleOptions> (definition?: ModuleDefinition<TOptions> | NuxtModule<TOptions>) {
+export function defineNuxtModule<TOptions extends ModuleOptions> (
+  definition?: ModuleDefinition<TOptions, Partial<TOptions>, false> | NuxtModule<TOptions, Partial<TOptions>, false>,
+) {
   if (definition) {
     return _defineNuxtModule(definition)
   }
 
   return {
     with: <TOptionsDefaults extends Partial<TOptions>>(
-      definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>,
+      definition: ModuleDefinition<TOptions, TOptionsDefaults, true> | NuxtModule<TOptions, TOptionsDefaults, true>,
     ) => _defineNuxtModule(definition),
   }
 }
 
-function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults extends Partial<TOptions>> (definition: ModuleDefinition<TOptions, TOptionsDefaults> | NuxtModule<TOptions, TOptionsDefaults>): NuxtModule<TOptions, TOptionsDefaults> {
-  if (typeof definition === 'function') { return _defineNuxtModule<TOptions, TOptionsDefaults>({ setup: definition }) }
+function _defineNuxtModule<
+  TOptions extends ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions>,
+  TWith extends boolean,
+> (
+  definition: ModuleDefinition<TOptions, TOptionsDefaults, TWith> | NuxtModule<TOptions, TOptionsDefaults, TWith>,
+): NuxtModule<TOptions, TOptionsDefaults, TWith> {
+  if (typeof definition === 'function') {
+    return _defineNuxtModule<TOptions, TOptionsDefaults, TWith>({ setup: definition })
+  }
 
   // Normalize definition and meta
-  const module: ModuleDefinition<TOptions, TOptionsDefaults> & Required<Pick<ModuleDefinition<TOptions, TOptionsDefaults>, 'meta'>> = defu(definition, { meta: {} })
+  const module: ModuleDefinition<TOptions, TOptionsDefaults, TWith> & Required<Pick<ModuleDefinition<TOptions, TOptionsDefaults, TWith>, 'meta'>> = defu(definition, { meta: {} })
 
   module.meta.configKey ||= module.meta.name
 
   // Resolves module options from inline options, [configKey] in nuxt.config, defaults and schema
-  async function getOptions (inlineOptions?: Partial<TOptions>, nuxt: Nuxt = useNuxt()): Promise<ResolvedModuleOptions<TOptions, TOptionsDefaults>> {
+  async function getOptions (
+    inlineOptions?: Partial<TOptions>,
+    nuxt: Nuxt = useNuxt(),
+  ): Promise<
+    TWith extends true
+      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+      : TOptions
+  > {
     const nuxtConfigOptionsKey = module.meta.configKey || module.meta.name
 
     const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[<keyof NuxtOptions> nuxtConfigOptionsKey] : {}
 
-    const optionsDefaults: TOptionsDefaults = module.defaults instanceof Function ? module.defaults(nuxt) : module.defaults ?? <TOptionsDefaults> {}
+    const optionsDefaults: TOptionsDefaults =
+      module.defaults instanceof Function
+        ? module.defaults(nuxt)
+        : module.defaults ?? <TOptionsDefaults> {}
 
-    let options: ResolvedModuleOptions<TOptions, TOptionsDefaults> = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
+    let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
 
     if (module.schema) {
       options = await applyDefaults(module.schema, options) as any
     }
 
+    // @ts-expect-error ignore type mismatch when calling `defineNuxtModule` without `.with()`
     return Promise.resolve(options)
   }
 
@@ -123,7 +146,7 @@ function _defineNuxtModule<TOptions extends ModuleOptions, TOptionsDefaults exte
   normalizedModule.getMeta = () => Promise.resolve(module.meta)
   normalizedModule.getOptions = getOptions
 
-  return <NuxtModule<TOptions, TOptionsDefaults>> normalizedModule
+  return <NuxtModule<TOptions, TOptionsDefaults, TWith>> normalizedModule
 }
 
 // -- Nuxt 2 compatibility shims --
