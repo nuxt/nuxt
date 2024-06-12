@@ -5014,14 +5014,14 @@ chrome-trace-event@^1.0.2:
   resolved "https://registry.npmjs.org/chrome-trace-event/-/chrome-trace-event-1.0.3.tgz#1015eced4741e15d06664a957dbbf50d041e26ac"
   integrity sha512-p3KULyQg4S7NIHixdwbGX+nFHkoBiA4YQmyWtjb8XngSKV124nJmRysgAeujbUVb15vh+RvFUfCPqU7rXk+hZg==
 
-chromium-bidi@0.5.19:
-  version "0.5.19"
-  resolved "https://registry.npmjs.org/chromium-bidi/-/chromium-bidi-0.5.19.tgz#e4f4951b7d9b20d668d6b387839f7b7bf2d69ef4"
-  integrity sha512-UA6zL77b7RYCjJkZBsZ0wlvCTD+jTjllZ8f6wdO4buevXgTZYjV+XLB9CiEa2OuuTGGTLnI7eN9I60YxuALGQg==
+chromium-bidi@0.5.23:
+  version "0.5.23"
+  resolved "https://registry.npmjs.org/chromium-bidi/-/chromium-bidi-0.5.23.tgz#0fbebc8b0c908d33f870b961d04fca3e2d4fa0ba"
+  integrity sha512-1o/gLU9wDqbN5nL2MtfjykjOuighGXc3/hnWueO1haiEoFgX8h5vbvcA4tgdQfjw1mkZ1OEF4x/+HVeqEX6NoA==
   dependencies:
     mitt "3.0.1"
     urlpattern-polyfill "10.0.0"
-    zod "3.22.4"
+    zod "3.23.8"
 
 ci-info@^3.2.0, ci-info@^3.4.0, ci-info@^3.6.1, ci-info@^3.7.1:
   version "3.8.0"
@@ -5981,6 +5981,13 @@ debug@4, debug@4.3.4, debug@^4.1.0, debug@^4.1.1, debug@^4.3.1, debug@^4.3.2, de
   dependencies:
     ms "2.1.2"
 
+debug@4.3.5:
+  version "4.3.5"
+  resolved "https://registry.npmjs.org/debug/-/debug-4.3.5.tgz#e83444eceb9fedd4a1da56d671ae2446a01a6e1e"
+  integrity sha512-pt0bNEmneDIvdL1Xsd9oDQ/wrQRkXDT4AUWlNZNPKvW5x/jyO9VFXkJUP07vQ2upmw5PlaITaPKc31jK13V+jg==
+  dependencies:
+    ms "2.1.2"
+
 debug@^3.2.7:
   version "3.2.7"
   resolved "https://registry.npmjs.org/debug/-/debug-3.2.7.tgz#72580b7e9145fb39b6676f9c5e5fb100b934179a"
@@ -6205,10 +6212,10 @@ devalue@^2.0.1:
   resolved "https://registry.npmjs.org/devalue/-/devalue-2.0.1.tgz#5d368f9adc0928e47b77eea53ca60d2f346f9762"
   integrity sha512-I2TiqT5iWBEyB8GRfTDP0hiLZ0YeDJZ+upDxjBfOC2lebO5LezQMv7QvIUTzdb64jQyAKLf1AHADtGN+jw6v8Q==
 
-devtools-protocol@0.0.1286932:
-  version "0.0.1286932"
-  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1286932.tgz#2303707034426fe0b39012713d4b7339f7dbc815"
-  integrity sha512-wu58HMQll9voDjR4NlPyoDEw1syfzaBNHymMMZ/QOXiHRNluOnDgu9hp1yHOKYoMlxCh4lSSiugLITe6Fvu1eA==
+devtools-protocol@0.0.1299070:
+  version "0.0.1299070"
+  resolved "https://registry.npmjs.org/devtools-protocol/-/devtools-protocol-0.0.1299070.tgz#b3e4cf0b678a46f0f907ae6e07e03ad3a53c00df"
+  integrity sha512-+qtL3eX50qsJ7c+qVyagqi7AWMoQCBGNfoyJZMwm/NSXVqLYbuitrWEEIzxfUmTNy7//Xe8yhMmQ+elj3uAqSg==
 
 diff-sequences@^29.6.3:
   version "29.6.3"
@@ -12811,15 +12818,15 @@ punycode@^2.1.0, punycode@^2.1.1, punycode@^2.3.1:
   resolved "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz#027422e2faec0b25e1549c3e1bd8309b9133b6e5"
   integrity sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==
 
-puppeteer-core@22.10.0:
-  version "22.10.0"
-  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-22.10.0.tgz#eef5735f90ed29e3b10815d142b3437e05939283"
-  integrity sha512-I54J4Vy4I07UHsgB1QSmuFoF7KNQjJWcvFBPhtY+ezMdBfwgGDr8dzYrJa11aPgP9kxIUHjhktcMmmfJkOAtTw==
+puppeteer-core@22.11.0:
+  version "22.11.0"
+  resolved "https://registry.npmjs.org/puppeteer-core/-/puppeteer-core-22.11.0.tgz#82b77f306c3665d65a1ad0115402c98ee404baee"
+  integrity sha512-57YUjhRoSpZWg9lCssWsgzM1/X/1jQnkKbbspbeW0bhZTt3TD4WdNXEYI7KrFFnSvx21tyHhfWW0zlxzbwYSAA==
   dependencies:
     "@puppeteer/browsers" "2.2.3"
-    chromium-bidi "0.5.19"
-    debug "4.3.4"
-    devtools-protocol "0.0.1286932"
+    chromium-bidi "0.5.23"
+    debug "4.3.5"
+    devtools-protocol "0.0.1299070"
     ws "8.17.0"
 
 pure-rand@^6.0.0:
@@ -13477,10 +13484,10 @@ sass-loader@^10.4.1:
     schema-utils "^3.0.0"
     semver "^7.3.2"
 
-sass@1.77.4:
-  version "1.77.4"
-  resolved "https://registry.npmjs.org/sass/-/sass-1.77.4.tgz#92059c7bfc56b827c56eb116778d157ec017a5cd"
-  integrity sha512-vcF3Ckow6g939GMA4PeU7b2K/9FALXk2KF9J87txdHzXbUF9XRQRwSxcAs/fGaTnJeBFd7UoV22j3lzMLdM0Pw==
+sass@1.77.5:
+  version "1.77.5"
+  resolved "https://registry.npmjs.org/sass/-/sass-1.77.5.tgz#5f9009820297521356e962c0bed13ee36710edfe"
+  integrity sha512-oDfX1mukIlxacPdQqNb6mV2tVCrnE+P3nVYioy72V5tlk56CPNcO4TCuFcaCRKKfJ1M3lH95CleRS+dVKL2qMg==
   dependencies:
     chokidar ">=3.0.0 <4.0.0"
     immutable "^4.0.0"
@@ -15782,7 +15789,7 @@ yocto-queue@^0.1.0:
   resolved "https://registry.npmjs.org/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
 
-zod@3.22.4:
-  version "3.22.4"
-  resolved "https://registry.npmjs.org/zod/-/zod-3.22.4.tgz#f31c3a9386f61b1f228af56faa9255e845cf3fff"
-  integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
+zod@3.23.8:
+  version "3.23.8"
+  resolved "https://registry.npmjs.org/zod/-/zod-3.23.8.tgz#e37b957b5d52079769fb8097099b592f0ef4067d"
+  integrity sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==
