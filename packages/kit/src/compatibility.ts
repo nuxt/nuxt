@@ -98,27 +98,26 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
 }
 
 /**
- * Check if current nuxt instance is version 2 legacy
+ * Check if current Nuxt instance is of specified major version
+ */
+export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()) {
+  const version = getNuxtVersion(nuxt)
+
+  return version.startsWith(`${majorVersion}.`)
+}
+
+/**
+ * @deprecated Use `isNuxtMajorVersion(2, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
 export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
-  const version = getNuxtVersion(nuxt)
-  return version[0] === '2' && version[1] === '.'
+  return isNuxtMajorVersion(2, nuxt)
 }
 
 /**
- * Check if current nuxt instance is version 3
+ * @deprecated Use `isNuxtMajorVersion(3, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
 export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
-  const version = getNuxtVersion(nuxt)
-  return version[0] === '3' && version[1] === '.'
-}
-
-/**
- * Check if current nuxt instance is version 4
- */
-export function isNuxt4 (nuxt: Nuxt = useNuxt()) {
-  const version = getNuxtVersion(nuxt)
-  return version[0] === '4' && version[1] === '.'
+  return isNuxtMajorVersion(3, nuxt)
 }
 
 /**
