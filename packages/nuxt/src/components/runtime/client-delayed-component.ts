@@ -19,9 +19,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h('div', {}, [
-          h(componentLoader, attrs),
-        ])
+        return () => h(componentLoader, attrs)
       }
 
       const nuxt = useNuxtApp()
