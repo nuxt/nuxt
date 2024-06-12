@@ -114,6 +114,14 @@ export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
 }
 
 /**
+ * Check if current nuxt instance is version 4
+ */
+export function isNuxt4 (nuxt: Nuxt = useNuxt()) {
+  const version = getNuxtVersion(nuxt)
+  return version[0] === '4' && version[1] === '.'
+}
+
+/**
  * Get nuxt version
  */
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
