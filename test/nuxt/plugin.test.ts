@@ -283,3 +283,34 @@ describe('plugin dependsOn', () => {
     ])
   })
 })
+
+describe('plugin hooks', () => {
+  it('registers hooks before executing plugins', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup (nuxt) {
+          sequence.push('start A')
+          nuxt.callHook('a:setup')
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        hooks: {
+          'a:setup': () => {
+            sequence.push('listen B')
+          },
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start A',
+      'listen B',
+    ])
+  })
+})

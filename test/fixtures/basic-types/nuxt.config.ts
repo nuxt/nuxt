@@ -1,4 +1,4 @@
-import { addTypeTemplate } from 'nuxt/kit'
+import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
   experimental: {
@@ -21,6 +21,13 @@ export default defineNuxtConfig({
       title: Promise.resolve('Nuxt Fixture'),
       // @ts-expect-error Functions are not allowed
       titleTemplate: title => 'test',
+      meta: [
+        {
+          // Allows unknown property
+          property: 'og:thing',
+          content: '1234567890',
+        },
+      ],
     },
     pageTransition: {
       // @ts-expect-error Functions are not allowed
@@ -54,6 +61,15 @@ export default defineNuxtConfig({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
       })
+      function _test () {
+        installModule('~/modules/example', {
+          typeTest (val) {
+            // @ts-expect-error module type defines val as boolean
+            const b: string = val
+            return !!b
+          },
+        })
+      }
     },
     './modules/test',
     [

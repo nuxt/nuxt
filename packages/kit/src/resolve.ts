@@ -23,6 +23,13 @@ export interface ResolvePathOptions {
    * @default false
    */
   virtual?: boolean
+
+  /**
+   * Whether to fallback to the original path if the resolved path does not exist instead of returning the normalized input path.
+   *
+   * @default false
+   */
+  fallbackToOriginal?: boolean
 }
 
 /**
@@ -99,7 +106,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Return normalized input
-  return path
+  return opts.fallbackToOriginal ? _path : path
 }
 
 /**

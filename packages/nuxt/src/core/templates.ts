@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate } from 'nuxt/schema'
+import type { NuxtTemplate, NuxtTypeTemplate } from 'nuxt/schema'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
@@ -96,6 +96,20 @@ export const serverPluginTemplate: NuxtTemplate = {
   },
 }
 
+export const appDefaults: NuxtTypeTemplate = {
+  filename: 'types/app-defaults.d.ts',
+  getContents: (ctx) => {
+    const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
+    return `
+declare module '#app/defaults' {
+  type DefaultAsyncDataErrorValue = ${isV4 ? 'undefined' : 'null'}
+  type DefaultAsyncDataValue = ${isV4 ? 'undefined' : 'null'}
+  type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
+  type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
+}`
+  },
+}
+
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async (ctx) => {
@@ -130,12 +144,6 @@ declare module '#app' {
   }
 }
 
-declare module '#app/defaults' {
-  type DefaultAsyncDataErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
-  type DefaultAsyncDataValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
-  type DefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}
-}
-
 declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
@@ -156,21 +164,29 @@ export const schemaTemplate: NuxtTemplate = {
 
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
+    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName), meta])
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    return [
-      'import { NuxtModule, RuntimeConfig } from \'nuxt/schema\'',
-      'declare module \'nuxt/schema\' {',
-      '  interface NuxtConfig {',
+    const moduleOptionsInterface = [
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
       ),
-      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+      modules.length > 0 ? `  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, meta]) => `[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+    ]
+    return [
+      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'declare module \'@nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      moduleOptionsInterface,
+      '  }',
+      '}',
+      'declare module \'nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      moduleOptionsInterface,
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {

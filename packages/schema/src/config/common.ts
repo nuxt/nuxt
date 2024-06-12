@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
@@ -19,6 +20,18 @@ export default defineUntypedSchema({
    * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
+
+  /**
+   * Specify a compatibility date for your app.
+   *
+   * This is used to control the behavior of presets in Nitro, Nuxt Image
+   * and other modules that may change behavior without a major version bump.
+   *
+   * We plan to improve the tooling around this feature in the future.
+   *
+   * @type {typeof import('compatx').CompatibilityDateSpec}
+   */
+  compatibilityDate: undefined,
 
   /**
    * Extend project from a local or remote source.
@@ -105,7 +118,16 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
-      if (!existsSync(srcDir)) {
+      const srcDirFiles = new Set<string>()
+      if (existsSync(srcDir)) {
+        const files = await readdir(srcDir).catch(() => [])
+        for (const file of files) {
+          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+            srcDirFiles.add(file)
+          }
+        }
+      }
+      if (srcDirFiles.size === 0) {
         for (const file of ['app.vue', 'App.vue']) {
           if (existsSync(resolve(rootDir, file))) {
             return rootDir

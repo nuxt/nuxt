@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
-import { generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
+import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -568,11 +568,12 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          result = await generateRoutesFromFiles(test.files.map(file => ({
+          result = generateRoutesFromFiles(test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
-          })), { shouldExtractBuildMeta: true, vfs })
+          })))
+          await augmentPages(result, vfs)
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
