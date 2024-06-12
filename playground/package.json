@@ -11,6 +11,8 @@
     "@vue/devtools-api": "latest",
     "@vue/shared": "latest",
     "nuxt": "workspace:*",
+    "nuxt-simple-robots": "latest",
+    "nuxt-site-config": "^2.2.12",
     "unhead": "latest",
     "vue": "latest"
   }
