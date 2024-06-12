@@ -275,6 +275,19 @@ export default defineNuxtModule({
       }
     })
 
+    if (!nuxt.options.dev && !nuxt.options._prepare) {
+      nuxt.hook('app:templatesGenerated', app => {
+        const nitro = useNitro()
+        if (nitro.options.prerender.crawlLinks) {
+          for (const page of app.pages!) {
+            if (page.path && !page.path.includes(':')) {
+              nitro.options.prerender.routes.push(page.path)
+            }
+          }
+        }
+      })
+    }
+
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
