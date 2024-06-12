@@ -276,7 +276,7 @@ export default defineNuxtModule({
     })
 
     if (!nuxt.options.dev && !nuxt.options._prepare) {
-      nuxt.hook('app:templatesGenerated', app => {
+      nuxt.hook('app:templatesGenerated', (app) => {
         const nitro = useNitro()
         if (nitro.options.prerender.crawlLinks) {
           for (const page of app.pages!) {
