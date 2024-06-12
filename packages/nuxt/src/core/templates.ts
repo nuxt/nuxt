@@ -178,7 +178,7 @@ export const schemaTemplate: NuxtTemplate = {
     }
     const [privateConfigSchema, publicConfigSchema] = await Promise.all([
       resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-      resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>)
+      resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
     ])
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
