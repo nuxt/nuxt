@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
@@ -117,7 +118,16 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
-      if (!existsSync(srcDir)) {
+      const srcDirFiles = new Set<string>()
+      if (existsSync(srcDir)) {
+        const files = await readdir(srcDir).catch(() => [])
+        for (const file of files) {
+          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+            srcDirFiles.add(file)
+          }
+        }
+      }
+      if (srcDirFiles.size === 0) {
         for (const file of ['app.vue', 'App.vue']) {
           if (existsSync(resolve(rootDir, file))) {
             return rootDir
