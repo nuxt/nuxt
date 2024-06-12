@@ -21,6 +21,13 @@ export default defineNuxtConfig({
       title: Promise.resolve('Nuxt Fixture'),
       // @ts-expect-error Functions are not allowed
       titleTemplate: title => 'test',
+      meta: [
+        {
+          // Allows unknown property
+          property: 'og:thing',
+          content: '1234567890',
+        },
+      ],
     },
     pageTransition: {
       // @ts-expect-error Functions are not allowed
