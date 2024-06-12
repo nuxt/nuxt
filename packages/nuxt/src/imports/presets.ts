@@ -119,6 +119,7 @@ export const scriptsStubsPreset = {
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',
+    'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
     'useScriptFathomAnalytics',
     'useScriptMatomoAnalytics',
