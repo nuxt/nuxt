@@ -77,9 +77,9 @@ export interface ModuleDefinition<
 }
 
 export interface NuxtModule<
-  TOptions extends ModuleOptions,
-  TOptionsDefaults extends Partial<TOptions>,
-  TWith extends boolean,
+  TOptions extends ModuleOptions = ModuleOptions,
+  TOptionsDefaults extends Partial<TOptions> = Partial<TOptions>,
+  TWith extends boolean = false,
 > {
   (
     this: void,
