@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@nuxt/schema": "workspace:*",
-    "c12": "^1.10.0",
+    "c12": "^1.11.1",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
