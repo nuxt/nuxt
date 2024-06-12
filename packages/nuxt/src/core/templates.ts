@@ -153,34 +153,26 @@ const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
+    const moduleInfo = nuxt.options._installedModules.map(m => ({
+      ...m.meta,
+      importName: m.entryPath || m.meta?.name,
+    })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
+
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const moduleOptionsInterface: string[] = []
-    const modulesStr: string[] = []
-    for (const m of nuxt.options._installedModules) {
-      const meta = m.meta
-      const impName = m.entryPath || meta?.name
-      if (meta.configKey && meta.name && !adHocModules.includes(meta.name)) {
-        const configKey = genString(meta.configKey)
-        const importName = getImportName(impName)
-        moduleOptionsInterface.push(`    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`)
-        modulesStr.push(`[${genString(m?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`)
-      }
-    }
-    if (modulesStr.length) {
-      moduleOptionsInterface.push(`    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],`)
-    }
-
+    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName), meta])
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    const [privateConfigSchema, publicConfigSchema] = await Promise.all([
-      resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
-      resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
-    ])
+    const moduleOptionsInterface = [
+      ...modules.map(([configKey, importName]) =>
+        `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
+      ),
+      modules.length > 0 ? `  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, meta]) => `[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+    ]
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
@@ -192,7 +184,7 @@ export const schemaTemplate: NuxtTemplate = {
       '  interface NuxtConfig {',
       moduleOptionsInterface,
       '  }',
-      generateTypes(privateConfigSchema,
+      generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
           interfaceName: 'RuntimeConfig',
           addExport: false,
@@ -200,7 +192,7 @@ export const schemaTemplate: NuxtTemplate = {
           allowExtraKeys: false,
           indentation: 2,
         }),
-      generateTypes(publicConfigSchema,
+      generateTypes(await resolveSchema(nuxt.options.runtimeConfig.public as Record<string, JSValue>),
         {
           interfaceName: 'PublicRuntimeConfig',
           addExport: false,
