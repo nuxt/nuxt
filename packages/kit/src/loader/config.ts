@@ -7,7 +7,9 @@ import { NuxtConfigSchema } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
 
-export interface LoadNuxtConfigOptions extends LoadConfigOptions<NuxtConfig> {}
+export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
+  overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
+}
 
 const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
 const layerSchema = Object.fromEntries(Object.entries(NuxtConfigSchema).filter(([key]) => layerSchemaKeys.includes(key)))
