@@ -168,7 +168,7 @@ export const schemaTemplate: NuxtTemplate = {
       }
     }
     if (modulesStr.length) {
-      moduleOptionsInterface.push(`  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],`
+      moduleOptionsInterface.push(`  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modulesStr.join(' | ')})[],`)
     }
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
