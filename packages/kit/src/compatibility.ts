@@ -103,7 +103,7 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
 export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()) {
   const version = getNuxtVersion(nuxt)
 
-  return version.startsWith(`${majorVersion}.`)
+  return version[0] === majorVersion.toString() && version[1] === '.'
 }
 
 /**
