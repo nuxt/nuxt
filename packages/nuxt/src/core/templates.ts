@@ -164,7 +164,7 @@ export const schemaTemplate: NuxtTemplate = {
         const configKey = genString(meta.configKey)
         const importName = getImportName(impName)
         moduleOptionsInterface.push(`    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`)
-        modulesStr.push(`[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`
+        modulesStr.push(`[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`)
       }
     }
     if (modulesStr.length) {
