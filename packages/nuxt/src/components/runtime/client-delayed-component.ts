@@ -5,7 +5,6 @@ import { useObserver } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
 
-// todo find a better way to do it ?
 function elementIsVisibleInViewport (el: Element) {
   const { top, left, bottom, right } = el.getBoundingClientRect()
   const { innerHeight, innerWidth } = window
@@ -65,9 +64,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h('div', {}, [
-          h(componentLoader, attrs),
-        ])
+        return () => h(componentLoader, attrs)
       }
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
@@ -86,9 +83,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
           idleHandle = null
         }
       })
-      return () => h('div', {}, [
-        isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null,
-      ])
+      return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
     },
   })
 }
