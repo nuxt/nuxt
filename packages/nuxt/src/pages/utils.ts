@@ -154,12 +154,15 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return augmentedPages
 }
 
-const SFC_SCRIPT_RE = /<script[^>]*>([\s\S]*?)<\/script[^>]*>/i
+const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/i
 export function extractScriptContent (html: string) {
-  const match = html.match(SFC_SCRIPT_RE)
+  const groups = html.match(SFC_SCRIPT_RE)?.groups || {}
 
-  if (match && match[1]) {
-    return match[1].trim()
+  if (groups.content) {
+    return {
+      loader: groups.attrs.includes('tsx') ? 'tsx' : 'ts',
+      code: groups.content.trim(),
+    } as const
   }
 
   return null
@@ -185,12 +188,12 @@ async function getRouteMeta (contents: string, absolutePath: string): Promise<Pa
     return {}
   }
 
-  if (!PAGE_META_RE.test(script)) {
+  if (!PAGE_META_RE.test(script.code)) {
     metaCache[absolutePath] = {}
     return {}
   }
 
-  const js = await transform(script, { loader: 'ts' })
+  const js = await transform(script.code, { loader: script.loader })
   const ast = parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',
