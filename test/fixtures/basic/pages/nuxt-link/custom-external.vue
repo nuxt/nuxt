@@ -17,7 +17,7 @@ const MyLink = defineNuxtLink({
         :to="{ path: 'https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html' }"
         external
       >
-        External links within route objects should be respected
+        External links within route objects should be respected and not have trailing slashes applied
       </NuxtLink>
     </div>
     <div>
@@ -25,7 +25,7 @@ const MyLink = defineNuxtLink({
         :to="{ path: '/missing-page' }"
         external
       >
-        External links within route objects should be respected
+        External links within route objects should be respected and have trailing slashes applied
       </MyLink>
     </div>
     <div>
@@ -33,7 +33,7 @@ const MyLink = defineNuxtLink({
         to="/missing-page"
         external
       >
-        External links should be respected and not have trailing slashes applied
+        External links should be respected and have trailing slashes applied
       </MyLink>
     </div>
     <div>

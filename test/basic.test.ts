@@ -752,7 +752,7 @@ describe('nuxt links', () => {
       [
         "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
         "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
-        "<a href="/missing-page"",
+        "<a href="/missing-page/"",
         "<a href="/missing-page/"",
       ]
     `)

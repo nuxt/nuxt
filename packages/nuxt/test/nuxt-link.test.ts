@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import type { RouteLocation } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'

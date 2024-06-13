@@ -192,7 +192,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
       },
     } satisfies ReturnType<typeof useLink> & {
-      to: ComputedRef<string | RouteLocationRaw>
+      to: ComputedRef<RouteLocationRaw>
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
