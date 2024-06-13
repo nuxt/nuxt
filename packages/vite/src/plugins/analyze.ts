@@ -17,15 +17,15 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
         for (const _bundleId in outputBundle) {
           const bundle = outputBundle[_bundleId]
           if (bundle.type !== 'chunk') { continue }
-          const originalEntries: Array<Promise<[string, RenderedModule]>> = []
+          const minifiedModuleEntryPromises: Array<Promise<[string, RenderedModule]>> = []
           for (const moduleId in bundle.modules) {
             const module = bundle.modules[moduleId]
-            originalEntries.push(transform(module.code || '', { minify: true }).then((result) => {
-              return [moduleId, { ...module, code: result.code }]
-            }))
+            minifiedModuleEntryPromises.push(
+              transform(module.code || '', { minify: true })
+                .then((result) => [moduleId, { ...module, code: result.code }])
+            )
           }
-          const minifiedEntries = await Promise.all(originalEntries)
-          bundle.modules = Object.fromEntries(minifiedEntries)
+          bundle.modules = Object.fromEntries(await Promise.all(minifiedModuleEntryPromises))
         }
       },
     },
