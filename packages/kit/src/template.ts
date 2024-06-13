@@ -11,7 +11,7 @@ import { readPackageJSON } from 'pkg-types'
 import { tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
-import { getModulePaths } from './internal/cjs'
+import { getNodeModulesPaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
 
 /**
@@ -113,28 +113,55 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
 }
 
 export async function _generateTypes (nuxt: Nuxt) {
-  const nodeModulePaths = getModulePaths(nuxt.options.modulesDir)
-
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
+  const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
 
-  const modules: string[] = []
-  for (const m of nuxt.options._installedModules) {
-    if (m.entryPath) {
-      modules.push(getDirectory(m.entryPath))
+  const include = new Set<string>([
+    './nuxt.d.ts',
+    join(relativeRootDir, '.config/nuxt.*'),
+    join(relativeRootDir, '**/*'),
+  ])
+
+  if (nuxt.options.srcDir !== nuxt.options.rootDir) {
+    include.add(join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*'))
+  }
+
+  if (nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir) {
+    include.add(join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*'))
+  }
+
+  for (const layer of nuxt.options._layers) {
+    const srcOrCwd = layer.config.srcDir ?? layer.cwd
+    if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules')) {
+      include.add(join(relative(nuxt.options.buildDir, srcOrCwd), '**/*'))
     }
   }
-  const buildDir = nuxt.options.buildDir
-  const modulePaths = await resolveNuxtModule(rootDirWithSlash, modules)
-  const nuxtBuildRootDir = relativeWithDot(buildDir, nuxt.options.rootDir)
-  const modulesInclude: string[] = new Array(modulePaths.length)
-  const modulesExclude: string[] = new Array(modulePaths.length)
-  for (let i = 0; i < modulePaths.length; i++) {
-    const relative = relativeWithDot(buildDir, modulePaths[i])
-    modulesInclude[i] = join(relative, 'runtime')
-    modulesExclude[i] = join(relative, 'runtime/server')
-  }
-  const isV4 = nuxt.options.future?.compatibilityVersion === 4
 
+  const exclude = new Set<string>([
+    // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
+    relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+  ])
+
+  for (const dir of nuxt.options.modulesDir) {
+    exclude.add(relativeWithDot(nuxt.options.buildDir, dir))
+  }
+
+  const moduleEntryPaths: string[] = []
+  for (const m of nuxt.options._installedModules) {
+    if (m.entryPath) {
+      moduleEntryPaths.push(getDirectory(m.entryPath))
+    }
+  }
+
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash, moduleEntryPaths)
+
+  for (const path of modulePaths) {
+    const relative = relativeWithDot(nuxt.options.buildDir, path)
+    include.add(join(relative, 'runtime'))
+    exclude.add(join(relative, 'runtime/server'))
+  }
+
+  const isV4 = nuxt.options.future?.compatibilityVersion === 4
   const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
     .then(r => r?.version && gte(r.version, '5.4.0'))
     .catch(() => isV4)
@@ -178,38 +205,21 @@ export async function _generateTypes (nuxt: Nuxt) {
       noImplicitThis: true, /* enabled with `strict` */
       allowSyntheticDefaultImports: true,
     },
-    include: [
-      './nuxt.d.ts',
-      join(nuxtBuildRootDir, '.config/nuxt.*'),
-      join(nuxtBuildRootDir, '**/*'),
-      ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(buildDir, nuxt.options.srcDir), '**/*')] : [],
-      ...nuxt.options._layers.reduce<string[]>((dirs, layer) => {
-        const srcOrCwd = layer.config.srcDir ?? layer.cwd
-        if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules')) {
-          dirs.push(join(relative(buildDir, srcOrCwd), '**/*'))
-        }
-        return dirs
-      }, []),
-      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modulesInclude,
-    ],
-    exclude: [
-      ...nuxt.options.modulesDir.map(m => relativeWithDot(buildDir, m)),
-      ...modulesExclude,
-      // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
-      relativeWithDot(buildDir, resolve(nuxt.options.rootDir, 'dist')),
-    ],
+    include: [...include],
+    exclude: [...exclude],
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
-    '#build': buildDir,
+    '#build': nuxt.options.buildDir,
   }
 
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
-  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(buildDir, tsConfig.compilerOptions!.baseUrl) : buildDir
+  const basePath = tsConfig.compilerOptions!.baseUrl
+    ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
+    : nuxt.options.buildDir
 
   tsConfig.compilerOptions = tsConfig.compilerOptions || {}
   tsConfig.include = tsConfig.include || []
@@ -228,7 +238,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       }
     }
 
-    const relativePath = relativeWithDot(buildDir, absolutePath)
+    const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
@@ -251,12 +261,13 @@ export async function _generateTypes (nuxt: Nuxt) {
     }
   }
 
-  const references: TSReference[] = await Promise.all([
-    ...nuxt.options.modules,
-    ...nuxt.options._modules,
-  ]
-    .filter(f => typeof f === 'string')
-    .map(async id => ({ types: (await readPackageJSON(id, { url: nodeModulePaths }).catch(() => null))?.name || id })))
+  const references: TSReference[] = []
+  await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async id => {
+    if (typeof id !== 'string') { return }
+
+    const pkg = await readPackageJSON(id, { url: getNodeModulesPaths(nuxt.options.modulesDir) }).catch(() => null)
+    references.push(({ types: pkg?.name || id }))
+  }))
 
   const declarations: string[] = []
 
@@ -267,17 +278,17 @@ export async function _generateTypes (nuxt: Nuxt) {
     tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
       if (!isAbsolute(path)) { return path }
       const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-      return relativeWithDot(buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
+      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
     }))
   }
 
-  tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(buildDir, p) : p))]
-  tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(buildDir, p) : p))]
+  tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
+  tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
   const declaration = [
     ...references.map((ref) => {
       if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(buildDir, ref.path)
+        ref.path = relative(nuxt.options.buildDir, ref.path)
       }
       return `/// <reference ${renderAttrs(ref)} />`
     }),
