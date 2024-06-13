@@ -1,5 +1,6 @@
 import { addBuildPlugin, addComponent } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
+import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
@@ -88,10 +89,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       needsFallback: undefined,
-      testConfig: 123,
     },
   },
   modules: [
+    function (_options, nuxt) {
+      // ensure setting `runtimeConfig` also sets `nitro.runtimeConfig`
+      nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+        public: {
+          testConfig: 123,
+        },
+      })
+    },
     function (_options, nuxt) {
       nuxt.hook('modules:done', () => {
         // @ts-expect-error not valid nuxt option
