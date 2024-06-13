@@ -126,7 +126,7 @@
     "@vitejs/plugin-vue": "5.0.4",
     "@vue/compiler-sfc": "3.4.27",
     "unbuild": "latest",
-    "vite": "5.2.13",
+    "vite": "5.3.0",
     "vitest": "1.6.0"
   },
   "peerDependencies": {
