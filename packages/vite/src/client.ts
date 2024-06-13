@@ -20,7 +20,8 @@ import { viteNodePlugin } from './vite-node'
 import { createViteLogger } from './utils/logger'
 
 export async function buildClient (ctx: ViteBuildContext) {
-  const nodeCompat = ctx.nuxt.options.experimental.clientNodeCompat
+  const options = ctx.nuxt.options
+  const nodeCompat = options.experimental.clientNodeCompat
     ? {
         alias: env(nodeless).alias,
         define: {
@@ -28,11 +29,12 @@ export async function buildClient (ctx: ViteBuildContext) {
         },
       }
     : { alias: {}, define: {} }
-
+  const buildAssetsDir = options.app.buildAssetsDir
+  const clientSourcemap = options.sourcemap.client
   const clientConfig: ViteConfig = vite.mergeConfig(ctx.config, vite.mergeConfig({
     configFile: false,
-    base: ctx.nuxt.options.dev
-      ? joinURL(ctx.nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', ctx.nuxt.options.app.buildAssetsDir)
+    base: options.dev
+      ? joinURL(options.app.baseURL.replace(/^\.\//, '/') || '/', buildAssetsDir)
       : './',
     experimental: {
       renderBuiltUrl: (filename, { type, hostType }) => {
@@ -44,7 +46,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     },
     css: {
-      devSourcemap: !!ctx.nuxt.options.sourcemap.client,
+      devSourcemap: !!clientSourcemap,
     },
     define: {
       'process.env.NODE_ENV': JSON.stringify(ctx.config.mode),
@@ -110,30 +112,30 @@ export async function buildClient (ctx: ViteBuildContext) {
       alias: {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
-        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
-        '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        '#internal/nuxt/paths': resolve(options.buildDir, 'paths.mjs'),
+        '#build/plugins': resolve(options.buildDir, 'plugins/client'),
+        '#internal/nitro': resolve(options.buildDir, 'nitro.client.mjs'),
       },
       dedupe: [
         'vue',
       ],
     },
-    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
+    cacheDir: resolve(options.rootDir, 'node_modules/.cache/vite', 'client'),
     build: {
-      sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.client : false,
+      sourcemap: clientSourcemap ? ctx.config.build?.sourcemap ?? clientSourcemap : false,
       manifest: 'manifest.json',
-      outDir: resolve(ctx.nuxt.options.buildDir, 'dist/client'),
+      outDir: resolve(options.buildDir, 'dist/client'),
       rollupOptions: {
         input: { entry: ctx.entry },
       },
     },
     plugins: [
       devStyleSSRPlugin({
-        srcDir: ctx.nuxt.options.srcDir,
-        buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
+        srcDir: options.srcDir,
+        buildAssetsURL: joinURL(options.app.baseURL, buildAssetsDir),
       }),
       runtimePathsPlugin({
-        sourcemap: !!ctx.nuxt.options.sourcemap.client,
+        sourcemap: !!clientSourcemap,
       }),
       viteNodePlugin(ctx),
     ],
@@ -141,19 +143,19 @@ export async function buildClient (ctx: ViteBuildContext) {
     server: {
       middlewareMode: true,
     },
-  } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
+  } satisfies vite.InlineConfig, options.vite.$client || {}))
 
   clientConfig.customLogger = createViteLogger(clientConfig)
 
   // In build mode we explicitly override any vite options that vite is relying on
   // to detect whether to inject production or development code (such as HMR code)
-  if (!ctx.nuxt.options.dev) {
+  if (!options.dev) {
     clientConfig.server!.hmr = false
   }
 
   // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-  if (ctx.nuxt.options.experimental.emitRouteChunkError) {
-    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+  if (options.experimental.emitRouteChunkError) {
+    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!clientSourcemap }))
   }
 
   // Inject an h3-based CORS handler in preference to vite's
@@ -163,17 +165,18 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // We want to respect users' own rollup output options
+  const fileNames = withoutLeadingSlash(join(buildAssetsDir, '[hash].js'))
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
-      chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
-      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
+      chunkFileNames: options.dev ? undefined : fileNames,
+      entryFileNames: options.dev ? 'entry.js' : fileNames,
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
   if (clientConfig.server && clientConfig.server.hmr !== false) {
     const serverDefaults: Omit<ServerOptions, 'hmr'> & { hmr: Exclude<ServerOptions['hmr'], boolean> } = {
       hmr: {
-        protocol: ctx.nuxt.options.devServer.https ? 'wss' : 'ws',
+        protocol: options.devServer.https ? 'wss' : 'ws',
       },
     }
     if (typeof clientConfig.server.hmr !== 'object' || !clientConfig.server.hmr.server) {
@@ -183,20 +186,20 @@ export async function buildClient (ctx: ViteBuildContext) {
         ports: Array.from({ length: 20 }, (_, i) => hmrPortDefault + 1 + i),
       })
     }
-    if (ctx.nuxt.options.devServer.https) {
-      serverDefaults.https = ctx.nuxt.options.devServer.https === true ? {} : ctx.nuxt.options.devServer.https
+    if (options.devServer.https) {
+      serverDefaults.https = options.devServer.https === true ? {} : options.devServer.https
     }
     clientConfig.server = defu(clientConfig.server, serverDefaults as ViteConfig['server'])
   }
 
   // Add analyze plugin if needed
-  if (!ctx.nuxt.options.test && ctx.nuxt.options.build.analyze && (ctx.nuxt.options.build.analyze === true || ctx.nuxt.options.build.analyze.enabled)) {
+  if (!options.test && options.build.analyze && (options.build.analyze === true || options.build.analyze.enabled)) {
     clientConfig.plugins!.push(...await import('./plugins/analyze').then(r => r.analyzePlugin(ctx)))
   }
 
   // Add type checking client panel
-  if (!ctx.nuxt.options.test && ctx.nuxt.options.typescript.typeCheck === true && ctx.nuxt.options.dev) {
-    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
+  if (!options.test && options.typescript.typeCheck === true && options.dev) {
+    clientConfig.plugins!.push(typeCheckPlugin({ sourcemap: !!clientSourcemap }))
   }
 
   await ctx.nuxt.callHook('vite:extendConfig', clientConfig, { isClient: true, isServer: false })
@@ -212,7 +215,7 @@ export async function buildClient (ctx: ViteBuildContext) {
   clientConfig.optimizeDeps!.include = clientConfig.optimizeDeps!.include!
     .filter(dep => !clientConfig.optimizeDeps!.exclude!.includes(dep))
 
-  if (ctx.nuxt.options.dev) {
+  if (options.dev) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
@@ -228,7 +231,13 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
 
     const viteMiddleware = defineEventHandler(async (event) => {
-      const viteRoutes = viteServer.middlewares.stack.map(m => m.route).filter(r => r.length > 1)
+      const viteRoutes = []
+      for (const viteRoute of viteServer.middlewares.stack) {
+        const m = viteRoute.route
+        if (m.length > 1) {
+          viteRoutes.push(m)
+        }
+      }
       if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
