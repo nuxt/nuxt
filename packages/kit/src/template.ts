@@ -262,7 +262,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   }
 
   const references: TSReference[] = []
-  await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async id => {
+  await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
     const pkg = await readPackageJSON(id, { url: getNodeModulesPaths(nuxt.options.modulesDir) }).catch(() => null)
