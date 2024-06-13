@@ -67,21 +67,22 @@ export default defineComponent({
       type: String,
       default: () => undefined,
     },
+    dangerouslyLoadClientComponents: {
+      type: Boolean,
+      default: false,
+    },
     /**
      * use the NuxtIslandResponse which has been cached if available
      * @default true
      */
     useCache: {
       type: Boolean,
-      default: true
-    },
-    dangerouslyLoadClientComponents: {
-      type: Boolean,
-      default: false,
+      default: true,
     },
   },
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
+    console.log(props.useCache)
     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
@@ -194,9 +195,7 @@ export default defineComponent({
           appendResponseHeader(event!, 'x-nitro-prerender', hints)
         }
       }
-      if (import.meta.client) {
-        setPayload(key, result)
-      }
+      setPayload(key, result)
       return result
     }
 
@@ -251,9 +250,9 @@ export default defineComponent({
     }
 
     if (import.meta.client && !instance.vnode.el && props.lazy) {
-      fetchComponent()
+      fetchComponent(!instance.vnode.el && !props.useCache)
     } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
-      await fetchComponent()
+      await fetchComponent(!instance.vnode.el && !props.useCache)
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
     }
