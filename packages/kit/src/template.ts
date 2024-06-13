@@ -120,7 +120,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   const modulePaths = await resolveNuxtModule(rootDirWithSlash,
     nuxt.options._installedModules
       .filter(m => m.entryPath)
-      .map(m => getDirectory(m.entryPath)),
+      .map(m => getDirectory(m.entryPath!)),
   )
 
   const isV4 = nuxt.options.future?.compatibilityVersion === 4
