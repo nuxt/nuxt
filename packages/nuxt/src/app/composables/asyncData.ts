@@ -236,7 +236,13 @@ export function useAsyncData<
 
   // Used to get default values
   const getDefault = () => asyncDataDefaults.value
-  const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
+  const getDefaultCachedData = () => {
+    if (nuxtApp.isHydrating) {
+      return Object.hasOwn(nuxtApp.payload.data ?? {}, key) ? nuxtApp.payload.data[key] : null
+    } else {
+      return Object.hasOwn(nuxtApp.static.data ?? {}, key) ? nuxtApp.static.data[key] : null
+    }
+  }
 
   // Apply defaults
   options.server = options.server ?? true
