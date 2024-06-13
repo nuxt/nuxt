@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
-import { getRouteMeta, normalizeRoutes } from "../src/pages/utils"
+import { describe, expect, it } from 'vitest'
+import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
 import type { NuxtPage } from '../schema'
 
 const filePath = '/app/pages/index.vue'
@@ -47,6 +47,34 @@ describe('page metadata', () => {
       }
     `)
   })
+
+  it('should extract serialisable metadata in options api', async () => {
+    const meta = await getRouteMeta(`
+    <script>
+    definePageMeta({
+      name: 'some-custom-name',
+      path: '/some-custom-path',
+      middleware: (from, to) => console.warn('middleware'),
+    })
+    export default {
+      setup() {
+      },
+    };
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+        "name": "some-custom-name",
+        "path": "/some-custom-path",
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {
@@ -69,12 +97,12 @@ describe('normalizeRoutes', () => {
       </script>
       `, filePath))
 
-      page.meta ||= {}
-      page.meta.layout = 'test'
-      page.meta.foo = 'bar'
+    page.meta ||= {}
+    page.meta.layout = 'test'
+    page.meta.foo = 'bar'
 
-      const { routes, imports } = normalizeRoutes([page], new Set(), true)
-      expect({ routes, imports }).toMatchInlineSnapshot(`
+    const { routes, imports } = normalizeRoutes([page], new Set(), true)
+    expect({ routes, imports }).toMatchInlineSnapshot(`
         {
           "imports": Set {
             "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
@@ -90,16 +118,16 @@ describe('normalizeRoutes', () => {
         ]",
         }
       `)
-    })
+  })
 
-  it('should produce valid route objects when used without extracted meta', async () => {
+  it('should produce valid route objects when used without extracted meta', () => {
     const page: NuxtPage = { path: '/', file: filePath }
-      page.meta ||= {}
-      page.meta.layout = 'test'
-      page.meta.foo = 'bar'
+    page.meta ||= {}
+    page.meta.layout = 'test'
+    page.meta.foo = 'bar'
 
-      const { routes, imports } = normalizeRoutes([page], new Set())
-      expect({ routes, imports }).toMatchInlineSnapshot(`
+    const { routes, imports } = normalizeRoutes([page], new Set())
+    expect({ routes, imports }).toMatchInlineSnapshot(`
         {
           "imports": Set {
             "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
@@ -116,6 +144,5 @@ describe('normalizeRoutes', () => {
         ]",
         }
       `)
-    })
+  })
 })
-
