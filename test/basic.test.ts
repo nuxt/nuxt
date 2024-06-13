@@ -168,13 +168,13 @@ describe('pages', () => {
 
   it('preserves page metadata added in pages:extend hook', async () => {
     const html = await $fetch<string>('/some-custom-path')
-    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1].trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
       "{
         "name": "some-custom-name",
         "path": "/some-custom-path",
         "validate": "() => true",
         "middleware": [
-          "() => {\\n      console.log(\\"hey\\");\\n    }"
+          "() => true"
         ],
         "otherValue": "{\\"foo\\":\\"bar\\"}"
       }"

@@ -3,9 +3,7 @@ definePageMeta({
   name: 'some-custom-name',
   path: '/some-custom-path',
   validate: () => true,
-  middleware: [
-    () => { console.log('hey') },
-  ],
+  middleware: [() => true],
   otherValue: {
     foo: 'bar',
   },
