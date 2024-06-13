@@ -169,15 +169,16 @@ export function createResolver (base: string | URL): Resolver {
 }
 
 export async function resolveNuxtModule (base: string, paths: string[]) {
-  const resolved = []
+  const resolved = new Array(paths.length)
   const resolver = createResolver(base)
 
-  for (const path of paths) {
+  for (let i = 0; i < paths.length; i++) {
+    const path = paths[i]
     if (path.startsWith(base)) {
-      resolved.push(path.split('/index.ts')[0])
+      resolved[i] = path.split('/index.ts')[0]
     } else {
       const resolvedPath = await resolver.resolvePath(path)
-      resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
+      resolved[i] = resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length)
     }
   }
 
@@ -209,6 +210,12 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 }
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
-  const files = await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })
-  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p)).sort()
+  const files: string[] = []
+  for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
+    const p = resolve(path, file)
+    if (!isIgnored(p)) {
+      files.push(p)
+    }
+  }
+  return files.sort()
 }

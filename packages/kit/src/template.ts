@@ -117,12 +117,22 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
 
-  const modulePaths = await resolveNuxtModule(rootDirWithSlash,
-    nuxt.options._installedModules
-      .filter(m => m.entryPath)
-      .map(m => getDirectory(m.entryPath)),
-  )
-
+  const modules: string[] = []
+  for (const m of nuxt.options._installedModules) {
+    if (m.entryPath) {
+      modules.push(getDirectory(m.entryPath))
+    }
+  }
+  const buildDir = nuxt.options.buildDir
+  const modulePaths = await resolveNuxtModule(rootDirWithSlash, modules)
+  const nuxtBuildRootDir = relativeWithDot(buildDir, nuxt.options.rootDir)
+  const modulesInclude: string[] = new Array(modulePaths.length)
+  const modulesExclude: string[] = new Array(modulePaths.length)
+  for (let i = 0; i < modulePaths.length; i++) {
+    const relative = relativeWithDot(buildDir, modulePaths[i])
+    modulesInclude[i] = join(relative, 'runtime')
+    modulesExclude[i] = join(relative, 'runtime/server')
+  }
   const isV4 = nuxt.options.future?.compatibilityVersion === 4
 
   const hasTypescriptVersionWithModulePreserve = await readPackageJSON('typescript', { url: nuxt.options.modulesDir })
@@ -170,32 +180,36 @@ export async function _generateTypes (nuxt: Nuxt) {
     },
     include: [
       './nuxt.d.ts',
-      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '.config/nuxt.*'),
-      join(relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir), '**/*'),
-      ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.srcDir), '**/*')] : [],
-      ...nuxt.options._layers.map(layer => layer.config.srcDir ?? layer.cwd)
-        .filter(srcOrCwd => !srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules'))
-        .map(srcOrCwd => join(relative(nuxt.options.buildDir, srcOrCwd), '**/*')),
-      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(nuxt.options.buildDir, nuxt.options.workspaceDir), '**/*')] : [],
-      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime')),
+      join(nuxtBuildRootDir, '.config/nuxt.*'),
+      join(nuxtBuildRootDir, '**/*'),
+      ...nuxt.options.srcDir !== nuxt.options.rootDir ? [join(relative(buildDir, nuxt.options.srcDir), '**/*')] : [],
+      ...nuxt.options._layers.reduce<string[]>((dirs, layer) => {
+        const srcOrCwd = layer.config.srcDir ?? layer.cwd
+        if (!srcOrCwd.startsWith(rootDirWithSlash) || srcOrCwd.includes('node_modules')) {
+          dirs.push(join(relative(buildDir, srcOrCwd), '**/*'))
+        }
+        return dirs
+      }, []),
+      ...nuxt.options.typescript.includeWorkspace && nuxt.options.workspaceDir !== nuxt.options.rootDir ? [join(relative(buildDir, nuxt.options.workspaceDir), '**/*')] : [],
+      ...modulesInclude,
     ],
     exclude: [
-      ...nuxt.options.modulesDir.map(m => relativeWithDot(nuxt.options.buildDir, m)),
-      ...modulePaths.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
+      ...nuxt.options.modulesDir.map(m => relativeWithDot(buildDir, m)),
+      ...modulesExclude,
       // nitro generate output: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/nitro.ts#L186
-      relativeWithDot(nuxt.options.buildDir, resolve(nuxt.options.rootDir, 'dist')),
+      relativeWithDot(buildDir, resolve(nuxt.options.rootDir, 'dist')),
     ],
   } satisfies TSConfig)
 
   const aliases: Record<string, string> = {
     ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir,
+    '#build': buildDir,
   }
 
   // Exclude bridge alias types to support Volar
   const excludedAlias = [/^@vue\/.*$/]
 
-  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl) : nuxt.options.buildDir
+  const basePath = tsConfig.compilerOptions!.baseUrl ? resolve(buildDir, tsConfig.compilerOptions!.baseUrl) : buildDir
 
   tsConfig.compilerOptions = tsConfig.compilerOptions || {}
   tsConfig.include = tsConfig.include || []
@@ -214,7 +228,7 @@ export async function _generateTypes (nuxt: Nuxt) {
       }
     }
 
-    const relativePath = relativeWithDot(nuxt.options.buildDir, absolutePath)
+    const relativePath = relativeWithDot(buildDir, absolutePath)
     if (stats?.isDirectory()) {
       tsConfig.compilerOptions.paths[alias] = [relativePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${relativePath}/*`]
@@ -253,17 +267,17 @@ export async function _generateTypes (nuxt: Nuxt) {
     tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
       if (!isAbsolute(path)) { return path }
       const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
+      return relativeWithDot(buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
     }))
   }
 
-  tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
-  tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
+  tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(buildDir, p) : p))]
+  tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(buildDir, p) : p))]
 
   const declaration = [
     ...references.map((ref) => {
       if ('path' in ref && isAbsolute(ref.path)) {
-        ref.path = relative(nuxt.options.buildDir, ref.path)
+        ref.path = relative(buildDir, ref.path)
       }
       return `/// <reference ${renderAttrs(ref)} />`
     }),
@@ -302,7 +316,11 @@ export async function writeTypes (nuxt: Nuxt) {
 }
 
 function renderAttrs (obj: Record<string, string>) {
-  return Object.entries(obj).map(e => renderAttr(e[0], e[1])).join(' ')
+  const attrs: string[] = []
+  for (const key in obj) {
+    attrs.push(renderAttr(key, obj[key]))
+  }
+  return attrs.join(' ')
 }
 
 function renderAttr (key: string, value: string) {
