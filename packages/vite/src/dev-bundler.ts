@@ -238,13 +238,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
     const { code, ids } = await bundleRequest(options, ctx.entry)
     await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     // Have CSS in the manifest to prevent FOUC on dev SSR
-    const manifestIds: string[] = []
-    for (const i of ids) {
-      if (isCSS(i)) {
-        manifestIds.push(i.slice(1))
-      }
-    }
-    await writeManifest(ctx, manifestIds)
+    await writeManifest(ctx, ids.filter(isCSS).map(i => i.slice(1)))
     const time = (Date.now() - start)
     logger.success(`Vite server built in ${time}ms`)
     await onBuild()

@@ -3,7 +3,6 @@ import { transform } from 'esbuild'
 import { visualizer } from 'rollup-plugin-visualizer'
 import defu from 'defu'
 import type { NuxtOptions } from 'nuxt/schema'
-import type { RenderedModule } from 'rollup'
 import type { ViteBuildContext } from '../vite'
 
 export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
@@ -14,18 +13,14 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
     {
       name: 'nuxt:analyze-minify',
       async generateBundle (_opts, outputBundle) {
-        for (const _bundleId in outputBundle) {
-          const bundle = outputBundle[_bundleId]
+        for (const [_bundleId, bundle] of Object.entries(outputBundle)) {
           if (bundle.type !== 'chunk') { continue }
-          const minifiedModuleEntryPromises: Array<Promise<[string, RenderedModule]>> = []
-          for (const moduleId in bundle.modules) {
-            const module = bundle.modules[moduleId]
-            minifiedModuleEntryPromises.push(
-              transform(module.code || '', { minify: true })
-                .then(result => [moduleId, { ...module, code: result.code }]),
-            )
-          }
-          bundle.modules = Object.fromEntries(await Promise.all(minifiedModuleEntryPromises))
+          const originalEntries = Object.entries(bundle.modules)
+          const minifiedEntries = await Promise.all(originalEntries.map(async ([moduleId, module]) => {
+            const { code } = await transform(module.code || '', { minify: true })
+            return [moduleId, { ...module, code }]
+          }))
+          bundle.modules = Object.fromEntries(minifiedEntries)
         }
       },
     },
