@@ -13,7 +13,7 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 
 const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
 const layerSchema = Object.create(null)
-for (const key in layerSchemaKeys) {
+for (const key of layerSchemaKeys) {
   if (key in NuxtConfigSchema) {
     layerSchema[key] = NuxtConfigSchema[key]
   }
