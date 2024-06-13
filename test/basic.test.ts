@@ -745,6 +745,24 @@ describe('nuxt links', () => {
     `)
   })
 
+  it('respects external links in edge cases', async () => {
+    const html = await $fetch<string>('/nuxt-link/custom-external')
+    const hrefs = html.match(/<a[^>]*href="([^"]+)"/g)
+    expect(hrefs).toMatchInlineSnapshot(`
+      [
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="/missing-page/"",
+        "<a href="/missing-page/"",
+      ]
+    `)
+
+    const { page, consoleLogs } = await renderPage('/nuxt-link/custom-external')
+    const warnings = consoleLogs.filter(c => c.text.includes('No match found for location'))
+    expect(warnings).toMatchInlineSnapshot(`[]`)
+    await page.close()
+  })
+
   it('preserves route state', async () => {
     const { page } = await renderPage('/nuxt-link/trailing-slash')
 
