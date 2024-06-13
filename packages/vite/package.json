@@ -28,6 +28,7 @@
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
+    "rollup": "^4.18.0",
     "unbuild": "latest",
     "vue": "3.4.27"
   },

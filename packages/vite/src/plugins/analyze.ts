@@ -3,6 +3,7 @@ import { transform } from 'esbuild'
 import { visualizer } from 'rollup-plugin-visualizer'
 import defu from 'defu'
 import type { NuxtOptions } from 'nuxt/schema'
+import type { RenderedModule } from 'rollup'
 import type { ViteBuildContext } from '../vite'
 
 export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
@@ -16,7 +17,7 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
         for (const _bundleId in outputBundle) {
           const bundle = outputBundle[_bundleId]
           if (bundle.type !== 'chunk') { continue }
-          const originalEntries = []
+          const originalEntries: Array<Promise<[string, RenderedModule]>> = []
           for (const moduleId in bundle.modules) {
             const module = bundle.modules[moduleId]
             originalEntries.push(transform(module.code || '', { minify: true }).then((result) => {
