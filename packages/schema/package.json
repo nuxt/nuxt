@@ -45,7 +45,7 @@
     "@vue/compiler-core": "3.4.27",
     "@vue/compiler-sfc": "3.4.27",
     "@vue/language-core": "2.0.21",
-    "c12": "1.10.0",
+    "c12": "1.11.1",
     "esbuild-loader": "4.1.0",
     "h3": "1.11.1",
     "ignore": "5.3.1",
@@ -63,7 +63,7 @@
     "webpack-dev-middleware": "7.2.1"
   },
   "dependencies": {
-    "compatx": "^0.1.3",
+    "compatx": "^0.1.8",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "hookable": "^5.5.3",
