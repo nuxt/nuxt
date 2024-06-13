@@ -303,7 +303,7 @@
       "alias": "mockMeta?.alias || []",
       "component": "() => import("pages/index.vue").then(m => m.default || m)",
       "meta": "mockMeta || {}",
-      "name": "mockMeta?.name",
+      "name": "mockMeta?.name ?? "index"",
       "path": ""/"",
       "redirect": "mockMeta?.redirect",
     },
