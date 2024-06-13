@@ -1,6 +1,7 @@
 <template>
   <PageContent />
 </template>
+
 <script setup lang="tsx">
 definePageMeta({})
 defineRouteRules({})

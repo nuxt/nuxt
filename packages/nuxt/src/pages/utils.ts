@@ -161,7 +161,7 @@ export function extractScriptContent (html: string) {
   if (groups.content) {
     return {
       loader: groups.attrs.includes('tsx') ? 'tsx' : 'ts',
-      code: groups.content.trim()
+      code: groups.content.trim(),
     } as const
   }
 
