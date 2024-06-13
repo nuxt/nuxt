@@ -232,7 +232,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
         }
 
         if (property.value.type === 'ArrayExpression') {
-          const values = []
+          const values: string[] = []
           for (const element of property.value.elements) {
             if (!element) {
               continue
