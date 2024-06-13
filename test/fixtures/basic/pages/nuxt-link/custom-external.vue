@@ -29,13 +29,20 @@ const MyLink = defineNuxtLink({
       </MyLink>
     </div>
     <div>
-      <MyLink to="/missing-page" external>
+      <MyLink
+        to="/missing-page"
+        external
+      >
         External links should be respected and not have trailing slashes applied
       </MyLink>
     </div>
     <div>
-      <NuxtLink custom to="https://google.com" external>
-        <template v-slot="{ navigate }">
+      <NuxtLink
+        custom
+        to="https://google.com"
+        external
+      >
+        <template #default="{ navigate }">
           <button @click="navigate()">
             Using navigate() with external link should work
           </button>
