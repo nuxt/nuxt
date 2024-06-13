@@ -32,10 +32,11 @@ const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"\{(.+)\
 /** @deprecated */
 const importSources = (sources: string | string[], { lazy = false } = {}) => {
   return toArray(sources).map((src) => {
+    const safeVariableName = genSafeVariableName(src)
     if (lazy) {
-      return `const ${genSafeVariableName(src)} = ${genDynamicImport(src, { comment: `webpackChunkName: ${JSON.stringify(src)}` })}`
+      return `const ${safeVariableName} = ${genDynamicImport(src, { comment: `webpackChunkName: ${JSON.stringify(src)}` })}`
     }
-    return genImport(src, genSafeVariableName(src))
+    return genImport(src, safeVariableName)
   }).join('\n')
 }
 
