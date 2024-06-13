@@ -82,7 +82,6 @@ export default defineComponent({
   },
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
-    console.log(props.useCache)
     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
