@@ -1,4 +1,4 @@
-name: Release
+name: changelog
 
 on:
   push:
@@ -15,12 +15,12 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
-  update-changelog:
+  update:
     if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - run: corepack enable

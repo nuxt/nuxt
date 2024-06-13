@@ -73,8 +73,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
     const mark = performance.mark(key)
     const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
-    const perf = performance.measure(key, mark?.name) // TODO: remove when Node 14 reaches EOL
-    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+    const perf = performance.measure(key, mark.name)
+    const setupTime = Math.round((perf.duration * 100)) / 100
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
@@ -89,8 +89,8 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
     // Return module install result
     return defu(res, <ModuleSetupReturn> {
       timings: {
-        setup: setupTime
-      }
+        setup: setupTime,
+      },
     })
   }
 
@@ -138,10 +138,10 @@ function nuxt2Shims (nuxt: Nuxt) {
         plugins: nuxt.options.plugins,
         templates: [
           ...templates.templatesFiles,
-          ...virtualTemplates
+          ...virtualTemplates,
         ],
-        templateVars: templates.templateVars
-      }
+        templateVars: templates.templateVars,
+      },
     }
     for await (const template of virtualTemplates) {
       const contents = await compileTemplate({ ...template, src: '' }, context)

@@ -22,13 +22,13 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
           }))
           bundle.modules = Object.fromEntries(minifiedEntries)
         }
-      }
+      },
     },
     visualizer({
       ...analyzeOptions,
       filename: 'filename' in analyzeOptions ? analyzeOptions.filename!.replace('{name}', 'client') : undefined,
       title: 'Client bundle stats',
-      gzipSize: true
-    })
+      gzipSize: true,
+    }),
   ]
 }

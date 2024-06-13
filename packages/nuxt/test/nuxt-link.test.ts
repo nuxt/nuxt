@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import type { RouteLocation } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
@@ -8,9 +8,9 @@ import { useRuntimeConfig } from '../src/app/nuxt'
 vi.mock('../src/app/nuxt', () => ({
   useRuntimeConfig: vi.fn(() => ({
     app: {
-      baseURL: '/'
-    }
-  }))
+      baseURL: '/',
+    },
+  })),
 }))
 
 // Mocks `h()`
@@ -19,7 +19,7 @@ vi.mock('vue', async () => {
   return {
     ...vue,
     resolveComponent: (name: string) => name,
-    h: (...args: any[]) => args
+    h: (...args: any[]) => args,
   }
 })
 
@@ -35,10 +35,10 @@ vi.mock('../src/app/composables/router', () => ({
         : {
             path: route.path || `/${route.name?.toString()}` || undefined,
             query: route.query || undefined,
-            hash: route.hash || undefined
+            hash: route.hash || undefined,
           }
-    }
-  })
+    },
+  }),
 }))
 
 // Helpers for test visibility
@@ -48,12 +48,12 @@ const INTERNAL = 'RouterLink'
 // Renders a `<NuxtLink />`
 const nuxtLink = (
   props: NuxtLinkProps = {},
-  nuxtLinkOptions: Partial<NuxtLinkOptions> = {}
+  nuxtLinkOptions: Partial<NuxtLinkOptions> = {},
 ): { type: string, props: Record<string, unknown>, slots: unknown } => {
   const component = defineNuxtLink({ componentName: 'NuxtLink', ...nuxtLinkOptions })
 
   const [type, _props, slots] = (component.setup as unknown as (props: NuxtLinkProps, context: { slots: Record<string, () => unknown> }) =>
-    () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
+  () => [string, Record<string, unknown>, unknown])(props, { slots: { default: () => null } })()
 
   return { type, props: _props, slots }
 }
@@ -99,7 +99,11 @@ describe('nuxt-link:isExternal', () => {
   })
 
   it('returns `false` when `to` is a route location object', () => {
-    expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw }).type).toBe(INTERNAL)
+    expect(nuxtLink({ to: { path: '/to' } }).type).toBe(INTERNAL)
+  })
+
+  it('returns `true` when `to` has a `target`', () => {
+    expect(nuxtLink({ to: { path: '/to' }, target: '_blank' }).type).toBe(EXTERNAL)
   })
 
   it('honors `external` prop', () => {
@@ -122,7 +126,12 @@ describe('nuxt-link:propsOrAttributes', () => {
       })
 
       it('resolves route location object', () => {
-        expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw, external: true }).props.href).toBe('/to')
+        expect(nuxtLink({ to: { path: '/to' }, external: true }).props.href).toBe('/to')
+      })
+
+      it('applies trailing slash behaviour', () => {
+        expect(nuxtLink({ to: { path: '/to' }, external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to', external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
       })
     })
 
@@ -140,8 +149,8 @@ describe('nuxt-link:propsOrAttributes', () => {
         vi.mocked(useRuntimeConfig).withImplementation(() => {
           return {
             app: {
-              baseURL: '/base'
-            }
+              baseURL: '/base',
+            },
           } as any
         }, () => {
           expect(nuxtLink({ to: '/', target: '_blank' }).props.href).toBe('/base')
@@ -161,12 +170,14 @@ describe('nuxt-link:propsOrAttributes', () => {
         vi.mocked(useRuntimeConfig).withImplementation(() => {
           return {
             app: {
-              baseURL: '/base'
-            }
+              baseURL: '/base',
+            },
           } as any
         }, () => {
           expect(nuxtLink({ to: 'http://nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('http://nuxtjs.org/app/about')
           expect(nuxtLink({ to: '//nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('//nuxtjs.org/app/about')
+          expect(nuxtLink({ to: { path: '/' }, external: true }).props.href).toBe('/')
+          expect(nuxtLink({ to: '/', external: true }).props.href).toBe('/')
         })
       })
     })
@@ -209,7 +220,7 @@ describe('nuxt-link:propsOrAttributes', () => {
     describe('to', () => {
       it('forwards `to` prop', () => {
         expect(nuxtLink({ to: '/to' }).props.to).toBe('/to')
-        expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw }).props.to).toEqual({ to: '/to' })
+        expect(nuxtLink({ to: { path: '/to' } }).props.to).toEqual({ path: '/to' })
       })
     })
 

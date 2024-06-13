@@ -4,11 +4,11 @@ import type {
   ComputedRef,
   DefineComponent,
   InjectionKey, PropType,
-  VNodeProps
+  VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLinkProps } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, parseURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from '#vue-router'
+import { hasProtocol, joinURL, parseQuery, withQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
@@ -23,30 +23,7 @@ const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => a
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
 /**
- * Create a NuxtLink component with given options as defaults.
- * @see https://nuxt.com/docs/api/components/nuxt-link
- */
-export interface NuxtLinkOptions extends
-  Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>,
-  Pick<NuxtLinkProps, 'prefetchedClass'> {
-  /**
-   * The name of the component.
-   * @default "NuxtLink"
-   */
-  componentName?: string
-  /**
-   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
-   */
-  externalRelAttribute?: string | null
-  /**
-   * An option to either add or remove trailing slashes in the `href`.
-   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
-   */
-  trailingSlash?: 'append' | 'remove'
-}
-
-/**
- * <NuxtLink> is a drop-in replacement for both Vue Router's <RouterLink> component and HTML's <a> tag.
+ * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
 export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
@@ -88,7 +65,30 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   noPrefetch?: boolean
 }
 
-  /*@__NO_SIDE_EFFECTS__*/
+/**
+ * Create a NuxtLink component with given options as defaults.
+ * @see https://nuxt.com/docs/api/components/nuxt-link
+ */
+export interface NuxtLinkOptions extends
+  Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
+  Partial<Pick<NuxtLinkProps, 'prefetchedClass'>> {
+  /**
+   * The name of the component.
+   * @default "NuxtLink"
+   */
+  componentName?: string
+  /**
+   * A default `rel` attribute value applied on external links. Defaults to `"noopener noreferrer"`. Set it to `""` to disable.
+   */
+  externalRelAttribute?: string | null
+  /**
+   * An option to either add or remove trailing slashes in the `href`.
+   * If unset or not matching the valid values `append` or `remove`, it will be ignored.
+   */
+  trailingSlash?: 'append' | 'remove'
+}
+
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
   const componentName = options.componentName || 'NuxtLink'
 
@@ -113,15 +113,90 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     const resolvedPath = {
       ...to,
-      path: applyTrailingSlashBehavior(path, options.trailingSlash)
-    }
-
-    // named routes would otherwise always override trailing slash behavior
-    if ('name' in resolvedPath) {
-      delete resolvedPath.name
+      name: undefined, // named routes would otherwise always override trailing slash behavior
+      path: applyTrailingSlashBehavior(path, options.trailingSlash),
     }
 
     return resolvedPath
+  }
+
+  function useNuxtLink (props: NuxtLinkProps) {
+    const router = useRouter()
+    const config = useRuntimeConfig()
+
+    const hasTarget = computed(() => !!props.target && props.target !== '_self')
+
+    // Lazily check whether to.value has a protocol
+    const isAbsoluteUrl = computed(() => {
+      const path = props.to || props.href || ''
+      return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
+    })
+
+    const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
+    const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
+
+    // Resolving link type
+    const isExternal = computed<boolean>(() => {
+      // External prop is explicitly set
+      if (props.external) {
+        return true
+      }
+
+      const path = props.to || props.href || ''
+
+      // When `to` is a route object then it's an internal link
+      if (typeof path === 'object') {
+        return false
+      }
+
+      return path === '' || isAbsoluteUrl.value
+    })
+
+    // Resolving `to` value from `to` and `href` props
+    const to: ComputedRef<RouteLocationRaw> = computed(() => {
+      checkPropConflicts(props, 'to', 'href')
+      const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+      if (isExternal.value) { return path }
+      return resolveTrailingSlashBehavior(path, router.resolve)
+    })
+
+    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
+
+    // Resolves `to` value if it's a route location object
+    const href = computed(() => {
+      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+
+      if (isExternal.value) {
+        const path = typeof to.value === 'object' ? resolveRouteObject(to.value) : to.value
+        return resolveTrailingSlashBehavior(path, router.resolve /* will not be called */) as string
+      }
+
+      if (typeof to.value === 'object') {
+        return router.resolve(to.value)?.href ?? null
+      }
+
+      return resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve /* will not be called */)
+    })
+
+    return {
+      to,
+      hasTarget,
+      isAbsoluteUrl,
+      isExternal,
+      //
+      href,
+      isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
+      isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
+      route: link?.route ?? computed(() => router.resolve(to.value)),
+      async navigate () {
+        await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
+      },
+    } satisfies ReturnType<typeof useLink> & {
+      to: ComputedRef<RouteLocationRaw>
+      hasTarget: ComputedRef<boolean | null | undefined>
+      isAbsoluteUrl: ComputedRef<boolean>
+      isExternal: ComputedRef<boolean>
+    }
   }
 
   return defineComponent({
@@ -131,123 +206,91 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       to: {
         type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
-        required: false
+        required: false,
       },
       href: {
         type: [String, Object] as PropType<RouteLocationRaw>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Attributes
       target: {
         type: String as PropType<NuxtLinkProps['target']>,
         default: undefined,
-        required: false
+        required: false,
       },
       rel: {
         type: String as PropType<NuxtLinkProps['rel']>,
         default: undefined,
-        required: false
+        required: false,
       },
       noRel: {
         type: Boolean as PropType<NuxtLinkProps['noRel']>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Prefetching
       prefetch: {
         type: Boolean as PropType<NuxtLinkProps['prefetch']>,
         default: undefined,
-        required: false
+        required: false,
       },
       noPrefetch: {
         type: Boolean as PropType<NuxtLinkProps['noPrefetch']>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Styling
       activeClass: {
         type: String as PropType<NuxtLinkProps['activeClass']>,
         default: undefined,
-        required: false
+        required: false,
       },
       exactActiveClass: {
         type: String as PropType<NuxtLinkProps['exactActiveClass']>,
         default: undefined,
-        required: false
+        required: false,
       },
       prefetchedClass: {
         type: String as PropType<NuxtLinkProps['prefetchedClass']>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Vue Router's `<RouterLink>` additional props
       replace: {
         type: Boolean as PropType<NuxtLinkProps['replace']>,
         default: undefined,
-        required: false
+        required: false,
       },
       ariaCurrentValue: {
         type: String as PropType<NuxtLinkProps['ariaCurrentValue']>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Edge cases handling
       external: {
         type: Boolean as PropType<NuxtLinkProps['external']>,
         default: undefined,
-        required: false
+        required: false,
       },
 
       // Slot API
       custom: {
         type: Boolean as PropType<NuxtLinkProps['custom']>,
         default: undefined,
-        required: false
-      }
+        required: false,
+      },
     },
+    useLink: useNuxtLink,
     setup (props, { slots }) {
       const router = useRouter()
-      const config = useRuntimeConfig()
 
-      // Resolving `to` value from `to` and `href` props
-      const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
-        checkPropConflicts(props, 'to', 'href')
-
-        const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
-
-        return resolveTrailingSlashBehavior(path, router.resolve)
-      })
-
-      // Lazily check whether to.value has a protocol
-      const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
-
-      const hasTarget = computed(() => props.target && props.target !== '_self')
-
-      // Resolving link type
-      const isExternal = computed<boolean>(() => {
-        // External prop is explicitly set
-        if (props.external) {
-          return true
-        }
-
-        // When `target` prop is set, link is external
-        if (hasTarget.value) {
-          return true
-        }
-
-        // When `to` is a route object then it's an internal link
-        if (typeof to.value === 'object') {
-          return false
-        }
-
-        return to.value === '' || isAbsoluteUrl.value
-      })
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
 
       // Prefetching
       const prefetched = ref(false)
@@ -270,10 +313,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                     unobserve?.()
                     unobserve = null
 
-                    const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
+                    const path = typeof to.value === 'string'
+                      ? to.value
+                      : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
                     await Promise.all([
                       nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
-                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {})
+                      !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
                     ])
                     prefetched.value = true
                   })
@@ -299,7 +344,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value) {
+        if (!isExternal.value && !hasTarget.value) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -307,7 +352,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             exactActiveClass: props.exactActiveClass || options.exactActiveClass,
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
-            custom: props.custom
+            custom: props.custom,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
@@ -323,17 +368,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return h(
             resolveComponent('RouterLink'),
             routerLinkProps,
-            slots.default
+            slots.default,
           )
         }
-
-        // Resolves `to` value if it's a route location object
-        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
-        const href = typeof to.value === 'object'
-          ? router.resolve(to.value)?.href ?? null
-          : (to.value && !props.external && !isAbsoluteUrl.value)
-              ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-              : to.value || null
 
         // Resolves `target` value
         const target = props.target || null
@@ -348,7 +385,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
           * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
           */
-          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : ''
+          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
         ) || null
 
         // https://router.vuejs.org/api/#custom
@@ -357,15 +394,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             return null
           }
 
-          const navigate = () => navigateTo(href, { replace: props.replace, external: props.external })
-
           return slots.default({
-            href,
+            href: href.value,
             navigate,
             get route () {
-              if (!href) { return undefined }
+              if (!href.value) { return undefined }
 
-              const url = parseURL(href)
+              const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
               return {
                 path: url.pathname,
                 fullPath: url.pathname,
@@ -376,20 +411,21 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                 matched: [],
                 redirectedFrom: undefined,
                 meta: {},
-                href
+                href: href.value,
               } satisfies RouteLocation & { href: string }
             },
             rel,
             target,
-            isExternal: isExternal.value,
+            isExternal: isExternal.value || hasTarget.value,
             isActive: false,
-            isExactActive: false
+            isExactActive: false,
           })
         }
 
-        return h('a', { ref: el, href, rel, target }, slots.default?.())
+        // converts `""` to `null` to prevent the attribute from being added as empty (`href=""`)
+        return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
       }
-    }
+    },
   }) as unknown as DefineComponent<NuxtLinkProps>
 }
 
@@ -445,7 +481,7 @@ function useObserver (): { observe: ObserveFn } | undefined {
   }
 
   const _observer = nuxtApp._observer = {
-    observe
+    observe,
   }
 
   return _observer
@@ -458,4 +494,8 @@ function isSlowConnection () {
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
   if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
   return false
+}
+
+function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  return withQuery(to.path || '', to.query || {}) + (to.hash ? '#' + to.hash : '')
 }

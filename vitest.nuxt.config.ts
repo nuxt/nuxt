@@ -4,19 +4,25 @@ export default defineVitestConfig({
   test: {
     dir: './test/nuxt',
     coverage: {
-      include: ['packages/nuxt/src/app']
+      include: ['packages/nuxt/src/app'],
     },
     environment: 'nuxt',
+    setupFiles: [
+      './test/setup-runtime.ts',
+    ],
     environmentOptions: {
       nuxt: {
         overrides: {
-          appConfig: {
-            nuxt: {
-              buildId: 'override'
-            }
-          }
-        }
-      }
-    }
-  }
+          runtimeConfig: {
+            app: {
+              buildId: 'override',
+            },
+          },
+          experimental: {
+            appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+          },
+        },
+      },
+    },
+  },
 })

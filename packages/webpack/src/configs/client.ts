@@ -46,15 +46,15 @@ function clientPerformance (ctx: WebpackConfigContext) {
   ctx.config.performance = {
     maxEntrypointSize: 1000 * 1024,
     hints: ctx.isDev ? false : 'warning',
-    ...ctx.config.performance
+    ...ctx.config.performance,
   }
 }
 
-function clientNodeCompat(ctx: WebpackConfigContext) {
+function clientNodeCompat (ctx: WebpackConfigContext) {
   if (!ctx.nuxt.options.experimental.clientNodeCompat) {
     return
   }
-  ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis', }))
+  ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis' }))
 
   ctx.config.resolve = ctx.config.resolve || {}
   ctx.config.resolve.fallback = {
@@ -64,7 +64,7 @@ function clientNodeCompat(ctx: WebpackConfigContext) {
 
   // https://github.com/webpack/webpack/issues/13290#issuecomment-1188760779
   ctx.config.plugins!.unshift(new webpack.NormalModuleReplacementPlugin(/node:/, (resource) => {
-    resource.request = resource.request.replace(/^node:/, '');
+    resource.request = resource.request.replace(/^node:/, '')
   }))
 }
 
@@ -81,7 +81,7 @@ function clientHMR (ctx: WebpackConfigContext) {
     ...clientOptions,
     ansiColors: JSON.stringify(clientOptions.ansiColors || {}),
     overlayStyles: JSON.stringify(clientOptions.overlayStyles || {}),
-    name: ctx.name
+    name: ctx.name,
   }
   const hotMiddlewareClientOptionsStr = querystring.stringify(hotMiddlewareClientOptions)
 
@@ -89,7 +89,7 @@ function clientHMR (ctx: WebpackConfigContext) {
   const app = (ctx.config.entry as any).app as any
   app.unshift(
     // https://github.com/glenjamin/webpack-hot-middleware#config
-    `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`
+    `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
 
   ctx.config.plugins = ctx.config.plugins || []
@@ -113,7 +113,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
       openAnalyzer: true,
       reportFilename: resolve(statsDir, `${ctx.name}.html`),
       statsFilename: resolve(statsDir, `${ctx.name}.json`),
-      ...ctx.userConfig.analyze === true ? {} : ctx.userConfig.analyze
+      ...ctx.userConfig.analyze === true ? {} : ctx.userConfig.analyze,
     }))
   }
 
@@ -122,7 +122,7 @@ function clientPlugins (ctx: WebpackConfigContext) {
   if (!ctx.nuxt.options.ssr) {
     if (!ctx.nuxt.options.test && (ctx.nuxt.options.typescript.typeCheck === true || (ctx.nuxt.options.typescript.typeCheck === 'build' && !ctx.nuxt.options.dev))) {
       ctx.config.plugins!.push(new ForkTSCheckerWebpackPlugin({
-        logger
+        logger,
       }))
     }
   }

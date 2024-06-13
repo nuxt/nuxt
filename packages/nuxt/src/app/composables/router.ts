@@ -2,9 +2,8 @@ import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 
 import type { Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -48,7 +47,7 @@ export interface RouteMiddleware {
 }
 
 /** @since 3.0.0 */
-/*@__NO_SIDE_EFFECTS__*/
+/* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtRouteMiddleware (middleware: RouteMiddleware) {
   return middleware
 }
@@ -85,8 +84,7 @@ const isProcessingMiddleware = () => {
       return true
     }
   } catch {
-    // Within an async middleware
-    return true
+    return false
   }
   return false
 }
@@ -99,10 +97,10 @@ export type OpenWindowFeatures = {
   popup?: boolean
   noopener?: boolean
   noreferrer?: boolean
-} & XOR<{width?: number}, {innerWidth?: number}>
-  & XOR<{height?: number}, {innerHeight?: number}>
-  & XOR<{left?: number}, {screenX?: number}>
-  & XOR<{top?: number}, {screenY?: number}>
+} & XOR<{ width?: number }, { innerWidth?: number }>
+  & XOR<{ height?: number }, { innerHeight?: number }>
+  & XOR<{ left?: number }, { screenX?: number }>
+  & XOR<{ top?: number }, { screenY?: number }>
 
 export type OpenOptions = {
   target: '_blank' | '_parent' | '_self' | '_top' | (string & {})
@@ -125,18 +123,15 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
 
   // Early open handler
-  if (options?.open) {
-    if (import.meta.client) {
-      const { target = '_blank', windowFeatures = {} } = options.open
+  if (import.meta.client && options?.open) {
+    const { target = '_blank', windowFeatures = {} } = options.open
 
-      const features = Object.entries(windowFeatures)
-        .filter(([_, value]) => value !== undefined)
-        .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
-        .join(', ')
+    const features = Object.entries(windowFeatures)
+      .filter(([_, value]) => value !== undefined)
+      .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
+      .join(', ')
 
-      open(toPath, target, features)
-    }
-
+    open(toPath, target, features)
     return Promise.resolve()
   }
 
@@ -145,7 +140,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -174,7 +169,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location }
+          headers: { location: encodeURI(location) },
         }
         return response
       }
@@ -214,8 +209,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
   return options?.replace ? router.replace(to) : router.push(to)
 }
 
-/** 
- * This will abort navigation within a Nuxt route middleware handler. 
+/**
+ * This will abort navigation within a Nuxt route middleware handler.
  * @since 3.0.0
  */
 export const abortNavigation = (err?: string | Partial<NuxtError>) => {

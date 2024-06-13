@@ -1,8 +1,8 @@
 <script setup lang="ts">
 defineRouteRules({
   headers: {
-    'x-extend': 'added in routeRules'
-  }
+    'x-extend': 'added in routeRules',
+  },
 })
 </script>
 

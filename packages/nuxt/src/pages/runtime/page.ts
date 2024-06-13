@@ -1,12 +1,11 @@
-import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
 import { RouterView } from '#vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
 
-import { toArray } from './utils'
+import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
-import { generateRouteKey, wrapInKeepAlive } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
@@ -20,25 +19,25 @@ export default defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: String
+      type: String,
     },
     transition: {
       type: [Boolean, Object] as any as () => boolean | TransitionProps,
-      default: undefined
+      default: undefined,
     },
     keepalive: {
       type: [Boolean, Object] as any as () => boolean | KeepAliveProps,
-      default: undefined
+      default: undefined,
     },
     route: {
-      type: Object as () => RouteLocationNormalized
+      type: Object as () => RouteLocationNormalized,
     },
     pageKey: {
       type: [Function, String] as unknown as () => string | ((route: RouteLocationNormalizedLoaded) => string),
-      default: null
-    }
+      default: null,
+    },
   },
-  setup (props, { attrs, expose }) {
+  setup (props, { attrs, slots, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -108,7 +107,7 @@ export default defineComponent({
             props.transition,
             routeProps.route.meta.pageTransition,
             defaultPageTransition,
-            { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } }
+            { onAfterLeave: () => { nuxtApp.callHook('page:transition:finish', routeProps.Component) } },
           ].filter(Boolean))
 
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
@@ -116,36 +115,36 @@ export default defineComponent({
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) }
+              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) },
             }, {
               default: () => {
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
-                  vnode: routeProps.Component,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
-                  vnodeRef: pageRef
+                  vnodeRef: pageRef,
                 })
                 if (import.meta.client && keepaliveConfig) {
                   (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
                 return providerVNode
-              }
-            })
+              },
+            }),
             )).default()
 
           return vnode
-        }
+        },
       })
     }
-  }
+  },
 })
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
     ...prop,
-    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined
+    onAfterLeave: prop.onAfterLeave ? toArray(prop.onAfterLeave) : undefined,
   }))
   return defu(..._props as [TransitionProps, TransitionProps])
 }

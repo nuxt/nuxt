@@ -8,7 +8,7 @@ export function registerVirtualModules () {
   const virtualModules = new VirtualModulesPlugin(nuxt.vfs)
   const writeFiles = () => {
     for (const filePath in nuxt.vfs) {
-      virtualModules.writeModule(filePath, nuxt.vfs[filePath])
+      virtualModules.writeModule(filePath, nuxt.vfs[filePath] || '')
     }
   }
 

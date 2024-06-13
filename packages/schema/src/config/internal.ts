@@ -23,8 +23,11 @@ export default defineUntypedSchema({
   _nuxtConfigFiles: [],
   /** @private */
   appDir: '',
-  /** @private */
+  /**
+   * @private
+   * @type {Array<{ meta: ModuleMeta; timings?: Record<string, number | undefined>; entryPath?: string }>}
+   */
   _installedModules: [],
   /** @private */
-  _modules: []
+  _modules: [],
 })

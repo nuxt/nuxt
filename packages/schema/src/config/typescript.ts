@@ -23,7 +23,35 @@ export default defineUntypedSchema({
      * @type {'vite' | 'webpack' | 'shared' | false | undefined}
      */
     builder: {
-      $resolve: val => val ?? null
+      $resolve: val => val ?? null,
+    },
+
+    /**
+     * Modules to generate deep aliases for within `compilerOptions.paths`. This does not yet support subpaths.
+     * It may be necessary when using Nuxt within a pnpm monorepo with `shamefully-hoist=false`.
+     */
+    hoist: {
+      $resolve: (val) => {
+        const defaults = [
+          // Nitro auto-imported/augmented dependencies
+          'nitropack',
+          'defu',
+          'h3',
+          'consola',
+          'ofetch',
+          // Key nuxt dependencies
+          '@unhead/vue',
+          '@nuxt/devtools',
+          'vue',
+          '@vue/runtime-core',
+          '@vue/compiler-sfc',
+          '@vue/runtime-dom',
+          'vue-router',
+          '@nuxt/schema',
+          'nuxt',
+        ]
+        return val === false ? [] : (Array.isArray(val) ? val.concat(defaults) : defaults)
+      },
     },
 
     /**
@@ -50,9 +78,12 @@ export default defineUntypedSchema({
     /**
      * Generate a `*.vue` shim.
      *
-     * We recommend instead either enabling [**Take Over Mode**](https://vuejs.org/guide/typescript/overview.html#volar-takeover-mode) or adding
-     * TypeScript Vue Plugin (Volar)** 👉 [[Download](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin)].
+     * We recommend instead letting the [official Vue extension](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+     * generate accurate types for your components.
+     *
+     * Note that you may wish to set this to `true` if you are using other libraries, such as ESLint,
+     * that are unable to understand the type of `.vue` files.
      */
-    shim: true
-  }
+    shim: false,
+  },
 })

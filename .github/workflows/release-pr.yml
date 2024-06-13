@@ -1,4 +1,4 @@
-name: release
+name: release-pr
 
 on:
   issue_comment:
@@ -22,16 +22,16 @@ jobs:
 
     steps:
       - name: Ensure action is by maintainer
-        uses: octokit/request-action@89697eb6635e52c6e1e5559f15b5c91ba5100cb0 # v2.1.9
+        uses: octokit/request-action@872c5c97b3c85c23516a572f02b31401ef82415d # v2.3.1
         id: check_role
         with:
           route: GET /repos/nuxt/nuxt/collaborators/${{ github.event.comment.user.login }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
-          ref: refs/pull/${{ github.event.issue.number }}/merge
+          ref: ${{ github.event.issue.pull_request.head.sha }}
           fetch-depth: 0
 
       - run: corepack enable

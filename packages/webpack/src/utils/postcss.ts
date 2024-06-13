@@ -6,24 +6,21 @@ import { defu } from 'defu'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
+const ensureItemIsLast = (item: string) => (arr: string[]) => {
+  const index = arr.indexOf(item)
+  if (index !== -1) {
+    arr.splice(index, 1)
+    arr.push(item)
+  }
+  return arr
+}
+
 const orderPresets = {
-  cssnanoLast (names: string[]) {
-    const nanoIndex = names.indexOf('cssnano')
-    if (nanoIndex !== names.length - 1) {
-      names.push(names.splice(nanoIndex, 1)[0])
-    }
-    return names
-  },
-  autoprefixerLast (names: string[]) {
-    const nanoIndex = names.indexOf('autoprefixer')
-    if (nanoIndex !== names.length - 1) {
-      names.push(names.splice(nanoIndex, 1)[0])
-    }
-    return names
-  },
+  cssnanoLast: ensureItemIsLast('cssnano'),
+  autoprefixerLast: ensureItemIsLast('autoprefixer'),
   autoprefixerAndCssnanoLast (names: string[]) {
     return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
-  }
+  },
 }
 
 export const getPostcssConfig = (nuxt: Nuxt) => {
@@ -47,18 +44,18 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       'postcss-import': {
         resolve: createResolver({
           alias: { ...nuxt.options.alias },
-          modules: nuxt.options.modulesDir
-        })
+          modules: nuxt.options.modulesDir,
+        }),
       },
 
       /**
        * https://github.com/postcss/postcss-url
        */
-      'postcss-url': {}
+      'postcss-url': {},
     },
     sourceMap: nuxt.options.webpack.cssSourceMap,
     // Array, String or Function
-    order: 'autoprefixerAndCssnanoLast'
+    order: 'autoprefixerAndCssnanoLast',
   })
 
   // Keep the order of default plugins
@@ -76,6 +73,6 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
   return {
     sourceMap: nuxt.options.webpack.cssSourceMap,
     ...nuxt.options.webpack.postcss,
-    postcssOptions
+    postcssOptions,
   }
 }

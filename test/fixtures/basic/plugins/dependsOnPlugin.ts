@@ -8,5 +8,5 @@ export default defineNuxtPlugin({
     }
     await new Promise(resolve => setTimeout(resolve, 100))
   },
-  parallel: true
+  parallel: true,
 })

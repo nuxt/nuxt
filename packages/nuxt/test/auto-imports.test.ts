@@ -6,18 +6,19 @@ import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
+import { registry as scriptRegistry } from '@nuxt/scripts/registry'
 import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets } from '../src/imports/presets'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
     { name: 'ref', as: 'ref', from: 'vue' },
     { name: 'computed', as: 'computed', from: 'bar' },
-    { name: 'foo', as: 'foo', from: 'excluded' }
+    { name: 'foo', as: 'foo', from: 'excluded' },
   ]
 
   const ctx = createUnimport({
-    imports
+    imports,
   })
 
   const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' }) as Plugin
@@ -73,7 +74,6 @@ describe('imports:nuxt', () => {
     }
   } catch (e) {
     it('should import composables', () => {
-      // eslint-disable-next-line no-console
       console.error(e)
       expect(false).toBe(true)
     })
@@ -181,7 +181,7 @@ const excludedVueHelpers = [
   'DeprecationTypes',
   'ErrorCodes',
   'TrackOpTypes',
-  'TriggerOpTypes'
+  'TriggerOpTypes',
 ]
 
 describe('imports:vue', () => {
@@ -193,4 +193,25 @@ describe('imports:vue', () => {
       expect(defaultPresets.find(a => a.from === 'vue')!.imports).toContain(name)
     })
   }
+})
+
+describe('imports:nuxt/scripts', () => {
+  const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
+  const globalScripts = new Set([
+    'useScript',
+    'useAnalyticsPageEvent',
+    'useElementScriptTrigger',
+    'useConsentScriptTrigger',
+    // registered separately
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAnalytics',
+  ])
+  it.each(scriptsStubsPreset.imports)(`should register %s from @nuxt/scripts`, (name) => {
+    if (globalScripts.has(name)) { return }
+
+    expect(scripts).toContain(name)
+  })
+  it.each(scripts)(`should register %s from @nuxt/scripts`, (name) => {
+    expect(scriptsStubsPreset.imports).toContain(name)
+  })
 })

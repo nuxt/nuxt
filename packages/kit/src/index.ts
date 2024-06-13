@@ -10,6 +10,7 @@ export * from './loader/nuxt'
 
 // Utils
 export * from './imports'
+export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
 export * from './build'
 export * from './compatibility'
 export * from './components'
@@ -20,7 +21,7 @@ export * from './pages'
 export * from './plugin'
 export * from './resolve'
 export * from './nitro'
-export * from './template'
+export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template'
 export * from './logger'
 
 // Internal Utils
@@ -30,7 +31,7 @@ export {
   requireModule,
   importModule,
   tryImportModule,
-  tryRequireModule
+  tryRequireModule,
 } from './internal/cjs'
 export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
 export { tryResolveModule } from './internal/esm'

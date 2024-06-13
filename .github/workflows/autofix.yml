@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
         with:
@@ -25,9 +25,6 @@ jobs:
 
       - name: Build (stub)
         run: pnpm dev:prepare
-
-      - name: Lint (code)
-        run: pnpm lint:fix
 
       - name: Test (unit)
         run: pnpm test:unit -u
@@ -51,5 +48,8 @@ jobs:
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
         run: pnpm vitest run bundle -u
+
+      - name: Lint (code)
+        run: pnpm lint:fix
 
       - uses: autofix-ci/action@ea32e3a12414e6d3183163c3424a7d7a8631ad84

@@ -9,7 +9,7 @@ import { toArray } from '../utils'
 
 /** @deprecated */
 // TODO: Remove support for compiling ejs templates in v4
-export async function compileTemplate <T>(template: NuxtTemplate<T>, ctx: any) {
+export async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: any) {
   const data = { ...ctx, options: template.options }
   if (template.src) {
     try {
@@ -27,7 +27,7 @@ export async function compileTemplate <T>(template: NuxtTemplate<T>, ctx: any) {
 }
 
 /** @deprecated */
-const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"{(.+)}"(?=,?$)/gm, r => JSON.parse(r).replace(/^{(.*)}$/, '$1'))
+const serialize = (data: any) => JSON.stringify(data, null, 2).replace(/"\{(.+)\}"(?=,?$)/gm, r => JSON.parse(r).replace(/^\{(.*)\}$/, '$1'))
 
 /** @deprecated */
 const importSources = (sources: string | string[], { lazy = false } = {}) => {

@@ -6,8 +6,8 @@ import { distDir } from './dirs'
 export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
   const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> } = {
     postcss: {
-      plugins: []
-    }
+      plugins: [],
+    },
   }
 
   const lastPlugins = ['autoprefixer', 'cssnano']
@@ -18,8 +18,8 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
       const plugin = requireModule(name, {
         paths: [
           ...nuxt.options.modulesDir,
-          distDir
-        ]
+          distDir,
+        ],
       })
       return plugin(opts)
     })

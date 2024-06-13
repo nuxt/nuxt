@@ -18,14 +18,15 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
   }
   if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  code = extractScriptContent(code) || code
+  const script = extractScriptContent(code)
+  code = script?.code || code
 
   let rule: NitroRouteConfig | null = null
 
-  const js = await transform(code, { loader: 'ts' })
+  const js = await transform(code, { loader: script?.loader || 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
-    ecmaVersion: 'latest'
+    ecmaVersion: 'latest',
   }) as Node, {
     enter (_node) {
       if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
@@ -39,7 +40,7 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
           throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
         }
       }
-    }
+    },
   })
 
   ruleCache[code] = rule
