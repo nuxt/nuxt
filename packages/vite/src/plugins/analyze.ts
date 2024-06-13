@@ -22,7 +22,7 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
             const module = bundle.modules[moduleId]
             minifiedModuleEntryPromises.push(
               transform(module.code || '', { minify: true })
-                .then((result) => [moduleId, { ...module, code: result.code }])
+                .then(result => [moduleId, { ...module, code: result.code }]),
             )
           }
           bundle.modules = Object.fromEntries(await Promise.all(minifiedModuleEntryPromises))
