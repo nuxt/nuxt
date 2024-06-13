@@ -43,24 +43,19 @@ export default class VueSSRClientPlugin {
 
       const allFiles = new Set<string>()
       const asyncFiles = new Set<string>()
-
-      for (const asset of stats.assets!) {
-        const file = asset.name
-        if (!isHotUpdate(file)) {
-          allFiles.add(file)
-          if (initialFiles.has(file)) { continue }
-          if (isJS(file) || isCSS(file)) {
-            asyncFiles.add(file)
-          }
-        }
-      }
-
       const assetsMapping: Record<string, string[]> = {}
-      for (const { name, chunkNames = [] } of stats.assets!) {
-        if (isJS(name) && !isHotUpdate(name)) {
+
+      for (const { name: file, chunkNames = [] } of stats.assets!) {
+        if (isHotUpdate(file)) { continue }
+        allFiles.add(file)
+        const isFileJS = isJS(file)
+        if (!initialFiles.has(file) && (isFileJS || isCSS(file))) {
+          asyncFiles.add(file)
+        }
+        if (isFileJS) {
           const componentHash = hash(chunkNames.join('|'))
           const map = assetsMapping[componentHash] ||= []
-          map.push(name)
+          map.push(file)
         }
       }
 
