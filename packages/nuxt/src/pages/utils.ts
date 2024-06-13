@@ -173,7 +173,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -505,19 +505,20 @@ async function createClientPage(loader) {
 }`)
       }
 
-      if (route.children != null) {
+      if (route.children) {
         metaRoute.children = route.children
       }
 
-      if (overrideMeta) {
-        metaRoute.name = `${metaImportName}?.name`
-        metaRoute.path = `${metaImportName}?.path ?? ''`
+      if (route.meta) {
+        metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
+      }
 
+      if (overrideMeta) {
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
           if (markedDynamic.has(key)) { continue }
-          metaRoute[key] = route[key] ?? metaRoute[key]
+          metaRoute[key] = route[key] ?? `${metaImportName}?.${key}`
         }
 
         // set to extracted value or delete if none extracted
@@ -532,10 +533,6 @@ async function createClientPage(loader) {
           metaRoute[key] = route[key]
         }
       } else {
-        if (route.meta != null) {
-          metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
-        }
-
         if (route.alias != null) {
           metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
         }

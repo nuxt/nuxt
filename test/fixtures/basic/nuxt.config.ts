@@ -33,6 +33,7 @@ export default defineNuxtConfig({
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   appId: 'nuxt-app-basic',
+  devtools: { enabled: true },
   build: {
     transpile: [
       (ctx) => {
@@ -149,6 +150,17 @@ export default defineNuxtConfig({
         }
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
+      })
+    },
+    function (_options, nuxt) {
+      // to check that page metadata is preserved
+      nuxt.hook('pages:extend', (pages) => {
+        const customName = pages.find(page => page.name === 'some-custom-name')
+        if (!customName) { throw new Error('Page with custom name not found') }
+        if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
+
+        customName.meta ||= {}
+        customName.meta.someProp = true
       })
     },
     // To test falsy module values
