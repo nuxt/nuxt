@@ -208,7 +208,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
   let foundMeta = false
 
   walk(ast, {
-    enter(node) {
+    enter (node) {
       if (foundMeta) { return }
 
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
@@ -269,7 +269,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
         extractedMeta.meta ??= {}
         extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
       }
-    }
+    },
   })
 
   metaCache[absolutePath] = extractedMeta
