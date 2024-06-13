@@ -153,7 +153,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     })
 
     // Resolving `to` value from `to` and `href` props
-    const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
+    const to: ComputedRef<RouteLocationRaw> = computed(() => {
       checkPropConflicts(props, 'to', 'href')
       const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
       if (isExternal.value) { return path }
