@@ -124,7 +124,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const router = useRouter()
     const config = useRuntimeConfig()
 
-    const hasTarget = computed(() => props.target && props.target !== '_self')
+    const hasTarget = computed(() => !!props.target && props.target !== '_self')
 
     // Lazily check whether to.value has a protocol
     const isAbsoluteUrl = computed(() => {
@@ -139,11 +139,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const isExternal = computed<boolean>(() => {
       // External prop is explicitly set
       if (props.external) {
-        return true
-      }
-
-      // When `target` prop is set, link is external
-      if (hasTarget.value) {
         return true
       }
 
@@ -168,12 +163,21 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
 
     // Resolves `to` value if it's a route location object
-    const href = computed(() => (typeof to.value === 'object'
-      ? isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value)?.href ?? null
-      : (to.value && !isExternal.value && !isAbsoluteUrl.value)
-          ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-          : to.value
-    ))
+    const href = computed(() => {
+      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+
+      if (isExternal.value) {
+        return typeof to.value === 'object'
+          ? resolveRouteObject(to.value)
+          : resolveTrailingSlashBehavior(to.value, router.resolve /* will not be called */) as string
+      }
+
+      if (typeof to.value === 'object') {
+        return router.resolve(to.value)?.href ?? null
+      }
+
+      return resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve /* will not be called */)
+    })
 
     return {
       to,
@@ -186,7 +190,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate () {
-        await navigateTo(href.value, { replace: props.replace, external: isExternal.value })
+        await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
       },
     } satisfies ReturnType<typeof useLink> & {
       to: ComputedRef<string | RouteLocationRaw>
@@ -315,7 +319,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                       : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
                     await Promise.all([
                       nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
-                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+                      !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
                     ])
                     prefetched.value = true
                   })
@@ -341,7 +345,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value) {
+        if (!isExternal.value && !hasTarget.value) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -413,7 +417,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             },
             rel,
             target,
-            isExternal: isExternal.value,
+            isExternal: isExternal.value || hasTarget.value,
             isActive: false,
             isExactActive: false,
           })
