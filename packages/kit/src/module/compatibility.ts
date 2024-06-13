@@ -52,7 +52,9 @@ export async function getNuxtModuleVersion (module: string | NuxtModule, nuxt: N
   if (!moduleMeta.name) { return false }
   // maybe the version got attached within the installed module instance?
   for (const m of nuxt.options._installedModules) {
-    if (m.meta.name === moduleMeta.name && m.meta.version) { return m.meta.version }
+    if (m.meta.name === moduleMeta.name && m.meta.version) {
+      return m.meta.version
+    }
   }
   // it's possible that the module will be installed, it just hasn't been done yet, preemptively load the instance
   if (hasNuxtModule(moduleMeta.name)) {
