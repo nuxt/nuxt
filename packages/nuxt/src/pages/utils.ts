@@ -9,6 +9,7 @@ import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
+import { walk } from 'estree-walker'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
@@ -199,70 +200,77 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     ecmaVersion: 'latest',
     ranges: true,
   }) as unknown as Program
-  const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
-  if (!pageMetaAST) {
-    metaCache[absolutePath] = {}
-    return {}
-  }
 
-  const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
   const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
   const dynamicProperties = new Set<keyof NuxtPage>()
 
-  for (const key of extractionKeys) {
-    const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
-    if (!property) { continue }
+  let foundMeta = false
 
-    if (property.value.type === 'ObjectExpression') {
-      const valueString = js.code.slice(property.value.range![0], property.value.range![1])
-      try {
-        extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
-      } catch {
-        console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-        dynamicProperties.add(key)
-        continue
-      }
-    }
+  walk(ast, {
+    enter(node) {
+      if (foundMeta) { return }
 
-    if (property.value.type === 'ArrayExpression') {
-      const values = []
-      for (const element of property.value.elements) {
-        if (!element) {
+      if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
+
+      foundMeta = true
+      const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+
+      for (const key of extractionKeys) {
+        const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
+        if (!property) { continue }
+
+        if (property.value.type === 'ObjectExpression') {
+          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+          try {
+            extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
+          } catch {
+            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+            dynamicProperties.add(key)
+            continue
+          }
+        }
+
+        if (property.value.type === 'ArrayExpression') {
+          const values = []
+          for (const element of property.value.elements) {
+            if (!element) {
+              continue
+            }
+            if (element.type !== 'Literal' || typeof element.value !== 'string') {
+              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+              dynamicProperties.add(key)
+              continue
+            }
+            values.push(element.value)
+          }
+          extractedMeta[key] = values
           continue
         }
-        if (element.type !== 'Literal' || typeof element.value !== 'string') {
-          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+
+        if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
+          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
           dynamicProperties.add(key)
           continue
         }
-        values.push(element.value)
+        extractedMeta[key] = property.value.value
       }
-      extractedMeta[key] = values
-      continue
+
+      const extraneousMetaKeys = pageMetaArgument.properties
+        .filter(property => property.type === 'Property' && property.key.type === 'Identifier' && !(extractionKeys as unknown as string[]).includes(property.key.name))
+        // @ts-expect-error inferred types have been filtered out
+        .map(property => property.key.name)
+
+      if (extraneousMetaKeys.length) {
+        dynamicProperties.add('meta')
+      }
+
+      if (dynamicProperties.size) {
+        extractedMeta.meta ??= {}
+        extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
+      }
     }
-
-    if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
-      console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
-      dynamicProperties.add(key)
-      continue
-    }
-    extractedMeta[key] = property.value.value
-  }
-
-  const extraneousMetaKeys = pageMetaArgument.properties
-    .filter(property => property.type === 'Property' && property.key.type === 'Identifier' && !(extractionKeys as unknown as string[]).includes(property.key.name))
-    // @ts-expect-error inferred types have been filtered out
-    .map(property => property.key.name)
-
-  if (extraneousMetaKeys.length) {
-    dynamicProperties.add('meta')
-  }
-
-  if (dynamicProperties.size) {
-    extractedMeta.meta ??= {}
-    extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
-  }
+  })
 
   metaCache[absolutePath] = extractedMeta
   return extractedMeta

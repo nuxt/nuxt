@@ -51,13 +51,13 @@ describe('page metadata', () => {
   it('should extract serialisable metadata in options api', async () => {
     const meta = await getRouteMeta(`
     <script>
-    definePageMeta({
-      name: 'some-custom-name',
-      path: '/some-custom-path',
-      middleware: (from, to) => console.warn('middleware'),
-    })
     export default {
       setup() {
+        definePageMeta({
+          name: 'some-custom-name',
+          path: '/some-custom-path',
+          middleware: (from, to) => console.warn('middleware'),
+        })
       },
     };
     </script>
