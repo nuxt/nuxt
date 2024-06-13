@@ -12,12 +12,7 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 }
 
 const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
-const layerSchema = Object.create(null)
-for (const key of layerSchemaKeys) {
-  if (key in NuxtConfigSchema) {
-    layerSchema[key] = NuxtConfigSchema[key]
-  }
-}
+const layerSchema = Object.fromEntries(Object.entries(NuxtConfigSchema).filter(([key]) => layerSchemaKeys.includes(key)))
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory

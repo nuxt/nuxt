@@ -61,7 +61,7 @@ function getRequireCacheItem (id: string) {
   }
 }
 
-export function getNodeModulesPaths (paths?: string[] | string) {
+export function getModulePaths (paths?: string[] | string) {
   return ([] as Array<string | undefined>).concat(
     global.__NUXT_PREPATHS__,
     paths || [],
@@ -73,7 +73,7 @@ export function getNodeModulesPaths (paths?: string[] | string) {
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
   return normalize(_require.resolve(id, {
-    paths: getNodeModulesPaths(opts.paths),
+    paths: getModulePaths(opts.paths),
   }))
 }
 
