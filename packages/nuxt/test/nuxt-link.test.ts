@@ -99,11 +99,11 @@ describe('nuxt-link:isExternal', () => {
   })
 
   it('returns `false` when `to` is a route location object', () => {
-    expect(nuxtLink({ to: { path: '/to' } satisfies RouteLocationRaw }).type).toBe(INTERNAL)
+    expect(nuxtLink({ to: { path: '/to' } }).type).toBe(INTERNAL)
   })
 
   it('returns `true` when `to` has a `target`', () => {
-    expect(nuxtLink({ to: { path: '/to' } satisfies RouteLocationRaw, target: '_blank' }).type).toBe(EXTERNAL)
+    expect(nuxtLink({ to: { path: '/to' }, target: '_blank' }).type).toBe(EXTERNAL)
   })
 
   it('honors `external` prop', () => {
@@ -126,7 +126,12 @@ describe('nuxt-link:propsOrAttributes', () => {
       })
 
       it('resolves route location object', () => {
-        expect(nuxtLink({ to: { path: '/to' } satisfies RouteLocationRaw, external: true }).props.href).toBe('/to')
+        expect(nuxtLink({ to: { path: '/to' }, external: true }).props.href).toBe('/to')
+      })
+
+      it('applies trailing slash behaviour', () => {
+        expect(nuxtLink({ to: { path: '/to' }, external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to', external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
       })
     })
 
@@ -215,7 +220,7 @@ describe('nuxt-link:propsOrAttributes', () => {
     describe('to', () => {
       it('forwards `to` prop', () => {
         expect(nuxtLink({ to: '/to' }).props.to).toBe('/to')
-        expect(nuxtLink({ to: { path: '/to' } satisfies RouteLocationRaw }).props.to).toEqual({ path: '/to' })
+        expect(nuxtLink({ to: { path: '/to' } }).props.to).toEqual({ path: '/to' })
       })
     })
 

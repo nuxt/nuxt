@@ -167,9 +167,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       if (!to.value || isAbsoluteUrl.value) { return to.value as string }
 
       if (isExternal.value) {
-        return typeof to.value === 'object'
-          ? resolveRouteObject(to.value)
-          : resolveTrailingSlashBehavior(to.value, router.resolve /* will not be called */) as string
+        const path = typeof to.value === 'object' ? resolveRouteObject(to.value) : to.value
+        return resolveTrailingSlashBehavior(path, router.resolve /* will not be called */) as string
       }
 
       if (typeof to.value === 'object') {
