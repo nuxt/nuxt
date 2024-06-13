@@ -93,16 +93,17 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       }
 
       // TODO: remove css from vite preload arrays
-      const styleArray: [string, string][] = []
-      for (const key in emitted) {
-        styleArray.push([key, `() => import('./${this.getFileName(emitted[key])}').then(interopDefault)`])
-      }
 
       this.emitFile({
         type: 'asset',
         fileName: 'styles.mjs',
-        source: `const interopDefault = r => r.default || r || []
-export default ${genObjectFromRawEntries(styleArray)}`,
+        source:
+          [
+            'const interopDefault = r => r.default || r || []',
+            `export default ${genObjectFromRawEntries(
+              Object.entries(emitted).map(([key, value]) => [key, `() => import('./${this.getFileName(value)}').then(interopDefault)`]) as [string, string][],
+            )}`,
+          ].join('\n'),
       })
     },
     renderChunk (_code, chunk) {

@@ -23,17 +23,15 @@ const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 
 export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
   const composableMeta: Record<string, any> = {}
-  const composableLength: number[] = new Array(options.composables.length)
-  const composableKeyed: string[] = new Array(options.composables.length)
-  for (let i = 0; i < options.composables.length; i++) {
-    const { name, argumentLength, ...meta } = options.composables[i]
+  const composableLengths = new Set<number>()
+  const keyedFunctions = new Set<string>()
+  for (const { name, ...meta } of options.composables) {
     composableMeta[name] = meta
-    composableLength[i] = argumentLength
-    composableKeyed[i] = name
+    keyedFunctions.add(name)
+    composableLengths.add(meta.argumentLength)
   }
 
-  const maxLength = Math.max(...composableLength)
-  const keyedFunctions = new Set(composableKeyed)
+  const maxLength = Math.max(...composableLengths)
   const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...keyedFunctions].map(f => escapeRE(f)).join('|')})\\b`)
 
   return {
