@@ -151,6 +151,17 @@ export default defineNuxtConfig({
         internalParent!.children = newPages
       })
     },
+    function (_options, nuxt) {
+      // to check that page metadata is preserved
+      nuxt.hook('pages:extend', (pages) => {
+        const customName = pages.find(page => page.name === 'some-custom-name')
+        if (!customName) { throw new Error('Page with custom name not found') }
+        if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
+
+        customName.meta ||= {}
+        customName.meta.someProp = true
+      })
+    },
     // To test falsy module values
     undefined,
   ],

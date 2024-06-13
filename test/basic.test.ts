@@ -166,6 +166,21 @@ describe('pages', () => {
     expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
   })
 
+  it('preserves page metadata added in pages:extend hook', async () => {
+    const html = await $fetch<string>('/some-custom-path')
+    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+      "{
+        "name": "some-custom-name",
+        "path": "/some-custom-path",
+        "validate": "() => true",
+        "middleware": [
+          "() => true"
+        ],
+        "otherValue": "{\\"foo\\":\\"bar\\"}"
+      }"
+    `)
+  })
+
   it('validates routes', async () => {
     const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
