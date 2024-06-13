@@ -231,7 +231,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
 
     const viteMiddleware = defineEventHandler(async (event) => {
-      const viteRoutes = []
+      const viteRoutes: string[] = []
       for (const viteRoute of viteServer.middlewares.stack) {
         const m = viteRoute.route
         if (m.length > 1) {
