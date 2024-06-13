@@ -42,10 +42,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   nuxtConfig._nuxtConfigFiles = [configFile]
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
+  const processedLayers = new Set<string>()
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     layer.config = layer.config || {}
-    layer.config.rootDir = layer.config.rootDir ?? layer.cwd
+    layer.config.rootDir = layer.config.rootDir ?? layer.cwd!
+
+    // Only process/resolve layers once
+    if (processedLayers.has(layer.config.rootDir)) { continue }
+    processedLayers.add(layer.config.rootDir)
 
     // Normalise layer directories
     layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig
