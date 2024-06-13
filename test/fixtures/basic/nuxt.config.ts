@@ -33,7 +33,6 @@ export default defineNuxtConfig({
   buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   appId: 'nuxt-app-basic',
-  devtools: { enabled: true },
   build: {
     transpile: [
       (ctx) => {
