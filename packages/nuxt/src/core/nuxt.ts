@@ -4,7 +4,7 @@ import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -49,7 +49,10 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
-    close: () => Promise.resolve(hooks.callHook('close', nuxt)),
+    close: async () => {
+      await hooks.callHook('close', nuxt)
+      hooks.removeAllHooks()
+    },
     vfs: {},
     apps: {},
   }
@@ -142,6 +145,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Add nuxt types
   nuxt.hook('prepare:types', (opts) => {
     opts.references.push({ types: 'nuxt' })
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app-defaults.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
@@ -661,8 +665,22 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options._modules.push('@nuxt/telemetry')
   }
 
-  // Ensure we share runtime config between Nuxt and Nitro
-  options.runtimeConfig = options.nitro.runtimeConfig as RuntimeConfig
+  // Ensure we share key config between Nuxt and Nitro
+  createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
+  createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
+
+  // prevent replacement of options.nitro
+  const nitroOptions = options.nitro
+  Object.defineProperties(options, {
+    nitro: {
+      configurable: false,
+      enumerable: true,
+      get: () => nitroOptions,
+      set (value) {
+        Object.assign(nitroOptions, value)
+      },
+    },
+  })
 
   const nuxt = createNuxt(options)
 
@@ -710,4 +728,32 @@ function deduplicateArray<T = unknown> (maybeArray: T): T {
     }
   }
   return fresh as T
+}
+
+function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: string[]) {
+  let sharedValue = sourceValue
+
+  for (const path of paths) {
+    const segments = path.split('.')
+    const key = segments.pop()!
+    let parent: Record<string, any> = options
+
+    while (segments.length) {
+      const key = segments.shift()!
+      parent = parent[key] || (parent[key] = {})
+    }
+
+    delete parent[key]
+
+    Object.defineProperties(parent, {
+      [key]: {
+        configurable: false,
+        enumerable: true,
+        get: () => sharedValue,
+        set (value) {
+          sharedValue = value
+        },
+      },
+    })
+  }
 }

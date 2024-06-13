@@ -109,6 +109,10 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useId'],
     from: '#app/composables/id',
   },
+  {
+    imports: ['useRouteAnnouncer'],
+    from: '#app/composables/route-announcer',
+  },
 ]
 
 export const scriptsStubsPreset = {
@@ -119,6 +123,7 @@ export const scriptsStubsPreset = {
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',
+    'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
     'useScriptFathomAnalytics',
     'useScriptMatomoAnalytics',
