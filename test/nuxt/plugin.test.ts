@@ -313,4 +313,66 @@ describe('plugin hooks', () => {
       'listen B',
     ])
   })
+
+  it('it runs after plugin', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup () {
+          sequence.push('start A')
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        setup (nuxt) {
+          nuxt.runAfterPlugin('A', () => {
+            sequence.push('after A')
+          })
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start A',
+      'after A',
+    ])
+  })
+
+  it('it registers callback before execution', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup (nuxt) {
+          sequence.push('start A')
+          nuxt.runAfterPlugin('B', () => {
+            sequence.push('after B')
+          })
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        dependsOn: ['A'],
+        setup () {
+          sequence.push('start B')
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+
+    expect(nuxtApp._resolvedPlugins).toMatchObject(['A', 'B'])
+
+    expect(sequence).toMatchObject([
+      'start A',
+      'start B',
+      'after B',
+    ])
+  })
 })
