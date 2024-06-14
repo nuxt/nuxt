@@ -136,6 +136,7 @@ function createGranularWatcher () {
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
+    nuxt.hook('close', () => watcher?.close())
   }
 }
 

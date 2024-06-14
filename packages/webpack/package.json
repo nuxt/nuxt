@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.11.2",
+  "version": "3.12.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -62,7 +62,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.0",
     "vue-loader": "^17.4.2",
-    "webpack": "^5.91.0",
+    "webpack": "^5.92.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-dev-middleware": "^7.2.1",
     "webpack-hot-middleware": "^2.26.1",

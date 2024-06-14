@@ -165,11 +165,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
     const config = useRuntimeConfig(ssrContext.event)
     ssrContext.modules = ssrContext.modules || new Set<string>()
     ssrContext!.payload = {
-      _errors: {},
       serverRendered: false,
-      data: {},
-      state: {},
-      once: new Set<string>(),
     }
     ssrContext.config = {
       public: config.public,
@@ -404,7 +400,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // 2. Styles
   head.push({ style: inlinedStyles })
   if (!isRenderingIsland || import.meta.dev) {
-    const link = []
+    const link: Link[] = []
     for (const style in styles) {
       const resource = styles[style]
       // Do not add links to resources that are inlined (vite v5+)

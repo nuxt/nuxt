@@ -166,6 +166,21 @@ describe('pages', () => {
     expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
   })
 
+  it('preserves page metadata added in pages:extend hook', async () => {
+    const html = await $fetch<string>('/some-custom-path')
+    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+      "{
+        "name": "some-custom-name",
+        "path": "/some-custom-path",
+        "validate": "() => true",
+        "middleware": [
+          "() => true"
+        ],
+        "otherValue": "{\\"foo\\":\\"bar\\"}"
+      }"
+    `)
+  })
+
   it('validates routes', async () => {
     const { status, headers } = await fetch('/forbidden')
     expect(status).toEqual(404)
@@ -743,6 +758,24 @@ describe('nuxt links', () => {
         ],
       }
     `)
+  })
+
+  it('respects external links in edge cases', async () => {
+    const html = await $fetch<string>('/nuxt-link/custom-external')
+    const hrefs = html.match(/<a[^>]*href="([^"]+)"/g)
+    expect(hrefs).toMatchInlineSnapshot(`
+      [
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="/missing-page/"",
+        "<a href="/missing-page/"",
+      ]
+    `)
+
+    const { page, consoleLogs } = await renderPage('/nuxt-link/custom-external')
+    const warnings = consoleLogs.filter(c => c.text.includes('No match found for location'))
+    expect(warnings).toMatchInlineSnapshot(`[]`)
+    await page.close()
   })
 
   it('preserves route state', async () => {

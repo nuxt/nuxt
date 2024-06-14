@@ -50,11 +50,14 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   await fse.mkdirp(serverDist)
 
   if (ctx.config.build?.cssCodeSplit === false) {
-    const entryCSS = Object.values(clientManifest as Record<string, { file?: string }>).find(val => (val).file?.endsWith('.css'))?.file
-    if (entryCSS) {
-      const key = relative(ctx.config.root!, ctx.entry)
-      clientManifest[key].css ||= []
-      clientManifest[key].css!.push(entryCSS)
+    for (const key in clientManifest as Record<string, { file?: string }>) {
+      const val = clientManifest[key]
+      if (val.file?.endsWith('.css')) {
+        const key = relative(ctx.config.root!, ctx.entry)
+        clientManifest[key].css ||= []
+        clientManifest[key].css!.push(val.file)
+        break
+      }
     }
   }
 

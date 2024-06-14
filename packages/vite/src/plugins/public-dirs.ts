@@ -25,7 +25,7 @@ export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boole
       resolveId: {
         enforce: 'post',
         handler (id) {
-          if (id === '/__skip_vite' || !id.startsWith('/') || id.startsWith('/@fs')) { return }
+          if (id === '/__skip_vite' || id[0] !== '/' || id.startsWith('/@fs')) { return }
 
           if (resolveFromPublicAssets(id)) {
             return PREFIX + encodeURIComponent(id)

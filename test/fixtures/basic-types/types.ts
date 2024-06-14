@@ -4,6 +4,7 @@ import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
+import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
@@ -241,6 +242,17 @@ describe('modules', () => {
     defineNuxtConfig({ sampleModule: { other: false } })
     // @ts-expect-error we want to ensure we throw type error on invalid key
     defineNuxtConfig({ undeclaredKey: { other: false } })
+  })
+
+  it('preserves options in defineNuxtModule setup without `.with()`', () => {
+    defineNuxtModule<{ foo?: string, baz: number }>({
+      defaults: {
+        baz: 100,
+      },
+      setup: (resolvedOptions) => {
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{ foo?: string, baz: number }>()
+      },
+    })
   })
 })
 
