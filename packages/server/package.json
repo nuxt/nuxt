@@ -25,7 +25,7 @@
     "launch-editor-middleware": "^2.6.1",
     "on-headers": "^1.0.2",
     "pify": "^5.0.0",
-    "serve-placeholder": "^2.0.1",
+    "serve-placeholder": "^2.0.2",
     "serve-static": "^1.15.0",
     "server-destroy": "^1.0.1",
     "ufo": "^1.5.3"
