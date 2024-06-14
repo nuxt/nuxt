@@ -20,7 +20,7 @@ concurrency:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || !((github.base_ref == '2.x') && github.head_ref == 'dev')
+    if: github.event_name == 'push'
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
