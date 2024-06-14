@@ -4628,7 +4628,7 @@ caniuse-api@^3.0.0:
     lodash.memoize "^4.1.2"
     lodash.uniq "^4.5.0"
 
-caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001599, caniuse-lite@^1.0.30001629, caniuse-lite@^1.0.30001632:
+caniuse-lite@^1.0.0, caniuse-lite@^1.0.30001599, caniuse-lite@^1.0.30001629, caniuse-lite@^1.0.30001634:
   version "1.0.30001634"
   resolved "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001634.tgz#aa563c8e7aeaf552f7ead60371bc8d803425deaa"
   integrity sha512-fbBYXQ9q3+yp1q1gBk86tOFs4pyn/yxFm5ZNP18OXJDfA3txImOY9PhfxVggZ4vRHDqoU8NrKU81eN0OtzOgRA==
@@ -13330,7 +13330,7 @@ serialize-javascript@^6.0.0, serialize-javascript@^6.0.2:
   dependencies:
     randombytes "^2.1.0"
 
-serve-placeholder@^2.0.1:
+serve-placeholder@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/serve-placeholder/-/serve-placeholder-2.0.2.tgz#c5db17fb8e906687c275404eaeb29c0d93aacc36"
   integrity sha512-/TMG8SboeiQbZJWRlfTCqMs2DD3SZgWp0kDQePz9yUuCnDfDh/92gf7/PxGhzXTKBIPASIHxFcZndoNbp6QOLQ==
