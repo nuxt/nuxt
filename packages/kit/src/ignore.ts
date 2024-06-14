@@ -49,11 +49,11 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
     return ignorePatterns.map((p) => {
-      const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
+      const [_, negation = '', pattern = p] = p.match(NEGATION_RE) || []
       if (pattern[0] === '*') {
         return p
       }
-      return negation + relative(relativePath, resolve(nuxt.options.rootDir, pattern || p))
+      return negation + relative(relativePath, resolve(nuxt.options.rootDir, pattern))
     })
   }
 
@@ -73,8 +73,8 @@ export function resolveGroupSyntax (group: string): string[] {
     groups = groups.flatMap((group) => {
       const [head, ...tail] = group.split('{')
       if (tail.length) {
-        const [body, ...rest] = tail.join('{').split('}')
-        return body.split(',').map(part => `${head}${part}${rest.join('')}`)
+        const [body = '', ...rest] = tail.join('{').split('}')
+        return body!.split(',').map(part => `${head}${part}${rest.join('')}`)
       }
 
       return group

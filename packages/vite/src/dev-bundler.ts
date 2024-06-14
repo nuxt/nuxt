@@ -91,7 +91,7 @@ ${res.code || '/* empty */'};
 
 async function transformRequestRecursive (opts: TransformOptions, id: string, parent = '<entry>', chunks: Record<string, TransformChunk> = {}) {
   if (chunks[id]) {
-    chunks[id].parents.push(parent)
+    chunks[id]!.parents.push(parent)
     return
   }
   const res = await transformRequest(opts, id)
