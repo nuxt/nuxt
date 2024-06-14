@@ -18,10 +18,10 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
-  const { data, pending, error, refresh, clear } = await useAsyncData(
-    'mountains',
-    () => $fetch('https://api.nuxtjs.dev/mountains')
-  )
+const { data, pending, error, refresh, clear } = await useAsyncData(
+  'mountains',
+  () => $fetch('https://api.nuxtjs.dev/mountains')
+)
 </script>
 ```
 
