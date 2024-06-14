@@ -112,7 +112,7 @@ interface _NuxtApp {
   callHook: _NuxtApp['hooks']['callHook']
 
   runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
-  runAfterPlugin: <T extends () => any>(pluginName: NuxtAppLiterals['pluginName'], fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  runAfterPlugin: (pluginName: NuxtAppLiterals['pluginName'], fn: () => void | Promise<void>) => void | Promise<void>
 
   [key: string]: unknown
 
@@ -276,8 +276,8 @@ export function createNuxtApp (options: CreateOptions) {
       }
       return callWithNuxt(nuxtApp, fn)
     },
-    runAfterPlugin (plugin: NuxtAppLiterals['pluginName'], fn: () => void) {
-      return runAfterPlugin(plugin, fn)
+    async runAfterPlugin (plugin: NuxtAppLiterals['pluginName'], fn: () => void | Promise<void>) {
+      return await runAfterPlugin(nuxtApp, plugin, fn)
     },
     isHydrating: import.meta.client,
     deferHydration () {
@@ -511,18 +511,16 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 }
 
 /** @since 3.13.0 */
-export function runAfterPlugin<T extends (...args: any[]) => any> (pluginName: NuxtAppLiterals['pluginName'], callback: T, nuxt?: NuxtApp | _NuxtApp) {
-  const nuxtApp = nuxt || useNuxtApp()
-
+export async function runAfterPlugin (nuxtApp: NuxtApp | _NuxtApp, pluginName: NuxtAppLiterals['pluginName'], callback: () => void | Promise<void>) {
   if (nuxtApp._resolvedPlugins.includes(pluginName)) {
-    callback()
+    await callback()
     return
   }
 
-  const unhook = nuxtApp.hook('app:plugin:resolved', (name) => {
+  const unhook = nuxtApp.hook('app:plugin:resolved', async (name) => {
     if (pluginName === name) {
       unhook()
-      callback()
+      await callback()
     }
   })
 }
