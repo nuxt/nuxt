@@ -19,14 +19,14 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ```vue [pages/modules.vue]
 <script setup lang="ts">
-const { data, pending, error, refresh } = await useFetch('/api/modules', {
+const { data, pending, error, refresh, clear } = await useFetch('/api/modules', {
   pick: ['title']
 })
 </script>
 ```
 
 ::note
-`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions..
 ::
 
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
@@ -43,7 +43,7 @@ The above example results in `https://api.nuxt.com/modules?param1=value1&param2=
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
+const { data, pending, error, refresh, clear } = await useFetch('/api/auth/login', {
   onRequest({ request, options }) {
     // Set the request headers
     options.headers = options.headers || {}
@@ -128,6 +128,7 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `pending` to `false`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 

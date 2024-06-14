@@ -53,6 +53,7 @@ describe('app config', () => {
 describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
+      'useRouteAnnouncer',
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',

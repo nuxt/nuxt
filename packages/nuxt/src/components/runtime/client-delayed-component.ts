@@ -4,11 +4,11 @@ import type { Component, Ref } from 'vue'
 import type { ObserveFn } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
-import { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callback'
+import { cancelIdleCallback, requestIdleCallback } from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app'
 
-function useIntersectionObserver(options: IntersectionObserverInit) : {observe: ObserveFn} {
-  if (import.meta.server) { return {observe: () => () => {}}}
+function useIntersectionObserver (options: IntersectionObserverInit): { observe: ObserveFn } {
+  if (import.meta.server) { return { observe: () => () => {} } }
 
   let observer: IntersectionObserver | null = null
 
@@ -30,7 +30,7 @@ function useIntersectionObserver(options: IntersectionObserverInit) : {observe: 
   }
 
   const _observer = {
-    observe
+    observe,
   }
 
   return _observer
@@ -100,12 +100,12 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       const isIdle = ref(false)
       let idleHandle: number | null = null
       onMounted(() => {
-        onNuxtReady(()=>{
+        onNuxtReady(() => {
           idleHandle = requestIdleCallback(() => {
             isIdle.value = true
             cancelIdleCallback(idleHandle as unknown as number)
             idleHandle = null
-          }, attrs.loader ?? {timeout: 10000})
+          }, attrs.loader ?? { timeout: 10000 })
         })
       })
       onBeforeUnmount(() => {

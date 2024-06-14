@@ -18,11 +18,12 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
   }
   if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  code = extractScriptContent(code) || code
+  const script = extractScriptContent(code)
+  code = script?.code || code
 
   let rule: NitroRouteConfig | null = null
 
-  const js = await transform(code, { loader: 'ts' })
+  const js = await transform(code, { loader: script?.loader || 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',

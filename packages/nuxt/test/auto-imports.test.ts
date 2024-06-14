@@ -202,6 +202,9 @@ describe('imports:nuxt/scripts', () => {
     'useAnalyticsPageEvent',
     'useElementScriptTrigger',
     'useConsentScriptTrigger',
+    // registered separately
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAnalytics',
   ])
   it.each(scriptsStubsPreset.imports)(`should register %s from @nuxt/scripts`, (name) => {
     if (globalScripts.has(name)) { return }

@@ -43,7 +43,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const modules = await resolveNuxtModule(rootDirWithSlash,
     nuxt.options._installedModules
       .filter(m => m.entryPath)
-      .map(m => m.entryPath),
+      .map(m => m.entryPath!),
   )
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
