@@ -201,7 +201,7 @@ export default {
         // Wait for asyncData & old fetch to finish
         await Promise.all(p)
         // Cleanup refs
-        p = [] 
+        p = []
 
         if (page.$fetch) {
           p.push(page.$fetch())
@@ -244,6 +244,7 @@ export default {
         <% if (splitChunks.layouts) { %>
         await this.loadLayout(errorLayout)
         <% } %>
+        this.nuxt.errPageReady = true
         this.setLayout(errorLayout)
       }
     },
