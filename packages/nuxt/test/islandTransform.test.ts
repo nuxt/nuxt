@@ -94,7 +94,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
     <slot name="thing" v-bind="thing" />
   </template>
 </template>
-`)
+`, 'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<script setup lang="ts">
