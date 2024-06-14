@@ -105,7 +105,7 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   if (!ctx.nuxt.options.dev) {
     const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
-      .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
+      .then(r => import(r!)).then(r => r.dependencies ? Object.keys(r.dependencies) : []).catch(() => [])
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build

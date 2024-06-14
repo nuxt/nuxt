@@ -1,4 +1,4 @@
-import type { Component, PropType } from 'vue'
+import type { Component, PropType, VNode } from 'vue'
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
@@ -29,7 +29,7 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
 async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
-  const promises = []
+  const promises: Array<Promise<void>> = []
 
   for (const component in paths) {
     if (!(components!.has(component))) {
@@ -259,7 +259,7 @@ export default defineComponent({
 
         // should away be triggered ONE tick after re-rendering the static node
         withMemo([teleportKey.value], () => {
-          const teleports = []
+          const teleports: Array<VNode> = []
           // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
 
