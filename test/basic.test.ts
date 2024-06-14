@@ -2676,6 +2676,7 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await page.waitForTimeout(1000); //attempt a hard-coded delay to ensure IO isn't triggered after network is idle
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
   })
