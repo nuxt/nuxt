@@ -1,6 +1,5 @@
 import { useNuxtApp } from './nuxt'
 
-
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
@@ -9,7 +8,7 @@ export type CallbackFn = () => void
 export type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
 export function useIntersectionObserver (options?: IntersectionObserverInit): { observe: ObserveFn } {
-  if (import.meta.server) { return {observe: () => () => {}} }
+  if (import.meta.server) { return { observe: () => () => {} } }
 
   const nuxtApp = useNuxtApp()
   if (nuxtApp._observer) {
@@ -28,7 +27,7 @@ export function useIntersectionObserver (options?: IntersectionObserverInit): { 
           const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
           if (isVisible && callback) { callback() }
         }
-      },options)
+      }, options)
     }
     callbacks.set(element, callback)
     observer.observe(element)
