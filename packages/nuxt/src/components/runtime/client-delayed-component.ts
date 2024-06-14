@@ -6,35 +6,7 @@ import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app'
-
-function useIntersectionObserver (options: IntersectionObserverInit): { observe: ObserveFn } {
-  if (import.meta.server) { return { observe: () => () => {} } }
-
-  let observer: IntersectionObserver | null = null
-
-  const observe: ObserveFn = (element, callback) => {
-    if (!observer) {
-      observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
-          if (isVisible && callback) { callback() }
-        }
-      }, options)
-    }
-    observer.observe(element)
-    return () => {
-      observer!.unobserve(element)
-      observer!.disconnect()
-      observer = null
-    }
-  }
-
-  const _observer = {
-    observe,
-  }
-
-  return _observer
-}
+import { useIntersectionObserver } from '#app/utils'
 
 function elementIsVisibleInViewport (el: Element) {
   const { top, left, bottom, right } = el.getBoundingClientRect()

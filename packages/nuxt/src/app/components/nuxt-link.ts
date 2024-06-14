@@ -14,7 +14,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import type { CallbackFn, ObserveFn } from '../utils'
+import { useIntersectionObserver } from '../utils'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
@@ -306,7 +306,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           let idleId: number
           let unobserve: (() => void) | null = null
           onMounted(() => {
-            const observer = useObserver()
+            const observer = useIntersectionObserver()
             onNuxtReady(() => {
               idleId = requestIdleCallback(() => {
                 if (el?.value?.tagName) {
@@ -444,47 +444,6 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 }
 
 // --- Prefetching utils ---
-
-function useObserver (): { observe: ObserveFn } | undefined {
-  if (import.meta.server) { return }
-
-  const nuxtApp = useNuxtApp()
-  if (nuxtApp._observer) {
-    return nuxtApp._observer
-  }
-
-  let observer: IntersectionObserver | null = null
-
-  const callbacks = new Map<Element, CallbackFn>()
-
-  const observe: ObserveFn = (element, callback) => {
-    if (!observer) {
-      observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          const callback = callbacks.get(entry.target)
-          const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
-          if (isVisible && callback) { callback() }
-        }
-      })
-    }
-    callbacks.set(element, callback)
-    observer.observe(element)
-    return () => {
-      callbacks.delete(element)
-      observer!.unobserve(element)
-      if (callbacks.size === 0) {
-        observer!.disconnect()
-        observer = null
-      }
-    }
-  }
-
-  const _observer = nuxtApp._observer = {
-    observe,
-  }
-
-  return _observer
-}
 
 function isSlowConnection () {
   if (import.meta.server) { return }
