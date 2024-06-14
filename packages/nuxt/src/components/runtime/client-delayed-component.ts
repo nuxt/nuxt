@@ -1,9 +1,40 @@
 import { createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
-import { useObserver } from '#app/utils'
+import type { ObserveFn } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
+import { requestIdleCallback, cancelIdleCallback } from '#app/compat/idle-callback'
+import { onNuxtReady } from '#app'
+
+function useIntersectionObserver(options: IntersectionObserverInit) : {observe: ObserveFn} {
+  if (import.meta.server) { return {observe: () => () => {}}}
+
+  let observer: IntersectionObserver | null = null
+
+  const observe: ObserveFn = (element, callback) => {
+    if (!observer) {
+      observer = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
+          if (isVisible && callback) { callback() }
+        }
+      }, options)
+    }
+    observer.observe(element)
+    return () => {
+      observer!.unobserve(element)
+      observer!.disconnect()
+      observer = null
+    }
+  }
+
+  const _observer = {
+    observe
+  }
+
+  return _observer
+}
 
 function elementIsVisibleInViewport (el: Element) {
   const { top, left, bottom, right } = el.getBoundingClientRect()
@@ -35,7 +66,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
 
       if (!isIntersecting.value) {
         onMounted(() => {
-          const observer = useObserver()
+          const observer = useIntersectionObserver(attrs.loader ?? {})
           unobserve = observer!.observe(el.value as Element, () => {
             isIntersecting.value = true
             unobserve?.()
@@ -69,10 +100,12 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       const isIdle = ref(false)
       let idleHandle: number | null = null
       onMounted(() => {
-        idleHandle = requestIdleCallback(() => {
-          isIdle.value = true
-          cancelIdleCallback(idleHandle as unknown as number)
-          idleHandle = null
+        onNuxtReady(()=>{
+          idleHandle = requestIdleCallback(() => {
+            isIdle.value = true
+            cancelIdleCallback(idleHandle as unknown as number)
+            idleHandle = null
+          }, attrs.loader ?? {timeout: 10000})
         })
       })
       onBeforeUnmount(() => {
