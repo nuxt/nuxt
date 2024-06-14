@@ -1,4 +1,3 @@
-
 <template>
   <div class="container">
     <h1>User Agent</h1>

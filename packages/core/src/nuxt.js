@@ -1,4 +1,3 @@
-
 import { isPlainObject } from 'lodash'
 import consola from 'consola'
 import Hookable from 'hookable'

@@ -1,4 +1,3 @@
-
 export default function ({ route, redirect }) {
   const redirectPathRegexp = /^\/redirect(\d+)$/
   const match = route.path.match(redirectPathRegexp)
