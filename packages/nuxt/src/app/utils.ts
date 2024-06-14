@@ -28,7 +28,7 @@ export function useIntersectionObserver (options?: Partial<IntersectionObserverI
           const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
           if (isVisible && callback) { callback() }
         }
-      }, defu(options ?? {}, { root: null, rootMargin: '0px', threshold: 0 }))
+      }, defu(options, { root: null, rootMargin: '0px', threshold: 0 }))
     }
     callbacks.set(element, callback)
     observer.observe(element)

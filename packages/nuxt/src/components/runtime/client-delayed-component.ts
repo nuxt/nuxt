@@ -37,7 +37,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
 
       if (!isIntersecting.value) {
         onMounted(() => {
-          const observer = useIntersectionObserver(attrs.loader ?? {})
+          const observer = useIntersectionObserver(attrs.loader as Partial<IntersectionObserverInit> | undefined)
           unobserve = observer!.observe(el.value as Element, () => {
             isIntersecting.value = true
             unobserve?.()
