@@ -109,6 +109,8 @@ export default defineUntypedSchema({
         },
       },
     },
-    cacheDir: await get('cacheDir'),
+    cacheDir: {
+      $resolve: async (val, get) => val ?? (await get('cacheDir')),
+    },
   },
 })
