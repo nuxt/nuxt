@@ -102,7 +102,7 @@ export const createLazyEventClientPage = (componentLoader: Component) => {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
       const isTriggered = ref(false)
-      const events: string[] = attrs.loader ?? ['mouseover']
+      const events: string[] = attrs.loader as string[] ?? ['mouseover']
 
       const registeredEvents: (() => void)[] = []
       onMounted(() => {
@@ -112,8 +112,8 @@ export const createLazyEventClientPage = (componentLoader: Component) => {
             registeredEvents.forEach((remove) => remove())
             eventsMapper.delete(instance)
           }
-          instance.vnode.el.addEventListener(event, handler)
-          registeredEvents.push(() => instance.vnode.el.removeEventListener(event, handler))
+          instance.vnode.el?.addEventListener(event, handler)
+          registeredEvents.push(() => instance.vnode.el?.removeEventListener(event, handler))
         })
         eventsMapper.set(instance, registeredEvents)
       })
