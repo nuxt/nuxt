@@ -2675,6 +2675,12 @@ describe('lazy import components', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
+    const component = await page.locator('#lazyevent');
+    const rect = component.boundingBox()
+    await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page.waitForTimeout(1000) // attempt a hard-coded delay to ensure IO isn't triggered after network is idle
     await page.waitForLoadState('networkidle')

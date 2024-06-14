@@ -43,7 +43,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
       const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?(Idle|Visible|idle-|visible-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?(Idle|Visible|idle-|visible-|Event|event-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
@@ -80,6 +80,12 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
                   imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
                   identifier += '_delayedIO'
                   imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  break
+                case 'Event':
+                case 'event-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyEventClientPage' }]))
+                  identifier += '_delayedEvent'
+                  imports.add(`const ${identifier} = createLazyEventClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
                 case 'Idle':
                 case 'idle-':

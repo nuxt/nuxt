@@ -1,5 +1,5 @@
 import { createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { Component, Ref } from 'vue'
+import type { Component, Ref, ComponentInternalInstance } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
@@ -87,5 +87,41 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
       })
       return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
     },
+  })
+}
+
+const eventsMapper = new WeakMap<ComponentInternalInstance,(() => void)[]>()
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyEventClientPage = (componentLoader: Component) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      if (import.meta.server) {
+        return () => h(componentLoader, attrs)
+      }
+      const nuxt = useNuxtApp()
+      const instance = getCurrentInstance()!
+      const isTriggered = ref(false)
+      const events: string[] = attrs.loader ?? ['mouseover']
+
+      const registeredEvents: (() => void)[] = []
+      onMounted(() => {
+        events.forEach((event) => {
+          const handler = () => {
+            isTriggered.value = true
+            registeredEvents.forEach((remove) => remove())
+            eventsMapper.delete(instance)
+          }
+          instance.vnode.el.addEventListener(event, handler)
+          registeredEvents.push(() => instance.vnode.el.removeEventListener(event, handler))
+        })
+        eventsMapper.set(instance, registeredEvents)
+      })
+      onBeforeUnmount(() => {
+        registeredEvents?.forEach((remove) => remove())
+        eventsMapper.delete(instance)
+      })
+      return () => isTriggered.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
+    }
   })
 }

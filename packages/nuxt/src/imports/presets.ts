@@ -42,7 +42,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/asyncData',
   },
   {
-    imports: ['useHydration', 'createVisibleLoader', 'createIdleLoader'],
+    imports: ['useHydration', 'createVisibleLoader', 'createIdleLoader', 'createEventLoader'],
     from: '#app/composables/hydrate',
   },
   {
