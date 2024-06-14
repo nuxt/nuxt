@@ -109,5 +109,6 @@ export default defineUntypedSchema({
         },
       },
     },
+    cacheDir: await get('cacheDir'),
   },
 })
