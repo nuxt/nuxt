@@ -1,5 +1,6 @@
 import { addBuildPlugin, addComponent } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
+import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
@@ -88,10 +89,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       needsFallback: undefined,
-      testConfig: 123,
     },
   },
   modules: [
+    function (_options, nuxt) {
+      // ensure setting `runtimeConfig` also sets `nitro.runtimeConfig`
+      nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+        public: {
+          testConfig: 123,
+        },
+      })
+    },
     function (_options, nuxt) {
       nuxt.hook('modules:done', () => {
         // @ts-expect-error not valid nuxt option
@@ -149,6 +157,17 @@ export default defineNuxtConfig({
         }
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
+      })
+    },
+    function (_options, nuxt) {
+      // to check that page metadata is preserved
+      nuxt.hook('pages:extend', (pages) => {
+        const customName = pages.find(page => page.name === 'some-custom-name')
+        if (!customName) { throw new Error('Page with custom name not found') }
+        if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
+
+        customName.meta ||= {}
+        customName.meta.someProp = true
       })
     },
     // To test falsy module values

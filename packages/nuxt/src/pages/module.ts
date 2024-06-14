@@ -275,6 +275,20 @@ export default defineNuxtModule({
       }
     })
 
+    // TODO: inject routes in `200.html` in next nitro upgrade (2.9.7+) via https://github.com/unjs/nitro/pull/2517
+    if (!nuxt.options.dev && !nuxt.options._prepare) {
+      nuxt.hook('app:templatesGenerated', (app) => {
+        const nitro = useNitro()
+        if (nitro.options.prerender.crawlLinks) {
+          for (const page of app.pages!) {
+            if (page.path && !page.path.includes(':')) {
+              nitro.options.prerender.routes.push(page.path)
+            }
+          }
+        }
+      })
+    }
+
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },

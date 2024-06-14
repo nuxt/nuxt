@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import type { RouteLocation } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
@@ -99,7 +99,11 @@ describe('nuxt-link:isExternal', () => {
   })
 
   it('returns `false` when `to` is a route location object', () => {
-    expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw }).type).toBe(INTERNAL)
+    expect(nuxtLink({ to: { path: '/to' } }).type).toBe(INTERNAL)
+  })
+
+  it('returns `true` when `to` has a `target`', () => {
+    expect(nuxtLink({ to: { path: '/to' }, target: '_blank' }).type).toBe(EXTERNAL)
   })
 
   it('honors `external` prop', () => {
@@ -122,7 +126,12 @@ describe('nuxt-link:propsOrAttributes', () => {
       })
 
       it('resolves route location object', () => {
-        expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw, external: true }).props.href).toBe('/to')
+        expect(nuxtLink({ to: { path: '/to' }, external: true }).props.href).toBe('/to')
+      })
+
+      it('applies trailing slash behaviour', () => {
+        expect(nuxtLink({ to: { path: '/to' }, external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
+        expect(nuxtLink({ to: '/to', external: true }, { trailingSlash: 'append' }).props.href).toBe('/to/')
       })
     })
 
@@ -167,6 +176,8 @@ describe('nuxt-link:propsOrAttributes', () => {
         }, () => {
           expect(nuxtLink({ to: 'http://nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('http://nuxtjs.org/app/about')
           expect(nuxtLink({ to: '//nuxtjs.org/app/about', target: '_blank' }).props.href).toBe('//nuxtjs.org/app/about')
+          expect(nuxtLink({ to: { path: '/' }, external: true }).props.href).toBe('/')
+          expect(nuxtLink({ to: '/', external: true }).props.href).toBe('/')
         })
       })
     })
@@ -209,7 +220,7 @@ describe('nuxt-link:propsOrAttributes', () => {
     describe('to', () => {
       it('forwards `to` prop', () => {
         expect(nuxtLink({ to: '/to' }).props.to).toBe('/to')
-        expect(nuxtLink({ to: { to: '/to' } as RouteLocationRaw }).props.to).toEqual({ to: '/to' })
+        expect(nuxtLink({ to: { path: '/to' } }).props.to).toEqual({ path: '/to' })
       })
     })
 
