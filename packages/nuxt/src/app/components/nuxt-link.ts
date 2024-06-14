@@ -14,7 +14,7 @@ import { onNuxtReady } from '../composables/ready'
 import { navigateTo, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
-import type { ObserveFn, CallbackFn } from '../utils'
+import type { CallbackFn, ObserveFn } from '../utils'
 
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
@@ -480,7 +480,7 @@ function useObserver (): { observe: ObserveFn } | undefined {
   }
 
   const _observer = nuxtApp._observer = {
-    observe
+    observe,
   }
 
   return _observer
