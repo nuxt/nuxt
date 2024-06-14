@@ -1,7 +1,6 @@
 import { createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { Component, Ref } from 'vue'
 // import ClientOnly from '#app/components/client-only'
-import type { ObserveFn } from '#app/utils'
 import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '#app/compat/idle-callback'
