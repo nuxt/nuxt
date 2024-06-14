@@ -651,6 +651,8 @@ function normalizeComponents (to, ___) {
 <% if (features.layouts) { %>
 const routeMap = new WeakMap()
 <% if (splitChunks.layouts) { %>async <% } %>function getLayoutForNextPage (to, from, next) {
+const routeMap = new WeakMap()
+<% if (splitChunks.layouts) { %>async <% } %>function getLayoutForNextPage (to, from, next) {
   // Set layout
   let hasError = Boolean(this.$options.nuxt.err)
   if (this._hadError && this._dateLastError === this.$options.nuxt.dateErr) {
@@ -663,6 +665,9 @@ const routeMap = new WeakMap()
   if (typeof layout === 'function') {
     layout = layout(app.context)
   }
+
+  routeMap.set(to, layout);
+
 
   routeMap.set(to, layout);
 

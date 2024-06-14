@@ -1,4 +1,3 @@
-
 import chalk from 'chalk'
 
 import listCommands from '../../src/list'
