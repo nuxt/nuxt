@@ -1,7 +1,7 @@
-import { useNuxtApp } from './nuxt'
 import defu from 'defu'
+import { useNuxtApp } from './nuxt'
 
-/** @since 3.9.0 */	
+/** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }
@@ -10,7 +10,7 @@ export type CallbackFn = () => void
 export type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
 export function useIntersectionObserver (options?: Partial<IntersectionObserverInit>): { observe: ObserveFn } {
-  if (import.meta.server) { return {observe: () => () => {}} }
+  if (import.meta.server) { return { observe: () => () => {} } }
 
   const nuxtApp = useNuxtApp()
   if (nuxtApp._observer) {
@@ -28,7 +28,7 @@ export function useIntersectionObserver (options?: Partial<IntersectionObserverI
           const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
           if (isVisible && callback) { callback() }
         }
-      }, defu(options ?? {},{root: null, rootMargin: "0px", threshold: 0}))
+      }, defu(options ?? {}, { root: null, rootMargin: '0px', threshold: 0 }))
     }
     callbacks.set(element, callback)
     observer.observe(element)
