@@ -7,7 +7,6 @@ on:
   pull_request:
     branches:
       - 2.x
-      - "!v[0-9]*"
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -20,7 +19,6 @@ concurrency:
 jobs:
   setup:
     runs-on: ${{ matrix.os }}
-    if: github.event_name == 'push'
 
     strategy:
       matrix:
