@@ -68,8 +68,8 @@
     "@unhead/dom": "^1.9.13",
     "@unhead/ssr": "^1.9.13",
     "@unhead/vue": "^1.9.13",
-    "@vue/shared": "^3.4.27",
-    "acorn": "8.11.3",
+    "@vue/shared": "^3.4.29",
+    "acorn": "8.12.0",
     "c12": "^1.11.1",
     "chokidar": "^3.6.0",
     "cookie-es": "^1.1.0",
@@ -112,7 +112,7 @@
     "unplugin-vue-router": "^0.7.0",
     "unstorage": "^1.10.2",
     "untyped": "^1.4.2",
-    "vue": "^3.4.27",
+    "vue": "^3.4.29",
     "vue-bundle-renderer": "^2.1.0",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.3.3"
@@ -124,9 +124,9 @@
     "@types/estree": "1.0.5",
     "@types/fs-extra": "11.0.4",
     "@vitejs/plugin-vue": "5.0.4",
-    "@vue/compiler-sfc": "3.4.27",
+    "@vue/compiler-sfc": "3.4.29",
     "unbuild": "latest",
-    "vite": "5.3.0",
+    "vite": "5.3.1",
     "vitest": "1.6.0"
   },
   "peerDependencies": {
