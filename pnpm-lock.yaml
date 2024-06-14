@@ -907,9 +907,6 @@ importers:
       '@types/webpack-hot-middleware':
         specifier: 2.25.9
         version: 2.25.9
-      '@types/webpack-virtual-modules':
-        specifier: 0.4.2
-        version: 0.4.2
       unbuild:
         specifier: latest
         version: 2.0.0(sass@1.69.4)(typescript@5.4.5)
@@ -2717,10 +2714,6 @@ packages:
 
   '@types/webpack-sources@3.2.1':
     resolution: {integrity: sha512-iLC3Fsx62ejm3ST3PQ8vBMC54Rb3EoCprZjeJGI5q+9QjfDLGt9jeg/k245qz1G9AQnORGk0vqPicJFPT1QODQ==}
-
-  '@types/webpack-virtual-modules@0.4.2':
-    resolution: {integrity: sha512-0ff/n3TXx1FysQV/kSpF8bxnCXUf7cw3Mp6WbXq0IfrgFK/MBIZqAQFN7VUkGwRzHZb+9DfLPZ3dOI+/L+m9ww==}
-    deprecated: This is a stub types definition. webpack-virtual-modules provides its own type definitions, so you do not need this installed.
 
   '@types/webpack@4.41.34':
     resolution: {integrity: sha512-CN2aOGrR3zbMc2v+cKqzaClYP1ldkpPOgtdNvgX+RmlWCSWxHxpzz6WSCVQZRkF8D60ROlkRzAoEpgjWQ+bd2g==}
@@ -9592,10 +9585,6 @@ snapshots:
       '@types/node': 20.14.2
       '@types/source-list-map': 0.1.4
       source-map: 0.7.4
-
-  '@types/webpack-virtual-modules@0.4.2':
-    dependencies:
-      webpack-virtual-modules: 0.6.2
 
   '@types/webpack@4.41.34':
     dependencies:
