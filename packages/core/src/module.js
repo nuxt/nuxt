@@ -149,8 +149,11 @@ export default class ModuleContainer {
     }
 
     // Prevent adding buildModules-listed entries in production
-    if (handler && this.options.buildModules.includes(handler) && this.options._start) {
-      return
+    if (this.options.buildModules.includes(handler) && this.options._start) {
+      if (handler) {
+        return
+      }
+      consola.warn('Module not resolved:', src)
     }
 
     // Resolve handler
