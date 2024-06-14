@@ -1,4 +1,3 @@
-
 import Test from '~/components/test.vue'
 
 export default {

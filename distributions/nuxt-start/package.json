@@ -19,7 +19,8 @@
   "homepage": "https://github.com/nuxt/nuxt.js#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nuxt/nuxt.js.git"
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "distributions/nuxt-start"
   },
   "license": "MIT",
   "main": "dist/nuxt-start.js",
