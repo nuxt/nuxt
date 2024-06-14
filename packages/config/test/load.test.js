@@ -1,4 +1,3 @@
-
 import { resolve } from 'path'
 import { loadNuxtConfig } from '../src/load'
 
