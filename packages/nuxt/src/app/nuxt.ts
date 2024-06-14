@@ -48,6 +48,7 @@ export interface RuntimeNuxtHooks {
   'app:chunkError': (options: { error: any }) => HookResult
   'app:data:refresh': (keys?: string[]) => HookResult
   'app:manifest:update': (meta?: NuxtAppManifestMeta) => HookResult
+  'app:plugin:resolved': (name: NuxtAppLiterals['pluginName']) => HookResult
   'dev:ssr-logs': (logs: LogObject[]) => void | Promise<void>
   'link:prefetch': (link: string) => HookResult
   'page:start': (Component?: VNode) => HookResult
@@ -111,6 +112,7 @@ interface _NuxtApp {
   callHook: _NuxtApp['hooks']['callHook']
 
   runWithContext: <T extends () => any>(fn: T) => ReturnType<T> | Promise<Awaited<ReturnType<T>>>
+  runAfterPlugin: (pluginName: NuxtAppLiterals['pluginName'], fn: () => void | Promise<void>) => void | Promise<void>
 
   [key: string]: unknown
 
@@ -166,6 +168,9 @@ interface _NuxtApp {
   _routeAnnouncer?: RouteAnnouncer
   /** @internal */
   _routeAnnouncerDeps?: number
+
+  /** @internal */
+  _resolvedPlugins: string[]
 
   // Nuxt injections
   $config: RuntimeConfig
@@ -271,6 +276,9 @@ export function createNuxtApp (options: CreateOptions) {
       }
       return callWithNuxt(nuxtApp, fn)
     },
+    async runAfterPlugin (plugin: NuxtAppLiterals['pluginName'], fn: () => void | Promise<void>) {
+      return await runAfterPlugin(nuxtApp, plugin, fn)
+    },
     isHydrating: import.meta.client,
     deferHydration () {
       if (!nuxtApp.isHydrating) { return () => {} }
@@ -293,6 +301,7 @@ export function createNuxtApp (options: CreateOptions) {
     _asyncDataPromises: {},
     _asyncData: shallowReactive({}),
     _payloadRevivers: {},
+    _resolvedPlugins: [],
     ...options,
   } as any as NuxtApp
 
@@ -408,20 +417,21 @@ export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlug
 
 /** @since 3.0.0 */
 export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & ObjectPlugin<any>>) {
-  const resolvedPlugins: string[] = []
+  nuxtApp._resolvedPlugins = []
+
   const unresolvedPlugins: [Set<string>, Plugin & ObjectPlugin<any>][] = []
   const parallels: Promise<any>[] = []
   const errors: Error[] = []
   let promiseDepth = 0
 
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.includes(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !nuxtApp._resolvedPlugins.includes(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
       const promise = applyPlugin(nuxtApp, plugin).then(async () => {
         if (plugin._name) {
-          resolvedPlugins.push(plugin._name)
+          nuxtApp._resolvedPlugins.push(plugin._name)
           await Promise.all(unresolvedPlugins.map(async ([dependsOn, unexecutedPlugin]) => {
             if (dependsOn.has(plugin._name!)) {
               dependsOn.delete(plugin._name!)
@@ -431,6 +441,8 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
               }
             }
           }))
+
+          nuxtApp.hooks.callHook('app:plugin:resolved', plugin._name)
         }
       })
 
@@ -496,6 +508,21 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
     nuxtAppCtx.set(nuxt as NuxtApp)
     return nuxt.vueApp.runWithContext(fn)
   }
+}
+
+/** @since 3.13.0 */
+export async function runAfterPlugin (nuxtApp: NuxtApp | _NuxtApp, pluginName: NuxtAppLiterals['pluginName'], callback: () => void | Promise<void>) {
+  if (nuxtApp._resolvedPlugins.includes(pluginName)) {
+    await callback()
+    return
+  }
+
+  const unhook = nuxtApp.hook('app:plugin:resolved', async (name) => {
+    if (pluginName === name) {
+      unhook()
+      await callback()
+    }
+  })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
