@@ -71,7 +71,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
       ],
     },
-    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),
+    cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'server'),
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
