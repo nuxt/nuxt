@@ -110,7 +110,7 @@ export default defineUntypedSchema({
       },
     },
     cacheDir: {
-      $resolve: async (val, get) => val ?? (await get('cacheDir')),
+      $resolve: async (val, get) => val ?? resolve(await get('rootDir'), 'node_modules/.cache/vite'),
     },
   },
 })
