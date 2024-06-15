@@ -277,7 +277,7 @@ export default defineNuxtModule({
 
     // TODO: inject routes in `200.html` in next nitro upgrade (2.9.7+) via https://github.com/unjs/nitro/pull/2517
     if (!nuxt.options.dev && !nuxt.options._prepare && nuxt.options.ssr) {
-      nuxt.hook('app:templatesGenerated', (app) => {
+      nuxt.hook('app:templatesGenerated', () => {
         const nitro = useNitro()
         if (nitro.options.prerender.crawlLinks) {
           nitro.options.prerender.routes.push('/')
