@@ -1,4 +1,5 @@
 import { consola } from 'consola'
+import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
@@ -110,7 +111,7 @@ export default defineUntypedSchema({
       },
     },
     cacheDir: {
-      $resolve: async (val, get) => val ?? resolve(await get('rootDir'), 'node_modules/.cache/vite'),
+      $resolve: async (val, get) => val ?? resolve(await get('rootDir') as string, 'node_modules/.cache/vite'),
     },
   },
 })
