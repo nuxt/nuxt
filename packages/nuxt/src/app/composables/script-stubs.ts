@@ -60,6 +60,12 @@ export function useScriptGoogleTagManager (...args: unknown[]) {
 export function useScriptSegment (...args: unknown[]) {
   renderStubMessage('useScriptSegment')
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptClarity (...args: unknown[]) {
+  renderStubMessage('useScriptClarity')
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptFacebookPixel (...args: unknown[]) {
   renderStubMessage('useScriptFacebookPixel')
