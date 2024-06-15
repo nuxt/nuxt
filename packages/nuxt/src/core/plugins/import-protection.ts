@@ -1,5 +1,5 @@
 import { createUnplugin } from 'unplugin'
-import { logger, useNuxt } from '@nuxt/kit'
+import { logger } from '@nuxt/kit'
 import { resolvePath } from 'mlly'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'

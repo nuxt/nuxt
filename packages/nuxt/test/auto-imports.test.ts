@@ -1,6 +1,5 @@
 import { readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
-import { join } from 'pathe'
 import { fileURLToPath } from 'node:url'
 import { findExports } from 'mlly'
 import * as VueFunctions from 'vue'
