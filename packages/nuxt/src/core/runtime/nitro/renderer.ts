@@ -95,7 +95,7 @@ export interface NuxtRenderResponse {
   headers: Record<string, string>
 }
 
-interface ClientManifest { }
+interface ClientManifest {}
 
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
@@ -158,7 +158,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
     buildAssetsURL,
   }
   // Create SPA renderer and cache the result for all requests
-  const renderer = createRenderer(() => () => { }, options)
+  const renderer = createRenderer(() => () => {}, options)
   const result = await renderer.renderToString({})
 
   const renderToString = (ssrContext: NuxtSSRContext) => {
@@ -187,12 +187,12 @@ const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
-      get<T = unknown>(key: string): Promise<T> | undefined {
+      get<T = unknown> (key: string): Promise<T> | undefined {
         if (sharedPrerenderKeys.has(key)) {
           return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
         }
       },
-      async set<T>(key: string, value: Promise<T>): Promise<void> {
+      async set<T> (key: string, value: Promise<T>): Promise<void> {
         sharedPrerenderKeys.add(key)
         sharedPrerenderPromises!.set(key, value)
         useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
@@ -447,7 +447,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // 5. Scripts
   if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
     head.push({
-      script: Object.values(scripts).map(resource => (<Script>{
+      script: Object.values(scripts).map(resource => (<Script> {
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
