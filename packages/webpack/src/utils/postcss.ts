@@ -1,5 +1,5 @@
+import { fileURLToPath } from 'node:url'
 import createResolver from 'postcss-import-resolver'
-import { createCommonJS } from 'mlly'
 import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -61,9 +61,10 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
-    const cjs = createCommonJS(import.meta.url)
+    const cwd = fileURLToPath(new URL('.', import.meta.url))
     postcssOptions.plugins = sortPlugins(postcssOptions).map((pluginName: string) => {
-      const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
+      // TODO: remove use of requireModule in favour of ESM import
+      const pluginFn = requireModule(pluginName, { paths: [cwd] })
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions || typeof pluginFn !== 'function') { return null }
       return pluginFn(pluginOptions)
