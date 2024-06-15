@@ -38,6 +38,6 @@ export const createVisibleLoader = (opts: Partial<IntersectionObserverInit>) => 
 
 /**
  * A utility used to determine which events should trigger hydration in components with event-based delayed hydration.
- * @param events an array of events that will be used to trigger the hydration 
+ * @param events an array of events that will be used to trigger the hydration
  */
 export const createEventLoader = (events: Array<keyof HTMLElementEventMap>) => events
