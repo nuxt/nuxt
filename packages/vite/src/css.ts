@@ -19,6 +19,7 @@ export function resolveCSSOptions (nuxt: Nuxt): ViteConfig['css'] {
 
   for (const [name, opts] of plugins) {
     if (opts) {
+      // TODO: remove use of requireModule in favour of ESM import
       const plugin = requireModule(name, {
         paths: [
           ...nuxt.options.modulesDir,
