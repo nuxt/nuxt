@@ -2679,13 +2679,13 @@ describe('lazy import components', () => {
     const component = await page.locator('#lazyevent')
     const rect = (await component.boundingBox())!
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
-    await page.waitForResponse(response => 
-      response.status() === 200 && response.text().then(text => text.includes("This shouldn't be visible at first with events!"))
+    await page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
     )
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-    await page.waitForResponse(response => 
-      response.status() === 200 && response.text().then(text => text.includes("This shouldn't be visible at first with viewport!"))
+    await page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with viewport!')),
     )
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
   })
