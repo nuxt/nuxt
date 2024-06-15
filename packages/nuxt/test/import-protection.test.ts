@@ -1,8 +1,8 @@
+import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
-import { fileURLToPath } from 'url'
 
 const testsToTriggerOn = [
   ['~/nuxt.config', 'app.vue', true],

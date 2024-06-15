@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
 import { fileURLToPath } from 'node:url'
+import { describe, expect, it } from 'vitest'
 import { findExports } from 'mlly'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
