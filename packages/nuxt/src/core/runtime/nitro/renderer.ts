@@ -132,7 +132,7 @@ const getSSRRenderer = lazyCachedFunction(async () => {
   const renderer = createRenderer(createSSRApp, options)
 
   type RenderToStringParams = Parameters<typeof _renderToString>
-  async function renderToString(input: RenderToStringParams[0], context: RenderToStringParams[1]) {
+  async function renderToString (input: RenderToStringParams[0], context: RenderToStringParams[1]) {
     const html = await _renderToString(input, context)
     // In development with vite-node, the manifest is on-demand and will be available after rendering
     if (import.meta.dev && process.env.NUXT_VITE_NODE_OPTIONS) {
@@ -187,23 +187,23 @@ const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
-    get<T = unknown>(key: string): Promise<T> | undefined {
-      if (sharedPrerenderKeys.has(key)) {
-        return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
-      }
-    },
-    async set<T>(key: string, value: Promise<T>): Promise<void> {
-      sharedPrerenderKeys.add(key)
-      sharedPrerenderPromises!.set(key, value)
-      useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+      get<T = unknown>(key: string): Promise<T> | undefined {
+        if (sharedPrerenderKeys.has(key)) {
+          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+        }
+      },
+      async set<T>(key: string, value: Promise<T>): Promise<void> {
+        sharedPrerenderKeys.add(key)
+        sharedPrerenderPromises!.set(key, value)
+        useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
         // free up memory after the promise is resolved
-        .finally(() => sharedPrerenderPromises!.delete(key))
-    },
-  }
+          .finally(() => sharedPrerenderPromises!.delete(key))
+      },
+    }
   : null
 
 const ISLAND_SUFFIX_RE = /\.json(\?.*)?$/
-async function getIslandContext(event: H3Event): Promise<NuxtIslandContext> {
+async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
   // TODO: Strict validation for url
   let url = event.path || ''
   if (import.meta.prerender && event.path && await islandPropCache!.hasItem(event.path)) {
@@ -312,8 +312,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
     modules: new Set(),
-    set _registeredComponents(value) { this.modules = value },
-    get _registeredComponents() { return this.modules },
+    set _registeredComponents (value) { this.modules = value },
+    get _registeredComponents () { return this.modules },
     islandContext,
   }
 
@@ -532,7 +532,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   return response
 })
 
-function lazyCachedFunction<T>(fn: () => Promise<T>): () => Promise<T> {
+function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
   let res: Promise<T> | null = null
   return () => {
     if (res === null) {
@@ -542,20 +542,20 @@ function lazyCachedFunction<T>(fn: () => Promise<T>): () => Promise<T> {
   }
 }
 
-function normalizeChunks(chunks: (string | undefined)[]) {
+function normalizeChunks (chunks: (string | undefined)[]) {
   return chunks.filter(Boolean).map(i => i!.trim())
 }
 
-function joinTags(tags: Array<string | undefined>) {
+function joinTags (tags: Array<string | undefined>) {
   return tags.join('')
 }
 
-function joinAttrs(chunks: string[]) {
+function joinAttrs (chunks: string[]) {
   if (chunks.length === 0) { return '' }
   return ' ' + chunks.join(' ')
 }
 
-function renderHTMLDocument(html: NuxtRenderHTMLContext) {
+function renderHTMLDocument (html: NuxtRenderHTMLContext) {
   return '<!DOCTYPE html>' +
     `<html${joinAttrs(html.htmlAttrs)}>` +
     `<head>${joinTags(html.head)}</head>` +
@@ -563,7 +563,7 @@ function renderHTMLDocument(html: NuxtRenderHTMLContext) {
     '</html>'
 }
 
-async function renderInlineStyles(usedModules: Set<string> | string[]): Promise<Style[]> {
+async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
@@ -576,7 +576,7 @@ async function renderInlineStyles(usedModules: Set<string> | string[]): Promise<
   return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
 }
 
-function renderPayloadResponse(ssrContext: NuxtSSRContext) {
+function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   return {
     body: process.env.NUXT_JSON_PAYLOADS
       ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
@@ -590,7 +590,7 @@ function renderPayloadResponse(ssrContext: NuxtSSRContext) {
   } satisfies RenderResponse
 }
 
-function renderPayloadJsonScript(opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
+function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
   const payload: Script = {
     'type': 'application/json',
@@ -609,7 +609,7 @@ function renderPayloadJsonScript(opts: { id: string, ssrContext: NuxtSSRContext,
   ]
 }
 
-function renderPayloadScript(opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
+function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
   if (_PAYLOAD_EXTRACTION) {
@@ -627,7 +627,7 @@ function renderPayloadScript(opts: { ssrContext: NuxtSSRContext, data?: any, src
   ]
 }
 
-function splitPayload(ssrContext: NuxtSSRContext) {
+function splitPayload (ssrContext: NuxtSSRContext) {
   const { data, prerenderedAt, ...initial } = ssrContext.payload
   return {
     initial: { ...initial, prerenderedAt },
@@ -638,7 +638,7 @@ function splitPayload(ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-function getServerComponentHTML(body: string[]): string {
+function getServerComponentHTML (body: string[]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
 }
@@ -647,7 +647,7 @@ const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
 const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*;(.*)$/
 
-function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
+function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
   for (const slot in ssrContext.islandContext.slots) {
@@ -659,7 +659,7 @@ function getSlotIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['
   return response
 }
 
-function getClientIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
+function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
 
@@ -674,7 +674,7 @@ function getClientIslandResponse(ssrContext: NuxtSSRContext): NuxtIslandResponse
   return response
 }
 
-function getComponentSlotTeleport(teleports: Record<string, string>) {
+function getComponentSlotTeleport (teleports: Record<string, string>) {
   const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 
@@ -689,7 +689,7 @@ function getComponentSlotTeleport(teleports: Record<string, string>) {
   return slots
 }
 
-function replaceIslandTeleports(ssrContext: NuxtSSRContext, html: string) {
+function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
   const { teleports, islandContext } = ssrContext
 
   if (islandContext || !teleports) { return html }
