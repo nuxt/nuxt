@@ -54,7 +54,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     apps: {},
   }
 
-  hooks.hookOnce('close', hooks.removeAllHooks)
+  hooks.hookOnce('close', () => { hooks.removeAllHooks() })
 
   return nuxt
 }
