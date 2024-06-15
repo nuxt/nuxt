@@ -105,18 +105,20 @@ export const createLazyEventClientPage = (componentLoader: Component) => {
       const events: string[] = attrs.loader as string[] ?? ['mouseover']
 
       const registeredEvents: (() => void)[] = []
-      onMounted(() => {
-        events.forEach((event) => {
-          const handler = () => {
-            isTriggered.value = true
-            registeredEvents.forEach(remove => remove())
-            eventsMapper.delete(instance)
-          }
-          instance.vnode.el?.addEventListener(event, handler)
-          registeredEvents.push(() => instance.vnode.el?.removeEventListener(event, handler))
+      if (!eventsMapper.has(instance)) {
+        onMounted(() => {
+          events.forEach((event) => {
+            const handler = () => {
+              isTriggered.value = true
+              registeredEvents.forEach(remove => remove())
+              eventsMapper.delete(instance)
+            }
+            instance.vnode.el?.addEventListener(event, handler)
+            registeredEvents.push(() => instance.vnode.el?.removeEventListener(event, handler))
+          })
+          eventsMapper.set(instance, registeredEvents)
         })
-        eventsMapper.set(instance, registeredEvents)
-      })
+      }
       onBeforeUnmount(() => {
         registeredEvents?.forEach(remove => remove())
         eventsMapper.delete(instance)
