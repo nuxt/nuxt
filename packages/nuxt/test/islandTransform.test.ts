@@ -71,12 +71,49 @@ describe('islandTransform - server and island components', () => {
               </div>
               </template>
               <script setup lang="ts">
+        import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
 
               </script>"
+      `)
+    })
+
+    it('generates bindings when props are needed to be merged', async () => {
+      const result = await viteTransform(`<script setup lang="ts">
+withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
+  things: () => [],
+  somethingElse: "yay",
+});
+</script>
+
+<template>
+  <template v-for="thing in things">
+    <slot name="thing" v-bind="thing" />
+  </template>
+</template>
+`, 'hello.server.vue')
+
+      expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
+        "<script setup lang="ts">
+        import { mergeProps as __mergeProps } from 'vue'
+        import { vforToArray as __vforToArray } from '#app/components/utils'
+        import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
+        import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
+        withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
+          things: () => [],
+          somethingElse: "yay",
+        });
+        </script>
+
+        <template>
+          <template v-for="thing in things">
+            <NuxtTeleportSsrSlot name="thing" :props="[__mergeProps(thing, {  })]"><slot name="thing" v-bind="thing" /></NuxtTeleportSsrSlot>
+          </template>
+        </template>
+        "
       `)
     })
 
@@ -103,6 +140,7 @@ describe('islandTransform - server and island components', () => {
               </div>
               </template>
               <script setup lang="ts">
+        import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -168,6 +206,7 @@ describe('islandTransform - server and island components', () => {
             </template>
 
             <script setup lang="ts">
+        import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -195,6 +234,7 @@ describe('islandTransform - server and island components', () => {
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<script setup lang="ts">
+        import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -234,6 +274,7 @@ describe('islandTransform - server and island components', () => {
                 </template>
 
                 <script setup lang="ts">
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -267,6 +308,7 @@ describe('islandTransform - server and island components', () => {
                 </template>
 
                 <script setup lang="ts">
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -302,6 +344,7 @@ describe('islandTransform - server and island components', () => {
                 </template>
 
                 <script setup lang="ts">
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
@@ -325,6 +368,7 @@ describe('islandTransform - server and island components', () => {
 
         expect(result).toMatchInlineSnapshot(`
           "<script setup>
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
@@ -351,6 +395,7 @@ describe('islandTransform - server and island components', () => {
 
         expect(result).toMatchInlineSnapshot(`
           "<script setup>
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
@@ -396,6 +441,7 @@ describe('islandTransform - server and island components', () => {
                 </template>
 
                 <script setup lang="ts">
+          import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
