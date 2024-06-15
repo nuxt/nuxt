@@ -162,14 +162,14 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const fullPath = typeof to === 'string' || isExternal ? toPath : router.resolve(to).fullPath || '/'
       const location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
-      const redirect = async function (response: any) {
+      async function redirect <T> (response: T) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location: encodeURI(location) },
+          headers: { location },
         }
         return response
       }
