@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import { createUnplugin } from 'unplugin'
-import { logger } from '@nuxt/kit'
+import { logger, useNuxt } from '@nuxt/kit'
+import { resolvePath } from 'mlly'
 import { isAbsolute, join, relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
@@ -58,6 +59,8 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
   const cache: Record<string, Map<string | RegExp, boolean>> = {}
   const importersToExclude = options?.exclude || []
+  const nuxt = useNuxt()
+  const proxy = resolvePath('unenv/runtime/mock/proxy', { url: nuxt.options.modulesDir })
   return {
     name: 'nuxt:import-protection',
     enforce: 'pre',
@@ -85,7 +88,7 @@ export const ImportProtectionPlugin = createUnplugin(function (options: ImportPr
         matched = true
       }
       if (matched) {
-        return _require.resolve('unenv/runtime/mock/proxy')
+        return proxy
       }
       return null
     },
