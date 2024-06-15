@@ -664,7 +664,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  await Promise.all(keyDependencies.map(dependency => checkDependencyVersion(dependency, nuxt._version)))
+  for (const dep of keyDependencies) {
+    checkDependencyVersion(dep, nuxt._version)
+  }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
   if (opts.overrides?.hooks) {
