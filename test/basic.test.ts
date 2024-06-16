@@ -2675,7 +2675,7 @@ describe('lazy import components', () => {
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
-    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
     const component = await page.locator('#lazyevent')
     const rect = (await component.boundingBox())!
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
