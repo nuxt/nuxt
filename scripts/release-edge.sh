@@ -18,6 +18,9 @@ if [[ ! -z ${NODE_AUTH_TOKEN} ]] ; then
   npm whoami
 fi
 
+# use absolute urls for better rendering on npm
+sed -i '' 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
+
 # Release packages
 for p in packages/* ; do
   if [[ $p == "packages/nuxi" ]] ; then
