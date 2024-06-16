@@ -49,13 +49,12 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
-    close: async () => {
-      await hooks.callHook('close', nuxt)
-      hooks.removeAllHooks()
-    },
+    close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
   }
+
+  hooks.hookOnce('close', () => { hooks.removeAllHooks() })
 
   return nuxt
 }
@@ -168,6 +167,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
+    modulesDir: nuxt.options.modulesDir,
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
@@ -664,7 +664,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  await Promise.all(keyDependencies.map(dependency => checkDependencyVersion(dependency, nuxt._version)))
+  for (const dep of keyDependencies) {
+    checkDependencyVersion(dep, nuxt._version)
+  }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
   if (opts.overrides?.hooks) {

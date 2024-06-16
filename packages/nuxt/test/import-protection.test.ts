@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
@@ -40,6 +41,7 @@ describe('import protection', () => {
 const transformWithImportProtection = (id: string, importer: string) => {
   const plugin = ImportProtectionPlugin.rollup({
     rootDir: '/root',
+    modulesDir: [fileURLToPath(new URL('..', import.meta.url))],
     patterns: nuxtImportProtections({
       options: {
         modules: ['some-nuxt-module'],

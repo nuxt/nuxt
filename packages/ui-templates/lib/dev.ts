@@ -1,10 +1,13 @@
 import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
 import { template } from 'lodash-es'
 import genericMessages from '../templates/messages.json'
 
-const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
+const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
+
+const r = (...path: string[]) => resolve(join(templatesRoot, ...path))
 
 export const DevRenderingPlugin = () => {
   return <Plugin>{
