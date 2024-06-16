@@ -9,7 +9,7 @@ git restore -s@ -SW  -- packages examples
 pnpm build
 
 # use absolute urls for better rendering on npm
-sed -i '' 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
+sed -i.bak 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
 
 # Release packages
 for PKG in packages/* ; do
@@ -33,3 +33,5 @@ for PKG in packages/* ; do
   pnpm publish --access public --no-git-checks --tag $TAG
   popd > /dev/null
 done
+
+mv README.md.bak README.md
