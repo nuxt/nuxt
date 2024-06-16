@@ -1,4 +1,4 @@
-[![Nuxt banner](https://github.com/nuxt/nuxt/tree/main/.github/assets/banner.svg)](https://nuxt.com)
+[![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
 
 # Nuxt
 
@@ -115,7 +115,7 @@ If you expect to be using Nuxt 2 beyond the EOL (End of Life) date (June 30, 202
 ## <a name="follow-us">🔗 Follow us</a>
 
 <p valign="center">
-  <a href="https://chat.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/github.svg" alt="GitHub"></a>
+  <a href="https://chat.nuxt.dev"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
 </p>
 
 ## <a name="license">⚖️ License</a>
