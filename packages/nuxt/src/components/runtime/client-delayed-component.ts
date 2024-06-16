@@ -16,7 +16,7 @@ function elementIsVisibleInViewport (el: Element) {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIOClientPage = (componentLoader: Component) => {
+export const createLazyIOComponent = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
@@ -59,7 +59,7 @@ export const createLazyIOClientPage = (componentLoader: Component) => {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyNetworkClientPage = (componentLoader: Component) => {
+export const createLazyNetworkComponent = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
@@ -92,7 +92,7 @@ export const createLazyNetworkClientPage = (componentLoader: Component) => {
 
 const eventsMapper = new WeakMap<ComponentInternalInstance, (() => void)[]>()
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyEventClientPage = (componentLoader: Component) => {
+export const createLazyEventComponent = (componentLoader: Component) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
