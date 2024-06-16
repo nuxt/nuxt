@@ -73,25 +73,25 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
 
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-            if (nuxt?.options.experimental.componentLazyHydration === true && modifier) {
+            if (nuxt?.options.experimental.delayedHydration === true && modifier) {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOClientPage' }]))
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOComponent' }]))
                   identifier += '_delayedIO'
-                  imports.add(`const ${identifier} = createLazyIOClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  imports.add(`const ${identifier} = createLazyIOComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
                 case 'Event':
                 case 'event-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyEventClientPage' }]))
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyEventComponent' }]))
                   identifier += '_delayedEvent'
-                  imports.add(`const ${identifier} = createLazyEventClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  imports.add(`const ${identifier} = createLazyEventComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
                 case 'Idle':
                 case 'idle-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkClientPage' }]))
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkComponent' }]))
                   identifier += '_delayedNetwork'
-                  imports.add(`const ${identifier} = createLazyNetworkClientPage(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  imports.add(`const ${identifier} = createLazyNetworkComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
                   break
               }
             } else {
