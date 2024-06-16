@@ -46,10 +46,12 @@ export async function build (nuxt: Nuxt) {
   if (!nuxt.options._prepare) {
     await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
     await nuxt.callHook('build:done')
-  }
 
-  if (!nuxt.options.dev) {
-    await nuxt.callHook('close', nuxt)
+    if (!nuxt.options.dev) {
+      await nuxt.callHook('close', nuxt)
+    }
+  } else {
+    nuxt.hook('prepare:types', () => nuxt.close())
   }
 }
 

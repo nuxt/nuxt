@@ -198,6 +198,7 @@ function cookieRef<T> (value: T | undefined, delay: number, shouldWatch: boolean
     if (shouldWatch) { unsubscribe = watch(internalRef, trigger) }
 
     function createExpirationTimeout () {
+      elapsed = 0
       clearTimeout(timeout)
       const timeRemaining = delay - elapsed
       const timeoutLength = timeRemaining < MAX_TIMEOUT_DELAY ? timeRemaining : MAX_TIMEOUT_DELAY

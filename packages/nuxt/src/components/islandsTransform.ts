@@ -28,7 +28,7 @@ const SCRIPT_RE = /<script[^>]*>/g
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
 const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
 
 function wrapWithVForDiv (code: string, vfor: string): string {
@@ -171,8 +171,8 @@ function getPropsToString (bindings: Record<string, string>): string {
       content.push(isBinding(b) ? `[\`${b.slice(1)}\`]: ${value}` : `[\`${b}\`]: \`${value}\``)
     }
   }
-  content = content.join(',')
-  const data = bindings._bind ? `mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
+  content = content.join('.')
+  const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
   } else {

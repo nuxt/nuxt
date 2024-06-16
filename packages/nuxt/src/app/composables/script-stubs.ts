@@ -60,9 +60,15 @@ export function useScriptGoogleTagManager (...args: unknown[]) {
 export function useScriptSegment (...args: unknown[]) {
   renderStubMessage('useScriptSegment')
 }
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScriptFacebookPixel (...args: unknown[]) {
-  renderStubMessage('useScriptFacebookPixel')
+export function useScriptClarity (...args: unknown[]) {
+  renderStubMessage('useScriptClarity')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptMetaPixel (...args: unknown[]) {
+  renderStubMessage('useScriptMetaPixel')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptXPixel (...args: unknown[]) {
@@ -99,4 +105,14 @@ export function useScriptGoogleMaps (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptNpm (...args: unknown[]) {
   renderStubMessage('useScriptNpm')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptGoogleAdsense (...args: unknown[]) {
+  renderStubMessage('useScriptGoogleAdsense')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptYouTubePlayer (...args: unknown[]) {
+  renderStubMessage('useScriptYouTubePlayer')
 }

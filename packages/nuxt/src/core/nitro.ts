@@ -376,6 +376,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins!.push(
     ImportProtectionPlugin.rollup({
       rootDir: nuxt.options.rootDir,
+      modulesDir: nuxt.options.modulesDir,
       patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
     }),
@@ -516,10 +517,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   if (nitro.options.static) {
-    nitro.hooks.hook('prerender:routes', (routes) => {
+    nitro.hooks.hook('prerender:routes', (routes) =>
       routes.add('/200.html')
       routes.add('/404.html')
-      if (!nuxt.options.ssr) {
+      if (nuxt.options.ssr) {
+        if (nitro.options.prerender.crawlLinks) {
+          routes.add('/')
+        }
+      } else {
         routes.add('/index.html')
       }
     })

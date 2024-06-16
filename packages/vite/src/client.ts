@@ -118,7 +118,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         'vue',
       ],
     },
-    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'client'),
+    cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'client'),
     build: {
       sourcemap: ctx.nuxt.options.sourcemap.client ? ctx.config.build?.sourcemap ?? ctx.nuxt.options.sourcemap.client : false,
       manifest: 'manifest.json',
@@ -163,10 +163,11 @@ export async function buildClient (ctx: ViteBuildContext) {
   }
 
   // We want to respect users' own rollup output options
+  const fileNames = withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js'))
   clientConfig.build!.rollupOptions = defu(clientConfig.build!.rollupOptions!, {
     output: {
-      chunkFileNames: ctx.nuxt.options.dev ? undefined : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
-      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : withoutLeadingSlash(join(ctx.nuxt.options.app.buildAssetsDir, '[hash].js')),
+      chunkFileNames: ctx.nuxt.options.dev ? undefined : fileNames,
+      entryFileNames: ctx.nuxt.options.dev ? 'entry.js' : fileNames,
     } satisfies NonNullable<BuildOptions['rollupOptions']>['output'],
   }) as any
 
@@ -228,7 +229,13 @@ export async function buildClient (ctx: ViteBuildContext) {
     })
 
     const viteMiddleware = defineEventHandler(async (event) => {
-      const viteRoutes = viteServer.middlewares.stack.map(m => m.route).filter(r => r.length > 1)
+      const viteRoutes: string[] = []
+      for (const viteRoute of viteServer.middlewares.stack) {
+        const m = viteRoute.route
+        if (m.length > 1) {
+          viteRoutes.push(m)
+        }
+      }
       if (!event.path.startsWith(clientConfig.base!) && !viteRoutes.some(route => event.path.startsWith(route))) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true

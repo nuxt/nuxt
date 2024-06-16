@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
 import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
 import { scanComponents } from '../src/components/scan'
 
-const fixtureDir = resolve(__dirname, 'fixture')
+const fixtureDir = fileURLToPath(new URL('fixture', import.meta.url))
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({

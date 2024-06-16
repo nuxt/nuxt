@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack-builder",
-  "version": "3.12.1",
+  "version": "3.12.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -42,7 +42,7 @@
     "hash-sum": "^2.0.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.10",
-    "memfs": "^4.9.2",
+    "memfs": "^4.9.3",
     "mini-css-extract-plugin": "^2.9.0",
     "mlly": "^1.7.1",
     "ohash": "^1.1.3",
@@ -77,9 +77,8 @@
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "@types/webpack-virtual-modules": "0.4.2",
     "unbuild": "latest",
-    "vue": "3.4.27"
+    "vue": "3.4.29"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
