@@ -2693,10 +2693,11 @@ describe('lazy import components', () => {
   it('respects custom delayed hydration triggers', async () => {
     const { page } = await renderPage('/lazy-import-components')
     await page.waitForLoadState('networkidle')
-    await page.locator('#lazyevent2').click()
-    await page.waitForResponse(response =>
+    const resp = page.waitForResponse(response =>
       response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
     )
+    await page.locator('#lazyevent2').click()
+    await resp
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
   })
