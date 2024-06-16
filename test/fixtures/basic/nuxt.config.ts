@@ -257,7 +257,7 @@ export default defineNuxtConfig({
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     headNext: true,
     inlineRouteRules: true,
-    componentLazyHydration: true,
+    delayedHydration: true,
   },
   appConfig: {
     fromNuxtConfig: true,
