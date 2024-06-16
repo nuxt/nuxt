@@ -119,6 +119,9 @@ ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type}`).join('\n')}
 }
 
 declare module '@vue/runtime-core' {
@@ -135,6 +138,9 @@ declare module 'vue' {
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type}`).join('\n')}
 
 export const componentNames: string[]
 `
