@@ -263,7 +263,7 @@ export default defineUntypedSchema({
      * Delayed component hydration
      *
      * This enables components to defer hydration until necessary, improving performance by not requesting all resources at once.
-     * @type {Boolean}
+     * @type {boolean}
      */
     delayedHydration: false,
 
