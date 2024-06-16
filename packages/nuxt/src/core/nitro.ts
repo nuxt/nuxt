@@ -517,7 +517,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   if (nitro.options.static) {
-    nitro.hooks.hook('prerender:routes', (routes) =>
+    nitro.hooks.hook('prerender:routes', (routes) => {3
       routes.add('/200.html')
       routes.add('/404.html')
       if (nuxt.options.ssr) {
