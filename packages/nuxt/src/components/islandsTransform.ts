@@ -171,7 +171,7 @@ function getPropsToString (bindings: Record<string, string>): string {
       content.push(isBinding(b) ? `[\`${b.slice(1)}\`]: ${value}` : `[\`${b}\`]: \`${value}\``)
     }
   }
-  content = content.join('.')
+  content = content.join(',')
   const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
