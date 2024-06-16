@@ -2699,6 +2699,7 @@ describe('lazy import components', () => {
     )
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
+  })
 })
 
 describe('defineNuxtComponent watch duplicate', () => {
