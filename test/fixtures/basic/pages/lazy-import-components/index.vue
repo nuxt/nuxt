@@ -4,7 +4,10 @@
     <LazyNCompClient message="lazy-named-comp-client" />
     <LazyNCompServer message="lazy-named-comp-server" />
     <LazyEventDelayedEvent id="lazyevent" />
-    <LazyEventDelayedEvent id="lazyevent2" :loader="createEventLoader(['click'])" />
+    <LazyEventDelayedEvent 
+      id="lazyevent2"
+      :loader="createEventLoader(['click'])"
+    />
     <LazyIdleDelayedNetwork />
     <div style="height:3000px">
       This is a very tall div
