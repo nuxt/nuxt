@@ -9483,17 +9483,17 @@ last-call-webpack-plugin@^3.0.0:
     lodash "^4.17.5"
     webpack-sources "^1.1.0"
 
-launch-editor-middleware@^2.6.1:
-  version "2.6.1"
-  resolved "https://registry.npmjs.org/launch-editor-middleware/-/launch-editor-middleware-2.6.1.tgz#7f2f400d8dda2283b69d02e9d83b1d272fef2bfb"
-  integrity sha512-Fg/xYhf7ARmRp40n18wIfJyuAMEjXo67Yull7uF7d0OJ3qA4EYJISt1XfPPn69IIJ5jKgQwzcg6DqHYo95LL/g==
+launch-editor-middleware@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.npmjs.org/launch-editor-middleware/-/launch-editor-middleware-2.7.0.tgz#4f9dde320c9dc4bb70b2043d712a33ec1d5d2d0d"
+  integrity sha512-rG+rNALg2G2uObvKqff38SqqETFYMUDwv0nvi2wYp8LcImFmWB+lSc5EI7gz82H4300CmC9Kgfaguhwf7sNXSQ==
   dependencies:
-    launch-editor "^2.6.1"
+    launch-editor "^2.7.0"
 
-launch-editor@^2.6.1:
-  version "2.6.1"
-  resolved "https://registry.npmjs.org/launch-editor/-/launch-editor-2.6.1.tgz#f259c9ef95cbc9425620bbbd14b468fcdb4ffe3c"
-  integrity sha512-eB/uXmFVpY4zezmGp5XtU21kwo7GBbKB+EQ+UZeWtGb9yAM5xt/Evk+lYH3eRNAtId+ej4u7TYPFZ07w4s7rRw==
+launch-editor@^2.7.0:
+  version "2.7.0"
+  resolved "https://registry.npmjs.org/launch-editor/-/launch-editor-2.7.0.tgz#53ba12b3eb131edefee99acaef7850c40272273f"
+  integrity sha512-KAc66u6LxWL8MifQ94oG3YGKYWDwz/Gi0T15lN//GaQoZe08vQGFJxrXkPAeu50UXgvJPPaRKVGuP1TRUm/aHQ==
   dependencies:
     picocolors "^1.0.0"
     shell-quote "^1.8.1"
