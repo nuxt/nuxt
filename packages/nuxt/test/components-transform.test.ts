@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
+import { normalize } from 'pathe'
 
 import { createTransformPlugin } from '../src/components/transform'
 
@@ -92,7 +93,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(rootDir, '<repo>/')
+    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(rootDir), '<repo>/')
   }
 }
 
