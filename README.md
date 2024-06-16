@@ -1,11 +1,11 @@
-[![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
+[![Nuxt banner](https://github.com/nuxt/nuxt/tree/main/.github/assets/banner.svg)](https://nuxt.com)
 
 # Nuxt
 
 <p>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
+  <a href="https://github.com/nuxt/nuxt/tree/main/LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
   <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt%20Docs-18181B?logo=nuxt.js" alt="Website"></a>
   <a href="https://chat.nuxt.dev"><img src="https://img.shields.io/badge/Nuxt%20Discord-18181B?logo=discord" alt="Discord"></a>
 </p>
@@ -115,9 +115,9 @@ If you expect to be using Nuxt 2 beyond the EOL (End of Life) date (June 30, 202
 ## <a name="follow-us">🔗 Follow us</a>
 
 <p valign="center">
-  <a href="https://chat.nuxt.dev"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
+  <a href="https://chat.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="https://github.com/nuxt/nuxt/tree/main/.github/assets/github.svg" alt="GitHub"></a>
 </p>
 
 ## <a name="license">⚖️ License</a>
 
-[MIT](./LICENSE)
+[MIT](https://github.com/nuxt/nuxt/tree/main/LICENSE)
