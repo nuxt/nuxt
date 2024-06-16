@@ -2689,6 +2689,16 @@ describe('lazy import components', () => {
     )
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
   })
+
+  it('respects custom delayed hydration triggers', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForLoadState('networkidle')
+    await page.locator('#lazyevent').click()
+    await page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
+    )
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
 })
 
 describe('defineNuxtComponent watch duplicate', () => {
