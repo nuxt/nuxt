@@ -30,7 +30,7 @@
     "hash-sum": "^2.0.0",
     "html-webpack-plugin": "^4.5.1",
     "lodash": "^4.17.21",
-    "memory-fs": "^0.5.0",
+    "memfs": "^4.9.3",
     "optimize-css-assets-webpack-plugin": "^6.0.1",
     "pify": "^5.0.0",
     "pnp-webpack-plugin": "^1.7.0",
