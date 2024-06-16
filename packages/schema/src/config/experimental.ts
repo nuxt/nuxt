@@ -260,11 +260,12 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Experimental built-in delayed component hydration
+     * Delayed component hydration
      *
-     * This enables components to lazily hydrate when needed, improving performance for sites with components below-the-fold
+     * This enables components to defer hydration until necessary, improving performance by not requesting all resources at once.
+     * @type {Boolean}
      */
-    componentLazyHydration: false,
+    delayedHydration: false,
 
     /**
      * Config schema support
