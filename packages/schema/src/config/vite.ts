@@ -84,16 +84,8 @@ export default defineUntypedSchema({
       },
     },
     esbuild: {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-      tsconfigRaw: {
-        $resolve: async (val: Exclude<ViteOptions['esbuild'], false>['tsconfigRaw'], get) => {
-          return defu(val, {
-            compilerOptions: {
-              experimentalDecorators: await get('experimental.decorators') as boolean
-            }
-          } satisfies Exclude<ViteOptions['esbuild'], false>['tsconfigRaw'])
-        }
+      $resolve: async (val: Record<string, any>, get) => {
+        return defu(val, await get('esbuild.options') as Record<string, any>)
       }
     },
     clearScreen: true,
