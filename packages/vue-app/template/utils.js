@@ -157,12 +157,15 @@ export function resolveRouteComponents (route, fn) {
             window.sessionStorage
           ) {
             const timeNow = Date.now()
-            const previousReloadTime = parseInt(window.sessionStorage.getItem('nuxt-reload'))
-
-            // check for previous reload time not to reload infinitely
-            if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
-              window.sessionStorage.setItem('nuxt-reload', timeNow)
-              window.location.reload(true /* skip cache */)
+            try {
+              const previousReloadTime = parseInt(window.sessionStorage.getItem('nuxt-reload'))
+              // check for previous reload time not to reload infinitely
+              if (!previousReloadTime || previousReloadTime + 60000 < timeNow) {
+                window.sessionStorage.setItem('nuxt-reload', timeNow)
+                window.location.reload(true /* skip cache */)
+              }
+            } catch {
+              // don't throw an error if we have issues reading sessionStorage
             }
           }
 
