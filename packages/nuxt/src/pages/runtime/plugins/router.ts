@@ -66,7 +66,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : createMemoryHistory(routerBase)
     )
 
-    const routes = await routerOptions.routes?.(_routes) ?? _routes
+    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
