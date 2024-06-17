@@ -46,7 +46,7 @@
     "vue": "3.4.29"
   },
   "devDependencies": {
-    "@eslint/js": "9.4.0",
+    "@eslint/js": "9.5.0",
     "@nuxt/eslint-config": "0.3.13",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.13.1",
@@ -64,7 +64,7 @@
     "changelogen": "0.5.5",
     "consola": "3.2.3",
     "devalue": "5.0.0",
-    "eslint": "9.4.0",
+    "eslint": "9.5.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.11.0",
     "eslint-typegen": "0.2.4",
