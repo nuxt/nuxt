@@ -1,24 +1,54 @@
-import MFS from 'memory-fs'
-export default class AsyncMFS extends MFS {}
+import path from 'path'
+import mkdirp from 'mkdirp'
+import { createFsFromVolume, Volume } from 'memfs'
+import { dirname } from 'upath'
 
 const syncRegex = /Sync$/
 
-const propsToPromisify = Object.getOwnPropertyNames(MFS.prototype).filter(n => syncRegex.test(n))
+export default function createFS () {
+  const volume = new Volume()
+  const fs = createFsFromVolume(volume)
 
-for (const prop of propsToPromisify) {
-  const asyncProp = prop.replace(syncRegex, '')
-  const origAsync = AsyncMFS.prototype[asyncProp]
+  fs.join = path.join.bind(path)
+  fs.mkdirp = mkdirp.bind(mkdirp)
 
-  AsyncMFS.prototype[asyncProp] = function (...args) {
-    // Callback support for webpack
-    if (origAsync && args.length && typeof args[args.length - 1] === 'function') {
-      return origAsync.call(this, ...args)
-    }
+  const propsToPromisify = Object.getOwnPropertyNames(fs).filter(n => syncRegex.test(n))
 
-    try {
-      return Promise.resolve(MFS.prototype[prop].call(this, ...args))
-    } catch (error) {
-      return Promise.reject(error)
+  const writeFileSync = fs.writeFileSync
+
+  function ensureDirSync (...args) {
+    if (typeof args[0] === 'string') {
+      const dir = dirname(args[0])
+      fs.mkdirSync(dir, { recursive: true })
     }
   }
+
+  fs.writeFileSync = function (...args) {
+    ensureDirSync(...args)
+    return writeFileSync.call(fs, ...args)
+  }
+
+  for (const prop of propsToPromisify) {
+    const asyncProp = prop.replace(syncRegex, '')
+    const origAsync = fs[asyncProp]
+
+    fs[asyncProp] = function (...args) {
+      if (asyncProp === 'writeFile') {
+        ensureDirSync(...args)
+      }
+
+      // Callback support for webpack
+      if (origAsync && args.length && typeof args[args.length - 1] === 'function') {
+        return origAsync.call(fs, ...args)
+      }
+
+      try {
+        return Promise.resolve(fs[prop](...args))
+      } catch (error) {
+        return Promise.reject(error)
+      }
+    }
+  }
+
+  return fs
 }
