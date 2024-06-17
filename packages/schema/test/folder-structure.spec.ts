@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyDefaults } from 'untyped'
 
+import { normalize } from 'pathe'
 import { NuxtConfigSchema } from '../src'
 import type { NuxtOptions } from '../src'
 
@@ -75,7 +76,9 @@ describe('nuxt folder structure', () => {
 })
 
 function getDirs (options: NuxtOptions) {
-  const stripRoot = (dir: string) => dir.replace(process.cwd(), '<cwd>')
+  const stripRoot = (dir: string) => {
+    return normalize(dir).replace(normalize(process.cwd()), '<cwd>')
+  }
   return {
     rootDir: stripRoot(options.rootDir),
     serverDir: stripRoot(options.serverDir),
