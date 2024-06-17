@@ -54,7 +54,7 @@
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.14.2",
+    "@types/node": "20.14.3",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.9.13",
     "@vitejs/plugin-vue": "5.0.4",
@@ -93,7 +93,7 @@
     "vue-router": "4.3.3",
     "vue-tsc": "2.0.21"
   },
-  "packageManager": "pnpm@9.3.0",
+  "packageManager": "pnpm@9.4.0",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
