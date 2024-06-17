@@ -2707,6 +2707,12 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
   })
+  it('does not delay hydration of components named after modifiers', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('body').getByText('This fake lazy event should be visible!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This fake lazy event shouldn\'t be visible!').all()).toHaveLength(0)
+  })
 })
 
 describe('defineNuxtComponent watch duplicate', () => {
