@@ -85,7 +85,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
     esbuild: {
-      options: { exclude: excludePattern },
+      options: {
+        exclude: excludePattern,
+        tsconfigRaw: {
+          compilerOptions: {
+            experimentalDecorators: nuxt.options.experimental.decorators ?? false
+          }
+        }
+      },
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {

@@ -125,6 +125,12 @@ export default defineUntypedSchema({
   },
   experimental: {
     /**
+     * Enable to use experimental decorators in Nuxt and Nitro.
+     *
+     * @link https://github.com/tc39/proposal-decorators
+     */
+    decorators: false,
+    /**
      * Set to true to generate an async entry point for the Vue bundle (for module federation support).
      */
     asyncEntry: {

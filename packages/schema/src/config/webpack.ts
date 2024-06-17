@@ -1,4 +1,5 @@
 import { defu } from 'defu'
+import type { LoaderOptions } from 'esbuild-loader'
 import { defineUntypedSchema } from 'untyped'
 import type { VueLoaderOptions } from 'vue-loader'
 
@@ -160,7 +161,15 @@ export default defineUntypedSchema({
       esbuild: {
         jsxFactory: 'h',
         jsxFragment: 'Fragment',
-        tsconfigRaw: '{}',
+        tsconfigRaw: {
+          $resolve: async (val: LoaderOptions['tsconfigRaw'], get) => {
+            return defu(val, {
+              compilerOptions: {
+                experimentalDecorators: await get('experimental.decorators') as boolean
+              }
+            } satisfies LoaderOptions['tsconfigRaw'])
+          }
+        }
       },
 
       /**

@@ -1,3 +1,4 @@
+import type { TSConfig } from 'pkg-types'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
@@ -73,7 +74,20 @@ export default defineUntypedSchema({
      * You can extend generated `.nuxt/tsconfig.json` using this option.
      * @type {0 extends 1 & VueCompilerOptions ? typeof import('pkg-types')['TSConfig'] : typeof import('pkg-types')['TSConfig'] & { vueCompilerOptions?: typeof import('@vue/language-core')['VueCompilerOptions']}}
      */
-    tsConfig: {},
+    tsConfig: {
+      $resolve: async (val, get) => {
+        if (val) return val
+
+        const enableDecorators = await get('experimental.decorators')
+        if (!enableDecorators) return {}
+
+        return {
+          compilerOptions: {
+            experimentalDecorators: true
+          }
+        } satisfies TSConfig
+      },
+    },
 
     /**
      * Generate a `*.vue` shim.
