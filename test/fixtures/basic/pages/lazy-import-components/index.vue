@@ -4,6 +4,7 @@
     <LazyNCompClient message="lazy-named-comp-client" />
     <LazyNCompServer message="lazy-named-comp-server" />
     <LazyEventDelayedEvent id="lazyevent" />
+    <LazyEventView />
     <LazyEventDelayedEvent
       id="lazyevent2"
       :loader="createEventLoader(['click'])"
