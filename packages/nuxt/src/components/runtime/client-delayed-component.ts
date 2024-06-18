@@ -51,7 +51,7 @@ export const createLazyIOComponent = (componentLoader: Component) => {
       })
       return () => {
         return h('div', { ref: el }, [
-          isIntersecting.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null,
+          isIntersecting.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null,
         ])
       }
     },
@@ -85,7 +85,7 @@ export const createLazyNetworkComponent = (componentLoader: Component) => {
           idleHandle = null
         }
       })
-      return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
+      return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null
     },
   })
 }
@@ -123,7 +123,7 @@ export const createLazyEventComponent = (componentLoader: Component) => {
         registeredEvents?.forEach(remove => remove())
         eventsMapper.delete(instance)
       })
-      return () => isTriggered.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createVNode(createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1)) : null
+      return () => isTriggered.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null
     },
   })
 }
