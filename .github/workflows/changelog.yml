@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 3.x
       - 2.x
 
 permissions:
@@ -16,7 +17,7 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
     runs-on: ubuntu-latest
 
     steps:
