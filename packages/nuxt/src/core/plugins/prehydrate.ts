@@ -37,7 +37,7 @@ export function prehydrateTransformPlugin (nuxt: Nuxt) {
             const needsAttr = node.arguments[0].params.length > 0
             const { start, end } = node.arguments[0] as Node & { start: number, end: number }
 
-            const p = transform(`forEach(${code.slice(start, end)})`, { loader: 'ts', minify: true })
+            const p = transform(`forEach(${code.slice(start, end)})`, { loader: 'ts', minify: true, ...nuxt.options.esbuild.options })
             promises.push(p.then(({ code: result }) => {
               const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
               const args = [JSON.stringify(cleaned)]
