@@ -2595,14 +2595,20 @@ describe('teleports', () => {
   })
 })
 
-describe('Node.js compatibility for client-side', () => {
-  it('should work', async () => {
-    const { page } = await renderPage('/node-compat')
+describe.only('experimental', () => {
+  it('decorators support works', async () => {
+    const html = await $fetch('/experimental/decorators')
+    expect(html).toContain('decorated-decorated')
+    expectNoClientErrors('/experimental/decorators')
+  })
+
+  it('Node.js compatibility for client-side', async () => {
+    const { page } = await renderPage('/experimental/node-compat')
     await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
-  })
-}, 20_000)
+  }, 30_000)
+})
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
