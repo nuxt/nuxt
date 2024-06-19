@@ -4,9 +4,6 @@ import { toRef } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { useRouter } from './router'
 
-// @ts-expect-error virtual file
-import { nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
-
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 
 /** @since 3.0.0 */
@@ -50,7 +47,7 @@ export const clearError = async (options: { redirect?: string } = {}) => {
     await useRouter().replace(options.redirect)
   }
 
-  error.value = nuxtDefaultErrorValue
+  error.value = undefined
 }
 
 /** @since 3.0.0 */
