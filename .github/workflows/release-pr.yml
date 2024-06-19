@@ -29,10 +29,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Get PR Info
+        id: pr
+        env:
+          PR_NUMBER: ${{ github.event.issue.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+          COMMENT_AT: ${{ github.event.comment.created_at }}
+        run: |
+          pr="$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/${GH_REPO}/pulls/${PR_NUMBER})"
+          head_sha="$(echo "$pr" | jq -r .head.sha)"
+          updated_at="$(echo "$pr" | jq -r .updated_at)"
+
+          if [[ $(date -d $updated_at) > $(date -d $COMMENT_AT) ]]; exit 1; fi
+          
+          echo "head_sha=$head_sha" >> $GITHUB_OUTPUT
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
-          ref: ${{ github.event.issue.pull_request.head.sha }}
-          fetch-depth: 0
+          ref: ${{ steps.pr.outputs.head_sha }}
+          fetch-depth: 1
 
       - run: corepack enable
       - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
