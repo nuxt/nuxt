@@ -102,16 +102,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config'].replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
       '/__nuxt_error': { cache: false },
     },
-    // TODO: implement appConfig internally
-    // appConfig: nuxt.options.appConfig,
-    // appConfigFiles: nuxt.options._layers.map(
-    //   layer => resolve(layer.config.srcDir, 'app.config'),
-    // ),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -213,6 +209,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  if (nuxt.options.experimental.serverAppConfig && nitroConfig.imports) {
+    nitroConfig.imports.imports ||= []
+    nitroConfig.imports.imports.push({
+      name: 'useAppConfig',
+      from: resolve(distDir, 'core/runtime/nitro/app-config'),
+    })
+  }
 
   // add error handler
   if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {

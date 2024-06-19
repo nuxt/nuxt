@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['nitro/runtime', '#internal/nuxt/paths'],
+        external: ['nitro/runtime', '#internal/nuxt/paths', '#internal/nuxt/app-config'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',

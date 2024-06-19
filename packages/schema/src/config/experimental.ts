@@ -138,6 +138,13 @@ export default defineUntypedSchema({
     externalVue: true,
 
     /**
+     * Enable accessing `appConfig` from server routes.
+     *
+     * @deprecated This option is not recommended.
+     */
+    serverAppConfig: false,
+
+    /**
      * Tree shakes contents of client-only components from server bundle.
      * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
      * @deprecated This option will no longer be configurable in Nuxt v4

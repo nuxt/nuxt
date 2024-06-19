@@ -329,17 +329,19 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { updateAppConfig } from '#app/config'
 import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
+/** client **/
 // Vite - webpack is handled directly in #app/config
-if (import.meta.hot) {
+if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
+  const { updateAppConfig } = await import('#app/config')
   import.meta.hot.accept((newModule) => {
     updateAppConfig(newModule.default)
   })
 }
+/** client-end **/
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
