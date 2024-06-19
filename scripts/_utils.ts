@@ -103,9 +103,7 @@ export async function determineBumpType () {
   const config = await loadChangelogConfig(process.cwd())
   const commits = await getLatestCommits()
 
-  const bumpType = determineSemverChange(commits, config)
-
-  return bumpType === 'major' ? 'minor' : bumpType
+  return determineSemverChange(commits, config)
 }
 
 export async function getLatestCommits () {
