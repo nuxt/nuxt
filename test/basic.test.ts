@@ -13,7 +13,6 @@ import type { NuxtIslandResponse } from '#app'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
-const isV4 = process.env.TEST_V4 === 'true'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -918,17 +917,12 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
-  it.skipIf(isV4)('SPA should render appHead tags', async () => {
-    const headHtml = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+  it('SPA should render appHead tags', async () => {
+    const headHtml = await $fetch<string>('/head-spa')
 
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
     expect(headHtml).toContain('<meta charset="utf-8">')
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
-  })
-
-  it.skipIf(isV4)('legacy vueuse/head works', async () => {
-    const headHtml = await $fetch<string>('/vueuse-head')
-    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
 
   it('should render http-equiv correctly', async () => {
@@ -2463,7 +2457,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   })
 
   it('data is null after navigation when immediate false', async () => {
-    const defaultValue = isV4 ? 'undefined' : 'null'
+    const defaultValue = 'undefined'
 
     const { page } = await renderPage('/useAsyncData/immediate-remove-unmounted')
     expect(await page.locator('#immediate-data').getByText(defaultValue).textContent()).toBe(defaultValue)

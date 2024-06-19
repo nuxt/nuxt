@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate as _compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils } from '@nuxt/kit'
+import { findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -53,9 +53,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   }
 
   // Compile templates into vfs
-  // TODO: remove utils in v4
-  const templateContext = { utils: templateUtils, nuxt, app }
-  const compileTemplate = nuxt.options.experimental.compileTemplate ? _compileTemplate : futureCompileTemplate
+  const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
@@ -113,7 +111,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 }
 
 /** @internal */
-async function futureCompileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
+async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
   delete ctx.utils
 
   if (template.src) {
