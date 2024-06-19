@@ -19,7 +19,7 @@ describe('resolveApp', () => {
       {
         "components": [],
         "configs": [],
-        "dir": "<rootDir>",
+        "dir": "<rootDir>/app",
         "errorComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-error-page.vue",
         "extensions": [
           ".js",
