@@ -54,7 +54,7 @@
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
     "@types/fs-extra": "11.0.4",
-    "@types/node": "20.14.5",
+    "@types/node": "20.14.6",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.9.13",
     "@vitejs/plugin-vue": "5.0.4",
