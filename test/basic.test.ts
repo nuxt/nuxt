@@ -13,7 +13,6 @@ import type { NuxtIslandResponse } from '#app'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
-const isV4 = true
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
