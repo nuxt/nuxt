@@ -15,6 +15,8 @@ export const DevRenderingPlugin = () => {
     async transformIndexHtml (html: string, context) {
       const page = context.originalUrl || '/'
 
+      if (page.endsWith('.png')) { return }
+
       if (page === '/') {
         const templateNames = await fsp.readdir(r('templates'))
         const serializedData = JSON.stringify({ templateNames })
