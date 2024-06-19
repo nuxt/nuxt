@@ -2,7 +2,6 @@ import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
-import { isNuxt2 } from '../compatibility'
 import { useNuxt } from '../context'
 import { requireModule } from '../internal/cjs'
 import { importModule } from '../internal/esm'
@@ -27,12 +26,7 @@ export async function installModule<
   }
 
   // Call module
-  const res = (
-    isNuxt2()
-      // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
-      ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
-      : await nuxtModule(inlineOptions, nuxt)
-  ) ?? {}
+  const res = await nuxtModule(inlineOptions, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }

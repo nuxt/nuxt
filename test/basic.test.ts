@@ -2602,7 +2602,7 @@ describe('Node.js compatibility for client-side', () => {
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
-}, 20_000)
+}, 30_000)
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {

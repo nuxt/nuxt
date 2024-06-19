@@ -1,13 +1,10 @@
-import { promises as fsp } from 'node:fs'
 import { performance } from 'node:perf_hooks'
 import { defu } from 'defu'
 import { applyDefaults } from 'untyped'
-import { dirname } from 'pathe'
-import type { ModuleDefinition, ModuleOptions, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions, ResolvedNuxtTemplate } from '@nuxt/schema'
+import type { ModuleDefinition, ModuleOptions, ModuleSetupReturn, Nuxt, NuxtModule, NuxtOptions } from '@nuxt/schema'
 import { logger } from '../logger'
-import { nuxtCtx, tryUseNuxt, useNuxt } from '../context'
-import { checkNuxtCompatibility, isNuxt2 } from '../compatibility'
-import { compileTemplate, templateUtils } from '../internal/template'
+import { tryUseNuxt, useNuxt } from '../context'
+import { checkNuxtCompatibility } from '../compatibility'
 
 /**
  * Define a Nuxt module, automatically merging defaults with user provided options, installing
@@ -58,9 +55,6 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
       }
     }
 
-    // Prepare
-    nuxt2Shims(nuxt)
-
     // Resolve module and options
     const _options = await getOptions(inlineOptions, nuxt)
 
@@ -99,54 +93,4 @@ export function defineNuxtModule<OptionsT extends ModuleOptions> (definition: Mo
   normalizedModule.getOptions = getOptions
 
   return normalizedModule as NuxtModule<OptionsT>
-}
-
-// -- Nuxt 2 compatibility shims --
-const NUXT2_SHIMS_KEY = '__nuxt2_shims_key__'
-function nuxt2Shims (nuxt: Nuxt) {
-  // Avoid duplicate install and only apply to Nuxt2
-  if (!isNuxt2(nuxt) || nuxt[NUXT2_SHIMS_KEY as keyof Nuxt]) { return }
-  nuxt[NUXT2_SHIMS_KEY as keyof Nuxt] = true
-
-  // Allow using nuxt.hooks
-  // @ts-expect-error Nuxt 2 extends hookable
-  nuxt.hooks = nuxt
-
-  // Allow using useNuxt()
-  if (!nuxtCtx.tryUse()) {
-    nuxtCtx.set(nuxt)
-    nuxt.hook('close', () => nuxtCtx.unset())
-  }
-
-  // Support virtual templates with getContents() by writing them to .nuxt directory
-  let virtualTemplates: ResolvedNuxtTemplate[]
-  // @ts-expect-error Nuxt 2 hook
-  nuxt.hook('builder:prepared', (_builder, buildOptions) => {
-    virtualTemplates = buildOptions.templates.filter((t: any) => t.getContents)
-    for (const template of virtualTemplates) {
-      buildOptions.templates.splice(buildOptions.templates.indexOf(template), 1)
-    }
-  })
-  // @ts-expect-error Nuxt 2 hook
-  nuxt.hook('build:templates', async (templates) => {
-    const context = {
-      nuxt,
-      utils: templateUtils,
-      app: {
-        dir: nuxt.options.srcDir,
-        extensions: nuxt.options.extensions,
-        plugins: nuxt.options.plugins,
-        templates: [
-          ...templates.templatesFiles,
-          ...virtualTemplates,
-        ],
-        templateVars: templates.templateVars,
-      },
-    }
-    for await (const template of virtualTemplates) {
-      const contents = await compileTemplate({ ...template, src: '' }, context)
-      await fsp.mkdir(dirname(template.dst), { recursive: true })
-      await fsp.writeFile(template.dst, contents)
-    }
-  })
 }

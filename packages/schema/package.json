@@ -46,7 +46,7 @@
     "@vue/compiler-sfc": "3.4.29",
     "@vue/language-core": "2.0.21",
     "c12": "1.11.1",
-    "esbuild-loader": "4.1.0",
+    "esbuild-loader": "4.2.0",
     "h3": "1.11.1",
     "ignore": "5.3.1",
     "nitropack": "2.9.6",
