@@ -31,18 +31,18 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}&nuxt_component_export=${c.export || 'default'}`
         : c.filePath
 
-      const mode = !c._raw && c.mode && ['client', 'server'].includes(c.mode) ? c.mode : undefined
-
+      const mode = !c._raw && c.mode && (c.mode === 'client' || c.mode === 'server') ? c.mode : undefined
+      const compName = c.export || 'default'
       return [
         {
           as: c.pascalName,
           from: withMode(mode),
-          name: c.export || 'default',
+          name: compName,
         },
         {
           as: 'Lazy' + c.pascalName,
           from: withMode([mode, 'async'].filter(Boolean).join(',')),
-          name: c.export || 'default',
+          name: compName,
         },
       ]
     })

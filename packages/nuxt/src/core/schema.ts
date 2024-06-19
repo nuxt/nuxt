@@ -142,15 +142,12 @@ export default defineNuxtModule({
         JSON.stringify(schema, null, 2),
         'utf8',
       )
-      const _types = generateTypes(schema, {
+      const types = `${generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
         partial: true,
         allowExtraKeys: false,
-      })
-      const types =
-        _types +
-        `
+      })}
 export type CustomAppConfig = Exclude<NuxtCustomSchema['appConfig'], undefined>
 type _CustomAppConfig = CustomAppConfig
 

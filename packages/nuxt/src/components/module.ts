@@ -31,7 +31,7 @@ export default defineNuxtModule<ComponentsOptions>({
     dirs: [],
   },
   setup (componentOptions, nuxt) {
-    let componentDirs: ComponentsDir[] = []
+    const componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[],
     }
@@ -44,7 +44,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
       if (Array.isArray(dir)) {
-        return dir.map(dir => normalizeDirs(dir, cwd, options)).flat().sort(compareDirByPathLength)
+        return dir.flatMap(dir => normalizeDirs(dir, cwd, options)).sort(compareDirByPathLength)
       }
       if (dir === true || dir === undefined) {
         return [
@@ -61,57 +61,72 @@ export default defineNuxtModule<ComponentsOptions>({
       if (!dir) {
         return []
       }
-      const dirs: ComponentsDir[] = (dir.dirs || [dir]).map((dir: any): ComponentsDir => typeof dir === 'string' ? { path: dir } : dir).filter((_dir: ComponentsDir) => _dir.path)
-      return dirs.map(_dir => ({
-        priority: options?.priority || 0,
-        ..._dir,
-        path: resolve(cwd, resolveAlias(_dir.path)),
-      }))
+      const dirs: ComponentsDir[] = []
+      for (const compDir of dir.dirs || [dir]) {
+        const _dir: ComponentsDir = typeof dir === 'string' ? { path: compDir } : compDir
+        if (_dir.path) {
+          dirs.push({
+            priority: options?.priority || 0,
+            ..._dir,
+            path: resolve(cwd, resolveAlias(_dir.path)),
+          })
+        }
+      }
+      return dirs
     }
 
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers
-      const allDirs = nuxt.options._layers
-        .map(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
-        .flat()
+      const allDirs = nuxt.options._layers.flatMap(layer => normalizeDirs(layer.config.components, layer.config.srcDir, { priority: layer.config.srcDir === nuxt.options.srcDir ? 1 : 0 }))
 
       await nuxt.callHook('components:dirs', allDirs)
 
-      componentDirs = allDirs.filter(isPureObjectOrString).map((dir) => {
-        const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
-        const dirPath = resolveAlias(dirOptions.path)
-        const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
+      for (const dir of allDirs) {
+        if (isPureObjectOrString(dir)) {
+          const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
+          const dirPath = resolveAlias(dirOptions.path)
+          const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
+          const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
 
-        const present = isDirectory(dirPath)
-        if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
-          logger.warn('Components directory not found: `' + dirPath + '`')
+          const present = isDirectory(dirPath)
+          if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
+            logger.warn('Components directory not found: `' + dirPath + '`')
+          }
+
+          const comp: ComponentsDir = {
+            global: componentOptions.global,
+            ...dirOptions,
+            // TODO: https://github.com/nuxt/framework/pull/251
+            enabled: true,
+            path: dirPath,
+            extensions,
+            pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
+            ignore: [
+              '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
+              '**/*.d.{cts,mts,ts}', // .d.ts files
+              ...(dirOptions.ignore || []),
+            ],
+            transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
+          }
+          if (comp.enabled) {
+            componentDirs.push(comp)
+          }
         }
+      }
 
-        return {
-          global: componentOptions.global,
-          ...dirOptions,
-          // TODO: https://github.com/nuxt/framework/pull/251
-          enabled: true,
-          path: dirPath,
-          extensions,
-          pattern: dirOptions.pattern || `**/*.{${extensions.join(',')},}`,
-          ignore: [
-            '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
-            '**/*.d.{cts,mts,ts}', // .d.ts files
-            ...(dirOptions.ignore || []),
-          ],
-          transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
+      const nodeComponents = []
+      for (const dir of componentDirs) {
+        if (dir.transpile) {
+          if (dir.path.includes('node_modules')) {
+            nodeComponents.push(dir.path)
+          } else {
+            nuxt.options.build!.transpile!.push(dir.path)
+          }
         }
-      }).filter(d => d.enabled)
+      }
 
-      componentDirs = [
-        ...componentDirs.filter(dir => !dir.path.includes('node_modules')),
-        ...componentDirs.filter(dir => dir.path.includes('node_modules')),
-      ]
-
-      nuxt.options.build!.transpile!.push(...componentDirs.filter(dir => dir.transpile).map(dir => dir.path))
+      nuxt.options.build!.transpile!.push(...nodeComponents)
     })
 
     // components.d.ts
@@ -142,7 +157,13 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
-      const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
+      const comps = getComponents()
+      const sourceFiles: string[] = []
+      for (const c of comps) {
+        if (c.global) {
+          sourceFiles.push(relative(nuxt.options.srcDir, c.filePath))
+        }
+      }
 
       for (const key in manifest) {
         if (manifest[key].isEntry) {
@@ -154,7 +175,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Restart dev server when component directories are added/removed
     nuxt.hook('builder:watch', (event, relativePath) => {
-      if (!['addDir', 'unlinkDir'].includes(event)) {
+      if (event !== 'addDir' && event !== 'unlinkDir') {
         return
       }
 
@@ -196,7 +217,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     // Watch for changes
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (!['add', 'unlink'].includes(event)) {
+      if (event !== 'add' && event !== 'unlink') {
         return
       }
       const path = resolve(nuxt.options.srcDir, relativePath)
@@ -247,13 +268,20 @@ export default defineNuxtModule<ComponentsOptions>({
               buildDir: nuxt.options.buildDir,
             }))
           } else {
-            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
-              getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
-                if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = fs.existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
-                return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
-              }, {} as Record<string, string>),
-            )}`)
+            const comps = getComponents()
+            const compObj: Record<string, string> = {}
+            for (const c of comps) {
+              if (c.mode === 'client' || c.mode === 'all') {
+                let filePath = c.filePath
+                if (filePath.endsWith('.vue') || filePath.endsWith('.js') || filePath.endsWith('.ts')) {
+                  Object.assign(compObj, { [c.pascalName]: `/@fs/${filePath}` })
+                  continue
+                }
+                filePath = fs.existsSync(`${filePath}.vue`) ? `${filePath}.vue` : fs.existsSync(`${filePath}.js`) ? `${filePath}.js` : `${filePath}.ts`
+                Object.assign(compObj, { [c.pascalName]: `/@fs/${filePath}` })
+              }
+            }
+            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(compObj)}`)
           }
         }
 

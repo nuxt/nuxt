@@ -58,7 +58,7 @@ export const definePageMeta = (meta: PageMeta): void => {
   if (import.meta.dev) {
     const component = getCurrentInstance()?.type
     try {
-      const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
+      const isRouteComponent = component && useRoute().matched.some(p => (p.components ? Object.values(p.components) : []).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       if (isRouteComponent || isRenderingServerPage) {
         // don't warn if it's being used in a route component (or server page)

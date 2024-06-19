@@ -13,23 +13,19 @@ const props = defineProps({
 const _error = props.error
 
 // TODO: extract to a separate utility
-const stacktrace = _error.stack
-  ? _error.stack
-    .split('\n')
-    .splice(1)
-    .map((line) => {
-      const text = line
-        .replace('webpack:/', '')
-        .replace('.vue', '.js') // TODO: Support sourcemap
-        .trim()
-      return {
-        text,
-        internal: (line.includes('node_modules') && !line.includes('.cache')) ||
+const stacktrace = []
+if (_error.stack) {
+  for (const line of _error.stack.split('\n').splice(1)) {
+    const text = line
+      .replace('webpack:/', '')
+      .replace('.vue', '.js') // TODO: Support sourcemap
+      .trim()
+    const internal = (line.includes('node_modules') && !line.includes('.cache')) ||
           line.includes('internal') ||
-          line.includes('new Promise'),
-      }
-    }).map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')
-  : ''
+          line.includes('new Promise')
+    stacktrace.push(`<span class="stack${internal ? ' internal' : ''}">${text}</span>`)
+  }
+}
 
 // Error page props
 const statusCode = Number(_error.statusCode || 500)
@@ -37,7 +33,7 @@ const is404 = statusCode === 404
 
 const statusMessage = _error.statusMessage ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
 const description = _error.message || _error.toString()
-const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
+const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace.join('\n')}</pre>` : undefined
 
 // TODO: Investigate side-effect issue with imports
 const _Error404 = defineAsyncComponent(() => import('./error-404.vue').then(r => r.default || r))

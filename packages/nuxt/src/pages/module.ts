@@ -3,7 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
-import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
+import type { NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -117,21 +117,17 @@ export default defineNuxtModule({
       addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
-        getContents: () => [
-          'export { useRoute } from \'#app/composables/router\'',
-          'export const START_LOCATION = Symbol(\'router:start-location\')',
-        ].join('\n'),
+        getContents: () => `export { useRoute } from '#app/composables/router'
+export const START_LOCATION = Symbol('router:start-location')`,
       })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
-        getContents: () => [
-          'declare module \'nitropack\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: string | string[] | Record<string, boolean>',
-          '  }',
-          '}',
-          'export {}',
-        ].join('\n'),
+        getContents: () => `declare module 'nitropack' {
+  interface NitroRouteConfig {
+    appMiddleware?: string | string[] | Record<string, boolean>
+  }
+}
+export {}`,
       })
       addComponent({
         name: 'NuxtPage',
@@ -274,14 +270,14 @@ export default defineNuxtModule({
         })
       }
     })
-
+    const composablesLoc = resolve(runtimeDir, 'composables')
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
-        { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
+        { name: 'definePageMeta', as: 'definePageMeta', from: composablesLoc },
         { name: 'useLink', as: 'useLink', from: '#vue-router' },
       )
       if (nuxt.options.experimental.inlineRouteRules) {
-        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
+        imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: composablesLoc })
       }
     })
 
@@ -386,19 +382,25 @@ export default defineNuxtModule({
     // Add router plugin
     addPlugin(resolve(runtimeDir, 'plugins/router'))
 
-    const getSources = (pages: NuxtPage[]): string[] => pages
-      .filter(p => Boolean(p.file))
-      .flatMap(p =>
-        [relative(nuxt.options.srcDir, p.file as string), ...(p.children?.length ? getSources(p.children) : [])],
-      )
-
+    const getSources = (pages: NuxtPage[]): string[] => {
+      const sources: string[] = []
+      for (const p of pages) {
+        if (p.file) {
+          sources.push(relative(nuxt.options.srcDir, p.file as string))
+          if (p.children?.length) {
+            sources.push(...getSources(p.children))
+          }
+        }
+      }
+      return sources
+    }
     // Do not prefetch page chunks
     nuxt.hook('build:manifest', (manifest) => {
       if (nuxt.options.dev) { return }
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
-
+      const nuxtApps = Object.values(nuxt.apps)
       for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+        if (manifest[key].src && nuxtApps.some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
           delete manifest[key]
           continue
         }
@@ -435,9 +437,11 @@ export default defineNuxtModule({
       getContents: async () => {
         // Scan and register app/router.options files
         const routerOptionsFiles = await resolveRouterOptions()
-
-        const configRouterOptions = genObjectFromRawEntries(Object.entries(nuxt.options.router.options)
-          .map(([key, value]) => [key, genString(value as string)]))
+        const rawOptions: [string, string][] = []
+        for (const key in nuxt.options.router.options) {
+          rawOptions.push([key, genString(nuxt.options.router.options[key as keyof typeof nuxt.options.router.options] as string)])
+        }
+        const configRouterOptions = genObjectFromRawEntries(rawOptions)
 
         return [
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
@@ -449,42 +453,46 @@ export default defineNuxtModule({
         ].join('\n')
       },
     })
-
+    const composablesFile = relative(join(nuxt.options.buildDir, 'types'), composablesLoc)
+    const composableModule = genString(composablesFile)
     addTypeTemplate({
       filename: 'types/middleware.d.ts',
-      getContents: ({ nuxt, app }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
-        const namedMiddleware = app.middleware.filter(mw => !mw.global)
-        return [
-          'import type { NavigationGuard } from \'vue-router\'',
-          `export type MiddlewareKey = ${namedMiddleware.map(mw => genString(mw.name)).join(' | ') || 'string'}`,
-          `declare module ${genString(composablesFile)} {`,
-          '  interface PageMeta {',
-          '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
-          '  }',
-          '}',
-          'declare module \'nitropack\' {',
-          '  interface NitroRouteConfig {',
-          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
-          '  }',
-          '}',
-        ].join('\n')
+      getContents: ({ app }) => {
+        const middleware: string[] = []
+        for (const mw of app.middleware) {
+          if (!mw.global) {
+            middleware.push(genString(mw.name))
+          }
+        }
+        return `import type { NavigationGuard } from 'vue-router'
+export type MiddlewareKey = ${middleware.join(' | ') || 'string'}
+declare module ${composableModule} {
+  interface PageMeta {
+    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
+  }
+}
+declare module 'nitropack' {
+  interface NitroRouteConfig {
+    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>
+  }
+}`
       },
     })
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
-        const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
-        return [
-          'import type { ComputedRef, MaybeRef } from \'vue\'',
-          `export type LayoutKey = ${Object.keys(app.layouts).map(name => genString(name)).join(' | ') || 'string'}`,
-          `declare module ${genString(composablesFile)} {`,
-          '  interface PageMeta {',
-          '    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>',
-          '  }',
-          '}',
-        ].join('\n')
+      getContents: ({ app }: { app: NuxtApp }) => {
+        const layouts: string[] = []
+        for (const name in app.layouts) {
+          layouts.push(genString(name))
+        }
+        return `import type { ComputedRef, MaybeRef } from 'vue'
+export type LayoutKey = ${layouts.join(' | ') || 'string'}
+declare module ${composableModule} {
+  interface PageMeta {
+    layout?: MaybeRef<LayoutKey | false> | ComputedRef<LayoutKey | false>
+  }
+}`
       },
     })
 
@@ -492,17 +500,13 @@ export default defineNuxtModule({
     if (nuxt.options.experimental.viewTransition) {
       addTypeTemplate({
         filename: 'types/view-transitions.d.ts',
-        getContents: ({ nuxt }) => {
-          const runtimeDir = resolve(distDir, 'pages/runtime')
-          const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
-          return [
-            'import type { ComputedRef, MaybeRef } from \'vue\'',
-            `declare module ${genString(composablesFile)} {`,
-            '  interface PageMeta {',
-            '    viewTransition?: boolean | \'always\'',
-            '  }',
-            '}',
-          ].join('\n')
+        getContents: () => {
+          return `import type { ComputedRef, MaybeRef } from 'vue'
+declare module ${composableModule} {
+  interface PageMeta {
+    viewTransition?: boolean | 'always'
+  }
+}`
         },
       })
     }

@@ -54,15 +54,14 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
 
   router._routePreloaded.add(path)
 
-  const components = matched
-    .map(component => component.components?.default)
-    .filter(component => typeof component === 'function')
-
-  for (const component of components) {
-    const promise = Promise.resolve((component as Function)())
-      .catch(() => {})
-      .finally(() => promises.splice(promises.indexOf(promise)))
-    promises.push(promise)
+  for (const component of matched) {
+    const defComponent = component.components?.default
+    if (typeof defComponent === 'function') {
+      const promise = Promise.resolve((defComponent as Function)())
+        .catch(() => {})
+        .finally(() => promises.splice(promises.indexOf(promise)))
+      promises.push(promise)
+    }
   }
 
   await Promise.all(promises)

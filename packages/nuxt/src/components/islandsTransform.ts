@@ -145,17 +145,33 @@ function extractAttributes (attributes: Record<string, string>, names: string[])
 }
 
 function attributeToString (attributes: Record<string, string>) {
-  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+  const attrs: string[] = []
+  for (const name in attributes) {
+    const value = attributes[name]
+    attrs.push(value ? ` ${name}="${value}"` : ` ${name}`)
+  }
+  return attrs.join('')
 }
 
 function isBinding (attr: string): boolean {
-  return attr.startsWith(':')
+  return attr[0] === ':'
 }
 
 function getPropsToString (bindings: Record<string, string>): string {
-  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
+  const vForExpr = bindings['v-for']?.split(' in ')
+  let vfor: [string, string] | undefined
+  if (vForExpr?.length) {
+    vfor = [vForExpr[0].trim(), vForExpr[1].trim()]
+  }
   if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
+  let content: string | string[] = []
+  for (const b in bindings) {
+    if (b && (b !== '_bind' && b !== 'v-for')) {
+      const value = bindings[b]
+      content.push(isBinding(b) ? `[\`${b.slice(1)}\`]: ${value}` : `[\`${b}\`]: \`${value}\``)
+    }
+  }
+  content = content.join(',')
   const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
   if (!vfor) {
     return `[${data}]`
@@ -199,7 +215,8 @@ export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
       async generateBundle (_opts, bundle) {
         const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
         const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
+        for (const chunkPath in bundle) {
+          const chunkInfo = bundle[chunkPath]
           if (chunkInfo.type !== 'chunk') { continue }
 
           for (const component of components) {

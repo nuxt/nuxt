@@ -73,8 +73,24 @@ const keyDependencies = [
 ]
 
 async function initNuxt (nuxt: Nuxt) {
+  const configs = new Array(nuxt.options._layers.length)
+  const cwds: string[] = []
+  const optsReferences: string[] = []
+  const layerModules: string[] = new Array(nuxt.options._layers.length)
+  for (let i = 0; i < nuxt.options._layers.length; i++) {
+    const layer = nuxt.options._layers[i]
+    configs[i] = layer.config
+    layerModules[i] = resolve(layer.cwd, 'node_modules')
+    if (layer.cwd.includes('node_modules')) {
+      cwds.push(layer.cwd as string)
+    }
+    const declaration = join(layer.cwd, 'index.d.ts')
+    if (fse.existsSync(declaration)) {
+      optsReferences.push(declaration)
+    }
+  }
   // Register user hooks
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of configs.slice().reverse()) {
     if (config.hooks) {
       nuxt.hooks.addHooks(config.hooks)
     }
@@ -107,7 +123,8 @@ async function initNuxt (nuxt: Nuxt) {
       const nightly = nightlies[pkg as keyof typeof nightlies]
       const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
       if (path) {
-        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+        const dirPath = dirname(path)
+        return [[pkg, [dirPath]], [nightly, [dirPath]]]
       }
     }
 
@@ -142,11 +159,8 @@ async function initNuxt (nuxt: Nuxt) {
     // Set Nuxt resolutions for types that might be obscured with shamefully-hoist=false
     opts.tsConfig.compilerOptions = defu(opts.tsConfig.compilerOptions, { paths: { ...paths } })
 
-    for (const layer of nuxt.options._layers) {
-      const declaration = join(layer.cwd, 'index.d.ts')
-      if (fse.existsSync(declaration)) {
-        opts.references.push({ path: declaration })
-      }
+    for (const declaration of optsReferences) {
+      opts.references.push({ path: declaration })
     }
   })
 
@@ -178,6 +192,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(prehydrateTransformPlugin(nuxt))
 
+  const slicedLayers = nuxt.options._layers.slice(1)
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
     addVitePlugin(() => LayerAliasingPlugin.vite({
@@ -185,14 +200,14 @@ async function initNuxt (nuxt: Nuxt) {
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
-      layers: nuxt.options._layers.slice(1),
+      layers: slicedLayers,
     }))
     addWebpackPlugin(() => LayerAliasingPlugin.webpack({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
-      layers: nuxt.options._layers.slice(1),
+      layers: slicedLayers,
       transform: true,
     }))
   }
@@ -274,11 +289,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transpile layers within node_modules
   nuxt.options.build.transpile.push(
-    ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
+    ...cwds,
   )
 
   // Ensure we can resolve dependencies within layers
-  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
+  nuxt.options.modulesDir.push(...layerModules)
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -294,12 +309,13 @@ async function initNuxt (nuxt: Nuxt) {
     specifiedModules.add(modPath)
   }
 
+  const extensions = nuxt.options.extensions.join(',')
   // Automatically register user modules
-  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
+  for (const config of configs.slice().reverse()) {
     const modulesDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.modules || 'modules'
     const layerModules = await resolveFiles(config.srcDir, [
-      `${modulesDir}/*{${nuxt.options.extensions.join(',')}}`,
-      `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+      `${modulesDir}/*{${extensions}}`,
+      `${modulesDir}/*/index{${extensions}}`,
     ])
     for (const mod of layerModules) {
       watchedPaths.add(mod)
@@ -545,7 +561,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     // Core Nuxt files: app.vue, error.vue and app.config.ts
-    const isFileChange = ['add', 'unlink'].includes(event)
+    const isFileChange = event === 'add' || event === 'unlink'
     if (isFileChange && RESTART_RE.test(path)) {
       logger.info(`\`${path}\` ${event === 'add' ? 'created' : 'removed'}`)
       return nuxt.callHook('restart')
@@ -624,13 +640,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     }
   }
 
+  const layers = []
+  for (const i of options._layers) {
+    if (i.cwd?.includes('node_modules')) {
+      layers.push(new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`))
+    }
+  }
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push([importsModule, {
     transform: {
-      include: options._layers
-        .filter(i => i.cwd && i.cwd.includes('node_modules'))
-        .map(i => new RegExp(`(^|\\/)${escapeRE(i.cwd!.split('node_modules/').pop()!)}(\\/|$)(?!node_modules\\/)`)),
+      include: layers,
     },
   }])
   options._modules.push(schemaModule)

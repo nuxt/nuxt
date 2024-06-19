@@ -158,10 +158,11 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve layouts/ from all config layers
   const layerConfigs = nuxt.options._layers.map(layer => layer.config)
   const reversedConfigs = layerConfigs.slice().reverse()
+  const extensions = nuxt.options.extensions.join(',')
   app.layouts = {}
   for (const config of layerConfigs) {
     const layoutDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.layouts || 'layouts'
-    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${nuxt.options.extensions.join(',')}}`)
+    const layoutFiles = await resolveFiles(config.srcDir, `${layoutDir}/**/*{${extensions}}`)
     for (const file of layoutFiles) {
       const name = getNameFromPath(file, resolve(config.srcDir, layoutDir))
       if (!name) {
@@ -173,14 +174,16 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
     }
   }
 
-  // Resolve middleware/ from all config layers, layers first
   app.middleware = []
+  app.plugins = []
   for (const config of reversedConfigs) {
-    const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
+    // Resolve middleware/ from all config layers, layers first
+    const baseDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir
+    const middlewareDir = baseDir?.middleware || 'middleware'
     const middlewareFiles = await resolveFiles(config.srcDir, [
-      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
+      `${middlewareDir}/*{${extensions}}`,
       ...nuxt.options.future.compatibilityVersion === 4
-        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
+        ? [`${middlewareDir}/*/index{${extensions}}`]
         : [],
     ])
     for (const file of middlewareFiles) {
@@ -192,18 +195,14 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       }
       app.middleware.push({ name, path: file, global: hasSuffix(file, '.global') })
     }
-  }
-
-  // Resolve plugins, first extended layers and then base
-  app.plugins = []
-  for (const config of reversedConfigs) {
-    const pluginDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.plugins || 'plugins'
+    // Resolve plugins, first extended layers and then base
+    const pluginDir = baseDir?.plugins || 'plugins'
     app.plugins.push(...[
       ...(config.plugins || []),
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
-          `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
+          `${pluginDir}/*{${extensions}}`,
+          `${pluginDir}/*/index{${extensions}}`,
         ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))
@@ -218,8 +217,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   }
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths([...app.middleware].reverse(), 'path'), 'name').reverse()
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  const [resolvedMiddlewarePre, resolvedPluginsPre] = await Promise.all([
+    resolvePaths([...app.middleware].reverse(), 'path'),
+    resolvePaths(app.plugins, 'src'),
+  ])
+  app.middleware = uniqueBy(resolvedMiddlewarePre, 'name').reverse()
+  app.plugins = uniqueBy(resolvedPluginsPre, 'src')
 
   // Resolve app.config
   app.configs = []
@@ -234,8 +237,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins and middleware
-  app.middleware = uniqueBy(await resolvePaths(app.middleware, 'path'), 'name')
-  app.plugins = uniqueBy(await resolvePaths(app.plugins, 'src'), 'src')
+  const [resolvedMiddlewarePost, resolvedPluginsPost] = await Promise.all([
+    resolvePaths(app.middleware, 'path'),
+    resolvePaths(app.plugins, 'src'),
+  ])
+  app.middleware = uniqueBy(resolvedMiddlewarePost, 'name')
+  app.plugins = uniqueBy(resolvedPluginsPost, 'src')
 }
 
 function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [K in keyof Item]: Item[K] extends string ? K : never }[keyof Item]) {
@@ -251,14 +258,15 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 const IS_TSX = /\.[jt]sx$/
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
-  for (const plugin of plugins) {
+  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = new Array(plugins.length)
+  for (let i = 0; i < plugins.length; i++) {
+    const plugin = plugins[i]
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src] : await fsp.readFile(plugin.src!, 'utf-8')
-      _plugins.push({
+      _plugins[i] = {
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
         ...plugin,
-      })
+      }
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
       if ((e as Error).message === 'Invalid plugin metadata') {
@@ -266,7 +274,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
-      _plugins.push(plugin)
+      _plugins[i] = plugin
     }
   }
 

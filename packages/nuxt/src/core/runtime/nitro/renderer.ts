@@ -102,10 +102,17 @@ const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/ser
   .then(r => r.default || r)
   .then(r => typeof r === 'function' ? r() : r) as Promise<ClientManifest>
 
-const getEntryIds: () => Promise<string[]> = () => getClientManifest().then(r => Object.values(r).filter(r =>
-  // @ts-expect-error internal key set by CSS inlining configuration
-  r._globalCSS,
-).map(r => r.src!))
+const getEntryIds: () => Promise<string[]> = () => getClientManifest().then((r) => {
+  const entries: string[] = []
+  for (const key in r) {
+    const val = r[key]
+    // @ts-expect-error internal key set by CSS inlining configuration
+    if (val._globalCSS) {
+      entries.push(val.src!)
+    }
+  }
+  return entries
+})
 
 // @ts-expect-error file will be produced after app build
 const getServerEntry = () => import('#build/dist/server/server.mjs').then(r => r.default || r)
@@ -115,12 +122,14 @@ const getSSRStyles = lazyCachedFunction((): Promise<Record<string, () => Promise
 
 // -- SSR Renderer --
 const getSSRRenderer = lazyCachedFunction(async () => {
-  // Load client manifest
-  const manifest = await getClientManifest()
+  // Load client manifest and server bundle
+  const [manifest, createSSRApp] = await Promise.all([
+    getClientManifest(),
+    getServerEntry(),
+  ])
+
   if (!manifest) { throw new Error('client.manifest is not available') }
 
-  // Load server bundle
-  const createSSRApp = await getServerEntry()
   if (!createSSRApp) { throw new Error('Server bundle is not available') }
 
   const options = {
@@ -146,11 +155,12 @@ const getSSRRenderer = lazyCachedFunction(async () => {
 
 // -- SPA Renderer --
 const getSPARenderer = lazyCachedFunction(async () => {
-  const manifest = await getClientManifest()
-
-  // @ts-expect-error virtual file
-  const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
+  const [manifest, spaTemplate] = await Promise.all([
+    getClientManifest(),
+    // @ts-expect-error virtual file
+    import('#spa-template').then(r => r.template).catch(() => '')
+      .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG),
+  ])
 
   const options = {
     manifest,
@@ -183,19 +193,20 @@ const getSPARenderer = lazyCachedFunction(async () => {
 const payloadCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:payload') : null
 const islandCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island') : null
 const islandPropCache = import.meta.prerender ? useStorage('internal:nuxt:prerender:island-props') : null
+const sharedCache = import.meta.prerender && process.env.NUXT_SHARED_DATA ? useStorage('internal:nuxt:prerender:shared') : null
 const sharedPrerenderPromises = import.meta.prerender && process.env.NUXT_SHARED_DATA ? new Map<string, Promise<any>>() : null
 const sharedPrerenderKeys = new Set<string>()
 const sharedPrerenderCache = import.meta.prerender && process.env.NUXT_SHARED_DATA
   ? {
       get<T = unknown> (key: string): Promise<T> | undefined {
         if (sharedPrerenderKeys.has(key)) {
-          return sharedPrerenderPromises!.get(key) ?? useStorage('internal:nuxt:prerender:shared').getItem(key) as Promise<T>
+          return sharedPrerenderPromises!.get(key) ?? sharedCache!.getItem(key) as Promise<T>
         }
       },
       async set<T> (key: string, value: Promise<T>): Promise<void> {
         sharedPrerenderKeys.add(key)
         sharedPrerenderPromises!.set(key, value)
-        useStorage('internal:nuxt:prerender:shared').setItem(key, await value as any)
+        sharedCache!.setItem(key, await value as any)
         // free up memory after the promise is resolved
           .finally(() => sharedPrerenderPromises!.delete(key))
       },
@@ -210,6 +221,7 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     // rehydrate props from cache so we can rerender island if cache does not have it any more
     url = await islandPropCache!.getItem(event.path) as string
   }
+
   const componentParts = url.substring('/__nuxt_island'.length + 1).replace(ISLAND_SUFFIX_RE, '').split('_')
   const hashId = componentParts.length > 1 ? componentParts.pop() : undefined
   const componentName = componentParts.join('_')
@@ -428,11 +440,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
     // 4. Payloads
+    const ssrData = splitPayload(ssrContext).initial
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
-          : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrData, src: payloadURL })
+          : renderPayloadScript({ ssrContext, data: ssrData, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
           ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
@@ -446,8 +459,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // 5. Scripts
   if (!routeOptions.experimentalNoScripts && !isRenderingIsland) {
-    head.push({
-      script: Object.values(scripts).map(resource => (<Script> {
+    const headScript: Array<Script> = []
+    for (const resourceKey in scripts) {
+      const resource = scripts[resourceKey]
+      headScript.push(<Script>{
         type: resource.module ? 'module' : null,
         src: renderer.rendererContext.buildAssetsURL(resource.file),
         defer: resource.module ? null : true,
@@ -455,7 +470,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         // we need to ensure this resolves before executing the Nuxt entry
         tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
         crossorigin: '',
-      })),
+      })
+    }
+    head.push({
+      script: headScript,
     }, headEntryOptions)
   }
 
@@ -512,8 +530,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       },
     } satisfies RenderResponse
     if (import.meta.prerender) {
-      await islandCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, response)
-      await islandPropCache!.setItem(`/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`, event.path)
+      const islandKey = `/__nuxt_island/${islandContext!.name}_${islandContext!.id}.json`
+      await Promise.all([
+        islandCache!.setItem(islandKey, response),
+        islandPropCache!.setItem(islandKey, event.path),
+      ])
     }
     return response
   }
@@ -543,7 +564,13 @@ function lazyCachedFunction<T> (fn: () => Promise<T>): () => Promise<T> {
 }
 
 function normalizeChunks (chunks: (string | undefined)[]) {
-  return chunks.filter(Boolean).map(i => i!.trim())
+  const normalizedChunks: string[] = []
+  for (const chunk of chunks) {
+    if (chunk) {
+      normalizedChunks.push(chunk!.trim())
+    }
+  }
+  return normalizedChunks
 }
 
 function joinTags (tags: Array<string | undefined>) {
@@ -556,15 +583,12 @@ function joinAttrs (chunks: string[]) {
 }
 
 function renderHTMLDocument (html: NuxtRenderHTMLContext) {
-  return '<!DOCTYPE html>' +
-    `<html${joinAttrs(html.htmlAttrs)}>` +
-    `<head>${joinTags(html.head)}</head>` +
-    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` +
-    '</html>'
+  return `<!DOCTYPE html><html${joinAttrs(html.htmlAttrs)}><head>${joinTags(html.head)}</head><body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body></html>`
 }
 
 async function renderInlineStyles (usedModules: Set<string> | string[]): Promise<Style[]> {
   const styleMap = await getSSRStyles()
+  const styleArray = []
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
     if (mod in styleMap) {
@@ -573,14 +597,18 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
       }
     }
   }
-  return Array.from(inlinedStyles).map(style => ({ innerHTML: style }))
+  for (const style of inlinedStyles) {
+    styleArray.push({ innerHTML: style })
+  }
+  return styleArray
 }
 
 function renderPayloadResponse (ssrContext: NuxtSSRContext) {
+  const ssrPayload = splitPayload(ssrContext).payload
   return {
     body: process.env.NUXT_JSON_PAYLOADS
-      ? stringify(splitPayload(ssrContext).payload, ssrContext._payloadReducers)
-      : `export default ${devalue(splitPayload(ssrContext).payload)}`,
+      ? stringify(ssrPayload, ssrContext._payloadReducers)
+      : `export default ${devalue(ssrPayload)}`,
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
@@ -612,17 +640,18 @@ function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext
 function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   opts.data.config = opts.ssrContext.config
   const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !opts.ssrContext.noSSR
+  const payloadData = devalue(opts.data)
   if (_PAYLOAD_EXTRACTION) {
     return [
       {
         type: 'module',
-        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${devalue(opts.data)})}`,
+        innerHTML: `import p from "${opts.src}";window.__NUXT__={...p,...(${payloadData})}`,
       },
     ]
   }
   return [
     {
-      innerHTML: `window.__NUXT__=${devalue(opts.data)}`,
+      innerHTML: `window.__NUXT__=${payloadData}`,
     },
   ]
 }
@@ -675,15 +704,14 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
 }
 
 function getComponentSlotTeleport (teleports: Record<string, string>) {
-  const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 
-  for (const [key, value] of entries) {
+  for (const key in teleports) {
     const match = key.match(SSR_CLIENT_SLOT_MARKER)
     if (match) {
       const [, slot] = match
       if (!slot) { continue }
-      slots[slot] = value
+      slots[slot] = teleports[key]
     }
   }
   return slots

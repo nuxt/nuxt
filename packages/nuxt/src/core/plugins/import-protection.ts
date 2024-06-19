@@ -27,11 +27,13 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 
   patterns.push([/(^|node_modules\/)@vue\/composition-api/])
 
-  for (const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
-    patterns.push([
-      new RegExp(`^${escapeRE(mod as string)}$`),
-      'Importing directly from module entry-points is not allowed.',
-    ])
+  for (const mod of nuxt.options.modules) {
+    if (typeof mod === 'string') {
+      patterns.push([
+        new RegExp(`^${escapeRE(mod as string)}$`),
+        'Importing directly from module entry-points is not allowed.',
+      ])
+    }
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/(kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nuxt\/(config|kit|schema)/, 'nitropack']) {
