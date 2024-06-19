@@ -3,9 +3,12 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
+
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitropack/types').$Fetch<unknown, import('nitropack/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 

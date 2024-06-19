@@ -4,8 +4,8 @@ import { cpus } from 'node:os'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
-import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
-import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
+import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
+import type { Nitro, NitroConfig, NitroOptions } from 'nitropack/types'
 import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
@@ -96,7 +96,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       : false,
     scanDirs: nuxt.options._layers.map(layer => (layer.config.serverDir || layer.config.srcDir) && resolve(layer.cwd, layer.config.serverDir || resolve(layer.config.srcDir, 'server'))).filter(Boolean),
     renderer: resolve(distDir, 'core/runtime/nitro/renderer'),
-    errorHandler: resolve(distDir, 'core/runtime/nitro/error'),
     nodeModulesDirs: nuxt.options.modulesDir,
     handlers: nuxt.options.serverHandlers,
     devHandlers: [],
@@ -108,10 +107,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     routeRules: {
       '/__nuxt_error': { cache: false },
     },
-    appConfig: nuxt.options.appConfig,
-    appConfigFiles: nuxt.options._layers.map(
-      layer => resolve(layer.config.srcDir, 'app.config'),
-    ),
+    // TODO: implement appConfig internally
+    // appConfig: nuxt.options.appConfig,
+    // appConfigFiles: nuxt.options._layers.map(
+    //   layer => resolve(layer.config.srcDir, 'app.config'),
+    // ),
     typescript: {
       strict: true,
       generateTsConfig: true,
@@ -213,6 +213,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     logLevel: logLevelMapReverse[nuxt.options.logLevel],
   } satisfies NitroConfig)
+
+  // add error handler
+  if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
+    nitroConfig.errorHandler = resolve(distDir, 'core/runtime/nitro/error')
+  }
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
@@ -390,7 +395,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
-    // @ts-expect-error this will be valid in a future version of Nitro
     compatibilityDate: nuxt.options.compatibilityDate,
   })
 
@@ -470,21 +474,24 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
     nitro.hooks.hook('rollup:before', (nitro) => {
-      if (nitro.options.preset === 'nitro-prerender') { return }
+      if (nitro.options.preset === 'nitro-prerender') {
+        nitro.options.errorHandler = resolve(distDir, 'core/runtime/nitro/error')
+        return
+      }
       const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
       if (nuxtErrorHandler >= 0) {
         nitro.options.handlers.splice(nuxtErrorHandler, 1)
       }
 
       nitro.options.renderer = undefined
-      nitro.options.errorHandler = '#internal/nitro/error'
     })
   }
 
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
-      await scanHandlers(nitro)
+      // TODO: re-export from nitro
+      // await scanHandlers(nitro)
       await writeTypes(nitro)
     }
     // Exclude nitro output dir from typescript

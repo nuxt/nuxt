@@ -34,6 +34,8 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
   "resolutions": {
+    "nitropack": "npm:nitropack-nightly@3x",
+    "h3": "npm:h3-nightly@latest",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/ui-templates": "workspace:*",

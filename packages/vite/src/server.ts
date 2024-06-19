@@ -61,7 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        '#internal/nitro', '#internal/nitro/utils',
+        'nitropack/runtime',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro', '#internal/nuxt/paths'],
+        external: ['nitropack/runtime', '#internal/nuxt/paths'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',

@@ -8,7 +8,7 @@ import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitropack/types'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
@@ -125,7 +125,7 @@ export default defineNuxtModule({
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
-          'declare module \'nitropack\' {',
+          'declare module \'nitropack/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
           '  }',
@@ -463,7 +463,7 @@ export default defineNuxtModule({
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
           '  }',
           '}',
-          'declare module \'nitropack\' {',
+          'declare module \'nitropack/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
