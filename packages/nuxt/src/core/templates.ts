@@ -170,18 +170,20 @@ export const schemaTemplate: NuxtTemplate = {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    const moduleOptionsInterface = [
-      ...modules.flatMap(([configKey, importName, mod]) => {
-        return [
+    const moduleOptionsInterface = (jsdocTags: boolean) => [
+      ...modules.flatMap(([configKey, importName, mod]) => [
         `    /**`,
         `     * Configuration for \`${importName}\``,
-        mod.meta?.rawPath
-          ? undefined
-          : `     * @see https://www.npmjs.com/package/${importName}`,
+        ...jsdocTags
+          ? [
+              mod.meta?.rawPath
+                ? undefined
+                : `     * @see https://www.npmjs.com/package/${importName}`,
+            ]
+          : [],
         `     */`,
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
-        ]
-      }),
+      ]),
       modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
@@ -189,12 +191,14 @@ export const schemaTemplate: NuxtTemplate = {
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
       '  interface NuxtConfig {',
-      ...moduleOptionsInterface,
+      // TypeScript will duplicate the jsdoc tags if we augment it twice
+      // So here we only generate tags for `nuxt/schema`
+      ...moduleOptionsInterface(false),
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
       '  interface NuxtConfig {',
-      ...moduleOptionsInterface,
+      ...moduleOptionsInterface(true),
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
