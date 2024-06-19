@@ -20,8 +20,6 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 
-import { asyncDataDefaults, nuxtDefaultErrorValue } from '#build/nuxt.config.mjs'
-
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
   headers: Object.fromEntries(event.headers.entries()),
@@ -128,7 +126,7 @@ describe('useAsyncData', () => {
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(asyncDataDefaults.value)
+    expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -140,7 +138,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(asyncDataDefaults.value)
+    expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -165,9 +163,9 @@ describe('useAsyncData', () => {
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
     const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })
-    expect(error.value).toBe(asyncDataDefaults.errorValue)
+    expect(error.value).toBe(undefined)
     await execute()
-    expect(error.value).toBe(asyncDataDefaults.errorValue)
+    expect(error.value).toBe(undefined)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -208,9 +206,8 @@ describe('useAsyncData', () => {
 
     clear()
 
-    // TODO: update to asyncDataDefaults.value in v4
     expect(data.value).toBeUndefined()
-    expect(error.value).toBe(asyncDataDefaults.errorValue)
+    expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
   })
@@ -354,7 +351,7 @@ describe('errors', () => {
     showError('new error')
     expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
-    expect(error.value).toBe(nuxtDefaultErrorValue)
+    expect(error.value).toBe(undefined)
   })
 })
 
@@ -620,7 +617,7 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
     expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
-    expect(error.value).toBe(nuxtDefaultErrorValue)
+    expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')

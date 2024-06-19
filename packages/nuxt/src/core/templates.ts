@@ -96,20 +96,6 @@ export const serverPluginTemplate: NuxtTemplate = {
   },
 }
 
-export const appDefaults: NuxtTypeTemplate = {
-  filename: 'types/app-defaults.d.ts',
-  getContents: (ctx) => {
-    const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
-    return `
-declare module '#app/defaults' {
-  type DefaultAsyncDataErrorValue = ${isV4 ? 'undefined' : 'null'}
-  type DefaultAsyncDataValue = ${isV4 ? 'undefined' : 'null'}
-  type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
-  type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
-}`
-  },
-}
-
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async (ctx) => {
@@ -418,13 +404,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify({
-        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-        value: ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
-        errorValue: ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
-      })}`,
-      `export const resetAsyncDataToUndefined = ${ctx.nuxt.options.experimental.resetAsyncDataToUndefined}`,
-      `export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
