@@ -918,7 +918,7 @@ describe('head tags', () => {
   })
 
   it('SPA should render appHead tags', async () => {
-    const headHtml = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+    const headHtml = await $fetch<string>('/head-spa')
 
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
     expect(headHtml).toContain('<meta charset="utf-8">')
