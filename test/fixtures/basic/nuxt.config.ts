@@ -242,6 +242,7 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    decorators: true,
     typedPages: true,
     polyfillVueUseHead: true,
     respectNoSSRHeader: true,

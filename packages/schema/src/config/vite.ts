@@ -1,8 +1,10 @@
 import { consola } from 'consola'
+import defu from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
+import type { ResolvedConfig as ViteOptions } from 'vite'
 
 export default defineUntypedSchema({
   /**
@@ -82,9 +84,9 @@ export default defineUntypedSchema({
       },
     },
     esbuild: {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-      tsconfigRaw: '{}',
+      $resolve: async (val: Record<string, any>, get) => {
+        return defu(val, await get('esbuild.options') as Record<string, any>)
+      }
     },
     clearScreen: true,
     build: {

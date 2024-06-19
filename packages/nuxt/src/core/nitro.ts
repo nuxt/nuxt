@@ -56,6 +56,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
       typescriptBundlerResolution: nuxt.options.future.typescriptBundlerResolution || nuxt.options.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler' || nuxt.options.nitro.typescript?.tsConfig?.compilerOptions?.moduleResolution?.toLowerCase() === 'bundler',
+      // @ts-expect-error coming soon!
+      decorators: nuxt.options.experimental.decorators,
     },
     framework: {
       name: 'nuxt',
@@ -85,7 +87,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       exclude: [...excludePattern, /[\\/]\.git[\\/]/],
     },
     esbuild: {
-      options: { exclude: excludePattern },
+      options: {
+        exclude: excludePattern,
+        ...nuxt.options.esbuild.options
+      },
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)
       ? {

@@ -303,7 +303,7 @@ export default defineNuxtModule({
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
         try {
-          const extractedRule = await extractRouteRules(code)
+          const extractedRule = await extractRouteRules(code, nuxt.options.esbuild.options)
           if (extractedRule) {
             if (!glob) {
               const relativePath = relative(nuxt.options.srcDir, path)

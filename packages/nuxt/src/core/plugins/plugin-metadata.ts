@@ -2,6 +2,7 @@ import type { CallExpression, Literal, Property, SpreadElement } from 'estree'
 import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import { transform } from 'esbuild'
+import type { TransformOptions } from 'esbuild'
 import { parse } from 'acorn'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
@@ -41,12 +42,12 @@ export const orderMap: Record<NonNullable<ObjectPlugin['enforce']>, number> = {
 }
 
 const metaCache: Record<string, Omit<PluginMeta, 'enforce'>> = {}
-export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
+export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx', esbuildOptions?: TransformOptions) {
   let meta: PluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
   }
-  const js = await transform(code, { loader })
+  const js = await transform(code, { loader, ...esbuildOptions })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',

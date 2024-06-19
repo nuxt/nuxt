@@ -8,6 +8,7 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { transform } from 'esbuild'
+import type { TransformOptions } from 'esbuild'
 import { parse } from 'acorn'
 import { walk } from 'estree-walker'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
@@ -67,9 +68,9 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
   if (shouldAugment) {
-    const augmentedPages = await augmentPages(pages, nuxt.vfs)
+    const augmentedPages = await augmentPages(pages, nuxt.vfs, undefined, nuxt.options.esbuild.options)
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs, augmentedPages)
+    await augmentPages(pages, nuxt.vfs, augmentedPages, nuxt.options.esbuild.options)
     augmentedPages.clear()
   } else {
     await nuxt.callHook('pages:extend', pages)
@@ -140,16 +141,16 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
   return prepareRoutes(routes)
 }
 
-export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<string>()) {
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<string>(), esbuildOptions?: TransformOptions) {
   for (const route of routes) {
     if (route.file && !augmentedPages.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      Object.assign(route, await getRouteMeta(fileContent, route.file))
+      Object.assign(route, await getRouteMeta(fileContent, route.file, esbuildOptions))
       augmentedPages.add(route.file)
     }
 
     if (route.children && route.children.length > 0) {
-      await augmentPages(route.children, vfs)
+      await augmentPages(route.children, vfs, augmentedPages, esbuildOptions)
     }
   }
   return augmentedPages
@@ -174,7 +175,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export async function getRouteMeta (contents: string, absolutePath: string, esbuildOptions?: TransformOptions): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -194,7 +195,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     return {}
   }
 
-  const js = await transform(script.code, { loader: script.loader })
+  const js = await transform(script.code, { loader: script.loader, ...esbuildOptions })
   const ast = parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',
