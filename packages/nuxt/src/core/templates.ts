@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate, NuxtTypeTemplate } from 'nuxt/schema'
+import type { NuxtTemplate } from 'nuxt/schema'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
