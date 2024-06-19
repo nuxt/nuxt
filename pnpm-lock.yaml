@@ -191,9 +191,6 @@ importers:
       klona:
         specifier: ^2.0.6
         version: 2.0.6
-      knitwork:
-        specifier: ^1.1.0
-        version: 1.1.0
       mlly:
         specifier: ^1.7.1
         version: 1.7.1
@@ -225,15 +222,9 @@ importers:
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
       '@types/semver':
         specifier: 7.5.8
         version: 7.5.8
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
       nitropack:
         specifier: 2.9.6
         version: 2.9.6(encoding@0.1.13)(magicast@0.3.4)
@@ -584,9 +575,6 @@ importers:
       '@types/html-minifier':
         specifier: 4.0.5
         version: 4.0.5
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
       '@unocss/reset':
         specifier: 0.61.0
         version: 0.61.0
@@ -608,9 +596,6 @@ importers:
       knitwork:
         specifier: 1.1.0
         version: 1.1.0
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
       pathe:
         specifier: 1.1.2
         version: 1.1.2
