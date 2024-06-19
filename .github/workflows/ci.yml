@@ -7,12 +7,14 @@ on:
       - "*.md"
     branches:
       - main
+      - 3.x
   pull_request:
     paths-ignore:
       - "docs/**"
       - "*.md"
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
