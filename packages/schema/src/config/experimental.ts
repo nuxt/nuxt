@@ -397,23 +397,7 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        /** @type {'undefined' | 'null'} */
-        value: {
-          async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
-          },
-        },
-        /** @type {'undefined' | 'null'} */
-        errorValue: {
-          async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
-          },
-        },
-        deep: {
-          async $resolve (val, get) {
-            return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-          },
-        },
+        deep: false,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
@@ -433,15 +417,5 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
-
-    /**
-     * Whether `clear` and `clearNuxtData` should reset async data to its _default_ value or update
-     * it to `null`/`undefined`.
-     */
-    resetAsyncDataToUndefined: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
   },
 })
