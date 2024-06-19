@@ -7,43 +7,12 @@ export default defineUntypedSchema({
    */
   future: {
     /**
-     * Enable early access to Nuxt v4 features or flags.
+     * Enable early access to future features or flags.
      *
-     * Setting `compatibilityVersion` to `4` changes defaults throughout your
-     * Nuxt configuration, but you can granularly re-enable Nuxt v3 behaviour
-     * when testing (see example). Please file issues if so, so that we can
-     * address in Nuxt or in the ecosystem.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *   future: {
-     *     compatibilityVersion: 4,
-     *   },
-     *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
-     *   srcDir: '.',
-     *   dir: {
-     *     app: 'app'
-     *   },
-     *   experimental: {
-     *     relativeWatchPaths: true,
-     *     resetAsyncDataToUndefined: true,
-     *     defaults: {
-     *       useAsyncData: {
-     *         deep: true
-     *       }
-     *     }
-     *   },
-     *   unhead: {
-     *     renderSSRHeadOptions: {
-     *       omitLineBreaks: false
-     *     }
-     *   }
-     * })
-     * ```
-     * @type {3 | 4}
+     * It is currently not configurable but may be in future.
+     * @type {4}
      */
-    compatibilityVersion: 3,
+    compatibilityVersion: 4,
     /**
      * This enables early access to the experimental multi-app support.
      * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
