@@ -102,11 +102,8 @@ async function initNuxt (nuxt: Nuxt) {
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
     if (dependencies.has(pkg) && !(pkg in nightlies)) { return [] }
 
-    let [_pkg = pkg, subpath = ''] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
-
-    if (subpath) {
-      subpath = '/' + subpath
-    }
+    const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
+    const subpath = _subpath ? '/' + _subpath : ''
 
     async function resolveTypePath (path: string) {
       try {
