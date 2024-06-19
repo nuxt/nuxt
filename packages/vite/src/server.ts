@@ -61,7 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        'nitropack/runtime',
+        'nitro/runtime',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['nitropack/runtime', '#internal/nuxt/paths'],
+        external: ['nitro/runtime', '#internal/nuxt/paths'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
@@ -104,7 +104,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
-    const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
+    const nitroDependencies = await tryResolveModule('nitro/package.json', ctx.nuxt.options.modulesDir)
       .then(r => import(r!)).then(r => r.dependencies ? Object.keys(r.dependencies) : []).catch(() => [])
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(

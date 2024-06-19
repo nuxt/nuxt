@@ -12,7 +12,7 @@ import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, par
 import type { NuxtIslandResponse } from '#app'
 
 // TODO: update @nuxt/test-utils
-const $fetch = _$fetch as import('nitropack/types').$Fetch<unknown, import('nitropack/types').NitroFetchRequest>
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'

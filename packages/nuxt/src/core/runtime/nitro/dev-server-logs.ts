@@ -7,7 +7,7 @@ import { withTrailingSlash } from 'ufo'
 import { getContext } from 'unctx'
 
 import { isVNode } from 'vue'
-import type { NitroApp } from 'nitropack/types'
+import type { NitroApp } from 'nitro/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'

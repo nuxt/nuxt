@@ -5,7 +5,7 @@ import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack/types' {
+declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
   }

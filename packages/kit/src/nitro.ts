@@ -1,4 +1,4 @@
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack/types'
+import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'

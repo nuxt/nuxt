@@ -8,7 +8,7 @@ import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 import { expectWithPolling, renderPage } from './utils'
 
 // TODO: update @nuxt/test-utils
-const $fetch = _$fetch as import('nitropack/types').$Fetch<unknown, import('nitropack/types').NitroFetchRequest>
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 

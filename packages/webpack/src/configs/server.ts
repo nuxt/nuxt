@@ -53,7 +53,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['nitropack/runtime']
+  const external = ['nitro/runtime']
   if (!ctx.nuxt.options.dev) {
     external.push('#internal/nuxt/paths')
   }
