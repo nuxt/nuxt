@@ -102,12 +102,6 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
   vueJsx?: VueJsxPluginOptions
 
   /**
-   * Bundler for dev time server-side rendering.
-   * @default 'vite-node'
-   */
-  devBundler?: 'vite-node' | 'legacy'
-
-  /**
    * Warmup vite entrypoint caches on dev startup.
    */
   warmupEntry?: boolean

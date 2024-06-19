@@ -13,5 +13,4 @@ export default defineBuildConfig({
     'vite',
     'h3',
   ],
-  failOnWarn: false,
 })
