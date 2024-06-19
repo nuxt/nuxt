@@ -29,23 +29,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Bridge compatibility check
-  if (isNuxt2(nuxt)) {
-    const bridgeRequirement = constraints.bridge
-    const hasBridge = !!(nuxt.options as any).bridge
-    if (bridgeRequirement === true && !hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is required',
-      })
-    } else if (bridgeRequirement === false && hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is not supported',
-      })
-    }
-  }
-
   // Builder compatibility check
   if (constraints.builder && typeof nuxt.options.builder === 'string') {
     const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
