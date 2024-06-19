@@ -490,8 +490,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Add typed route responses
   nuxt.hook('prepare:types', async (opts) => {
     if (!nuxt.options.dev) {
-      // TODO: re-export from nitro
-      // await scanHandlers(nitro)
       await writeTypes(nitro)
     }
     // Exclude nitro output dir from typescript

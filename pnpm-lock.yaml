@@ -5,8 +5,8 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  nitropack: npm:nitropack-nightly@3x
-  h3: npm:h3-nightly@latest
+  nitropack: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
+  h3: npm:h3-nightly@1.12.0-1718799699.76736ea
   '@nuxt/kit': workspace:*
   '@nuxt/schema': workspace:*
   '@nuxt/ui-templates': workspace:*
@@ -33,7 +33,7 @@ importers:
         version: link:packages/kit
       '@nuxt/test-utils':
         specifier: 3.13.1
-        version: 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
+        version: 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -98,8 +98,8 @@ importers:
         specifier: 14.0.1
         version: 14.0.1
       h3:
-        specifier: npm:h3-nightly@latest
-        version: h3-nightly@1.12.0-1718641606.861f7e4
+        specifier: npm:h3-nightly@1.12.0-1718799699.76736ea
+        version: h3-nightly@1.12.0-1718799699.76736ea
       happy-dom:
         specifier: 14.12.0
         version: 14.12.0
@@ -110,8 +110,8 @@ importers:
         specifier: 0.41.0
         version: 0.41.0
       nitropack:
-        specifier: npm:nitropack-nightly@3x
-        version: nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+        specifier: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
+        version: nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       nuxi:
         specifier: 3.12.0
         version: 3.12.0
@@ -150,7 +150,7 @@ importers:
         version: 1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0)
       vitest-environment-nuxt:
         specifier: 1.0.0
-        version: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
+        version: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
       vue:
         specifier: 3.4.29
         version: 3.4.29(typescript@5.4.5)
@@ -237,8 +237,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       nitropack:
-        specifier: npm:nitropack-nightly@3x
-        version: nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+        specifier: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
+        version: nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       unbuild:
         specifier: latest
         version: 2.0.0(sass@1.69.4)(typescript@5.4.5)
@@ -324,8 +324,8 @@ importers:
         specifier: ^14.0.1
         version: 14.0.1
       h3:
-        specifier: npm:h3-nightly@latest
-        version: h3-nightly@1.12.0-1718641606.861f7e4
+        specifier: npm:h3-nightly@1.12.0-1718799699.76736ea
+        version: h3-nightly@1.12.0-1718799699.76736ea
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -348,8 +348,8 @@ importers:
         specifier: ^1.7.1
         version: 1.7.1
       nitropack:
-        specifier: npm:nitropack-nightly@3x
-        version: nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+        specifier: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
+        version: nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       nuxi:
         specifier: ^3.12.0
         version: 3.12.0
@@ -539,14 +539,14 @@ importers:
         specifier: 4.2.0
         version: 4.2.0(webpack@5.92.0)
       h3:
-        specifier: npm:h3-nightly@latest
-        version: h3-nightly@1.12.0-1718641606.861f7e4
+        specifier: npm:h3-nightly@1.12.0-1718799699.76736ea
+        version: h3-nightly@1.12.0-1718799699.76736ea
       ignore:
         specifier: 5.3.1
         version: 5.3.1
       nitropack:
-        specifier: npm:nitropack-nightly@3x
-        version: nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+        specifier: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
+        version: nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       ofetch:
         specifier: 1.3.4
         version: 1.3.4
@@ -677,8 +677,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: npm:h3-nightly@latest
-        version: h3-nightly@1.12.0-1718641606.861f7e4
+        specifier: npm:h3-nightly@1.12.0-1718799699.76736ea
+        version: h3-nightly@1.12.0-1718799699.76736ea
       knitwork:
         specifier: ^1.1.0
         version: 1.1.0
@@ -798,8 +798,8 @@ importers:
         specifier: ^11.2.0
         version: 11.2.0
       h3:
-        specifier: npm:h3-nightly@latest
-        version: h3-nightly@1.12.0-1718641606.861f7e4
+        specifier: npm:h3-nightly@1.12.0-1718799699.76736ea
+        version: h3-nightly@1.12.0-1718799699.76736ea
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -1940,10 +1940,10 @@ packages:
       '@testing-library/vue': ^7.0.0 || ^8.0.1
       '@vitest/ui': ^0.34.6 || ^1.0.0
       '@vue/test-utils': ^2.4.2
-      h3: npm:h3-nightly@latest
+      h3: npm:h3-nightly@1.12.0-1718799699.76736ea
       happy-dom: ^9.10.9 || ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0
       jsdom: ^22.0.0 || ^23.0.0 || ^24.0.0
-      nitropack: npm:nitropack-nightly@3x
+      nitropack: npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror
       playwright-core: ^1.43.1
       vite: 5.3.1
       vitest: ^0.34.6 || ^1.0.0
@@ -4500,8 +4500,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3-nightly@1.12.0-1718641606.861f7e4:
-    resolution: {integrity: sha512-Ee9YclHRPcPWcPiGvykKDVt8t4gnpVesQmFsG7ZjSl2jalK174UgDZJSf2wsd9I2Z05FywddNxBnoV8epIXvQg==}
+  h3-nightly@1.12.0-1718799699.76736ea:
+    resolution: {integrity: sha512-umAJ31goxzXSqlQb/wvybthZIDHj/qFqnPOai9ljsKB/hOlwumuE/5RnbKu8NvpeouPmsvWJFz2D7bg+G4kNFg==}
 
   happy-dom@14.12.0:
     resolution: {integrity: sha512-dHcnlGFY2o2CdxfuYpqwSrBrpj/Kuzv4u4f3TU5yHW1GL24dKij4pv1BRjXnXc3uWo8qsCbToF9weaDsm/He8A==}
@@ -5530,8 +5530,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitro-nightly@3.0.0-beta-28643641.7e0b49ef:
-    resolution: {integrity: sha512-+z1k5YLE12XbXR+W2p0IesvcUnxsLvioPiX8C6Fou/wH8YWc3CTfyhgdA8Wyi5qgqfbBDf9G18elqLPSN7usBA==}
+  nitro-nightly@3.0.0-beta-28646495.e1c52afb:
+    resolution: {integrity: sha512-DfUl0HFJjamPRH1PI66LQWtmQ0c4bT4W0dxhI5rJrrZw3qHJswPhCFZRts26OqBk+MQZqwP3G0uKlBHQq/r+5w==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -5540,8 +5540,8 @@ packages:
       xml2js:
         optional: true
 
-  nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror:
-    resolution: {integrity: sha512-GTQBb7P2tjYa7BR4Y5ecceseyREcV2r4rPJNqyJJir1C27E0HKaXjf/jWO1vutsPeLaC644NIfy6fPvDbVIZjw==}
+  nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror:
+    resolution: {integrity: sha512-c50CI6YhAa97qR91d1ZFzHnX/2iU3Kn9O1wm2AyW6ZwT5v8QuBohI9nW14JNRkjTOAcpnxsLnIhJpbwH/HMh5g==}
     hasBin: true
 
   no-case@2.3.2:
@@ -8539,7 +8539,7 @@ snapshots:
       consola: 3.2.3
       defu: 6.1.4
       estree-walker: 3.0.3
-      h3: h3-nightly@1.12.0-1718641606.861f7e4
+      h3: h3-nightly@1.12.0-1718799699.76736ea
       magic-string: 0.30.10
       mlly: 1.7.1
       ofetch: 1.3.4
@@ -8613,7 +8613,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.7.0
 
-  '@nuxt/test-utils@3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))':
+  '@nuxt/test-utils@3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
@@ -8625,10 +8625,10 @@ snapshots:
       execa: 8.0.1
       fake-indexeddb: 5.0.2
       get-port-please: 3.1.2
-      h3: h3-nightly@1.12.0-1718641606.861f7e4
+      h3: h3-nightly@1.12.0-1718799699.76736ea
       local-pkg: 0.5.0
       magic-string: 0.30.10
-      nitropack: nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+      nitropack: nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13)
       node-fetch-native: 1.6.4
       ofetch: 1.3.4
       pathe: 1.1.2
@@ -8640,7 +8640,7 @@ snapshots:
       unenv: 1.9.0
       unplugin: 1.10.1
       vite: 5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0)
-      vitest-environment-nuxt: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
+      vitest-environment-nuxt: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
       vue: 3.4.29(typescript@5.4.5)
       vue-router: 4.3.3(vue@3.4.29(typescript@5.4.5))
     optionalDependencies:
@@ -11839,7 +11839,7 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3-nightly@1.12.0-1718641606.861f7e4:
+  h3-nightly@1.12.0-1718799699.76736ea:
     dependencies:
       cookie-es: 1.1.0
       crossws: 0.2.4
@@ -12421,7 +12421,7 @@ snapshots:
       crossws: 0.2.4
       defu: 6.1.4
       get-port-please: 3.1.2
-      h3: h3-nightly@1.12.0-1718641606.861f7e4
+      h3: h3-nightly@1.12.0-1718799699.76736ea
       http-shutdown: 1.2.2
       jiti: 1.21.6
       mlly: 1.7.1
@@ -13057,7 +13057,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitro-nightly@3.0.0-beta-28643641.7e0b49ef(@opentelemetry/api@1.9.0)(encoding@0.1.13):
+  nitro-nightly@3.0.0-beta-28646495.e1c52afb(@opentelemetry/api@1.9.0)(encoding@0.1.13):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.3
       '@netlify/functions': 2.7.0(@opentelemetry/api@1.9.0)
@@ -13092,7 +13092,7 @@ snapshots:
       fs-extra: 11.2.0
       globby: 14.0.1
       gzip-size: 7.0.0
-      h3: h3-nightly@1.12.0-1718641606.861f7e4
+      h3: h3-nightly@1.12.0-1718799699.76736ea
       hookable: 5.5.3
       httpxy: 0.1.5
       ioredis: 5.4.1
@@ -13151,9 +13151,9 @@ snapshots:
       - supports-color
       - uWebSockets.js
 
-  nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13):
+  nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13):
     dependencies:
-      nitro: nitro-nightly@3.0.0-beta-28643641.7e0b49ef(@opentelemetry/api@1.9.0)(encoding@0.1.13)
+      nitro: nitro-nightly@3.0.0-beta-28646495.e1c52afb(@opentelemetry/api@1.9.0)(encoding@0.1.13)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -14966,7 +14966,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 3.6.0
       destr: 2.0.3
-      h3: h3-nightly@1.12.0-1718641606.861f7e4
+      h3: h3-nightly@1.12.0-1718799699.76736ea
       listhen: 1.7.2
       lru-cache: 10.2.0
       mri: 1.2.0
@@ -15182,9 +15182,9 @@ snapshots:
       sass: 1.69.4
       terser: 5.27.0
 
-  vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5)):
+  vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5)):
     dependencies:
-      '@nuxt/test-utils': 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718641606.861f7e4)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28643641.7e0b49ef-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
+      '@nuxt/test-utils': 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.4.5)))(@vue/test-utils@2.4.6)(h3-nightly@1.12.0-1718799699.76736ea)(happy-dom@14.12.0)(magicast@0.3.4)(nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror(@opentelemetry/api@1.9.0)(encoding@0.1.13))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.5)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.5)(happy-dom@14.12.0)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.4.5)))(vue@3.4.29(typescript@5.4.5))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
