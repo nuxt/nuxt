@@ -287,7 +287,7 @@ jobs:
           path: packages
 
       - name: Release Edge
-        run: ./scripts/release-edge.sh 4x
+        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
