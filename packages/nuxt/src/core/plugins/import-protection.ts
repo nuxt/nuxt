@@ -85,7 +85,6 @@ export const ImportProtectionPlugin = createUnplugin(function (options: ImportPr
         matched = true
       }
       if (matched) {
-        console.log(id, cache[id])
         return proxy
       }
       return null
