@@ -789,12 +789,18 @@ importers:
       fs-extra:
         specifier: ^11.2.0
         version: 11.2.0
+      globby:
+        specifier: ^14.0.1
+        version: 14.0.1
       h3:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
+      knitwork:
+        specifier: ^1.1.0
+        version: 1.1.0
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
@@ -901,6 +907,9 @@ importers:
       '@types/webpack-hot-middleware':
         specifier: 2.25.9
         version: 2.25.9
+      rollup:
+        specifier: ^4.18.0
+        version: 4.18.0
       unbuild:
         specifier: latest
         version: 2.0.0(sass@1.69.4)(typescript@5.5.2)
