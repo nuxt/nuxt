@@ -34,9 +34,9 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
   "resolutions": {
-    "nitropack": "npm:nitropack-nightly@3.0.0-beta-28646495.e1c52afb-nitro-nightly-mirror",
-    "nitro": "npm:nitro-nightly@3.0.0-beta-28646495.e1c52afb",
-    "h3": "npm:h3-nightly@1.12.0-1718799699.76736ea",
+    "nitropack": "npm:nitropack-nightly@3.0.0-beta-28647098.77e4b5af-nitro-nightly-mirror",
+    "nitro": "npm:nitro-nightly@3.0.0-beta-28647098.77e4b5af",
+    "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/ui-templates": "workspace:*",
