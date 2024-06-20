@@ -45,6 +45,10 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 
 :link-example{to="/docs/examples/advanced/use-cookie"}
 
+::note
+Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/api/utils/refresh-cookie).
+::
+
 ## Options
 
 Cookie composable accepts several options which let you modify the behavior of cookies.
@@ -147,6 +151,10 @@ Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reac
 - `true` - Will watch cookie ref data changes and its nested properties (default).
 - `shallow` - Will watch cookie ref data changes for only top level properties
 - `false` - Will not watch cookie ref data changes.
+
+::note
+Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/api/utils/refresh-cookie).
+::
 
 **Example 1:**
 
