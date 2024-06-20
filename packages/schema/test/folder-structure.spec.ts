@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { applyDefaults } from 'untyped'
 
+import { normalize } from 'pathe'
 import { NuxtConfigSchema } from '../src'
 import type { NuxtOptions } from '../src'
 
@@ -10,13 +11,13 @@ describe('nuxt folder structure', () => {
     expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
       {
         "dir": {
-          "app": "app",
-          "modules": "modules",
-          "public": "public",
+          "app": "<cwd>/app",
+          "modules": "<cwd>/modules",
+          "public": "<cwd>/public",
         },
         "rootDir": "<cwd>",
         "serverDir": "<cwd>/server",
-        "srcDir": "<cwd>",
+        "srcDir": "<cwd>/app",
         "workspaceDir": "<cwd>",
       }
     `)
@@ -27,12 +28,12 @@ describe('nuxt folder structure', () => {
     expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
       {
         "dir": {
-          "app": "app",
-          "modules": "modules",
-          "public": "public",
+          "app": "/test/src",
+          "modules": "/test/modules",
+          "public": "/test/public",
         },
         "rootDir": "/test",
-        "serverDir": "/test/src/server",
+        "serverDir": "/test/server",
         "srcDir": "/test/src",
         "workspaceDir": "/test",
       }
@@ -75,7 +76,9 @@ describe('nuxt folder structure', () => {
 })
 
 function getDirs (options: NuxtOptions) {
-  const stripRoot = (dir: string) => dir.replace(process.cwd(), '<cwd>')
+  const stripRoot = (dir: string) => {
+    return normalize(dir).replace(normalize(process.cwd()), '<cwd>')
+  }
   return {
     rootDir: stripRoot(options.rootDir),
     serverDir: stripRoot(options.serverDir),

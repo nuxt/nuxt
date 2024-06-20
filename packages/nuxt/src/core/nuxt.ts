@@ -4,7 +4,7 @@ import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
-import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions, RuntimeConfig } from 'nuxt/schema'
+import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -49,10 +49,12 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     addHooks: hooks.addHooks,
     hook: hooks.hook,
     ready: () => initNuxt(nuxt),
-    close: () => Promise.resolve(hooks.callHook('close', nuxt)),
+    close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
   }
+
+  hooks.hookOnce('close', () => { hooks.removeAllHooks() })
 
   return nuxt
 }
@@ -97,21 +99,37 @@ async function initNuxt (nuxt: Nuxt) {
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (dependencies.has(pkg) && !(pkg in nightlies)) { return [] }
+    const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
+    const subpath = _subpath ? '/' + _subpath : ''
 
-    // deduplicate types for nightly releases
-    if (pkg in nightlies) {
-      const nightly = nightlies[pkg as keyof typeof nightlies]
-      const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
-      if (path) {
-        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
+
+    async function resolveTypePath (path: string) {
+      try {
+        const r = await _resolvePath(path, { url: nuxt.options.modulesDir, conditions: ['types', 'import', 'require'] })
+        if (subpath) {
+          return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')
+        }
+        const rootPath = await resolvePackageJSON(r)
+        return dirname(rootPath)
+      } catch {
+        return null
       }
     }
 
-    const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+    // deduplicate types for nightly releases
+    if (_pkg in nightlies) {
+      const nightly = nightlies[_pkg as keyof typeof nightlies]
+      const path = await resolveTypePath(nightly + subpath)
+      if (path) {
+        return [[pkg, [path]], [nightly + subpath, [path]]]
+      }
+    }
+
+    const path = await resolveTypePath(_pkg + subpath)
     if (path) {
-      return [[pkg, [dirname(path)]]]
+      return [[pkg, [path]]]
     }
 
     return []
@@ -164,6 +182,7 @@ async function initNuxt (nuxt: Nuxt) {
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
+    modulesDir: nuxt.options.modulesDir,
   }
   addVitePlugin(() => ImportProtectionPlugin.vite(config))
   addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
@@ -513,6 +532,12 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  if (nuxt.options.experimental.navigationRepaint) {
+    addPlugin({
+      src: resolve(nuxt.options.appDir, 'plugins/navigation-repaint.client'),
+    })
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -641,12 +666,28 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     options._modules.push('@nuxt/telemetry')
   }
 
-  // Ensure we share runtime config between Nuxt and Nitro
-  options.runtimeConfig = options.nitro.runtimeConfig as RuntimeConfig
+  // Ensure we share key config between Nuxt and Nitro
+  createPortalProperties(options.nitro.runtimeConfig, options, ['nitro.runtimeConfig', 'runtimeConfig'])
+  createPortalProperties(options.nitro.routeRules, options, ['nitro.routeRules', 'routeRules'])
+
+  // prevent replacement of options.nitro
+  const nitroOptions = options.nitro
+  Object.defineProperties(options, {
+    nitro: {
+      configurable: false,
+      enumerable: true,
+      get: () => nitroOptions,
+      set (value) {
+        Object.assign(nitroOptions, value)
+      },
+    },
+  })
 
   const nuxt = createNuxt(options)
 
-  await Promise.all(keyDependencies.map(dependency => checkDependencyVersion(dependency, nuxt._version)))
+  for (const dep of keyDependencies) {
+    checkDependencyVersion(dep, nuxt._version)
+  }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
   if (opts.overrides?.hooks) {
@@ -680,7 +721,7 @@ const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 function deduplicateArray<T = unknown> (maybeArray: T): T {
   if (!Array.isArray(maybeArray)) { return maybeArray }
 
-  const fresh = []
+  const fresh: any[] = []
   const hashes = new Set<string>()
   for (const item of maybeArray) {
     const _hash = hash(item)
@@ -690,4 +731,32 @@ function deduplicateArray<T = unknown> (maybeArray: T): T {
     }
   }
   return fresh as T
+}
+
+function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: string[]) {
+  let sharedValue = sourceValue
+
+  for (const path of paths) {
+    const segments = path.split('.')
+    const key = segments.pop()!
+    let parent: Record<string, any> = options
+
+    while (segments.length) {
+      const key = segments.shift()!
+      parent = parent[key] || (parent[key] = {})
+    }
+
+    delete parent[key]
+
+    Object.defineProperties(parent, {
+      [key]: {
+        configurable: false,
+        enumerable: true,
+        get: () => sharedValue,
+        set (value) {
+          sharedValue = value
+        },
+      },
+    })
+  }
 }

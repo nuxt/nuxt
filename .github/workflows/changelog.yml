@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 3.x
       - 2.x
 
 permissions:
@@ -16,11 +17,11 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - run: corepack enable

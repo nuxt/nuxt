@@ -19,7 +19,7 @@ describe('resolveApp', () => {
       {
         "components": [],
         "configs": [],
-        "dir": "<rootDir>",
+        "dir": "<rootDir>/app",
         "errorComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-error-page.vue",
         "extensions": [
           ".js",
@@ -42,6 +42,10 @@ describe('resolveApp', () => {
           {
             "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/payload.client.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
           },
           {
             "mode": "client",

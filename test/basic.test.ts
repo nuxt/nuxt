@@ -13,7 +13,6 @@ import type { NuxtIslandResponse } from '#app'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
-const isV4 = process.env.TEST_V4 === 'true'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -164,6 +163,21 @@ describe('pages', () => {
   it('includes page metadata from pages added in pages:extend hook', async () => {
     const res = await fetch('/page-extend')
     expect(res.headers.get('x-extend')).toEqual('added in pages:extend')
+  })
+
+  it('preserves page metadata added in pages:extend hook', async () => {
+    const html = await $fetch<string>('/some-custom-path')
+    expect (html.match(/<pre>([^<]*)<\/pre>/)?.[1]?.trim().replace(/&quot;/g, '"').replace(/&gt;/g, '>')).toMatchInlineSnapshot(`
+      "{
+        "name": "some-custom-name",
+        "path": "/some-custom-path",
+        "validate": "() => true",
+        "middleware": [
+          "() => true"
+        ],
+        "otherValue": "{\\"foo\\":\\"bar\\"}"
+      }"
+    `)
   })
 
   it('validates routes', async () => {
@@ -745,6 +759,24 @@ describe('nuxt links', () => {
     `)
   })
 
+  it('respects external links in edge cases', async () => {
+    const html = await $fetch<string>('/nuxt-link/custom-external')
+    const hrefs = html.match(/<a[^>]*href="([^"]+)"/g)
+    expect(hrefs).toMatchInlineSnapshot(`
+      [
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="https://thehackernews.com/2024/01/urgent-upgrade-gitlab-critical.html"",
+        "<a href="/missing-page/"",
+        "<a href="/missing-page/"",
+      ]
+    `)
+
+    const { page, consoleLogs } = await renderPage('/nuxt-link/custom-external')
+    const warnings = consoleLogs.filter(c => c.text.includes('No match found for location'))
+    expect(warnings).toMatchInlineSnapshot(`[]`)
+    await page.close()
+  })
+
   it('preserves route state', async () => {
     const { page } = await renderPage('/nuxt-link/trailing-slash')
 
@@ -885,17 +917,12 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
-  it.skipIf(isV4)('SPA should render appHead tags', async () => {
-    const headHtml = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+  it('SPA should render appHead tags', async () => {
+    const headHtml = await $fetch<string>('/head-spa')
 
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
     expect(headHtml).toContain('<meta charset="utf-8">')
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
-  })
-
-  it.skipIf(isV4)('legacy vueuse/head works', async () => {
-    const headHtml = await $fetch<string>('/vueuse-head')
-    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
 
   it('should render http-equiv correctly', async () => {
@@ -2430,7 +2457,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   })
 
   it('data is null after navigation when immediate false', async () => {
-    const defaultValue = isV4 ? 'undefined' : 'null'
+    const defaultValue = 'undefined'
 
     const { page } = await renderPage('/useAsyncData/immediate-remove-unmounted')
     expect(await page.locator('#immediate-data').getByText(defaultValue).textContent()).toBe(defaultValue)
@@ -2569,7 +2596,7 @@ describe('Node.js compatibility for client-side', () => {
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
   })
-}, 20_000)
+}, 30_000)
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {

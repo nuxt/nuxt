@@ -1,16 +1,21 @@
+import { runInNewContext } from 'node:vm'
 import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
-import { template } from 'lodash-es'
 import genericMessages from '../templates/messages.json'
 
-const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
+const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
+
+const r = (...path: string[]) => resolve(join(templatesRoot, ...path))
 
 export const DevRenderingPlugin = () => {
   return <Plugin>{
     name: 'dev-rendering',
     async transformIndexHtml (html: string, context) {
       const page = context.originalUrl || '/'
+
+      if (page.endsWith('.png')) { return }
 
       if (page === '/') {
         const templateNames = await fsp.readdir(r('templates'))
@@ -22,11 +27,19 @@ export const DevRenderingPlugin = () => {
 
       const messages = JSON.parse(await fsp.readFile(r(page, 'messages.json'), 'utf-8'))
 
-      return template(contents, {
-        interpolate: /\{\{\{?([\s\S]+?)\}?\}\}/g,
-      })({
-        messages: { ...genericMessages, ...messages },
-      })
+      const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/g)
+      let templateString = chunks.shift()
+      for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+        const value = runInNewContext(expression[1].trim(), {
+          messages: { ...genericMessages, ...messages },
+        })
+        templateString += `${value}${chunks.shift()}`
+      }
+      if (chunks.length > 0) {
+        templateString += chunks.join('')
+      }
+
+      return templateString
     },
   }
 }

@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
 import { join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
@@ -117,7 +118,16 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
-      if (!existsSync(srcDir)) {
+      const srcDirFiles = new Set<string>()
+      if (existsSync(srcDir)) {
+        const files = await readdir(srcDir).catch(() => [])
+        for (const file of files) {
+          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+            srcDirFiles.add(file)
+          }
+        }
+      }
+      if (srcDirFiles.size === 0) {
         for (const file of ['app.vue', 'App.vue']) {
           if (existsSync(resolve(rootDir, file))) {
             return rootDir
@@ -291,7 +301,8 @@ export default defineUntypedSchema({
       $resolve: async (val: string | undefined, get) => {
         const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('srcDir') as string, val || '.')
+          const [srcDir, rootDir] = await Promise.all([get('srcDir') as Promise<string>, get('rootDir') as Promise<string>])
+          return resolve(await get('srcDir') as string, val || (srcDir === rootDir ? 'app' : '.'))
         }
         return val || 'app'
       },

@@ -12,7 +12,9 @@ You can use this function to create an error object with additional metadata. It
 
 ## Parameters
 
-- `err`: `{ cause, data, message, name, stack, statusCode, statusMessage, fatal }`
+- `err`: `string | { cause, data, message, name, stack, statusCode, statusMessage, fatal }`
+
+You can pass either a string or an object to the `createError` function. If you pass a string, it will be used as the error `message`, and the `statusCode` will default to `500`. If you pass an object, you can set multiple properties of the error, such as `statusCode`, `message`, and other error properties.
 
 ## In Vue App
 
@@ -47,5 +49,7 @@ export default eventHandler(() => {
   })
 })
 ```
+
+In API routes, using `createError` by passing an object with a short `statusMessage` is recommended because it can be accessed on the client side. Otherwise, a `message` passed to `createError` on an API route will not propagate to the client. Alternatively, you can use the `data` property to pass data back to the client. In any case, always consider avoiding to put dynamic user input to the message to avoid potential security issues.
 
 :read-more{to="/docs/getting-started/error-handling"}

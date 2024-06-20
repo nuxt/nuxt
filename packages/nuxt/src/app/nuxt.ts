@@ -23,8 +23,6 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 // @ts-expect-error virtual file
 import { appId } from '#build/nuxt.config.mjs'
 
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultErrorValue } from '#app/defaults'
 import type { NuxtAppLiterals } from '#app'
 
 function getNuxtAppCtx (appName = appId || 'nuxt-app') {
@@ -69,7 +67,7 @@ export interface NuxtSSRContext extends SSRContext {
   /** whether we are rendering an SSR error */
   error?: boolean
   nuxt: _NuxtApp
-  payload: NuxtPayload
+  payload: Partial<NuxtPayload>
   head: VueHeadClient<MergeHead>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
@@ -94,8 +92,8 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | DefaultErrorValue
-  _errors: Record<string, NuxtError | DefaultAsyncDataErrorValue>
+  error?: NuxtError | undefined
+  _errors: Record<string, NuxtError | undefined>
   [key: string]: unknown
 }
 
@@ -124,7 +122,7 @@ interface _NuxtApp {
   _asyncData: Record<string, {
     data: Ref<unknown>
     pending: Ref<boolean>
-    error: Ref<Error | DefaultAsyncDataErrorValue>
+    error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
     /** @internal */
     _default: () => unknown
@@ -558,6 +556,7 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
 /**
  * Configure error getter on runtime secret property access that doesn't exist on the client side
  */
+const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   if (!import.meta.dev || import.meta.server) { return runtimeConfig }
   const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
@@ -565,7 +564,10 @@ function wrappedConfig (runtimeConfig: Record<string, unknown>) {
   return new Proxy(runtimeConfig, {
     get (target, p, receiver) {
       if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
-        console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See \`https://nuxt.com/docs/guide/going-further/runtime-config\` for more information.`)
+        if (!loggedKeys.has(p)) {
+          loggedKeys.add(p)
+          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/guide/going-further/runtime-config for more information.`)
+        }
       }
       return Reflect.get(target, p, receiver)
     },

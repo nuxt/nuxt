@@ -7,45 +7,12 @@ export default defineUntypedSchema({
    */
   future: {
     /**
-     * Enable early access to Nuxt v4 features or flags.
+     * Enable early access to future features or flags.
      *
-     * Setting `compatibilityVersion` to `4` changes defaults throughout your
-     * Nuxt configuration, but you can granularly re-enable Nuxt v3 behaviour
-     * when testing (see example). Please file issues if so, so that we can
-     * address in Nuxt or in the ecosystem.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *   future: {
-     *     compatibilityVersion: 4,
-     *   },
-     *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
-     *   srcDir: '.',
-     *   dir: {
-     *     app: 'app'
-     *   },
-     *   experimental: {
-     *     compileTemplate: true,
-     *     templateUtils: true,
-     *     relativeWatchPaths: true,
-     *     resetAsyncDataToUndefined: true,
-     *     defaults: {
-     *       useAsyncData: {
-     *         deep: true
-     *       }
-     *     }
-     *   },
-     *   unhead: {
-     *     renderSSRHeadOptions: {
-     *       omitLineBreaks: false
-     *     }
-     *   }
-     * })
-     * ```
-     * @type {3 | 4}
+     * It is currently not configurable but may be in future.
+     * @type {4}
      */
-    compatibilityVersion: 3,
+    compatibilityVersion: 4,
     /**
      * This enables early access to the experimental multi-app support.
      * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
@@ -430,23 +397,7 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        /** @type {'undefined' | 'null'} */
-        value: {
-          async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
-          },
-        },
-        /** @type {'undefined' | 'null'} */
-        errorValue: {
-          async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
-          },
-        },
-        deep: {
-          async $resolve (val, get) {
-            return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-          },
-        },
+        deep: false,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
@@ -468,50 +419,11 @@ export default defineUntypedSchema({
     clientNodeCompat: false,
 
     /**
-     * Whether to use `lodash.template` to compile Nuxt templates.
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
      *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
+     * It can reduce INP when navigating on prerendered routes.
      */
-    compileTemplate: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
-
-    /**
-     * Whether to provide a legacy `templateUtils` object (with `serialize`,
-     * `importName` and `importSources`) when compiling Nuxt templates.
-     *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
-     */
-    templateUtils: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
-
-    /**
-     * Whether to provide relative paths in the `builder:watch` hook.
-     *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
-     */
-    relativeWatchPaths: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
-
-    /**
-     * Whether `clear` and `clearNuxtData` should reset async data to its _default_ value or update
-     * it to `null`/`undefined`.
-     */
-    resetAsyncDataToUndefined: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
+    navigationRepaint: true,
   },
 })
