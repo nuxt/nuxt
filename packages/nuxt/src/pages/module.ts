@@ -125,6 +125,11 @@ export default defineNuxtModule({
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
+          'declare module \'nitropack/types\' {',
+          '  interface NitroRouteConfig {',
+          '    appMiddleware?: string | string[] | Record<string, boolean>',
+          '  }',
+          '}',
           'declare module \'nitro/types\' {',
           '  interface NitroRouteConfig {',
           '    appMiddleware?: string | string[] | Record<string, boolean>',
@@ -461,6 +466,11 @@ export default defineNuxtModule({
           `declare module ${genString(composablesFile)} {`,
           '  interface PageMeta {',
           '    middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>',
+          '  }',
+          '}',
+          'declare module \'nitropack/types\' {',
+          '  interface NitroRouteConfig {',
+          '    appMiddleware?: MiddlewareKey | MiddlewareKey[] | Record<MiddlewareKey, boolean>',
           '  }',
           '}',
           'declare module \'nitro/types\' {',
