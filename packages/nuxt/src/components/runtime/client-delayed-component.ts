@@ -26,20 +26,20 @@ export const createLazyIOComponent = (componentLoader: Component) => {
 
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      const isIntersecting = ref(false)
+      const hasIntersected = ref(false)
       const el: Ref<Element | null> = ref(null)
       let unobserve: (() => void) | null = null
 
       // todo can be refactored
       if (instance.vnode.el && nuxt.isHydrating) {
-        isIntersecting.value = elementIsVisibleInViewport(instance.vnode.el as Element)
+        hasIntersected.value = elementIsVisibleInViewport(instance.vnode.el as Element)
       }
 
-      if (!isIntersecting.value) {
+      if (!hasIntersected.value) {
         onMounted(() => {
           const observer = useIntersectionObserver(attrs.loader as Partial<IntersectionObserverInit> | undefined)
           unobserve = observer!.observe(el.value as Element, () => {
-            isIntersecting.value = true
+            hasIntersected.value = true
             unobserve?.()
             unobserve = null
           })
@@ -51,7 +51,7 @@ export const createLazyIOComponent = (componentLoader: Component) => {
       })
       return () => {
         return h('div', { ref: el }, [
-          isIntersecting.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null,
+          hasIntersected.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null,
         ])
       }
     },
