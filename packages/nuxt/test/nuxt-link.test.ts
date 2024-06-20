@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocation } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
+import { withQuery } from 'ufo'
 
 // mocks `useRuntimeConfig()`
 vi.mock('../src/app/nuxt', () => ({
@@ -24,7 +25,10 @@ vi.mock('vue', async () => {
 })
 
 // Mocks Nuxt `useRouter()`
-vi.mock('../src/app/composables/router', () => ({
+vi.mock('../src/app/composables/router', (orig) => ({
+  resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+    return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+  },
   useRouter: () => ({
     resolve: (route: string | RouteLocation & { to?: string }): Partial<RouteLocation> & { href?: string } => {
       if (typeof route === 'string') {
