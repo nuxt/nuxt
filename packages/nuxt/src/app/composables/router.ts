@@ -120,7 +120,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     to = '/'
   }
 
-  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+  const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
   if (import.meta.client && options?.open) {
@@ -251,4 +251,11 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (!inMiddleware) {
     useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
+}
+
+/**
+ * @internal
+ */
+export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
 }

@@ -11,7 +11,7 @@ import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkPro
 import { hasProtocol, joinURL, parseQuery, withQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, useRouter } from '../composables/router'
+import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
@@ -496,6 +496,3 @@ function isSlowConnection () {
   return false
 }
 
-function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
-  return withQuery(to.path || '', to.query || {}) + (to.hash ? '#' + to.hash : '')
-}
