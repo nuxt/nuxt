@@ -36,6 +36,7 @@
   "resolutions": {
     "nitropack": "npm:nitropack-nightly@3.0.0-beta-28647098.77e4b5af-nitro-nightly-mirror",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28647098.77e4b5af",
+    "typescript": "5.5.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
