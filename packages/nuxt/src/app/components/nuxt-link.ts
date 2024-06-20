@@ -8,7 +8,7 @@ import type {
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
 import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, withQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
@@ -495,4 +495,3 @@ function isSlowConnection () {
   if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
   return false
 }
-
