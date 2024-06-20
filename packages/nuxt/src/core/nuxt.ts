@@ -532,6 +532,12 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  if (nuxt.options.experimental.navigationRepaint) {
+    addPlugin({
+      src: resolve(nuxt.options.appDir, 'plugins/navigation-repaint.client'),
+    })
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns

@@ -417,5 +417,13 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
+
+    /**
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
+     *
+     * It can reduce INP when navigating on prerendered routes.
+     */
+    navigationRepaint: true,
   },
 })
