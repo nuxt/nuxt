@@ -45,6 +45,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {

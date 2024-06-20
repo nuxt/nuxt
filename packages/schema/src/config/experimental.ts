@@ -513,5 +513,13 @@ export default defineUntypedSchema({
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
       },
     },
+
+    /**
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
+     *
+     * It can reduce INP when navigating on prerendered routes.
+     */
+    navigationRepaint: true,
   },
 })
