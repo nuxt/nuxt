@@ -1,6 +1,6 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 
@@ -120,7 +120,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     to = '/'
   }
 
-  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+  const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
   if (import.meta.client && options?.open) {
@@ -251,4 +251,11 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (!inMiddleware) {
     useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
+}
+
+/**
+ * @internal
+ */
+export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
 }

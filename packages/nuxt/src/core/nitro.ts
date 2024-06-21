@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, scanHandlers, writeTypes } from 'nitropack'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
-import { findPath, logger, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
+import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import fsExtra from 'fs-extra'
@@ -218,6 +218,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
   nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir), `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`]
 
+  // Resolve aliases in user-provided input - so `~/server/test` will work
+  nitroConfig.plugins = nitroConfig.plugins?.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
+
   // Add app manifest handler and prerender configuration
   if (nuxt.options.experimental.appManifest) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
@@ -338,15 +341,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     if (process.platform === 'win32') {
       nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(/\//g, '\\')] = 'export default {}'
     }
-  }
-
-  // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
-  if (nuxt.options.experimental.respectNoSSRHeader) {
-    nitroConfig.handlers = nitroConfig.handlers || []
-    nitroConfig.handlers.push({
-      handler: resolve(distDir, 'core/runtime/nitro/no-ssr'),
-      middleware: true,
-    })
   }
 
   // Register nuxt protection patterns
