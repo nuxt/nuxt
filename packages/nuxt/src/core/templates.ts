@@ -267,7 +267,7 @@ declare module 'nitropack' {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
+export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
 `,
 }
 
