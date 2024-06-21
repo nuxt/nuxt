@@ -19,7 +19,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
       const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"110k"`)
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"106k"`)
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
           "_nuxt/entry.js",
@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"210k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"219k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1435k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1344k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -45,10 +45,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       [
         "@babel/parser",
         "@unhead/dom",
-        "@unhead/dom/node_modules/@unhead/shared",
         "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/ssr/node_modules/@unhead/shared",
         "@vue/compiler-core",
         "@vue/compiler-dom",
         "@vue/compiler-ssr",
@@ -65,9 +63,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "source-map-js",
         "ufo",
         "unhead",
-        "unhead/node_modules/@unhead/dom",
-        "unhead/node_modules/@unhead/dom/node_modules/@unhead/shared",
-        "unhead/node_modules/@unhead/shared",
         "vue",
         "vue-bundle-renderer",
       ]
@@ -78,10 +73,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"531k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"540k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"170k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"80.3k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -90,17 +85,12 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(packages).toMatchInlineSnapshot(`
       [
         "@unhead/dom",
-        "@unhead/dom/node_modules/@unhead/shared",
         "@unhead/shared",
         "@unhead/ssr",
-        "@unhead/ssr/node_modules/@unhead/shared",
         "db0",
         "devalue",
         "hookable",
         "unhead",
-        "unhead/node_modules/@unhead/dom",
-        "unhead/node_modules/@unhead/dom/node_modules/@unhead/shared",
-        "unhead/node_modules/@unhead/shared",
       ]
     `)
   })
