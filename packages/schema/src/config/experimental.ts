@@ -217,7 +217,7 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     delayedHydration: false,
-      
+
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
 
