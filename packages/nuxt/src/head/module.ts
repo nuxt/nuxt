@@ -52,11 +52,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
     const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
-    if (nuxt.options.experimental.polyfillVueUseHead) {
-      // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = unheadVue
-      addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
-    }
 
     addTemplate({
       filename: 'unhead-plugins.mjs',
