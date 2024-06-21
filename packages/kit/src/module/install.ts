@@ -26,7 +26,7 @@ export async function installModule<
   }
 
   // Call module
-  const res = await nuxtModule(inlineOptions, nuxt) ?? {}
+  const res = await nuxtModule(inlineOptions || {}, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
