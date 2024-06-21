@@ -7,12 +7,14 @@ on:
       - "*.md"
     branches:
       - main
+      - 3.x
   pull_request:
     paths-ignore:
       - "docs/**"
       - "*.md"
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
@@ -198,7 +200,6 @@ jobs:
         builder: ["vite", "webpack"]
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
-        version: ["v4", "v3"]
         payload: ["json", "js"]
         node: [18]
         exclude:
@@ -244,7 +245,6 @@ jobs:
           TEST_BUILDER: ${{ matrix.builder }}
           TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
-          TEST_V4: ${{ matrix.version == 'v4' }}
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || matrix.payload == 'js' || runner.os == 'Windows' }}
 
@@ -289,7 +289,7 @@ jobs:
           path: packages
 
       - name: Release Edge
-        run: ./scripts/release-edge.sh
+        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true

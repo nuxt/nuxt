@@ -12,7 +12,6 @@ declare module 'nitropack' {
 }
 
 export default defineNuxtConfig({
-  future: { compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3 },
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -63,6 +62,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
