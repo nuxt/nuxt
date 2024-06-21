@@ -21,7 +21,7 @@ If you would like to trigger hydration when the element is either clicked or has
 ```vue [pages/index.vue]
 <template>
   <div>
-    <LazyEventMyComponent :loader="createEventLoader(['click','mouseover'])"/>
+    <LazyEventMyComponent :hydrate="createEventLoader(['click','mouseover'])"/>
   </div>
 <template>
 ```

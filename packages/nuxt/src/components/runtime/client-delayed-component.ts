@@ -37,7 +37,7 @@ export const createLazyIOComponent = (componentLoader: Component) => {
 
       if (!hasIntersected.value) {
         onMounted(() => {
-          const observer = useIntersectionObserver(attrs.loader as Partial<IntersectionObserverInit> | undefined)
+          const observer = useIntersectionObserver(attrs.hydrate as Partial<IntersectionObserverInit> | undefined)
           unobserve = observer!.observe(el.value as Element, () => {
             hasIntersected.value = true
             unobserve?.()
@@ -76,7 +76,7 @@ export const createLazyNetworkComponent = (componentLoader: Component) => {
             isIdle.value = true
             cancelIdleCallback(idleHandle as unknown as number)
             idleHandle = null
-          }, attrs.loader ?? { timeout: 10000 })
+          }, attrs.hydrate ?? { timeout: 10000 })
         })
       })
       onBeforeUnmount(() => {
@@ -102,7 +102,7 @@ export const createLazyEventComponent = (componentLoader: Component) => {
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
       const isTriggered = ref(false)
-      const events: string[] = attrs.loader as string[] ?? ['mouseover']
+      const events: string[] = attrs.hydrate as string[] ?? ['mouseover']
 
       const registeredEvents: (() => void)[] = []
       if (!eventsMapper.has(instance)) {

@@ -7,7 +7,7 @@
     <LazyEventView />
     <LazyEventDelayedEvent
       id="lazyevent2"
-      :loader="createEventLoader(['click'])"
+      :hydrate="createEventLoader(['click'])"
     />
     <LazyIdleDelayedNetwork />
     <div style="height:3000px">

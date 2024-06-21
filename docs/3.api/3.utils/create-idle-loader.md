@@ -21,7 +21,7 @@ If you would like to give a timeout of 5 seconds for the components:
 ```vue [pages/index.vue]
 <template>
   <div>
-    <LazyIdleMyComponent :loader="createIdleLoader({timeout: 3000})"/>
+    <LazyIdleMyComponent :hydrate="createIdleLoader({timeout: 3000})"/>
   </div>
 <template>
 ```

@@ -21,7 +21,7 @@ If you would like to change the threshold of the element:
 ```vue [pages/index.vue]
 <template>
   <div>
-    <LazyVisibleMyComponent :loader="createVisibleLoader({threshold: 0.2})"/>
+    <LazyVisibleMyComponent :hydrate="createVisibleLoader({threshold: 0.2})"/>
   </div>
 <template>
 ```
