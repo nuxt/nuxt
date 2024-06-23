@@ -3,13 +3,15 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
+import { mkdir, writeFile } from 'node:fs/promises'
+
 import { normalizeWebpackManifest } from 'vue-bundle-renderer'
 import { dirname } from 'pathe'
 import hash from 'hash-sum'
-import fse from 'fs-extra'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
+
 import { isCSS, isHotUpdate, isJS } from './util'
 
 interface PluginOptions {
@@ -121,11 +123,11 @@ export default class VueSSRClientPlugin {
 
       const src = JSON.stringify(manifest, null, 2)
 
-      await fse.mkdirp(dirname(this.options.filename))
-      await fse.writeFile(this.options.filename, src)
+      await mkdir(dirname(this.options.filename), { recursive: true })
+      await writeFile(this.options.filename, src)
 
       const mjsSrc = 'export default ' + src
-      await fse.writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
+      await writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
 
       // assets[this.options.filename] = {
       //   source: () => src,
