@@ -51,7 +51,6 @@
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.13.1",
     "@nuxt/webpack-builder": "workspace:*",
-    "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
     "@types/node": "20.14.7",
     "@types/semver": "7.5.8",

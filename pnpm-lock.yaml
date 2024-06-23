@@ -31,13 +31,10 @@ importers:
         version: link:packages/kit
       '@nuxt/test-utils':
         specifier: 3.13.1
-        version: 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
+        version: 3.13.1(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
-      '@testing-library/vue':
-        specifier: 8.1.0
-        version: 8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2))
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
@@ -142,7 +139,7 @@ importers:
         version: 1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
       vitest-environment-nuxt:
         specifier: 1.0.0
-        version: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
+        version: 1.0.0(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
       vue:
         specifier: 3.4.29
         version: 3.4.29(typescript@5.5.2)
@@ -7832,6 +7829,7 @@ snapshots:
   '@babel/runtime@7.23.9':
     dependencies:
       regenerator-runtime: 0.14.1
+    optional: true
 
   '@babel/standalone@7.23.9': {}
 
@@ -8671,7 +8669,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.7.0
 
-  '@nuxt/test-utils@3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))':
+  '@nuxt/test-utils@3.13.1(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
@@ -8698,11 +8696,11 @@ snapshots:
       unenv: 1.9.0
       unplugin: 1.10.1
       vite: 5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0)
-      vitest-environment-nuxt: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
+      vitest-environment-nuxt: 1.0.0(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
       vue: 3.4.29(typescript@5.5.2)
       vue-router: 4.3.3(vue@3.4.29(typescript@5.5.2))
     optionalDependencies:
-      '@testing-library/vue': 8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2))
+      '@testing-library/vue': 8.1.0(vue@3.4.29(typescript@5.5.2))
       '@vue/test-utils': 2.4.6
       happy-dom: 14.12.3
       playwright-core: 1.44.1
@@ -9078,15 +9076,15 @@ snapshots:
       dom-accessibility-api: 0.5.16
       lz-string: 1.5.0
       pretty-format: 27.5.1
+    optional: true
 
-  '@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2))':
+  '@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2))':
     dependencies:
       '@babel/runtime': 7.23.9
       '@testing-library/dom': 9.3.4
       '@vue/test-utils': 2.4.6
       vue: 3.4.29(typescript@5.5.2)
-    optionalDependencies:
-      '@vue/compiler-sfc': 3.4.29
+    optional: true
 
   '@trysound/sax@0.2.0': {}
 
@@ -9097,7 +9095,8 @@ snapshots:
       '@tufjs/canonical-json': 2.0.0
       minimatch: 9.0.4
 
-  '@types/aria-query@5.0.4': {}
+  '@types/aria-query@5.0.4':
+    optional: true
 
   '@types/clean-css@4.2.11':
     dependencies:
@@ -10337,11 +10336,13 @@ snapshots:
   aria-query@5.1.3:
     dependencies:
       deep-equal: 2.2.3
+    optional: true
 
   array-buffer-byte-length@1.0.0:
     dependencies:
       call-bind: 1.0.7
       is-array-buffer: 3.0.2
+    optional: true
 
   array-union@2.1.0: {}
 
@@ -10388,7 +10389,8 @@ snapshots:
       postcss: 8.4.38
       postcss-value-parser: 4.2.0
 
-  available-typed-arrays@1.0.6: {}
+  available-typed-arrays@1.0.6:
+    optional: true
 
   b4a@1.6.4: {}
 
@@ -10910,6 +10912,7 @@ snapshots:
       which-boxed-primitive: 1.0.2
       which-collection: 1.0.1
       which-typed-array: 1.1.14
+    optional: true
 
   deep-extend@0.6.0: {}
 
@@ -10951,6 +10954,7 @@ snapshots:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
+    optional: true
 
   defu@6.1.4: {}
 
@@ -10992,7 +10996,8 @@ snapshots:
 
   doctypes@1.1.0: {}
 
-  dom-accessibility-api@0.5.16: {}
+  dom-accessibility-api@0.5.16:
+    optional: true
 
   dom-serializer@2.0.0:
     dependencies:
@@ -11098,6 +11103,7 @@ snapshots:
       is-string: 1.0.7
       isarray: 2.0.5
       stop-iteration-iterator: 1.0.0
+    optional: true
 
   es-module-lexer@1.3.1: {}
 
@@ -11582,6 +11588,7 @@ snapshots:
   for-each@0.3.3:
     dependencies:
       is-callable: 1.2.7
+    optional: true
 
   foreground-child@3.1.1:
     dependencies:
@@ -11638,7 +11645,8 @@ snapshots:
 
   function-bind@1.1.2: {}
 
-  functions-have-names@1.2.3: {}
+  functions-have-names@1.2.3:
+    optional: true
 
   gauge@3.0.2:
     dependencies:
@@ -11819,7 +11827,8 @@ snapshots:
       webidl-conversions: 7.0.0
       whatwg-mimetype: 3.0.0
 
-  has-bigints@1.0.2: {}
+  has-bigints@1.0.2:
+    optional: true
 
   has-flag@3.0.0: {}
 
@@ -11839,7 +11848,8 @@ snapshots:
 
   has-unicode@2.0.1: {}
 
-  has@1.0.4: {}
+  has@1.0.4:
+    optional: true
 
   hash-sum@2.0.0: {}
 
@@ -12034,6 +12044,7 @@ snapshots:
       get-intrinsic: 1.2.4
       has: 1.0.4
       side-channel: 1.0.4
+    optional: true
 
   ioredis@5.3.2:
     dependencies:
@@ -12066,18 +12077,21 @@ snapshots:
     dependencies:
       call-bind: 1.0.7
       has-tostringtag: 1.0.2
+    optional: true
 
   is-array-buffer@3.0.2:
     dependencies:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
       is-typed-array: 1.1.12
+    optional: true
 
   is-arrayish@0.2.1: {}
 
   is-bigint@1.0.4:
     dependencies:
       has-bigints: 1.0.2
+    optional: true
 
   is-binary-path@2.1.0:
     dependencies:
@@ -12087,12 +12101,14 @@ snapshots:
     dependencies:
       call-bind: 1.0.7
       has-tostringtag: 1.0.2
+    optional: true
 
   is-builtin-module@3.2.1:
     dependencies:
       builtin-modules: 3.3.0
 
-  is-callable@1.2.7: {}
+  is-callable@1.2.7:
+    optional: true
 
   is-core-module@2.13.1:
     dependencies:
@@ -12101,6 +12117,7 @@ snapshots:
   is-date-object@1.0.5:
     dependencies:
       has-tostringtag: 1.0.2
+    optional: true
 
   is-decimal@2.0.1: {}
 
@@ -12134,13 +12151,15 @@ snapshots:
 
   is-lambda@1.0.1: {}
 
-  is-map@2.0.2: {}
+  is-map@2.0.2:
+    optional: true
 
   is-module@1.0.0: {}
 
   is-number-object@1.0.7:
     dependencies:
       has-tostringtag: 1.0.2
+    optional: true
 
   is-number@7.0.0: {}
 
@@ -12163,11 +12182,13 @@ snapshots:
       call-bind: 1.0.7
       has-tostringtag: 1.0.2
 
-  is-set@2.0.2: {}
+  is-set@2.0.2:
+    optional: true
 
   is-shared-array-buffer@1.0.2:
     dependencies:
       call-bind: 1.0.7
+    optional: true
 
   is-ssh@1.4.0:
     dependencies:
@@ -12182,23 +12203,28 @@ snapshots:
   is-string@1.0.7:
     dependencies:
       has-tostringtag: 1.0.2
+    optional: true
 
   is-symbol@1.0.4:
     dependencies:
       has-symbols: 1.0.3
+    optional: true
 
   is-typed-array@1.1.12:
     dependencies:
       which-typed-array: 1.1.14
+    optional: true
 
   is-unicode-supported@2.0.0: {}
 
-  is-weakmap@2.0.1: {}
+  is-weakmap@2.0.1:
+    optional: true
 
   is-weakset@2.0.2:
     dependencies:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
+    optional: true
 
   is-wsl@2.2.0:
     dependencies:
@@ -12214,7 +12240,8 @@ snapshots:
 
   isarray@1.0.0: {}
 
-  isarray@2.0.5: {}
+  isarray@2.0.5:
+    optional: true
 
   isexe@2.0.0: {}
 
@@ -12454,7 +12481,8 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lz-string@1.5.0: {}
+  lz-string@1.5.0:
+    optional: true
 
   magic-string-ast@0.3.0:
     dependencies:
@@ -13267,14 +13295,17 @@ snapshots:
 
   object-assign@4.1.1: {}
 
-  object-inspect@1.13.0: {}
+  object-inspect@1.13.0:
+    optional: true
 
   object-is@1.1.5:
     dependencies:
       call-bind: 1.0.7
       define-properties: 1.2.1
+    optional: true
 
-  object-keys@1.1.1: {}
+  object-keys@1.1.1:
+    optional: true
 
   object.assign@4.1.4:
     dependencies:
@@ -13282,6 +13313,7 @@ snapshots:
       define-properties: 1.2.1
       has-symbols: 1.0.3
       object-keys: 1.1.1
+    optional: true
 
   ofetch@1.3.4:
     dependencies:
@@ -13728,6 +13760,7 @@ snapshots:
       ansi-regex: 5.0.1
       ansi-styles: 5.2.0
       react-is: 17.0.2
+    optional: true
 
   pretty-format@29.7.0:
     dependencies:
@@ -13866,7 +13899,8 @@ snapshots:
       defu: 6.1.4
       destr: 2.0.3
 
-  react-is@17.0.2: {}
+  react-is@17.0.2:
+    optional: true
 
   react-is@18.2.0: {}
 
@@ -13929,7 +13963,8 @@ snapshots:
     dependencies:
       '@eslint-community/regexpp': 4.10.0
 
-  regenerator-runtime@0.14.1: {}
+  regenerator-runtime@0.14.1:
+    optional: true
 
   regexp-ast-analysis@0.7.1:
     dependencies:
@@ -13943,6 +13978,7 @@ snapshots:
       call-bind: 1.0.7
       define-properties: 1.2.1
       set-function-name: 2.0.1
+    optional: true
 
   regjsparser@0.10.0:
     dependencies:
@@ -14228,6 +14264,7 @@ snapshots:
       define-data-property: 1.1.4
       functions-have-names: 1.2.3
       has-property-descriptors: 1.0.2
+    optional: true
 
   setprototypeof@1.2.0: {}
 
@@ -14260,6 +14297,7 @@ snapshots:
       call-bind: 1.0.7
       get-intrinsic: 1.2.4
       object-inspect: 1.13.0
+    optional: true
 
   siginfo@2.0.0: {}
 
@@ -14378,6 +14416,7 @@ snapshots:
   stop-iteration-iterator@1.0.0:
     dependencies:
       internal-slot: 1.0.5
+    optional: true
 
   streamx@2.15.1:
     dependencies:
@@ -15046,9 +15085,9 @@ snapshots:
       sass: 1.69.4
       terser: 5.27.0
 
-  vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2)):
+  vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2)):
     dependencies:
-      '@nuxt/test-utils': 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.29)(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
+      '@nuxt/test-utils': 3.13.1(@testing-library/vue@8.1.0(vue@3.4.29(typescript@5.5.2)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.44.1)(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.7)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.3.3(vue@3.4.29(typescript@5.5.2)))(vue@3.4.29(typescript@5.5.2))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
@@ -15346,6 +15385,7 @@ snapshots:
       is-number-object: 1.0.7
       is-string: 1.0.7
       is-symbol: 1.0.4
+    optional: true
 
   which-collection@1.0.1:
     dependencies:
@@ -15353,6 +15393,7 @@ snapshots:
       is-set: 2.0.2
       is-weakmap: 2.0.1
       is-weakset: 2.0.2
+    optional: true
 
   which-typed-array@1.1.14:
     dependencies:
@@ -15361,6 +15402,7 @@ snapshots:
       for-each: 0.3.3
       gopd: 1.0.1
       has-tostringtag: 1.0.2
+    optional: true
 
   which@2.0.2:
     dependencies:
