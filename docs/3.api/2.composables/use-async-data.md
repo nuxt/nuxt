@@ -26,7 +26,7 @@ const { data, pending, error, refresh, clear } = await useAsyncData(
 ```
 
 ::warning
-If you're using a custom useAsyncData wrapper, do not await it in the composable, as that will cause hydration issues. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher. 
+If you're using a custom useAsyncData wrapper, do not await it in the composable, as that will cause hydration issues. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
 ::
 
 ::note
