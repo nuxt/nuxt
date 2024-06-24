@@ -44,7 +44,9 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
 
       // replace `_resolveComponent("...")` to direct import
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
-        const component = findComponent(components, name, options.mode)
+        const normalComponent = findComponent(components, name, options.mode)
+        const lazyComponent = !component && lazy ? findComponent(components, lazy + name, options.mode) : null
+        const component = normalComponent || lazyComponent
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
           if (component._internal_install && tryUseNuxt()?.options.test === false) {
@@ -71,7 +73,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             identifier += '_client'
           }
 
-          if (lazy) {
+          if (lazy && normalComponent) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             identifier += '_lazy'
             imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
