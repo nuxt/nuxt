@@ -2,7 +2,6 @@ import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
-import { globby } from 'globby'
 import { execaSync } from 'execa'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
@@ -43,12 +42,13 @@ export async function loadPackage (dir: string) {
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await globby(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = await fsp.readdir('packages', { withFileTypes: true })
 
   const packages: Package[] = []
 
   for (const pkgDir of pkgDirs) {
-    const pkg = await loadPackage(pkgDir)
+    if (!pkgDir.isDirectory()) { continue }
+    const pkg = await loadPackage(resolve('packages', pkgDir.name))
     if (!pkg.data.name) { continue }
     packages.push(pkg)
   }
