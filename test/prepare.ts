@@ -1,6 +1,8 @@
 import { fileURLToPath } from 'node:url'
+import { rm } from 'node:fs/promises'
+
 import { globby } from 'globby'
-import fs from 'fs-extra'
+
 import { execa } from 'execa'
 
 async function initTesting () {
@@ -12,9 +14,9 @@ async function initTesting () {
 
   await Promise.all([
     // clear nuxt build files
-    ...dirs.map(dir => fs.remove(`${dir}/.nuxt`)),
+    ...dirs.map(dir => rm(`${dir}/.nuxt`, { force: true, recursive: true })),
     // clear vite cache
-    ...dirs.map(dir => fs.remove(`${dir}/node_modules/.cache`), { force: true }),
+    ...dirs.map(dir => rm(`${dir}/node_modules/.cache`, { force: true, recursive: true })),
   ])
 
   await Promise.all(

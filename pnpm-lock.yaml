@@ -41,9 +41,6 @@ importers:
       '@types/eslint__js':
         specifier: 8.42.3
         version: 8.42.3
-      '@types/fs-extra':
-        specifier: 11.0.4
-        version: 11.0.4
       '@types/node':
         specifier: 20.14.7
         version: 20.14.7
@@ -89,9 +86,6 @@ importers:
       execa:
         specifier: 9.2.0
         version: 9.2.0
-      fs-extra:
-        specifier: 11.2.0
-        version: 11.2.0
       globby:
         specifier: 14.0.1
         version: 14.0.1
@@ -306,9 +300,6 @@ importers:
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
-      fs-extra:
-        specifier: ^11.2.0
-        version: 11.2.0
       globby:
         specifier: ^14.0.1
         version: 14.0.1
@@ -430,9 +421,6 @@ importers:
       '@types/estree':
         specifier: 1.0.5
         version: 1.0.5
-      '@types/fs-extra':
-        specifier: 11.0.4
-        version: 11.0.4
       '@vitejs/plugin-vue':
         specifier: 5.0.4
         version: 5.0.4(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vue@3.4.29(typescript@5.5.2))
@@ -653,9 +641,6 @@ importers:
       externality:
         specifier: ^1.0.2
         version: 1.0.2
-      fs-extra:
-        specifier: ^11.2.0
-        version: 11.2.0
       get-port-please:
         specifier: ^3.1.2
         version: 3.1.2
@@ -726,9 +711,6 @@ importers:
       '@types/estree':
         specifier: 1.0.5
         version: 1.0.5
-      '@types/fs-extra':
-        specifier: 11.0.4
-        version: 11.0.4
       rollup:
         specifier: ^4.18.0
         version: 4.18.0
@@ -777,9 +759,6 @@ importers:
       fork-ts-checker-webpack-plugin:
         specifier: ^9.0.2
         version: 9.0.2(typescript@5.5.2)(webpack@5.92.1)
-      fs-extra:
-        specifier: ^11.2.0
-        version: 11.2.0
       h3:
         specifier: ^1.12.0
         version: 1.12.0
@@ -874,9 +853,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@types/fs-extra':
-        specifier: 11.0.4
-        version: 11.0.4
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
@@ -2496,9 +2472,6 @@ packages:
   '@types/file-loader@5.0.4':
     resolution: {integrity: sha512-aB4X92oi5D2nIGI8/kolnJ47btRM2MQjQS4eJgA/VnCD12x0+kP5v7b5beVQWKHLOcquwUXvv6aMt8PmMy9uug==}
 
-  '@types/fs-extra@11.0.4':
-    resolution: {integrity: sha512-yTbItCNreRooED33qjunPthRcSjERP1r4MqCZc7wv0u2sUkzTFp45tgUfS5+r7FrZPdmCCNflLhVSP/o+SemsQ==}
-
   '@types/google.maps@3.55.9':
     resolution: {integrity: sha512-phaOMtezbT3NaXPKiI3m0OosUS7Nly0auw3Be5s/CgMWLVoDAUP1Yb/Ld0TRoRp8ibrlT4VqM5kmzfvUA0UNLQ==}
 
@@ -2525,9 +2498,6 @@ packages:
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
-
-  '@types/jsonfile@6.1.2':
-    resolution: {integrity: sha512-8t92P+oeW4d/CRQfJaSqEwXujrhH4OEeHRjGU3v1Q8mUS8GPF3yiX26sw4svv6faL2HfBtGTe2xWIoVgN3dy9w==}
 
   '@types/lodash-es@4.17.12':
     resolution: {integrity: sha512-0NgftHUcV4v34VhXm8QBSftKVXtbkBG3ViCjs6+eJ5a6y6Mi/jiFGPc1sC7QK+9BFhWrURE3EOggmWaSxL9OzQ==}
@@ -9164,11 +9134,6 @@ snapshots:
     dependencies:
       '@types/webpack': 4.41.34
 
-  '@types/fs-extra@11.0.4':
-    dependencies:
-      '@types/jsonfile': 6.1.2
-      '@types/node': 20.14.7
-
   '@types/google.maps@3.55.9': {}
 
   '@types/hash-sum@1.0.2': {}
@@ -9198,10 +9163,6 @@ snapshots:
       '@types/istanbul-lib-report': 3.0.2
 
   '@types/json-schema@7.0.15': {}
-
-  '@types/jsonfile@6.1.2':
-    dependencies:
-      '@types/node': 20.14.7
 
   '@types/lodash-es@4.17.12':
     dependencies:
