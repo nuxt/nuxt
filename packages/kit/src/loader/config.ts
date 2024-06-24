@@ -1,11 +1,13 @@
+import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { NuxtConfigSchema } from '@nuxt/schema'
-import { globby } from 'globby'
 import defu from 'defu'
+import { join } from 'pathe'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
@@ -21,12 +23,16 @@ for (const key of layerSchemaKeys) {
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  opts.overrides = defu(opts.overrides, {
-    _extends: await globby('layers/*', {
-      onlyDirectories: true,
-      cwd: opts.cwd || process.cwd(),
-    }),
-  });
+  const _extends: string[] = []
+  const layersDir = join(opts.cwd || process.cwd(), 'layers')
+  if (existsSync(layersDir)) {
+    for (const file of await readdir(layersDir, { withFileTypes: true })) {
+      if (file.isDirectory()) {
+        _extends.push(join(layersDir, file.name))
+      }
+    }
+  }
+  opts.overrides = defu(opts.overrides, { _extends });
   (globalThis as any).defineNuxtConfig = (c: any) => c
   const result = await loadConfig<NuxtConfig>({
     name: 'nuxt',
