@@ -86,9 +86,9 @@ importers:
       execa:
         specifier: 9.2.0
         version: 9.2.0
-      globby:
-        specifier: 14.0.1
-        version: 14.0.1
+      fdir:
+        specifier: 6.1.1
+        version: 6.1.1(picomatch@4.0.2)
       h3:
         specifier: 1.12.0
         version: 1.12.0
@@ -119,6 +119,9 @@ importers:
       pathe:
         specifier: 1.1.2
         version: 1.1.2
+      picomatch:
+        specifier: ^4.0.2
+        version: 4.0.2
       playwright-core:
         specifier: 1.44.1
         version: 1.44.1
@@ -170,9 +173,9 @@ importers:
       destr:
         specifier: ^2.0.3
         version: 2.0.3
-      globby:
-        specifier: ^14.0.1
-        version: 14.0.1
+      fdir:
+        specifier: ^6.1.1
+        version: 6.1.1(picomatch@4.0.2)
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
@@ -191,6 +194,9 @@ importers:
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
+      picomatch:
+        specifier: ^4.0.2
+        version: 4.0.2
       pkg-types:
         specifier: ^1.1.1
         version: 1.1.1
@@ -216,6 +222,9 @@ importers:
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
+      '@types/picomatch':
+        specifier: ^2.3.3
+        version: 2.3.3
       '@types/semver':
         specifier: 7.5.8
         version: 7.5.8
@@ -300,9 +309,9 @@ importers:
       estree-walker:
         specifier: ^3.0.3
         version: 3.0.3
-      globby:
-        specifier: ^14.0.1
-        version: 14.0.1
+      fdir:
+        specifier: ^6.1.1
+        version: 6.1.1(picomatch@4.0.2)
       h3:
         specifier: ^1.12.0
         version: 1.12.0
@@ -348,6 +357,9 @@ importers:
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
+      picomatch:
+        specifier: ^4.0.2
+        version: 4.0.2
       pkg-types:
         specifier: ^1.1.1
         version: 1.1.1
@@ -421,6 +433,9 @@ importers:
       '@types/estree':
         specifier: 1.0.5
         version: 1.0.5
+      '@types/picomatch':
+        specifier: ^2.3.3
+        version: 2.3.3
       '@vitejs/plugin-vue':
         specifier: 5.0.4
         version: 5.0.4(vite@5.3.1(@types/node@20.14.7)(sass@1.69.4)(terser@5.27.0))(vue@3.4.29(typescript@5.5.2))
@@ -572,9 +587,9 @@ importers:
       execa:
         specifier: 9.2.0
         version: 9.2.0
-      globby:
-        specifier: 14.0.1
-        version: 14.0.1
+      fdir:
+        specifier: 6.1.1
+        version: 6.1.1(picomatch@4.0.2)
       html-minifier:
         specifier: 4.0.0
         version: 4.0.0
@@ -587,6 +602,9 @@ importers:
       pathe:
         specifier: 1.1.2
         version: 1.1.2
+      picomatch:
+        specifier: 4.0.2
+        version: 4.0.2
       prettier:
         specifier: 3.3.2
         version: 3.3.2
@@ -2520,6 +2538,9 @@ packages:
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
 
+  '@types/picomatch@2.3.3':
+    resolution: {integrity: sha512-Yll76ZHikRFCyz/pffKGjrCwe/le2CDwOP5F210KQo27kpRE46U2rDnzikNlVn6/ezH3Mhn46bJMTfeVTtcYMg==}
+
   '@types/pify@5.0.4':
     resolution: {integrity: sha512-gxKJ1Aw8LbyCsCQWIsip9bYKJCNsKHMoZoQMAe2IWH7U7hgp/l6TvJpbFvu8ZlGBimjZZNvEx2S1ZQlj02ayNQ==}
 
@@ -4263,6 +4284,14 @@ packages:
 
   fastq@1.15.0:
     resolution: {integrity: sha512-wBrocU2LCXXa+lWBt8RoIRD89Fi8OdABODa/kEnyeyjS5aZO5/GNvI5sEINADqP/h8M29UHTHUb53sUu5Ihqdw==}
+
+  fdir@6.1.1:
+    resolution: {integrity: sha512-QfKBVg453Dyn3mr0Q0O+Tkr1r79lOTAKSi9f/Ot4+qVEwxWhav2Z+SudrG9vQjM2aYRMQQZ2/Q1zdA8ACM1pDg==}
+    peerDependencies:
+      picomatch: 3.x
+    peerDependenciesMeta:
+      picomatch:
+        optional: true
 
   figures@3.2.0:
     resolution: {integrity: sha512-yaduQFRKLXYOGgEn6AZau90j3ggSOyiqXU0F9JZfeXYhNa+Jk4X+s45A2zg5jns87GAFa34BBm2kXw4XpNcbdg==}
@@ -9186,6 +9215,8 @@ snapshots:
 
   '@types/normalize-package-data@2.4.4': {}
 
+  '@types/picomatch@2.3.3': {}
+
   '@types/pify@5.0.4': {}
 
   '@types/pug@2.0.10': {}
@@ -11517,6 +11548,10 @@ snapshots:
   fastq@1.15.0:
     dependencies:
       reusify: 1.0.4
+
+  fdir@6.1.1(picomatch@4.0.2):
+    optionalDependencies:
+      picomatch: 4.0.2
 
   figures@3.2.0:
     dependencies:

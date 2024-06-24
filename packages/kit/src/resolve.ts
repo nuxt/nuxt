@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
-import { globby } from 'globby'
+import { fdir } from 'fdir'
 import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
@@ -210,7 +210,7 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
   const files: string[] = []
-  for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
+  for (const file of await new fdir().withRelativePaths().globWithOptions(toArray(pattern), { dot: true }).crawl(path).withPromise()) {
     const p = resolve(path, file)
     if (!isIgnored(p)) {
       files.push(p)

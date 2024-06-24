@@ -2,8 +2,8 @@ import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { execaCommand } from 'execa'
-import { globby } from 'globby'
-import { join } from 'pathe'
+import { fdir } from 'fdir'
+import { join, resolve } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
@@ -31,7 +31,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    const serverStats = await analyzeSizes('**/*.mjs', serverDir, { excludeNodeModules: true })
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"210k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
@@ -71,7 +71,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default server bundle size (inlined vue modules)', async () => {
     const serverDir = join(rootDir, '.output-inline/server')
 
-    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    const serverStats = await analyzeSizes('**/*.mjs', serverDir, { excludeNodeModules: true })
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"531k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
@@ -94,11 +94,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
-async function analyzeSizes (pattern: string | string[], rootDir: string) {
-  const files: string[] = await globby(pattern, { cwd: rootDir })
+async function analyzeSizes (pattern: string | string[], rootDir: string, opts: { excludeNodeModules?: boolean } = {}) {
+  const patterns = Array.isArray(pattern) ? pattern : [pattern]
+  const files: string[] = new fdir({
+    resolveSymlinks: true,
+    exclude: p => opts.excludeNodeModules ? p.includes('node_modules') : false
+  })
+    .withRelativePaths().globWithOptions(patterns, { dot: true }).crawl(rootDir).sync()
   let totalBytes = 0
   for (const file of files) {
-    const path = join(rootDir, file)
+    const path = resolve(rootDir, file)
     const isSymlink = (await fsp.lstat(path).catch(() => null))?.isSymbolicLink()
 
     if (!isSymlink) {
