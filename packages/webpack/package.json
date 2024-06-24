@@ -76,7 +76,7 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "unbuild": "latest",
-    "vue": "3.4.29"
+    "vue": "3.4.30"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
