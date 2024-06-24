@@ -1,11 +1,11 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync } from 'node:fs'
+import { writeFile } from 'node:fs/promises'
 import { builtinModules } from 'node:module'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import type * as vite from 'vite'
 import type { isExternal } from 'externality'
 import { genDynamicImport, genObjectFromRawEntries } from 'knitwork'
-import fse from 'fs-extra'
 import { debounce } from 'perfect-debounce'
 import { isIgnored, logger } from '@nuxt/kit'
 import { hashId, isCSS, uniq } from './utils'
@@ -236,7 +236,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   const _doBuild = async () => {
     const start = Date.now()
     const { code, ids } = await bundleRequest(options, ctx.entry)
-    await fse.writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
+    await writeFile(resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'), code, 'utf-8')
     // Have CSS in the manifest to prevent FOUC on dev SSR
     const manifestIds: string[] = []
     for (const i of ids) {
