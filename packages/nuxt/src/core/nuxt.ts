@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
@@ -10,7 +12,6 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 
 import escapeRE from 'escape-string-regexp'
-import fse from 'fs-extra'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
@@ -159,7 +160,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
-      if (fse.existsSync(declaration)) {
+      if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
       }
     }
@@ -277,7 +278,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
-          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
           manifest[file].file = ''
         }
       }
