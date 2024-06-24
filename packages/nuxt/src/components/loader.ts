@@ -45,7 +45,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       // replace `_resolveComponent("...")` to direct import
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
         const normalComponent = findComponent(components, name, options.mode)
-        const lazyComponent = !component && lazy ? findComponent(components, lazy + name, options.mode) : null
+        const lazyComponent = !normalComponent && lazy ? findComponent(components, lazy + name, options.mode) : null
         const component = normalComponent || lazyComponent
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
