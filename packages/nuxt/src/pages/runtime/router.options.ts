@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
+import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'

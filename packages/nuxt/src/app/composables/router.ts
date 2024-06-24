@@ -1,6 +1,6 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 

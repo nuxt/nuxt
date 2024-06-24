@@ -358,7 +358,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   await nuxt.callHook('nitro:config', nitroConfig)
 
   // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, '#imports', '#vue-router', 'vue-demi', /^#app/]
+  const excludedAlias = [/^@vue\/.*$/, '#imports', 'vue-demi', /^#app/]
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
