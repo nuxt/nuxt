@@ -1514,7 +1514,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
 
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, nav)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
@@ -1576,7 +1576,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1591,7 +1591,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1624,7 +1624,7 @@ describe('layout change not load page twice', () => {
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
 
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, path2)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, path2)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1917,7 +1917,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
 describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes', () => {
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
     await expectWithPolling(
       () => consoleLogs
         .map(w => w.text).join('\n')
@@ -1930,7 +1930,7 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.waitForFunction((path) => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
