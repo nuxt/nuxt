@@ -20,6 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { hasProtocol } from 'ufo'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -605,12 +606,15 @@ describe('routing utilities: `resolveRouteObject`', () => {
 })
 
 describe('routing utilities: `encodeURL`', () => {
+  const encode = (url: string) => {
+    const isExternal = hasProtocol(url, { acceptRelative: true })
+    return encodeURL(url, isExternal)
+  }
   it('encodeURL should correctly encode a URL', () => {
-    expect(encodeURL('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
-    expect(encodeURL('https://test.com', true)).toMatchInlineSnapshot(`"https://test.com/"`)
-    expect(encodeURL('//test.com', true)).toMatchInlineSnapshot(`"//test.com/"`)
-    expect(encodeURL('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
-    const encoded = encodeURL('/cœur?redirected=' + encodeURIComponent('https://google.com'))
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
     expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
