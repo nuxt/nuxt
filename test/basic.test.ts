@@ -2644,7 +2644,9 @@ describe('import components', () => {
   })
 
   it('load user-made lazy components', () => {
-    expect(html).toContain('This is a fake lazy component that should load')
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForLoadState('networkidle')
+    expect(await page.getByText('This is a fake lazy component that should load').all()).toHaveLength(1)
   })
 })
 
