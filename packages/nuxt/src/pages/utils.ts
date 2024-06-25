@@ -257,9 +257,19 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
       }
 
       const extraneousMetaKeys = pageMetaArgument.properties
-        .filter(property => property.type === 'Property' && property.key.type === 'Identifier' && !(extractionKeys as unknown as string[]).includes(property.key.name))
-        // @ts-expect-error inferred types have been filtered out
-        .map(property => property.key.name)
+        .filter((property) => {
+          if (property.type !== 'Property') {
+            return false
+          }
+          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
+          if (!isIdentifierOrLiteral) {
+            return false
+          }
+          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
+          return !(extractionKeys as unknown as string[]).includes(name)
+        })
+        // @ts-expect-error inferred types have been filtered out - Remove with TS 5.5
+        .map((property: Property) => property.key.type === 'Identifier' ? property.key.name : String(property.value))
 
       if (extraneousMetaKeys.length) {
         dynamicProperties.add('meta')
