@@ -2642,6 +2642,10 @@ describe('import components', () => {
   it('load named component with mode server', () => {
     expect(html).toContain('named-comp-server')
   })
+
+  it('load user-made lazy components', () => {
+    expect(html).toContain('This is a fake lazy component that should load')
+  })
 })
 
 describe('lazy import components', () => {
