@@ -2643,7 +2643,7 @@ describe('import components', () => {
     expect(html).toContain('named-comp-server')
   })
 
-  it('load user-made lazy components', () => {
+  it('load user-made lazy components', async () => {
     const { page } = await renderPage('/lazy-import-components')
     await page.waitForLoadState('networkidle')
     expect(await page.getByText('This is a fake lazy component that should load').all()).toHaveLength(1)
