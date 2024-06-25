@@ -48,8 +48,9 @@ const dirs: ComponentsDir[] = [
     enabled: true,
     extensions: [
       'vue',
+      'ts',
     ],
-    pattern: '**/*.{vue,}',
+    pattern: '**/*.{vue,ts}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
@@ -62,8 +63,9 @@ const dirs: ComponentsDir[] = [
     enabled: true,
     extensions: [
       'vue',
+      'ts',
     ],
-    pattern: '**/*.{vue,}',
+    pattern: '**/*.{vue,ts}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
@@ -75,10 +77,11 @@ const dirs: ComponentsDir[] = [
     path: rFixture('components'),
     extensions: [
       'vue',
+      'ts',
     ],
     prefix: 'nuxt',
     enabled: true,
-    pattern: '**/*.{vue,}',
+    pattern: '**/*.{vue,ts}',
     ignore: [
       '**/*.stories.{js,ts,jsx,tsx}',
       '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}',
@@ -127,6 +130,32 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+  },
+  {
+    chunkName: 'components/named-export',
+    export: 'NamedExport',
+    global: undefined,
+    island: undefined,
+    kebabName: 'named-export',
+    mode: 'all',
+    pascalName: 'NamedExport',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/Named.ts',
+  },
+  {
+    chunkName: 'components/named',
+    export: 'default',
+    global: undefined,
+    island: undefined,
+    kebabName: 'named',
+    mode: 'all',
+    pascalName: 'Named',
+    prefetch: false,
+    preload: false,
+    priority: 1,
+    shortPath: 'components/Named.ts',
   },
   {
     mode: 'client',
