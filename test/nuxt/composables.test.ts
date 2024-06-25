@@ -6,6 +6,7 @@ import { defineEventHandler } from 'h3'
 import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
+import { hasProtocol } from 'ufo'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -20,7 +21,6 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
-import { hasProtocol } from 'ufo'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
