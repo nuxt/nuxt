@@ -93,7 +93,7 @@ describe('page metadata', () => {
           "__nuxt_dynamic_meta_key": Set {
             "meta",
           },
-        }
+        },
       }
     `)
   })
