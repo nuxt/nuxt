@@ -311,7 +311,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
     _payloadReducers: {},
-    modules: new Set(), 
+    modules: new Set(),
     islandContext,
   }
 
