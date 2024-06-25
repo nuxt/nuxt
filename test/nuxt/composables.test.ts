@@ -607,7 +607,9 @@ describe('routing utilities: `resolveRouteObject`', () => {
 describe('routing utilities: `encodeURL`', () => {
   it('encodeURL should correctly encode a URL', () => {
     expect(encodeURL('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
-    expect(encodeURL('//test.com')).toMatchInlineSnapshot(`"http://test.com/"`)
+    expect(encodeURL('https://test.com', true)).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encodeURL('//test.com', true)).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encodeURL('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
     const encoded = encodeURL('/cœur?redirected=' + encodeURIComponent('https://google.com'))
     expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
     expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
