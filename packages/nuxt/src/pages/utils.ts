@@ -140,16 +140,16 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
   return prepareRoutes(routes)
 }
 
-export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPagesWithPaths = new Set<string>()) {
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPagesWithPaths = new Set<string>(), parentPath = '') {
   for (const route of routes) {
     if (route.file && !augmentedPagesWithPaths.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
       Object.assign(route, await getRouteMeta(fileContent, route.file))
-      augmentedPagesWithPaths.add(`${route.file}_${route.path}`)
+      augmentedPagesWithPaths.add(`${route.file}_${parentPath}${route.path}`)
     }
 
     if (route.children && route.children.length > 0) {
-      await augmentPages(route.children, vfs)
+      await augmentPages(route.children, vfs, augmentedPagesWithPaths, route.path)
     }
   }
   return augmentedPagesWithPaths
