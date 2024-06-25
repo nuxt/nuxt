@@ -567,8 +567,8 @@ importers:
         specifier: 0.61.0
         version: 0.61.0
       critters:
-        specifier: 0.0.22
-        version: 0.0.22
+        specifier: 0.0.23
+        version: 0.0.23
       execa:
         specifier: 9.3.0
         version: 9.3.0
@@ -3633,8 +3633,8 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  critters@0.0.22:
-    resolution: {integrity: sha512-NU7DEcQZM2Dy8XTKFHxtdnIM/drE312j2T4PCVaSUcS0oBeyT/NImpRw/Ap0zOr/1SE7SgPK9tGPg1WK/sVakw==}
+  critters@0.0.23:
+    resolution: {integrity: sha512-/MCsQbuzTPA/ZTOjjyr2Na5o3lRpr8vd0MZE8tMP0OBNg/VrLxWHteVKalQ8KR+fBmUadbJLdoyEz9sT+q84qg==}
 
   croner@8.0.1:
     resolution: {integrity: sha512-Hq1+lXVgjJjcS/U+uk6+yVmtxami0r0b+xVtlGyABgdz110l/kOnHWvlSI7nVzrTl8GCdZHwZS4pbBFT7hSL/g==}
@@ -10629,7 +10629,7 @@ snapshots:
 
   create-require@1.1.1: {}
 
-  critters@0.0.22:
+  critters@0.0.23:
     dependencies:
       chalk: 4.1.2
       css-select: 5.1.0
