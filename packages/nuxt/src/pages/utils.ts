@@ -256,23 +256,19 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
         extractedMeta[key] = property.value.value
       }
 
-      const extraneousMetaKeys = pageMetaArgument.properties
-        .filter((property) => {
-          if (property.type !== 'Property') {
-            return false
-          }
-          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
-          if (!isIdentifierOrLiteral) {
-            return false
-          }
-          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          return !(extractionKeys as unknown as string[]).includes(name)
-        })
-        // @ts-expect-error inferred types have been filtered out - Remove with TS 5.5
-        .map((property: Property) => property.key.type === 'Identifier' ? property.key.name : String(property.value))
-
-      if (extraneousMetaKeys.length) {
-        dynamicProperties.add('meta')
+      for (const property of pageMetaArgument.properties) {
+        if (property.type !== 'Property') {
+          continue
+        }
+        const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
+        if (!isIdentifierOrLiteral) {
+          continue
+        }
+        const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
+        if (!(extractionKeys as unknown as string[]).includes(name)) {
+          dynamicProperties.add('meta')
+          break
+        }
       }
 
       if (dynamicProperties.size) {
