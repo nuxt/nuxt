@@ -545,7 +545,7 @@ describe('pages', () => {
     // Go to client only page
     await normalInitialPage.click('a')
 
-    await clientInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page')
+    await normalInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page')
 
     // and expect same object to be present
     expect(await normalInitialPage.locator('#state').textContent()).toMatchInlineSnapshot(`
