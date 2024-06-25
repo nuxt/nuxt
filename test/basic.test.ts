@@ -523,7 +523,7 @@ describe('pages', () => {
 
     // that page should be client rendered
     // TODO: investigate why multiple elements are appearing on page
-    expect(await clientInitialPage.locator('#server-rendered').first().textContent()).toMatchInlineSnapshot('"false"')
+    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
     // and not contain any errors or warnings
     expect(errors.length).toBe(0)
 

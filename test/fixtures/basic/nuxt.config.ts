@@ -13,7 +13,7 @@ declare module 'nitropack' {
 
 export default defineNuxtConfig({
   app: {
-    pageTransition: true,
+    pageTransition: { name: 'page', mode: 'out-in' },
     layoutTransition: true,
     teleportId: 'nuxt-teleport',
     teleportTag: 'span',
