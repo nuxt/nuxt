@@ -266,7 +266,7 @@ export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
 /**
  * @internal
  */
-export function encodeURL(location: string, isExternalHost = false) {
+export function encodeURL (location: string, isExternalHost = false) {
   const url = new URL(location, 'http://localhost')
   if (!isExternalHost) {
     return url.toString().replace(/^http:\/\/localhost\//, '/')
