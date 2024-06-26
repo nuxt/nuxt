@@ -1005,9 +1005,10 @@ describe('navigate', () => {
   })
 
   it('expect to redirect with encoding', async () => {
-    const { status } = await fetch('/redirect-with-encode', { redirect: 'manual' })
+    const { status, headers } = await fetch('/redirect-with-encode', { redirect: 'manual' })
 
     expect(status).toEqual(302)
+    expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
 })
 

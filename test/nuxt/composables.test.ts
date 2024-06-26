@@ -6,6 +6,7 @@ import { defineEventHandler } from 'h3'
 import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
+import { hasProtocol } from 'ufo'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -19,6 +20,7 @@ import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { encodeURL, resolveRouteObject } from '#app/composables/router'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -593,6 +595,29 @@ describe('routing utilities: `navigateTo`', () => {
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
+  })
+})
+
+describe('routing utilities: `resolveRouteObject`', () => {
+  it('resolveRouteObject should correctly resolve a route object', () => {
+    expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
+    expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+})
+
+describe('routing utilities: `encodeURL`', () => {
+  const encode = (url: string) => {
+    const isExternal = hasProtocol(url, { acceptRelative: true })
+    return encodeURL(url, isExternal)
+  }
+  it('encodeURL should correctly encode a URL', () => {
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
+    expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
+    expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
+    expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
   })
 })
 
