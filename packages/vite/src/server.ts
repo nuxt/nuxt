@@ -61,7 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        '#internal/nitro', '#internal/nitro/utils',
+        'nitro/runtime',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro', '#internal/nuxt/paths'],
+        external: ['nitro/runtime', '#internal/nuxt/paths', '#internal/nuxt/app-config'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
@@ -104,8 +104,8 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
-    const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
-      .then(r => import(r!)).then(r => r.dependencies ? Object.keys(r.dependencies) : []).catch(() => [])
+    const nitroDependencies = await tryResolveModule('nitro/runtime/meta', ctx.nuxt.options.modulesDir)
+      .then(r => import(r!)).then(r => r.runtimeDependencies || []).catch(() => [])
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
