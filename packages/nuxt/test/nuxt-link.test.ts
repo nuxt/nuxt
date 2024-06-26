@@ -121,9 +121,9 @@ describe('nuxt-link:isExternal', () => {
   })
 })
 
-describe.only('nuxt-link:propsOrAttributes', () => {
-  describe.only('`isExternal` is `true`', () => {
-    describe.only('href', () => {
+describe('nuxt-link:propsOrAttributes', () => {
+  describe('`isExternal` is `true`', () => {
+    describe('href', () => {
       it('forwards `to` value', () => {
         expect(nuxtLink({ to: 'https://nuxtjs.org' }).props.href).toBe('https://nuxtjs.org')
       })
@@ -132,7 +132,7 @@ describe.only('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: { path: '/to' }, external: true }).props.href).toBe('/to')
       })
 
-      it.only('resolves route location object with name', () => {
+      it('resolves route location object with name', () => {
         expect(nuxtLink({ to: { name: 'to' }, external: true }).props.href).toBe('/to')
       })
 
