@@ -60,6 +60,11 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
    */
   prefetch?: boolean
   /**
+   * Determines when to prefetch links. Defaults to `on-visible`. This prop is only used when `prefetch` is
+   * enabled (default) and `noPrefetch` is not set.
+   */
+  prefetchMode?: 'on-hover' | 'on-visible'
+  /**
    * Escape hatch to disable `prefetch` attribute.
    */
   noPrefetch?: boolean
@@ -239,6 +244,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         default: undefined,
         required: false,
       },
+      prefetchMode: {
+        type: String as PropType<NuxtLinkProps['prefetchMode']>,
+        default: 'on-visible',
+        required: false,
+      },
       noPrefetch: {
         type: Boolean as PropType<NuxtLinkProps['noPrefetch']>,
         default: undefined,
@@ -299,10 +309,26 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
+      function checkShouldPrefetch () {
+        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection() && !prefetched.value
+        return shouldPrefetch
+      }
+
+      async function prefetch (nuxtApp = useNuxtApp()) {
+        const path = typeof to.value === 'string'
+          ? to.value
+          : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+        await Promise.all([
+          nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
+          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+        ])
+        prefetched.value = true
+      }
+
       if (import.meta.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
-        if (shouldPrefetch) {
+        const shouldPrefetch = checkShouldPrefetch()
+        if (shouldPrefetch && props.prefetchMode === 'on-visible') {
           const nuxtApp = useNuxtApp()
           let idleId: number
           let unobserve: (() => void) | null = null
@@ -314,15 +340,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                   unobserve = observer!.observe(el.value as HTMLElement, async () => {
                     unobserve?.()
                     unobserve = null
-
-                    const path = typeof to.value === 'string'
-                      ? to.value
-                      : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-                    await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
-                      !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
-                    ])
-                    prefetched.value = true
+                    await prefetch(nuxtApp)
                   })
                 }
               })
@@ -355,6 +373,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
             custom: props.custom,
+            onMouseenter: props.prefetchMode === 'on-hover' && checkShouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
