@@ -1,4 +1,6 @@
-import fse from 'fs-extra'
+import { readFileSync } from 'node:fs'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+
 import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
@@ -30,7 +32,7 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   const manifestFile = resolve(clientDist, 'manifest.json')
   const clientManifest = ctx.nuxt.options.dev
     ? devClientManifest
-    : await fse.readJSON(manifestFile)
+    : JSON.parse(readFileSync(manifestFile, 'utf-8'))
 
   const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir))
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
@@ -47,7 +49,7 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
     }
   }
 
-  await fse.mkdirp(serverDist)
+  await mkdir(serverDist, { recursive: true })
 
   if (ctx.config.build?.cssCodeSplit === false) {
     for (const key in clientManifest as Record<string, { file?: string }>) {
@@ -64,10 +66,10 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
   const manifest = normalizeViteManifest(clientManifest)
   await ctx.nuxt.callHook('build:manifest', manifest)
   const stringifiedManifest = JSON.stringify(manifest, null, 2)
-  await fse.writeFile(resolve(serverDist, 'client.manifest.json'), stringifiedManifest, 'utf8')
-  await fse.writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + stringifiedManifest, 'utf8')
+  await writeFile(resolve(serverDist, 'client.manifest.json'), stringifiedManifest, 'utf8')
+  await writeFile(resolve(serverDist, 'client.manifest.mjs'), 'export default ' + stringifiedManifest, 'utf8')
 
   if (!ctx.nuxt.options.dev) {
-    await fse.rm(manifestFile, { force: true })
+    await rm(manifestFile, { force: true })
   }
 }

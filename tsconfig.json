@@ -31,9 +31,6 @@
       ],
       "#app/*": [
         "./packages/nuxt/src/app/*"
-      ],
-      "#vue-router": [
-        "./node_modules/vue-router"
       ]
     }
   },
