@@ -239,7 +239,28 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitropack' {
+declare module 'nitro/types' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
+  }
+  interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+declare module 'nitropack/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -267,7 +288,7 @@ declare module 'nitropack' {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
+export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
 `,
 }
 
@@ -315,17 +336,19 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { updateAppConfig } from '#app/config'
 import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
+/** client **/
 // Vite - webpack is handled directly in #app/config
-if (import.meta.hot) {
+if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
+  const { updateAppConfig } = await import('#app/config')
   import.meta.hot.accept((newModule) => {
     updateAppConfig(newModule.default)
   })
 }
+/** client-end **/
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
@@ -339,7 +362,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`

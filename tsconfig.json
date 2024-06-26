@@ -31,15 +31,6 @@
       ],
       "#app/*": [
         "./packages/nuxt/src/app/*"
-      ],
-      "#internal/nitro": [
-        "./node_modules/nitropack/dist/runtime"
-      ],
-      "#internal/nitro/app": [
-        "./node_modules/nitropack/dist/runtime/app"
-      ],
-      "#internal/nitro/utils": [
-        "./node_modules/nitropack/dist/runtime/utils"
       ]
     }
   },

@@ -62,6 +62,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',
+  'nitro': 'nitro-nightly',
   'h3': 'h3-nightly',
   'nuxt': 'nuxt-nightly',
   '@nuxt/schema': '@nuxt/schema-nightly',
