@@ -82,9 +82,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        * @example third-components/Awesome.vue -> Awesome
        */
       let fileName = basename(filePath, extname(filePath))
-      if (fileName.startsWith('Lazy')) {
-        logger.warn(`The component ${fileName} is using the reserved "Lazy" prefix used for dynamic imports. This will break it at runtime. Please rename it to not begin with "Lazy".`)
-      }
+
       const island = /\.island(?:\.global)?$/.test(fileName) || dir.island
       const global = /\.global(?:\.island)?$/.test(fileName) || dir.global
       const mode = island ? 'server' : (fileName.match(/(?<=\.)(client|server)(\.global|\.island)*$/)?.[1] || 'all') as 'client' | 'server' | 'all'
@@ -97,7 +95,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const suffix = (mode !== 'all' ? `-${mode}` : '')
       const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
-
+      
+      if (pascalName.startsWith('Lazy')) {
+        logger.warn(`The component ${pascalName} is using the reserved "Lazy" prefix used for dynamic imports. This will break it at runtime. Please rename it to not begin with "Lazy".`)
+      }
+      
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
         warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
