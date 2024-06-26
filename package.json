@@ -34,7 +34,9 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs"
   },
   "resolutions": {
+    "nitro": "npm:nitro-nightly@3.0.0-beta-28648657.9a717203",
     "typescript": "5.5.2",
+    "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/ui-templates": "workspace:*",
