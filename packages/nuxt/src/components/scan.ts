@@ -82,7 +82,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        * @example third-components/Awesome.vue -> Awesome
        */
       let fileName = basename(filePath, extname(filePath))
-      if (/^Lazy/.test(fileName)) {
+      if (fileName.startsWith('Lazy')) {
         logger.warn(`The component ${fileName} is using the reserved "Lazy" prefix used for dynamic imports. This will break it at runtime. Please rename it to not begin with "Lazy".`)
       }
       const island = /\.island(?:\.global)?$/.test(fileName) || dir.island
