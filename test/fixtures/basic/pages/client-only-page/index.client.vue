@@ -1,8 +1,7 @@
 <script setup lang="ts">
-
 definePageMeta({
   // Disable page transition for this page to avoid having multiple time the same page during transition
-  pageTransition: false
+  pageTransition: false,
 })
 
 const state = useState('test', () => {
