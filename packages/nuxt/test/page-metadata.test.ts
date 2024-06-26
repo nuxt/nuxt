@@ -75,6 +75,28 @@ describe('page metadata', () => {
       }
     `)
   })
+
+  it('should extract serialisable metadata all quoted', async () => {
+    const meta = await getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      "otherValue": {
+        foo: 'bar',
+      },
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {

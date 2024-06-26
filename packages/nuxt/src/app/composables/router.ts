@@ -135,7 +135,8 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
+  const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
+  const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
@@ -166,10 +167,12 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
         const encodedLoc = location.replace(/"/g, '%22')
+        const encodedHeader = encodeURL(location, isExternalHost)
+
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location: encodeURI(location) },
+          headers: { location: encodedHeader },
         }
         return response
       }
@@ -258,4 +261,18 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
  */
 export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
   return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+}
+
+/**
+ * @internal
+ */
+export function encodeURL (location: string, isExternalHost = false) {
+  const url = new URL(location, 'http://localhost')
+  if (!isExternalHost) {
+    return url.pathname + url.search + url.hash
+  }
+  if (location.startsWith('//')) {
+    return url.toString().replace(url.protocol, '')
+  }
+  return url.toString()
 }
