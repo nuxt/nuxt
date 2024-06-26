@@ -95,11 +95,11 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const suffix = (mode !== 'all' ? `-${mode}` : '')
       const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
-      
+
       if (pascalName.startsWith('Lazy')) {
         logger.warn(`The component ${pascalName} is using the reserved "Lazy" prefix used for dynamic imports. This will break it at runtime. Please rename it to not begin with "Lazy".`)
       }
-      
+
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
         warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
