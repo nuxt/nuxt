@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions } from 'ofetch'
-import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
+import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'

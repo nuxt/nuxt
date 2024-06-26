@@ -1,5 +1,5 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { logger } from './logger'
