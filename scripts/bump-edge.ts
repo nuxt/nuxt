@@ -4,8 +4,8 @@ import { consola } from 'consola'
 import { determineBumpType, loadWorkspace } from './_utils'
 
 const nightlyPackages = {
-  nitro: 'nitro-nightly',
-  h3: 'h3-nightly',
+  // nitro: 'nitro-nightly',
+  // h3: 'h3-nightly',
   nuxi: 'nuxi-nightly',
 }
 
