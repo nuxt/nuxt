@@ -243,15 +243,12 @@ export default defineNuxtConfig({
   },
   experimental: {
     typedPages: true,
-    polyfillVueUseHead: true,
-    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
       selectiveClient: 'deep',
     },
-    treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',

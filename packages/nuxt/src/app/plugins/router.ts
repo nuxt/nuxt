@@ -226,6 +226,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       })
     }
 
+    // @ts-expect-error vue-router types diverge from our Route type above
     nuxtApp._route = route
 
     // Handle middleware

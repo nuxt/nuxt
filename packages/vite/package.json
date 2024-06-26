@@ -27,10 +27,9 @@
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.5",
-    "@types/fs-extra": "11.0.4",
     "rollup": "4.18.0",
     "unbuild": "latest",
-    "vue": "3.4.29"
+    "vue": "3.4.30"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -46,7 +45,6 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
-    "fs-extra": "^11.2.0",
     "get-port-please": "^3.1.2",
     "h3": "^1.12.0",
     "knitwork": "^1.1.0",

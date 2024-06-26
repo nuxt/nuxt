@@ -9,7 +9,6 @@ import type { Nitro, NitroConfig, NitroOptions } from 'nitropack'
 import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
-import fsExtra from 'fs-extra'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
@@ -359,7 +358,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   await nuxt.callHook('nitro:config', nitroConfig)
 
   // TODO: extract to shared utility?
-  const excludedAlias = [/^@vue\/.*$/, '#imports', '#vue-router', 'vue-demi', /^#app/]
+  const excludedAlias = [/^@vue\/.*$/, '#imports', 'vue-demi', /^#app/]
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
@@ -534,7 +533,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
-    nuxt.hook('webpack:compile', ({ compiler }) => { compiler.outputFileSystem = { ...fsExtra, join } as any })
     nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 

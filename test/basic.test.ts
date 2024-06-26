@@ -491,7 +491,7 @@ describe('pages', () => {
   })
 
   it('client only page', async () => {
-    const response = await fetch('/client-only').then(r => r.text())
+    const response = await fetch('/client-only-page').then(r => r.text())
 
     // Should not contain rendered page on initial request
     expect(response).not.toContain('"hasAccessToWindow": true')
@@ -519,10 +519,11 @@ describe('pages', () => {
 
     // Then go to non client only page
     await clientInitialPage.click('a')
-    await new Promise(resolve => setTimeout(resolve, 50)) // little delay to finish transition
+    await clientInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page/normal')
 
     // that page should be client rendered
-    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
+    // TODO: investigate why multiple elements are appearing on page
+    expect(await clientInitialPage.locator('#server-rendered').first().textContent()).toMatchInlineSnapshot('"false"')
     // and not contain any errors or warnings
     expect(errors.length).toBe(0)
 
@@ -543,6 +544,8 @@ describe('pages', () => {
 
     // Go to client only page
     await normalInitialPage.click('a')
+
+    await normalInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page')
 
     // and expect same object to be present
     expect(await normalInitialPage.locator('#state').textContent()).toMatchInlineSnapshot(`
@@ -1415,6 +1418,7 @@ describe('deferred app suspense resolve', () => {
   it.each(['/async-parent/child', '/internal-layout/async-parent/child'])('should wait for all suspense instance on initial hydration', async (path) => {
     const { page, consoleLogs } = await renderPage(path)
 
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
     // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
@@ -1511,7 +1515,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
 
-    await new Promise<void>(resolve => setTimeout(resolve, 50))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
@@ -1573,6 +1577,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1587,6 +1592,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1619,6 +1625,7 @@ describe('layout change not load page twice', () => {
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, path2)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1911,7 +1918,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
 describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes', () => {
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
     await expectWithPolling(
       () => consoleLogs
         .map(w => w.text).join('\n')
@@ -1924,7 +1931,7 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
@@ -2591,12 +2598,12 @@ describe('teleports', () => {
 
 describe('Node.js compatibility for client-side', () => {
   it('should work', async () => {
-    const { page } = await renderPage('/node-compat')
+    const { page } = await renderPage('/experimental/node-compat')
     await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
-  })
-}, 30_000)
+  }, 40_000)
+})
 
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {

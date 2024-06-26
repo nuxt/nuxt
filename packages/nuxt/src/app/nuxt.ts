@@ -1,6 +1,6 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'

@@ -47,7 +47,8 @@ export default defineUntypedSchema({
           '@vue/compiler-sfc',
           '@vue/runtime-dom',
           'vue-router',
-          'vue-router/auto',
+          'vue-router/auto-routes',
+          'unplugin-vue-router/client',
           '@nuxt/schema',
           'nuxt',
         ]
