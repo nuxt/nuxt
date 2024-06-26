@@ -3,6 +3,7 @@ const renderedOnServer = useState(() => import.meta.server)
 definePageMeta({
   // Disable page transition for this page to avoid having multiple time the same page during transition
   pageTransition: false,
+  layoutTransition: false,
 })
 </script>
 
