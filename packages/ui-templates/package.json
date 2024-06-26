@@ -21,7 +21,7 @@
   "devDependencies": {
     "@types/html-minifier": "4.0.5",
     "@unocss/reset": "0.61.0",
-    "critters": "0.0.23",
+    "critters": "0.0.24",
     "execa": "9.3.0",
     "globby": "14.0.1",
     "html-minifier": "4.0.0",
