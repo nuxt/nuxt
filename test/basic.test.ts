@@ -522,7 +522,7 @@ describe('pages', () => {
     await clientInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page/normal')
 
     // that page should be client rendered
-    // TODO: investigate why multiple elements are appearing on page
+    // There's multiple elements due to page transition that don't contain any transition style
     expect(await clientInitialPage.locator('#server-rendered').first().textContent()).toMatchInlineSnapshot('"false"')
     // and not contain any errors or warnings
     expect(errors.length).toBe(0)
