@@ -38,7 +38,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
 
   // Nuxt 3
-  if (majorVersion === 3) {
+  if (majorVersion && majorVersion >= 3) {
     const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
     const nuxt = await loadNuxt(opts)
     return nuxt
