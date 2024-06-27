@@ -56,5 +56,25 @@
       <span class="inline-block font-mono leading-none text-[#00DC82] group-hover:border-[#00DC42] text-[16px] font-semibold border-[#00DC42]/50 bg-[#00DC42]/10 group-hover:bg-[#00DC42]/15 px-2.5 py-1.5 border rounded">{{ version }}</span>
     </a>
     <div class="nuxt-loader-bar"></div>
+    <script>
+      if (typeof window.fetch === 'undefined') {
+        setTimeout(() => window.location.reload(), 1000)
+      } else {
+        const check = async () => {
+          try {
+            const body = await window
+              .fetch(window.location.href)
+              .then(r => r.text())
+            if (!body.includes('__NUXT_LOADING__')) {
+              return window
+                .location
+                .reload()
+            }
+          } catch {}
+          setTimeout(check, 1000)
+        }
+        check()
+      }
+    </script>
   </body>
 </html>
