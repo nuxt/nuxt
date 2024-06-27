@@ -22,7 +22,7 @@
     "fresh": "^0.5.2",
     "fs-extra": "^11.2.0",
     "ip": "^2.0.1",
-    "launch-editor-middleware": "^2.7.0",
+    "launch-editor-middleware": "^2.8.0",
     "on-headers": "^1.0.2",
     "pify": "^5.0.0",
     "serve-placeholder": "^2.0.2",
