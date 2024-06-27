@@ -38,7 +38,7 @@ export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boole
         const s = new MagicString(code)
         const q = code.match(/(?<= = )['"`]/)?.[0] || '"'
         for (const [full, url] of code.matchAll(CSS_URL_RE)) {
-          if (resolveFromPublicAssets(url)) {
+          if (url && resolveFromPublicAssets(url)) {
             s.replace(full, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
           }
         }
@@ -53,13 +53,13 @@ export const VitePublicDirsPlugin = createUnplugin((options: { sourcemap?: boole
       },
       generateBundle (_outputOptions, bundle) {
         for (const file in bundle) {
-          const chunk = bundle[file]
+          const chunk = bundle[file]!
           if (!file.endsWith('.css') || chunk.type !== 'asset') { continue }
 
           let css = chunk.source.toString()
           let wasReplaced = false
           for (const [full, url] of css.matchAll(CSS_URL_RE)) {
-            if (resolveFromPublicAssets(url)) {
+            if (url && resolveFromPublicAssets(url)) {
               const relativeURL = relative(withLeadingSlash(dirname(file)), url)
               css = css.replace(full, `url(${relativeURL})`)
               wasReplaced = true
