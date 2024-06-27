@@ -1,99 +1,14 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
-".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
-  filter: blur(20vh);
-  height: 40vh;
-  bottom: -30vh;
-}
-.gradient-border {
-  position: relative;
-  border-radius: 0.5rem;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-@media (prefers-color-scheme: light) {
-  .gradient-border {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-  .gradient-border::before {
-    background: linear-gradient(
-      90deg,
-      #e2e2e2 0%,
-      #e2e2e2 25%,
-      #00dc82 50%,
-      #36e4da 75%,
-      #0047e1 100%
-    );
-  }
-}
-@media (prefers-color-scheme: dark) {
-  .gradient-border {
-    background-color: rgba(20, 20, 20, 0.3);
-  }
-  .gradient-border::before {
-    background: linear-gradient(
-      90deg,
-      #303030 0%,
-      #303030 25%,
-      #00dc82 50%,
-      #36e4da 75%,
-      #0047e1 100%
-    );
-  }
-}
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.5rem;
-  padding: 2px;
-  width: 100%;
-  background-size: 400% auto;
-  opacity: 0.5;
-  transition:
-    background-position 0.3s ease-in-out,
-    opacity 0.2s ease-in-out;
-  -webkit-mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  mask:
-    linear-gradient(#fff 0 0) content-box,
-    linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-}
-.gradient-border:hover::before {
-  background-position: -50% 0;
-  opacity: 1;
-}
-.fixed {
-  position: fixed;
-}
-.left-0 {
-  left: 0;
-}
-.right-0 {
-  right: 0;
-}
-.z-10 {
-  z-index: 10;
-}
-.z-20 {
-  z-index: 20;
-}
-.grid {
+".grid {
   display: grid;
 }
-.mb-16 {
-  margin-bottom: 4rem;
+.mb-2 {
+  margin-bottom: 0.5rem;
 }
-.mb-8 {
-  margin-bottom: 2rem;
+.mb-4 {
+  margin-bottom: 1rem;
 }
 .max-w-520px {
   max-width: 520px;
@@ -106,9 +21,6 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
 }
 .flex {
   display: flex;
-}
-.cursor-pointer {
-  cursor: pointer;
 }
 .place-content-center {
   place-content: center;
@@ -126,41 +38,47 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
   --un-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--un-bg-opacity));
 }
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.px-8 {
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .text-center {
   text-align: center;
 }
-.text-8xl {
-  font-size: 6rem;
-  line-height: 1;
+.text-\\[80px\\] {
+  font-size: 80px;
 }
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
 }
-.text-black {
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+.text-\\[\\#020420\\] {
   --un-text-opacity: 1;
-  color: rgb(0 0 0 / var(--un-text-opacity));
+  color: rgb(2 4 32 / var(--un-text-opacity));
 }
-.font-light {
-  font-weight: 300;
+.text-\\[\\#64748B\\] {
+  --un-text-opacity: 1;
+  color: rgb(100 116 139 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#00DC82\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(0 220 130 / var(--un-text-opacity));
 }
 .font-medium {
   font-weight: 500;
 }
-.leading-tight {
-  line-height: 1.25;
+.font-semibold {
+  font-weight: 600;
+}
+.leading-none {
+  line-height: 1;
+}
+.tracking-wide {
+  letter-spacing: 0.025em;
 }
 .font-sans {
   font-family:
@@ -179,14 +97,26 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
     Segoe UI Symbol,
     "Noto Color Emoji";
 }
+.tabular-nums {
+  --un-numeric-spacing: tabular-nums;
+  font-variant-numeric: var(--un-ordinal) var(--un-slashed-zero)
+    var(--un-numeric-figure) var(--un-numeric-spacing)
+    var(--un-numeric-fraction);
+}
+.underline {
+  text-decoration-line: underline;
+}
+.underline-offset-3 {
+  text-underline-offset: 3px;
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-black {
+  .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
-    background-color: rgb(0 0 0 / var(--un-bg-opacity));
+    background-color: rgb(2 4 32 / var(--un-bg-opacity));
   }
   .dark\\:text-white {
     --un-text-opacity: 1;
@@ -194,25 +124,12 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
   }
 }
 @media (min-width: 640px) {
-  .sm\\:px-0 {
-    padding-left: 0;
-    padding-right: 0;
+  .sm\\:text-\\[110px\\] {
+    font-size: 110px;
   }
-  .sm\\:px-6 {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-  .sm\\:py-3 {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-  }
-  .sm\\:text-4xl {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
-  }
-  .sm\\:text-xl {
-    font-size: 1.25rem;
-    line-height: 1.75rem;
+  .sm\\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
   }
 }
 "
@@ -252,7 +169,8 @@ body {
   margin: 0;
   line-height: inherit;
 }
-h1 {
+h1,
+h2 {
   font-size: inherit;
   font-weight: inherit;
 }
@@ -261,6 +179,7 @@ a {
   text-decoration: inherit;
 }
 h1,
+h2,
 p {
   margin: 0;
 }
@@ -322,33 +241,14 @@ p {
 `;
 
 exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
-".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
-  filter: blur(20vh);
-}
-.fixed {
-  position: fixed;
-}
-.-bottom-1\\/2 {
-  bottom: -50%;
-}
-.left-0 {
-  left: 0;
-}
-.right-0 {
-  right: 0;
-}
-.grid {
+".grid {
   display: grid;
 }
-.mb-16 {
-  margin-bottom: 4rem;
+.mb-2 {
+  margin-bottom: 0.5rem;
 }
-.mb-8 {
-  margin-bottom: 2rem;
-}
-.h-1\\/2 {
-  height: 50%;
+.mb-4 {
+  margin-bottom: 1rem;
 }
 .max-w-520px {
   max-width: 520px;
@@ -366,33 +266,36 @@ exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
   --un-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--un-bg-opacity));
 }
-.px-8 {
-  padding-left: 2rem;
-  padding-right: 2rem;
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .text-center {
   text-align: center;
 }
-.text-8xl {
-  font-size: 6rem;
+.text-\\[80px\\] {
+  font-size: 80px;
+}
+.text-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+.text-\\[\\#020420\\] {
+  --un-text-opacity: 1;
+  color: rgb(2 4 32 / var(--un-text-opacity));
+}
+.text-\\[\\#64748B\\] {
+  --un-text-opacity: 1;
+  color: rgb(100 116 139 / var(--un-text-opacity));
+}
+.font-semibold {
+  font-weight: 600;
+}
+.leading-none {
   line-height: 1;
 }
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-.text-black {
-  --un-text-opacity: 1;
-  color: rgb(0 0 0 / var(--un-text-opacity));
-}
-.font-light {
-  font-weight: 300;
-}
-.font-medium {
-  font-weight: 500;
-}
-.leading-tight {
-  line-height: 1.25;
+.tracking-wide {
+  letter-spacing: 0.025em;
 }
 .font-sans {
   font-family:
@@ -411,14 +314,20 @@ exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
     Segoe UI Symbol,
     "Noto Color Emoji";
 }
+.tabular-nums {
+  --un-numeric-spacing: tabular-nums;
+  font-variant-numeric: var(--un-ordinal) var(--un-slashed-zero)
+    var(--un-numeric-figure) var(--un-numeric-spacing)
+    var(--un-numeric-fraction);
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-black {
+  .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
-    background-color: rgb(0 0 0 / var(--un-bg-opacity));
+    background-color: rgb(2 4 32 / var(--un-bg-opacity));
   }
   .dark\\:text-white {
     --un-text-opacity: 1;
@@ -426,13 +335,12 @@ exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
   }
 }
 @media (min-width: 640px) {
-  .sm\\:px-0 {
-    padding-left: 0;
-    padding-right: 0;
+  .sm\\:text-\\[110px\\] {
+    font-size: 110px;
   }
-  .sm\\:text-4xl {
-    font-size: 2.25rem;
-    line-height: 2.5rem;
+  .sm\\:text-3xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
   }
 }
 "
@@ -472,11 +380,13 @@ body {
   margin: 0;
   line-height: inherit;
 }
-h1 {
+h1,
+h2 {
   font-size: inherit;
   font-weight: inherit;
 }
 h1,
+h2,
 p {
   margin: 0;
 }
@@ -538,30 +448,27 @@ p {
 `;
 
 exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
-".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
-  opacity: 0.8;
-  filter: blur(30vh);
-  height: 60vh;
-  bottom: -40vh;
+".absolute {
+  position: absolute;
 }
-.fixed {
-  position: fixed;
-}
-.left-0 {
-  left: 0;
-}
-.right-0 {
-  right: 0;
+.top-6 {
+  top: 1.5rem;
 }
 .z-10 {
   z-index: 10;
 }
-.mb-6 {
-  margin-bottom: 1.5rem;
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}
+.mb-4 {
+  margin-bottom: 1rem;
 }
 .mb-8 {
   margin-bottom: 2rem;
+}
+.inline-block {
+  display: inline-block;
 }
 .h-auto {
   height: auto;
@@ -581,12 +488,21 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 .overflow-y-auto {
   overflow-y: auto;
 }
+.border {
+  border-width: 1px;
+}
+.border-b-0 {
+  border-bottom-width: 0px;
+}
+.border-black\\/5 {
+  border-color: #0000000d;
+}
 .rounded-t-md {
   border-top-left-radius: 0.375rem;
   border-top-right-radius: 0.375rem;
 }
-.bg-black\\/5 {
-  background-color: #0000000d;
+.bg-gray-50\\/50 {
+  background-color: #f5f5f580;
 }
 .bg-white {
   --un-bg-opacity: 1;
@@ -599,12 +515,16 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
   padding-left: 2.5rem;
   padding-right: 2.5rem;
 }
-.pt-14 {
-  padding-top: 3.5rem;
+.pt-12 {
+  padding-top: 3rem;
 }
 .text-6xl {
   font-size: 3.75rem;
   line-height: 1;
+}
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
 }
 .text-xl {
   font-size: 1.25rem;
@@ -613,6 +533,10 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 .text-black {
   --un-text-opacity: 1;
   color: rgb(0 0 0 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#00DC82\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(0 220 130 / var(--un-text-opacity));
 }
 .font-light {
   font-weight: 300;
@@ -640,17 +564,26 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
     Segoe UI Symbol,
     "Noto Color Emoji";
 }
+.hover\\:underline:hover {
+  text-decoration-line: underline;
+}
+.underline-offset-3 {
+  text-underline-offset: 3px;
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-black {
-    --un-bg-opacity: 1;
-    background-color: rgb(0 0 0 / var(--un-bg-opacity));
+  .dark\\:border-white\\/10 {
+    border-color: #ffffff1a;
   }
-  .dark\\:bg-white\\/10 {
-    background-color: #ffffff1a;
+  .dark\\:bg-\\[\\#020420\\] {
+    --un-bg-opacity: 1;
+    background-color: rgb(2 4 32 / var(--un-bg-opacity));
+  }
+  .dark\\:bg-white\\/5 {
+    background-color: #ffffff0d;
   }
   .dark\\:text-white {
     --un-text-opacity: 1;
@@ -658,6 +591,9 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
   }
 }
 @media (min-width: 640px) {
+  .sm\\:right-6 {
+    right: 1.5rem;
+  }
   .sm\\:text-2xl {
     font-size: 1.5rem;
     line-height: 2rem;
@@ -707,6 +643,10 @@ body {
 h1 {
   font-size: inherit;
   font-weight: inherit;
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 pre {
   font-family:
@@ -786,209 +726,36 @@ pre {
 
 exports[`template > correctly outputs style blocks for loading.vue 1`] = `
 ".nuxt-loader-bar {
-  background: repeating-linear-gradient(
-    to right,
-    #36e4da 0%,
-    #1de0b1 25%,
-    #00dc82 50%,
-    #1de0b1 75%,
-    #36e4da 100%
-  );
-  height: 100px;
-  background-size: 200% auto;
-  background-position: 0 0;
-  animation: gradient 2s infinite;
-  animation-fill-mode: forwards;
-  animation-timing-function: linear;
+  background: #00dc82;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 5px;
+  height: 3px;
 }
-.visual-effects .nuxt-loader-bar {
-  height: 100px;
-  bottom: -50px;
-  left: -50px;
-  right: -50px;
-  filter: blur(100px);
-}
-.visual-effects .mouse-gradient {
-  background: repeating-linear-gradient(
-    to right,
-    #00dc82 0%,
-    #1de0b1 50%,
-    #36e4da 100%
-  );
-  filter: blur(100px);
-  opacity: 0.5;
-}
-#animation-toggle {
-  position: fixed;
-  padding: 10px;
-  top: 0;
-  right: 0;
-  transition: opacity 0.4s ease-in;
-  opacity: 0;
-}
-#animation-toggle:hover {
-  opacity: 0.8;
-}
-@keyframes gradient {
-  0% {
-    background-position: 0 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-@media (prefers-color-scheme: dark) {
-  html,
-  body {
-    color: white;
-    color-scheme: dark;
-  }
-  .nuxt-loader-bar {
-    opacity: 0.5;
-  }
-}
-*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
-  border-color: var(--un-default-border-color, #e5e7eb);
-}
-:before,
-:after {
-  --un-content: "";
-}
-html {
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
-    Segoe UI Symbol,
-    "Noto Color Emoji";
-  font-feature-settings: normal;
-  font-variation-settings: normal;
-  -webkit-tap-highlight-color: transparent;
-}
-body {
-  margin: 0;
-  line-height: inherit;
-}
-a {
-  color: inherit;
-  text-decoration: inherit;
-}
-button {
-  font-family: inherit;
-  font-feature-settings: inherit;
-  font-variation-settings: inherit;
-  font-size: 100%;
-  font-weight: inherit;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-  padding: 0;
-}
-button {
-  text-transform: none;
-}
-button {
-  -webkit-appearance: button;
-  background-color: transparent;
-  background-image: none;
-}
-button {
-  cursor: pointer;
-}
-svg {
-  display: block;
-  vertical-align: middle;
-}
-*,
-:before,
-:after {
-  --un-rotate: 0;
-  --un-rotate-x: 0;
-  --un-rotate-y: 0;
-  --un-rotate-z: 0;
-  --un-scale-x: 1;
-  --un-scale-y: 1;
-  --un-scale-z: 1;
-  --un-skew-x: 0;
-  --un-skew-y: 0;
-  --un-translate-x: 0;
-  --un-translate-y: 0;
-  --un-translate-z: 0;
-  --un-pan-x: ;
-  --un-pan-y: ;
-  --un-pinch-zoom: ;
-  --un-scroll-snap-strictness: proximity;
-  --un-ordinal: ;
-  --un-slashed-zero: ;
-  --un-numeric-figure: ;
-  --un-numeric-spacing: ;
-  --un-numeric-fraction: ;
-  --un-border-spacing-x: 0;
-  --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-inset: ;
-  --un-ring-offset-width: 0px;
-  --un-ring-offset-color: #fff;
-  --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
-  --un-blur: ;
-  --un-brightness: ;
-  --un-contrast: ;
-  --un-drop-shadow: ;
-  --un-grayscale: ;
-  --un-hue-rotate: ;
-  --un-invert: ;
-  --un-saturate: ;
-  --un-sepia: ;
-  --un-backdrop-blur: ;
-  --un-backdrop-brightness: ;
-  --un-backdrop-contrast: ;
-  --un-backdrop-grayscale: ;
-  --un-backdrop-hue-rotate: ;
-  --un-backdrop-invert: ;
-  --un-backdrop-opacity: ;
-  --un-backdrop-saturate: ;
-  --un-backdrop-sepia: ;
-}
-.absolute {
+.triangle-loading {
   position: absolute;
+}
+.triangle-loading > path {
+  fill: none;
+  stroke-width: 4px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 128;
+  stroke-dashoffset: 128;
+  animation: nuxt-loading-move 3s linear infinite;
+}
+.nuxt-logo:hover .triangle-loading > path {
+  animation-play-state: paused;
 }
 .relative {
   position: relative;
 }
-.top-0 {
-  top: 0;
-}
-.z-20 {
-  z-index: 20;
-}
-.h-\\[200px\\] {
-  height: 200px;
+.inline-block {
+  display: inline-block;
 }
 .min-h-screen {
   min-height: 100vh;
-}
-.w-\\[200px\\] {
-  width: 200px;
 }
 .flex {
   display: flex;
@@ -996,57 +763,134 @@ svg {
 .flex-col {
   flex-direction: column;
 }
+.items-end {
+  align-items: flex-end;
+}
 .items-center {
   align-items: center;
 }
 .justify-center {
   justify-content: center;
 }
+.gap-4 {
+  gap: 1rem;
+}
 .overflow-hidden {
   overflow: hidden;
 }
-.rounded-full {
-  border-radius: 9999px;
+.border {
+  border-width: 1px;
+}
+.border-\\[\\#00DC42\\]\\/50 {
+  border-color: #00dc4280;
+}
+.group:hover .group-hover\\:border-\\[\\#00DC42\\] {
+  --un-border-opacity: 1;
+  border-color: rgb(0 220 66 / var(--un-border-opacity));
+}
+.rounded {
+  border-radius: 0.25rem;
+}
+.bg-\\[\\#00DC42\\]\\/10 {
+  background-color: #00dc421a;
 }
 .bg-white {
   --un-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--un-bg-opacity));
 }
+.group:hover .group-hover\\:bg-\\[\\#00DC42\\]\\/15 {
+  background-color: #00dc4226;
+}
+.px-2\\.5 {
+  padding-left: 0.625rem;
+  padding-right: 0.625rem;
+}
+.py-1\\.5 {
+  padding-top: 0.375rem;
+  padding-bottom: 0.375rem;
+}
 .text-center {
   text-align: center;
 }
-.transition-opacity {
-  transition-property: opacity;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.15s;
+.text-\\[16px\\] {
+  font-size: 16px;
+}
+.text-\\[\\#00DC82\\],
+.group:hover .group-hover\\:text-\\[\\#00DC82\\] {
+  --un-text-opacity: 1;
+  color: rgb(0 220 130 / var(--un-text-opacity));
+}
+.text-\\[\\#00DC82\\]\\/80 {
+  color: #00dc82cc;
+}
+.text-\\[\\#020420\\],
+.group:hover .group-hover\\:text-\\[\\#020420\\] {
+  --un-text-opacity: 1;
+  color: rgb(2 4 32 / var(--un-text-opacity));
+}
+.text-\\[\\#020420\\]\\/80 {
+  color: #020420cc;
+}
+.font-semibold {
+  font-weight: 600;
+}
+.leading-none {
+  line-height: 1;
+}
+.font-mono {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    Liberation Mono,
+    Courier New,
+    monospace;
+}
+.font-sans {
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    Segoe UI,
+    Roboto,
+    Helvetica Neue,
+    Arial,
+    Noto Sans,
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    Segoe UI Symbol,
+    "Noto Color Emoji";
+}
+.antialiased {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 @media (prefers-color-scheme: dark) {
-  .dark\\:bg-black {
+  .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
-    background-color: rgb(0 0 0 / var(--un-bg-opacity));
+    background-color: rgb(2 4 32 / var(--un-bg-opacity));
+  }
+  .dark\\:text-gray-200 {
+    --un-text-opacity: 1;
+    color: rgb(224 224 224 / var(--un-text-opacity));
+  }
+  .dark\\:text-white,
+  .group:hover .dark\\:group-hover\\:text-white {
+    --un-text-opacity: 1;
+    color: rgb(255 255 255 / var(--un-text-opacity));
   }
 }
 "
 `;
 
 exports[`template > correctly outputs style blocks for loading.vue 2`] = `
-"#animation-toggle {
-  position: fixed;
-  padding: 10px;
-  top: 0;
-  right: 0;
-  transition: opacity 0.4s ease-in;
-  opacity: 0;
-}
-#animation-toggle:hover {
-  opacity: 0.8;
-}
-@keyframes gradient {
-  0% {
-    background-position: 0 0;
-  }
+"@keyframes nuxt-loading-move {
   100% {
-    background-position: -200% 0;
+    stroke-dashoffset: -128;
   }
 }
 @media (prefers-color-scheme: dark) {
@@ -1092,28 +936,6 @@ body {
 a {
   color: inherit;
   text-decoration: inherit;
-}
-button {
-  font-family: inherit;
-  font-feature-settings: inherit;
-  font-variation-settings: inherit;
-  font-size: 100%;
-  font-weight: inherit;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-  padding: 0;
-}
-button {
-  text-transform: none;
-}
-button {
-  -webkit-appearance: button;
-  background-color: transparent;
-  background-image: none;
-}
-button {
-  cursor: pointer;
 }
 svg {
   display: block;
@@ -1177,216 +999,7 @@ svg {
 `;
 
 exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
-"@media (prefers-color-scheme: light) {
-  .get-started-gradient-border {
-    background: linear-gradient(to right, #ffffff, #ffffff),
-      linear-gradient(to right, #00dc82, #1de0b1, #36e4da);
-  }
-  .gradient-border-modules {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(247, 209, 76),
-      rgba(247, 209, 76, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(247, 209, 76)
-    );
-  }
-  .gradient-border-examples {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(141, 234, 255),
-      rgba(141, 234, 255, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(141, 234, 255)
-    );
-  }
-  .gradient-border-documentation {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(0, 220, 130),
-      rgba(0, 220, 130, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(0, 220, 130)
-    );
-  }
-}
-@media (prefers-color-scheme: dark) {
-  .get-started-gradient-border {
-    background: linear-gradient(to right, #18181b, #18181b),
-      linear-gradient(to right, #00dc82, #1de0b1, #36e4da);
-  }
-  .gradient-border-modules {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(247, 209, 76),
-      rgba(163, 129, 8),
-      rgba(255, 255, 255, 0.3),
-      rgba(163, 129, 8)
-    );
-  }
-  .gradient-border-examples {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(141, 234, 255),
-      rgba(0, 138, 169),
-      rgba(255, 255, 255, 0.3),
-      rgba(0, 138, 169)
-    );
-  }
-  .gradient-border-documentation {
-    background: linear-gradient(
-      var(--gradient-angle),
-      rgba(0, 220, 130),
-      rgba(0, 63, 37),
-      rgba(255, 255, 255, 0.2),
-      rgba(0, 63, 37)
-    );
-  }
-}
-.get-started-gradient-border {
-  background-clip: padding-box, border-box;
-  background-origin: padding-box, border-box;
-  border-color: transparent;
-  border-radius: 12px;
-  border-width: 1px;
-}
-.get-started-gradient-border:hover
-  > :is(.get-started-gradient-left, .get-started-gradient-right) {
-  opacity: 0.2;
-}
-.get-started-gradient-left,
-.get-started-gradient-right {
-  opacity: 0;
-}
-.gradient-border {
-  opacity: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: calc(100% + 2px);
-  border-radius: 12px;
-  z-index: -1;
-  transform: translate(-1px, -1px);
-}
-.gradient-border-rect {
-  height: calc(100% + 2px);
-}
-@media (min-width: 1024px) {
-  .gradient-border-rect {
-    height: calc(100% + 1px);
-  }
-}
-.gradient-border-square {
-  height: calc(100% + 2px);
-}
-.modules-gradient-right {
-  opacity: 0;
-}
-.modules-container:hover > .gradient-border,
-.examples-container:hover > .gradient-border,
-.documentation-container:hover > .gradient-border {
-  opacity: 1;
-  animation: gradient-rotate 5s cubic-bezier(0, 0, 1, 1) 0s infinite reverse;
-  transition: all 0.3s linear;
-}
-.modules-container:hover > .modules-gradient-right {
-  opacity: 0.2;
-}
-.examples-container:hover > .examples-gradient-right {
-  opacity: 0.2;
-}
-.examples-gradient-right {
-  opacity: 0;
-}
-.documentation-image-color-light,
-.documentation-image-color-dark {
-  display: none;
-}
-.modules-image-color-light,
-.modules-image-color-dark {
-  display: none;
-}
-.examples-image-color-light,
-.examples-image-color-dark {
-  display: none;
-}
-@media (prefers-color-scheme: light) {
-  .modules-image-light {
-    display: block;
-  }
-  .modules-image-dark {
-    display: none;
-  }
-  .modules-container:hover > a > .modules-image-light {
-    display: none;
-  }
-  .modules-container:hover > a > .modules-image-color-light {
-    display: block;
-  }
-  .examples-image-light {
-    display: block;
-  }
-  .examples-image-dark {
-    display: none;
-  }
-  .examples-container:hover > a > .examples-image-light {
-    display: none;
-  }
-  .examples-container:hover > a > .examples-image-color-light {
-    display: block;
-  }
-  .documentation-image-light {
-    display: block;
-  }
-  .documentation-image-dark {
-    display: none;
-  }
-  .documentation-container:hover > a > div > .documentation-image-light {
-    display: none;
-  }
-  .documentation-container:hover > a > div > .documentation-image-color-light {
-    display: block;
-  }
-}
-@media (prefers-color-scheme: dark) {
-  .modules-image-dark {
-    display: block;
-  }
-  .modules-image-light {
-    display: none;
-  }
-  .modules-container:hover > a > .modules-image-color-dark {
-    display: block;
-  }
-  .modules-container:hover > a > .modules-image-dark {
-    display: none;
-  }
-  .examples-image-dark {
-    display: block;
-  }
-  .examples-image-light {
-    display: none;
-  }
-  .examples-container:hover > a > .examples-image-color-dark {
-    display: block;
-  }
-  .examples-container:hover > a > .examples-image-dark {
-    display: none;
-  }
-  .documentation-image-dark {
-    display: block;
-  }
-  .documentation-image-light {
-    display: none;
-  }
-  .documentation-container:hover > a > div > .documentation-image-color-dark {
-    display: block;
-  }
-  .documentation-container:hover > a > div > .documentation-image-dark {
-    display: none;
-  }
-}
-.sr-only {
+".sr-only {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -1403,71 +1016,64 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 .relative {
   position: relative;
 }
-.inset-x-0 {
-  left: 0;
-  right: 0;
+.right-4 {
+  right: 1rem;
 }
-.inset-y-0 {
-  top: 0;
-  bottom: 0;
-}
-.-top-\\[58px\\] {
-  top: -58px;
-}
-.-top-3 {
-  top: -0.75rem;
-}
-.left-0 {
-  left: 0;
-}
-.right-0 {
-  right: 0;
-}
-.z-1 {
-  z-index: 1;
-}
-.z-10 {
-  z-index: 10;
-}
-.order-last {
-  order: 9999;
+.top-4 {
+  top: 1rem;
 }
 .grid {
   display: grid;
 }
-.col-span-2 {
-  grid-column: span 2 / span 2;
-}
-.row-span-2 {
-  grid-row: span 2 / span 2;
-}
-.grid-cols-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
 }
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
 }
-.mb-2 {
-  margin-bottom: 0.5rem;
+.mb-6 {
+  margin-bottom: 1.5rem;
 }
-.hidden {
-  display: none;
+.mt-1 {
+  margin-top: 0.25rem;
 }
-.h-\\[70px\\] {
-  height: 70px;
+.mt-4 {
+  margin-top: 1rem;
 }
-.h-32 {
-  height: 8rem;
+.mt-6 {
+  margin-top: 1.5rem;
 }
-.max-w-\\[960px\\] {
-  max-width: 960px;
+.inline-block {
+  display: inline-block;
+}
+.size-\\[18px\\] {
+  width: 18px;
+  height: 18px;
+}
+.size-4 {
+  width: 1rem;
+  height: 1rem;
+}
+.size-5,
+.group:hover .group-hover\\:size-5 {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+.h-\\[32px\\] {
+  height: 32px;
+}
+.h-8 {
+  height: 2rem;
+}
+.max-w-\\[980px\\] {
+  max-width: 980px;
 }
 .min-h-screen {
   min-height: 100vh;
 }
-.w-\\[20\\%\\] {
-  width: 20%;
+.w-\\[32px\\] {
+  width: 32px;
 }
 .w-full {
   width: 100%;
@@ -1475,41 +1081,29 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 .flex {
   display: flex;
 }
-.flex-1 {
-  flex: 1 1 0%;
+.inline-flex {
+  display: inline-flex;
 }
 .flex-col {
   flex-direction: column;
 }
-.flex-col-reverse {
-  flex-direction: column-reverse;
-}
 .place-content-center {
   place-content: center;
+}
+.items-end {
+  align-items: flex-end;
 }
 .items-center {
   align-items: center;
 }
-.justify-end {
-  justify-content: flex-end;
-}
 .justify-center {
   justify-content: center;
 }
-.gap-3 {
-  gap: 0.75rem;
+.gap-1 {
+  gap: 0.25rem;
 }
-.gap-6 {
-  gap: 1.5rem;
-}
-.gap-x-4 {
-  column-gap: 1rem;
-}
-.gap-y-16 {
-  row-gap: 4rem;
-}
-.gap-y-2 {
-  row-gap: 0.5rem;
+.gap-4 {
+  gap: 1rem;
 }
 .gap-y-4 {
   row-gap: 1rem;
@@ -1517,129 +1111,115 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 .border {
   border-width: 1px;
 }
-.border-t {
-  border-top-width: 1px;
+.border-\\[\\#00DC42\\]\\/50 {
+  border-color: #00dc4280;
+}
+.border-\\[\\#00DC82\\] {
+  --un-border-opacity: 1;
+  border-color: rgb(0 220 130 / var(--un-border-opacity));
 }
 .border-gray-200 {
   --un-border-opacity: 1;
   border-color: rgb(224 224 224 / var(--un-border-opacity));
 }
-.hover\\:border-transparent:hover {
-  border-color: transparent;
+.border-green-600\\/10 {
+  border-color: #00bb6a1a;
+}
+.border-green-600\\/20 {
+  border-color: #00bb6a33;
+}
+.hover\\:border-\\[\\#00DC82\\]:hover {
+  --un-border-opacity: 1;
+  border-color: rgb(0 220 130 / var(--un-border-opacity));
 }
 .rounded {
   border-radius: 0.25rem;
 }
-.rounded-xl {
-  border-radius: 0.75rem;
+.rounded-lg {
+  border-radius: 0.5rem;
 }
-.bg-gray-100 {
+.bg-\\[\\#00DC42\\]\\/10 {
+  background-color: #00dc421a;
+}
+.bg-\\[\\#00DC82\\]\\/5 {
+  background-color: #00dc820d;
+}
+.bg-gray-50\\/10 {
+  background-color: #f5f5f51a;
+}
+.bg-green-50 {
   --un-bg-opacity: 1;
-  background-color: rgb(238 238 238 / var(--un-bg-opacity));
+  background-color: rgb(208 252 222 / var(--un-bg-opacity));
 }
 .bg-white {
   --un-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--un-bg-opacity));
 }
-.from-blue-400 {
-  --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(96 165 250 / var(--un-from-opacity, 1))
-    var(--un-gradient-from-position);
-  --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(96 165 250 / 0) var(--un-gradient-to-position);
-  --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
-}
-.from-green-400 {
-  --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(55 233 144 / var(--un-from-opacity, 1))
-    var(--un-gradient-from-position);
-  --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(55 233 144 / 0) var(--un-gradient-to-position);
-  --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
-}
-.from-yellow-400 {
-  --un-gradient-from-position: 0%;
-  --un-gradient-from: rgb(250 204 21 / var(--un-from-opacity, 1))
-    var(--un-gradient-from-position);
-  --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(250 204 21 / 0) var(--un-gradient-to-position);
-  --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
-}
-.to-transparent {
-  --un-gradient-to-position: 100%;
-  --un-gradient-to: transparent var(--un-gradient-to-position);
-}
-.bg-gradient-to-l {
-  --un-gradient-shape: to left;
-  --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
-  background-image: linear-gradient(var(--un-gradient));
-}
-.bg-gradient-to-r {
-  --un-gradient-shape: to right;
-  --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
-  background-image: linear-gradient(var(--un-gradient));
-}
 .p-1 {
   padding: 0.25rem;
+}
+.p-6 {
+  padding: 1.5rem;
+}
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
 }
 .px-4 {
   padding-left: 1rem;
   padding-right: 1rem;
 }
-.px-5 {
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
+.py-1 {
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
 }
-.py-14 {
-  padding-top: 3.5rem;
-  padding-bottom: 3.5rem;
+.text-\\[12px\\] {
+  font-size: 12px;
 }
-.py-6 {
-  padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
-}
-.pb-6 {
-  padding-bottom: 1.5rem;
-}
-.pt-\\[58px\\] {
-  padding-top: 58px;
-}
-.text-center {
-  text-align: center;
-}
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-.text-4xl {
-  font-size: 2.25rem;
-  line-height: 2.5rem;
+.text-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
 }
 .text-sm {
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
-.text-xl {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-.text-black {
+.text-\\[\\#00DC82\\],
+.group:hover .group-hover\\:text-\\[\\#00DC82\\] {
   --un-text-opacity: 1;
-  color: rgb(0 0 0 / var(--un-text-opacity));
+  color: rgb(0 220 130 / var(--un-text-opacity));
+}
+.text-\\[\\#020420\\] {
+  --un-text-opacity: 1;
+  color: rgb(2 4 32 / var(--un-text-opacity));
+}
+.text-\\[\\#020420\\]\\/20 {
+  color: #02042033;
+}
+.text-gray-500 {
+  --un-text-opacity: 1;
+  color: rgb(117 117 117 / var(--un-text-opacity));
 }
 .text-gray-700 {
   --un-text-opacity: 1;
   color: rgb(66 66 66 / var(--un-text-opacity));
 }
-.hover\\:text-black:hover {
+.text-green-700 {
   --un-text-opacity: 1;
-  color: rgb(0 0 0 / var(--un-text-opacity));
+  color: rgb(0 153 86 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#020420\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(2 4 32 / var(--un-text-opacity));
 }
 .font-bold {
   font-weight: 700;
 }
 .font-semibold {
   font-weight: 600;
+}
+.leading-none {
+  line-height: 1;
 }
 .font-mono {
   font-family:
@@ -1666,139 +1246,120 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
   box-shadow: var(--un-ring-offset-shadow), var(--un-ring-shadow),
     var(--un-shadow);
 }
-.transition-opacity {
-  transition-property: opacity;
+.transition-all {
+  transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 0.15s;
 }
-.duration-300 {
-  transition-duration: 0.3s;
-}
 @media (prefers-color-scheme: dark) {
-  .dark\\:block {
-    display: block;
+  .dark\\:border-\\[\\#00DC82\\]\\/50 {
+    border-color: #00dc8280;
   }
-  .dark\\:hidden {
-    display: none;
+  .dark\\:border-\\[\\#00DC82\\]\\/80,
+  .group:hover .group-hover\\:dark\\:border-\\[\\#00DC82\\]\\/80 {
+    border-color: #00dc82cc;
   }
-  .dark\\:border-gray-900 {
+  .dark\\:border-white\\/10 {
+    border-color: #ffffff1a;
+  }
+  .dark\\:border-white\\/20 {
+    border-color: #fff3;
+  }
+  .hover\\:dark\\:border-\\[\\#00DC82\\]:hover {
     --un-border-opacity: 1;
-    border-color: rgb(24 24 27 / var(--un-border-opacity));
+    border-color: rgb(0 220 130 / var(--un-border-opacity));
   }
-  .dark\\:border-transparent {
-    border-color: transparent;
-  }
-  .dark\\:border-none {
-    border-style: none;
-  }
-  .dark\\:bg-black {
+  .dark\\:bg-\\[\\#020420\\] {
     --un-bg-opacity: 1;
-    background-color: rgb(0 0 0 / var(--un-bg-opacity));
+    background-color: rgb(2 4 32 / var(--un-bg-opacity));
   }
-  .dark\\:bg-gray-900 {
-    --un-bg-opacity: 1;
-    background-color: rgb(24 24 27 / var(--un-bg-opacity));
+  .dark\\:bg-white\\/5 {
+    background-color: #ffffff0d;
   }
-  .dark\\:bg-white\\/10 {
-    background-color: #ffffff1a;
-  }
-  .dark\\:text-gray-300 {
+  .dark\\:text-\\[\\#00DC82\\] {
     --un-text-opacity: 1;
-    color: rgb(189 189 189 / var(--un-text-opacity));
+    color: rgb(0 220 130 / var(--un-text-opacity));
   }
-  .dark\\:text-white,
+  .dark\\:text-gray-200 {
+    --un-text-opacity: 1;
+    color: rgb(224 224 224 / var(--un-text-opacity));
+  }
+  .dark\\:text-gray-400 {
+    --un-text-opacity: 1;
+    color: rgb(158 158 158 / var(--un-text-opacity));
+  }
+  .dark\\:text-white {
+    --un-text-opacity: 1;
+    color: rgb(255 255 255 / var(--un-text-opacity));
+  }
+  .dark\\:text-white\\/40 {
+    color: #fff6;
+  }
   .dark\\:hover\\:text-white:hover {
     --un-text-opacity: 1;
     color: rgb(255 255 255 / var(--un-text-opacity));
   }
+  .group:hover .group-hover\\:dark\\:text-gray-100 {
+    --un-text-opacity: 1;
+    color: rgb(238 238 238 / var(--un-text-opacity));
+  }
 }
 @media (min-width: 640px) {
-  .sm\\:col-span-1 {
-    grid-column: span 1 / span 1;
+  .sm\\:col-span-2 {
+    grid-column: span 2 / span 2;
   }
-  .sm\\:h-34 {
-    height: 8.5rem;
+  .sm\\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  .sm\\:min-h-\\[220px\\] {
-    min-height: 220px;
+  .sm\\:mb-0 {
+    margin-bottom: 0;
   }
-  .sm\\:flex-row {
-    flex-direction: row;
+  .sm\\:mt-0 {
+    margin-top: 0;
   }
-  .sm\\:justify-between {
-    justify-content: space-between;
+  .sm\\:mt-10 {
+    margin-top: 2.5rem;
   }
-  .sm\\:px-28 {
-    padding-left: 7rem;
-    padding-right: 7rem;
+  .sm\\:mt-6 {
+    margin-top: 1.5rem;
+  }
+  .sm\\:h-12 {
+    height: 3rem;
+  }
+  .sm\\:gap-6 {
+    gap: 1.5rem;
+  }
+  .sm\\:px-2\\.5 {
+    padding-left: 0.625rem;
+    padding-right: 0.625rem;
   }
   .sm\\:px-6 {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
   }
-  .sm\\:text-5xl {
-    font-size: 3rem;
-    line-height: 1;
+  .sm\\:py-1\\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+  }
+  .sm\\:text-\\[14px\\] {
+    font-size: 14px;
   }
   .sm\\:text-base {
     font-size: 1rem;
     line-height: 1.5rem;
   }
 }
-@media (min-width: 768px) {
-  .md\\:min-h-\\[180px\\] {
-    min-height: 180px;
-  }
-}
 @media (min-width: 1024px) {
-  .lg\\:order-none {
-    order: 0;
-  }
-  .lg\\:col-span-10 {
-    grid-column: span 10 / span 10;
-  }
-  .lg\\:col-span-4 {
-    grid-column: span 4 / span 4;
-  }
-  .lg\\:col-span-6 {
-    grid-column: span 6 / span 6;
-  }
-  .lg\\:grid-cols-10 {
-    grid-template-columns: repeat(10, minmax(0, 1fr));
-  }
-  .lg\\:min-h-min {
-    min-height: min-content;
-  }
-  .lg\\:flex-col {
-    flex-direction: column;
-  }
   .lg\\:px-8 {
     padding-left: 2rem;
     padding-right: 2rem;
-  }
-  .lg\\:py-7 {
-    padding-top: 1.75rem;
-    padding-bottom: 1.75rem;
   }
 }
 "
 `;
 
 exports[`template > correctly outputs style blocks for welcome.vue 2`] = `
-"@property --gradient-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 180deg;
-}
-@keyframes gradient-rotate {
-  0% {
-    --gradient-angle: 0deg;
-  }
-  100% {
-    --gradient-angle: 360deg;
-  }
-}
-*,
+"*,
 :before,
 :after {
   box-sizing: border-box;
@@ -1831,9 +1392,7 @@ body {
   margin: 0;
   line-height: inherit;
 }
-h1,
-h2,
-h3 {
+h2 {
   font-size: inherit;
   font-weight: inherit;
 }
@@ -1841,9 +1400,7 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
-h1,
 h2,
-h3,
 p {
   margin: 0;
 }
@@ -1852,14 +1409,9 @@ ul {
   margin: 0;
   padding: 0;
 }
-img,
 svg {
   display: block;
   vertical-align: middle;
-}
-img {
-  max-width: 100%;
-  height: auto;
 }
 *,
 :before,
