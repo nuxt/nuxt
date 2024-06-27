@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
@@ -10,7 +12,6 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 
 import escapeRE from 'escape-string-regexp'
-import fse from 'fs-extra'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
@@ -61,6 +62,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',
+  'nitro': 'nitro-nightly',
   'h3': 'h3-nightly',
   'nuxt': 'nuxt-nightly',
   '@nuxt/schema': '@nuxt/schema-nightly',
@@ -99,21 +101,37 @@ async function initNuxt (nuxt: Nuxt) {
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (dependencies.has(pkg) && !(pkg in nightlies)) { return [] }
+    const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
+    const subpath = _subpath ? '/' + _subpath : ''
 
-    // deduplicate types for nightly releases
-    if (pkg in nightlies) {
-      const nightly = nightlies[pkg as keyof typeof nightlies]
-      const path = await _resolvePath(nightly, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
-      if (path) {
-        return [[pkg, [dirname(path)]], [nightly, [dirname(path)]]]
+    // ignore packages that exist in `package.json` as these can be resolved by TypeScript
+    if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
+
+    async function resolveTypePath (path: string) {
+      try {
+        const r = await _resolvePath(path, { url: nuxt.options.modulesDir, conditions: ['types', 'import', 'require'] })
+        if (subpath) {
+          return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')
+        }
+        const rootPath = await resolvePackageJSON(r)
+        return dirname(rootPath)
+      } catch {
+        return null
       }
     }
 
-    const path = await _resolvePath(pkg, { url: nuxt.options.modulesDir }).then(r => resolvePackageJSON(r)).catch(() => null)
+    // deduplicate types for nightly releases
+    if (_pkg in nightlies) {
+      const nightly = nightlies[_pkg as keyof typeof nightlies]
+      const path = await resolveTypePath(nightly + subpath)
+      if (path) {
+        return [[pkg, [path]], [nightly + subpath, [path]]]
+      }
+    }
+
+    const path = await resolveTypePath(_pkg + subpath)
     if (path) {
-      return [[pkg, [dirname(path)]]]
+      return [[pkg, [path]]]
     }
 
     return []
@@ -127,7 +145,6 @@ async function initNuxt (nuxt: Nuxt) {
   // Add nuxt types
   nuxt.hook('prepare:types', (opts) => {
     opts.references.push({ types: 'nuxt' })
-    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/app-defaults.d.ts') })
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/plugins.d.ts') })
     // Add vue shim
     if (nuxt.options.typescript.shim) {
@@ -144,7 +161,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
-      if (fse.existsSync(declaration)) {
+      if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
       }
     }
@@ -262,7 +279,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
-          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
           manifest[file].file = ''
         }
       }
@@ -515,6 +532,12 @@ async function initNuxt (nuxt: Nuxt) {
     if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
       addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
     }
+  }
+
+  if (nuxt.options.experimental.navigationRepaint) {
+    addPlugin({
+      src: resolve(nuxt.options.appDir, 'plugins/navigation-repaint.client'),
+    })
   }
 
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {

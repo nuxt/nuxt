@@ -8,10 +8,7 @@ import { createError } from './error'
 import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
-import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
-
-// TODO: temporary module for backwards compatibility
-import type { DedupeOption, DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+import { asyncDataDefaults } from '#build/nuxt.config.mjs'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
@@ -45,7 +42,7 @@ export interface AsyncDataOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > {
   /**
    * Whether to fetch on the server side.
@@ -107,7 +104,7 @@ export interface AsyncDataExecuteOptions {
    * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
    * Boolean values will be removed in a future release.
    */
-  dedupe?: DedupeOption
+  dedupe?: 'cancel' | 'defer'
 }
 
 export interface _AsyncData<DataT, ErrorT> {
@@ -119,7 +116,7 @@ export interface _AsyncData<DataT, ErrorT> {
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void
-  error: Ref<ErrorT | DefaultAsyncDataErrorValue>
+  error: Ref<ErrorT | undefined>
   status: Ref<AsyncDataRequestStatus>
 }
 
@@ -140,11 +137,11 @@ export function useAsyncData<
   NuxtErrorDataT = unknown,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -160,7 +157,7 @@ export function useAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -173,12 +170,12 @@ export function useAsyncData<
   NuxtErrorDataT = unknown,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -196,14 +193,14 @@ export function useAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined>
 export function useAsyncData<
   ResT,
   NuxtErrorDataT = unknown,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | DefaultAsyncDataErrorValue> {
+  DefaultT = undefined,
+> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys>, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>) | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
 
@@ -235,7 +232,7 @@ export function useAsyncData<
       }
 
   // Used to get default values
-  const getDefault = () => asyncDataDefaults.value
+  const getDefault = () => undefined
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
@@ -257,7 +254,7 @@ export function useAsyncData<
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
-    nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
+    nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
 
@@ -319,7 +316,7 @@ export function useAsyncData<
         nuxtApp.payload.data[key] = result
 
         asyncData.data.value = result
-        asyncData.error.value = asyncDataDefaults.errorValue
+        asyncData.error.value = undefined
         asyncData.status.value = 'success'
       })
       .catch((error: any) => {
@@ -416,11 +413,11 @@ export function useLazyAsyncData<
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | DefaultAsyncDataValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | undefined>
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -430,18 +427,18 @@ export function useLazyAsyncData<
 > (
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | DefaultAsyncDataValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | undefined>
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | DefaultAsyncDataValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | undefined>
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
@@ -452,15 +449,15 @@ export function useLazyAsyncData<
   key: string,
   handler: (ctx?: NuxtApp) => Promise<ResT>,
   options?: Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | DefaultAsyncDataValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | undefined>
 
 export function useLazyAsyncData<
   ResT,
   DataE = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
-> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | DefaultAsyncDataValue> {
+  DefaultT = undefined,
+> (...args: any[]): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, DataE | undefined> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
   const [key, handler, options = {}] = args as [string, (ctx?: NuxtApp) => Promise<ResT>, AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>]
@@ -475,12 +472,12 @@ export function useLazyAsyncData<
 }
 
 /** @since 3.1.0 */
-export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | DefaultAsyncDataValue> } {
+export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
 
   // Initialize value when key is not already set
   if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = asyncDataDefaults.value
+    nuxtApp.payload.data[key] = undefined
   }
 
   return {
@@ -532,18 +529,21 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (key in nuxtApp.payload._errors) {
-    nuxtApp.payload._errors[key] = asyncDataDefaults.errorValue
+    nuxtApp.payload._errors[key] = undefined
   }
 
   if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key]!.data.value = resetAsyncDataToUndefined ? undefined : nuxtApp._asyncData[key]!._default()
-    nuxtApp._asyncData[key]!.error.value = asyncDataDefaults.errorValue
+    nuxtApp._asyncData[key]!.data.value = nuxtApp._asyncData[key]!._default()
+    nuxtApp._asyncData[key]!.error.value = undefined
     nuxtApp._asyncData[key]!.pending.value = false
     nuxtApp._asyncData[key]!.status.value = 'idle'
   }
 
   if (key in nuxtApp._asyncDataPromises) {
-    (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+    if (nuxtApp._asyncDataPromises[key]) {
+      (nuxtApp._asyncDataPromises[key] as any).cancelled = true
+    }
+
     nuxtApp._asyncDataPromises[key] = undefined
   }
 }

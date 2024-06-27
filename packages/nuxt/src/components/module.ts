@@ -216,7 +216,7 @@ export default defineNuxtModule<ComponentsOptions>({
       const mode = isClient ? 'client' : 'server'
 
       config.plugins = config.plugins || []
-      if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
+      if (isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
           sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
@@ -285,7 +285,7 @@ export default defineNuxtModule<ComponentsOptions>({
       configs.forEach((config) => {
         const mode = config.name === 'client' ? 'client' : 'server'
         config.plugins = config.plugins || []
-        if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
+        if (mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
             sourcemap: !!nuxt.options.sourcemap[mode],
             getComponents,

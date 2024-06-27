@@ -29,23 +29,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Bridge compatibility check
-  if (isNuxt2(nuxt)) {
-    const bridgeRequirement = constraints.bridge
-    const hasBridge = !!(nuxt.options as any).bridge
-    if (bridgeRequirement === true && !hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is required',
-      })
-    } else if (bridgeRequirement === false && hasBridge) {
-      issues.push({
-        name: 'bridge',
-        message: 'Nuxt bridge is not supported',
-      })
-    }
-  }
-
   // Builder compatibility check
   if (constraints.builder && typeof nuxt.options.builder === 'string') {
     const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
@@ -98,19 +81,26 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
 }
 
 /**
- * Check if current nuxt instance is version 2 legacy
+ * Check if current Nuxt instance is of specified major version
  */
-export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+export function isNuxtMajorVersion (majorVersion: 2 | 3 | 4, nuxt: Nuxt = useNuxt()) {
   const version = getNuxtVersion(nuxt)
-  return version[0] === '2' && version[1] === '.'
+
+  return version[0] === majorVersion.toString() && version[1] === '.'
 }
 
 /**
- * Check if current nuxt instance is version 3
+ * @deprecated Use `isNuxtMajorVersion(2, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
+ */
+export function isNuxt2 (nuxt: Nuxt = useNuxt()) {
+  return isNuxtMajorVersion(2, nuxt)
+}
+
+/**
+ * @deprecated Use `isNuxtMajorVersion(3, nuxt)` instead. This may be removed in \@nuxt/kit v5 or a future major version.
  */
 export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
-  const version = getNuxtVersion(nuxt)
-  return version[0] === '3' && version[1] === '.'
+  return isNuxtMajorVersion(3, nuxt)
 }
 
 /**

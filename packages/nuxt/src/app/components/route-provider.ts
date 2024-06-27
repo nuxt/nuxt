@@ -1,6 +1,6 @@
 import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
 import type { Ref, VNode } from 'vue'
-import type { RouteLocation, RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
 export const RouteProvider = defineComponent({
@@ -23,7 +23,7 @@ export const RouteProvider = defineComponent({
     const previousRoute = props.route
 
     // Provide a reactive route within the page
-    const route = {} as RouteLocation
+    const route = {} as RouteLocationNormalizedLoaded
     for (const key in props.route) {
       Object.defineProperty(route, key, {
         get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded],

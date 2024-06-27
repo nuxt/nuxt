@@ -31,6 +31,7 @@ export default defineBuildConfig({
     'vue',
     'unctx',
     'hookable',
+    'nitro',
     'nitropack',
     'webpack',
     'webpack-bundle-analyzer',
