@@ -2693,6 +2693,7 @@ describe('lazy import components', () => {
       response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with viewport!')),
     )
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
+    await page.close()
   })
 
   it('respects custom delayed hydration triggers and overrides defaults', async () => {
@@ -2711,12 +2712,14 @@ describe('lazy import components', () => {
     await resp
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
+    await page.close()
   })
   it('does not delay hydration of components named after modifiers', async () => {
     const { page } = await renderPage('/lazy-import-components')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This fake lazy event should be visible!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This fake lazy event shouldn\'t be visible!').all()).toHaveLength(0)
+    await page.close()
   })
 })
 
