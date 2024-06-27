@@ -24,7 +24,7 @@ interface SSRStylePluginOptions {
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
-  const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
+  const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
   const idRefMap: Record<string, string> = {}
 
   const relativeToSrcDir = (path: string) => relative(options.srcDir, path)
@@ -135,7 +135,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
         const relativePath = relativeToSrcDir(moduleId)
         if (relativePath in cssMap) {
-          cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && relativeToSrcDir(moduleId)) || isEntry)
+          cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativeToSrcDir(moduleId)) || isEntry)
         }
       }
 
@@ -185,7 +185,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       }
 
       const relativeId = relativeToSrcDir(id)
-      const idMap = cssMap[relativeId] ||= { files: [], inBundle: false }
+      const idMap = cssMap[relativeId] ||= { files: [] }
 
       const emittedIds = new Set<string>()
 
