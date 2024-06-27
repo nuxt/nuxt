@@ -90,7 +90,7 @@ export const RenderPlugin = () => {
           html = html.replace('</body></html>', '')
         }
 
-        html = html.replace(/{{ version }}/g, version)
+        html = html.replace(/\{\{ version \}\}/g, version)
 
         // Load messages
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
