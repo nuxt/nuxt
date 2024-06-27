@@ -307,7 +307,7 @@ async function initNuxt (nuxt: Nuxt) {
   for (const _mod of nuxt.options.modules) {
     const mod = Array.isArray(_mod) ? _mod[0] : _mod
     if (typeof mod !== 'string') { continue }
-    const modPath = await resolvePath(resolveAlias(mod))
+    const modPath = await resolvePath(resolveAlias(mod), { fallbackToOriginal: true })
     specifiedModules.add(modPath)
   }
 
@@ -708,9 +708,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = await resolvePath(name).catch(() => null)
+  const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
-  if (!path) { return }
+  if (!path || path === name) { return }
   const { version } = await readPackageJSON(path)
 
   if (version && gt(nuxtVersion, version)) {
