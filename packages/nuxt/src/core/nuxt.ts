@@ -307,7 +307,7 @@ async function initNuxt (nuxt: Nuxt) {
   for (const _mod of nuxt.options.modules) {
     const mod = Array.isArray(_mod) ? _mod[0] : _mod
     if (typeof mod !== 'string') { continue }
-    const modPath = await resolvePath(resolveAlias(mod))
+    const modPath = await resolvePath(resolveAlias(mod), { fallbackToOriginal: true })
     specifiedModules.add(modPath)
   }
 
