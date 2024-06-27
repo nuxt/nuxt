@@ -5,7 +5,7 @@ import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
   }
@@ -242,16 +242,14 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    serverAppConfig: true,
     typedPages: true,
-    polyfillVueUseHead: true,
-    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
       selectiveClient: 'deep',
     },
-    treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',

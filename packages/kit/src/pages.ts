@@ -1,5 +1,5 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { useNuxt } from './context'
 import { logger } from './logger'
@@ -44,7 +44,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
-        const foundPath = app.middleware[find].path
+        const foundPath = app.middleware[find]!.path
         if (foundPath === middleware.path) { continue }
         if (options.override === true) {
           app.middleware[find] = { ...middleware }

@@ -1,7 +1,7 @@
+import { writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
-import fse from 'fs-extra'
 import { isAbsolute, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
@@ -181,11 +181,11 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 
-  await fse.writeFile(
+  await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
   )
-  await fse.writeFile(
+  await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
   )

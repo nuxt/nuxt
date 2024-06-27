@@ -107,6 +107,12 @@ export default defineUntypedSchema({
     externalVue: true,
 
     /**
+     * Enable accessing `appConfig` from server routes.
+     *
+     * @deprecated This option is not recommended.
+     */
+    serverAppConfig: false,
+    /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *

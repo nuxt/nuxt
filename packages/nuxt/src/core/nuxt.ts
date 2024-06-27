@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
@@ -10,7 +12,6 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 
 import escapeRE from 'escape-string-regexp'
-import fse from 'fs-extra'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
@@ -61,6 +62,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
 const nightlies = {
   'nitropack': 'nitropack-nightly',
+  'nitro': 'nitro-nightly',
   'h3': 'h3-nightly',
   'nuxt': 'nuxt-nightly',
   '@nuxt/schema': '@nuxt/schema-nightly',
@@ -159,7 +161,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     for (const layer of nuxt.options._layers) {
       const declaration = join(layer.cwd, 'index.d.ts')
-      if (fse.existsSync(declaration)) {
+      if (existsSync(declaration)) {
         opts.references.push({ path: declaration })
       }
     }
@@ -277,7 +279,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('build:manifest', async (manifest) => {
       for (const file in manifest) {
         if (manifest[file].resourceType === 'script') {
-          await fse.rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
           manifest[file].file = ''
         }
       }
@@ -305,7 +307,7 @@ async function initNuxt (nuxt: Nuxt) {
   for (const _mod of nuxt.options.modules) {
     const mod = Array.isArray(_mod) ? _mod[0] : _mod
     if (typeof mod !== 'string') { continue }
-    const modPath = await resolvePath(resolveAlias(mod))
+    const modPath = await resolvePath(resolveAlias(mod), { fallbackToOriginal: true })
     specifiedModules.add(modPath)
   }
 
@@ -706,9 +708,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
-  const path = await resolvePath(name).catch(() => null)
+  const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
-  if (!path) { return }
+  if (!path || path === name) { return }
   const { version } = await readPackageJSON(path)
 
   if (version && gt(nuxtVersion, version)) {

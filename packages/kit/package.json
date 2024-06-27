@@ -49,7 +49,7 @@
   "devDependencies": {
     "@types/hash-sum": "1.0.2",
     "@types/semver": "7.5.8",
-    "nitropack": "2.9.6",
+    "nitro": "npm:nitro-nightly@3.0.0-beta-28648657.9a717203",
     "unbuild": "latest",
     "vite": "5.3.1",
     "vitest": "1.6.0",

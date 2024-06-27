@@ -1,6 +1,7 @@
 import pify from 'pify'
 import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
+import { resolve } from 'pathe'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
 import type { MultiWatching } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
@@ -9,7 +10,8 @@ import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
-import { logger, useNuxt } from '@nuxt/kit'
+import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import type { InputPluginOption } from 'rollup'
 
 import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
@@ -18,6 +20,7 @@ import { createMFS } from './utils/mfs'
 import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
+import { dynamicRequire } from './nitro/plugins/dynamic-require'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -31,6 +34,26 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
   })
+
+  /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
+  const nitro = useNitro()
+  const dynamicRequirePlugin = dynamicRequire({
+    dir: resolve(nuxt.options.buildDir, 'dist/server'),
+    inline:
+      nitro.options.node === false || nitro.options.inlineDynamicImports,
+    ignore: [
+      'client.manifest.mjs',
+      'server.js',
+      'server.cjs',
+      'server.mjs',
+      'server.manifest.mjs',
+    ],
+  })
+  const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
+  const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
+
+  prerenderRollupPlugins.push(dynamicRequirePlugin)
+  rollupPlugins.push(dynamicRequirePlugin)
 
   await nuxt.callHook('webpack:config', webpackConfigs)
 

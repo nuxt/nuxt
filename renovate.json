@@ -21,17 +21,12 @@
       ]
     },
     {
-      "groupName": "unplugin-vue-router",
-      "matchPackageNames": [
-        "unplugin-vue-router"
-      ]
-    },
-    {
       "matchBaseBranches": [
         "main"
       ],
       "ignoreDeps": [
-        "@vitejs/plugin-vue",
+        "nitro",
+        "h3",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"

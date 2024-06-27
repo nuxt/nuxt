@@ -1,8 +1,8 @@
 import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
-import { RouterView } from '#vue-router'
+import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'

@@ -43,10 +43,11 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
       const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?(Idle|Visible|idle-|visible-|Event|event-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?(Idle|Visible|idle-|visible-|Event|event-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
+
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
           if (component._internal_install && nuxt?.options.test === false) {
