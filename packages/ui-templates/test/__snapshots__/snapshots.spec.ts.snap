@@ -448,14 +448,27 @@ p {
 `;
 
 exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
-".z-10 {
+".absolute {
+  position: absolute;
+}
+.top-6 {
+  top: 1.5rem;
+}
+.z-10 {
   z-index: 10;
+}
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
 }
 .mb-4 {
   margin-bottom: 1rem;
 }
 .mb-8 {
   margin-bottom: 2rem;
+}
+.inline-block {
+  display: inline-block;
 }
 .h-auto {
   height: auto;
@@ -477,6 +490,9 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 }
 .border {
   border-width: 1px;
+}
+.border-b-0 {
+  border-bottom-width: 0px;
 }
 .border-black\\/5 {
   border-color: #0000000d;
@@ -506,6 +522,10 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
   font-size: 3.75rem;
   line-height: 1;
 }
+.text-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
 .text-xl {
   font-size: 1.25rem;
   line-height: 1.75rem;
@@ -513,6 +533,10 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 .text-black {
   --un-text-opacity: 1;
   color: rgb(0 0 0 / var(--un-text-opacity));
+}
+.hover\\:text-\\[\\#00DC82\\]:hover {
+  --un-text-opacity: 1;
+  color: rgb(0 220 130 / var(--un-text-opacity));
 }
 .font-light {
   font-weight: 300;
@@ -540,6 +564,12 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
     Segoe UI Symbol,
     "Noto Color Emoji";
 }
+.hover\\:underline:hover {
+  text-decoration-line: underline;
+}
+.underline-offset-3 {
+  text-underline-offset: 3px;
+}
 .antialiased {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -561,6 +591,9 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
   }
 }
 @media (min-width: 640px) {
+  .sm\\:right-6 {
+    right: 1.5rem;
+  }
   .sm\\:text-2xl {
     font-size: 1.5rem;
     line-height: 2rem;
@@ -610,6 +643,10 @@ body {
 h1 {
   font-size: inherit;
   font-weight: inherit;
+}
+a {
+  color: inherit;
+  text-decoration: inherit;
 }
 pre {
   font-family:
