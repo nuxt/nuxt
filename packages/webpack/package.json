@@ -31,7 +31,7 @@
     "html-webpack-plugin": "^4.5.1",
     "lodash": "^4.17.21",
     "memfs": "^4.9.3",
-    "mkdirp": "^1.0.4",
+    "mkdirp": "^3.0.1",
     "optimize-css-assets-webpack-plugin": "^6.0.1",
     "pify": "^5.0.0",
     "pnp-webpack-plugin": "^1.7.0",
