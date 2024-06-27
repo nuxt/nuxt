@@ -58,7 +58,7 @@
     <div class="nuxt-loader-bar"></div>
     <script>
       if (typeof window.fetch === 'undefined') {
-        setTimeout(() => window.location.reload(), 1000)
+        setTimeout(() => window.location.reload(), 200)
       } else {
         const check = async () => {
           try {
@@ -71,7 +71,7 @@
                 .reload()
             }
           } catch {}
-          setTimeout(check, 1000)
+          setTimeout(check, 200)
         }
         check()
       }
