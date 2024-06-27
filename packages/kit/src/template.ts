@@ -228,10 +228,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    let absolutePath = resolve(basePath, aliases[alias])
+    let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias], nuxt.options.modulesDir)
+      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
@@ -251,7 +251,7 @@ export async function _generateTypes (nuxt: Nuxt) {
         // remove extension
         ? relativePath.replace(/\b\.\w+$/g, '')
         // non-existent file probably shouldn't be resolved
-        : aliases[alias]
+        : aliases[alias]!
 
       tsConfig.compilerOptions.paths[alias] = [path]
 
@@ -334,7 +334,7 @@ function renderAttrs (obj: Record<string, string>) {
   return attrs.join(' ')
 }
 
-function renderAttr (key: string, value: string) {
+function renderAttr (key: string, value?: string) {
   return value ? `${key}="${value}"` : ''
 }
 

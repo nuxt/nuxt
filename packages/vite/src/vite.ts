@@ -42,8 +42,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       ...app.plugins.map(p => dirname(p.src)),
       ...app.middleware.map(m => dirname(m.path)),
       ...Object.values(app.layouts || {}).map(l => dirname(l.file)),
-      dirname(nuxt.apps.default.rootComponent!),
-      dirname(nuxt.apps.default.errorComponent!),
+      dirname(nuxt.apps.default!.rootComponent!),
+      dirname(nuxt.apps.default!.errorComponent!),
     ]),
   ].filter(d => d && existsSync(d))
 
@@ -184,7 +184,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         clientCSSMap,
         chunksWithInlinedCSS,
         shouldInline: ctx.nuxt.options.features.inlineStyles,
-        components: ctx.nuxt.apps.default.components,
+        components: ctx.nuxt.apps.default!.components || [],
         globalCSS: ctx.nuxt.options.css,
         mode: isServer ? 'server' : 'client',
         entry: ctx.entry,
@@ -194,7 +194,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Remove CSS entries for files that will have inlined styles
     ctx.nuxt.hook('build:manifest', (manifest) => {
       for (const key in manifest) {
-        const entry = manifest[key]
+        const entry = manifest[key]!
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
         if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
           // @ts-expect-error internal key

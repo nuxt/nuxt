@@ -24,7 +24,7 @@ interface SSRStylePluginOptions {
 const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
-  const cssMap: Record<string, { files: string[], inBundle: boolean }> = {}
+  const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
   const idRefMap: Record<string, string> = {}
 
   const relativeToSrcDir = (path: string) => relative(options.srcDir, path)
@@ -63,7 +63,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
       const emitted: Record<string, string> = {}
       for (const file in cssMap) {
-        const { files, inBundle } = cssMap[file]
+        const { files, inBundle } = cssMap[file]!
         // File has been tree-shaken out of build (or there are no styles to inline)
         if (!files.length || !inBundle) { continue }
         const fileName = filename(file)
@@ -115,18 +115,19 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         // 'Teleport' CSS chunks that made it into the bundle on the client side
         // to be inlined on server rendering
         if (options.mode === 'client') {
-          options.clientCSSMap[moduleId] ||= new Set()
+          const moduleMap = options.clientCSSMap[moduleId] ||= new Set()
           if (isCSS(moduleId)) {
             // Vue files can (also) be their own entrypoints as they are tracked separately
             if (isVue(moduleId)) {
-              options.clientCSSMap[moduleId].add(moduleId)
+              moduleMap.add(moduleId)
               const parent = moduleId.replace(/\?.+$/, '')
-              options.clientCSSMap[parent] ||= new Set()
-              options.clientCSSMap[parent].add(moduleId)
+              const parentMap = options.clientCSSMap[parent] ||= new Set()
+              parentMap.add(moduleId)
             }
             // This is required to track CSS in entry chunk
-            if (isEntry) {
-              options.clientCSSMap[chunk.facadeModuleId!].add(moduleId)
+            if (isEntry && chunk.facadeModuleId) {
+              const facadeMap = options.clientCSSMap[chunk.facadeModuleId] ||= new Set()
+              facadeMap.add(moduleId)
             }
           }
           continue
@@ -134,7 +135,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
 
         const relativePath = relativeToSrcDir(moduleId)
         if (relativePath in cssMap) {
-          cssMap[relativePath].inBundle = cssMap[relativePath].inBundle ?? ((isVue(moduleId) && relativeToSrcDir(moduleId)) || isEntry)
+          cssMap[relativePath]!.inBundle = cssMap[relativePath]!.inBundle ?? ((isVue(moduleId) && !!relativeToSrcDir(moduleId)) || isEntry)
         }
       }
 
@@ -146,7 +147,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         // or include it here in the client build so it is emitted in the CSS.
         if (id === options.entry && (options.shouldInline === true || (typeof options.shouldInline === 'function' && options.shouldInline(id)))) {
           const s = new MagicString(code)
-          options.clientCSSMap[id] ||= new Set()
+          const idClientCSSMap = options.clientCSSMap[id] ||= new Set()
           if (!options.globalCSS.length) { return }
 
           for (const file of options.globalCSS) {
@@ -160,7 +161,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
               s.prepend(`${genImport(file)}\n`)
               continue
             }
-            options.clientCSSMap[id].add(resolved.id)
+            idClientCSSMap.add(resolved.id)
           }
           if (s.hasChanged()) {
             return {
@@ -184,7 +185,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       }
 
       const relativeId = relativeToSrcDir(id)
-      cssMap[relativeId] = cssMap[relativeId] || { files: [] }
+      const idMap = cssMap[relativeId] ||= { files: [] }
 
       const emittedIds = new Set<string>()
 
@@ -208,7 +209,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         })
 
         idRefMap[relativeToSrcDir(file)] = ref
-        cssMap[relativeId].files.push(ref)
+        idMap.files.push(ref)
       }
 
       if (!SUPPORTED_FILES_RE.test(pathname)) { return }
@@ -235,7 +236,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         })
 
         idRefMap[relativeToSrcDir(resolved.id)] = ref
-        cssMap[relativeId].files.push(ref)
+        idMap.files.push(ref)
       }
     },
   }
