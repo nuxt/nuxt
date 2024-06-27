@@ -111,7 +111,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       const resolveHmrId = async () => {
         const node = await page.$('#hmr-id')
         const text = await node?.innerText() || ''
-        return Number(text?.trim().split(':')[1].trim())
+        return Number(text.trim().split(':')[1]?.trim() || '')
       }
       const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
       const triggerHmr = async () => fsp.writeFile(
