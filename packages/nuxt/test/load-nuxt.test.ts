@@ -56,8 +56,9 @@ describe('dependency mismatch', () => {
       cwd: repoRoot,
     })
 
+    // @nuxt/kit is explicitly installed in repo root but @nuxt/schema isn't, so we only
+    // get warnings about @nuxt/schema
     expect(console.warn).toHaveBeenCalledWith(`[nuxt] Expected \`@nuxt/kit\` to be at least \`${version}\` but got \`3.0.0\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
-    expect(console.warn).toHaveBeenCalledWith(`[nuxt] Expected \`@nuxt/schema\` to be at least \`${version}\` but got \`3.0.0\`. This might lead to unexpected behavior. Check your package.json or refresh your lockfile.`)
 
     vi.mocked(readPackageJSON).mockRestore()
     await nuxt.close()
