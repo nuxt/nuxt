@@ -257,7 +257,7 @@ export default defineNuxtModule({
       if (nitro.options.prerender.crawlLinks) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
-          mode: 'sesrver',
+          mode: 'server',
         })
       }
     })
