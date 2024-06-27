@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/cli",
-  "version": "2.17.4",
+  "version": "2.18.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -16,8 +16,8 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.17.4",
-    "@nuxt/utils": "2.17.4",
+    "@nuxt/config": "2.18.0",
+    "@nuxt/utils": "2.18.0",
     "boxen": "^5.1.2",
     "chalk": "^4.1.2",
     "compression": "^1.7.4",
