@@ -139,9 +139,14 @@ export const RenderPlugin = () => {
           }
           return lastChar || ''
         }).replace(/@media[^{]*\{\}/g, '')
-        const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
-          .map(block => block[1])
-          .filter(i => !i.includes('const t=document.createElement("link")'))
+
+        const inlineScripts: string[] = []
+        for (const [_, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+          if (i && !i.includes('const t=document.createElement("link")')) {
+            inlineScripts.push(i)
+          }
+        }
+
         const props = genObjectFromRawEntries(Object.entries({ ...genericMessages, ...messages }).map(([key, value]) => [key, {
           type: typeof value === 'string' ? 'String' : typeof value === 'number' ? 'Number' : typeof value === 'boolean' ? 'Boolean' : 'undefined',
           default: JSON.stringify(value),

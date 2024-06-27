@@ -13,7 +13,7 @@ export function addLayout (this: any, template: NuxtTemplate | string, name?: st
   // Nuxt 3 adds layouts on app
   nuxt.hook('app:templates', (app) => {
     if (layoutName in app.layouts) {
-      const relativePath = relative(nuxt.options.srcDir, app.layouts[layoutName].file)
+      const relativePath = relative(nuxt.options.srcDir, app.layouts[layoutName]!.file)
       return logger.warn(
         `Not overriding \`${layoutName}\` (provided by \`~/${relativePath}\`) with \`${src || filename}\`.`,
       )
