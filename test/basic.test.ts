@@ -4,12 +4,15 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
+
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
@@ -1005,9 +1008,10 @@ describe('navigate', () => {
   })
 
   it('expect to redirect with encoding', async () => {
-    const { status } = await fetch('/redirect-with-encode', { redirect: 'manual' })
+    const { status, headers } = await fetch('/redirect-with-encode', { redirect: 'manual' })
 
     expect(status).toEqual(302)
+    expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
 })
 

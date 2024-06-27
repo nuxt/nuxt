@@ -46,7 +46,7 @@
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
     "get-port-please": "^3.1.2",
-    "h3": "^1.12.0",
+    "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "knitwork": "^1.1.0",
     "magic-string": "^0.30.10",
     "mlly": "^1.7.1",
