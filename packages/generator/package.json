@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/generator",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
