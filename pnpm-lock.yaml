@@ -287,6 +287,12 @@ importers:
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
+      compatx:
+        specifier: ^0.1.8
+        version: 0.1.8
+      consola:
+        specifier: ^3.2.3
+        version: 3.2.3
       cookie-es:
         specifier: ^1.1.0
         version: 1.1.0
