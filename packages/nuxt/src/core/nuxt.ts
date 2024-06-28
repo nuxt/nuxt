@@ -21,6 +21,7 @@ import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
+import { hasTTY, isCI } from 'std-env'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -43,7 +44,6 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
-import { hasTTY, isCI } from 'std-env'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
