@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'

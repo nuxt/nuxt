@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, tryResolveModule, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
@@ -11,12 +11,12 @@ import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-v
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
+import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
-import { resolveTypePath } from '../core/utils/types'
 
 export default defineNuxtModule({
   meta: {
