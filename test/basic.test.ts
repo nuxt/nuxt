@@ -2716,7 +2716,7 @@ describe('lazy import components', () => {
   })
   it('does not delay hydration of components named after modifiers', async () => {
     const { page } = await renderPage('/lazy-import-components')
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
   })
 })
 
