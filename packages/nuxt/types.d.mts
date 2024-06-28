@@ -1,4 +1,5 @@
 /// <reference types="nitro/types" />
+/// <reference path="dist/app/types/augments.d.ts" />
 
 import type { DefineNuxtConfig } from 'nuxt/config'
 import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
