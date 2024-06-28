@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/webpack",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -13,9 +13,9 @@
   ],
   "dependencies": {
     "@babel/core": "^7.24.7",
-    "@nuxt/babel-preset-app": "2.18.0",
+    "@nuxt/babel-preset-app": "2.18.1",
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
-    "@nuxt/utils": "2.18.0",
+    "@nuxt/utils": "2.18.1",
     "babel-loader": "^8.3.0",
     "cache-loader": "^4.1.0",
     "caniuse-lite": "^1.0.30001638",

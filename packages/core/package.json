@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/core",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -12,9 +12,9 @@
     "dist"
   ],
   "dependencies": {
-    "@nuxt/config": "2.18.0",
-    "@nuxt/server": "2.18.0",
-    "@nuxt/utils": "2.18.0",
+    "@nuxt/config": "2.18.1",
+    "@nuxt/server": "2.18.1",
+    "@nuxt/utils": "2.18.1",
     "consola": "^3.2.3",
     "fs-extra": "^11.2.0",
     "hash-sum": "^2.0.0",

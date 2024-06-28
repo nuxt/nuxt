@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/config",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -14,7 +14,7 @@
     "index.d.ts"
   ],
   "dependencies": {
-    "@nuxt/utils": "2.18.0",
+    "@nuxt/utils": "2.18.1",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
