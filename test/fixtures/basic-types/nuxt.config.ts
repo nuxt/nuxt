@@ -1,6 +1,7 @@
 import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
+  compatibilityDate: '2024-06-28',
   experimental: {
     typedPages: true,
     appManifest: true,
