@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, tryResolveModule, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
@@ -16,6 +16,7 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
+import { resolveTypePath } from '../core/utils/types'
 
 export default defineNuxtModule({
   meta: {
@@ -27,6 +28,15 @@ export default defineNuxtModule({
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
     )
+
+    nuxt.options.alias['#vue-router'] = 'vue-router'
+    const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
+      tsConfig.compilerOptions ||= {}
+      tsConfig.compilerOptions.paths ||= {}
+      tsConfig.compilerOptions.paths['#vue-router'] = [routerPath]
+      delete tsConfig.compilerOptions.paths['#vue-router/*']
+    })
 
     async function resolveRouterOptions () {
       const context = {
