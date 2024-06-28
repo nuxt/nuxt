@@ -108,7 +108,7 @@ async function initNuxt (nuxt: Nuxt) {
         type: 'confirm',
         default: true,
       })
-      if (result) {
+      if (result === true) {
         const res = await updateConfig({
           configFile: 'nuxt.config',
           cwd: nuxt.options.rootDir,
