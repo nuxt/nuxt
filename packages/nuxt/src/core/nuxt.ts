@@ -43,6 +43,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { hasTTY, isCI } from 'std-env'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -102,7 +103,7 @@ async function initNuxt (nuxt: Nuxt) {
     }
 
     // Prompt to update in dev mode
-    if (!warnedAboutCompatDate && nuxt.options.dev) {
+    if (!warnedAboutCompatDate && nuxt.options.dev && hasTTY && !isCI) {
       const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
         type: 'confirm',
         default: true,
