@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -8,7 +8,7 @@ import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerP
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import consola from 'consola'
 import { colorize } from 'consola/utils'
@@ -30,6 +30,7 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
+import { resolveTypePath } from './utils/types'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -171,29 +172,16 @@ async function initNuxt (nuxt: Nuxt) {
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
     if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
 
-    async function resolveTypePath (path: string) {
-      try {
-        const r = await _resolvePath(path, { url: nuxt.options.modulesDir, conditions: ['types', 'import', 'require'] })
-        if (subpath) {
-          return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')
-        }
-        const rootPath = await resolvePackageJSON(r)
-        return dirname(rootPath)
-      } catch {
-        return null
-      }
-    }
-
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
       const nightly = nightlies[_pkg as keyof typeof nightlies]
-      const path = await resolveTypePath(nightly + subpath)
+      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
       if (path) {
         return [[pkg, [path]], [nightly + subpath, [path]]]
       }
     }
 
-    const path = await resolveTypePath(_pkg + subpath)
+    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
     if (path) {
       return [[pkg, [path]]]
     }
