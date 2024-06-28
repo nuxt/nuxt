@@ -10,12 +10,18 @@ import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
+import consola from 'consola'
+import { colorize } from 'consola/utils'
+import { updateConfig } from 'c12/update'
+import { formatDate } from 'compatx'
+import type { DateString } from 'compatx'
 
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
+import { hasTTY, isCI } from 'std-env'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -60,6 +66,9 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
+// TODO: update to nitro import
+const fallbackCompatibilityDate = '2024-04-03' as DateString
+
 const nightlies = {
   'nitropack': 'nitropack-nightly',
   'nitro': 'nitro-nightly',
@@ -74,12 +83,67 @@ const keyDependencies = [
   '@nuxt/schema',
 ]
 
+let warnedAboutCompatDate = false
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
       nuxt.hooks.addHooks(config.hooks)
     }
+  }
+
+  // Prompt to set compatibility date
+  if (!nuxt.options.compatibilityDate) {
+    const todaysDate = formatDate(new Date())
+
+    if (!warnedAboutCompatDate) {
+      // Print warning
+      console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file.`)
+    }
+
+    // Prompt to update in dev mode
+    if (!warnedAboutCompatDate && nuxt.options.dev && hasTTY && !isCI) {
+      const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
+        type: 'confirm',
+        default: true,
+      })
+      if (result === true) {
+        const res = await updateConfig({
+          configFile: 'nuxt.config',
+          cwd: nuxt.options.rootDir,
+          async onCreate ({ configFile }) {
+            const shallCreate = await consola.prompt(`Do you want to create ${colorize('cyan', relative(nuxt.options.rootDir, configFile))}?`, {
+              type: 'confirm',
+              default: true,
+            })
+            if (shallCreate !== true) {
+              return false
+            }
+            return _getDefaultNuxtConfig()
+          },
+          onUpdate (config) {
+            config.compatibilityDate = todaysDate
+          },
+        }).catch((error) => {
+          consola.error(`Failed to update config: ${error.message}`)
+          return null
+        })
+        if (res?.configFile) {
+          nuxt.options.compatibilityDate = todaysDate
+          consola.success(`Compatibility date set to \`${todaysDate}\` in \`${relative(nuxt.options.rootDir, res.configFile)}\``)
+        }
+      }
+    }
+
+    if (!nuxt.options.compatibilityDate) {
+      nuxt.options.compatibilityDate = fallbackCompatibilityDate
+      if (!warnedAboutCompatDate) {
+        console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+      }
+    }
+
+    warnedAboutCompatDate = true
   }
 
   // Restart Nuxt when layer directories are added or removed
@@ -762,3 +826,10 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
     })
   }
 }
+
+const _getDefaultNuxtConfig = () => /* js */
+`// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  devtools: { enabled: true }
+})
+`
