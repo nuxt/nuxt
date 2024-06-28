@@ -477,7 +477,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,
-      html: getServerComponentHTML([replaceIslandTeleports(ssrContext, _rendered.html)]),
+      html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
     }
@@ -507,8 +507,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head: normalizeChunks([headTags]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
-    body: [
-      _rendered.html,
+    body:  [
+      componentIslands ? replaceIslandTeleports(ssrContext, _rendered.html) : _rendered.html,
       APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG,
     ],
     bodyAppend: [bodyTags],
@@ -637,8 +637,8 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-function getServerComponentHTML (body: string[]): string {
-  const match = body[0].match(ROOT_NODE_REGEX)
+function getServerComponentHTML (body: string): string {
+  const match = body.match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
 }
 
