@@ -2714,7 +2714,7 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
     await page.close()
   })
-  it('does not delay hydration of components named after modifiers', async () => {
+  it('does not delay hydration of components named after modifiers', () => {
     expect(html).toContain('This fake lazy event should be visible!')
     expect(html).not.toContain('This fake lazy event shouldn\'t be visible!')
   })
