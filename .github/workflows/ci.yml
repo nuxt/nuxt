@@ -254,6 +254,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build-release:
+    concurrency:
+      group: release
     permissions:
       id-token: write
     if: |
@@ -295,6 +297,8 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
   release-pr:
+    concurrency:
+      group: release
     permissions:
       id-token: write
       pull-requests: write

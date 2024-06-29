@@ -14,6 +14,8 @@ permissions:
 jobs:
   release-pr:
     if: github.repository == 'nuxt/nuxt' && github.event.issue.pull_request && github.event.comment.body == '/trigger release'
+    concurrency:
+      group: release
     permissions:
       id-token: write
       pull-requests: write
@@ -44,7 +46,7 @@ jobs:
           if [[ $(date -d "$updated_at" +%s) -gt $(date -d "$COMMENT_AT" +%s) ]]; then
               exit 1
           fi
-          
+
           echo "head_sha=$head_sha" >> $GITHUB_OUTPUT
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
