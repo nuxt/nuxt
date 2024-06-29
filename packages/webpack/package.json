@@ -39,7 +39,7 @@
     "postcss-import": "^15.1.0",
     "postcss-import-resolver": "^2.0.0",
     "postcss-loader": "^4.3.0",
-    "postcss-preset-env": "^9.5.14",
+    "postcss-preset-env": "^9.5.15",
     "postcss-url": "^10.1.3",
     "semver": "^7.6.2",
     "std-env": "^3.7.0",
