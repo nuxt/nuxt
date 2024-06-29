@@ -51,7 +51,7 @@
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28648657.9a717203",
     "unbuild": "latest",
-    "vite": "5.3.1",
+    "vite": "5.3.2",
     "vitest": "1.6.0",
     "webpack": "5.92.1"
   },
