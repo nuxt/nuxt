@@ -18,7 +18,7 @@ export function useIntersectionObserver (options?: Partial<IntersectionObserverI
   }
 
   let observer: IntersectionObserver | null = null
-  const callbacks = new WeakMap<Element, CallbackFn>()
+  const callbacks = new Map<Element, CallbackFn>()
 
   const observe: ObserveFn = (element, callback) => {
     if (!observer) {
