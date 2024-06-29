@@ -71,7 +71,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
     compiler: VueCompilerSFC,
     ...options,
   })
-  // @ts-expect-error
+  // @ts-expect-error Types are not correct as they are too generic
   plugin.configResolved!({
     isProduction: options.isProduction,
     command: 'build',
