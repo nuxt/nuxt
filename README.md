@@ -1,3 +1,17 @@
+## Nuxt 2 has reached End of Life
+
+**You are looking at the now inactive branch for Nuxt 2. The actively maintained branch for the latest version of Nuxt is [nuxt/nuxt#main](https://github.com/nuxt/nuxt/tree/main).**
+
+Nuxt 2 reached End of Life on June 30, 2024.
+
+It will continue to be available on the npm package manager, but will no longer receive updates, such as security and browser compatibility fixes. In other words, your applications will continue to work, but you may get deprecation warnings from your package manager reminding you that Nuxt 2 is no longer a supported version.
+
+If you are starting a new project, please start with the latest version of Nuxt. We also strongly recommend current Nuxt 2 users to upgrade. [See more about how to upgrade](https://nuxt.com/docs/getting-started/upgrade#nuxt-2-vs-nuxt-3).
+
+If you have to stay on Nuxt 2 post-EOL, we have partnered with HeroDevs to offer [Nuxt 2 Never-Ending Support (NES)](https://www.herodevs.com/support/nuxt-nes?utm_source=nuxt&utm_medium=nuxt-eol-article).
+
+Read more in [our blog post](https://nuxt.com/blog/nuxt2-eol).
+
 <p align="center"><img alt="Nuxt" align="center" src="./.github/logo.svg"/></p><br/>
 <p align="center">
   <a href="https://github.com/nuxt/nuxt.js/actions?query=branch%3Adev+event%3Apush"><img src="https://github.com/nuxt/nuxt.js/workflows/test/badge.svg?branch=dev&event=push" alt="Tests Status"></a>
@@ -14,12 +28,6 @@
 </p>
 
 > Build your next Vue(2) application with confidence using Nuxt: a framework making web development simple and powerful.
-
-## Nuxt 3
-
-The evolution of Nuxt powered by Vite and Vue 3 available on:
-- GitHub: [nuxt/framework](https://github.com/nuxt/framework)
-- Documentation: [nuxt.com](https://nuxt.com/)
 
 ## Links
 
