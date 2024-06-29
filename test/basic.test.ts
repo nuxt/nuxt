@@ -25,14 +25,14 @@ await setup({
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
-      'modules:done'() {
+      'modules:done' () {
         // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
         // Vite reads its `isProduction` value from NODE_ENV and passes this to some plugins
         // like vite-plugin-vue
         if (process.env.TEST_ENV !== 'dev') {
           process.env.NODE_ENV = 'production'
         }
-      }
+      },
     },
     builder: isWebpack ? 'webpack' : 'vite',
   },

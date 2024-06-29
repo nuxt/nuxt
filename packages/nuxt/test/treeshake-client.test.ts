@@ -77,7 +77,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
     command: 'build',
     root: process.cwd(),
     build: { sourcemap: false },
-    define: {}
+    define: {},
   })
   const result = await (plugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
