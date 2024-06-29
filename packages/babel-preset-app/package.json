@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/babel-preset-app",
-  "version": "2.18.1",
+  "version": "2.18.2",
   "description": "babel-preset-app for nuxt",
   "repository": {
     "type": "git",
