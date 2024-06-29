@@ -27,6 +27,7 @@
         "3.x"
       ],
       "ignoreDeps": [
+        "@vitejs/plugin-vue",
         "nitro",
         "h3",
         "nuxt",
