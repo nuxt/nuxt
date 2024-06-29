@@ -67,10 +67,19 @@ const treeshake = async (source: string): Promise<string> => {
 }
 
 async function SFCCompile (name: string, source: string, options: Options, ssr = false): Promise<string> {
-  const result = await (vuePlugin({
+  const plugin = vuePlugin({
     compiler: VueCompilerSFC,
     ...options,
-  }).transform! as Function).call({
+  })
+  // @ts-expect-error
+  plugin.configResolved!({
+    isProduction: options.isProduction,
+    command: 'build',
+    root: process.cwd(),
+    build: { sourcemap: false },
+    define: {}
+  })
+  const result = await (plugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
       sourceType: 'module',
       ecmaVersion: 'latest',
@@ -110,8 +119,6 @@ const stateToTest: { index: number, name: string, options: Partial<Options & { d
 describe('treeshake client only in ssr', () => {
   vi.spyOn(process, 'cwd').mockImplementation(() => '')
   it.each(stateToTest)(`should treeshake ClientOnly correctly in $name`, async (state) => {
-    const env = process.env.NODE_ENV
-    process.env.NODE_ENV = state.options.isProduction ? 'production' : 'test'
     // add index to avoid using vite vue plugin cache
     const clientResult = await SFCCompile(`SomeComponent${state.index}.vue`, WithClientOnly, state.options)
 
@@ -186,7 +193,6 @@ describe('treeshake client only in ssr', () => {
       expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
     }
     expect(treeshaken.replace(/data-v-\w{8}/g, 'data-v-one-hash').replace(/scoped=\w{8}/g, 'scoped=one-hash')).toMatchSnapshot()
-    process.env.NODE_ENV = env
   })
 
   it('should not treeshake reused component #26137', async () => {
