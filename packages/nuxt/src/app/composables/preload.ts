@@ -23,6 +23,8 @@ export const preloadComponents = async (components: string | string[]) => {
  * @since 3.0.0
  */
 export const prefetchComponents = (components: string | string[]) => {
+  if (import.meta.server) { return }
+
   // TODO
   return preloadComponents(components)
 }
