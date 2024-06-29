@@ -34,7 +34,7 @@
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^5.0.7",
-    "@vitejs/plugin-vue": "^5.0.4",
+    "@vitejs/plugin-vue": "^5.0.5",
     "@vitejs/plugin-vue-jsx": "^4.0.0",
     "autoprefixer": "^10.4.19",
     "clear": "^0.1.0",
