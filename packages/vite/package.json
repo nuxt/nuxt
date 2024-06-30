@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "rollup": "4.18.0",
     "unbuild": "latest",
-    "vue": "3.4.30"
+    "vue": "3.4.31"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -54,14 +54,14 @@
     "pathe": "^1.1.2",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.1.1",
-    "postcss": "^8.4.38",
+    "postcss": "^8.4.39",
     "rollup-plugin-visualizer": "^5.12.0",
     "std-env": "^3.7.0",
     "strip-literal": "^2.1.0",
     "ufo": "^1.5.3",
     "unenv": "^1.9.0",
-    "unplugin": "^1.10.1",
-    "vite": "^5.3.1",
+    "unplugin": "^1.10.2",
+    "vite": "^5.3.2",
     "vite-node": "^1.6.0",
     "vite-plugin-checker": "^0.6.4",
     "vue-bundle-renderer": "^2.1.0"
