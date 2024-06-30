@@ -17,7 +17,7 @@ import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { HeadEntryOptions } from '@unhead/schema'
+import type { HeadEntryOptions, HeadTag } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
 
@@ -78,10 +78,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: {
-    link: (Record<string, string>)[]
-    style: ({ innerHTML: string, key: string })[]
-  }
+  head: HeadTag[]
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -480,21 +477,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: NuxtIslandResponse['head'] = {
-      link: [],
-      style: [],
-    }
-    for (const tag of await head.resolveTags()) {
-      if (tag.tag === 'link') {
-        islandHead.link.push({ key: 'island-link-' + hash(tag.props), ...tag.props })
-      } else if (tag.tag === 'style' && tag.innerHTML) {
-        islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
-      }
-    }
+    // re-push inlined styles
+    head.push({ style: inlinedStyles })
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: islandHead,
-      html: getServerComponentHTML(htmlContext.body),
+      head: (await head.resolveTags()).map(tag => ({ ...tag, props: { innerHTML: tag.innerHTML, key: 'island-tag-' + hash(tag.innerHTML ?? tag.props), ...tag.props } })) as HeadTag[],
+      html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
     }
@@ -637,8 +625,8 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-function getServerComponentHTML (body: string[]): string {
-  const match = body[0].match(ROOT_NODE_REGEX)
+function getServerComponentHTML (body: string): string {
+  const match = body.match(ROOT_NODE_REGEX)
   return match ? match[1] : body[0]
 }
 

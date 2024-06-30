@@ -1,9 +1,9 @@
 import type { Component, PropType, VNode } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, reactive, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { useHead } from '@unhead/vue'
+import { type Head, useHead, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -158,8 +158,9 @@ export default defineComponent({
       return html
     })
 
-    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
-    useHead(cHead)
+    const cHead = ref([])
+
+    const head = injectHead()
 
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
@@ -199,8 +200,10 @@ export default defineComponent({
       }
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-        cHead.value.link = res.head.link
-        cHead.value.style = res.head.style
+
+        const newHead: Head = {}
+        
+        cHead.value = newHead
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
