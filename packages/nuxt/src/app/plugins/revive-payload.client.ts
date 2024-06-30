@@ -31,11 +31,6 @@ if (componentIslands) {
     }
     return {
       html: '',
-      state: {},
-      head: {
-        link: [],
-        style: [],
-      },
       ...result,
     }
   }

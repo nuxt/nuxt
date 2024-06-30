@@ -17,9 +17,10 @@ import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { HeadEntryOptions, HeadTag } from '@unhead/schema'
+import type { Head, HeadEntryOptions, MergeHead } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead } from '@unhead/vue'
+import { toValue } from 'vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 
@@ -78,7 +79,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: HeadTag[]
+  head: Head[]
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -477,11 +478,31 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    // re-push inlined styles
+    // re-push inlined styles - head is reset by the island renderer
     head.push({ style: inlinedStyles })
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: (await head.resolveTags()).map(tag => ({ ...tag, props: { innerHTML: tag.innerHTML, key: 'island-tag-' + hash(tag.innerHTML ?? tag.props), ...tag.props } })) as HeadTag[],
+      head: head.headEntries().filter((h) => {
+        if (h.resolvedInput) {
+          const resolvedInput = toValue(h.resolvedInput)
+          for (const key in resolvedInput) {
+            const input = resolvedInput[key as keyof MergeHead]
+            if (Array.isArray(input)) {
+              if (toValue(input).length === 0) {
+                delete resolvedInput[key as keyof MergeHead]
+              } else {
+                // @ts-expect-error todo fix this
+                input.forEach((i) => { if (typeof i === 'object') { i.key = 'island-key-' + hash(i) } })
+              }
+            }
+          }
+          if (Object.keys(h.resolvedInput).length) {
+            return true
+          }
+        }
+
+        return false
+      }).map(h => h.resolvedInput) as Head[],
       html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),

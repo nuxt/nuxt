@@ -79,6 +79,7 @@
       style="color: red;"
       class="client-only"
     />
+    <NuxtIsland name="AsyncServerComponent" ref="island" />
     <ServerOnlyComponent
       class="server-only"
       style="background-color: gray;"
@@ -96,18 +97,42 @@
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
 import { useRuntimeConfig } from '#imports'
 import { importedRE, importedValue } from '~/some-exports'
+import type { NuxtIsland, ServerOnlyComponent } from '#build/components'
 
 setupDevtoolsPlugin({}, () => {}) as any
-
+const island = ref<InstanceType<typeof ServerOnlyComponent>>()
 const config = useRuntimeConfig()
-
+ 
 const someValue = useState('val', () => 1)
 
 const NestedCounter = resolveComponent('NestedCounter')
 if (!NestedCounter) {
   throw new Error('Component not found')
 }
-
+useHead({ 
+  meta: [
+    {
+      name: 'author',
+      content: 'Nuxt',
+      key: 'testkey',
+    },
+    {
+      name: 'author',
+      content: 'Nuxt',
+      key: 'testkey',
+    },
+  ],
+  script: [
+    {
+      innerHTML: 'console.log("my script")',
+      key: 'my-script',
+    },
+    {
+      innerHTML: 'console.log("my script")',
+      key: 'my-script',
+    },
+  ] 
+}, {key: 'testkey'})
 definePageMeta({
   alias: '/some-alias',
   other: ref('test'),

@@ -3,7 +3,7 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { type Head, useHead, injectHead } from '@unhead/vue'
+import { injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -96,7 +96,7 @@ export default defineComponent({
       if (result.props) { toRevive.props = result.props }
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
-
+      if (result.head) { toRevive.head = result.head }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -158,8 +158,6 @@ export default defineComponent({
       return html
     })
 
-    const cHead = ref([])
-
     const head = injectHead()
 
     async function _fetchComponent (force = false) {
@@ -201,9 +199,6 @@ export default defineComponent({
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 
-        const newHead: Head = {}
-        
-        cHead.value = newHead
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
@@ -249,6 +244,13 @@ export default defineComponent({
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
+    }
+
+    if (nuxtApp.isHydrating) {
+      // re-push head into active head instance
+      nuxtApp.payload.data[`${props.name}_${hashId.value}`]?.head?.forEach((h) => {
+        head.push(h)
+      })
     }
 
     return (_ctx: any, _cache: any) => {
