@@ -3,6 +3,12 @@ import { defineUntypedSchema } from 'untyped'
 export default defineUntypedSchema({
   postcss: {
     /**
+     * A strategy for ordering PostCSS plugins.
+     *
+     * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[], presets: Record<string, (plugins: string[]) => string[]>) => string[])}
+     */
+    order: 'autoprefixerAndCssnanoLast',
+    /**
      * Options for configuring PostCSS plugins.
      *
      * https://postcss.org/
