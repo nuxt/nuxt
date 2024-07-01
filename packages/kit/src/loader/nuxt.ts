@@ -39,13 +39,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   const rootDir = pathToFileURL(nuxt.options.rootDir).href
 
-  // Nuxt 3
-  if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt-nightly', rootDir) || await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
-    return build(nuxt)
-  }
-
-  // Nuxt 2
-  const { build } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
+  const { build } = await tryImportModule('nuxt-nightly', rootDir) || await importModule('nuxt', rootDir)
   return build(nuxt)
 }
