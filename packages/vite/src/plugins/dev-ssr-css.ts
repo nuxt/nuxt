@@ -22,9 +22,22 @@ export function devStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
         moduleId = moduleId.slice(options.srcDir.length)
       }
 
-      // When dev `<style>` is injected, remove the `<link>` styles from manifest
-      const selectors = [joinURL(options.buildAssetsURL, moduleId), joinURL(options.buildAssetsURL, '@fs', moduleId)]
-      return code + selectors.map(selector => `\ndocument.querySelectorAll(\`link[href="${selector}"]\`).forEach(i=>i.remove())`).join('')
+      // When dev <style> is injected, remove the <link> styles from manifest
+      const selectors = [
+        joinURL(options.buildAssetsURL, moduleId),
+        joinURL(options.buildAssetsURL, '@fs', moduleId)
+      ]
+
+      // Added custom attribute check
+      const updatedCode = selectors.map(selector => `
+        document.querySelectorAll('link[href="${selector}"]').forEach(i => {
+          if (i.getAttribute('data-vite-dev-style')) {
+            i.remove();
+          }
+        })
+      `).join('')
+
+      return code + updatedCode
     },
   }
 }
