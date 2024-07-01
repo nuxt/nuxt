@@ -25,7 +25,7 @@ export function devStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
       // When dev <style> is injected, remove the <link> styles from manifest
       const selectors = [
         joinURL(options.buildAssetsURL, moduleId),
-        joinURL(options.buildAssetsURL, '@fs', moduleId)
+        joinURL(options.buildAssetsURL, '@fs', moduleId),
       ]
 
       // Added custom attribute check
