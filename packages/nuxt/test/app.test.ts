@@ -52,6 +52,14 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {
+            "mode": "server",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+          },
+          {
             "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
