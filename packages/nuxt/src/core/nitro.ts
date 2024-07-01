@@ -503,11 +503,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       for (const route of ['/200.html', '/404.html']) {
         routes.add(route)
       }
-      if (nuxt.options.ssr) {
-        if (nitro.options.prerender.crawlLinks) {
-          routes.add('/')
-        }
-      } else {
+      if (!nuxt.options.ssr) {
         routes.add('/index.html')
       }
     })
