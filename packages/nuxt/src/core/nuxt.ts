@@ -472,21 +472,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add <NuxtIsland>
-  if (nuxt.options.experimental.componentIslands) {
-    addComponent({
-      name: 'NuxtIsland',
-      priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
-    })
-
-    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
-      nuxt.options.ssr = true
-      nuxt.options.nitro.routeRules ||= {}
-      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
-    }
-  }
-
   // Add stubs for <NuxtImg> and <NuxtPicture>
   for (const name of ['NuxtImg', 'NuxtPicture']) {
     addComponent({
@@ -496,38 +481,6 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
       // @ts-expect-error TODO: refactor to nuxi
       _internal_install: '@nuxt/image',
-    })
-  }
-
-  // Add prerender payload support
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
-  // Add experimental cross-origin prefetch support using Speculation Rules API
-  if (nuxt.options.experimental.crossOriginPrefetch) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
-  }
-
-  // Add experimental page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
-  }
-  // Add experimental session restoration support
-  if (nuxt.options.experimental.restoreState) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
-  }
-
-  // Add experimental automatic view transition api support
-  if (nuxt.options.experimental.viewTransition) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
-  }
-
-  // Add experimental support for custom types in JSON payload
-  if (nuxt.options.experimental.renderJsonPayloads) {
-    nuxt.hooks.hook('modules:done', () => {
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
     })
   }
 
@@ -573,6 +526,51 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+
+  // Add <NuxtIsland>
+  if (nuxt.options.experimental.componentIslands) {
+    addComponent({
+      name: 'NuxtIsland',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
+    })
+
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
+  }
+
+  // Add prerender payload support
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
+
+  // Add experimental cross-origin prefetch support using Speculation Rules API
+  if (nuxt.options.experimental.crossOriginPrefetch) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
+  }
+
+  // Add experimental page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
+  }
+  // Add experimental session restoration support
+  if (nuxt.options.experimental.restoreState) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
+  }
+
+  // Add experimental automatic view transition api support
+  if (nuxt.options.experimental.viewTransition) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+  }
+
+  // Add experimental support for custom types in JSON payload
+  if (nuxt.options.experimental.renderJsonPayloads) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+  }
 
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
