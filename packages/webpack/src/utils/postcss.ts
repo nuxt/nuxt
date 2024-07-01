@@ -1,6 +1,5 @@
 import { fileURLToPath } from 'node:url'
 import createResolver from 'postcss-import-resolver'
-import { requireModule } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
 
@@ -23,8 +22,8 @@ const orderPresets = {
   },
 }
 
-export const getPostcssConfig = (nuxt: Nuxt) => {
-  function sortPlugins ({ plugins, order }: any) {
+export const getPostcssConfig = async (nuxt: Nuxt) => {
+  async function sortPlugins ({ plugins, order }: any) {
     const names = Object.keys(plugins)
     if (typeof order === 'string') {
       order = orderPresets[order as keyof typeof orderPresets]
@@ -62,13 +61,14 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
     const cwd = fileURLToPath(new URL('.', import.meta.url))
-    postcssOptions.plugins = sortPlugins(postcssOptions).map((pluginName: string) => {
-      // TODO: remove use of requireModule in favour of ESM import
-      const pluginFn = requireModule(pluginName, { paths: [cwd] })
-      const pluginOptions = postcssOptions.plugins[pluginName]
-      if (!pluginOptions || typeof pluginFn !== 'function') { return null }
-      return pluginFn(pluginOptions)
-    }).filter(Boolean)
+    postcssOptions.plugins = await Promise.all(
+      sortPlugins(postcssOptions).map(async (pluginName: string) => {
+        const { default: pluginFn } = await import(pluginName)
+        const pluginOptions = postcssOptions.plugins[pluginName]
+        if (!pluginOptions || typeof pluginFn !== 'function') { return null }
+        return pluginFn(pluginOptions)
+      })
+    ).filter(Boolean)
   }
 
   return {
