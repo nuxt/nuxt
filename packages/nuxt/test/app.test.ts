@@ -52,12 +52,8 @@ describe('resolveApp', () => {
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {
-            "mode": "server",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.server.ts",
-          },
-          {
             "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -72,10 +68,6 @@ describe('resolveApp', () => {
           {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
