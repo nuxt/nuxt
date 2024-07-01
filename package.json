@@ -71,7 +71,7 @@
     "eslint-plugin-perfectionist": "2.11.0",
     "eslint-typegen": "0.2.4",
     "execa": "9.3.0",
-    "globby": "14.0.1",
+    "globby": "14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "14.12.3",
     "jiti": "1.21.6",
