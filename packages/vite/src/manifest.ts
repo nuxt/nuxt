@@ -8,7 +8,7 @@ import { normalizeViteManifest } from 'vue-bundle-renderer'
 import type { Manifest } from 'vue-bundle-renderer'
 import type { ViteBuildContext } from './vite'
 
-export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) {
+export async function writeManifest (ctx: ViteBuildContext) {
   // Write client manifest for use in vue-bundle-renderer
   const clientDist = resolve(ctx.nuxt.options.buildDir, 'dist/client')
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
@@ -17,7 +17,7 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
     '@vite/client': {
       isEntry: true,
       file: '@vite/client',
-      css,
+      css: [],
       module: true,
       resourceType: 'script',
     },
