@@ -83,7 +83,7 @@
     "rimraf": "5.0.7",
     "semver": "7.6.2",
     "std-env": "3.7.0",
-    "typescript": "5.5.2",
+    "typescript": "5.5.3",
     "ufo": "1.5.3",
     "vitest": "1.6.0",
     "vitest-environment-nuxt": "1.0.0",
