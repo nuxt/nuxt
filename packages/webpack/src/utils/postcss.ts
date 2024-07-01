@@ -65,13 +65,14 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     // Map postcss plugins into instances on object mode once
     const cwd = fileURLToPath(new URL('.', import.meta.url))
     const plugins: Plugin[] = []
-    for (const pluginName in sortPlugins(postcssOptions)) {
+    for (const pluginName of sortPlugins(postcssOptions)) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
       const path = await tryResolveModule(pluginName, nuxt.options.modulesDir)
 
       let pluginFn: (opts: Record<string, any>) => Plugin
+      // TODO: use jiti v2
       if (path) {
         pluginFn = await import(pathToFileURL(path).href).then(interopDefault)
       } else {

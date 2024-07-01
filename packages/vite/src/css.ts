@@ -18,7 +18,7 @@ const orderPresets = {
   cssnanoLast: ensureItemIsLast('cssnano'),
   autoprefixerLast: ensureItemIsLast('autoprefixer'),
   autoprefixerAndCssnanoLast (names: string[]) {
-    return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
+    return orderPresets.autoprefixerLast(orderPresets.cssnanoLast(names))
   },
 }
 
@@ -42,13 +42,14 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
   const postcssOptions = nuxt.options.postcss
 
   const cwd = fileURLToPath(new URL('.', import.meta.url))
-  for (const pluginName in sortPlugins(postcssOptions)) {
+  for (const pluginName of sortPlugins(postcssOptions)) {
     const pluginOptions = postcssOptions.plugins[pluginName]
     if (!pluginOptions) { continue }
 
     const path = await tryResolveModule(pluginName, nuxt.options.modulesDir)
 
     let pluginFn: (opts: Record<string, any>) => Plugin
+    // TODO: use jiti v2
     if (path) {
       pluginFn = await import(pathToFileURL(path).href).then(interopDefault)
     } else {
