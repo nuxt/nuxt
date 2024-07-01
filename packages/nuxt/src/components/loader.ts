@@ -58,7 +58,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
-            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
+            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
