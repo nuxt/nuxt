@@ -23,7 +23,7 @@ const orderPresets = {
 }
 
 export const getPostcssConfig = async (nuxt: Nuxt) => {
-  async function sortPlugins ({ plugins, order }: any) {
+  function sortPlugins ({ plugins, order }: any) {
     const names = Object.keys(plugins)
     if (typeof order === 'string') {
       order = orderPresets[order as keyof typeof orderPresets]
@@ -60,15 +60,20 @@ export const getPostcssConfig = async (nuxt: Nuxt) => {
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
-    const cwd = fileURLToPath(new URL('.', import.meta.url))
     postcssOptions.plugins = await Promise.all(
       sortPlugins(postcssOptions).map(async (pluginName: string) => {
-        const { default: pluginFn } = await import(pluginName)
-        const pluginOptions = postcssOptions.plugins[pluginName]
-        if (!pluginOptions || typeof pluginFn !== 'function') { return null }
-        return pluginFn(pluginOptions)
+        try {
+          const { default: pluginFn } = await import(pluginName)
+          const pluginOptions = postcssOptions.plugins[pluginName]
+          if (typeof pluginFn === 'function') {
+            return pluginFn(pluginOptions)
+          }
+        } catch (error) {
+          console.error(`Failed to import plugin ${pluginName}:`, error)
+        }
+        return null
       })
-    ).filter(Boolean)
+    ).then(plugins => plugins.filter(Boolean) as any) // Await Promise.all and then filter out null values
   }
 
   return {
