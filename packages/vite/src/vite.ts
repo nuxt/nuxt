@@ -123,6 +123,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
+  // TODO: this may no longer be needed with most recent vite version
   if (nuxt.options.dev) {
     // Identify which layers will need to have an extra resolve step.
     const layerDirs: string[] = []
@@ -133,17 +134,24 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     }
     if (layerDirs.length > 0) {
-      ctx.config.plugins!.push({
-        name: 'nuxt:optimize-layer-deps',
-        enforce: 'pre',
-        async resolveId (source, _importer) {
-          if (!_importer) { return }
-          const importer = normalize(_importer)
-          if (layerDirs.some(dir => importer.startsWith(dir))) {
+      // Reverse so longest/most specific directories are searched first
+      layerDirs.sort().reverse()
+      ctx.nuxt.hook('vite:extendConfig', (config) => {
+        const dirs = [...layerDirs]
+        config.plugins!.push({
+          name: 'nuxt:optimize-layer-deps',
+          enforce: 'pre',
+          async resolveId (source, _importer) {
+            if (!_importer || !dirs.length) { return }
+            const importer = normalize(_importer)
+            const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
             // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
-            await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
-          }
-        },
+            if (layerIndex !== -1) {
+              dirs.splice(layerIndex, 1)
+              await this.resolve(source, join(nuxt.options.srcDir, 'index.html'), { skipSelf: true }).catch(() => null)
+            }
+          },
+        })
       })
     }
   }
