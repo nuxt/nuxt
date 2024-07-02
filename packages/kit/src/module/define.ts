@@ -112,7 +112,6 @@ function _defineNuxtModule<
     }
 
     // Call setup
-    const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
     const start = performance.now()
     const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
     const perf = performance.now() - start
