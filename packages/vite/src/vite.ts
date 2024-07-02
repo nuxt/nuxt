@@ -144,7 +144,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           async resolveId (source, _importer) {
             if (!_importer || !dirs.length) { return }
             const importer = normalize(_importer)
-            const layerIndex = dirs.findIndex((dir) => importer.startsWith(dir))
+            const layerIndex = dirs.findIndex(dir => importer.startsWith(dir))
             // Trigger vite to optimize dependencies imported within a layer, just as if they were imported in final project
             if (layerIndex !== -1) {
               dirs.splice(layerIndex, 1)
