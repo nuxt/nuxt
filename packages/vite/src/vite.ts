@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
+import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -217,15 +217,27 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {
-      const start = Date.now()
-      warmupViteServer(server, [ctx.entry], env.isServer)
-        .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
-        .catch(logger.error)
+      // Don't delay nitro build for warmup
+      useNitro().hooks.hookOnce('compiled', () => {
+        const start = Date.now()
+        warmupViteServer(server, [ctx.entry], env.isServer)
+          .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
+          .catch(logger.error)
+      })
     }
   })
 
-  await buildClient(ctx)
-  await buildServer(ctx)
+  await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
+  await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
+
+async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
+  if (!enabled) { return fn() }
+
+  const start = performance.now()
+  await fn()
+  const duration = performance.now() - start
+  logger.success(`${message} in ${Math.round(duration)}ms`)
+}
