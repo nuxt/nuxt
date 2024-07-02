@@ -36,8 +36,6 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       'postcss-url': {},
     },
     sourceMap: nuxt.options.webpack.cssSourceMap,
-    // Array, String or Function
-    order: 'autoprefixerAndCssnanoLast' as const,
   })
 
   // Keep the order of default plugins
