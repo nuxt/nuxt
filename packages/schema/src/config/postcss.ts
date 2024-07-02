@@ -22,7 +22,7 @@ export default defineUntypedSchema({
     /**
      * A strategy for ordering PostCSS plugins.
      *
-     * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[], presets: Record<string, (plugins: string[]) => string[]>) => string[])}
+     * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[]) => string[])}
      */
     order: {
       $resolve: (val: string | string[] | ((plugins: string[]) => string[])): string[] | ((plugins: string[]) => string[]) => {
