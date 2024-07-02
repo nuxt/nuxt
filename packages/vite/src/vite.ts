@@ -219,7 +219,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     if (nuxt.options.vite.warmupEntry !== false) {
       // Don't delay nitro build for warmup
-      useNitro().hooks.hook('compiled', () => {
+      useNitro().hooks.hookOnce('compiled', () => {
         const start = Date.now()
         warmupViteServer(server, [ctx.entry], env.isServer)
           .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
