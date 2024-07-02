@@ -76,7 +76,7 @@
     "nitropack": "2.9.7",
     "nuxi": "3.12.0",
     "nuxt": "workspace:*",
-    "nuxt-content-twoslash": "0.0.10",
+    "nuxt-content-twoslash": "0.1.0",
     "ofetch": "1.3.4",
     "pathe": "1.1.2",
     "playwright-core": "1.45.0",
