@@ -9,11 +9,11 @@ import { node } from '../presets/node'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 
-export function server (ctx: WebpackConfigContext) {
+export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
   ctx.isServer = true
 
-  applyPresets(ctx, [
+  await applyPresets(ctx, [
     nuxt,
     node,
     serverStandalone,
