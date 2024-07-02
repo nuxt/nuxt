@@ -32,7 +32,7 @@ export default defineUntypedSchema({
           }
           return orderPresets[val as keyof typeof orderPresets]
         }
-        return val
+        return val ?? orderPresets.autoprefixerAndCssnanoLast
       }
     },
     /**
