@@ -68,7 +68,7 @@ importers:
         specifier: 2.4.6
         version: 2.4.6
       autoprefixer:
-        specifier: ^10.4.19
+        specifier: 10.4.19
         version: 10.4.19(postcss@8.4.39)
       case-police:
         specifier: 0.6.1
@@ -80,7 +80,7 @@ importers:
         specifier: 3.2.3
         version: 3.2.3
       cssnano:
-        specifier: ^7.0.3
+        specifier: 7.0.3
         version: 7.0.3(postcss@8.4.39)
       devalue:
         specifier: 5.0.0
