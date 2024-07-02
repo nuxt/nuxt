@@ -191,6 +191,7 @@ export async function _generateTypes (nuxt: Nuxt) {
         'ESNext',
         'dom',
         'dom.iterable',
+        'webworker',
       ],
       /* JSX support for Vue */
       jsx: 'preserve',

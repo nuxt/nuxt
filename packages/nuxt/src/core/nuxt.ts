@@ -661,7 +661,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
-  options._majorVersion = 3
+  options._majorVersion = 4
 
   // De-duplicate key arrays
   for (const key in options.app.head || {}) {
