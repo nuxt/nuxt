@@ -386,7 +386,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
   // 1.Extracted payload preloading
-  if (_PAYLOAD_EXTRACTION && !isRenderingIsland) {
+  if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS && !isRenderingIsland) {
     head.push({
       link: [
         process.env.NUXT_JSON_PAYLOADS
