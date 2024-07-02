@@ -46,7 +46,7 @@ counter.value = counter.value || Math.round(Math.random() * 1000)
 :link-example{to="/docs/examples/advanced/use-cookie"}
 
 ::note
-Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/api/utils/refresh-cookie).
+Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/api/utils/refresh-cookie).
 ::
 
 ## Options
@@ -153,7 +153,7 @@ Specifies the `boolean` or `string` value for [watch](https://vuejs.org/api/reac
 - `false` - Will not watch cookie ref data changes.
 
 ::note
-Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/api/utils/refresh-cookie).
+Refresh `useCookie` values manually when a cookie has changed with [`refreshCookie`](/docs/api/utils/refresh-cookie).
 ::
 
 **Example 1:**
