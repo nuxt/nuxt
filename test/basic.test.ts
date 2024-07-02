@@ -2681,6 +2681,51 @@ describe('lazy import components', () => {
   it('lazy load named component with mode server', () => {
     expect(html).toContain('lazy-named-comp-server')
   })
+
+  it('lazy load delayed hydration comps at the right time', async () => {
+    expect(html).toContain('This should be visible at first with network!')
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
+    const component = await page.locator('#lazyevent')
+    const rect = (await component.boundingBox())!
+    await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
+    await page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
+    )
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
+    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
+    await page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with viewport!')),
+    )
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
+    await page.close()
+  })
+
+  it('respects custom delayed hydration triggers and overrides defaults', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForLoadState('networkidle')
+    const component = await page.locator('#lazyevent2')
+    const rect = (await component.boundingBox())!
+    await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
+    await page.waitForTimeout(500)
+    await page.waitForLoadState('networkidle')
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
+    const resp = page.waitForResponse(response =>
+      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
+    )
+    await page.locator('#lazyevent2').click()
+    await resp
+    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
+    await page.close()
+  })
+  it('does not delay hydration of components named after modifiers', async () => {
+    const { page } = await renderPage('/lazy-import-components')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
+  })
 })
 
 describe('defineNuxtComponent watch duplicate', () => {
