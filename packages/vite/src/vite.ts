@@ -228,8 +228,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
-  withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
+  await withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
+  await withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
