@@ -4,8 +4,8 @@ import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 import { getPostcssConfig } from '../utils/postcss'
 
-export function style (ctx: WebpackConfigContext) {
-  applyPresets(ctx, [
+export async function style (ctx: WebpackConfigContext) {
+  await applyPresets(ctx, [
     loaders,
     extractCSS,
     minimizer,
@@ -32,32 +32,32 @@ function extractCSS (ctx: WebpackConfigContext) {
   }))
 }
 
-function loaders (ctx: WebpackConfigContext) {
+async function loaders (ctx: WebpackConfigContext) {
   // CSS
-  ctx.config.module!.rules!.push(createdStyleRule('css', /\.css$/i, null, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('css', /\.css$/i, null, ctx))
 
   // PostCSS
-  ctx.config.module!.rules!.push(createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
 
   // Less
   const lessLoader = { loader: 'less-loader', options: ctx.userConfig.loaders.less }
-  ctx.config.module!.rules!.push(createdStyleRule('less', /\.less$/i, lessLoader, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('less', /\.less$/i, lessLoader, ctx))
 
   // Sass (TODO: optional dependency)
   const sassLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.sass }
-  ctx.config.module!.rules!.push(createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
 
   const scssLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.scss }
-  ctx.config.module!.rules!.push(createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
 
   // Stylus
   const stylusLoader = { loader: 'stylus-loader', options: ctx.userConfig.loaders.stylus }
-  ctx.config.module!.rules!.push(createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
+  ctx.config.module!.rules!.push(await createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
 }
 
-function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
+async function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
   const styleLoaders = [
-    createPostcssLoadersRule(ctx),
+    await createPostcssLoadersRule(ctx),
     processorLoader,
   ].filter(Boolean)
 
@@ -114,10 +114,10 @@ function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any)
   ]
 }
 
-function createPostcssLoadersRule (ctx: WebpackConfigContext) {
+async function createPostcssLoadersRule (ctx: WebpackConfigContext) {
   if (!ctx.options.postcss) { return }
 
-  const config = getPostcssConfig(ctx.nuxt)
+  const config = await getPostcssConfig(ctx.nuxt)
 
   if (!config) {
     return
