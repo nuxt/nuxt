@@ -8,7 +8,6 @@ import type { Plugin } from 'postcss'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
-
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
   return typeof order === 'function' ? order(names) : (order || names)

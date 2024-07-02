@@ -33,7 +33,7 @@ export default defineUntypedSchema({
           return orderPresets[val as keyof typeof orderPresets]
         }
         return val ?? orderPresets.autoprefixerAndCssnanoLast
-      }
+      },
     },
     /**
      * Options for configuring PostCSS plugins.
