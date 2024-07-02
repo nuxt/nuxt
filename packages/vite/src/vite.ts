@@ -228,8 +228,17 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }
   })
 
-  await buildClient(ctx)
-  await buildServer(ctx)
+  withLogs(() => buildClient(ctx), 'Vite client built', ctx.nuxt.options.dev)
+  withLogs(() => buildServer(ctx), 'Vite server built', ctx.nuxt.options.dev)
 }
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
+
+async function withLogs(fn: () => Promise<void>, message: string, enabled = true) {
+  if (!enabled) { return fn() }
+
+  const start = performance.now()
+  await fn()
+  const duration = performance.now() - start
+  logger.success(`${message} in ${Math.round(duration)}ms`)
+}
