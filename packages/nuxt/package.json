@@ -78,7 +78,7 @@
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "devalue": "^5.0.0",
-    "esbuild": "^0.22.0",
+    "esbuild": "^0.23.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "globby": "^14.0.2",
