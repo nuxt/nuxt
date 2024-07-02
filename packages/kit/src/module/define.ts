@@ -113,10 +113,10 @@ function _defineNuxtModule<
 
     // Call setup
     const key = `nuxt:module:${uniqueKey || (Math.round(Math.random() * 10000))}`
-    const mark = performance.mark(key)
+    const start = performance.now()
     const res = await module.setup?.call(null as any, _options, nuxt) ?? {}
-    const perf = performance.measure(key, mark.name)
-    const setupTime = Math.round((perf.duration * 100)) / 100
+    const perf = performance.now() - start
+    const setupTime = Math.round((perf * 100)) / 100
 
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
