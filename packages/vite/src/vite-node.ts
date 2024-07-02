@@ -1,8 +1,8 @@
-import { writeFile } from 'node:fs/promises'
+import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
-import { isAbsolute, normalize, resolve } from 'pathe'
+import { isAbsolute, join, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
@@ -191,6 +191,8 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
 
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
+
+  await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
 
   await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
