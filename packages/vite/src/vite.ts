@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath } from '@nuxt/kit'
+import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -216,11 +216,15 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     })
 
+
     if (nuxt.options.vite.warmupEntry !== false) {
-      const start = Date.now()
-      warmupViteServer(server, [ctx.entry], env.isServer)
-        .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
-        .catch(logger.error)
+      // Don't delay nitro build for warmup
+      useNitro().hooks.hook('compiled', () => {
+        const start = Date.now()
+        warmupViteServer(server, [ctx.entry], env.isServer)
+          .then(() => logger.info(`Vite ${env.isClient ? 'client' : 'server'} warmed up in ${Date.now() - start}ms`))
+          .catch(logger.error)
+      })
     }
   })
 
