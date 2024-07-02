@@ -97,6 +97,9 @@ export async function buildServer (ctx: ViteBuildContext) {
       },
     },
     server: {
+      warmup: {
+        ssrFiles: [ctx.entry],
+      },
       // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
       preTransformRequests: false,
       hmr: false,
