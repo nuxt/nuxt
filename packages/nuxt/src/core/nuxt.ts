@@ -13,7 +13,7 @@ import { hash } from 'ohash'
 import consola from 'consola'
 import { colorize } from 'consola/utils'
 import { updateConfig } from 'c12/update'
-import { formatDate } from 'compatx'
+import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 
 import escapeRE from 'escape-string-regexp'
@@ -95,21 +95,32 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Prompt to set compatibility date
-  if (!nuxt.options.compatibilityDate) {
-    const todaysDate = formatDate(new Date())
+  nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
 
-    if (!warnedAboutCompatDate) {
-      // Print warning
-      console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file.`)
+  if (!nuxt.options.compatibilityDate.default) {
+    const todaysDate = formatDate(new Date())
+    nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
+
+    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
+    if (!shouldShowPrompt) {
+      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
-    // Prompt to update in dev mode
-    if (!warnedAboutCompatDate && nuxt.options.dev && hasTTY && !isCI) {
-      const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
-        type: 'confirm',
-        default: true,
-      })
-      if (result === true) {
+    nuxt.hooks.hookOnce('nitro:init', nitro => {
+      nitro.hooks.hookOnce('compiled', async () => {
+        warnedAboutCompatDate = true
+        // Print warning
+        console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
+        if (!shouldShowPrompt) { return }
+
+        const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
+          type: 'confirm',
+          default: true,
+        })
+        if (result !== true) {
+          console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+          return
+        }
         const res = await updateConfig({
           configFile: 'nuxt.config',
           cwd: nuxt.options.rootDir,
@@ -128,23 +139,14 @@ async function initNuxt (nuxt: Nuxt) {
           },
         }).catch((error) => {
           consola.error(`Failed to update config: ${error.message}`)
-          return null
+          console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         })
         if (res?.configFile) {
-          nuxt.options.compatibilityDate = todaysDate
+          nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
           consola.success(`Compatibility date set to \`${todaysDate}\` in \`${relative(nuxt.options.rootDir, res.configFile)}\``)
         }
-      }
-    }
-
-    if (!nuxt.options.compatibilityDate) {
-      nuxt.options.compatibilityDate = fallbackCompatibilityDate
-      if (!warnedAboutCompatDate) {
-        console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
-      }
-    }
-
-    warnedAboutCompatDate = true
+      })
+    })
   }
 
   // Restart Nuxt when layer directories are added or removed
