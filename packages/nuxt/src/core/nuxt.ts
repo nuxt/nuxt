@@ -149,7 +149,7 @@ async function initNuxt (nuxt: Nuxt) {
       console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
-    nuxt.hooks.hookOnce('nitro:init', nitro => {
+    nuxt.hooks.hookOnce('nitro:init', (nitro) => {
       if (warnedAboutCompatDate) { return }
 
       nitro.hooks.hookOnce('compiled', () => {
