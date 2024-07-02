@@ -19,6 +19,7 @@ import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
+import { distDir } from './dirs'
 
 export interface ViteBuildContext {
   nuxt: Nuxt
@@ -31,6 +32,8 @@ export interface ViteBuildContext {
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   const useAsyncEntry = nuxt.options.experimental.asyncEntry || nuxt.options.dev
   const entry = await resolvePath(resolve(nuxt.options.appDir, useAsyncEntry ? 'entry.async' : 'entry'))
+
+  nuxt.options.modulesDir.push(distDir)
 
   let allowDirs = [
     nuxt.options.appDir,
@@ -71,7 +74,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             'abort-controller': 'unenv/runtime/mock/empty',
           },
         },
-        css: resolveCSSOptions(nuxt),
+        css: await resolveCSSOptions(nuxt),
         define: {
           __NUXT_VERSION__: JSON.stringify(nuxt._version),
           __NUXT_ASYNC_CONTEXT__: nuxt.options.experimental.asyncContext,
