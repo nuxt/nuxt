@@ -8,29 +8,10 @@ import type { Plugin } from 'postcss'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
-const ensureItemIsLast = (item: string) => (arr: string[]) => {
-  const index = arr.indexOf(item)
-  if (index !== -1) {
-    arr.splice(index, 1)
-    arr.push(item)
-  }
-  return arr
-}
-
-const orderPresets = {
-  cssnanoLast: ensureItemIsLast('cssnano'),
-  autoprefixerLast: ensureItemIsLast('autoprefixer'),
-  autoprefixerAndCssnanoLast (names: string[]) {
-    return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
-  },
-}
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
-  if (typeof order === 'string') {
-    order = orderPresets[order]
-  }
-  return typeof order === 'function' ? order(names, orderPresets) : (order || names)
+  return typeof order === 'function' ? order(names) : (order || names)
 }
 
 export async function getPostcssConfig (nuxt: Nuxt) {

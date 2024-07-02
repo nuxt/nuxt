@@ -5,29 +5,9 @@ import type { InlineConfig as ViteConfig } from 'vite'
 import { interopDefault } from 'mlly'
 import type { Plugin } from 'postcss'
 
-const ensureItemIsLast = (item: string) => (arr: string[]) => {
-  const index = arr.indexOf(item)
-  if (index !== -1) {
-    arr.splice(index, 1)
-    arr.push(item)
-  }
-  return arr
-}
-
-const orderPresets = {
-  cssnanoLast: ensureItemIsLast('cssnano'),
-  autoprefixerLast: ensureItemIsLast('autoprefixer'),
-  autoprefixerAndCssnanoLast (names: string[]) {
-    return orderPresets.autoprefixerLast(orderPresets.cssnanoLast(names))
-  },
-}
-
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
-  if (typeof order === 'string') {
-    order = orderPresets[order]
-  }
-  return typeof order === 'function' ? order(names, orderPresets) : (order || names)
+  return typeof order === 'function' ? order(names) : (order || names)
 }
 
 export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']> {
