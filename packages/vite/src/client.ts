@@ -217,6 +217,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
+    ctx.nuxt.hook('close', async () => viteServer.close())
     await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
     const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
     viteServer.middlewares.stack.splice(transformHandler, 0, {
@@ -257,10 +258,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       })
     })
     await ctx.nuxt.callHook('server:devHandler', viteMiddleware)
-
-    ctx.nuxt.hook('close', async () => {
-      await viteServer.close()
-    })
   } else {
     // Build
     logger.info('Building client...')
