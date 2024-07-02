@@ -123,6 +123,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.config.build!.watch = undefined
   }
 
+  // TODO: this may no longer be needed with most recent vite version
   if (nuxt.options.dev) {
     // Identify which layers will need to have an extra resolve step.
     const layerDirs: string[] = []
