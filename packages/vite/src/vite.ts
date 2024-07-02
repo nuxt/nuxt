@@ -216,7 +216,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       }
     })
 
-
     if (nuxt.options.vite.warmupEntry !== false) {
       // Don't delay nitro build for warmup
       useNitro().hooks.hookOnce('compiled', () => {
@@ -234,7 +233,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
 const globalThisReplacements = Object.fromEntries([';', '(', '{', '}', ' ', '\t', '\n'].map(d => [`${d}global.`, `${d}globalThis.`]))
 
-async function withLogs(fn: () => Promise<void>, message: string, enabled = true) {
+async function withLogs (fn: () => Promise<void>, message: string, enabled = true) {
   if (!enabled) { return fn() }
 
   const start = performance.now()
