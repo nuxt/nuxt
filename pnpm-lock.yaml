@@ -670,6 +670,9 @@ importers:
       h3:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
+      jiti:
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
       knitwork:
         specifier: ^1.1.0
         version: 1.1.0
@@ -791,6 +794,9 @@ importers:
       hash-sum:
         specifier: ^2.0.0
         version: 2.0.0
+      jiti:
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3
       knitwork:
         specifier: ^1.1.0
         version: 1.1.0
