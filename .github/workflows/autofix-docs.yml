@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build (stub)
+        run: pnpm dev:prepare
+
       - name: Lint (docs)
         run: pnpm lint:docs:fix
 
