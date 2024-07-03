@@ -1,10 +1,10 @@
 import { pathToFileURL } from 'node:url'
 import { normalize } from 'pathe'
 import { interopDefault } from 'mlly'
-import jiti from 'jiti'
+import { createJiti } from 'jiti'
 
 // TODO: use create-require for jest environment
-const _require = jiti(process.cwd(), { interopDefault: true, esmResolve: true })
+const jiti = createJiti(process.cwd(), { interopDefault: true })
 
 /** @deprecated Do not use CJS utils */
 export interface ResolveModuleOptions {
@@ -37,7 +37,7 @@ function clearRequireCache (id: string) {
   const entry = getRequireCacheItem(id)
 
   if (!entry) {
-    delete _require.cache[id]
+    delete jiti.cache[id]
     return
   }
 
@@ -49,13 +49,13 @@ function clearRequireCache (id: string) {
     clearRequireCache(child.id)
   }
 
-  delete _require.cache[id]
+  delete jiti.cache[id]
 }
 
 /** @deprecated Do not use CJS utils */
 function getRequireCacheItem (id: string) {
   try {
-    return _require.cache[id]
+    return jiti.cache[id]
   } catch (e) {
     // ignore issues accessing require.cache
   }
@@ -72,7 +72,7 @@ export function getNodeModulesPaths (paths?: string[] | string) {
 
 /** @deprecated Do not use CJS utils */
 export function resolveModule (id: string, opts: ResolveModuleOptions = {}) {
-  return normalize(_require.resolve(id, {
+  return normalize(jiti.resolve(id, {
     paths: getNodeModulesPaths(opts.paths),
   }))
 }
@@ -88,7 +88,7 @@ export function requireModule (id: string, opts: RequireModuleOptions = {}) {
   }
 
   // Try to require
-  const requiredModule = _require(resolvedPath)
+  const requiredModule = jiti(resolvedPath)
 
   return requiredModule
 }

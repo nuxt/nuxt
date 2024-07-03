@@ -78,7 +78,7 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.18.0",
-    "unbuild": "latest",
+    "unbuild": "3.0.0-rc.6",
     "vue": "3.4.31"
   },
   "peerDependencies": {
