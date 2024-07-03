@@ -1,5 +1,4 @@
 import { defu } from 'defu'
-import type { LoaderOptions } from 'esbuild-loader'
 import { defineUntypedSchema } from 'untyped'
 import type { VueLoaderOptions } from 'vue-loader'
 

@@ -4,7 +4,6 @@ import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
-import type { ResolvedConfig as ViteOptions } from 'vite'
 
 export default defineUntypedSchema({
   /**

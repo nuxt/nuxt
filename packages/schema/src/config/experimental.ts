@@ -94,7 +94,7 @@ export default defineUntypedSchema({
     /**
      * Enable to use experimental decorators in Nuxt and Nitro.
      *
-     * @link https://github.com/tc39/proposal-decorators
+     * @see https://github.com/tc39/proposal-decorators
      */
     decorators: false,
     /**
