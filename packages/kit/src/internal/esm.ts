@@ -50,6 +50,7 @@ const warnings = new Set<string>()
 export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
   if (!warnings.has(id)) {
     console.warn('[@nuxt/kit] `requireModule` is deprecated. Please use `importModule` instead.')
+    warnings.add(id)
   }
   const resolvedPath = resolveModule(id, opts)
   const jiti = createJiti(import.meta.url, {
