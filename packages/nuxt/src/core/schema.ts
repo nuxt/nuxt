@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { dirname, resolve } from 'pathe'
+import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { interopDefault } from 'mlly'
 import { defu } from 'defu'
@@ -23,7 +23,7 @@ export default defineNuxtModule({
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
-    const _resolveSchema = createJiti(dirname(fileURLToPath(import.meta.url)), {
+    const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
       interopDefault: true,
       cache: false,
       transformOptions: {
