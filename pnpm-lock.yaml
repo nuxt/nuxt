@@ -5,20 +5,20 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  nitro: npm:nitro-nightly@3.0.0-beta-28659787.859de2d6
-  typescript: 5.5.3
-  h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
-  c12: 2.0.0-beta.1
-  jiti: 2.0.0-beta.3
-  unbuild: 3.0.0-rc.6
   '@nuxt/kit': workspace:*
   '@nuxt/schema': workspace:*
   '@nuxt/ui-templates': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
+  c12: 2.0.0-beta.1
+  h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
+  jiti: 2.0.0-beta.3
   magic-string: ^0.30.10
+  nitro: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
   nuxt: workspace:*
   rollup: ^4.18.0
+  typescript: 5.5.3
+  unbuild: 3.0.0-rc.6
   vite: 5.3.3
   vue: 3.4.31
 
@@ -119,8 +119,8 @@ importers:
         specifier: 0.41.0
         version: 0.41.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28659787.859de2d6
-        version: nitro-nightly@3.0.0-beta-28659787.859de2d6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
+        version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
       nuxi:
         specifier: 3.12.0
         version: 3.12.0
@@ -237,8 +237,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28659787.859de2d6
-        version: nitro-nightly@3.0.0-beta-28659787.859de2d6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
+        version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
       unbuild:
         specifier: 3.0.0-rc.6
         version: 3.0.0-rc.6(sass@1.69.4)(typescript@5.5.3)(vue-tsc@2.0.24(typescript@5.5.3))
@@ -351,8 +351,8 @@ importers:
         specifier: ^1.7.1
         version: 1.7.1
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28659787.859de2d6
-        version: nitro-nightly@3.0.0-beta-28659787.859de2d6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
+        version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
       nuxi:
         specifier: ^3.12.0
         version: 3.12.0
@@ -545,8 +545,8 @@ importers:
         specifier: 5.3.1
         version: 5.3.1
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28659787.859de2d6
-        version: nitro-nightly@3.0.0-beta-28659787.859de2d6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
+        version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3)
       ofetch:
         specifier: 1.3.4
         version: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
@@ -1863,11 +1863,6 @@ packages:
       nuxt: workspace:*
       vite: 5.3.3
 
-  '@nuxt/devtools-kit@1.3.6':
-    resolution: {integrity: sha512-FM0s9CrTxwvaMcakWZc7oGqzSj4GPalcY3PmyZhollMyR2dqBB1n0ZfnTdLm8KUSgc7jdFR6DuG7PfQwAm06tQ==}
-    peerDependencies:
-      vite: 5.3.3
-
   '@nuxt/devtools-kit@1.3.9':
     resolution: {integrity: sha512-tgr/F+4BbI53/JxgaXl3cuV9dMuCXMsd4GEXN+JqtCdAkDbH3wL79GGWx0/6I9acGzRsB6UZ1H6U96nfgcIrAw==}
     peerDependencies:
@@ -2307,9 +2302,6 @@ packages:
 
   '@shikijs/core@1.10.1':
     resolution: {integrity: sha512-qdiJS5a/QGCff7VUFIqd0hDdWly9rDp8lhVmXVrS11aazX8LOTRLHAXkkEeONNsS43EcCd7gax9LLoOz4vlFQA==}
-
-  '@shikijs/core@1.6.4':
-    resolution: {integrity: sha512-WTU9rzZae1p2v6LOxMf6LhtmZOkIHYYW160IuahUyJy7YXPPjyWZLR1ag+SgD22ZMxZtz1gfU6Tccc8t0Il/XA==}
 
   '@shikijs/transformers@1.1.2':
     resolution: {integrity: sha512-tldkUMW7RBkU2F6eXbiRMw3ja+hQer1EjwhD2NGOv6K0pgZdVp3JKjU8uisRtg65tyBqrVHq7zlLHVk7EKmUZA==}
@@ -3070,11 +3062,6 @@ packages:
 
   acorn@7.4.1:
     resolution: {integrity: sha512-nQyp0o1/mNdbTO1PO6kHkwSrmgZ0MT/jCCpNiwbUjGoRN4dlBhqJtoQuCnEOKzgTVwg0ZWiCoQy6SxMebQVh8A==}
-    engines: {node: '>=0.4.0'}
-    hasBin: true
-
-  acorn@8.12.0:
-    resolution: {integrity: sha512-RTvkC4w+KNXrM39/lWCUaG0IbRkWdCv7W/IOW9oU6SawyxulvkQy5HQPVTKxEjczcUvapcrw3cFx/60VN/NRNw==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -4076,10 +4063,6 @@ packages:
     resolution: {integrity: sha512-ElQkdLMEEqQNM9Njff+2Y4q2afHk7JpkPvrd7Xh7xefwgQynqPxwf55J7di9+MEibWUGdNjFF9ITG9Pck5M84w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
-
-  espree@10.0.1:
-    resolution: {integrity: sha512-MWkrWZbJsL2UwnjxTX3gG8FneachS/Mwg7tdGXce011sJd5b0JG54vat5KHnfSBODZ3Wvzd2WnjxyzsRoVv+ww==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   espree@10.1.0:
     resolution: {integrity: sha512-M1M6CpiE6ffoigIOWYO9UDP8TMUw9kqb21tf+08IgDYjCsOvCuDt4jQcZmoYxx+w7zlKw9/N0KXfto+I8/FrXA==}
@@ -5088,9 +5071,6 @@ packages:
   mdast-util-find-and-replace@3.0.1:
     resolution: {integrity: sha512-SG21kZHGC3XRTSUhtofZkBzZTJNM5ecCi0SK2IMKmSXR8vO3peL+kb1O0z7Zl83jKtutG4k5Wv/W7V3/YHvzPA==}
 
-  mdast-util-from-markdown@2.0.0:
-    resolution: {integrity: sha512-n7MTOr/z+8NAX/wmhhDji8O3bRvPTV/U0oTCaZJkjhPSKTPhS3xufVhKGF8s1pJ7Ox4QgoIU7KHseh09S+9rTA==}
-
   mdast-util-from-markdown@2.0.1:
     resolution: {integrity: sha512-aJEUyzZ6TzlsX2s5B4Of7lN7EQtAxvtradMMglCQDyaTFgse6CmtmdJ15ElnVRlCg1vpNyVtbem0PWzlNieZsA==}
 
@@ -5388,8 +5368,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitro-nightly@3.0.0-beta-28659787.859de2d6:
-    resolution: {integrity: sha512-aFCJkpUWOfzWCZMb4m1julUFAtzQUhB8+g06aVg3j1NOJPE2/rEyAXBq/G4PcGMKmXV2CH1laoRGCi/O0Lhv+w==}
+  nitro-nightly@3.0.0-beta-28665895.e727afda:
+    resolution: {integrity: sha512-xVaHw8KDxkp9gn9thoN7Nf0qb7iPxTZ05QeiLWU6Dongt78wUTnan0oZkugj8x1eaFePCKZS8ZyWPjWkbThfQQ==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -5949,10 +5929,6 @@ packages:
   postcss-value-parser@4.2.0:
     resolution: {integrity: sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ==}
 
-  postcss@8.4.38:
-    resolution: {integrity: sha512-Wglpdk03BSfXkHoQa3b/oulrotAkwrlLDRSOb9D0bN86FdRyE9lppSp33aHNPgBa0JKCoB+drFLZkQoRRYae5A==}
-    engines: {node: ^10 || ^12 || >=14}
-
   postcss@8.4.39:
     resolution: {integrity: sha512-0vzE+lAiG7hZl1/9I8yzKLx3aR9Xbof3fBHKunvMfOCYAtMhrsnccJY2iTURb9EZd5+pLuiNV9/c/GZJOHsgIw==}
     engines: {node: ^10 || ^12 || >=14}
@@ -6351,9 +6327,6 @@ packages:
 
   shiki@1.10.1:
     resolution: {integrity: sha512-uafV7WCgN4YYrccH6yxpnps6k38sSTlFRrwc4jycWmhWxJIm9dPrk+XkY1hZ2t0I7jmacMNb15Lf2fspa/Y3lg==}
-
-  shiki@1.6.4:
-    resolution: {integrity: sha512-X88chM7w8jnadoZtjPTi5ahCJx9pc9f8GfEkZAEYUTlcUZIEw2D/RY86HI/LkkE7Nj8TQWkiBfaFTJ3VJT6ESg==}
 
   side-channel@1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
@@ -6840,10 +6813,6 @@ packages:
     peerDependenciesMeta:
       vue-router:
         optional: true
-
-  unplugin@1.10.2:
-    resolution: {integrity: sha512-KuPqnjU4HBcrSwmQatfdc5hU4xzaQrhoKqCKylwmLnbBvqj5udXL8cHrkOuYDoI4ESCwJIiAIKMujroIUKLgow==}
-    engines: {node: '>=14.0.0'}
 
   unplugin@1.11.0:
     resolution: {integrity: sha512-3r7VWZ/webh0SGgJScpWl2/MRCZK5d3ZYFcNaeci/GQ7Teop7zf0Nl2pUuz7G21BwPd9pcUPOC5KmJ2L3WgC5g==}
@@ -8066,13 +8035,6 @@ snapshots:
       nuxt: link:packages/nuxt
       vite: 5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0)
 
-  '@nuxt/devtools-kit@1.3.6(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))':
-    dependencies:
-      '@nuxt/kit': link:packages/kit
-      '@nuxt/schema': link:packages/schema
-      execa: 7.2.0
-      vite: 5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0)
-
   '@nuxt/devtools-kit@1.3.9(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))':
     dependencies:
       '@nuxt/kit': link:packages/kit
@@ -8229,7 +8191,7 @@ snapshots:
 
   '@nuxt/scripts@0.5.1(@nuxt/devtools@1.3.9(rollup@4.18.0)(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.60.4(rollup@4.18.0)(webpack@5.92.1(esbuild@0.23.0)))(@vue/compiler-core@3.4.31)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.39)(rollup@4.18.0)(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))(webpack@5.92.1(esbuild@0.23.0))':
     dependencies:
-      '@nuxt/devtools-kit': 1.3.6(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))
+      '@nuxt/devtools-kit': 1.3.9(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))
       '@nuxt/devtools-ui-kit': 1.3.3(@nuxt/devtools@1.3.9(rollup@4.18.0)(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.60.4(rollup@4.18.0)(webpack@5.92.1(esbuild@0.23.0)))(@vue/compiler-core@3.4.31)(nuxt@packages+nuxt)(postcss@8.4.39)(rollup@4.18.0)(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))(webpack@5.92.1(esbuild@0.23.0))
       '@nuxt/kit': link:packages/kit
       '@types/google.maps': 3.55.9
@@ -8249,7 +8211,7 @@ snapshots:
       pathe: 1.1.2
       pkg-types: 1.1.3
       semver: 7.6.2
-      shiki: 1.6.4
+      shiki: 1.10.1
       sirv: 2.0.4
       std-env: 3.7.0
       third-party-capital: 1.0.30
@@ -8702,8 +8664,6 @@ snapshots:
 
   '@shikijs/core@1.10.1': {}
 
-  '@shikijs/core@1.6.4': {}
-
   '@shikijs/transformers@1.1.2':
     dependencies:
       shiki: 1.1.2
@@ -8746,7 +8706,7 @@ snapshots:
       acorn: 8.12.1
       eslint: 9.6.0
       eslint-visitor-keys: 4.0.0
-      espree: 10.0.1
+      espree: 10.1.0
 
   '@stylistic/eslint-plugin-jsx@2.1.0(eslint@9.6.0)':
     dependencies:
@@ -9868,10 +9828,6 @@ snapshots:
     dependencies:
       event-target-shim: 5.0.1
 
-  acorn-import-attributes@1.9.5(acorn@8.12.0):
-    dependencies:
-      acorn: 8.12.0
-
   acorn-import-attributes@1.9.5(acorn@8.12.1):
     dependencies:
       acorn: 8.12.1
@@ -9883,8 +9839,6 @@ snapshots:
   acorn-walk@8.3.2: {}
 
   acorn@7.4.1: {}
-
-  acorn@8.12.0: {}
 
   acorn@8.12.1: {}
 
@@ -10373,7 +10327,7 @@ snapshots:
       dom-serializer: 2.0.0
       domhandler: 5.0.3
       htmlparser2: 8.0.2
-      postcss: 8.4.38
+      postcss: 8.4.39
       postcss-media-query-parser: 0.2.3
 
   croner@8.0.2: {}
@@ -11000,12 +10954,6 @@ snapshots:
       text-table: 0.2.0
     transitivePeerDependencies:
       - supports-color
-
-  espree@10.0.1:
-    dependencies:
-      acorn: 8.12.1
-      acorn-jsx: 5.3.2(acorn@8.12.1)
-      eslint-visitor-keys: 4.0.0
 
   espree@10.1.0:
     dependencies:
@@ -12099,23 +12047,6 @@ snapshots:
       unist-util-is: 6.0.0
       unist-util-visit-parents: 6.0.1
 
-  mdast-util-from-markdown@2.0.0:
-    dependencies:
-      '@types/mdast': 4.0.3
-      '@types/unist': 3.0.2
-      decode-named-character-reference: 1.0.2
-      devlop: 1.1.0
-      mdast-util-to-string: 4.0.0
-      micromark: 4.0.0
-      micromark-util-decode-numeric-character-reference: 2.0.1
-      micromark-util-decode-string: 2.0.0
-      micromark-util-normalize-identifier: 2.0.0
-      micromark-util-symbol: 2.0.0
-      micromark-util-types: 2.0.0
-      unist-util-stringify-position: 4.0.0
-    transitivePeerDependencies:
-      - supports-color
-
   mdast-util-from-markdown@2.0.1:
     dependencies:
       '@types/mdast': 4.0.3
@@ -12533,7 +12464,7 @@ snapshots:
 
   mlly@1.7.1:
     dependencies:
-      acorn: 8.12.0
+      acorn: 8.12.1
       pathe: 1.1.2
       pkg-types: 1.1.3
       ufo: 1.5.3
@@ -12560,7 +12491,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitro-nightly@3.0.0-beta-28659787.859de2d6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3):
+  nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.3):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.3
       '@netlify/functions': 2.7.0(@opentelemetry/api@1.9.0)
@@ -13286,12 +13217,6 @@ snapshots:
 
   postcss-value-parser@4.2.0: {}
 
-  postcss@8.4.38:
-    dependencies:
-      nanoid: 3.3.7
-      picocolors: 1.0.1
-      source-map-js: 1.2.0
-
   postcss@8.4.39:
     dependencies:
       nanoid: 3.3.7
@@ -13599,7 +13524,7 @@ snapshots:
   remark-parse@11.0.0:
     dependencies:
       '@types/mdast': 4.0.3
-      mdast-util-from-markdown: 2.0.0
+      mdast-util-from-markdown: 2.0.1
       micromark-util-types: 2.0.0
       unified: 11.0.5
     transitivePeerDependencies:
@@ -13814,10 +13739,6 @@ snapshots:
   shiki@1.10.1:
     dependencies:
       '@shikijs/core': 1.10.1
-
-  shiki@1.6.4:
-    dependencies:
-      '@shikijs/core': 1.6.4
 
   side-channel@1.0.4:
     dependencies:
@@ -14203,10 +14124,10 @@ snapshots:
 
   unctx@2.3.1:
     dependencies:
-      acorn: 8.12.0
+      acorn: 8.12.1
       estree-walker: 3.0.3
       magic-string: 0.30.10
-      unplugin: 1.10.2
+      unplugin: 1.11.0
 
   undici-types@5.26.5: {}
 
@@ -14246,7 +14167,7 @@ snapshots:
   unimport@3.7.2(rollup@4.18.0):
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.18.0)
-      acorn: 8.12.0
+      acorn: 8.12.1
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
       fast-glob: 3.3.2
@@ -14257,7 +14178,7 @@ snapshots:
       pkg-types: 1.1.3
       scule: 1.3.0
       strip-literal: 2.1.0
-      unplugin: 1.10.2
+      unplugin: 1.11.0
     transitivePeerDependencies:
       - rollup
 
@@ -14369,13 +14290,6 @@ snapshots:
     transitivePeerDependencies:
       - rollup
       - vue
-
-  unplugin@1.10.2:
-    dependencies:
-      acorn: 8.12.1
-      chokidar: 3.6.0
-      webpack-sources: 3.2.3
-      webpack-virtual-modules: 0.6.2
 
   unplugin@1.11.0:
     dependencies:
@@ -14781,8 +14695,8 @@ snapshots:
       '@webassemblyjs/ast': 1.12.1
       '@webassemblyjs/wasm-edit': 1.12.1
       '@webassemblyjs/wasm-parser': 1.12.1
-      acorn: 8.12.0
-      acorn-import-attributes: 1.9.5(acorn@8.12.0)
+      acorn: 8.12.1
+      acorn-import-attributes: 1.9.5(acorn@8.12.1)
       browserslist: 4.23.1
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.17.0
@@ -14812,8 +14726,8 @@ snapshots:
       '@webassemblyjs/ast': 1.12.1
       '@webassemblyjs/wasm-edit': 1.12.1
       '@webassemblyjs/wasm-parser': 1.12.1
-      acorn: 8.12.0
-      acorn-import-attributes: 1.9.5(acorn@8.12.0)
+      acorn: 8.12.1
+      acorn-import-attributes: 1.9.5(acorn@8.12.1)
       browserslist: 4.23.1
       chrome-trace-event: 1.0.3
       enhanced-resolve: 5.17.0
