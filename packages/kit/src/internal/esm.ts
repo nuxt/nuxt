@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import { interopDefault, resolvePath } from 'mlly'
+import { interopDefault, resolvePathSync } from 'mlly'
 
 export interface ResolveModuleOptions {
   paths?: string | string[]
@@ -11,16 +11,16 @@ export interface ResolveModuleOptions {
  *
  * @internal
  */
-export async function tryResolveModule (id: string, url: string | string[] = import.meta.url) {
+export function tryResolveModule (id: string, url: string | string[] = import.meta.url) {
   try {
-    return await resolvePath(id, { url })
+    return resolvePathSync(id, { url })
   } catch {
     // intentionally empty as this is a `try-` function
   }
 }
 
-export async function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return await resolvePath(id, { url: options?.paths ?? [import.meta.url] })
+export function resolveModule (id: string, options?: ResolveModuleOptions) {
+  return resolvePathSync(id, { url: options?.paths ?? [import.meta.url] })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {
