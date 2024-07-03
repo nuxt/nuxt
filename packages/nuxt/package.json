@@ -69,7 +69,7 @@
     "@unhead/ssr": "^1.9.14",
     "@unhead/vue": "^1.9.14",
     "@vue/shared": "^3.4.31",
-    "acorn": "8.12.0",
+    "acorn": "8.12.1",
     "c12": "^2.0.0-beta.1",
     "chokidar": "^3.6.0",
     "compatx": "^0.1.8",
