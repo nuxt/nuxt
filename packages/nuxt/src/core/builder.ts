@@ -1,9 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
-import { interopDefault } from 'mlly'
+import { importModule, isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
@@ -151,7 +149,7 @@ async function createParcelWatcher () {
     return false
   }
 
-  const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+  const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
   for (const layer of nuxt.options._layers) {
     if (!layer.config.srcDir) { continue }
     const watcher = subscribe(layer.config.srcDir, (err, events) => {
@@ -201,5 +199,5 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   if (!builderPath) {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
-  return import(pathToFileURL(builderPath).href)
+  return importModule(builderPath)
 }

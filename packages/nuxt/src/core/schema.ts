@@ -1,12 +1,11 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
 import { watch } from 'chokidar'
-import { interopDefault } from 'mlly'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, logger, tryResolveModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, importModule, logger, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
   resolveSchema as resolveUntypedSchema,
@@ -60,7 +59,7 @@ export default defineNuxtModule({
       if (nuxt.options.experimental.watcher === 'parcel') {
         const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
         if (watcherPath) {
-          const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+          const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
           for (const layer of nuxt.options._layers) {
             const subscription = await subscribe(layer.config.rootDir, onChange, {
               ignore: ['!nuxt.schema.*'],
