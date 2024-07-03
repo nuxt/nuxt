@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
-import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
+import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
