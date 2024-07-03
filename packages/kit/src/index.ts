@@ -32,14 +32,5 @@ export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, write
 export { logger, useLogger } from './logger'
 
 // Internal Utils
-// TODO
-export {
-  resolveModule,
-  requireModule,
-  importModule,
-  tryImportModule,
-  tryRequireModule,
-} from './internal/cjs'
-export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
 export { tryResolveModule } from './internal/esm'
 export * from './internal/template'

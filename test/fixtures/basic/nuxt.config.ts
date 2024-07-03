@@ -78,6 +78,11 @@ export default defineNuxtConfig({
       ],
     },
   },
+  postcss: {
+    plugins: {
+      '~/postcss/plugin': {},
+    },
+  },
   optimization: {
     keyedComposables: [
       {
