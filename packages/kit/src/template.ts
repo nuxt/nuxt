@@ -11,7 +11,6 @@ import { readPackageJSON } from 'pkg-types'
 import { tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
-import { getNodeModulesPaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
 
 /**
@@ -266,7 +265,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
-    const pkg = await readPackageJSON(id, { url: getNodeModulesPaths(nuxt.options.modulesDir) }).catch(() => null)
+    const pkg = await readPackageJSON(id, { url: nuxt.options.modulesDir }).catch(() => null)
     references.push(({ types: pkg?.name || id }))
   }))
 

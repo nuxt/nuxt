@@ -1,9 +1,7 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
 import createResolver from 'postcss-import-resolver'
-import { interopDefault } from 'mlly'
-import { requireModule, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
+import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
@@ -38,28 +36,25 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
 
+  const jiti = createJiti(nuxt.options.rootDir, {
+    interopDefault: true,
+    alias: nuxt.options.alias,
+  })
+
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
-    const cwd = fileURLToPath(new URL('.', import.meta.url))
     const plugins: Plugin[] = []
     for (const pluginName of sortPlugins(postcssOptions)) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
-      const path = await tryResolveModule(pluginName, nuxt.options.modulesDir)
-
-      let pluginFn: (opts: Record<string, any>) => Plugin
-      // TODO: use jiti v2
-      if (path) {
-        pluginFn = await import(pathToFileURL(path).href).then(interopDefault)
-      } else {
-        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\` with ESM. Please report this as a bug.`)
-        // fall back to cjs
-        pluginFn = requireModule(pluginName, { paths: [cwd] })
-      }
+      const path = jiti.esmResolve(pluginName)
+      const pluginFn = (await jiti.import(path)) as (opts: Record<string, any>) => Plugin
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
+      } else {
+        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
       }
     }
 
