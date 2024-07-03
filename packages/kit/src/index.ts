@@ -32,5 +32,6 @@ export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, write
 export { logger, useLogger } from './logger'
 
 // Internal Utils
-export { tryResolveModule } from './internal/esm'
+export { resolveModule, tryResolveModule, importModule, tryImportModule } from './internal/esm'
+export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm'
 export * from './internal/template'
