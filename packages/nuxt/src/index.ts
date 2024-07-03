@@ -1,2 +1,2 @@
-export * from './core/nuxt'
-export * from './core/builder'
+export { createNuxt, loadNuxt } from './core/nuxt'
+export { build } from './core/builder'
