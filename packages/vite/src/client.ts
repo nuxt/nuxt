@@ -112,7 +112,7 @@ export async function buildClient (ctx: ViteBuildContext) {
         ...ctx.config.resolve?.alias,
         '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/client'),
-        '#internal/nitro': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        'nitro/runtime': resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
       },
       dedupe: [
         'vue',
@@ -139,6 +139,9 @@ export async function buildClient (ctx: ViteBuildContext) {
     ],
     appType: 'custom',
     server: {
+      warmup: {
+        clientFiles: [ctx.entry],
+      },
       middlewareMode: true,
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
@@ -217,6 +220,7 @@ export async function buildClient (ctx: ViteBuildContext) {
     // Dev
     const viteServer = await vite.createServer(clientConfig)
     ctx.clientServer = viteServer
+    ctx.nuxt.hook('close', () => viteServer.close())
     await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
     const transformHandler = viteServer.middlewares.stack.findIndex(m => m.handle instanceof Function && m.handle.name === 'viteTransformMiddleware')
     viteServer.middlewares.stack.splice(transformHandler, 0, {
@@ -257,10 +261,6 @@ export async function buildClient (ctx: ViteBuildContext) {
       })
     })
     await ctx.nuxt.callHook('server:devHandler', viteMiddleware)
-
-    ctx.nuxt.hook('close', async () => {
-      await viteServer.close()
-    })
   } else {
     // Build
     logger.info('Building client...')

@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
+import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
@@ -12,8 +12,8 @@ import type { NavigateToOptions } from '#app/composables/router'
 import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+type DefaultAsyncDataErrorValue = undefined
+type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
@@ -251,6 +251,23 @@ describe('modules', () => {
       },
       setup: (resolvedOptions) => {
         expectTypeOf(resolvedOptions).toEqualTypeOf<{ foo?: string, baz: number }>()
+      },
+    })
+  })
+
+  it('correctly typed resolved options in defineNuxtModule setup using `.with()`', () => {
+    defineNuxtModule<{
+      foo?: string
+      baz: number
+    }>().with({
+      defaults: {
+        foo: 'bar',
+      },
+      setup: (resolvedOptions) => {
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{
+          foo: string
+          baz?: number | undefined
+        }>()
       },
     })
   })

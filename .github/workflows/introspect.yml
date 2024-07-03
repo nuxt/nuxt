@@ -6,11 +6,13 @@ on:
       - ".github/workflows/**"
     branches:
       - main
+      - 3.x
   pull_request:
     paths:
       - ".github/workflows/**"
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 permissions:

@@ -6,7 +6,7 @@ import { transform } from 'esbuild'
 import type { TransformOptions } from 'esbuild'
 import { parse } from 'acorn'
 import type { NuxtPage } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { normalize } from 'pathe'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 

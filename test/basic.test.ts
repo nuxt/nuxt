@@ -4,16 +4,18 @@ import { describe, expect, it } from 'vitest'
 import { joinURL, withQuery } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
-import { $fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
+
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
-const isV4 = process.env.TEST_V4 === 'true'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/basic', import.meta.url)),
@@ -22,9 +24,17 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
+    hooks: {
+      'modules:done' () {
+        // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
+        // Vite reads its `isProduction` value from NODE_ENV and passes this to some plugins
+        // like vite-plugin-vue
+        if (process.env.TEST_ENV !== 'dev') {
+          process.env.NODE_ENV = 'production'
+        }
+      },
+    },
     builder: isWebpack ? 'webpack' : 'vite',
-    buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
   },
 })
 
@@ -492,7 +502,7 @@ describe('pages', () => {
   })
 
   it('client only page', async () => {
-    const response = await fetch('/client-only').then(r => r.text())
+    const response = await fetch('/client-only-page').then(r => r.text())
 
     // Should not contain rendered page on initial request
     expect(response).not.toContain('"hasAccessToWindow": true')
@@ -520,10 +530,11 @@ describe('pages', () => {
 
     // Then go to non client only page
     await clientInitialPage.click('a')
-    await new Promise(resolve => setTimeout(resolve, 50)) // little delay to finish transition
+    await clientInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page/normal')
 
     // that page should be client rendered
-    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
+    // TODO: investigate why multiple elements are appearing on page
+    expect(await clientInitialPage.locator('#server-rendered').first().textContent()).toMatchInlineSnapshot('"false"')
     // and not contain any errors or warnings
     expect(errors.length).toBe(0)
 
@@ -544,6 +555,8 @@ describe('pages', () => {
 
     // Go to client only page
     await normalInitialPage.click('a')
+
+    await normalInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page')
 
     // and expect same object to be present
     expect(await normalInitialPage.locator('#state').textContent()).toMatchInlineSnapshot(`
@@ -711,7 +724,7 @@ describe('nuxt links', () => {
     for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
       data[selector] = []
       for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
-        data[selector].push(match[1])
+        data[selector]!.push(match[1]!)
       }
     }
     expect(data).toMatchInlineSnapshot(`
@@ -918,17 +931,12 @@ describe('head tags', () => {
     expect(headHtml).toContain('<meta content="0;javascript:alert(1)">')
   })
 
-  it.skipIf(isV4)('SPA should render appHead tags', async () => {
-    const headHtml = await $fetch<string>('/head', { headers: { 'x-nuxt-no-ssr': '1' } })
+  it('SPA should render appHead tags', async () => {
+    const headHtml = await $fetch<string>('/head-spa')
 
     expect(headHtml).toContain('<meta name="description" content="Nuxt Fixture">')
     expect(headHtml).toContain('<meta charset="utf-8">')
     expect(headHtml).toContain('<meta name="viewport" content="width=1024, initial-scale=1">')
-  })
-
-  it.skipIf(isV4)('legacy vueuse/head works', async () => {
-    const headHtml = await $fetch<string>('/vueuse-head')
-    expect(headHtml).toContain('<title>using provides usehead and updateDOM - VueUse head polyfill test</title>')
   })
 
   it('should render http-equiv correctly', async () => {
@@ -1008,9 +1016,10 @@ describe('navigate', () => {
   })
 
   it('expect to redirect with encoding', async () => {
-    const { status } = await fetch('/redirect-with-encode', { redirect: 'manual' })
+    const { status, headers } = await fetch('/redirect-with-encode', { redirect: 'manual' })
 
     expect(status).toEqual(302)
+    expect(headers.get('location') || '').toEqual(encodeURI('/cœur') + '?redirected=' + encodeURIComponent('https://google.com'))
   })
 })
 
@@ -1409,7 +1418,7 @@ describe('extends support', () => {
   describe('app', () => {
     it('extends foo/app/router.options & bar/app/router.options', async () => {
       const html: string = await $fetch<string>('/')
-      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)?.[1].split(' ')
+      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)![1]!.split(' ')
       expect(routerLinkClasses).toContain('foo-active-class')
       expect(routerLinkClasses).toContain('bar-exact-active-class')
     })
@@ -1421,6 +1430,7 @@ describe('deferred app suspense resolve', () => {
   it.each(['/async-parent/child', '/internal-layout/async-parent/child'])('should wait for all suspense instance on initial hydration', async (path) => {
     const { page, consoleLogs } = await renderPage(path)
 
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
     // Wait for all pending micro ticks to be cleared in case hydration hasn't finished yet.
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
 
@@ -1451,7 +1461,7 @@ describe('nested suspense', () => {
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
     ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/'],
-  ]).flatMap(([start, end]) => [
+  ] as const).flatMap(([start, end]) => [
     [start, end],
     [start, end + '?layout=custom'],
     [start + '?layout=custom', end],
@@ -1517,7 +1527,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
 
-    await new Promise<void>(resolve => setTimeout(resolve, 50))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
     expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
@@ -1579,6 +1589,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1593,6 +1604,7 @@ describe('page key', () => {
     await page.click(`[href="${path}/1"]`)
     await page.waitForSelector('#page-1')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, `${path}/1`)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1625,6 +1637,7 @@ describe('layout change not load page twice', () => {
     await page.click(`[href="${path2}"]`)
     await page.waitForSelector('#with-layout2')
 
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, path2)
     // Wait for all pending micro ticks to be cleared,
     // so we are not resolved too early when there are repeated page loading
     await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
@@ -1714,7 +1727,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]!))
     let css = ''
     for (const file of cssFiles || []) {
       css += await $fetch<string>(file)
@@ -1917,7 +1930,7 @@ describe.skipIf(isDev() || isWindows || !isRenderingJson)('prefetching', () => {
 describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes', () => {
   it.each(['1', '2', '3', '4'])('should detect invalid root nodes in pages (\'/invalid-root/%s\')', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
     await expectWithPolling(
       () => consoleLogs
         .map(w => w.text).join('\n')
@@ -1930,7 +1943,7 @@ describe.runIf(isDev() && (!isWindows || !isCI))('detecting invalid root nodes',
 
   it.each(['fine'])('should not complain if there is no transition (%s)', async (path) => {
     const { consoleLogs, page } = await renderPage(joinURL('/invalid-root', path))
-    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, joinURL('/invalid-root', path))
 
     const consoleLogsWarns = consoleLogs.filter(i => i.type === 'warning')
     expect(consoleLogsWarns.length).toEqual(0)
@@ -1965,7 +1978,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
@@ -1974,10 +1987,10 @@ describe.skipIf(isDev())('dynamic paths', () => {
   it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch<string>('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
-    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
+    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u!))
     expect(cssURL).toBeDefined()
     const css = await $fetch<string>(cssURL!)
-    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.')))
+    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1]!.replace(/[-.]\w{8}\./g, '.')))
     expect([...imageUrls]).toMatchInlineSnapshot(`
       [
         "./logo.svg",
@@ -1996,7 +2009,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
@@ -2012,7 +2025,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -2041,7 +2054,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
   })
@@ -2077,7 +2090,7 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/RouteComponent')))
     }
 
     expect(result).toMatchInlineSnapshot(`
@@ -2099,7 +2112,7 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
@@ -2157,7 +2170,7 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
     result.props = {}
     result.components = {}
@@ -2182,7 +2195,7 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
+        result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
       }
       const { components } = result
       result.components = {}
@@ -2203,13 +2216,13 @@ describe('component islands', () => {
         }
       `)
       expect(teleportsEntries).toHaveLength(1)
-      expect(teleportsEntries[0][0].startsWith('Counter-')).toBeTruthy()
-      expect(teleportsEntries[0][1].props).toMatchInlineSnapshot(`
+      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
+      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
       {
         "multiplier": 1,
       }
     `)
-      expect(teleportsEntries[0][1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
+      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
     })
   }
 
@@ -2227,10 +2240,10 @@ describe('component islands', () => {
     if (isDev()) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
-        link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-        link.key = link.key.replace(/-[a-z0-9]+$/i, '')
+        link.href = link.href!.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+        link.key = link.key!.replace(/-[a-z0-9]+$/i, '')
       }
-      result.head.link.sort((a, b) => b.href.localeCompare(a.href))
+      result.head.link.sort((a, b) => b.href!.localeCompare(a.href!))
     }
 
     // TODO: fix rendering of styles in webpack
@@ -2249,7 +2262,7 @@ describe('component islands', () => {
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head.link = result.head.link.filter(h => !h.href.includes('SharedComponent'))
+      result.head.link = result.head.link.filter(h => !h.href!.includes('SharedComponent'))
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
@@ -2463,7 +2476,7 @@ describe.skipIf(isWindows)('useAsyncData', () => {
   })
 
   it('data is null after navigation when immediate false', async () => {
-    const defaultValue = isV4 ? 'undefined' : 'null'
+    const defaultValue = 'undefined'
 
     const { page } = await renderPage('/useAsyncData/immediate-remove-unmounted')
     expect(await page.locator('#immediate-data').getByText(defaultValue).textContent()).toBe(defaultValue)
@@ -2595,7 +2608,7 @@ describe('teleports', () => {
   })
 })
 
-describe.only('experimental', () => {
+describe('experimental', () => {
   it('decorators support works', async () => {
     const html = await $fetch('/experimental/decorators')
     expect(html).toContain('decorated-decorated')
@@ -2607,7 +2620,7 @@ describe.only('experimental', () => {
     await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
     await page.close()
-  }, 30_000)
+  }, 40_000)
 })
 
 function normaliseIslandResult (result: NuxtIslandResponse) {

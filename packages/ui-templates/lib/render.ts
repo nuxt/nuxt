@@ -10,6 +10,7 @@ import htmlMinifier from 'html-minifier'
 import { globby } from 'globby'
 import { camelCase } from 'scule'
 
+import { version } from '../../nuxt/package.json'
 import genericMessages from '../templates/messages.json'
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
@@ -89,6 +90,8 @@ export const RenderPlugin = () => {
           html = html.replace('</body></html>', '')
         }
 
+        html = html.replace(/\{\{ version \}\}/g, version)
+
         // Load messages
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
@@ -136,9 +139,14 @@ export const RenderPlugin = () => {
           }
           return lastChar || ''
         }).replace(/@media[^{]*\{\}/g, '')
-        const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
-          .map(block => block[1])
-          .filter(i => !i.includes('const t=document.createElement("link")'))
+
+        const inlineScripts: string[] = []
+        for (const [_, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+          if (i && !i.includes('const t=document.createElement("link")')) {
+            inlineScripts.push(i)
+          }
+        }
+
         const props = genObjectFromRawEntries(Object.entries({ ...genericMessages, ...messages }).map(([key, value]) => [key, {
           type: typeof value === 'string' ? 'String' : typeof value === 'number' ? 'Number' : typeof value === 'boolean' ? 'Boolean' : 'undefined',
           default: JSON.stringify(value),

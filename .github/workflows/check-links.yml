@@ -7,6 +7,7 @@ on:
       - "*.md"
     branches:
       - main
+      - 3.x
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
