@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { dirname, resolve } from 'pathe'
-import chokidar from 'chokidar'
+import { resolve } from 'pathe'
+import { watch } from 'chokidar'
 import { interopDefault } from 'mlly'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
@@ -13,7 +13,7 @@ import {
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
-import jiti from 'jiti'
+import { createJiti } from 'jiti'
 
 export default defineNuxtModule({
   meta: {
@@ -23,11 +23,9 @@ export default defineNuxtModule({
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
-    const _resolveSchema = jiti(dirname(fileURLToPath(import.meta.url)), {
-      esmResolve: true,
+    const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
       interopDefault: true,
       cache: false,
-      requireCache: false,
       transformOptions: {
         babel: {
           plugins: [untypedPlugin],
@@ -77,7 +75,7 @@ export default defineNuxtModule({
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
         resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
       ))
-      const watcher = chokidar.watch(filesToWatch, {
+      const watcher = watch(filesToWatch, {
         ...nuxt.options.watchers.chokidar,
         ignoreInitial: true,
       })
