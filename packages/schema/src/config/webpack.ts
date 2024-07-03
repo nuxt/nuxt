@@ -160,7 +160,7 @@ export default defineUntypedSchema({
       esbuild: {
         $resolve: async (val: Record<string, any>, get) => {
           return defu(val, await get('esbuild.options') as Record<string, any>)
-        }
+        },
       },
 
       /**

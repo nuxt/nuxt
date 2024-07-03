@@ -88,7 +88,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     esbuild: {
       options: {
         exclude: excludePattern,
-        ...nuxt.options.esbuild.options
+        ...nuxt.options.esbuild.options,
       },
     },
     analyze: !nuxt.options.test && nuxt.options.build.analyze && (nuxt.options.build.analyze === true || nuxt.options.build.analyze.enabled)

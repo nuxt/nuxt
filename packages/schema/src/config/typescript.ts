@@ -78,15 +78,15 @@ export default defineUntypedSchema({
      */
     tsConfig: {
       $resolve: async (val, get) => {
-        if (val) return val
+        if (val) { return val }
 
         const enableDecorators = await get('experimental.decorators')
-        if (!enableDecorators) return {}
+        if (!enableDecorators) { return {} }
 
         return {
           compilerOptions: {
-            experimentalDecorators: true
-          }
+            experimentalDecorators: true,
+          },
         } satisfies TSConfig
       },
     },

@@ -1,11 +1,11 @@
 export default eventHandler((_event) => {
-  function something(_method: () => unknown) {
+  function something (_method: () => unknown) {
     return () => 'decorated'
   }
 
   class SomeClass {
     @something
-    public someMethod() {
+    public someMethod () {
       return 'initial'
     }
   }
