@@ -31,7 +31,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const rootDir = pathToFileURL(opts.cwd!).href
 
-  const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
+  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { paths: rootDir })
   const nuxt = await loadNuxt(opts)
   return nuxt
 }
@@ -39,6 +39,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   const rootDir = pathToFileURL(nuxt.options.rootDir).href
 
-  const { build } = await tryImportModule('nuxt-nightly', rootDir) || await importModule('nuxt', rootDir)
+  const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { paths: rootDir }) || await importModule<typeof import('nuxt')>('nuxt', { paths: rootDir })
   return build(nuxt)
 }
