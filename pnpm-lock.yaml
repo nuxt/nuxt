@@ -602,7 +602,7 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       html-validate:
-        specifier: ^8.20.1
+        specifier: 8.20.1
         version: 8.20.1(vitest@1.6.0(@types/node@20.14.9)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))
       jiti:
         specifier: 2.0.0-beta.3
