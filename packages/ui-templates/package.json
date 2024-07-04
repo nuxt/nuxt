@@ -12,7 +12,6 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "lint": "eslint --ext .ts,.js .",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
     "postinstall": "pnpm build",
     "prerender": "pnpm build && jiti ./lib/prerender",
@@ -25,6 +24,7 @@
     "execa": "9.3.0",
     "globby": "14.0.2",
     "html-minifier": "4.0.0",
+    "html-validate": "^8.20.1",
     "jiti": "2.0.0-beta.3",
     "knitwork": "1.1.0",
     "pathe": "1.1.2",
