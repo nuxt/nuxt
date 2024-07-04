@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
+import { createJiti } from 'jiti'
 
 export interface ResolveModuleOptions {
   paths?: string | string[]
@@ -36,6 +37,35 @@ export async function importModule<T = unknown> (id: string, opts?: ImportModule
 export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
   try {
     return importModule<T>(id, opts).catch(() => undefined)
+  } catch {
+    // intentionally empty as this is a `try-` function
+  }
+}
+
+const warnings = new Set<string>()
+
+/**
+ * @deprecated Please use `importModule` instead.
+ */
+export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
+  if (!warnings.has(id)) {
+    // TODO: add more information on stack trace
+    console.warn('[@nuxt/kit] `requireModule` is deprecated. Please use `importModule` instead.')
+    warnings.add(id)
+  }
+  const resolvedPath = resolveModule(id, opts)
+  const jiti = createJiti(import.meta.url, {
+    interopDefault: opts?.interopDefault !== false,
+  })
+  return jiti(pathToFileURL(resolvedPath).href) as T
+}
+
+/**
+ * @deprecated Please use `tryImportModule` instead.
+ */
+export function tryRequireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
+  try {
+    return requireModule<T>(id, opts)
   } catch {
     // intentionally empty as this is a `try-` function
   }
