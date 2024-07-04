@@ -49,6 +49,7 @@ const warnings = new Set<string>()
  */
 export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
   if (!warnings.has(id)) {
+    // TODO: add more information on stack trace
     console.warn('[@nuxt/kit] `requireModule` is deprecated. Please use `importModule` instead.')
     warnings.add(id)
   }
