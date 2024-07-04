@@ -59,8 +59,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/schema':
-        specifier: 1.9.14
-        version: 1.9.14
+        specifier: 1.9.15
+        version: 1.9.15
       '@vitejs/plugin-vue':
         specifier: 5.0.5
         version: 5.0.5(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))
@@ -276,14 +276,14 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 20.14.9
       '@unhead/dom':
-        specifier: ^1.9.14
-        version: 1.9.14
+        specifier: ^1.9.15
+        version: 1.9.15
       '@unhead/ssr':
-        specifier: ^1.9.14
-        version: 1.9.14
+        specifier: ^1.9.15
+        version: 1.9.15
       '@unhead/vue':
-        specifier: ^1.9.14
-        version: 1.9.14(vue@3.4.31(typescript@5.5.3))
+        specifier: ^1.9.15
+        version: 1.9.15(vue@3.4.31(typescript@5.5.3))
       '@vue/shared':
         specifier: ^3.4.31
         version: 3.4.31
@@ -515,8 +515,8 @@ importers:
         specifier: 8.0.8
         version: 8.0.8
       '@unhead/schema':
-        specifier: 1.9.14
-        version: 1.9.14
+        specifier: 1.9.15
+        version: 1.9.15
       '@vitejs/plugin-vue':
         specifier: 5.0.5
         version: 5.0.5(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))
@@ -917,7 +917,7 @@ importers:
     dependencies:
       '@unhead/shared':
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
@@ -929,7 +929,7 @@ importers:
         version: link:../packages/nuxt
       unhead:
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       vue:
         specifier: 3.4.31
         version: 3.4.31(typescript@5.5.3)
@@ -945,10 +945,10 @@ importers:
     devDependencies:
       '@unhead/dom':
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       '@unhead/shared':
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
@@ -963,7 +963,7 @@ importers:
         version: 1.5.3
       unhead:
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       unplugin:
         specifier: latest
         version: 1.11.0
@@ -1019,7 +1019,7 @@ importers:
     devDependencies:
       '@unhead/shared':
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
@@ -1028,7 +1028,7 @@ importers:
         version: 3.4.31
       unhead:
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
 
   test/fixtures/suspense:
     dependencies:
@@ -1041,7 +1041,7 @@ importers:
     devDependencies:
       '@unhead/shared':
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
@@ -1053,7 +1053,7 @@ importers:
         version: 5.5.3
       unhead:
         specifier: latest
-        version: 1.9.14
+        version: 1.9.15
 
 packages:
 
@@ -2579,20 +2579,20 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/dom@1.9.14':
-    resolution: {integrity: sha512-XZSZ2Wmm1Sv7k9scSFGrarbteSIl3p3I3oOUprKPDboBTvuG5q81Qz8O99NKUGKGJ8BKUkxCqE982eH3S8DKJA==}
+  '@unhead/dom@1.9.15':
+    resolution: {integrity: sha512-4sdP/2Unt4zFRO8pBZVXvebidGmrLEvnDU6ZpasZfInjiiuuaQOVTJaiKnEnug3cmW2YjglPG2d1c2xAsHr3NQ==}
 
-  '@unhead/schema@1.9.14':
-    resolution: {integrity: sha512-60NYSM6QjfK/wx4/QfaYyZ3XnNtwxS9a1oij2abEkGHPmA2/fqBOXeuHtnBo4eD42/Eg+owcS5s3mClPL8AkXw==}
+  '@unhead/schema@1.9.15':
+    resolution: {integrity: sha512-9ADZuXOH+tOKHIjXsgg+SPINnh/YJEBMCjpg+8VLGgE2r5med3jAnOU8g7ALfuVEBRBrbFgs1qVKoKm1NkTXJQ==}
 
-  '@unhead/shared@1.9.14':
-    resolution: {integrity: sha512-7ZIC7uDV8gp3KHm5JxJ/NXMENQgkh+SCyTcsILSpOhkAGeszMHABrB6vjeZDGM4J9mRUxwyPn24KI2zG/R+XiQ==}
+  '@unhead/shared@1.9.15':
+    resolution: {integrity: sha512-+U5r04eRtCNcniWjzNPRtwVuF9rW/6EXxhGvuohJBDaIE57J6BHWo5cEp7Pqts7DlTFs7LiDtH8ONNDv4QqRaw==}
 
-  '@unhead/ssr@1.9.14':
-    resolution: {integrity: sha512-OIBZu+WBiyCcDMJ4Ysu7uA6yMZ3fWXWyVrT2w0my5oQJgA0BS7lzfReRL8Sw6+ORlupn9Rn++HXfV0ixtxCxIA==}
+  '@unhead/ssr@1.9.15':
+    resolution: {integrity: sha512-gqRQQkT1jzZKf9nF7r1exBtWbBi5QjGi7wa0y7cHPJ6aTPOyLVTeb9OvfC0MAP94JXgsZrgyQt8q8uD6N1tfTw==}
 
-  '@unhead/vue@1.9.14':
-    resolution: {integrity: sha512-Yc7Qv0ze+iLte4urHiA+ghkF7y+svrawrT+ZrCuGXkZ/eRTF/AY2SKex+rJQJZsP+fKEQ2pGb72IsI5kHFZT3A==}
+  '@unhead/vue@1.9.15':
+    resolution: {integrity: sha512-h866wYOs6Q6+lc0av4EU0CPTtTvaz9UWwwsiNoulzJa95QyUN/gDPI/NiDuKweHswY+a0SSzEqe9Nhg+LlmHew==}
     peerDependencies:
       vue: 3.4.31
 
@@ -6743,8 +6743,8 @@ packages:
   unenv@1.9.0:
     resolution: {integrity: sha512-QKnFNznRxmbOF1hDgzpqrlIf6NC5sbZ2OJ+5Wl3OX8uM+LUJXbj4TXvLJCtwbPTmbMHCLIz6JLKNinNsMShK9g==}
 
-  unhead@1.9.14:
-    resolution: {integrity: sha512-npdYu6CfasX/IhB8OO27e3u4A1zhAY77T1FwWDIIUaJvugYTte5hjsolPX0/fG5jmjnWTFTuIkmbCSfj7bfIkg==}
+  unhead@1.9.15:
+    resolution: {integrity: sha512-/99Wft1CT0fxsWzmBeOwuH/k4HdMeyfDGyB4wFNVZVNTffRHDOqaqQ6RS+LHPsIiCKmm9FP7Vq7Rz09Zs/fQJQ==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8198,7 +8198,7 @@ snapshots:
       '@types/stripe-v3': 3.1.33
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.0.50
-      '@unhead/vue': 1.9.14(vue@3.4.31(typescript@5.5.3))
+      '@unhead/vue': 1.9.15(vue@3.4.31(typescript@5.5.3))
       '@vueuse/core': 10.10.1(vue@3.4.31(typescript@5.5.3))
       consola: 3.2.3
       defu: 6.1.4
@@ -9027,31 +9027,31 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/dom@1.9.14':
+  '@unhead/dom@1.9.15':
     dependencies:
-      '@unhead/schema': 1.9.14
-      '@unhead/shared': 1.9.14
+      '@unhead/schema': 1.9.15
+      '@unhead/shared': 1.9.15
 
-  '@unhead/schema@1.9.14':
+  '@unhead/schema@1.9.15':
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
 
-  '@unhead/shared@1.9.14':
+  '@unhead/shared@1.9.15':
     dependencies:
-      '@unhead/schema': 1.9.14
+      '@unhead/schema': 1.9.15
 
-  '@unhead/ssr@1.9.14':
+  '@unhead/ssr@1.9.15':
     dependencies:
-      '@unhead/schema': 1.9.14
-      '@unhead/shared': 1.9.14
+      '@unhead/schema': 1.9.15
+      '@unhead/shared': 1.9.15
 
-  '@unhead/vue@1.9.14(vue@3.4.31(typescript@5.5.3))':
+  '@unhead/vue@1.9.15(vue@3.4.31(typescript@5.5.3))':
     dependencies:
-      '@unhead/schema': 1.9.14
-      '@unhead/shared': 1.9.14
+      '@unhead/schema': 1.9.15
+      '@unhead/shared': 1.9.15
       hookable: 5.5.3
-      unhead: 1.9.14
+      unhead: 1.9.15
       vue: 3.4.31(typescript@5.5.3)
 
   '@unocss/astro@0.60.4(rollup@4.18.0)(vite@5.3.3(@types/node@20.14.9)(sass@1.69.4)(terser@5.27.0))':
@@ -14143,11 +14143,11 @@ snapshots:
       node-fetch-native: 1.6.4
       pathe: 1.1.2
 
-  unhead@1.9.14:
+  unhead@1.9.15:
     dependencies:
-      '@unhead/dom': 1.9.14
-      '@unhead/schema': 1.9.14
-      '@unhead/shared': 1.9.14
+      '@unhead/dom': 1.9.15
+      '@unhead/schema': 1.9.15
+      '@unhead/shared': 1.9.15
       hookable: 5.5.3
 
   unicode-emoji-modifier-base@1.0.0: {}

@@ -61,7 +61,7 @@
     "@types/eslint__js": "8.42.3",
     "@types/node": "20.14.9",
     "@types/semver": "7.5.8",
-    "@unhead/schema": "1.9.14",
+    "@unhead/schema": "1.9.15",
     "@vitejs/plugin-vue": "5.0.5",
     "@vitest/coverage-v8": "1.6.0",
     "@vue/test-utils": "2.4.6",
