@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
+exports[`template > produces correct output for error-404 template 1`] = `
 ".spotlight {
   background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
   filter: blur(20vh);
@@ -218,7 +218,7 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-404.vue 2`] = `
+exports[`template > produces correct output for error-404 template 2`] = `
 "*,
 :before,
 :after {
@@ -321,7 +321,7 @@ p {
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
+exports[`template > produces correct output for error-500 template 1`] = `
 ".spotlight {
   background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
   filter: blur(20vh);
@@ -438,7 +438,7 @@ exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-500.vue 2`] = `
+exports[`template > produces correct output for error-500 template 2`] = `
 "*,
 :before,
 :after {
@@ -537,7 +537,7 @@ p {
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
+exports[`template > produces correct output for error-dev template 1`] = `
 ".spotlight {
   background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
   opacity: 0.8;
@@ -670,7 +670,7 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-dev.vue 2`] = `
+exports[`template > produces correct output for error-dev template 2`] = `
 "*,
 :before,
 :after {
@@ -784,7 +784,7 @@ pre {
 "
 `;
 
-exports[`template > correctly outputs style blocks for loading.vue 1`] = `
+exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
   background: repeating-linear-gradient(
     to right,
@@ -903,7 +903,8 @@ button {
 button {
   text-transform: none;
 }
-button {
+button,
+[type="button"] {
   -webkit-appearance: button;
   background-color: transparent;
   background-image: none;
@@ -1029,7 +1030,7 @@ svg {
 "
 `;
 
-exports[`template > correctly outputs style blocks for loading.vue 2`] = `
+exports[`template > produces correct output for loading template 2`] = `
 "#animation-toggle {
   position: fixed;
   padding: 10px;
@@ -1107,7 +1108,8 @@ button {
 button {
   text-transform: none;
 }
-button {
+button,
+[type="button"] {
   -webkit-appearance: button;
   background-color: transparent;
   background-image: none;
@@ -1176,7 +1178,7 @@ svg {
 "
 `;
 
-exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
+exports[`template > produces correct output for welcome template 1`] = `
 "@media (prefers-color-scheme: light) {
   .get-started-gradient-border {
     background: linear-gradient(to right, #ffffff, #ffffff),
@@ -1784,7 +1786,7 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for welcome.vue 2`] = `
+exports[`template > produces correct output for welcome template 2`] = `
 "@property --gradient-angle {
   syntax: "<angle>";
   inherits: false;

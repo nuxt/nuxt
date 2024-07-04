@@ -602,6 +602,9 @@ importers:
       html-minifier:
         specifier: 4.0.0
         version: 4.0.0
+      html-validate:
+        specifier: ^8.20.1
+        version: 8.20.1(vitest@1.6.0(@types/node@20.14.9)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))
       jiti:
         specifier: 1.21.6
         version: 1.21.6
@@ -2001,6 +2004,10 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
+  '@html-validate/stylish@4.2.0':
+    resolution: {integrity: sha512-Nl8HCv0hGRSLQ+n1OD4Hk3a+Urwk9HH0vQkAzzCarT4KlA7bRl+6xEiS5PZVwOmjtC7XiH/oNe3as9Fxcr2A1w==}
+    engines: {node: '>= 16'}
+
   '@humanwhocodes/module-importer@1.0.1':
     resolution: {integrity: sha512-bxveV4V8v5Yb4ncFTT3rPSgZBOpCkjfK0y4oVVVJwIuDVBRMDXrPyXRL988i5ap9m9bnyEEjWfm5WkBmtffLfA==}
     engines: {node: '>=12.22'}
@@ -2659,6 +2666,12 @@ packages:
 
   '@shikijs/vitepress-twoslash@1.10.0':
     resolution: {integrity: sha512-Qvua0BIb5uSDryLBkSRx8EX7cNwvTa2GDq53Yh7NbqhwFlYPVp3pnBaRtiDiyYl3Ng+rR2UAakMFiF4PTdnMFg==}
+
+  '@sidvind/better-ajv-errors@2.1.3':
+    resolution: {integrity: sha512-lWuod/rh7Xz5uXiEGSfm2Sd5PG7K/6yJfoAZVqzsEswjPJhUz15R7Gn/o8RczA041QS15hBd/BCSeu9vwPArkA==}
+    engines: {node: '>= 16.14'}
+    peerDependencies:
+      ajv: 4.11.8 - 8
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -3869,7 +3882,7 @@ packages:
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.5.3
+      typescript: '>=4.9.5'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -3878,7 +3891,7 @@ packages:
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.5.3
+      typescript: '>=4.9.5'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -4855,6 +4868,25 @@ packages:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
     engines: {node: '>=8'}
 
+  html-validate@8.20.1:
+    resolution: {integrity: sha512-EawDiHzvZtnbBIfxE90lvKOWqNsmZGqRXTy+utxlGo525Vqjowg+RK42q1AeJ6zm1AyVTFIDSah1eBe9tc6YHg==}
+    engines: {node: '>= 16.14'}
+    hasBin: true
+    peerDependencies:
+      jest: ^27.1 || ^28.1.3 || ^29.0.3
+      jest-diff: ^27.1 || ^28.1.3 || ^29.0.3
+      jest-snapshot: ^27.1 || ^28.1.3 || ^29.0.3
+      vitest: ^0.34 || ^1
+    peerDependenciesMeta:
+      jest:
+        optional: true
+      jest-diff:
+        optional: true
+      jest-snapshot:
+        optional: true
+      vitest:
+        optional: true
+
   html-void-elements@3.0.0:
     resolution: {integrity: sha512-bEqo66MRXsUGxWHV5IP0PUiAWwoEjba4VCzg0LjFJBpchPaTfyfCKTG6bc5F8ucKec3q5y6qOdGyYTSBEvhCrg==}
 
@@ -5266,6 +5298,10 @@ packages:
 
   kleur@3.0.3:
     resolution: {integrity: sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==}
+    engines: {node: '>=6'}
+
+  kleur@4.1.5:
+    resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
   klona@2.0.6:
@@ -7474,7 +7510,7 @@ packages:
   vue@3.4.31:
     resolution: {integrity: sha512-njqRrOy7W3YLAlVqSKpBebtZpDVg21FPoaq1I7f/+qqBThK9ChAIjkRWgeP6Eat+8C+iia4P3OYqpATP21BCoQ==}
     peerDependencies:
-      typescript: 5.5.3
+      typescript: '*'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -8359,6 +8395,10 @@ snapshots:
       long: 5.2.3
       protobufjs: 7.3.2
       yargs: 17.7.2
+
+  '@html-validate/stylish@4.2.0':
+    dependencies:
+      kleur: 4.1.5
 
   '@humanwhocodes/module-importer@1.0.1': {}
 
@@ -9277,6 +9317,12 @@ snapshots:
       - '@nuxt/kit'
       - supports-color
       - typescript
+
+  '@sidvind/better-ajv-errors@2.1.3(ajv@8.12.0)':
+    dependencies:
+      '@babel/code-frame': 7.24.7
+      ajv: 8.12.0
+      chalk: 4.1.2
 
   '@sinclair/typebox@0.27.8': {}
 
@@ -12106,6 +12152,22 @@ snapshots:
 
   html-tags@3.3.1: {}
 
+  html-validate@8.20.1(vitest@1.6.0(@types/node@20.14.9)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)):
+    dependencies:
+      '@babel/code-frame': 7.24.7
+      '@html-validate/stylish': 4.2.0
+      '@sidvind/better-ajv-errors': 2.1.3(ajv@8.12.0)
+      ajv: 8.12.0
+      deepmerge: 4.3.1
+      glob: 10.4.1
+      ignore: 5.3.1
+      kleur: 4.1.5
+      minimist: 1.2.8
+      prompts: 2.4.2
+      semver: 7.6.2
+    optionalDependencies:
+      vitest: 1.6.0(@types/node@20.14.9)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
+
   html-void-elements@3.0.0: {}
 
   htmlparser2@8.0.2:
@@ -12490,6 +12552,8 @@ snapshots:
       json-buffer: 3.0.1
 
   kleur@3.0.3: {}
+
+  kleur@4.1.5: {}
 
   klona@2.0.6: {}
 
