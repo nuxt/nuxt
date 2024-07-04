@@ -49,6 +49,7 @@ export const RenderPlugin = () => {
           // Apply critters to inline styles
           html = await critters.process(html)
         }
+        html = html.replace(/<html[^>]*>/, '<html lang="en">')
         // We no longer need references to external CSS
         html = html.replace(/<link[^>]*>/g, '')
 
