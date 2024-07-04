@@ -299,8 +299,6 @@ export const clientConfigTemplate: NuxtTemplate = {
   },
 }
 
-// export const useRuntimeConfig = () => ${!nuxt.options.future.multiApp ? `window?.__NUXT__?.config` : `window.__NUXT__?.[${JSON.stringify(nuxt.options.appId)}]?.config`} || {}
-
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
