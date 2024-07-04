@@ -187,6 +187,9 @@ importers:
       destr:
         specifier: ^2.0.3
         version: 2.0.3
+      errx:
+        specifier: ^0.1.0
+        version: 0.1.0
       globby:
         specifier: ^14.0.2
         version: 14.0.2
