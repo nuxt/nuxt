@@ -15,12 +15,10 @@ import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { Head, HeadEntryOptions, MergeHead } from '@unhead/schema'
+import type { Head, HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
-import { toValue } from 'vue'
+import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 
@@ -482,27 +480,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({ style: inlinedStyles })
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: head.headEntries().filter((h) => {
-        if (h.resolvedInput) {
-          const resolvedInput = toValue(h.resolvedInput)
-          for (const key in resolvedInput) {
-            const input = resolvedInput[key as keyof MergeHead]
-            if (Array.isArray(input)) {
-              if (toValue(input).length === 0) {
-                delete resolvedInput[key as keyof MergeHead]
-              } else {
-                // @ts-expect-error todo fix this
-                input.forEach((i) => { if (typeof i === 'object') { i.key = 'island-key-' + hash(i) } })
-              }
-            }
-          }
-          if (Object.keys(h.resolvedInput).length) {
-            return true
-          }
-        }
-
-        return false
-      }).map(h => h.resolvedInput) as Head[],
+      head: head.headEntries().map(h => resolveUnrefHeadInput(h.input)) as Head[],
       html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
