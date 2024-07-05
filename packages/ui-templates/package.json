@@ -25,7 +25,7 @@
     "execa": "9.3.0",
     "globby": "14.0.2",
     "html-minifier": "4.0.0",
-    "html-validate": "^8.20.1",
+    "html-validate": "8.20.1",
     "jiti": "1.21.6",
     "knitwork": "1.1.0",
     "lodash-es": "4.17.21",
