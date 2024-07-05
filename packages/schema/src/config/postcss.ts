@@ -39,7 +39,7 @@ export default defineUntypedSchema({
      * Options for configuring PostCSS plugins.
      *
      * https://postcss.org/
-     * @type {Record<string, Record<string, unknown> | false> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options }}
+     * @type {Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options }}
      */
     plugins: {
       /**
