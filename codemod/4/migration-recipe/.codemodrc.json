@@ -15,7 +15,6 @@
     "tags": ["migration", "nuxt"],
     "git": "https://github.com/nuxt/nuxt/tree/main/codemod/4/migration-recipe"
   },
-  "deps": ["nuxt@4"],
   "applicability": {
     "from": [["nuxt", ">=", "3.0.0"], ["nuxt", "<", "4.0.0"]],
     "to": [["nuxt", ">=", "4.0.0"]]
