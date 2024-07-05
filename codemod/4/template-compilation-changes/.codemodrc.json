@@ -1,0 +1,16 @@
+{
+  "$schema": "https://codemod-utils.s3.us-west-1.amazonaws.com/configuration_schema.json",
+  "version": "1.0.0",
+  "private": false,
+  "name": "nuxt/4/template-compilation-changes",
+  "engine": "jscodeshift",
+  "applicability": {
+    "from": [["nuxt", ">=", "3.0.0"], ["nuxt", "<", "4.0.0"]],
+    "to": [["nuxt", ">=", "4.0.0"]]
+  },
+  "meta": {
+    "tags": ["nuxt", "4", "migration"],
+    "git": "https://github.com/codemod-com/codemod/tree/main/packages/codemods/nuxt/4/template-compilation-changes"
+  },
+  "include": ["**/*.js", "**/*.ts"]
+}

@@ -1,0 +1,15 @@
+{
+  "name": "@codemod/nuxt-4-shallow-data-reactivity",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "ts-node": "^10.9.1",
+    "jscodeshift": "^0.15.1",
+    "@types/jscodeshift": "^0.11.10",
+    "vitest": "^1.0.1",
+    "@vitest/coverage-v8": "^1.0.1"
+  },
+  "scripts": {},
+  "files": ["./README.md", "./.codemodrc.json", "./dist/index.cjs"],
+  "type": "module"
+}
