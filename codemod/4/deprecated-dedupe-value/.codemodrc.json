@@ -10,7 +10,7 @@
   },
   "meta": {
     "tags": ["nuxt", "4", "migration"],
-    "git": "https://github.com/codemod-com/codemod/tree/main/packages/codemods/nuxt/4/deprecated-dedupe-value"
+    "git": "https://github.com/nuxt/nuxt/tree/main/codemod/4/deprecated-dedupe-value"
   },
   "include": ["**/*.js", "**/*.ts", "**/*.vue"]
 }

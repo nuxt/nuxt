@@ -10,7 +10,7 @@
   },
   "meta": {
     "tags": ["nuxt", "4", "migration"],
-    "git": "https://github.com/codemod-com/codemod/tree/main/packages/codemods/nuxt/4/shallow-data-reactivity"
+    "git": "https://github.com/nuxt/nuxt/tree/main/codemod/4/shallow-data-reactivity"
   },
   "include": ["**/*.js", "**/*.ts"]
 }

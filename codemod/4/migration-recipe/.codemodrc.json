@@ -1,0 +1,23 @@
+{
+  "$schema": "https://codemod-utils.s3.us-west-1.amazonaws.com/configuration_schema.json",
+  "name": "nuxt/4/migration-recipe",
+  "version": "1.0.0",
+  "private": false,
+  "engine": "recipe",
+  "names": [
+    "nuxt/4/absolute-watch-paths",
+    "nuxt/4/default-data-error-value",
+    "nuxt/4/deprecated-dedupe-value",
+    "nuxt/4/file-structure",
+    "nuxt/4/shallow-data-reactivity"
+  ],
+  "meta": {
+    "tags": ["migration", "nuxt"],
+    "git": "https://github.com/nuxt/nuxt/tree/main/codemod/4/migration-recipe"
+  },
+  "deps": ["nuxt@4"],
+  "applicability": {
+    "from": [["nuxt", ">=", "3.0.0"], ["nuxt", "<", "4.0.0"]],
+    "to": [["nuxt", ">=", "4.0.0"]]
+  }
+}
