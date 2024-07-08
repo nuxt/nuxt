@@ -9,7 +9,8 @@
     "nuxt/4/default-data-error-value",
     "nuxt/4/deprecated-dedupe-value",
     "nuxt/4/file-structure",
-    "nuxt/4/shallow-data-reactivity"
+    "nuxt/4/shallow-data-reactivity",
+    "nuxt/4/template-compilation-changes"
   ],
   "meta": {
     "tags": ["migration", "nuxt"],
