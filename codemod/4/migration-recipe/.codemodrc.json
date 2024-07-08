@@ -1,7 +1,7 @@
 {
   "$schema": "https://codemod-utils.s3.us-west-1.amazonaws.com/configuration_schema.json",
   "name": "nuxt/4/migration-recipe",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "engine": "recipe",
   "names": [
