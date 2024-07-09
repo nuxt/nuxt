@@ -9,7 +9,7 @@ links:
 ---
 
 ::note
-`navigateTo` is available on both the `vue` server side and client side. To send a redirect from an a server endpoint (Nitro) please use [`sendRedirect()`]('https://h3.unjs.io/utils/response#sendredirectevent-location-code').
+`navigateTo` is available on both the `vue` server side and client side. To send a redirect from an a server endpoint (Nitro) please use [`sendRedirect()`](https://h3.unjs.io/utils/response#sendredirectevent-location-code).
 ::
 
 ## Usage
