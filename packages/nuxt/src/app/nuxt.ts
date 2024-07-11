@@ -121,6 +121,9 @@ interface _NuxtApp {
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<unknown>
+    /**
+     * @deprecated This may be removed in a future major version.
+     */
     pending: Ref<boolean>
     error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
