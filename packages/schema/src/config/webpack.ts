@@ -158,9 +158,9 @@ export default defineUntypedSchema({
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
       esbuild: {
-        jsxFactory: 'h',
-        jsxFragment: 'Fragment',
-        tsconfigRaw: '{}',
+        $resolve: async (val: Record<string, any>, get) => {
+          return defu(val, await get('esbuild.options') as Record<string, any>)
+        },
       },
 
       /**
