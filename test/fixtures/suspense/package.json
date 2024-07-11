@@ -11,7 +11,7 @@
   "devDependencies": {
     "@unhead/shared": "latest",
     "@vue/devtools-api": "latest",
-    "@vue/shared": "latest",
+    "@vue/shared": "catalog:",
     "typescript": "latest",
     "unhead": "latest"
   }
