@@ -229,6 +229,7 @@ export default defineNuxtModule({
       if (routerImports) {
         routerImports.from = 'vue-router'
       }
+    })
 
     // Regenerate templates when adding or removing pages
     const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
