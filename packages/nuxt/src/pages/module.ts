@@ -148,6 +148,12 @@ export default defineNuxtModule({
         priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
       })
+      // Prerender index if pages integration is not enabled
+      nuxt.hook('nitro:init', (nitro) => {
+        if (nuxt.options.dev || !nuxt.options.ssr || !nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
+
+        nitro.options.prerender.routes.push('/')
+      })
       return
     }
 
@@ -309,7 +315,6 @@ export default defineNuxtModule({
       processPages(pages)
     })
 
-    // For static sites with ssr: false with crawl, prerender all routes
     nuxt.hook('nitro:init', (nitro) => {
       if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
 
