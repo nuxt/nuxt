@@ -119,7 +119,7 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.5.1",
+    "@nuxt/scripts": "0.6.3",
     "@nuxt/ui-templates": "1.3.4",
     "@parcel/watcher": "2.4.1",
     "@types/estree": "1.0.5",
