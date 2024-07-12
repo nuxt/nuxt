@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "ofetch": "latest",
-    "unplugin-vue-router": "^0.10.0",
-    "vitest": "1.6.0",
+    "unplugin-vue-router": "catalog:",
+    "vitest": "catalog:",
     "vue": "latest",
     "vue-router": "latest"
   }
