@@ -24,9 +24,7 @@ export const showError = <DataT = unknown>(
     const nuxtApp = useNuxtApp()
     const error = useError()
 
-    if (import.meta.client) {
-      nuxtApp.hooks.callHook('app:error', nuxtError)
-    }
+    nuxtApp.hooks.callHook('app:error', nuxtError)
 
     error.value = error.value || nuxtError
   } catch {
