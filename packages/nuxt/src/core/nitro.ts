@@ -6,7 +6,7 @@ import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from
 import { joinURL, withTrailingSlash } from 'ufo'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitro'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
-import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolvePath } from '@nuxt/kit'
+import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
@@ -112,6 +112,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       generateTsConfig: true,
       tsconfigPath: 'tsconfig.server.json',
       tsConfig: {
+        compilerOptions: {
+          lib: ['esnext', 'webworker', 'dom.iterable'],
+        },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
           ...modules.map(m => join(relativeWithDot(nuxt.options.buildDir, m), 'runtime/server')),
@@ -405,7 +408,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   })
 
   const cacheDir = resolve(nuxt.options.buildDir, 'cache/nitro/prerender')
-  const cacheDriverPath = await resolvePath(join(distDir, 'core/runtime/nitro/cache-driver'))
+  const cacheDriverPath = join(distDir, 'core/runtime/nitro/cache-driver.js')
   await fsp.rm(cacheDir, { recursive: true, force: true }).catch(() => {})
   nitro.options._config.storage = defu(nitro.options._config.storage, {
     'internal:nuxt:prerender': {
@@ -500,11 +503,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       for (const route of ['/200.html', '/404.html']) {
         routes.add(route)
       }
-      if (nuxt.options.ssr) {
-        if (nitro.options.prerender.crawlLinks) {
-          routes.add('/')
-        }
-      } else {
+      if (!nuxt.options.ssr) {
         routes.add('/index.html')
       }
     })

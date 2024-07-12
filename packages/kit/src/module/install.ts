@@ -2,10 +2,9 @@ import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
+import { createJiti } from 'jiti'
 import { useNuxt } from '../context'
-import { requireModule } from '../internal/cjs'
-import { importModule } from '../internal/esm'
-import { resolveAlias, resolvePath } from '../resolve'
+import { resolveAlias } from '../resolve'
 import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
@@ -72,15 +71,20 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
+
+  const jiti = createJiti(nuxt.options.rootDir, {
+    interopDefault: true,
+    alias: nuxt.options.alias,
+  })
+
   // Import if input is string
   if (typeof nuxtModule === 'string') {
     const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
     let error: unknown
     for (const path of paths) {
       try {
-        const src = await resolvePath(path, { fallbackToOriginal: true })
-        // Prefer ESM resolution if possible
-        nuxtModule = await importModule(src, nuxt.options.modulesDir).catch(() => null) ?? requireModule(src, { paths: nuxt.options.modulesDir })
+        const src = jiti.esmResolve(path)
+        nuxtModule = await jiti.import(src) as NuxtModule
 
         // nuxt-module-builder generates a module.json with metadata including the version
         const moduleMetadataPath = join(dirname(src), 'module.json')
@@ -94,7 +98,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       }
     }
     if (typeof nuxtModule !== 'function' && error) {
-      logger.error(`Error while requiring module \`${nuxtModule}\`: ${error}`)
+      logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
       throw error
     }
   }

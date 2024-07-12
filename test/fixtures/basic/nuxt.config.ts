@@ -12,6 +12,7 @@ declare module 'nitro/types' {
 }
 
 export default defineNuxtConfig({
+  compatibilityDate: '2024-06-28',
   app: {
     pageTransition: true,
     layoutTransition: true,

@@ -149,7 +149,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
     }
 
     if (route.children && route.children.length > 0) {
-      await augmentPages(route.children, vfs)
+      await augmentPages(route.children, vfs, augmentedPages)
     }
   }
   return augmentedPages

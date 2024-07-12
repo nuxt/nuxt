@@ -421,7 +421,7 @@ export default defineUntypedSchema({
         '~~': rootDir,
         '@@': rootDir,
         [basename(assetsDir)]: join(srcDir, assetsDir),
-        [basename(publicDir)]: join(srcDir, publicDir),
+        [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
       }
     },

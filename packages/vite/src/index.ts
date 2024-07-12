@@ -1,1 +1,2 @@
-export * from './vite'
+export { bundle } from './vite'
+export type { ViteBuildContext } from './vite'

@@ -12,6 +12,8 @@ permissions: {}
 jobs:
   release:
     if: github.repository == 'nuxt/nuxt' && (startsWith(github.event.head_commit.message, 'v3.') || startsWith(github.event.head_commit.message, 'v4.'))
+    concurrency:
+      group: release
     permissions:
       id-token: write
     runs-on: ubuntu-latest

@@ -23,7 +23,7 @@ export default defineUntypedSchema({
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
-   * @see [Nuxt 3 documentation](https://nuxt.com/docs/guide/directory-structure/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {

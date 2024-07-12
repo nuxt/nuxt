@@ -310,7 +310,7 @@ export function useAsyncData<
 
         if (import.meta.dev && import.meta.server && !result) {
           // @ts-expect-error private property
-          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` should return a value that is not \`null\` or \`undefined\` or the request may be duplicated on the client side.`)
+          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a truthy value (for example, it should not be \`undefined\`, \`null\` or empty string) or the request may be duplicated on the client side.`)
         }
 
         nuxtApp.payload.data[key] = result

@@ -70,7 +70,11 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
+    if (!nuxt.options.experimental.componentIslands) {
+      return 'export const islandComponents = {}'
+    }
+
     const components = app.components
     const pages = app.pages
     const islands = components.filter(component =>

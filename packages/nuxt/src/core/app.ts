@@ -60,7 +60,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
-    const mark = performance.mark(fullPath)
+    const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
       logger.error(`Could not compile template \`${template.filename}\`.`)
@@ -83,8 +83,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.measure(fullPath, mark.name)
-    const setupTime = Math.round((perf.duration * 100)) / 100
+    const perf = performance.now() - start
+    const setupTime = Math.round((perf * 100)) / 100
 
     if (nuxt.options.debug || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
