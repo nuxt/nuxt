@@ -316,10 +316,8 @@ export default defineNuxtModule({
       // Only hint the first route when `ssr: true` and no routes are provided
       if (nuxt.options.ssr) {
         nitro.hooks.hook('prerender:routes', (routes) => {
-          if ([...routes].every(r => r.match(/(^\/api|\.\w+)/))) {
-            const [firstPage] = [...prerenderRoutes].sort()
-            routes.add(firstPage || '/')
-          }
+          const [firstPage] = [...prerenderRoutes].sort()
+          routes.add(firstPage || '/')
         })
         return
       }
