@@ -148,6 +148,12 @@ export default defineNuxtModule({
         priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
       })
+      // Prerender index if pages integration is not enabled
+      nuxt.hook('nitro:init', (nitro) => {
+        if (nuxt.options.dev || !nuxt.options.ssr || !nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
+
+        nitro.options.prerender.routes.push('/')
+      })
       return
     }
 
@@ -309,28 +315,22 @@ export default defineNuxtModule({
       processPages(pages)
     })
 
-    // For static sites with ssr: false with crawl, prerender all routes
-    nuxt.hook('nitro:init', (nitro) => {
+    nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
+      // as the rest will be injected at runtime when this is prerendered
       if (nuxt.options.ssr) {
-        nitro.hooks.hook('prerender:routes', (routes) => {
-          if ([...routes].every(r => r.match(/(^\/api|\.\w+)/))) {
-            const [firstPage] = [...prerenderRoutes].sort()
-            routes.add(firstPage || '/')
-          }
-        })
+        const [firstPage] = [...prerenderRoutes].sort()
+        nitro.options.prerender.routes.push(firstPage || '/')
         return
       }
 
       // Prerender all non-dynamic page routes when generating `ssr: false` app
-      nuxt.hook('nitro:build:before', (nitro) => {
-        for (const route of nitro.options.prerender.routes || []) {
-          prerenderRoutes.add(route)
-        }
-        nitro.options.prerender.routes = Array.from(prerenderRoutes)
-      })
+      for (const route of nitro.options.prerender.routes || []) {
+        prerenderRoutes.add(route)
+      }
+      nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
     nuxt.hook('imports:extend', (imports) => {
