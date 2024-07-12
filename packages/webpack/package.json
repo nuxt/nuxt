@@ -64,7 +64,7 @@
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.0",
     "vue-loader": "^17.4.2",
-    "webpack": "^5.92.1",
+    "webpack": "^5.93.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-dev-middleware": "^7.2.1",
     "webpack-hot-middleware": "^2.26.1",
@@ -78,7 +78,7 @@
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.18.0",
+    "rollup": "4.18.1",
     "unbuild": "3.0.0-rc.6",
     "vue": "3.4.31"
   },
