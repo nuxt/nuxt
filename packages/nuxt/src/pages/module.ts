@@ -315,25 +315,22 @@ export default defineNuxtModule({
       processPages(pages)
     })
 
-    nuxt.hook('nitro:init', (nitro) => {
+    nuxt.hook('nitro:build:before', (nitro) => {
       if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
+      // as the rest will be injected at runtime when this is prerendered
       if (nuxt.options.ssr) {
-        nitro.hooks.hook('prerender:routes', (routes) => {
-          const [firstPage] = [...prerenderRoutes].sort()
-          routes.add(firstPage || '/')
-        })
+        const [firstPage] = [...prerenderRoutes].sort()
+        nitro.options.prerender.routes.push(firstPage || '/')
         return
       }
 
       // Prerender all non-dynamic page routes when generating `ssr: false` app
-      nuxt.hook('nitro:build:before', (nitro) => {
-        for (const route of nitro.options.prerender.routes || []) {
-          prerenderRoutes.add(route)
-        }
-        nitro.options.prerender.routes = Array.from(prerenderRoutes)
-      })
+      for (const route of nitro.options.prerender.routes || []) {
+        prerenderRoutes.add(route)
+      }
+      nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
     nuxt.hook('imports:extend', (imports) => {
