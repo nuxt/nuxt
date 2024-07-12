@@ -109,7 +109,7 @@ export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */) {
   const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
   if (typeof rawVersion !== 'string') {
-    throw new Error('Cannot determine nuxt version! Is current instance passed?')
+    throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
   }
   return rawVersion.replace(/^v/g, '')
 }
