@@ -285,13 +285,6 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const head = createServerHead({
     plugins: unheadPlugins,
   })
-  if(isRenderingIsland) {
-    const _push = head.push
-    head.push = (...args) => {
-      debugger
-      return _push.call(head, ...args)
-    }
-  }
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
