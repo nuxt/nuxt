@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -8,14 +8,20 @@ import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerP
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
-import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
+import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
+import consola from 'consola'
+import { colorize } from 'consola/utils'
+import { updateConfig } from 'c12/update'
+import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
+import type { DateString } from 'compatx'
 
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
+import { hasTTY, isCI } from 'std-env'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -24,6 +30,7 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
+import { resolveTypePath } from './utils/types'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
@@ -60,6 +67,9 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   return nuxt
 }
 
+// TODO: update to nitro import
+const fallbackCompatibilityDate = '2024-04-03' as DateString
+
 const nightlies = {
   'nitropack': 'nitropack-nightly',
   'nitro': 'nitro-nightly',
@@ -74,12 +84,81 @@ const keyDependencies = [
   '@nuxt/schema',
 ]
 
+let warnedAboutCompatDate = false
+
 async function initNuxt (nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
       nuxt.hooks.addHooks(config.hooks)
     }
+  }
+
+  // Prompt to set compatibility date
+  nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
+
+  if (!nuxt.options.compatibilityDate.default) {
+    const todaysDate = formatDate(new Date())
+    nuxt.options.compatibilityDate.default = fallbackCompatibilityDate
+
+    const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
+    if (!shouldShowPrompt) {
+      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+    }
+
+    async function promptAndUpdate () {
+      const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
+        type: 'confirm',
+        default: true,
+      })
+      if (result !== true) {
+        console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+        return
+      }
+
+      try {
+        const res = await updateConfig({
+          configFile: 'nuxt.config',
+          cwd: nuxt.options.rootDir,
+          async onCreate ({ configFile }) {
+            const shallCreate = await consola.prompt(`Do you want to create ${colorize('cyan', relative(nuxt.options.rootDir, configFile))}?`, {
+              type: 'confirm',
+              default: true,
+            })
+            if (shallCreate !== true) {
+              return false
+            }
+            return _getDefaultNuxtConfig()
+          },
+          onUpdate (config) {
+            config.compatibilityDate = todaysDate
+          },
+        })
+
+        if (res?.configFile) {
+          nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
+          consola.success(`Compatibility date set to \`${todaysDate}\` in \`${relative(nuxt.options.rootDir, res.configFile)}\``)
+          return
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : err
+
+        consola.error(`Failed to update config: ${message}`)
+      }
+
+      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+    }
+
+    nuxt.hooks.hookOnce('nitro:init', (nitro) => {
+      if (warnedAboutCompatDate) { return }
+
+      nitro.hooks.hookOnce('compiled', () => {
+        warnedAboutCompatDate = true
+        // Print warning
+        console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
+        if (shouldShowPrompt) { promptAndUpdate() }
+      })
+    })
   }
 
   // Restart Nuxt when layer directories are added or removed
@@ -107,29 +186,16 @@ async function initNuxt (nuxt: Nuxt) {
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
     if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
 
-    async function resolveTypePath (path: string) {
-      try {
-        const r = await _resolvePath(path, { url: nuxt.options.modulesDir, conditions: ['types', 'import', 'require'] })
-        if (subpath) {
-          return r.replace(/(?:\.d)?\.[mc]?[jt]s$/, '')
-        }
-        const rootPath = await resolvePackageJSON(r)
-        return dirname(rootPath)
-      } catch {
-        return null
-      }
-    }
-
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
       const nightly = nightlies[_pkg as keyof typeof nightlies]
-      const path = await resolveTypePath(nightly + subpath)
+      const path = await resolveTypePath(nightly + subpath, subpath, nuxt.options.modulesDir)
       if (path) {
         return [[pkg, [path]], [nightly + subpath, [path]]]
       }
     }
 
-    const path = await resolveTypePath(_pkg + subpath)
+    const path = await resolveTypePath(_pkg + subpath, subpath, nuxt.options.modulesDir)
     if (path) {
       return [[pkg, [path]]]
     }
@@ -420,21 +486,6 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
-  // Add <NuxtIsland>
-  if (nuxt.options.experimental.componentIslands) {
-    addComponent({
-      name: 'NuxtIsland',
-      priority: 10, // built-in that we do not expect the user to override
-      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
-    })
-
-    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
-      nuxt.options.ssr = true
-      nuxt.options.nitro.routeRules ||= {}
-      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
-    }
-  }
-
   // Add stubs for <NuxtImg> and <NuxtPicture>
   for (const name of ['NuxtImg', 'NuxtPicture']) {
     addComponent({
@@ -444,38 +495,6 @@ async function initNuxt (nuxt: Nuxt) {
       filePath: resolve(nuxt.options.appDir, 'components/nuxt-stubs'),
       // @ts-expect-error TODO: refactor to nuxi
       _internal_install: '@nuxt/image',
-    })
-  }
-
-  // Add prerender payload support
-  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
-  }
-
-  // Add experimental cross-origin prefetch support using Speculation Rules API
-  if (nuxt.options.experimental.crossOriginPrefetch) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
-  }
-
-  // Add experimental page reload support
-  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
-  }
-  // Add experimental session restoration support
-  if (nuxt.options.experimental.restoreState) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
-  }
-
-  // Add experimental automatic view transition api support
-  if (nuxt.options.experimental.viewTransition) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
-  }
-
-  // Add experimental support for custom types in JSON payload
-  if (nuxt.options.experimental.renderJsonPayloads) {
-    nuxt.hooks.hook('modules:done', () => {
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
     })
   }
 
@@ -521,6 +540,51 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+
+  // Add <NuxtIsland>
+  if (nuxt.options.experimental.componentIslands) {
+    addComponent({
+      name: 'NuxtIsland',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/nuxt-island'),
+    })
+
+    if (!nuxt.options.ssr && nuxt.options.experimental.componentIslands !== 'auto') {
+      nuxt.options.ssr = true
+      nuxt.options.nitro.routeRules ||= {}
+      nuxt.options.nitro.routeRules['/**'] = defu(nuxt.options.nitro.routeRules['/**'], { ssr: false })
+    }
+  }
+
+  // Add prerender payload support
+  if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+  }
+
+  // Add experimental cross-origin prefetch support using Speculation Rules API
+  if (nuxt.options.experimental.crossOriginPrefetch) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
+  }
+
+  // Add experimental page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
+  }
+  // Add experimental session restoration support
+  if (nuxt.options.experimental.restoreState) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
+  }
+
+  // Add experimental automatic view transition api support
+  if (nuxt.options.experimental.viewTransition) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+  }
+
+  // Add experimental support for custom types in JSON payload
+  if (nuxt.options.experimental.renderJsonPayloads) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+  }
 
   if (nuxt.options.experimental.appManifest) {
     addRouteMiddleware({
@@ -611,7 +675,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   // Temporary until finding better placement for each
   options.appDir = options.alias['#app'] = resolve(distDir, 'app')
-  options._majorVersion = 3
+  options._majorVersion = 4
 
   // De-duplicate key arrays
   for (const key in options.app.head || {}) {
@@ -762,3 +826,10 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
     })
   }
 }
+
+const _getDefaultNuxtConfig = () => /* js */
+`// https://nuxt.com/docs/api/configuration/nuxt-config
+export default defineNuxtConfig({
+  devtools: { enabled: true }
+})
+`

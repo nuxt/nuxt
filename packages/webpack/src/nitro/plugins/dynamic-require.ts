@@ -1,8 +1,8 @@
-import { pathToFileURL } from 'node:url'
 import { globby } from 'globby'
 import { genSafeVariableName } from 'knitwork'
 import { resolve } from 'pathe'
 import type { Plugin } from 'rollup'
+import { importModule } from '@nuxt/kit'
 
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
@@ -61,9 +61,8 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
       let files = []
       try {
         const wpManifest = resolve(dir, './server.manifest.json')
-        files = await import(pathToFileURL(wpManifest).href).then(r =>
-          Object.keys(r.files).filter(file => !ignore.includes(file)),
-        )
+        files = await importModule<{ files: Record<string, unknown> }>(wpManifest)
+          .then(r => Object.keys(r.files).filter(file => !ignore.includes(file)))
       } catch {
         files = await globby('**/*.{cjs,mjs,js}', {
           cwd: dir,
@@ -89,9 +88,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
 }
 
 async function getWebpackChunkMeta (src: string) {
-  const chunk = await import(pathToFileURL(src).href).then(
-    r => r.default || r || {},
-  )
+  const chunk = await importModule<{ id: string, ids: string[], modules: Record<string, unknown> }>(src) || {}
   const { id, ids, modules } = chunk
   if (!id && !ids) {
     return null // Not a webpack chunk

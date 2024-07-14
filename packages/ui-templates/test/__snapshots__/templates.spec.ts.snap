@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
+exports[`template > produces correct output for error-404 template 1`] = `
 ".grid {
   display: grid;
 }
@@ -135,7 +135,7 @@ exports[`template > correctly outputs style blocks for error-404.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-404.vue 2`] = `
+exports[`template > produces correct output for error-404 template 2`] = `
 "*,
 :before,
 :after {
@@ -240,7 +240,7 @@ p {
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
+exports[`template > produces correct output for error-500 template 1`] = `
 ".grid {
   display: grid;
 }
@@ -346,7 +346,7 @@ exports[`template > correctly outputs style blocks for error-500.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-500.vue 2`] = `
+exports[`template > produces correct output for error-500 template 2`] = `
 "*,
 :before,
 :after {
@@ -447,7 +447,7 @@ p {
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
+exports[`template > produces correct output for error-dev template 1`] = `
 ".absolute {
   position: absolute;
 }
@@ -606,7 +606,7 @@ exports[`template > correctly outputs style blocks for error-dev.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for error-dev.vue 2`] = `
+exports[`template > produces correct output for error-dev template 2`] = `
 "*,
 :before,
 :after {
@@ -724,7 +724,7 @@ pre {
 "
 `;
 
-exports[`template > correctly outputs style blocks for loading.vue 1`] = `
+exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
   background: #00dc82;
   position: fixed;
@@ -887,7 +887,7 @@ exports[`template > correctly outputs style blocks for loading.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for loading.vue 2`] = `
+exports[`template > produces correct output for loading template 2`] = `
 "@keyframes nuxt-loading-move {
   100% {
     stroke-dashoffset: -128;
@@ -998,7 +998,7 @@ svg {
 "
 `;
 
-exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
+exports[`template > produces correct output for welcome template 1`] = `
 ".sr-only {
   position: absolute;
   width: 1px;
@@ -1358,7 +1358,7 @@ exports[`template > correctly outputs style blocks for welcome.vue 1`] = `
 "
 `;
 
-exports[`template > correctly outputs style blocks for welcome.vue 2`] = `
+exports[`template > produces correct output for welcome template 2`] = `
 "*,
 :before,
 :after {
@@ -1392,6 +1392,7 @@ body {
   margin: 0;
   line-height: inherit;
 }
+h1,
 h2 {
   font-size: inherit;
   font-weight: inherit;
@@ -1400,6 +1401,7 @@ a {
   color: inherit;
   text-decoration: inherit;
 }
+h1,
 h2,
 p {
   margin: 0;

@@ -11,11 +11,11 @@ import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 
-export function client (ctx: WebpackConfigContext) {
+export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
   ctx.isClient = true
 
-  applyPresets(ctx, [
+  await applyPresets(ctx, [
     nuxt,
     clientPlugins,
     clientOptimization,

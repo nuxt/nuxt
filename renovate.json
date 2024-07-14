@@ -7,7 +7,7 @@
   ],
   "baseBranches": [
     "main",
-    "2.x"
+    "3.x"
   ],
   "packageRules": [
     {
@@ -22,7 +22,8 @@
     },
     {
       "matchBaseBranches": [
-        "main"
+        "main",
+        "3.x"
       ],
       "ignoreDeps": [
         "nitro",
@@ -30,33 +31,6 @@
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
-      ]
-    },
-    {
-      "matchBaseBranches": [
-        "2.x"
-      ],
-      "ignoreDeps": [
-        "@types/node",
-        "postcss-import",
-        "postcss-loader",
-        "postcss-url",
-        "css-loader",
-        "sass-loader",
-        "npm",
-        "boxen",
-        "html-webpack-plugin",
-        "terser-webpack-plugin",
-        "@types/terser-webpack-plugin",
-        "@types/webpack-bundle-analyzer",
-        "@types/webpack-hot-middleware",
-        "webpack-dev-middleware",
-        "wrap-ansi",
-        "globby",
-        "execa",
-        "chalk",
-        "vue",
-        "vuex"
       ]
     }
   ]

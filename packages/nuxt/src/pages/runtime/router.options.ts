@@ -58,7 +58,7 @@ function _getHashElementScrollMarginTop (selector: string): number {
   try {
     const elem = document.querySelector(selector)
     if (elem) {
-      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop)
+      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop) + Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)
     }
   } catch {
     // ignore any errors parsing scrollMarginTop
