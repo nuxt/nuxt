@@ -285,6 +285,14 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const head = createServerHead({
     plugins: unheadPlugins,
   })
+  if(isRenderingIsland) {
+    const _push = head.push
+    head.push = (...args) => {
+      debugger
+      return _push.call(head, ...args)
+    }
+  }
+
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
   if (!isRenderingIsland) {
@@ -393,7 +401,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 2. Styles
-  head.push({ style: inlinedStyles })
+  if (inlinedStyles.length) {
+    head.push({ style: inlinedStyles })
+  }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
     for (const style in styles) {
@@ -410,7 +420,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
     }
-    head.push({ link }, headEntryOptions)
+    if (link.length) {
+      head.push({ link }, headEntryOptions)
+    }
   }
 
   if (!NO_SCRIPTS && !isRenderingIsland) {
