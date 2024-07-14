@@ -53,6 +53,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.6.0",
+    "@unhead/vue": "^1.9.15",
     "@nuxt/eslint-config": "0.3.13",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.13.1",

@@ -61,6 +61,9 @@ importers:
       '@unhead/schema':
         specifier: 1.9.15
         version: 1.9.15
+      '@unhead/vue':
+        specifier: ^1.9.15
+        version: 1.9.15(vue@3.4.31(typescript@5.5.3))
       '@vitejs/plugin-vue':
         specifier: 5.0.5
         version: 5.0.5(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))

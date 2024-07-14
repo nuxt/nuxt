@@ -7,7 +7,8 @@ import { join, normalize } from 'pathe'
 import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
+import { resolveUnrefHeadInput } from '@unhead/vue'
+import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, removeNuxtTemplateLink, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
@@ -137,7 +138,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
+    expect(html.replaceAll(/ data-island-uid="[^"]*"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -2096,18 +2097,14 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head = result.head.filter(h => h.tag !== 'link' || ((!h.props.href!.includes('@nuxt+ui-templates') && (h.props.href!.startsWith('_nuxt/components/islands/') && h.props.href!.includes('_nuxt/components/islands/RouteComponent')))))
+      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' && h.props.href!.includes('_nuxt/components/islands/RouteComponent'))
     }
 
     expect(result).toMatchInlineSnapshot(`
       {
         "head": [
           {
-            "props": {
-              "data-capo": "",
-              "key": "island-tag-TNSM0SxoEb",
-            },
-            "tag": "htmlAttrs",
+            "style": [],
           },
         ],
         "html": "<pre data-island-uid>    Route: /foo
@@ -2123,18 +2120,14 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head = result.head.filter(h => h.tag !== 'link' || (!h.props.href!.includes('@nuxt+ui-templates') && (h.props.href!.startsWith('_nuxt/components/islands/') && h.props.href!.includes('_nuxt/components/islands/LongAsyncComponent'))))
+      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' || (!h.props.href!.includes('@nuxt+ui-templates') && h.props.href!.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "head": [
           {
-            "props": {
-              "data-capo": "",
-              "key": "island-tag-TNSM0SxoEb",
-            },
-            "tag": "htmlAttrs",
+            "style": [],
           },
         ],
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
@@ -2186,7 +2179,12 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head = result.head.filter(h => h.tag !== 'link' || (!h.props.href!.includes('@nuxt+ui-templates') && (h.props.href!.startsWith('_nuxt/components/islands/') && h.props.href!.includes('_nuxt/components/islands/AsyncServerComponent'))))
+      result.head = result.head.map((h) => {
+        if (h.link) {
+          h.link = h.link.filter(h => (!(h.href! as string).includes('@nuxt+ui-templates') && ((h.href! as string).startsWith('_nuxt/components/islands/') && (h.href! as string).includes('_nuxt/components/islands/AsyncServerComponent'))))
+        }
+        return h
+      })
     }
     result.props = {}
     result.components = {}
@@ -2198,11 +2196,7 @@ describe('component islands', () => {
         "components": {},
         "head": [
           {
-            "props": {
-              "data-capo": "",
-              "key": "island-tag-TNSM0SxoEb",
-            },
-            "tag": "htmlAttrs",
+            "style": [],
           },
         ],
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
@@ -2216,7 +2210,7 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head = result.head.filter(h => h.tag !== 'link' || !h.props.href!.includes('@nuxt+ui-templates'))
+        result.head = removeNuxtTemplateLink(result.head)
       }
       const { components } = result
       result.components = {}
@@ -2230,11 +2224,7 @@ describe('component islands', () => {
           "components": {},
           "head": [
             {
-              "props": {
-                "data-capo": "",
-                "key": "island-tag-TNSM0SxoEb",
-              },
-              "tag": "htmlAttrs",
+              "style": [],
             },
           ],
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component bellow is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
@@ -2266,35 +2256,46 @@ describe('component islands', () => {
     if (isDev()) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const head of result.head) {
-        if (head.tag === 'link') {
-          if (head.props.href) {
-            head.props.href = head.props.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-          }
-          if (head.props.key) {
-            head.props.key = head.props.key!.replace(/-[a-z0-9]+$/i, '')
+        for (const key in head) {
+          if (key === 'link') {
+            head[key] = head[key]?.map((h) => {
+              if (h.href) {
+                h.href = resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+              }
+              return h
+            })
           }
         }
       }
-      result.head.filter(h => h.tag === 'link').sort((a, b) => b.props.href!.localeCompare(a.props.href!))
+
+      // todo : why do we need to sort ?
+      // result.head.filter(h => h.tag === 'link').sort((a, b) => b.props.href!.localeCompare(a.props.href!))
     }
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
-        {
-          "link": [],
-          "style": [
-            {
-              "innerHTML": "pre[data-v-xxxxx]{color:blue}",
-              "key": "island-style",
-            },
-          ],
-        }
+        [
+          {
+            "style": [
+              {
+                "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              },
+            ],
+          },
+          {
+            "style": [
+              {
+                "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              },
+            ],
+          },
+        ]
       `)
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head = result.head.filter(h => h.tag !== 'link' || !h.props.href!.includes('@nuxt+ui-templates'))
+      result.head = removeNuxtTemplateLink(result.head)
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [
@@ -2653,15 +2654,18 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
     head: result.head.map((h) => {
-      if (h.tag === 'style') {
-        return {
-          ...h,
-          props: {
-            ...h.props,
-            innerHTML: (h.props.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx'),
-            key: h.props.key!.replace(/-[a-z0-9]+$/i, ''),
-          },
+      if (h.style) {
+        for (const style of h.style) {
+          if (typeof style !== 'string') {
+            if (style.innerHTML) {
+              style.innerHTML = (style.innerHTML as string).replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+            }
+            if (style.key) {
+              style.key = style.key.replace(/-[a-z0-9]+$/i, '')
+            }
+          }
         }
+        return h
       }
     }),
   }

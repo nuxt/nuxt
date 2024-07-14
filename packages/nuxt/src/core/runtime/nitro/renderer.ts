@@ -466,7 +466,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     head.push({ style: inlinedStyles })
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: head.headEntries().map(h => resolveUnrefHeadInput(h.input)) as Head[],
+      head: (head.headEntries().map(h => resolveUnrefHeadInput(h.input) as Head)),
       html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
