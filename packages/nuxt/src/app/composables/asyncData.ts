@@ -250,16 +250,16 @@ export function useAsyncData<
   }
 
   // TODO: make more precise when v4 lands
-  const hasCachedData = () => options.getCachedData!(key, nuxtApp) != null
+  const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
-
+    const cachedData = options.getCachedData!(key, nuxtApp)
     nuxtApp._asyncData[key] = {
-      data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
+      data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
@@ -308,9 +308,9 @@ export function useAsyncData<
           result = pick(result as any, options.pick) as DataT
         }
 
-        if (import.meta.dev && import.meta.server && !result) {
+        if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
           // @ts-expect-error private property
-          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a truthy value (for example, it should not be \`undefined\`, \`null\` or empty string) or the request may be duplicated on the client side.`)
+          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
         }
 
         nuxtApp.payload.data[key] = result
