@@ -1051,7 +1051,7 @@ describe('errors', () => {
     const error = await res.json()
     delete error.stack
     expect(error).toMatchObject({
-      message: 'internal server error',
+      message: isDev() ? 'This is a custom error' : 'internal server error',
       statusCode: 422,
       statusMessage: 'This is a custom error',
       url: '/error',
