@@ -7,7 +7,7 @@ import type { NuxtPayload } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
-  const { stack, statusCode, statusMessage, message } = normalizeError(error)
+  const { stack, statusCode, statusMessage, message } = normalizeError(error, import.meta.dev)
 
   // Create an error object
   const errorObject = {
@@ -111,33 +111,39 @@ function hasReqHeader (event: H3Event, name: string, includes: string) {
   )
 }
 
-function normalizeError (error: any) {
+function normalizeError (error: any, isDev?: boolean) {
   // temp fix for https://github.com/unjs/nitro/issues/759
   // TODO: investigate vercel-edge not using unenv pollyfill
   const cwd = typeof process.cwd === 'function' ? process.cwd() : '/'
-  const stack = ((error.stack as string) || '')
-    .split('\n')
-    .splice(1)
-    .filter(line => line.includes('at '))
-    .map((line) => {
-      const text = line
-        .replace(cwd + '/', './')
-        .replace('webpack:/', '')
-        .replace('file://', '')
-        .trim()
-      return {
-        text,
-        internal:
-          (line.includes('node_modules') && !line.includes('.cache')) ||
-          line.includes('internal') ||
-          line.includes('new Promise'),
-      }
-    })
+
+  // Hide details of unhandled/fatal errors in production
+  const hideDetails = !isDev && (error.unhandled || error.fatal)
+
+  const stack = hideDetails
+    ? []
+    : ((error.stack as string) || '')
+        .split('\n')
+        .splice(1)
+        .filter(line => line.includes('at '))
+        .map((line) => {
+          const text = line
+            .replace(cwd + '/', './')
+            .replace('webpack:/', '')
+            .replace('file://', '')
+            .trim()
+          return {
+            text,
+            internal:
+              (line.includes('node_modules') && !line.includes('.cache')) ||
+              line.includes('internal') ||
+              line.includes('new Promise'),
+          }
+        })
 
   const statusCode = error.statusCode || 500
   const statusMessage =
     error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
-  const message = error.message || error.toString()
+  const message = hideDetails ? 'internal server error' : (error.message || error.toString())
 
   return {
     stack,
