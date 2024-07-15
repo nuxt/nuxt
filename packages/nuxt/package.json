@@ -65,9 +65,9 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.5.4",
     "@nuxt/vite-builder": "workspace:*",
-    "@unhead/dom": "^1.9.15",
-    "@unhead/ssr": "^1.9.15",
-    "@unhead/vue": "^1.9.15",
+    "@unhead/dom": "^1.9.16",
+    "@unhead/ssr": "^1.9.16",
+    "@unhead/vue": "^1.9.16",
     "@vue/shared": "^3.4.31",
     "acorn": "8.12.1",
     "c12": "^2.0.0-beta.1",
@@ -119,7 +119,7 @@
     "vue-router": "^4.4.0"
   },
   "devDependencies": {
-    "@nuxt/scripts": "0.6.3",
+    "@nuxt/scripts": "0.6.4",
     "@nuxt/ui-templates": "1.3.4",
     "@parcel/watcher": "2.4.1",
     "@types/estree": "1.0.5",
