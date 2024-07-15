@@ -34,7 +34,7 @@ export default defineUntypedSchema({
       $resolve: (val) => {
         const defaults = [
           // Nitro auto-imported/augmented dependencies
-          'nitropack',
+          'nitro/types',
           'defu',
           'h3',
           'consola',
@@ -47,6 +47,8 @@ export default defineUntypedSchema({
           '@vue/compiler-sfc',
           '@vue/runtime-dom',
           'vue-router',
+          'vue-router/auto-routes',
+          'unplugin-vue-router/client',
           '@nuxt/schema',
           'nuxt',
         ]

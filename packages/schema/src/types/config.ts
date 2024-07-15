@@ -3,7 +3,7 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
+import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
@@ -75,9 +75,10 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack' | 'postcss'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
+  postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
@@ -100,12 +101,6 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
    * @see [@vitejs/plugin-vue-jsx.](https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx)
    */
   vueJsx?: VueJsxPluginOptions
-
-  /**
-   * Bundler for dev time server-side rendering.
-   * @default 'vite-node'
-   */
-  devBundler?: 'vite-node' | 'legacy'
 
   /**
    * Warmup vite entrypoint caches on dev startup.

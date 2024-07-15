@@ -148,17 +148,6 @@ export default createConfigForNuxt({
             ],
           },
         ],
-        'import/order': [
-          'error',
-          {
-            pathGroups: [
-              {
-                group: 'external',
-                pattern: '#vue-router',
-              },
-            ],
-          },
-        ],
         'jsdoc/check-tag-names': [
           'error',
           {

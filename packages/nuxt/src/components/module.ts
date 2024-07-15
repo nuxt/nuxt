@@ -121,11 +121,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
-    if (nuxt.options.experimental.componentIslands) {
-      addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
-    } else {
-      addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
-    }
+    addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
 
     if (componentOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
@@ -216,7 +212,7 @@ export default defineNuxtModule<ComponentsOptions>({
       const mode = isClient ? 'client' : 'server'
 
       config.plugins = config.plugins || []
-      if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
+      if (isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
           sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
@@ -285,7 +281,7 @@ export default defineNuxtModule<ComponentsOptions>({
       configs.forEach((config) => {
         const mode = config.name === 'client' ? 'client' : 'server'
         config.plugins = config.plugins || []
-        if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
+        if (mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
             sourcemap: !!nuxt.options.sourcemap[mode],
             getComponents,

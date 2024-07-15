@@ -5,6 +5,7 @@ import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
 vi.mock('#app/compat/idle-callback', () => ({
   requestIdleCallback: (cb: Function) => cb(),
+  cancelIdleCallback: () => {},
 }))
 
 const timestamp = Date.now()

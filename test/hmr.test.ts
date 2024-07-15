@@ -3,9 +3,12 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
+
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -108,7 +111,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       const resolveHmrId = async () => {
         const node = await page.$('#hmr-id')
         const text = await node?.innerText() || ''
-        return Number(text?.trim().split(':')[1].trim())
+        return Number(text.trim().split(':')[1]?.trim() || '')
       }
       const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
       const triggerHmr = async () => fsp.writeFile(

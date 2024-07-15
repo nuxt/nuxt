@@ -55,7 +55,7 @@ export async function addComponent (opts: AddComponentOptions) {
   nuxt.hook('components:extend', (components: Component[]) => {
     const existingComponentIndex = components.findIndex(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
     if (existingComponentIndex !== -1) {
-      const existingComponent = components[existingComponentIndex]
+      const existingComponent = components[existingComponentIndex]!
       const existingPriority = existingComponent.priority ?? 0
       const newPriority = component.priority ?? 0
 

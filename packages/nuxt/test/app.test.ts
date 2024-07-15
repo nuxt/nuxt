@@ -19,7 +19,7 @@ describe('resolveApp', () => {
       {
         "components": [],
         "configs": [],
-        "dir": "<rootDir>",
+        "dir": "<rootDir>/app",
         "errorComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-error-page.vue",
         "extensions": [
           ".js",
@@ -45,6 +45,10 @@ describe('resolveApp', () => {
           },
           {
             "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/navigation-repaint.client.ts",
+          },
+          {
+            "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/check-outdated-build.client.ts",
           },
           {
@@ -54,6 +58,10 @@ describe('resolveApp', () => {
           {
             "mode": "client",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/revive-payload.client.ts",
+          },
+          {
+            "mode": "client",
+            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
           {
             "filename": "components.plugin.mjs",
@@ -68,10 +76,6 @@ describe('resolveApp', () => {
           {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
-          },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/chunk-reload.client.ts",
           },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",

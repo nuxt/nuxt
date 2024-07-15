@@ -1,19 +1,12 @@
 import type { NuxtHooks, NuxtMiddleware } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { useNuxt } from './context'
-import { isNuxt2 } from './compatibility'
 import { logger } from './logger'
 import { toArray } from './utils'
 
 export function extendPages (cb: NuxtHooks['pages:extend']) {
-  const nuxt = useNuxt()
-  if (isNuxt2(nuxt)) {
-    // @ts-expect-error TODO: Nuxt 2 hook
-    nuxt.hook('build:extendRoutes', cb)
-  } else {
-    nuxt.hook('pages:extend', cb)
-  }
+  useNuxt().hook('pages:extend', cb)
 }
 
 export interface ExtendRouteRulesOptions {
@@ -51,7 +44,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
-        const foundPath = app.middleware[find].path
+        const foundPath = app.middleware[find]!.path
         if (foundPath === middleware.path) { continue }
         if (options.override === true) {
           app.middleware[find] = { ...middleware }

@@ -34,7 +34,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - 🏠 [Local Development](#local-development)
 - ⛰️ [Nuxt 2](#nuxt-2)
 - 🛟 [Professional Support](#professional-support)
-- 🔗 [Follow us](#follow-us)
+- 🔗 [Follow Us](#follow-us)
 - ⚖️ [License](#license)
 
 ---
@@ -101,18 +101,12 @@ Here are a few ways you can get involved:
 
 Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
 
-## <a name="nuxt-2">⛰️ Nuxt 2</a>
-
-You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [v2.nuxt.com](https://v2.nuxt.com).
-
-If you expect to be using Nuxt 2 beyond the EOL (End of Life) date (June 30, 2024), and still need a maintained version that can satisfy security and browser compatibility requirements, make sure to check out [HeroDevs’ NES (Never-Ending Support) Nuxt 2](https://www.herodevs.com/support/nuxt-nes?utm_source=nuxt-github&utm_medium=nuxt-readme).
-
 ## <a name="professional-support">🛟 Professional Support</a>
 
 - Technical audit & consulting: [Nuxt Experts](https://nuxt.com/enterprise/support)
 - Custom development & more: [Nuxt Agencies Partners](https://nuxt.com/enterprise/agencies)
 
-## <a name="follow-us">🔗 Follow us</a>
+## <a name="follow-us">🔗 Follow Us</a>
 
 <p valign="center">
   <a href="https://chat.nuxt.dev"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
