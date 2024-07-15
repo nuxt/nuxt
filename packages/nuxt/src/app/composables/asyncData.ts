@@ -119,8 +119,6 @@ export interface _AsyncData<DataT, ErrorT> {
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
 
-const isDefer = (dedupe?: AsyncDataExecuteOptions['dedupe']) => dedupe === 'defer'
-
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
@@ -267,7 +265,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxtApp._asyncDataPromises[key]) {
-      if (isDefer(opts.dedupe ?? options.dedupe)) {
+      if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
         return nuxtApp._asyncDataPromises[key]!
       }
