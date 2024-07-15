@@ -52,7 +52,7 @@
     "vue": "3.4.31"
   },
   "devDependencies": {
-    "@eslint/js": "9.6.0",
+    "@eslint/js": "9.7.0",
     "@nuxt/eslint-config": "0.3.13",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.13.1",
@@ -61,7 +61,7 @@
     "@types/eslint__js": "8.42.3",
     "@types/node": "20.14.10",
     "@types/semver": "7.5.8",
-    "@unhead/schema": "1.9.15",
+    "@unhead/schema": "1.9.16",
     "@vitejs/plugin-vue": "5.0.5",
     "@vitest/coverage-v8": "1.6.0",
     "@vue/test-utils": "2.4.6",
@@ -71,7 +71,7 @@
     "consola": "3.2.3",
     "cssnano": "7.0.4",
     "devalue": "5.0.0",
-    "eslint": "9.6.0",
+    "eslint": "9.7.0",
     "eslint-plugin-no-only-tests": "3.1.0",
     "eslint-plugin-perfectionist": "2.11.0",
     "eslint-typegen": "0.2.4",
