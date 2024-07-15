@@ -11,6 +11,12 @@
   ],
   "packageRules": [
     {
+      "groupName": "vite-plugin-checker",
+      "matchPackageNames": [
+        "vite-plugin-checker"
+      ]
+    },
+    {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
