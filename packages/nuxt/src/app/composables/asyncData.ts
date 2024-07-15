@@ -100,9 +100,6 @@ export interface AsyncDataExecuteOptions {
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
-   *
-   * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
-   * Boolean values will be removed in a future release.
    */
   dedupe?: 'cancel' | 'defer'
 }
@@ -121,9 +118,6 @@ export interface _AsyncData<DataT, ErrorT> {
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
-
-// TODO: remove boolean option in Nuxt 4
-const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -245,10 +239,6 @@ export function useAsyncData<
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
 
-  if (import.meta.dev && typeof options.dedupe === 'boolean') {
-    console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
-  }
-
   // TODO: make more precise when v4 lands
   const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
 
@@ -275,7 +265,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxtApp._asyncDataPromises[key]) {
-      if (isDefer(opts.dedupe ?? options.dedupe)) {
+      if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
         return nuxtApp._asyncDataPromises[key]!
       }
