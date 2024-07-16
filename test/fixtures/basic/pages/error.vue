@@ -12,7 +12,7 @@ const { data, error } = await useAsyncData(() => {
 
 if (error.value) {
   useCookie('some-error').value = 'was set'
-  throw createError({ statusCode: 422, fatal: true, statusMessage: 'This is a custom error' })
+  throw createError({ statusCode: 422, statusMessage: 'This is a custom error' })
 }
 
 const state = ref({ attr: 'Hello World' })
