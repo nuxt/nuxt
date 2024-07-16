@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { applyDefaults } from 'untyped'
 
 import { normalize } from 'pathe'
 import { NuxtConfigSchema } from '../src'
 import type { NuxtOptions } from '../src'
+
+vi.mock('node:fs', () => ({
+  existsSync: (id: string) => id.endsWith('app'),
+}))
 
 describe('nuxt folder structure', () => {
   it('should resolve directories for v3 setup correctly', async () => {
@@ -17,7 +21,7 @@ describe('nuxt folder structure', () => {
         },
         "rootDir": "<cwd>",
         "serverDir": "<cwd>/server",
-        "srcDir": "<cwd>",
+        "srcDir": "<cwd>/app",
         "workspaceDir": "<cwd>",
       }
     `)
@@ -51,7 +55,7 @@ describe('nuxt folder structure', () => {
         },
         "rootDir": "<cwd>",
         "serverDir": "<cwd>/server",
-        "srcDir": "<cwd>",
+        "srcDir": "<cwd>/app",
         "workspaceDir": "<cwd>",
       }
     `)
