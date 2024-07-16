@@ -117,7 +117,7 @@ function normalizeError (error: any) {
   const cwd = typeof process.cwd === 'function' ? process.cwd() : '/'
 
   // Hide details of unhandled/fatal errors in production
-  const hideDetails = !import.meta.dev && (error.fatal || error.unhandled)
+  const hideDetails = !import.meta.dev && error.unhandled
 
   const _stack = import.meta.dev
     ? ((error.stack as string) || '')
