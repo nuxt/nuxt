@@ -7,7 +7,7 @@ import type { NuxtPayload } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
-  const { stack, statusCode, statusMessage, message } = normalizeError(error, import.meta.dev)
+  const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
   // Create an error object
   const errorObject = {
@@ -111,17 +111,16 @@ function hasReqHeader (event: H3Event, name: string, includes: string) {
   )
 }
 
-function normalizeError (error: any, isDev?: boolean) {
+function normalizeError (error: any) {
   // temp fix for https://github.com/unjs/nitro/issues/759
   // TODO: investigate vercel-edge not using unenv pollyfill
   const cwd = typeof process.cwd === 'function' ? process.cwd() : '/'
 
   // Hide details of unhandled/fatal errors in production
-  const hideDetails = !isDev && (error.unhandled || error.fatal)
+  const hideDetails = !import.meta.dev && error.unhandled
 
-  const stack = hideDetails
-    ? []
-    : ((error.stack as string) || '')
+  const _stack = import.meta.dev
+    ? ((error.stack as string) || '')
         .split('\n')
         .splice(1)
         .filter(line => line.includes('at '))
@@ -139,10 +138,11 @@ function normalizeError (error: any, isDev?: boolean) {
               line.includes('new Promise'),
           }
         })
+    : []
 
+  const stack = hideDetails ? [] : _stack
   const statusCode = error.statusCode || 500
-  const statusMessage =
-    error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
+  const statusMessage = error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
   const message = hideDetails ? 'internal server error' : (error.message || error.toString())
 
   return {
