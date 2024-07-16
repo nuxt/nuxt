@@ -17,7 +17,7 @@ describe('nuxt folder structure', () => {
         },
         "rootDir": "<cwd>",
         "serverDir": "<cwd>/server",
-        "srcDir": "<cwd>/app",
+        "srcDir": "<cwd>",
         "workspaceDir": "<cwd>",
       }
     `)
@@ -51,7 +51,7 @@ describe('nuxt folder structure', () => {
         },
         "rootDir": "<cwd>",
         "serverDir": "<cwd>/server",
-        "srcDir": "<cwd>/app",
+        "srcDir": "<cwd>",
         "workspaceDir": "<cwd>",
       }
     `)
