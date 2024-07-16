@@ -43,8 +43,11 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * Note: By default plugin is prepended to the plugins array. You can use second argument to append (push) instead.
  * @example
  * ```js
+ * import { createResolver } from '@nuxt/kit'
+ * const resolver = createResolver(import.meta.url)
+ *
  * addPlugin({
- *   src: path.resolve(__dirname, 'templates/foo.js'),
+ *   src: resolver.resolve('templates/foo.js'),
  *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```

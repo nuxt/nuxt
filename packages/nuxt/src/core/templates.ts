@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate, NuxtTypeTemplate } from 'nuxt/schema'
+import type { NuxtTemplate } from 'nuxt/schema'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
@@ -93,20 +93,6 @@ export const serverPluginTemplate: NuxtTemplate = {
       ...imports,
       `export default ${genArrayFromRaw(exports)}`,
     ].join('\n')
-  },
-}
-
-export const appDefaults: NuxtTypeTemplate = {
-  filename: 'types/app-defaults.d.ts',
-  getContents: (ctx) => {
-    const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
-    return `
-declare module '#app/defaults' {
-  type DefaultAsyncDataErrorValue = ${isV4 ? 'undefined' : 'null'}
-  type DefaultAsyncDataValue = ${isV4 ? 'undefined' : 'null'}
-  type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
-  type DedupeOption = ${isV4 ? '\'cancel\' | \'defer\'' : 'boolean | \'cancel\' | \'defer\''}
-}`
   },
 }
 
@@ -253,7 +239,28 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitropack' {
+declare module 'nitro/types' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
+  }
+  interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+declare module 'nitropack/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -281,7 +288,7 @@ declare module 'nitropack' {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
+export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
 `,
 }
 
@@ -329,17 +336,19 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { updateAppConfig } from '#app/config'
 import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
+/** client **/
 // Vite - webpack is handled directly in #app/config
-if (import.meta.hot) {
+if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
+  const { updateAppConfig } = await import('#app/config')
   import.meta.hot.accept((newModule) => {
     updateAppConfig(newModule.default)
   })
 }
+/** client-end **/
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
@@ -353,7 +362,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
@@ -418,15 +427,9 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const devRootDir = ${ctx.nuxt.options.dev ? JSON.stringify(ctx.nuxt.options.rootDir) : 'null'}`,
       `export const devLogs = ${JSON.stringify(ctx.nuxt.options.features.devLogs)}`,
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
-      `export const asyncDataDefaults = ${JSON.stringify({
-        ...ctx.nuxt.options.experimental.defaults.useAsyncData,
-        value: ctx.nuxt.options.experimental.defaults.useAsyncData.value === 'null' ? null : undefined,
-        errorValue: ctx.nuxt.options.experimental.defaults.useAsyncData.errorValue === 'null' ? null : undefined,
-      })}`,
-      `export const resetAsyncDataToUndefined = ${ctx.nuxt.options.experimental.resetAsyncDataToUndefined}`,
-      `export const nuxtDefaultErrorValue = ${ctx.nuxt.options.future.compatibilityVersion === 4 ? 'undefined' : 'null'}`,
+      `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
-      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
+      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,

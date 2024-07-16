@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
@@ -61,7 +61,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     ssr: {
       external: [
-        '#internal/nitro', '#internal/nitro/utils',
+        'nitro/runtime',
       ],
       noExternal: [
         ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
@@ -71,7 +71,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         /(nuxt|nuxt3|nuxt-nightly)\/(dist|src|app)/,
       ],
     },
-    cacheDir: resolve(ctx.nuxt.options.rootDir, 'node_modules/.cache/vite', 'server'),
+    cacheDir: resolve(ctx.nuxt.options.rootDir, ctx.config.cacheDir ?? 'node_modules/.cache/vite', 'server'),
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
@@ -80,7 +80,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['#internal/nitro', '#internal/nuxt/paths'],
+        external: ['nitro/runtime', '#internal/nuxt/paths', '#internal/nuxt/app-config'],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
@@ -97,6 +97,9 @@ export async function buildServer (ctx: ViteBuildContext) {
       },
     },
     server: {
+      warmup: {
+        ssrFiles: [ctx.entry],
+      },
       // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
       preTransformRequests: false,
       hmr: false,
@@ -104,14 +107,15 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
-    const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
-      .then(r => import(r!)).then(r => Object.keys(r.dependencies || {})).catch(() => [])
+    const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
+      paths: ctx.nuxt.options.modulesDir,
+    }) || {}
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
         'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...nitroDependencies,
+        ...runtimeDependencies,
       )
     }
   }
@@ -143,9 +147,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     return
   }
 
-  // Write dev client manifest
-  await writeManifest(ctx)
-
   if (!ctx.nuxt.options.ssr) {
     await onBuild()
     return
@@ -155,18 +156,13 @@ export async function buildServer (ctx: ViteBuildContext) {
   const viteServer = await vite.createServer(serverConfig)
   ctx.ssrServer = viteServer
 
-  await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
-
   // Close server on exit
   ctx.nuxt.hook('close', () => viteServer.close())
+
+  await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
 
   // Initialize plugins
   await viteServer.pluginContainer.buildStart({})
 
-  if (ctx.config.devBundler !== 'legacy') {
-    await initViteNodeServer(ctx)
-  } else {
-    logger.info('Vite server using legacy server bundler...')
-    await import('./dev-bundler').then(r => r.initViteDevBundler(ctx, onBuild))
-  }
+  await initViteNodeServer(ctx)
 }

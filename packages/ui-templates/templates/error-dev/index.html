@@ -5,21 +5,12 @@
     <meta charset="utf-8"/>
     <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
     <script type="module" src="/styles.ts"></script>
-    <style>
-      .spotlight {
-        background: linear-gradient(45deg, #00DC82 0%, #36E4DA 50%, #0047E1 100%);
-        opacity: 0.8;
-        filter: blur(30vh);
-        height: 60vh;
-        bottom: -40vh;
-      }
-    </style>
   </head>
-  <body class="font-sans antialiased bg-white px-10 pt-14 dark:bg-black text-black dark:text-white min-h-screen flex flex-col">
-    <div class="fixed left-0 right-0 spotlight"></div>
-    <h1 class="text-6xl sm:text-8xl font-medium mb-6">{{ messages.statusCode }}</h1>
-    <p class="text-xl sm:text-2xl font-light mb-8 leading-tight">{{ messages.description }}</p>
-    <div class="bg-white rounded-t-md bg-black/5 dark:bg-white/10 flex-1 overflow-y-auto h-auto">
+  <body class="font-sans antialiased bg-white px-10 pt-12 dark:bg-[#020420] text-black dark:text-white min-h-screen flex flex-col">
+    <h1 class="text-6xl sm:text-8xl font-medium mb-4">{{ messages.statusCode }}</h1>
+    <p class="text-xl sm:text-2xl mb-8 font-light leading-tight">{{ messages.description }}</p>
+    <a href="https://nuxt.com/docs/getting-started/error-handling?utm_source=nuxt-error-dev-page" target="_blank" class="absolute top-6 sm:right-6 mx-auto inline-block hover:underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">Customize this page</a>
+    <div class="rounded-t-md border border-b-0 border-black/5 bg-gray-50/50 dark:border-white/10 dark:bg-white/5 flex-1 overflow-y-auto h-auto">
       <pre class="text-xl font-light leading-tight z-10 p-8">{{{ messages.stack }}}</pre>
     </div>
   </body>

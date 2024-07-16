@@ -1,37 +1,17 @@
 import createResolver from 'postcss-import-resolver'
-import { createCommonJS } from 'mlly'
-import { requireModule } from '@nuxt/kit'
-import type { Nuxt } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
+import { createJiti } from 'jiti'
+import type { Plugin } from 'postcss'
 
 const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
-const ensureItemIsLast = (item: string) => (arr: string[]) => {
-  const index = arr.indexOf(item)
-  if (index !== -1) {
-    arr.splice(index, 1)
-    arr.push(item)
-  }
-  return arr
+function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
+  const names = Object.keys(plugins)
+  return typeof order === 'function' ? order(names) : (order || names)
 }
 
-const orderPresets = {
-  cssnanoLast: ensureItemIsLast('cssnano'),
-  autoprefixerLast: ensureItemIsLast('autoprefixer'),
-  autoprefixerAndCssnanoLast (names: string[]) {
-    return orderPresets.cssnanoLast(orderPresets.autoprefixerLast(names))
-  },
-}
-
-export const getPostcssConfig = (nuxt: Nuxt) => {
-  function sortPlugins ({ plugins, order }: any) {
-    const names = Object.keys(plugins)
-    if (typeof order === 'string') {
-      order = orderPresets[order as keyof typeof orderPresets]
-    }
-    return typeof order === 'function' ? order(names, orderPresets) : (order || names)
-  }
-
+export async function getPostcssConfig (nuxt: Nuxt) {
   if (!nuxt.options.webpack.postcss || !nuxt.options.postcss) {
     return false
   }
@@ -54,20 +34,32 @@ export const getPostcssConfig = (nuxt: Nuxt) => {
       'postcss-url': {},
     },
     sourceMap: nuxt.options.webpack.cssSourceMap,
-    // Array, String or Function
-    order: 'autoprefixerAndCssnanoLast',
+  })
+
+  const jiti = createJiti(nuxt.options.rootDir, {
+    interopDefault: true,
+    alias: nuxt.options.alias,
   })
 
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {
     // Map postcss plugins into instances on object mode once
-    const cjs = createCommonJS(import.meta.url)
-    postcssOptions.plugins = sortPlugins(postcssOptions).map((pluginName: string) => {
-      const pluginFn = requireModule(pluginName, { paths: [cjs.__dirname] })
+    const plugins: Plugin[] = []
+    for (const pluginName of sortPlugins(postcssOptions)) {
       const pluginOptions = postcssOptions.plugins[pluginName]
-      if (!pluginOptions || typeof pluginFn !== 'function') { return null }
-      return pluginFn(pluginOptions)
-    }).filter(Boolean)
+      if (!pluginOptions) { continue }
+
+      const path = jiti.esmResolve(pluginName)
+      const pluginFn = (await jiti.import(path)) as (opts: Record<string, any>) => Plugin
+      if (typeof pluginFn === 'function') {
+        plugins.push(pluginFn(pluginOptions))
+      } else {
+        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
+      }
+    }
+
+    // @ts-expect-error we are mutating type here from object to array
+    postcssOptions.plugins = plugins
   }
 
   return {

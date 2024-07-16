@@ -7,11 +7,11 @@ import type {
   VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from '#vue-router'
-import { hasProtocol, joinURL, parseQuery, withQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, useRouter } from '../composables/router'
+import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
@@ -167,8 +167,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       if (!to.value || isAbsoluteUrl.value) { return to.value as string }
 
       if (isExternal.value) {
-        const path = typeof to.value === 'object' ? resolveRouteObject(to.value) : to.value
-        return resolveTrailingSlashBehavior(path, router.resolve /* will not be called */) as string
+        const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
+        // separately resolve route objects with a 'name' property and without 'path'
+        const href = typeof path === 'object' ? router.resolve(path).href : path
+        return resolveTrailingSlashBehavior(href, router.resolve /* will not be called */) as string
       }
 
       if (typeof to.value === 'object') {
@@ -494,8 +496,4 @@ function isSlowConnection () {
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
   if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
   return false
-}
-
-function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
-  return withQuery(to.path || '', to.query || {}) + (to.hash ? '#' + to.hash : '')
 }

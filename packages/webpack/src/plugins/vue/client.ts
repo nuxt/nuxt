@@ -3,13 +3,15 @@
  * https://github.com/vuejs/vue/blob/dev/src/server/webpack-plugin/client.js
  */
 
+import { mkdir, writeFile } from 'node:fs/promises'
+
 import { normalizeWebpackManifest } from 'vue-bundle-renderer'
 import { dirname } from 'pathe'
 import hash from 'hash-sum'
-import fse from 'fs-extra'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'
+
 import { isCSS, isHotUpdate, isJS } from './util'
 
 interface PluginOptions {
@@ -43,24 +45,19 @@ export default class VueSSRClientPlugin {
 
       const allFiles = new Set<string>()
       const asyncFiles = new Set<string>()
-
-      for (const asset of stats.assets!) {
-        const file = asset.name
-        if (!isHotUpdate(file)) {
-          allFiles.add(file)
-          if (initialFiles.has(file)) { continue }
-          if (isJS(file) || isCSS(file)) {
-            asyncFiles.add(file)
-          }
-        }
-      }
-
       const assetsMapping: Record<string, string[]> = {}
-      for (const { name, chunkNames = [] } of stats.assets!) {
-        if (isJS(name) && !isHotUpdate(name)) {
+
+      for (const { name: file, chunkNames = [] } of stats.assets!) {
+        if (isHotUpdate(file)) { continue }
+        allFiles.add(file)
+        const isFileJS = isJS(file)
+        if (!initialFiles.has(file) && (isFileJS || isCSS(file))) {
+          asyncFiles.add(file)
+        }
+        if (isFileJS) {
           const componentHash = hash(chunkNames.join('|'))
           const map = assetsMapping[componentHash] ||= []
-          map.push(name)
+          map.push(file)
         }
       }
 
@@ -126,11 +123,11 @@ export default class VueSSRClientPlugin {
 
       const src = JSON.stringify(manifest, null, 2)
 
-      await fse.mkdirp(dirname(this.options.filename))
-      await fse.writeFile(this.options.filename, src)
+      await mkdir(dirname(this.options.filename), { recursive: true })
+      await writeFile(this.options.filename, src)
 
       const mjsSrc = 'export default ' + src
-      await fse.writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
+      await writeFile(this.options.filename.replace('.json', '.mjs'), mjsSrc)
 
       // assets[this.options.filename] = {
       //   source: () => src,

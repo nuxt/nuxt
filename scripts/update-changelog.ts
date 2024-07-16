@@ -11,7 +11,7 @@ async function main () {
   const config = await loadChangelogConfig(process.cwd(), {})
 
   const commits = await getLatestCommits().then(commits => commits.filter(
-    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps' && !c.isBreaking),
+    c => config.types[c.type] && !(c.type === 'chore' && c.scope === 'deps'),
   ))
   const bumpType = await determineBumpType() || 'patch'
 
