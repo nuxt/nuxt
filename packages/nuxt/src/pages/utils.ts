@@ -144,9 +144,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !augmentedPages.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      let meta
-      if (route.meta || (await getRouteMeta(fileContent, route.file)).meta) {
-        meta = Object.assign({}, route.meta, (await getRouteMeta(fileContent, route.file)).meta)
+      let meta = (await getRouteMeta(fileContent, route.file)).meta
+      if (route.meta) {
+        meta = Object.assign(meta, route.meta)
       }
       Object.assign(route, await getRouteMeta(fileContent, route.file), { meta })
       augmentedPages.add(route.file)
