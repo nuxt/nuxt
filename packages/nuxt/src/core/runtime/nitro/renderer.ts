@@ -355,6 +355,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Handle errors
   if (ssrContext.payload?.error && !ssrError) {
+    await ssrContext.nuxt?.hooks.callHook('app:error', ssrContext.payload.error)
     throw ssrContext.payload.error
   }
 
