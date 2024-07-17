@@ -118,13 +118,15 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
+      if (!existsSync(srcDir)) {
+        return rootDir
+      }
+
       const srcDirFiles = new Set<string>()
-      if (existsSync(srcDir)) {
-        const files = await readdir(srcDir).catch(() => [])
-        for (const file of files) {
-          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
-            srcDirFiles.add(file)
-          }
+      const files = await readdir(srcDir).catch(() => [])
+      for (const file of files) {
+        if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+          srcDirFiles.add(file)
         }
       }
       if (srcDirFiles.size === 0) {
