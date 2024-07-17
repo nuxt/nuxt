@@ -89,7 +89,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 
     let watchPaused = false
 
-    if (getCurrentScope()) {
+    const hasScope = !!getCurrentScope()
+
+    if (hasScope) {
       onScopeDispose(() => {
         watchPaused = true
         callback()
@@ -103,7 +105,9 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
         if (cookie) { handleChange({ value: cookie.value }) }
       }
       store.addEventListener('change', changeHandler)
-      onScopeDispose(() => store.removeEventListener('change', changeHandler))
+      if (hasScope) {
+        onScopeDispose(() => store.removeEventListener('change', changeHandler))
+      }
     } else if (channel) {
       channel.onmessage = ({ data }) => handleChange(data)
     }
