@@ -98,10 +98,12 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (store) {
-      store.onchange = (event) => {
+      const changeHandler = (event: any) => {
         const cookie = event.changed.find((c: any) => c.name === name)
         if (cookie) { handleChange({ value: cookie.value }) }
       }
+      store.addEventListener('change', changeHandler)
+      onScopeDispose(() => store.removeEventListener('change', changeHandler))
     } else if (channel) {
       channel.onmessage = ({ data }) => handleChange(data)
     }
