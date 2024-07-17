@@ -119,8 +119,9 @@ function normalizeError (error: any) {
   // Hide details of unhandled/fatal errors in production
   const hideDetails = !import.meta.dev && error.unhandled
 
-  const _stack = import.meta.dev
-    ? ((error.stack as string) || '')
+  const stack = hideDetails
+    ? []
+    : ((error.stack as string) || '')
         .split('\n')
         .splice(1)
         .filter(line => line.includes('at '))
@@ -138,9 +139,7 @@ function normalizeError (error: any) {
               line.includes('new Promise'),
           }
         })
-    : []
 
-  const stack = hideDetails ? [] : _stack
   const statusCode = error.statusCode || 500
   const statusMessage = error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
   const message = hideDetails ? 'internal server error' : (error.message || error.toString())
