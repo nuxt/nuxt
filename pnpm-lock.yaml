@@ -187,6 +187,9 @@ importers:
       destr:
         specifier: ^2.0.3
         version: 2.0.3
+      errx:
+        specifier: ^0.1.0
+        version: 0.1.0
       globby:
         specifier: ^14.0.2
         version: 14.0.2
@@ -450,6 +453,9 @@ importers:
       '@vue/compiler-sfc':
         specifier: 3.4.31
         version: 3.4.31
+      errx:
+        specifier: ^0.1.0
+        version: 0.1.0
       unbuild:
         specifier: 3.0.0-rc.6
         version: 3.0.0-rc.6(sass@1.69.4)(typescript@5.5.3)(vue-tsc@2.0.26(typescript@5.5.3))
@@ -3984,6 +3990,9 @@ packages:
 
   error-stack-parser@2.1.4:
     resolution: {integrity: sha512-Sk5V6wVazPhq5MhpO+AUxJn5x7XSXGl1R93Vn7i+zS15KDVxQijejNCrz8340/2bgLBjR9GtEG8ZVKONDjcqGQ==}
+
+  errx@0.1.0:
+    resolution: {integrity: sha512-fZmsRiDNv07K6s2KkKFTiD2aIvECa7++PKyD5NC32tpRw46qZA3sOz+aM+/V9V0GDHxVTKLziveV4JhzBHDp9Q==}
 
   es-define-property@1.0.0:
     resolution: {integrity: sha512-jxayLKShrEqqzJ0eumQbVhTYQM27CfT1T35+gCgDFoL82JLsXqTJ76zv6A0YLOgEnLUMvLzsDsGIrl8NFpT2gQ==}
@@ -10986,6 +10995,8 @@ snapshots:
   error-stack-parser@2.1.4:
     dependencies:
       stackframe: 1.3.4
+
+  errx@0.1.0: {}
 
   es-define-property@1.0.0:
     dependencies:
