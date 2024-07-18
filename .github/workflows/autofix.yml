@@ -52,4 +52,4 @@ jobs:
       - name: Lint (code)
         run: pnpm lint:fix
 
-      - uses: autofix-ci/action@2891949f3779a1cafafae1523058501de3d4e944
+      - uses: autofix-ci/action@ff86a557419858bb967097bfc916833f5647fa8c
