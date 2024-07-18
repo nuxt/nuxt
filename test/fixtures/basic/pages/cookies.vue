@@ -9,6 +9,8 @@ useCookie<string | null>('set-to-null-with-default', { default: () => 'default' 
 useCookie('browser-accessed-but-not-used')
 useCookie('browser-accessed-with-default-value', { default: () => 'default' })
 useCookie('browser-set').value = 'set'
+// confirm that it only sets one `set-cookie` header
+useCookie('browser-set').value = 'set'
 useCookie('browser-set-to-null').value = null
 useCookie<string | null>('browser-set-to-null-with-default', { default: () => 'default' }).value = null
 
@@ -17,7 +19,6 @@ const objectCookieSecond = useCookie('browser-object-default', {
   default: () => ({ foo: 'bar' }),
 })
 function changeCookie () {
-  console.log(objectCookie.value, objectCookieSecond.value)
   if (objectCookie.value!.foo === 'baz') {
     objectCookie.value!.foo = 'bar'
   } else {
