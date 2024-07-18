@@ -83,7 +83,8 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
       watchPaused = true
-      cookies[name] = cookie.value = value
+      cookie.value = value
+      cookies[name] = klona(value)
       nextTick(() => { watchPaused = false })
     }
 
