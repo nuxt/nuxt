@@ -126,7 +126,7 @@ export default defineComponent({
                   trackRootNodes: hasTransition,
                   vnodeRef: pageRef,
                 })
-                if (import.meta.client && keepaliveConfig) {
+                if (import.meta.client && keepaliveConfig && !(providerVNode.type as any).name) {
                   (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
                 return providerVNode
