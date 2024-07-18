@@ -17,7 +17,6 @@ const objectCookieSecond = useCookie('browser-object-default', {
   default: () => ({ foo: 'bar' }),
 })
 function changeCookie () {
-  console.log(objectCookie.value, objectCookieSecond.value)
   if (objectCookie.value!.foo === 'baz') {
     objectCookie.value!.foo = 'bar'
   } else {
