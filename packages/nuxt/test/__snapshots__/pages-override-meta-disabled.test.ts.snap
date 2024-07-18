@@ -17,6 +17,16 @@
       "path": ""/"",
     },
   ],
+  "route.meta generated from file": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "name": "mockMeta?.name ?? "page-with-meta"",
+      "path": "mockMeta?.path ?? "/page-with-meta"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should allow pages with `:` in their path": [
     {
       "alias": "mockMeta?.alias || []",
@@ -346,6 +356,16 @@
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
+  "should merge route.meta with meta from file": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "name": "mockMeta?.name ?? "page-with-meta"",
+      "path": "mockMeta?.path ?? "/page-with-meta"",
       "redirect": "mockMeta?.redirect",
     },
   ],

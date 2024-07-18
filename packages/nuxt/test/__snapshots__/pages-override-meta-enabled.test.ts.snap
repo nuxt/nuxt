@@ -16,6 +16,14 @@
       "path": ""/"",
     },
   ],
+  "route.meta generated from file": [
+    {
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{"test":1}",
+      "name": ""page-with-meta"",
+      "path": ""/page-with-meta"",
+    },
+  ],
   "should allow pages with `:` in their path": [
     {
       "component": "() => import("pages/test:name.vue").then(m => m.default || m)",
@@ -238,6 +246,14 @@
       "component": "() => import("pages/index/index.vue").then(m => m.default || m)",
       "name": ""index"",
       "path": ""/"",
+    },
+  ],
+  "should merge route.meta with meta from file": [
+    {
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "name": ""page-with-meta"",
+      "path": ""/page-with-meta"",
     },
   ],
   "should not generate colliding route names when hyphens are in file name": [
