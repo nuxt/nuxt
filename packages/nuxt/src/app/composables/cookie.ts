@@ -83,13 +83,16 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     const handleChange = (data: { value?: any, refresh?: boolean }) => {
       const value = data.refresh ? readRawCookies(opts)?.[name] : opts.decode(data.value)
       watchPaused = true
-      cookies[name] = cookie.value = value
+      cookie.value = value
+      cookies[name] = klona(value)
       nextTick(() => { watchPaused = false })
     }
 
     let watchPaused = false
 
-    if (getCurrentScope()) {
+    const hasScope = !!getCurrentScope()
+
+    if (hasScope) {
       onScopeDispose(() => {
         watchPaused = true
         callback()
@@ -98,9 +101,13 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (store) {
-      store.onchange = (event) => {
+      const changeHandler = (event: any) => {
         const cookie = event.changed.find((c: any) => c.name === name)
         if (cookie) { handleChange({ value: cookie.value }) }
+      }
+      store.addEventListener('change', changeHandler)
+      if (hasScope) {
+        onScopeDispose(() => store.removeEventListener('change', changeHandler))
       }
     } else if (channel) {
       channel.onmessage = ({ data }) => handleChange(data)
