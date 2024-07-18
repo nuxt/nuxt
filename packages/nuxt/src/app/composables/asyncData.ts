@@ -60,10 +60,10 @@ export interface AsyncDataOptions<
   default?: () => DefaultT | Ref<DefaultT>
   /**
    * Provide a function which returns cached data.
-   * A `null` or `undefined` return value will trigger a fetch.
+   * An `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
    */
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT>
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT> | undefined
   /**
    * A function that can be used to alter handler function result after resolving.
    * Do not use it along with the `pick` option.
@@ -100,9 +100,6 @@ export interface AsyncDataExecuteOptions {
    * Force a refresh, even if there is already a pending request. Previous requests will
    * not be cancelled, but their result will not affect the data/pending state - and any
    * previously awaited promises will not resolve until this new request resolves.
-   *
-   * Instead of using `boolean` values, use `cancel` for `true` and `defer` for `false`.
-   * Boolean values will be removed in a future release.
    */
   dedupe?: 'cancel' | 'defer'
 }
@@ -121,9 +118,6 @@ export interface _AsyncData<DataT, ErrorT> {
 }
 
 export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncData<Data, Error>>
-
-// TODO: remove boolean option in Nuxt 4
-const isDefer = (dedupe?: boolean | 'cancel' | 'defer') => dedupe === 'defer' || dedupe === false
 
 /**
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
@@ -245,21 +239,17 @@ export function useAsyncData<
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
 
-  if (import.meta.dev && typeof options.dedupe === 'boolean') {
-    console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')
-  }
-
   // TODO: make more precise when v4 lands
-  const hasCachedData = () => options.getCachedData!(key, nuxtApp) != null
+  const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
-
+    const cachedData = options.getCachedData!(key, nuxtApp)
     nuxtApp._asyncData[key] = {
-      data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
+      data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
@@ -275,7 +265,7 @@ export function useAsyncData<
 
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxtApp._asyncDataPromises[key]) {
-      if (isDefer(opts.dedupe ?? options.dedupe)) {
+      if ((opts.dedupe ?? options.dedupe) === 'defer') {
         // Avoid fetching same key more than once at a time
         return nuxtApp._asyncDataPromises[key]!
       }
@@ -308,9 +298,9 @@ export function useAsyncData<
           result = pick(result as any, options.pick) as DataT
         }
 
-        if (import.meta.dev && import.meta.server && !result) {
+        if (import.meta.dev && import.meta.server && typeof result === 'undefined') {
           // @ts-expect-error private property
-          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a truthy value (for example, it should not be \`undefined\`, \`null\` or empty string) or the request may be duplicated on the client side.`)
+          console.warn(`[nuxt] \`${options._functionName || 'useAsyncData'}\` must return a value (it should not be \`undefined\`) or the request may be duplicated on the client side.`)
         }
 
         nuxtApp.payload.data[key] = result
