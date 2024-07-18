@@ -140,6 +140,7 @@ export const scriptsStubsPreset = {
     'useScriptYouTubePlayer',
     'useScriptGoogleMaps',
     'useScriptNpm',
+    'useScriptCrisp',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
