@@ -113,6 +113,8 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
+  _cookies?: Record<string, unknown>
+  /** @internal */
   _id?: number
   /** @internal */
   _scope: EffectScope
