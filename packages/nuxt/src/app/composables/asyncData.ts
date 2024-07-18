@@ -253,16 +253,16 @@ export function useAsyncData<
   }
 
   // TODO: make more precise when v4 lands
-  const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
+  const hasCachedData = () => options.getCachedData!(key, nuxtApp) != null
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= asyncDataDefaults.errorValue
 
     const _ref = options.deep ? ref : shallowRef
-    const cachedData = options.getCachedData!(key, nuxtApp)
+
     nuxtApp._asyncData[key] = {
-      data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
+      data: _ref(options.getCachedData!(key, nuxtApp) ?? options.default!()),
       pending: ref(!hasCachedData()),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
