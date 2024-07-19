@@ -43,7 +43,7 @@
     "nuxt": "workspace:*",
     "rollup": "^4.18.1",
     "vite": "5.3.4",
-    "vue": "3.4.32"
+    "vue": "3.4.33"
   },
   "devDependencies": {
     "@eslint/js": "9.7.0",
@@ -89,7 +89,7 @@
     "ufo": "1.5.4",
     "vitest": "2.0.3",
     "vitest-environment-nuxt": "1.0.0",
-    "vue": "3.4.32",
+    "vue": "3.4.33",
     "vue-router": "4.4.0",
     "vue-tsc": "2.0.26"
   },
