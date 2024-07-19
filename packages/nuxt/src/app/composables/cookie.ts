@@ -21,9 +21,10 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
+  filter?: (key: string) => boolean
 }
 
-export interface CookieRef<T> extends Ref<T> {}
+export interface CookieRef<T> extends Ref<T> { }
 
 const CookieDefaults = {
   path: '/',
@@ -35,10 +36,13 @@ const CookieDefaults = {
 const store = import.meta.client && cookieStore ? window.cookieStore : undefined
 
 /** @since 3.0.0 */
-export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
-export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
-export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
-  const opts = { ...CookieDefaults, ..._opts }
+export function useCookie<T = string | null | undefined>(name: string, _opts?: CookieOptions<T> & { readonly?: false }): CookieRef<T>
+export function useCookie<T = string | null | undefined>(name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
+export function useCookie<T = string | null | undefined>(name: string, _opts?: CookieOptions<T>): CookieRef<T> {
+  const filter = (key: string) => {
+    return key !== name;
+  }
+  const opts = { ...CookieDefaults, ..._opts, filter }
   const cookies = readRawCookies(opts) || {}
 
   let delay: number | undefined
