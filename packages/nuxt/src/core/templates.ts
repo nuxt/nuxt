@@ -150,21 +150,29 @@ export const schemaTemplate: NuxtTemplate = {
 
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName)])
+    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName), meta])
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    return [
-      'import { NuxtModule, RuntimeConfig } from \'nuxt/schema\'',
-      'declare module \'nuxt/schema\' {',
-      '  interface NuxtConfig {',
+    const moduleOptionsInterface = [
       ...modules.map(([configKey, importName]) =>
         `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
       ),
-      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName]) => `[${genString(importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+      modules.length > 0 ? `  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, meta]) => `[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+    ]
+    return [
+      'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
+      'declare module \'@nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      moduleOptionsInterface,
+      '  }',
+      '}',
+      'declare module \'nuxt/schema\' {',
+      '  interface NuxtConfig {',
+      moduleOptionsInterface,
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
@@ -231,7 +239,28 @@ import type { H3Event } from 'h3'
 import type { LogObject } from 'consola'
 import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext } from 'nuxt/app'
 
-declare module 'nitropack' {
+declare module 'nitro/types' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
+  }
+  interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+declare module 'nitropack/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
@@ -259,17 +288,20 @@ declare module 'nitropack' {
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
   getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || {}
+export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
 `,
 }
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
+    const typesDir = join(nuxt.options.buildDir, 'types')
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(/\b\.\w+$/g, ''))
+
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
 import type { Defu } from 'defu'
-${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id.replace(/\b\.\w+$/g, ''))}`).join('\n')}
+${configPaths.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
 declare const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 type ResolvedAppConfig = Defu<typeof inlineConfig, [${app.configs.map((_id: string, index: number) => `typeof cfg${index}`).join(', ')}]>
@@ -304,17 +336,19 @@ export const appConfigTemplate: NuxtTemplate = {
   write: true,
   getContents ({ app, nuxt }) {
     return `
-import { updateAppConfig } from '#app/config'
 import { defuFn } from 'defu'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
+/** client **/
 // Vite - webpack is handled directly in #app/config
-if (import.meta.hot) {
+if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
+  const { updateAppConfig } = await import('#app/config')
   import.meta.hot.accept((newModule) => {
     updateAppConfig(newModule.default)
   })
 }
+/** client-end **/
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
@@ -328,7 +362,7 @@ export const publicPathTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     return [
       'import { joinRelativeURL } from \'ufo\'',
-      !nuxt.options.dev && 'import { useRuntimeConfig } from \'#internal/nitro\'',
+      !nuxt.options.dev && 'import { useRuntimeConfig } from \'nitro/runtime\'',
 
       nuxt.options.dev
         ? `const appConfig = ${JSON.stringify(nuxt.options.app)}`
@@ -395,9 +429,36 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
-      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootId ? `'#${ctx.nuxt.options.app.rootId}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
+      `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
+      `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
     ].join('\n\n')
+  },
+}
+
+const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+const DECLARATION_RE = /\.d\.[cm]?ts$/
+export const buildTypeTemplate: NuxtTemplate = {
+  filename: 'types/build.d.ts',
+  getContents ({ app }) {
+    let declarations = ''
+
+    for (const file of app.templates) {
+      if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
+        continue
+      }
+
+      if (TYPE_FILENAME_RE.test(file.filename)) {
+        const typeFilenames = new Set([file.filename.replace(TYPE_FILENAME_RE, '.d.$1ts'), file.filename.replace(TYPE_FILENAME_RE, '.d.ts')])
+        if (app.templates.some(f => f.filename && typeFilenames.has(f.filename))) {
+          continue
+        }
+      }
+
+      declarations += 'declare module ' + JSON.stringify(join('#build', file.filename)) + ';\n'
+    }
+
+    return declarations
   },
 }

@@ -16,8 +16,8 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
-export function base (ctx: WebpackConfigContext) {
-  applyPresets(ctx, [
+export async function base (ctx: WebpackConfigContext) {
+  await applyPresets(ctx, [
     baseAlias,
     baseConfig,
     basePlugins,
@@ -125,7 +125,7 @@ function baseAlias (ctx: WebpackConfigContext) {
     ...ctx.alias,
   }
   if (ctx.isClient) {
-    ctx.alias['#internal/nitro'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
+    ctx.alias['nitro/runtime'] = resolve(ctx.nuxt.options.buildDir, 'nitro.client.mjs')
   }
 }
 

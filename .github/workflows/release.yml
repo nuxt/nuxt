@@ -11,17 +11,19 @@ permissions: {}
 
 jobs:
   release:
-    if: github.repository == 'nuxt/nuxt' && startsWith(github.event.head_commit.message, 'v3.')
+    if: github.repository == 'nuxt/nuxt' && (startsWith(github.event.head_commit.message, 'v3.') || startsWith(github.event.head_commit.message, 'v4.'))
+    concurrency:
+      group: release
     permissions:
       id-token: write
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           registry-url: "https://registry.npmjs.org/"

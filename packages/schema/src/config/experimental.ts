@@ -7,44 +7,17 @@ export default defineUntypedSchema({
    */
   future: {
     /**
-     * Enable early access to Nuxt v4 features or flags.
+     * Enable early access to future features or flags.
      *
-     * Setting `compatibilityVersion` to `4` changes defaults throughout your
-     * Nuxt configuration, but you can granularly re-enable Nuxt v3 behaviour
-     * when testing (see example). Please file issues if so, so that we can
-     * address in Nuxt or in the ecosystem.
-     *
-     * @example
-     * ```ts
-     * export default defineNuxtConfig({
-     *   future: {
-     *     compatibilityVersion: 4,
-     *   },
-     *   // To re-enable _all_ Nuxt v3 behaviour, set the following options:
-     *   srcDir: '.',
-     *   dir: {
-     *     app: 'app'
-     *   },
-     *   experimental: {
-     *     compileTemplate: true,
-     *     templateUtils: true,
-     *     relativeWatchPaths: true,
-     *     defaults: {
-     *       useAsyncData: {
-     *         deep: true
-     *       }
-     *     }
-     *   },
-     *   unhead: {
-     *     renderSSRHeadOptions: {
-     *       omitLineBreaks: false
-     *     }
-     *   }
-     * })
-     * ```
-     * @type {3 | 4}
+     * It is currently not configurable but may be in future.
+     * @type {4}
      */
-    compatibilityVersion: 3,
+    compatibilityVersion: 4,
+    /**
+     * This enables early access to the experimental multi-app support.
+     * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
+     */
+    multiApp: false,
     /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
@@ -134,21 +107,11 @@ export default defineUntypedSchema({
     externalVue: true,
 
     /**
-     * Tree shakes contents of client-only components from server bundle.
-     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
-     * @deprecated This option will no longer be configurable in Nuxt v4
+     * Enable accessing `appConfig` from server routes.
+     *
+     * @deprecated This option is not recommended.
      */
-    treeshakeClientOnly: {
-      async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-        if (isV4 && val === false) {
-          console.warn('Enabling `experimental.treeshakeClientOnly` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
-          return true
-        }
-        return val ?? true
-      },
-    },
-
+    serverAppConfig: false,
     /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
@@ -253,55 +216,6 @@ export default defineUntypedSchema({
       },
     },
 
-    /**
-     * Config schema support
-     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
-     * @deprecated This option will no longer be configurable in Nuxt v4
-     */
-    configSchema: {
-      async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-        if (isV4 && val === false) {
-          console.warn('Enabling `experimental.configSchema` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
-          return true
-        }
-        return val ?? true
-      },
-    },
-
-    /**
-     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
-     * `@vueuse/head` API.
-     *
-     * This is disabled to reduce the client-side bundle by ~0.5kb.
-     * @deprecated This feature will be removed in Nuxt v4.
-     */
-    polyfillVueUseHead: {
-      async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-        if (isV4 && val === true) {
-          console.warn('Disabling `experimental.polyfillVueUseHead` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
-          return false
-        }
-        return val ?? false
-      },
-    },
-
-    /**
-     * Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header.
-     * @deprecated This feature will be removed in Nuxt v4.
-     */
-    respectNoSSRHeader: {
-      async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-        if (isV4 && val === true) {
-          console.warn('Disabling `experimental.respectNoSSRHeader` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
-          return false
-        }
-        return val ?? false
-      },
-    },
-
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
 
@@ -314,10 +228,19 @@ export default defineUntypedSchema({
     appManifest: true,
 
     /**
+     * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
+     *
+     * Set to `false` to disable.
+     * @type {number | false}
+     */
+    checkOutdatedBuildInterval: 1000 * 60 * 60,
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
-     * (like `node_modules` and `.git`) that are excluded from watching.
+     * Nuxt uses 'chokidar-granular' if your source directory is the same as your root
+     * directory . This will ignore top-level directories (like `node_modules` and `.git`)
+     * that are excluded from watching.
      *
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
      * performance in large projects or on Windows platforms.
@@ -327,7 +250,18 @@ export default defineUntypedSchema({
      * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular',
+    watcher: {
+      $resolve: async (val, get) => {
+        if (val) {
+          return val
+        }
+        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')]) as [string, string]
+        if (srcDir === rootDir) {
+          return 'chokidar-granular'
+        }
+        return 'chokidar'
+      },
+    },
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -337,8 +271,10 @@ export default defineUntypedSchema({
 
     /**
      * Use new experimental head optimisations:
+     *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
+     *
      * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
      */
     headNext: true,
@@ -362,7 +298,7 @@ export default defineUntypedSchema({
      *
      * https://github.com/nuxt/nuxt/issues/24770
      */
-    scanPageMeta: false,
+    scanPageMeta: true,
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
@@ -387,7 +323,11 @@ export default defineUntypedSchema({
      * })
      * ```
      */
-    sharedPrerenderData: false,
+    sharedPrerenderData: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
@@ -410,11 +350,7 @@ export default defineUntypedSchema({
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: {
-          async $resolve (val, get) {
-            return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-          },
-        },
+        deep: false,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
@@ -436,40 +372,11 @@ export default defineUntypedSchema({
     clientNodeCompat: false,
 
     /**
-     * Whether to use `lodash.template` to compile Nuxt templates.
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
      *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
+     * It can reduce INP when navigating on prerendered routes.
      */
-    compileTemplate: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
-
-    /**
-     * Whether to provide a legacy `templateUtils` object (with `serialize`,
-     * `importName` and `importSources`) when compiling Nuxt templates.
-     *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
-     */
-    templateUtils: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
-
-    /**
-     * Whether to provide relative paths in the `builder:watch` hook.
-     *
-     * This flag will be removed with the release of v4 and exists only for
-     * advance testing within Nuxt v3.12+ or in [the nightly release channel](/docs/guide/going-further/nightly-release-channel).
-     */
-    relativeWatchPaths: {
-      async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
-      },
-    },
+    navigationRepaint: true,
   },
 })

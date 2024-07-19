@@ -109,6 +109,10 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useId'],
     from: '#app/composables/id',
   },
+  {
+    imports: ['useRouteAnnouncer'],
+    from: '#app/composables/route-announcer',
+  },
 ]
 
 export const scriptsStubsPreset = {
@@ -119,22 +123,26 @@ export const scriptsStubsPreset = {
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',
+    'useScriptCrisp',
+    'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
     'useScriptFathomAnalytics',
     'useScriptMatomoAnalytics',
     'useScriptGoogleTagManager',
+    'useScriptGoogleAdsense',
     'useScriptSegment',
-    'useScriptFacebookPixel',
+    'useScriptMetaPixel',
     'useScriptXPixel',
     'useScriptIntercom',
     'useScriptHotjar',
     'useScriptStripe',
     'useScriptLemonSqueezy',
     'useScriptVimeoPlayer',
-    'useScriptYouTubeIframe',
+    'useScriptYouTubePlayer',
     'useScriptGoogleMaps',
     'useScriptNpm',
   ],
+  priority: -1,
   from: '#app/composables/script-stubs',
 } satisfies InlinePreset
 

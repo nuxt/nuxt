@@ -5,7 +5,7 @@ import { walk } from 'estree-walker'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import type { NuxtPage } from '@nuxt/schema'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { normalize } from 'pathe'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
@@ -18,11 +18,12 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
   }
   if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  code = extractScriptContent(code) || code
+  const script = extractScriptContent(code)
+  code = script?.code || code
 
   let rule: NitroRouteConfig | null = null
 
-  const js = await transform(code, { loader: 'ts' })
+  const js = await transform(code, { loader: script?.loader || 'ts' })
   walk(parse(js.code, {
     sourceType: 'module',
     ecmaVersion: 'latest',

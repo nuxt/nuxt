@@ -1,4 +1,4 @@
-import type { RouteLocationNormalized, RouterScrollBehavior } from '#vue-router'
+import type { RouteLocationNormalized, RouterScrollBehavior } from 'vue-router'
 import type { RouterConfig } from 'nuxt/schema'
 import { useNuxtApp } from '#app/nuxt'
 import { isChangingPage } from '#app/components/utils'
@@ -58,7 +58,7 @@ function _getHashElementScrollMarginTop (selector: string): number {
   try {
     const elem = document.querySelector(selector)
     if (elem) {
-      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop)
+      return Number.parseFloat(getComputedStyle(elem).scrollMarginTop) + Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)
     }
   } catch {
     // ignore any errors parsing scrollMarginTop
