@@ -18,6 +18,11 @@ export async function build (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     watch(nuxt)
+
+    process.on('exit', () => {
+      nuxt.callHook('close', nuxt)
+    })
+
     nuxt.hook('builder:watch', async (event, relativePath) => {
       if (event === 'change') { return }
       const path = resolve(nuxt.options.srcDir, relativePath)
