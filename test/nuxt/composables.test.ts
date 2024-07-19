@@ -665,6 +665,26 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
+  it('cookie decode function should be invoked once', () => {
+    const fooCookie = useCookie('foo', {
+      default: () => 'FOO'
+    })
+
+    const barOptions = {
+      default: () => 'BAR',
+      decode(value) {
+        expect(value).toBe("BAR");
+        return value
+      },
+    }
+    const barCookieDecodeSpy = vi.spyOn(barOptions, "decode");
+    const barCookie = useCookie('bar', barOptions);
+    expect(barCookieDecodeSpy.mock.calls.length).toBe(1);
+
+    expect(fooCookie.value).toBe("FOO");
+    expect(barCookie.value).toBe("BAR");
+  })
+
   it('should not watch custom cookie refs when shallow', () => {
     for (const value of ['shallow', false] as const) {
       const user = useCookie('shallowUserInfo', {
