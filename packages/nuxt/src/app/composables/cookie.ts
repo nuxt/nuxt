@@ -22,11 +22,9 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   watch?: boolean | 'shallow'
   readonly?: boolean
   filter?: (key: string) => boolean
-  filter?: (key: string) => boolean
 }
 
-export interface CookieRef<T> extends Ref<T> { }
-export interface CookieRef<T> extends Ref<T> { }
+export interface CookieRef<T> extends Ref<T> {}
 
 const CookieDefaults = {
   path: '/',
