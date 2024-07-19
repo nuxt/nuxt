@@ -43,7 +43,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
 
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
@@ -58,7 +58,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
-            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
+            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }

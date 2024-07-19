@@ -22,14 +22,17 @@ await setup({
 describe('suspense multiple nav', () => {
   it('should not throw error', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
     expect(await page.locator('#btn-a').textContent()).toMatchInlineSnapshot('" Target A "')
     // Make sure it navigates to the correct page
     await page.locator('#btn-a').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
     console.log(page.url())
     expect(await page.locator('#content').textContent()).toContain('Hello a')
     await page.goBack()
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
 
     // When back
     expect(await page.locator('body').textContent()).toContain('Index Page')
@@ -39,6 +42,8 @@ describe('suspense multiple nav', () => {
       page.locator('#btn-a').click(),
       page.locator('#btn-b').click(),
     ])
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
 
     expect.soft(await page.locator('#content').textContent()).toContain('Hello b')
 

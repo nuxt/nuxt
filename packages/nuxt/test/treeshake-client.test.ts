@@ -67,10 +67,19 @@ const treeshake = async (source: string): Promise<string> => {
 }
 
 async function SFCCompile (name: string, source: string, options: Options, ssr = false): Promise<string> {
-  const result = await (vuePlugin({
+  const plugin = vuePlugin({
     compiler: VueCompilerSFC,
     ...options,
-  }).transform! as Function).call({
+  })
+  // @ts-expect-error Types are not correct as they are too generic
+  plugin.configResolved!({
+    isProduction: options.isProduction,
+    command: 'build',
+    root: process.cwd(),
+    build: { sourcemap: false },
+    define: {},
+  })
+  const result = await (plugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
       sourceType: 'module',
       ecmaVersion: 'latest',
@@ -84,14 +93,16 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
   return typeof result === 'string' ? result : result?.code
 }
 
-const stateToTest: { name: string, options: Partial<Options & { devServer: { config: { server: any } } }> }[] = [
+const stateToTest: { index: number, name: string, options: Partial<Options & { devServer: { config: { server: any } } }> }[] = [
   {
+    index: 0,
     name: 'prod',
     options: {
       isProduction: true,
     },
   },
   {
+    index: 1,
     name: 'dev',
     options: {
       isProduction: false,
@@ -107,93 +118,91 @@ const stateToTest: { name: string, options: Partial<Options & { devServer: { con
 
 describe('treeshake client only in ssr', () => {
   vi.spyOn(process, 'cwd').mockImplementation(() => '')
-  for (const [index, state] of stateToTest.entries()) {
-    it(`should treeshake ClientOnly correctly in ${state.name}`, async () => {
-      // add index to avoid using vite vue plugin cache
-      const clientResult = await SFCCompile(`SomeComponent${index}.vue`, WithClientOnly, state.options)
+  it.each(stateToTest)(`should treeshake ClientOnly correctly in $name`, async (state) => {
+    // add index to avoid using vite vue plugin cache
+    const clientResult = await SFCCompile(`SomeComponent${state.index}.vue`, WithClientOnly, state.options)
 
-      const ssrResult = await SFCCompile(`SomeComponent${index}.vue`, WithClientOnly, state.options, true)
+    const ssrResult = await SFCCompile(`SomeComponent${state.index}.vue`, WithClientOnly, state.options, true)
 
-      const treeshaken = await treeshake(ssrResult)
-      const [_, scopeId] = clientResult.match(/_pushScopeId\("(.*)"\)/)!
+    const treeshaken = await treeshake(ssrResult)
+    const [_, scopeId] = clientResult.match(/_pushScopeId\("(.*)"\)/)!
 
-      // ensure the id is correctly passed between server and client
-      expect(clientResult).toContain(`pushScopeId("${scopeId}")`)
-      expect(treeshaken).toContain(`<div ${scopeId}>`)
+    // ensure the id is correctly passed between server and client
+    expect(clientResult).toContain(`pushScopeId("${scopeId}")`)
+    expect(treeshaken).toContain(`<div ${scopeId}>`)
 
-      expect(clientResult).toContain('should-be-treeshaken')
-      expect(treeshaken).not.toContain('should-be-treeshaken')
+    expect(clientResult).toContain('should-be-treeshaken')
+    expect(treeshaken).not.toContain('should-be-treeshaken')
 
-      expect(treeshaken).not.toContain('import HelloWorld from \'../HelloWorld.vue\'')
-      expect(clientResult).toContain('import HelloWorld from \'../HelloWorld.vue\'')
+    expect(treeshaken).not.toContain('import HelloWorld from \'../HelloWorld.vue\'')
+    expect(clientResult).toContain('import HelloWorld from \'../HelloWorld.vue\'')
 
-      expect(treeshaken).not.toContain('import { Treeshaken } from \'somepath\'')
-      expect(clientResult).toContain('import { Treeshaken } from \'somepath\'')
+    expect(treeshaken).not.toContain('import { Treeshaken } from \'somepath\'')
+    expect(clientResult).toContain('import { Treeshaken } from \'somepath\'')
 
-      // remove resolved import
-      expect(treeshaken).not.toContain('const _component_ResolvedImport =')
-      expect(clientResult).toContain('const _component_ResolvedImport =')
+    // remove resolved import
+    expect(treeshaken).not.toContain('const _component_ResolvedImport =')
+    expect(clientResult).toContain('const _component_ResolvedImport =')
 
-      // treeshake multi line variable declaration
-      expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
-      expect(treeshaken).not.toContain('return (await import(\'./../some.island.vue\'))')
-      expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
+    // treeshake multi line variable declaration
+    expect(clientResult).toContain('const SomeIsland = defineAsyncComponent(async () => {')
+    expect(treeshaken).not.toContain('const SomeIsland = defineAsyncComponent(async () => {')
+    expect(treeshaken).not.toContain('return (await import(\'./../some.island.vue\'))')
+    expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
 
-      // treeshake object and array declaration
-      expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
-      expect(treeshaken).not.toContain('const { ObjectPattern: ObjectPatternDeclaration } = await import(\'nuxt.com\')')
-      expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
-      expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+    // treeshake object and array declaration
+    expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
+    expect(treeshaken).not.toContain('const { ObjectPattern: ObjectPatternDeclaration } = await import(\'nuxt.com\')')
+    expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
 
-      // treeshake object that has an assignment pattern
-      expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
-      expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
+    // treeshake object that has an assignment pattern
+    expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
+    expect(treeshaken).not.toContain('const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {')
 
-      // expect no empty ObjectPattern on treeshaking
-      expect(treeshaken).not.toContain('const {  } = defineAsyncComponent')
-      expect(treeshaken).not.toContain('import {  } from')
+    // expect no empty ObjectPattern on treeshaking
+    expect(treeshaken).not.toContain('const {  } = defineAsyncComponent')
+    expect(treeshaken).not.toContain('import {  } from')
 
-      // expect components used in setup to not be removed
-      expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
+    // expect components used in setup to not be removed
+    expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
 
-      // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
-      expect(treeshaken).not.toContain('ClientImport')
-      expect(treeshaken).toContain('import {  Glob } from \'#components\'')
+    // expect import of ClientImport to be treeshaken but not Glob since it is also used outside <ClientOnly>
+    expect(treeshaken).not.toContain('ClientImport')
+    expect(treeshaken).toContain('import {  Glob } from \'#components\'')
 
-      // treeshake .client slot
-      expect(treeshaken).not.toContain('ByeBye')
-      // don't treeshake variables that has the same name as .client components
-      expect(treeshaken).toContain('NotDotClientComponent')
-      expect(treeshaken).not.toContain('(DotClientComponent')
+    // treeshake .client slot
+    expect(treeshaken).not.toContain('ByeBye')
+    // don't treeshake variables that has the same name as .client components
+    expect(treeshaken).toContain('NotDotClientComponent')
+    expect(treeshaken).not.toContain('(DotClientComponent')
 
-      expect(treeshaken).not.toContain('AutoImportedComponent')
-      expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
+    expect(treeshaken).not.toContain('AutoImportedComponent')
+    expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
 
-      expect(treeshaken).not.toContain('Both')
-      expect(treeshaken).not.toContain('AreTreeshaken')
+    expect(treeshaken).not.toContain('Both')
+    expect(treeshaken).not.toContain('AreTreeshaken')
 
-      if (state.options.isProduction === false) {
-        // treeshake at inlined template
-        expect(treeshaken).not.toContain('ssrRenderComponent($setup["HelloWorld"]')
-        expect(treeshaken).toContain('ssrRenderComponent($setup["Glob"]')
-      } else {
-        // treeshake unref
-        expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
-        expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
-      }
-      expect(treeshaken.replace(/data-v-\w{8}/g, 'data-v-one-hash').replace(/scoped=\w{8}/g, 'scoped=one-hash')).toMatchSnapshot()
-    })
-  }
+    if (state.options.isProduction === false) {
+      // treeshake at inlined template
+      expect(treeshaken).not.toContain('ssrRenderComponent($setup["HelloWorld"]')
+      expect(treeshaken).toContain('ssrRenderComponent($setup["Glob"]')
+    } else {
+      // treeshake unref
+      expect(treeshaken).not.toContain('ssrRenderComponent(_unref(HelloWorld')
+      expect(treeshaken).toContain('ssrRenderComponent(_unref(Glob')
+    }
+    expect(treeshaken.replace(/data-v-\w{8}/g, 'data-v-one-hash').replace(/scoped=\w{8}/g, 'scoped=one-hash')).toMatchSnapshot()
+  })
 
   it('should not treeshake reused component #26137', async () => {
     const treeshaken = await treeshake(`import { resolveComponent as _resolveComponent, withCtx as _withCtx, createVNode as _createVNode } from "vue"
     import { ssrRenderComponent as _ssrRenderComponent, ssrRenderAttrs as _ssrRenderAttrs } from "vue/server-renderer"
-    
+
     export function ssrRender(_ctx, _push, _parent, _attrs) {
       const _component_AppIcon = _resolveComponent("AppIcon")
       const _component_ClientOnly = _resolveComponent("ClientOnly")
-    
+
       _push(\`<div\${_ssrRenderAttrs(_attrs)}>\`)
       _push(_ssrRenderComponent(_component_AppIcon, { name: "caret-left" }, null, _parent))
       _push(_ssrRenderComponent(_component_ClientOnly, null, {

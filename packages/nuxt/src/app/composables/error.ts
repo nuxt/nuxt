@@ -47,7 +47,7 @@ export const clearError = async (options: { redirect?: string } = {}) => {
     await useRouter().replace(options.redirect)
   }
 
-  error.value = null
+  error.value = undefined
 }
 
 /** @since 3.0.0 */

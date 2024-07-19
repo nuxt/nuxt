@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import type { RouteLocationNormalized } from '#vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -86,7 +86,7 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
-    const array = []
+    const array: number[] = []
     for (let i = 0; i < source; i++) {
       array[i] = i
     }

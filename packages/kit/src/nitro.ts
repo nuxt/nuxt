@@ -1,4 +1,4 @@
-import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
+import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitro/types'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
 import { useNuxt } from './context'
@@ -12,7 +12,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
   return {
-    method,
+    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace' | undefined,
     ...handler,
     handler: normalize(handler.handler),
   }

@@ -18,15 +18,19 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
-const { data, pending, error, refresh } = await useAsyncData(
+const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains')
 )
 </script>
 ```
 
+::warning
+If you're using a custom useAsyncData wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+::
+
 ::note
-`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+`data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
 ### Watch Params
@@ -88,10 +92,10 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
-- `pending`: a boolean indicating whether the data is still being fetched.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
@@ -127,7 +131,6 @@ type AsyncDataOptions<DataT> = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void

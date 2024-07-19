@@ -6,6 +6,7 @@ import { defineEventHandler } from 'h3'
 import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
+import { hasProtocol } from 'ufo'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -19,6 +20,7 @@ import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { encodeURL, resolveRouteObject } from '#app/composables/router'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -35,7 +37,6 @@ describe('app config', () => {
     `)
     updateAppConfig({
       new: 'value',
-      // @ts-expect-error property does not exist
       nuxt: { nested: 42 },
     })
     expect(appConfig).toMatchInlineSnapshot(`
@@ -52,6 +53,7 @@ describe('app config', () => {
 describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
+      'useRouteAnnouncer',
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',
@@ -126,7 +128,7 @@ describe('useAsyncData', () => {
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(null)
+    expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -138,7 +140,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(null)
+    expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -162,10 +164,10 @@ describe('useAsyncData', () => {
 
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
-    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
-    expect(error.value).toBe(null)
+    const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })
+    expect(error.value).toBe(undefined)
     await execute()
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(undefined)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -207,13 +209,13 @@ describe('useAsyncData', () => {
     clear()
 
     expect(data.value).toBeUndefined()
-    expect(error.value).toBeNull()
+    expect(error.value).toBe(undefined)
     expect(pending.value).toBe(false)
     expect(status.value).toBe('idle')
   })
 
   it('allows custom access to a cache', async () => {
-    const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
+    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData: () => ({ val: false }) })
     expect(data.value).toMatchInlineSnapshot(`
       {
         "val": false,
@@ -313,6 +315,7 @@ describe('useFetch', () => {
 
   it('should timeout', async () => {
     const { status, error } = await useFetch(
+      // @ts-expect-error should resolve to a string
       () => new Promise(resolve => setTimeout(resolve, 5000)),
       { timeout: 1 },
     )
@@ -345,13 +348,12 @@ describe('errors', () => {
   })
 
   it('global nuxt errors', () => {
-    const err = useError()
-    expect(err.value).toBeUndefined()
+    const error = useError()
+    expect(error.value).toBeUndefined()
     showError('new error')
-    expect(err.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
-    // TODO: should this return to being undefined?
-    expect(err.value).toBeNull()
+    expect(error.value).toBe(undefined)
   })
 })
 
@@ -379,7 +381,7 @@ describe('useHydration', () => {
   it('should hydrate value from payload', async () => {
     let val: any
     const nuxtApp = useNuxtApp()
-    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    useHydration('key', () => { }, (fromPayload) => { val = fromPayload })
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
     expect(val).toMatchInlineSnapshot('undefined')
 
@@ -450,7 +452,7 @@ describe('useId', () => {
     const vals = new Set<string>()
     for (let index = 0; index < 100; index++) {
       mount(defineComponent({
-        setup () {
+        setup() {
           const id = useId()
           vals.add(id)
           return () => h('div', id)
@@ -462,7 +464,7 @@ describe('useId', () => {
 
   it('generates unique ids per-component', () => {
     const component = defineComponent({
-      setup () {
+      setup() {
         const id = useId()
         return () => h('div', id)
       },
@@ -531,6 +533,7 @@ describe('loading state', () => {
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
+    // @ts-expect-error timestamp is not optional
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
@@ -595,6 +598,29 @@ describe('routing utilities: `navigateTo`', () => {
   })
 })
 
+describe('routing utilities: `resolveRouteObject`', () => {
+  it('resolveRouteObject should correctly resolve a route object', () => {
+    expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
+    expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+})
+
+describe('routing utilities: `encodeURL`', () => {
+  const encode = (url: string) => {
+    const isExternal = hasProtocol(url, { acceptRelative: true })
+    return encodeURL(url, isExternal)
+  }
+  it('encodeURL should correctly encode a URL', () => {
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
+    expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
+    expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
+    expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+})
+
 describe('routing utilities: `useRoute`', () => {
   it('should show provide a mock route', () => {
     expect(useRoute()).toMatchObject({
@@ -616,7 +642,7 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should throw an error if one is provided', () => {
     const error = useError()
     expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
-    expect(error.value).toBeFalsy()
+    expect(error.value).toBe(undefined)
   })
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
@@ -715,7 +741,7 @@ describe('callOnce', () => {
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => {})
+    const fnSync = vi.fn().mockImplementation(() => { })
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])
     expect(fnSync).toHaveBeenCalledTimes(1)

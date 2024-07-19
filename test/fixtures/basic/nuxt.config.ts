@@ -1,17 +1,18 @@
 import { addBuildPlugin, addComponent } from 'nuxt/kit'
 import type { NuxtPage } from 'nuxt/schema'
+import { defu } from 'defu'
 import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
   }
 }
 
 export default defineNuxtConfig({
-  future: { compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3 },
+  compatibilityDate: '2024-06-28',
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -62,6 +63,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
@@ -88,10 +90,17 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       needsFallback: undefined,
-      testConfig: 123,
     },
   },
   modules: [
+    function (_options, nuxt) {
+      // ensure setting `runtimeConfig` also sets `nitro.runtimeConfig`
+      nuxt.options.runtimeConfig = defu(nuxt.options.runtimeConfig, {
+        public: {
+          testConfig: 123,
+        },
+      })
+    },
     function (_options, nuxt) {
       nuxt.hook('modules:done', () => {
         // @ts-expect-error not valid nuxt option
@@ -149,6 +158,17 @@ export default defineNuxtConfig({
         }
         const internalParent = pages.find(page => page.path === '/internal-layout')
         internalParent!.children = newPages
+      })
+    },
+    function (_options, nuxt) {
+      // to check that page metadata is preserved
+      nuxt.hook('pages:extend', (pages) => {
+        const customName = pages.find(page => page.name === 'some-custom-name')
+        if (!customName) { throw new Error('Page with custom name not found') }
+        if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
+
+        customName.meta ||= {}
+        customName.meta.someProp = true
       })
     },
     // To test falsy module values
@@ -223,16 +243,14 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    serverAppConfig: true,
     typedPages: true,
-    polyfillVueUseHead: true,
-    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
       selectiveClient: 'deep',
     },
-    treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',

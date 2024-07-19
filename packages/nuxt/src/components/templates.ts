@@ -70,7 +70,11 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
+    if (!nuxt.options.experimental.componentIslands) {
+      return 'export const islandComponents = {}'
+    }
+
     const components = app.components
     const pages = app.pages
     const islands = components.filter(component =>
@@ -112,7 +116,7 @@ export const componentsTypeTemplate = {
       ]
     })
 
-    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
