@@ -2295,11 +2295,18 @@ describe('component islands', () => {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
       result.head = removeNuxtTemplateLink(result.head)
-        .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' || (v.href?.includes('SharedComponent')))))
+        .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' || (!v.href?.includes('SharedComponent')))))
 
       expect(result.head).toMatchInlineSnapshot(`
         [
-          {},
+          {
+            "link": [
+              {
+                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                "rel": "stylesheet",
+              },
+            ],
+          },
           {
             "style": [],
           },
