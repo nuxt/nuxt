@@ -2097,16 +2097,12 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' && h.props.href!.includes('_nuxt/components/islands/RouteComponent'))
+      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' && h.href?.includes('_nuxt/components/islands/RouteComponent'))
     }
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": [
-          {
-            "style": [],
-          },
-        ],
+        "head": [],
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
       }
@@ -2120,12 +2116,20 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' || (!h.props.href!.includes('@nuxt+ui-templates') && h.props.href!.includes('_nuxt/components/islands/LongAsyncComponent')))
+      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' || (!h.href?.includes('@nuxt+ui-templates') && h.href?.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
         "head": [
+          {
+            "link": [
+              {
+                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                "rel": "stylesheet",
+              },
+            ],
+          },
           {
             "style": [],
           },
@@ -2196,6 +2200,9 @@ describe('component islands', () => {
         "components": {},
         "head": [
           {
+            "link": [],
+          },
+          {
             "style": [],
           },
         ],
@@ -2223,6 +2230,14 @@ describe('component islands', () => {
         {
           "components": {},
           "head": [
+            {
+              "link": [
+                {
+                  "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                  "rel": "stylesheet",
+                },
+              ],
+            },
             {
               "style": [],
             },
@@ -2297,16 +2312,19 @@ describe('component islands', () => {
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
       result.head = removeNuxtTemplateLink(result.head)
       expect(result.head).toMatchInlineSnapshot(`
-        {
-          "link": [
-            {
-              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
-              "key": "island-link",
-              "rel": "stylesheet",
-            },
-          ],
-          "style": [],
-        }
+        [
+          {
+            "link": [
+              {
+                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                "rel": "stylesheet",
+              },
+            ],
+          },
+          {
+            "style": [],
+          },
+        ]
       `)
     }
 
