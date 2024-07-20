@@ -62,7 +62,7 @@ export const definePageMeta = (meta: PageMeta): void => {
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
       const isRenderingClientOnlyPage = component?.__name?.endsWith('.client')
       if (isRouteComponent || isRenderingServerPage || isRenderingClientOnlyPage) {
-        // don't warn if it's being used in a route component (or server page)
+        // don't warn if it's being used in a route component (or server page or client only page)
         return
       }
     } catch {
