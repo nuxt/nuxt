@@ -7,7 +7,7 @@ export const createClientPage = (loader: AsyncComponentLoader) => {
   const page = defineAsyncComponent(import.meta.dev
     ? () => loader().then((m) => {
         // mark component as client-only for `definePageMeta`
-        (m || m.default).__clientOnlyPage = true
+        (m.default || m).__clientOnlyPage = true
         return m.default || m
       })
     : loader)
