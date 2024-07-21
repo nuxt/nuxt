@@ -45,7 +45,7 @@
     "magic-string": "^0.30.10",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "nuxt": "workspace:*",
-    "rollup": "^4.18.1",
+    "rollup": "^4.19.0",
     "typescript": "5.5.3",
     "unbuild": "3.0.0-rc.7",
     "vite": "5.3.4",
