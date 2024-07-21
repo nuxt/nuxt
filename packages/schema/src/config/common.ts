@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
-import { basename, join, relative, resolve } from 'pathe'
+import { basename, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -422,7 +422,7 @@ export default defineUntypedSchema({
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [basename(assetsDir)]: join(srcDir, assetsDir),
+        [basename(assetsDir)]: resolve(srcDir, assetsDir),
         [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
       }
