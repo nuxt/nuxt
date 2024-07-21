@@ -11,7 +11,7 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
 }
 
-const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
+const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
 const layerSchema = Object.create(null)
 for (const key of layerSchemaKeys) {
   if (key in NuxtConfigSchema) {

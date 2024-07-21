@@ -107,17 +107,17 @@ export function parsePayload (payload: string) {
 }
 export function parseData (html: string) {
   if (!isRenderingJson) {
-    const { script } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
+    const { script = '' } = html.match(/<script>(?<script>window.__NUXT__.*?)<\/script>/)?.groups || {}
     const _script = new Script(script)
     return {
       script: _script.runInContext(createContext({ window: {} })),
       attrs: {},
     }
   }
-  const { script, attrs } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
+  const { script, attrs = '' } = html.match(/<script type="application\/json" id="__NUXT_DATA__"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/)?.groups || {}
   const _attrs: Record<string, string> = {}
   for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)="(?<value>[^"]+)"/g)) {
-    _attrs[attr!.groups!.key] = attr!.groups!.value
+    _attrs[attr!.groups!.key!] = attr!.groups!.value!
   }
   return {
     script: parsePayload(script || ''),

@@ -44,7 +44,7 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
-        const foundPath = app.middleware[find].path
+        const foundPath = app.middleware[find]!.path
         if (foundPath === middleware.path) { continue }
         if (options.override === true) {
           app.middleware[find] = { ...middleware }

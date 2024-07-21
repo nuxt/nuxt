@@ -238,8 +238,9 @@ export default defineUntypedSchema({
     /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
-     * (like `node_modules` and `.git`) that are excluded from watching.
+     * Nuxt uses 'chokidar-granular' if your source directory is the same as your root
+     * directory . This will ignore top-level directories (like `node_modules` and `.git`)
+     * that are excluded from watching.
      *
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
      * performance in large projects or on Windows platforms.
@@ -249,7 +250,18 @@ export default defineUntypedSchema({
      * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular',
+    watcher: {
+      $resolve: async (val, get) => {
+        if (val) {
+          return val
+        }
+        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')]) as [string, string]
+        if (srcDir === rootDir) {
+          return 'chokidar-granular'
+        }
+        return 'chokidar'
+      },
+    },
 
     /**
      * Enable native async context to be accessible for nested composables

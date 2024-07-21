@@ -24,9 +24,17 @@ await setup({
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
+    hooks: {
+      'modules:done' () {
+        // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
+        // Vite reads its `isProduction` value from NODE_ENV and passes this to some plugins
+        // like vite-plugin-vue
+        if (process.env.TEST_ENV !== 'dev') {
+          process.env.NODE_ENV = 'production'
+        }
+      },
+    },
     builder: isWebpack ? 'webpack' : 'vite',
-    buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
   },
 })
 
@@ -582,7 +590,7 @@ describe('nuxt composables', () => {
       },
     })
     const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/"')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/"')
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -715,7 +723,7 @@ describe('nuxt links', () => {
     for (const selector of ['nuxt-link', 'router-link', 'link-with-trailing-slash', 'link-without-trailing-slash']) {
       data[selector] = []
       for (const match of html.matchAll(new RegExp(`href="([^"]*)"[^>]*class="[^"]*\\b${selector}\\b`, 'g'))) {
-        data[selector].push(match[1])
+        data[selector]!.push(match[1]!)
       }
     }
     expect(data).toMatchInlineSnapshot(`
@@ -1409,7 +1417,7 @@ describe('extends support', () => {
   describe('app', () => {
     it('extends foo/app/router.options & bar/app/router.options', async () => {
       const html: string = await $fetch<string>('/')
-      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)?.[1].split(' ')
+      const routerLinkClasses = html.match(/href="\/" class="([^"]*)"/)![1]!.split(' ')
       expect(routerLinkClasses).toContain('foo-active-class')
       expect(routerLinkClasses).toContain('bar-exact-active-class')
     })
@@ -1452,7 +1460,7 @@ describe('nested suspense', () => {
     ['/suspense/sync-1/sync-1/', '/suspense/sync-2/async-1/'],
     ['/suspense/async-1/async-1/', '/suspense/async-2/async-1/'],
     ['/suspense/async-1/sync-1/', '/suspense/async-2/async-1/'],
-  ]).flatMap(([start, end]) => [
+  ] as const).flatMap(([start, end]) => [
     [start, end],
     [start, end + '?layout=custom'],
     [start + '?layout=custom', end],
@@ -1718,7 +1726,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]))
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]!))
     let css = ''
     for (const file of cssFiles || []) {
       css += await $fetch<string>(file)
@@ -1969,7 +1977,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
   it('should work with no overrides', async () => {
     const html: string = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('/_nuxt/') || isPublicFile('/', url)).toBeTruthy()
     }
   })
@@ -1978,10 +1986,10 @@ describe.skipIf(isDev())('dynamic paths', () => {
   it.skipIf(isWebpack)('adds relative paths to CSS', async () => {
     const html: string = await $fetch<string>('/assets')
     const urls = Array.from(html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)).map(m => m[2] || m[3])
-    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u))
+    const cssURL = urls.find(u => /_nuxt\/assets.*\.css$/.test(u!))
     expect(cssURL).toBeDefined()
     const css = await $fetch<string>(cssURL!)
-    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1].replace(/[-.]\w{8}\./g, '.')))
+    const imageUrls = new Set(Array.from(css.matchAll(/url\(([^)]*)\)/g)).map(m => m[1]!.replace(/[-.]\w{8}\./g, '.')))
     expect([...imageUrls]).toMatchInlineSnapshot(`
       [
         "./logo.svg",
@@ -2000,7 +2008,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('/foo/_other/') || isPublicFile('/foo/', url)).toBeTruthy()
     }
 
@@ -2016,7 +2024,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('./_nuxt/') || isPublicFile('./', url)).toBeTruthy()
       expect(url.startsWith('./_nuxt/_nuxt')).toBeFalsy()
     }
@@ -2045,7 +2053,7 @@ describe.skipIf(isDev())('dynamic paths', () => {
 
     const html = await $fetch<string>('/foo/assets')
     for (const match of html.matchAll(/(href|src)="(.*?)"|url\(([^)]*)\)/g)) {
-      const url = match[2] || match[3]
+      const url = match[2] || match[3]!
       expect(url.startsWith('https://example.com/_cdn/') || isPublicFile('https://example.com/', url)).toBeTruthy()
     }
   })
@@ -2081,7 +2089,7 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/RouteComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/RouteComponent')))
     }
 
     expect(result).toMatchInlineSnapshot(`
@@ -2103,7 +2111,7 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/LongAsyncComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/LongAsyncComponent')))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
@@ -2161,7 +2169,7 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
+      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
     }
     result.props = {}
     result.components = {}
@@ -2186,7 +2194,7 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head.link = result.head.link.filter(l => !l.href.includes('@nuxt+ui-templates') && (l.href.startsWith('_nuxt/components/islands/') && l.href.includes('_nuxt/components/islands/AsyncServerComponent')))
+        result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
       }
       const { components } = result
       result.components = {}
@@ -2207,13 +2215,13 @@ describe('component islands', () => {
         }
       `)
       expect(teleportsEntries).toHaveLength(1)
-      expect(teleportsEntries[0][0].startsWith('Counter-')).toBeTruthy()
-      expect(teleportsEntries[0][1].props).toMatchInlineSnapshot(`
+      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
+      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
       {
         "multiplier": 1,
       }
     `)
-      expect(teleportsEntries[0][1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
+      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
     })
   }
 
@@ -2231,10 +2239,10 @@ describe('component islands', () => {
     if (isDev()) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
       for (const link of result.head.link) {
-        link.href = link.href.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-        link.key = link.key.replace(/-[a-z0-9]+$/i, '')
+        link.href = link.href!.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+        link.key = link.key!.replace(/-[a-z0-9]+$/i, '')
       }
-      result.head.link.sort((a, b) => b.href.localeCompare(a.href))
+      result.head.link.sort((a, b) => b.href!.localeCompare(a.href!))
     }
 
     // TODO: fix rendering of styles in webpack
@@ -2253,7 +2261,7 @@ describe('component islands', () => {
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head.link = result.head.link.filter(h => !h.href.includes('SharedComponent'))
+      result.head.link = result.head.link.filter(h => !h.href!.includes('SharedComponent'))
       expect(result.head).toMatchInlineSnapshot(`
         {
           "link": [

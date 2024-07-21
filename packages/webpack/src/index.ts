@@ -1,1 +1,1 @@
-export * from './webpack'
+export { bundle } from './webpack'

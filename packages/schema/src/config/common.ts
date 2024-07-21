@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
-import { basename, join, relative, resolve } from 'pathe'
+import { basename, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -118,13 +118,15 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
+      if (!existsSync(srcDir)) {
+        return rootDir
+      }
+
       const srcDirFiles = new Set<string>()
-      if (existsSync(srcDir)) {
-        const files = await readdir(srcDir).catch(() => [])
-        for (const file of files) {
-          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
-            srcDirFiles.add(file)
-          }
+      const files = await readdir(srcDir).catch(() => [])
+      for (const file of files) {
+        if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+          srcDirFiles.add(file)
         }
       }
       if (srcDirFiles.size === 0) {
@@ -420,8 +422,8 @@ export default defineUntypedSchema({
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [basename(assetsDir)]: join(srcDir, assetsDir),
-        [basename(publicDir)]: join(srcDir, publicDir),
+        [basename(assetsDir)]: resolve(srcDir, assetsDir),
+        [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
       }
     },

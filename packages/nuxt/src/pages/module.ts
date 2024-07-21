@@ -3,6 +3,7 @@ import { mkdir, readFile } from 'node:fs/promises'
 import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
+import { joinURL } from 'ufo'
 import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
@@ -11,11 +12,14 @@ import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-v
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
 import { distDir } from '../dirs'
+import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
 import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
+
+const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 export default defineNuxtModule({
   meta: {
@@ -27,6 +31,15 @@ export default defineNuxtModule({
     const pagesDirs = nuxt.options._layers.map(
       layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
     )
+
+    nuxt.options.alias['#vue-router'] = 'vue-router'
+    const routerPath = await resolveTypePath('vue-router', '', nuxt.options.modulesDir) || 'vue-router'
+    nuxt.hook('prepare:types', ({ tsConfig }) => {
+      tsConfig.compilerOptions ||= {}
+      tsConfig.compilerOptions.paths ||= {}
+      tsConfig.compilerOptions.paths['#vue-router'] = [routerPath]
+      delete tsConfig.compilerOptions.paths['#vue-router/*']
+    })
 
     async function resolveRouterOptions () {
       const context = {
@@ -135,6 +148,12 @@ export default defineNuxtModule({
         priority: 10, // built-in that we do not expect the user to override
         filePath: resolve(distDir, 'pages/runtime/page-placeholder'),
       })
+      // Prerender index if pages integration is not enabled
+      nuxt.hook('nitro:init', (nitro) => {
+        if (nuxt.options.dev || !nuxt.options.ssr || !nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
+
+        nitro.options.prerender.routes.push('/')
+      })
       return
     }
 
@@ -210,6 +229,14 @@ export default defineNuxtModule({
       references.push({ types: useExperimentalTypedPages ? 'vue-router/auto-routes' : 'vue-router' })
     })
 
+    // Add vue-router route guard imports
+    nuxt.hook('imports:sources', (sources) => {
+      const routerImports = sources.find(s => s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave'))
+      if (routerImports) {
+        routerImports.from = 'vue-router'
+      }
+    })
+
     // Regenerate templates when adding or removing pages
     const updateTemplatePaths = nuxt.options._layers.flatMap((l) => {
       const dir = (l.config.rootDir === nuxt.options.rootDir ? nuxt.options : l.config).dir
@@ -257,6 +284,53 @@ export default defineNuxtModule({
           mode: 'server',
         })
       }
+    })
+
+    // Record all pages for use in prerendering
+    const prerenderRoutes = new Set<string>()
+
+    function processPages (pages: NuxtPage[], currentPath = '/') {
+      for (const page of pages) {
+        // Add root of optional dynamic paths and catchalls
+        if (OPTIONAL_PARAM_RE.test(page.path) && !page.children?.length) {
+          prerenderRoutes.add(currentPath)
+        }
+
+        // Skip dynamic paths
+        if (page.path.includes(':')) { continue }
+
+        const route = joinURL(currentPath, page.path)
+        prerenderRoutes.add(route)
+
+        if (page.children) {
+          processPages(page.children, route)
+        }
+      }
+    }
+
+    nuxt.hook('pages:extend', (pages) => {
+      if (nuxt.options.dev) { return }
+
+      prerenderRoutes.clear()
+      processPages(pages)
+    })
+
+    nuxt.hook('nitro:build:before', (nitro) => {
+      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
+
+      // Only hint the first route when `ssr: true` and no routes are provided
+      // as the rest will be injected at runtime when this is prerendered
+      if (nuxt.options.ssr) {
+        const [firstPage] = [...prerenderRoutes].sort()
+        nitro.options.prerender.routes.push(firstPage || '/')
+        return
+      }
+
+      // Prerender all non-dynamic page routes when generating `ssr: false` app
+      for (const route of nitro.options.prerender.routes || []) {
+        prerenderRoutes.add(route)
+      }
+      nitro.options.prerender.routes = Array.from(prerenderRoutes)
     })
 
     nuxt.hook('imports:extend', (imports) => {
