@@ -21,7 +21,6 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   default?: () => T | Ref<T>
   watch?: boolean | 'shallow'
   readonly?: boolean
-  filter?: (key: string) => boolean
 }
 
 export interface CookieRef<T> extends Ref<T> {}
