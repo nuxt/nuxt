@@ -381,7 +381,7 @@ describe('useHydration', () => {
   it('should hydrate value from payload', async () => {
     let val: any
     const nuxtApp = useNuxtApp()
-    useHydration('key', () => { }, (fromPayload) => { val = fromPayload })
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
     expect(val).toMatchInlineSnapshot('undefined')
 
@@ -741,7 +741,7 @@ describe('callOnce', () => {
     await Promise.all([execute(), execute(), execute()])
     expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => { })
+    const fnSync = vi.fn().mockImplementation(() => {})
     const executeSync = () => callOnce(fnSync)
     await Promise.all([executeSync(), executeSync(), executeSync()])
     expect(fnSync).toHaveBeenCalledTimes(1)
