@@ -1,5 +1,5 @@
 <template>
   <div>
-    Page really deep in group
+    Page deep, deep in group
   </div>
 </template>

@@ -573,11 +573,15 @@ describe('pages', () => {
   })
 
   it('groups routes', async () => {
-    for (const targetRoute of ['/group-page-1', '/group-page-2', '/nested-group/group-page-1', '/nested-group/group-page-2', '/nested-group']) {
+    for (const targetRoute of ['/group-page', '/nested-group/group-page', '/nested-group']) {
       const { status } = await fetch(targetRoute)
 
       expect(status).toBe(200)
     }
+
+    const { status } = await fetch('/nested-group/more-nested')
+
+    expect(status).toBe(404)
   })
 })
 
