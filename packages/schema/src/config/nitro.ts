@@ -37,7 +37,6 @@ export default defineUntypedSchema({
   /**
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
-   *
    * @see [unjs/nitro Config RouteRules](https://nitro.unjs.io/config/#routerules)
    * @type {typeof import('nitro/types')['NitroConfig']['routeRules']}
    */

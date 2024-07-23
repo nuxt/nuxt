@@ -247,7 +247,6 @@ export default defineUntypedSchema({
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
-     *
      * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */

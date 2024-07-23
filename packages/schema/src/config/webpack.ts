@@ -164,7 +164,7 @@ export default defineUntypedSchema({
       },
 
       /**
-       * @see [file-loader options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [File Loader Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -174,7 +174,7 @@ export default defineUntypedSchema({
       file: { esModule: false },
 
       /**
-       * @see [file-loader options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [File Loader Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -184,7 +184,7 @@ export default defineUntypedSchema({
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
-       * @see [file-loader options](https://github.com/webpack-contrib/file-loader#options)
+       * @see [File Loader Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
