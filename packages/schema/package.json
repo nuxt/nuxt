@@ -40,7 +40,7 @@
     "@types/pug": "2.0.10",
     "@types/sass-loader": "8.0.8",
     "@unhead/schema": "1.9.16",
-    "@vitejs/plugin-vue": "5.0.5",
+    "@vitejs/plugin-vue": "5.1.0",
     "@vitejs/plugin-vue-jsx": "4.0.0",
     "@vue/compiler-core": "3.4.33",
     "@vue/compiler-sfc": "3.4.33",
