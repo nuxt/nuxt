@@ -228,6 +228,7 @@ const vuePreset = defineUnimportPreset({
     'useSlots',
     'useTransitionState',
     'useId',
+    'useTemplateRef',
   ],
 })
 
