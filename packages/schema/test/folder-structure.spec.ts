@@ -77,6 +77,23 @@ describe('nuxt folder structure', () => {
       }
     `)
   })
+
+  it('should not override value from user for serverDir', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, serverDir: '/myServer' })
+    expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
+      {
+        "dir": {
+          "app": "<cwd>/app",
+          "modules": "<cwd>/modules",
+          "public": "<cwd>/public",
+        },
+        "rootDir": "<cwd>",
+        "serverDir": "/myServer",
+        "srcDir": "<cwd>/app",
+        "workspaceDir": "<cwd>",
+      }
+    `)
+  })
 })
 
 function getDirs (options: NuxtOptions) {
