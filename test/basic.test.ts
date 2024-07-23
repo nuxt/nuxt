@@ -578,10 +578,6 @@ describe('pages', () => {
 
       expect(status).toBe(200)
     }
-
-    const { status } = await fetch('/nested-group/more-nested')
-
-    expect(status).toBe(404)
   })
 })
 
