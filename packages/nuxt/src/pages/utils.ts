@@ -385,10 +385,7 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
-        } else if (PARAM_CHAR_RE.test(c)) {
-          buffer += c
-        }
-        if (c === ')' && state === SegmentParserState.group) {
+        } else if (c === ')' && state === SegmentParserState.group) {
           if (!buffer) {
             throw new Error('Empty group')
           } else {
@@ -396,6 +393,8 @@ function parseSegment (segment: string) {
           }
           state = SegmentParserState.initial
         } else if (GROUP_CHAR_RE.test(c)) {
+          buffer += c
+        } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         }
 
