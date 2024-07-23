@@ -73,7 +73,7 @@
     "devalue": "5.0.0",
     "eslint": "9.7.0",
     "eslint-plugin-no-only-tests": "3.1.0",
-    "eslint-plugin-perfectionist": "2.11.0",
+    "eslint-plugin-perfectionist": "3.0.0",
     "eslint-typegen": "0.2.4",
     "execa": "9.3.0",
     "globby": "14.0.2",
