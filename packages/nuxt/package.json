@@ -111,7 +111,7 @@
     "unenv": "^1.10.0",
     "unimport": "^3.9.0",
     "unplugin": "^1.11.0",
-    "unplugin-vue-router": "^0.10.0",
+    "unplugin-vue-router": "^0.10.1",
     "unstorage": "^1.10.2",
     "untyped": "^1.4.2",
     "vue": "^3.4.33",
