@@ -3,7 +3,6 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 // @ts-expect-error missing types
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
-// @ts-expect-error missing types
 import perfectionist from 'eslint-plugin-perfectionist'
 
 export default createConfigForNuxt({
@@ -189,6 +188,7 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
+    // @ts-expect-error incorrect types 🤔
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
