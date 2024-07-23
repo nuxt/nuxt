@@ -310,7 +310,6 @@ function getRoutePath (tokens: SegmentToken[]): string {
 }
 
 const PARAM_CHAR_RE = /[\w.]/
-const GROUP_CHAR_RE = /[\w.-]/
 
 function parseSegment (segment: string) {
   let state: SegmentParserState = SegmentParserState.initial
@@ -392,8 +391,6 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
-        } else if (GROUP_CHAR_RE.test(c)) {
-          buffer += c
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         }
