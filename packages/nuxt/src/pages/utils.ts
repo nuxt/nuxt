@@ -104,6 +104,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     let parent = routes
 
     const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith(')')) {
+      continue
+    }
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
