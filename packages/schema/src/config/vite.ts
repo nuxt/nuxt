@@ -56,11 +56,13 @@ export default defineUntypedSchema({
         },
       },
       script: {
-        propsDestructure: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure),
-        },
         hoistStatic: {
           $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic,
+        },
+      },
+      features: {
+        propsDestructure: {
+          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure),
         },
       },
     },
