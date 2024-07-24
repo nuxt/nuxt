@@ -6,7 +6,7 @@ export default defineUntypedSchema({
     /**
      * Whether to enable HTTPS.
      * @example
-     * ```
+     * ```ts
      * export default defineNuxtConfig({
      *   devServer: {
      *     https: {
