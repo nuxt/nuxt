@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
-import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol } from 'ufo'
@@ -17,7 +16,6 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
@@ -89,7 +87,6 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'useId',
       'useRoute',
       'navigateTo',
       'abortNavigation',
@@ -111,6 +108,7 @@ describe('composables', () => {
       'reloadNuxtApp',
       'refreshCookie',
       'onPrehydrate',
+      'useId',
       'useFetch',
       'useHead',
       'useLazyFetch',
@@ -466,33 +464,6 @@ describe('clearNuxtState', () => {
     clearNuxtState()
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
-  })
-})
-
-describe('useId', () => {
-  it('default', () => {
-    const vals = new Set<string>()
-    for (let index = 0; index < 100; index++) {
-      mount(defineComponent({
-        setup () {
-          const id = useId()
-          vals.add(id)
-          return () => h('div', id)
-        },
-      }))
-    }
-    expect(vals.size).toBe(100)
-  })
-
-  it('generates unique ids per-component', () => {
-    const component = defineComponent({
-      setup () {
-        const id = useId()
-        return () => h('div', id)
-      },
-    })
-
-    expect(mount(component).html()).not.toBe(mount(component).html())
   })
 })
 
