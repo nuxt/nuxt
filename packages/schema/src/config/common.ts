@@ -554,7 +554,7 @@ export default defineUntypedSchema({
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '' // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
+   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }
