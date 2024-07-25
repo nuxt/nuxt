@@ -171,7 +171,6 @@ const excludedVueHelpers = [
   'hydrate',
   'initDirectivesForSSR',
   'render',
-  'useCssVars',
   'vModelCheckbox',
   'vModelDynamic',
   'vModelRadio',
@@ -183,6 +182,13 @@ const excludedVueHelpers = [
   'ErrorCodes',
   'TrackOpTypes',
   'TriggerOpTypes',
+  'useHost',
+  'hydrateOnVisible',
+  'hydrateOnMediaQuery',
+  'hydrateOnInteraction',
+  'hydrateOnIdle',
+  'onWatcherCleanup',
+  'getCurrentWatcher',
 ]
 
 describe('imports:vue', () => {

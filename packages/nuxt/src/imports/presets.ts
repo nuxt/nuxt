@@ -229,6 +229,8 @@ const vuePreset = defineUnimportPreset({
     'useTransitionState',
     'useId',
     'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 
