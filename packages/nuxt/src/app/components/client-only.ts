@@ -10,7 +10,7 @@ export default defineComponent({
   inheritAttrs: false,
 
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup(_, { slots, attrs }) {
+  setup (_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
@@ -34,7 +34,7 @@ export default defineComponent({
 const cache = new WeakMap()
 
 /* @__NO_SIDE_EFFECTS__ */
-export function createClientOnly<T extends ComponentOptions>(component: T) {
+export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (cache.has(component)) {
     return cache.get(component)
   }
@@ -87,13 +87,12 @@ export function createClientOnly<T extends ComponentOptions>(component: T) {
       mounted$.value = true
     })
 
-
     return Promise.resolve(component.setup?.(props, ctx) || {})
       .then((setupState) => {
         if (typeof setupState !== 'function') {
           setupState = setupState || {}
           setupState.mounted$ = mounted$
-          if(import.meta.client) {
+          if (import.meta.client) {
             setupState.isHydrating$ = nuxtApp.isHydrating
           }
           return setupState
@@ -117,7 +116,7 @@ export function createClientOnly<T extends ComponentOptions>(component: T) {
   return clone
 }
 
-function extractDirectives(instance: ComponentInternalInstance | null) {
+function extractDirectives (instance: ComponentInternalInstance | null) {
   if (!instance || !instance.vnode.dirs) { return null }
   const directives = instance.vnode.dirs
   instance.vnode.dirs = null
