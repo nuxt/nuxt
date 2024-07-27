@@ -45,7 +45,7 @@ export function createClientOnly<T extends ComponentOptions>(component: T) {
     // override the component render (non script setup component)
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => {
       // import.meta.client for server-side treeshakking
-      if (import.meta.client && (($setup.mounted$ ?? ctx.mounted$) || $setup.isHydrating$ === false)) {
+      if (import.meta.client && ($setup.mounted$ ?? ctx.mounted$)) {
         const res = component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options)
         return (res.children === null || typeof res.children === 'string')
           ? cloneVNode(res)
@@ -93,13 +93,13 @@ export function createClientOnly<T extends ComponentOptions>(component: T) {
         if (typeof setupState !== 'function') {
           setupState = setupState || {}
           setupState.mounted$ = mounted$
-          if(import.meta.client) {
-            setupState.isHydrating$ = nuxtApp.isHydrating
+          if (import.meta.client && !nuxtApp.isHydrating) {
+            setupState.mounted$ = true
           }
           return setupState
         }
         return (...args: any[]) => {
-          if (mounted$.value || !nuxtApp.isHydrating) {
+          if (import.meta.client && (mounted$.value || !nuxtApp.isHydrating)) {
             const res = setupState(...args)
             return (res.children === null || typeof res.children === 'string')
               ? cloneVNode(res)
