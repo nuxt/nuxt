@@ -10,7 +10,7 @@ export default defineComponent({
   inheritAttrs: false,
 
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup (_, { slots, attrs }) {
+  setup(_, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
@@ -34,7 +34,7 @@ export default defineComponent({
 const cache = new WeakMap()
 
 /* @__NO_SIDE_EFFECTS__ */
-export function createClientOnly<T extends ComponentOptions> (component: T) {
+export function createClientOnly<T extends ComponentOptions>(component: T) {
   if (cache.has(component)) {
     return cache.get(component)
   }
@@ -44,7 +44,8 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (clone.render) {
     // override the component render (non script setup component)
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => {
-      if ($setup.mounted$ ?? ctx.mounted$) {
+      // import.meta.client for server-side treeshakking
+      if (import.meta.client && (($setup.mounted$ ?? ctx.mounted$) || $setup.isHydrating$ === false)) {
         const res = component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options)
         return (res.children === null || typeof res.children === 'string')
           ? cloneVNode(res)
@@ -63,33 +64,42 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   }
 
   clone.setup = (props, ctx) => {
+    const nuxtApp = useNuxtApp()
+    const mounted$ = ref(false)
     const instance = getCurrentInstance()!
 
-    const attrs = { ...instance.attrs }
+    if (import.meta.server || nuxtApp.isHydrating) {
+      const attrs = { ...instance.attrs }
+      // remove existing directives during hydration
+      const directives = extractDirectives(instance)
+      // prevent attrs inheritance since a staticVNode is rendered before hydration
+      for (const key in attrs) {
+        delete instance.attrs[key]
+      }
 
-    // remove existing directives during hydration
-    const directives = extractDirectives(instance)
-    // prevent attrs inheritance since a staticVNode is rendered before hydration
-    for (const key in attrs) {
-      delete instance.attrs[key]
+      onMounted(() => {
+        Object.assign(instance.attrs, attrs)
+        instance.vnode.dirs = directives
+      })
     }
-    const mounted$ = ref(false)
 
     onMounted(() => {
-      Object.assign(instance.attrs, attrs)
-      instance.vnode.dirs = directives
       mounted$.value = true
     })
+
 
     return Promise.resolve(component.setup?.(props, ctx) || {})
       .then((setupState) => {
         if (typeof setupState !== 'function') {
           setupState = setupState || {}
           setupState.mounted$ = mounted$
+          if(import.meta.client) {
+            setupState.isHydrating$ = nuxtApp.isHydrating
+          }
           return setupState
         }
         return (...args: any[]) => {
-          if (mounted$.value) {
+          if (mounted$.value || !nuxtApp.isHydrating) {
             const res = setupState(...args)
             return (res.children === null || typeof res.children === 'string')
               ? cloneVNode(res)
@@ -107,7 +117,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   return clone
 }
 
-function extractDirectives (instance: ComponentInternalInstance | null) {
+function extractDirectives(instance: ComponentInternalInstance | null) {
   if (!instance || !instance.vnode.dirs) { return null }
   const directives = instance.vnode.dirs
   instance.vnode.dirs = null
