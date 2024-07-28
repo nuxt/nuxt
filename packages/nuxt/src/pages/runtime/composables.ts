@@ -1,8 +1,8 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtError } from '#app'
 
@@ -60,7 +60,7 @@ export const definePageMeta = (meta: PageMeta): void => {
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
-      if (isRouteComponent || isRenderingServerPage) {
+      if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
         // don't warn if it's being used in a route component (or server page)
         return
       }

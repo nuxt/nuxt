@@ -1,5 +1,5 @@
-export * from './names'
-export * from './plugins'
+export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names'
+export { isJS, isVue } from './plugins'
 
 export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
   if (arr.length < 2) {

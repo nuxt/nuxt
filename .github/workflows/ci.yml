@@ -7,12 +7,14 @@ on:
       - "*.md"
     branches:
       - main
+      - 3.x
   pull_request:
     paths-ignore:
       - "docs/**"
       - "*.md"
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 # https://github.com/vitejs/vite/blob/main/.github/workflows/ci.yml
@@ -37,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -55,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
+        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
         with:
           retention-days: 3
           name: dist
@@ -74,7 +76,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -83,19 +85,19 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@23acc5c183826b7a8a97bce3cecc52db901f8251 # v3.25.10
+        uses: github/codeql-action/init@5cf07d8b700b67e235fbb65cbc84f69c0cf10464 # v3.25.14
         with:
           languages: javascript
           queries: +security-and-quality
 
       - name: Restore dist cache
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: dist
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@23acc5c183826b7a8a97bce3cecc52db901f8251 # v3.25.10
+        uses: github/codeql-action/analyze@5cf07d8b700b67e235fbb65cbc84f69c0cf10464 # v3.25.14
         with:
           category: "/language:javascript"
 
@@ -113,7 +115,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -122,7 +124,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: dist
           path: packages
@@ -144,7 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -168,7 +170,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -198,7 +200,6 @@ jobs:
         builder: ["vite", "webpack"]
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
-        version: ["v4", "v3"]
         payload: ["json", "js"]
         node: [18]
         exclude:
@@ -220,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -232,7 +233,7 @@ jobs:
         run: pnpm playwright-core install chromium
 
       - name: Restore dist cache
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: dist
           path: packages
@@ -244,7 +245,6 @@ jobs:
           TEST_BUILDER: ${{ matrix.builder }}
           TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
-          TEST_V4: ${{ matrix.version == 'v4' }}
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || matrix.payload == 'js' || runner.os == 'Windows' }}
 
@@ -254,6 +254,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
 
   build-release:
+    concurrency:
+      group: release
     permissions:
       id-token: write
     if: |
@@ -274,7 +276,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -283,18 +285,20 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: dist
           path: packages
 
       - name: Release Edge
-        run: ./scripts/release-edge.sh
+        run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
         env:
           NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
           NPM_CONFIG_PROVENANCE: true
 
   release-pr:
+    concurrency:
+      group: release
     permissions:
       id-token: write
       pull-requests: write
@@ -313,7 +317,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -322,7 +326,7 @@ jobs:
         run: pnpm install
 
       - name: Restore dist cache
-        uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
           name: dist
           path: packages

@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { RouteLocation } from 'vue-router'
+import type { RouteLocation, RouteLocationRaw } from 'vue-router'
+import { withQuery } from 'ufo'
 import type { NuxtLinkOptions, NuxtLinkProps } from '../src/app/components/nuxt-link'
 import { defineNuxtLink } from '../src/app/components/nuxt-link'
 import { useRuntimeConfig } from '../src/app/nuxt'
@@ -25,18 +26,20 @@ vi.mock('vue', async () => {
 
 // Mocks Nuxt `useRouter()`
 vi.mock('../src/app/composables/router', () => ({
+  resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+    return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+  },
   useRouter: () => ({
-    resolve: (route: string | RouteLocation & { to?: string }): Partial<RouteLocation> & { href?: string } => {
+    resolve: (route: string | RouteLocation): Partial<RouteLocation> & { href: string } => {
       if (typeof route === 'string') {
-        return { href: route, path: route }
+        return { path: route, href: route }
       }
-      return route.to
-        ? { href: route.to }
-        : {
-            path: route.path || `/${route.name?.toString()}` || undefined,
-            query: route.query || undefined,
-            hash: route.hash || undefined,
-          }
+      return {
+        path: route.path || `/${route.name?.toString()}`,
+        query: route.query || undefined,
+        hash: route.hash || undefined,
+        href: route.path || `/${route.name?.toString()}`,
+      }
     },
   }),
 }))
@@ -127,6 +130,10 @@ describe('nuxt-link:propsOrAttributes', () => {
 
       it('resolves route location object', () => {
         expect(nuxtLink({ to: { path: '/to' }, external: true }).props.href).toBe('/to')
+      })
+
+      it('resolves route location object with name', () => {
+        expect(nuxtLink({ to: { name: 'to' }, external: true }).props.href).toBe('/to')
       })
 
       it('applies trailing slash behaviour', () => {
@@ -221,6 +228,7 @@ describe('nuxt-link:propsOrAttributes', () => {
       it('forwards `to` prop', () => {
         expect(nuxtLink({ to: '/to' }).props.to).toBe('/to')
         expect(nuxtLink({ to: { path: '/to' } }).props.to).toEqual({ path: '/to' })
+        expect(nuxtLink({ to: { name: 'to' } }).props.to).toEqual({ name: 'to' })
       })
     })
 

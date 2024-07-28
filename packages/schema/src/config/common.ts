@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
-import { join, relative, resolve } from 'pathe'
+import { basename, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -118,13 +118,15 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
+      if (!existsSync(srcDir)) {
+        return rootDir
+      }
+
       const srcDirFiles = new Set<string>()
-      if (existsSync(srcDir)) {
-        const files = await readdir(srcDir).catch(() => [])
-        for (const file of files) {
-          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
-            srcDirFiles.add(file)
-          }
+      const files = await readdir(srcDir).catch(() => [])
+      for (const file of files) {
+        if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+          srcDirFiles.add(file)
         }
       }
       if (srcDirFiles.size === 0) {
@@ -156,7 +158,7 @@ export default defineUntypedSchema({
     $resolve: async (val: string | undefined, get): Promise<string> => {
       const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
 
-      return resolve(await get('rootDir') as string, (val || isV4) ? 'server' : resolve(await get('srcDir') as string, 'server'))
+      return resolve(isV4 ? await get('rootDir') as string : await get('srcDir') as string, val ?? 'server')
     },
   },
 
@@ -301,7 +303,8 @@ export default defineUntypedSchema({
       $resolve: async (val: string | undefined, get) => {
         const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('srcDir') as string, val || '.')
+          const [srcDir, rootDir] = await Promise.all([get('srcDir') as Promise<string>, get('rootDir') as Promise<string>])
+          return resolve(await get('srcDir') as string, val || (srcDir === rootDir ? 'app' : '.'))
         }
         return val || 'app'
       },
@@ -419,8 +422,8 @@ export default defineUntypedSchema({
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [assetsDir]: join(srcDir, assetsDir),
-        [publicDir]: join(srcDir, publicDir),
+        [basename(assetsDir)]: resolve(srcDir, assetsDir),
+        [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
       }
     },
@@ -551,7 +554,7 @@ export default defineUntypedSchema({
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '' // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
+   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }

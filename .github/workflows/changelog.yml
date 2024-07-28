@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - 2.x
+      - 3.x
 
 permissions:
   pull-requests: write
@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"

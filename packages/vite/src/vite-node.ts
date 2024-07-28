@@ -1,11 +1,12 @@
+import { mkdir, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
-import fse from 'fs-extra'
-import { isAbsolute, normalize, resolve } from 'pathe'
+import { isAbsolute, join, normalize, resolve } from 'pathe'
 import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
+import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
 import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
@@ -78,13 +79,23 @@ export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
 }
 
 function getManifest (ctx: ViteBuildContext) {
-  const css = Array.from(ctx.ssrServer!.moduleGraph.urlToModuleMap.keys())
-    .filter(i => isCSS(i))
+  const css = new Set<string>()
+  for (const key of ctx.ssrServer!.moduleGraph.urlToModuleMap.keys()) {
+    if (isCSS(key)) {
+      const query = getQuery(key)
+      if ('raw' in query) { continue }
+      const importers = ctx.ssrServer!.moduleGraph.urlToModuleMap.get(key)?.importers
+      if (importers && [...importers].every(i => i.id && 'raw' in getQuery(i.id))) {
+        continue
+      }
+      css.add(key)
+    }
+  }
 
   const manifest = normalizeViteManifest({
     '@vite/client': {
       file: '@vite/client',
-      css,
+      css: [...css],
       module: true,
       isEntry: true,
     },
@@ -181,11 +192,13 @@ export async function initViteNodeServer (ctx: ViteBuildContext) {
   const serverResolvedPath = resolve(distDir, 'runtime/vite-node.mjs')
   const manifestResolvedPath = resolve(distDir, 'runtime/client.manifest.mjs')
 
-  await fse.writeFile(
+  await mkdir(join(ctx.nuxt.options.buildDir, 'dist/server'), { recursive: true })
+
+  await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/server.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(serverResolvedPath).href)}`,
   )
-  await fse.writeFile(
+  await writeFile(
     resolve(ctx.nuxt.options.buildDir, 'dist/server/client.manifest.mjs'),
     `export { default } from ${JSON.stringify(pathToFileURL(manifestResolvedPath).href)}`,
   )

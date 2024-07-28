@@ -1,13 +1,13 @@
 import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
-import type { RenderResponse } from 'nitropack'
+import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
 
@@ -23,8 +23,6 @@ import type { ViewTransition } from './plugins/view-transitions.client'
 // @ts-expect-error virtual file
 import { appId } from '#build/nuxt.config.mjs'
 
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultErrorValue } from '#app/defaults'
 import type { NuxtAppLiterals } from '#app'
 
 function getNuxtAppCtx (appName = appId || 'nuxt-app') {
@@ -94,8 +92,8 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | DefaultErrorValue
-  _errors: Record<string, NuxtError | DefaultAsyncDataErrorValue>
+  error?: NuxtError | undefined
+  _errors: Record<string, NuxtError | undefined>
   [key: string]: unknown
 }
 
@@ -115,6 +113,8 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
+  _cookies?: Record<string, unknown>
+  /** @internal */
   _id?: number
   /** @internal */
   _scope: EffectScope
@@ -123,8 +123,11 @@ interface _NuxtApp {
   /** @internal */
   _asyncData: Record<string, {
     data: Ref<unknown>
+    /**
+     * @deprecated This may be removed in a future major version.
+     */
     pending: Ref<boolean>
-    error: Ref<Error | DefaultAsyncDataErrorValue>
+    error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
     /** @internal */
     _default: () => unknown
