@@ -156,20 +156,44 @@ export const schemaTemplate: NuxtTemplate = {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
+
     const moduleOptionsInterface = (jsdocTags: boolean) => [
-      ...modules.flatMap(([configKey, importName, mod]) => [
-        `    /**`,
-        `     * Configuration for \`${importName}\``,
-        ...jsdocTags
-          ? [
-              mod.meta?.rawPath
-                ? undefined
-                : `     * @see https://www.npmjs.com/package/${importName}`,
-            ]
-          : [],
-        `     */`,
-        `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
-      ]),
+      ...modules.flatMap(([configKey, importName, mod]) => {
+        let link: string | undefined
+
+        // If it's not a local module, provide a link
+        if (!mod.meta?.rawPath) {
+          link = `https://www.npmjs.com/package/${importName}`
+
+          if (typeof mod.meta?.docs === 'string') {
+            link = mod.meta.docs
+          } else if (mod.meta?.repository) {
+            if (typeof mod.meta.repository === 'string') {
+              link = mod.meta.repository
+            } else if (typeof mod.meta.repository.url === 'string') {
+              link = mod.meta.repository.url
+            }
+            if (link?.startsWith('git+')) {
+              link = link.replace(/^git\+/, '')
+            }
+            if (!link?.startsWith('http')) {
+              link = 'https://github.com/' + link
+            }
+          }
+        }
+
+        return [
+          `    /**`,
+          `     * Configuration for \`${importName}\``,
+          ...jsdocTags && link
+            ? [
+                `     * @see ${link}`,
+              ]
+            : [],
+          `     */`,
+          `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
+        ]
+      }),
       modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
