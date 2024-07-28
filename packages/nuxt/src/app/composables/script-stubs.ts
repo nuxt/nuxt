@@ -45,6 +45,10 @@ export function useScriptCloudflareWebAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptCloudflareWebAnalytics')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptCrisp (...args: unknown[]) {
+  renderStubMessage('useScriptCrisp')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptFathomAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptFathomAnalytics')
 }

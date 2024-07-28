@@ -60,10 +60,10 @@ export interface AsyncDataOptions<
   default?: () => DefaultT | Ref<DefaultT>
   /**
    * Provide a function which returns cached data.
-   * A `null` or `undefined` return value will trigger a fetch.
+   * An `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
    */
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT>
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT> | undefined
   /**
    * A function that can be used to alter handler function result after resolving.
    * Do not use it along with the `pick` option.
@@ -174,7 +174,7 @@ export function useAsyncData<
  * Provides access to data that resolves asynchronously in an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-async-data}
  * @param key A unique key to ensure that data fetching can be properly de-duplicated across requests.
- * @param handler An asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+ * @param handler An asynchronous function that must return a value (it should not be `undefined`) or the request may be duplicated on the client side.
  * @param options customize the behavior of useAsyncData
  */
 export function useAsyncData<

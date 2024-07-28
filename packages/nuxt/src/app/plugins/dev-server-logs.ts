@@ -1,6 +1,7 @@
 import { createConsola } from 'consola'
 import type { LogObject } from 'consola'
 import { parse } from 'devalue'
+import type { ParsedTrace } from 'errx'
 
 import { h } from 'vue'
 import { defineNuxtPlugin } from '../nuxt'
@@ -45,15 +46,24 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   }
 })
 
-function normalizeFilenames (stack?: string) {
-  stack = stack?.split('\n')[0] || ''
-  stack = stack.replace(`${devRootDir}/`, '')
-  stack = stack.replace(/:\d+:\d+\)?$/, '')
-  return stack
+function normalizeFilenames (stack?: ParsedTrace[]) {
+  if (!stack) {
+    return ''
+  }
+  let message = ''
+  for (const item of stack) {
+    const source = item.source.replace(`${devRootDir}/`, '')
+    if (item.function) {
+      message += `  at ${item.function} (${source})\n`
+    } else {
+      message += `  at ${source}\n`
+    }
+  }
+  return message
 }
 
 function normalizeServerLog (log: LogObject) {
-  log.additional = normalizeFilenames(log.stack as string)
+  log.additional = normalizeFilenames(log.stack as ParsedTrace[])
   log.tag = 'ssr'
   delete log.stack
   return log
