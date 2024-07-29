@@ -158,7 +158,7 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     * @see [Vue Transition](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
      * @type {typeof import('../src/types/config').NuxtAppConfig['layoutTransition']}
      */
     layoutTransition: false,
@@ -168,7 +168,7 @@ export default defineUntypedSchema({
      *
      * This can be overridden with `definePageMeta` on an individual page.
      * Only JSON-serializable values are allowed.
-     * @see [Vue Transition](https://vuejs.org/api/built-in-components.html#transition)
+     * @see [Vue Transition docs](https://vuejs.org/api/built-in-components.html#transition)
      * @type {typeof import('../src/types/config').NuxtAppConfig['pageTransition']}
      */
     pageTransition: false,
@@ -180,7 +180,7 @@ export default defineUntypedSchema({
      * [enabled in your nuxt.config file](/docs/getting-started/transitions#view-transitions-api-experimental).
      *
      * This can be overridden with `definePageMeta` on an individual page.
-     * @see [View Transition API Experimental](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
+     * @see [Nuxt View Transition API docs](https://nuxt.com/docs/getting-started/transitions#view-transitions-api-experimental)
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
     viewTransition: {
