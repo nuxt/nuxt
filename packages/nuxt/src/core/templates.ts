@@ -343,9 +343,19 @@ const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 /** client **/
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
-  const { updateAppConfig } = await import('#app/config')
+  const { reactive } = await import('vue')
+
+  function updateClientAppConfig(currentAppConfig) {
+    const nuxtApp = useNuxtApp()
+    if (!nuxtApp._appConfig) {
+      nuxtApp._appConfig = reactive(currentAppConfig)
+    } else {
+      defuFn(nuxtApp._appConfig, currentAppConfig)
+    }
+  }
+
   import.meta.hot.accept((newModule) => {
-    updateAppConfig(newModule.default)
+    updateClientAppConfig(newModule.default)
   })
 }
 /** client-end **/
