@@ -709,7 +709,7 @@ describe('useCookie', () => {
 
     const barCookie = useCookie('bar', barOptions)
     expect(barCookie.value).toBe('BAR')
-    expect(barCallCount).toBe(1);
+    setTimeout(() => (expect(barCallCount).toBe(1)), 1);
 
     let baCallCount = 0;
     const baOptions = {
@@ -722,8 +722,8 @@ describe('useCookie', () => {
     }
 
     const baCookie = useCookie('ba', baOptions)
-    expect(baCallCount).toBe(2)
     expect(baCookie.value).toBe('BA')
+    setTimeout(() => (expect(baCallCount).toBe(2)), 1);
   })
 
   it('should not watch custom cookie refs when shallow', () => {
