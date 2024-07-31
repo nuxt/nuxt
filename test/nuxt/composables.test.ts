@@ -706,9 +706,8 @@ describe('useCookie', () => {
     }
 
     const barCookieDecodeSpy = vi.spyOn(barOptions, 'decode')
-    expect(barCookieDecodeSpy.mock.calls.length).toBe(1)
-
     const barCookie = useCookie('bar', barOptions)
+    expect(barCookieDecodeSpy.mock.calls.length).toBe(1)
     expect(barCookie.value).toBe('BAR')
 
     const baOptions = {
@@ -720,9 +719,8 @@ describe('useCookie', () => {
     }
 
     const baCookieDecodeSpy = vi.spyOn(baOptions, 'decode')
-    expect(baCookieDecodeSpy.mock.calls.length).toBe(2)
-
     const baCookie = useCookie('ba', baOptions)
+    expect(baCookieDecodeSpy.mock.calls.length).toBe(2)
     expect(baCookie.value).toBe('BA')
   })
 
