@@ -56,7 +56,7 @@ The `getState` function will append returned values to current state, so be care
 
 By default, when `usePreviewMode` is enabled, it will call `refreshNuxtData()` to re-fetch all data from the server.
 
-When preview mode is disabled, the composable will attach a callback to call `refreshNuxtData()` on the next router navigation.
+When preview mode is disabled, the composable will attach a callback to call `refreshNuxtData()` to run after a subsequent router navigation.
 
 You can specify custom callbacks to be triggered by providing your own functions for the `onEnable` and `onDisable` options.
 
