@@ -695,20 +695,35 @@ describe('useCookie', () => {
     const fooCookie = useCookie('foo', {
       default: () => 'FOO',
     })
+    expect(fooCookie.value).toBe('FOO')
 
     const barOptions = {
       default: () => 'BAR',
-      decode (value) {
+      decode (value: string) {
         expect(value).toBe('BAR')
         return value
       },
     }
+
     const barCookieDecodeSpy = vi.spyOn(barOptions, 'decode')
-    const barCookie = useCookie('bar', barOptions)
     expect(barCookieDecodeSpy.mock.calls.length).toBe(1)
 
-    expect(fooCookie.value).toBe('FOO')
+    const barCookie = useCookie('bar', barOptions)
     expect(barCookie.value).toBe('BAR')
+
+    const baOptions = {
+      default: () => 'BA',
+      filter: (key: string) => key.startsWith('ba'),
+      decode (value: string) {
+        return value
+      },
+    }
+
+    const baCookieDecodeSpy = vi.spyOn(baOptions, 'decode')
+    expect(baCookieDecodeSpy.mock.calls.length).toBe(2)
+
+    const baCookie = useCookie('ba', baOptions)
+    expect(baCookie.value).toBe('BA')
   })
 
   it('should not watch custom cookie refs when shallow', () => {
