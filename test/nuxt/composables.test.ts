@@ -697,32 +697,32 @@ describe('useCookie', () => {
     })
     expect(fooCookie.value).toBe('FOO')
 
+    let barCallCount = 0;
     const barOptions = {
       default: () => 'BAR',
       decode (value: string) {
         expect(value).toBe('BAR')
+        barCallCount++;
         return value
       },
     }
 
-    const barCookieDecodeSpy = vi.spyOn(barOptions, 'decode')
-    expect(barCookieDecodeSpy.mock.calls.length).toBe(1)
-
     const barCookie = useCookie('bar', barOptions)
     expect(barCookie.value).toBe('BAR')
+    expect(barCallCount).toBe(1);
 
+    let baCallCount = 0;
     const baOptions = {
       default: () => 'BA',
       filter: (key: string) => key.startsWith('ba'),
       decode (value: string) {
+        baCallCount++;
         return value
       },
     }
 
-    const baCookieDecodeSpy = vi.spyOn(baOptions, 'decode')
-    expect(baCookieDecodeSpy.mock.calls.length).toBe(2)
-
     const baCookie = useCookie('ba', baOptions)
+    expect(baCallCount).toBe(2)
     expect(baCookie.value).toBe('BA')
   })
 
