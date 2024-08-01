@@ -337,14 +337,13 @@ export const appConfigTemplate: NuxtTemplate = {
   getContents ({ app, nuxt }) {
     return `
 import { defuFn } from 'defu'
+import { reactive } from 'vue'
 
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
-  const { reactive } = await import('vue')
-
   function updateClientAppConfig(currentAppConfig) {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp._appConfig) {
