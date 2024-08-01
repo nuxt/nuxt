@@ -2,6 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
+import { destr } from 'destr'
 
 import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -691,39 +692,54 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
-  it('cookie decode function should be invoked once', () => {
-    const fooCookie = useCookie('foo', {
-      default: () => 'FOO',
+  it('preset test cookie', () => {
+    const foo = useCookie('foo', {
+      default: () => 'Foo',
+      maxAge: 60 * 60,
     })
-    expect(fooCookie.value).toBe('FOO')
+    foo.value = 'Foo'
 
-    let barCallCount = 0;
-    const barOptions = {
-      default: () => 'BAR',
+    const bar = useCookie<{ s2: number }>('bar', {
+      default: () => ({ s2: -1 }),
+      maxAge: 60 * 60,
+    })
+    bar.value.s2++
+
+    const bazCookie = useCookie<{ s2: number }>('baz', {
+      default: () => ({ s2: -1 }),
+      maxAge: 60 * 60,
+    })
+    bazCookie.value.s2++
+  })
+
+  it('cookie decode function should be invoked once', () => {
+    let barCallCount = 0
+    const bazCookie = useCookie<{ s2: number }>('baz', {
+      default: () => ({ s2: -1 }),
+      maxAge: 60 * 60,
       decode (value: string) {
-        expect(value).toBe('BAR')
-        barCallCount++;
-        return value
+        barCallCount++
+        return destr(decodeURIComponent(value))
       },
-    }
+    })
+    bazCookie.value.s2++
+    expect(bazCookie.value.s2).toEqual(1)
+    expect(barCallCount).toBe(1)
 
-    const barCookie = useCookie('bar', barOptions)
-    expect(barCookie.value).toBe('BAR')
-    setTimeout(() => (expect(barCallCount).toBe(1)), 1);
-
-    let baCallCount = 0;
-    const baOptions = {
-      default: () => 'BA',
-      filter: (key: string) => key.startsWith('ba'),
+    let baCallCount = 0
+    const baCookie = useCookie<{ s3: number }>('ba', {
+      default: () => ({ s3: -1 }),
+      filter: (key: string) => {
+        return key === 'bar' || key === 'baz'
+      },
       decode (value: string) {
-        baCallCount++;
-        return value
+        baCallCount++
+        return destr(decodeURIComponent(value))
       },
-    }
-
-    const baCookie = useCookie('ba', baOptions)
-    expect(baCookie.value).toBe('BA')
-    setTimeout(() => (expect(baCallCount).toBe(2)), 1);
+    })
+    baCookie.value.s3++
+    expect(baCookie.value.s3).toBe(0)
+    expect(baCallCount).toBe(2)
   })
 
   it('should not watch custom cookie refs when shallow', () => {
