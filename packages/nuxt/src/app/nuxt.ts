@@ -245,13 +245,17 @@ export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
   ssrContext?: NuxtApp['ssrContext']
   globalName?: NuxtApp['globalName']
+  /**
+   * The name of the Nuxt application, overrides the default name specified in the Nuxt config (default: `nuxt-app`).
+   */
+  appId?: NuxtApp['_name']
 }
 
 /** @since 3.0.0 */
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    _name: appId || 'nuxt-app',
+    _name: options.appId || appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     globalName: 'nuxt',
