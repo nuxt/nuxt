@@ -57,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@0b2256b8c012f0828dc542b3febcab082c67f72b # v4.3.4
+        uses: actions/upload-artifact@89ef406dd8d7e03cfd12d9e0a4a378f454709029 # v4.3.5
         with:
           retention-days: 3
           name: dist
@@ -85,7 +85,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@5cf07d8b700b67e235fbb65cbc84f69c0cf10464 # v3.25.14
+        uses: github/codeql-action/init@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
         with:
           languages: javascript
           queries: +security-and-quality
@@ -97,7 +97,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@5cf07d8b700b67e235fbb65cbc84f69c0cf10464 # v3.25.14
+        uses: github/codeql-action/analyze@afb54ba388a7dca6ecae48f608c4ff05ff4cc77a # v3.25.15
         with:
           category: "/language:javascript"
 
