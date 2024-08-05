@@ -6,6 +6,7 @@ import { normalizeLineEndings } from './utils'
 const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
 
 const viteTransform = async (source: string, id: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (pluginVite.transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
@@ -38,16 +39,16 @@ describe('test devonly transform ', () => {
     expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
       "<template>
           <div>
-            
+
           </div>
           <SomeComponent>
-            
+
           </SomeComponent>
           <div>
-            
+
           </div>
           <SomeComponent>
-            
+
           </SomeComponent>
           </template>"
     `)
@@ -73,9 +74,9 @@ describe('test devonly transform ', () => {
 
     expect(result).toMatchInlineSnapshot(`
       "<template>
-          
+
               <div class="red">This should also be red.</div>
-            
+
         </template>
         "
     `)

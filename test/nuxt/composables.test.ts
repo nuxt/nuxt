@@ -486,7 +486,7 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -501,7 +501,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -516,7 +516,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()

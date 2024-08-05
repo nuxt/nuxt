@@ -9,6 +9,7 @@ describe('route-injection:transform', () => {
   const injectionPlugin = RouteInjectionPlugin({ options: { sourcemap: { client: false, server: false } } } as Nuxt).raw({}, { framework: 'rollup' }) as Plugin
 
   const transform = async (source: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (injectionPlugin.transform! as Function).call({ error: null, warn: null } as any, source, 'test.vue')
     const code: string = typeof result === 'string' ? result : result?.code
     let depth = 0

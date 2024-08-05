@@ -91,7 +91,7 @@ const isProcessingMiddleware = () => {
 
 // Conditional types, either one or other
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export type OpenWindowFeatures = {
   popup?: boolean

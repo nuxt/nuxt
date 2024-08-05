@@ -6,6 +6,7 @@ import {
   getRequestDependencies,
   renderResourceHeaders,
 } from 'vue-bundle-renderer/runtime'
+import type { Manifest as ClientManifest } from 'vue-bundle-renderer'
 import type { RenderResponse } from 'nitro/types'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
@@ -93,8 +94,6 @@ export interface NuxtRenderResponse {
   statusMessage?: string
   headers: Record<string, string>
 }
-
-interface ClientManifest {}
 
 // @ts-expect-error file will be produced after app build
 const getClientManifest: () => Promise<Manifest> = () => import('#build/dist/server/client.manifest.mjs')
