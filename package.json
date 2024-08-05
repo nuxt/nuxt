@@ -39,6 +39,7 @@
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
+    "@types/node": "*",
     "magic-string": "^0.30.11",
     "nuxt": "workspace:*",
     "rollup": "^4.20.0",
