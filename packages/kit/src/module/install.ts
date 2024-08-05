@@ -59,7 +59,7 @@ export function getDirectory (p: string) {
     // we need to target directories instead of module file paths themselves
     // /home/user/project/node_modules/module/index.js -> /home/user/project/node_modules/module
     return isAbsolute(p) && lstatSync(p).isFile() ? dirname(p) : p
-  } catch (e) {
+  } catch {
     // maybe the path is absolute but does not exist, allow this to bubble up
   }
   return p

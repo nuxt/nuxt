@@ -567,6 +567,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       nuxt: {}
       fromLayer: boolean
       fromNuxtConfig: boolean

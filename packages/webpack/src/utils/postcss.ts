@@ -4,7 +4,7 @@ import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import type { Plugin } from 'postcss'
 
-const isPureObject = (obj: unknown): obj is Object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
+const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
