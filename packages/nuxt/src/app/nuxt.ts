@@ -101,7 +101,6 @@ interface _NuxtApp {
   /** @internal */
   _name: string
   vueApp: App<Element>
-  globalName: string
   versions: Record<string, string>
 
   hooks: Hookable<RuntimeNuxtHooks>
@@ -245,7 +244,6 @@ export type ObjectPluginInput<Injections extends Record<string, unknown> = Recor
 export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
   ssrContext?: NuxtApp['ssrContext']
-  globalName?: NuxtApp['globalName']
 }
 
 /** @since 3.0.0 */
@@ -255,7 +253,6 @@ export function createNuxtApp (options: CreateOptions) {
     _name: appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
-    globalName: 'nuxt',
     versions: {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version },
