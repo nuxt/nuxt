@@ -328,7 +328,7 @@ export default defineUntypedSchema({
    * @note Plugins are also auto-registered from the `~/plugins` directory
    * and these plugins do not need to be listed in `nuxt.config` unless you
    * need to customize their order. All plugins are deduplicated by their src path.
-   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/plugins)
+   * @see [`plugins/` directory documentation](https://nuxt.com/docs/guide/directory-structure/plugins)
    * @example
    * ```js
    * plugins: [
@@ -375,7 +375,7 @@ export default defineUntypedSchema({
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *
-     * @see [unjs/unhead SSR Installation Options](https://unhead.unjs.io/setup/ssr/installation#options)
+     * @see [`unhead` options documentation](https://unhead.unjs.io/setup/ssr/installation#options)
      *
      * @example
      * ```ts

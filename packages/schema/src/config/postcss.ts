@@ -38,19 +38,19 @@ export default defineUntypedSchema({
     /**
      * Options for configuring PostCSS plugins.
      *
-     * @see [PostCSS](https://postcss.org/)
+     * @see [PostCSS docs](https://postcss.org/)
      * @type {Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options }}
      */
     plugins: {
       /**
        * Plugin to parse CSS and add vendor prefixes to CSS rules.
        *
-       * @see [PostCSS Autoprefixer](https://github.com/postcss/autoprefixer)
+       * @see [`autoprefixer`](https://github.com/postcss/autoprefixer)
        */
       autoprefixer: {},
 
       /**
-       * @see [cssnano Configuration Options](https://cssnano.github.io/cssnano/docs/config-file/#configuration-options)
+       * @see [`cssnano` configuration options](https://cssnano.github.io/cssnano/docs/config-file/#configuration-options)
        */
       cssnano: {
         $resolve: async (val, get) => {

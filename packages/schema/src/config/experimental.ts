@@ -26,7 +26,7 @@ export default defineUntypedSchema({
      *
      * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
-     * @see [TypeScript PR #51669](https://github.com/microsoft/TypeScript/pull/51669)
+     * @see [TypeScript PR implementing `bundler` module resolution](https://github.com/microsoft/TypeScript/pull/51669)
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
@@ -358,7 +358,7 @@ export default defineUntypedSchema({
 
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
-     * @see [unjs/unenv](https://github.com/unjs/unenv)
+     * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *

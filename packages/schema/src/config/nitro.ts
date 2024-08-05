@@ -4,7 +4,7 @@ import type { RuntimeConfig } from '../types/config'
 export default defineUntypedSchema({
   /**
    * Configuration for Nitro.
-   * @see [unjs/nitro Config](https://nitro.unjs.io/config/)
+   * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
    * @type {typeof import('nitro/types')['NitroConfig']}
    */
   nitro: {
@@ -37,7 +37,7 @@ export default defineUntypedSchema({
   /**
    * Global route options applied to matching server routes.
    * @experimental This is an experimental feature and API may change in the future.
-   * @see [unjs/nitro Config RouteRules](https://nitro.unjs.io/config/#routerules)
+   * @see [Nitro route rules documentation](https://nitro.unjs.io/config/#routerules)
    * @type {typeof import('nitro/types')['NitroConfig']['routeRules']}
    */
   routeRules: {},
@@ -53,7 +53,7 @@ export default defineUntypedSchema({
    * - middleware: Specifies whether it is a middleware handler.
    * - lazy: Specifies whether to use lazy loading to import the handler.
    *
-   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/server)
+   * @see [`server/` directory documentation](https://nuxt.com/docs/guide/directory-structure/server)
    * @note Files from `server/api`, `server/middleware` and `server/routes` will be automatically registered by Nuxt.
    * @example
    * ```js
@@ -67,7 +67,7 @@ export default defineUntypedSchema({
 
   /**
    * Nitro development-only server handlers.
-   * @see [unjs/nitro Server Routes](https://nitro.unjs.io/guide/routing)
+   * @see [Nitro server routes documentation](https://nitro.unjs.io/guide/routing)
    * @type {typeof import('nitro/types')['NitroDevEventHandler'][]}
    */
   devServerHandlers: [],
