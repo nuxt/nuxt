@@ -23,6 +23,7 @@ export interface CookieOptions<T = any> extends _CookieOptions {
   readonly?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface CookieRef<T> extends Ref<T> {}
 
 const CookieDefaults = {
