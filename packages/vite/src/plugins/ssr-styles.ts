@@ -72,6 +72,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           : outputOptions.assetFileNames({
             type: 'asset',
             name: `${fileName}-styles.mjs`,
+            originalFileName: `${fileName}-styles.mjs`,
             source: '',
           })
 
