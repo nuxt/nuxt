@@ -54,6 +54,7 @@ export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit
 }
 
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
 
 export interface NuxtApp {
