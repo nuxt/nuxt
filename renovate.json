@@ -11,6 +11,15 @@
   ],
   "packageRules": [
     {
+      "groupName": "vue",
+      "matchPackageNames": [
+        "vue"
+      ],
+      "matchPackagePatterns": [
+        "^@vue/"
+      ]
+    },
+    {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
