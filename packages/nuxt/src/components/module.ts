@@ -13,7 +13,7 @@ import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
+const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
 }

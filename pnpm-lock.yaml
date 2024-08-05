@@ -30,8 +30,8 @@ importers:
         specifier: workspace:*
         version: link:packages/kit
       '@nuxt/test-utils':
-        specifier: 3.13.1
-        version: 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))
+        specifier: 3.14.0
+        version: 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -84,8 +84,8 @@ importers:
         specifier: 3.1.0
         version: 3.1.0
       eslint-plugin-perfectionist:
-        specifier: 2.11.0
-        version: 2.11.0(eslint@9.8.0)(typescript@5.5.4)(vue-eslint-parser@9.4.3(eslint@9.8.0))
+        specifier: 3.1.1
+        version: 3.1.1(eslint@9.8.0)(typescript@5.5.4)(vue-eslint-parser@9.4.3(eslint@9.8.0))
       eslint-typegen:
         specifier: 0.3.0
         version: 0.3.0(eslint@9.8.0)
@@ -2236,23 +2236,23 @@ packages:
     resolution: {integrity: sha512-KH6wxzsNys69daSO0xUv0LEBAfhwwjK1M+0Cdi1/vxmifCslMIY7lN11B4eywSfscbyVPAYJvANyc7XiVPImBQ==}
     hasBin: true
 
-  '@nuxt/test-utils@3.13.1':
-    resolution: {integrity: sha512-rqNnjArhFUU8qMHtpEZzjfF6fGTzeXxZsreNLUy9X5AoUuS37HgnobNJIirTrA0xzlzitKVm/mB9r4gXZGzWdQ==}
-    engines: {node: '>=18.20.2'}
+  '@nuxt/test-utils@3.14.0':
+    resolution: {integrity: sha512-8HJOvGChQ70s6RKduKlrNABJXizNCLodBRbgepa4RYA3QFv2KrTxLvlHlhEUwd9r2E55LcQacv9P7Er47Z2GaA==}
+    engines: {node: '>=18.20.4'}
     peerDependencies:
       '@cucumber/cucumber': ^10.3.1
       '@jest/globals': ^29.5.0
       '@playwright/test': ^1.43.1
       '@testing-library/vue': ^7.0.0 || ^8.0.1
-      '@vitest/ui': ^0.34.6 || ^1.0.0
+      '@vitest/ui': ^0.34.6 || ^1.0.0 || ^2.0.0
       '@vue/test-utils': ^2.4.2
-      h3: '*'
+      h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
       happy-dom: ^9.10.9 || ^10.0.0 || ^11.0.0 || ^12.0.0 || ^13.0.0 || ^14.0.0
       jsdom: ^22.0.0 || ^23.0.0 || ^24.0.0
       nitropack: '*'
       playwright-core: ^1.43.1
       vite: 5.3.5
-      vitest: ^0.34.6 || ^1.0.0
+      vitest: ^0.34.6 || ^1.0.0 || ^2.0.0
       vue: 3.4.33
       vue-router: ^4.0.0
     peerDependenciesMeta:
@@ -3766,6 +3766,14 @@ packages:
       magicast:
         optional: true
 
+  c12@2.0.0-beta.1:
+    resolution: {integrity: sha512-/m7oUlw0XGeiG4e4xx1s4dqCtTuZiGm79WFbo/n/ppbtEmPKez1xDvaTIfpnHBhuQ7OC78rxCdhMpYkQHLyHnA==}
+    peerDependencies:
+      magicast: ^0.3.4
+    peerDependenciesMeta:
+      magicast:
+        optional: true
+
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -4007,7 +4015,7 @@ packages:
     resolution: {integrity: sha512-kcZ6+W5QzcJ3P1Mt+83OUv/oHFqZHIx8DuxG6eZ5RGMERoLqp4BuGjhHLYGK+Kf5XVkQvqBSmAy/nGWN3qDgEA==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.5.4
+      typescript: '>=4.9.5'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -4016,7 +4024,7 @@ packages:
     resolution: {integrity: sha512-itvL5h8RETACmOTFc4UfIyB2RfEHi71Ax6E/PivVxq9NseKbOWpeyHEOIbmAw1rs8Ak0VursQNww7lf7YtUwzg==}
     engines: {node: '>=14'}
     peerDependencies:
-      typescript: 5.5.4
+      typescript: '>=4.9.5'
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -4511,13 +4519,14 @@ packages:
     resolution: {integrity: sha512-Lf4YW/bL6Un1R6A76pRZyE1dl1vr31G/ev8UzIc/geCgFWyrKil8hVjYqWVKGB/UIGmb6Slzs9T0wNezdSVegw==}
     engines: {node: '>=5.0.0'}
 
-  eslint-plugin-perfectionist@2.11.0:
-    resolution: {integrity: sha512-XrtBtiu5rbQv88gl+1e2RQud9te9luYNvKIgM9emttQ2zutHPzY/AQUucwxscDKV4qlTkvLTxjOFvxqeDpPorw==}
+  eslint-plugin-perfectionist@3.1.1:
+    resolution: {integrity: sha512-joaAPd2gVNV+Gm+xU6tqOxy9WlBcb/6TSCUaHLNSdhot/KcsyiKSzeTVToasrCPIxgqgGwcOy+AJaGaBhBwblw==}
+    engines: {node: ^18.0.0 || >=20.0.0}
     peerDependencies:
       astro-eslint-parser: ^1.0.2
       eslint: '>=8.0.0'
       svelte: '>=3.0.0'
-      svelte-eslint-parser: ^0.37.0
+      svelte-eslint-parser: ^0.40.0
       vue-eslint-parser: '>=9.0.0'
     peerDependenciesMeta:
       astro-eslint-parser:
@@ -4649,8 +4658,8 @@ packages:
   externality@1.0.2:
     resolution: {integrity: sha512-LyExtJWKxtgVzmgtEHyQtLFpw1KFhQphF9nTG8TpAIVkiI/xQ3FJh75tRFLYl4hkn7BNIIdLJInuDAavX35pMw==}
 
-  fake-indexeddb@5.0.2:
-    resolution: {integrity: sha512-cB507r5T3D55DfclY01GLkninZLfU7HXV/mhVRTnTRm5k2u+fY7Fof2dBkr80p5t7G7dlA/G5dI87QiMdPpMCQ==}
+  fake-indexeddb@6.0.0:
+    resolution: {integrity: sha512-YEboHE5VfopUclOck7LncgIqskAqnv4q0EWbYCaxKKjAvO93c+TJIaBuGy8CBFdbg9nKdpN3AuPRwVBJ4k7NrQ==}
     engines: {node: '>=18'}
 
   fast-deep-equal@3.1.3:
@@ -5381,6 +5390,10 @@ packages:
 
   jiti@2.0.0-beta.2:
     resolution: {integrity: sha512-c+PHQZakiQuMKbnhvrjZUvrK6E/AfmTOf4P+E3Y4FNVHcNMX9e/XrnbEvO+m4wS6ZjsvhHh/POQTlfy8uXFc0A==}
+    hasBin: true
+
+  jiti@2.0.0-beta.3:
+    resolution: {integrity: sha512-pmfRbVRs/7khFrSAYnSiJ8C0D5GvzkE4Ey2pAvUcJsw1ly/p+7ut27jbJrjY79BpAJQJ4gXYFtK6d1Aub+9baQ==}
     hasBin: true
 
   js-beautify@1.14.9:
@@ -7610,7 +7623,7 @@ packages:
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
     peerDependencies:
-      '@types/node': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
       less: '*'
       lightningcss: ^1.21.0
       sass: '*'
@@ -7667,7 +7680,7 @@ packages:
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
-      '@types/node': '*'
+      '@types/node': ^18.0.0 || >=20.0.0
       '@vitest/browser': 2.0.5
       '@vitest/ui': 2.0.5
       happy-dom: '*'
@@ -9241,17 +9254,17 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.7.0
 
-  '@nuxt/test-utils@3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))':
+  '@nuxt/test-utils@3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
-      c12: 1.11.1(magicast@0.3.4)
+      c12: 2.0.0-beta.1(magicast@0.3.4)
       consola: 3.2.3
       defu: 6.1.4
       destr: 2.0.3
       estree-walker: 3.0.3
       execa: 8.0.1
-      fake-indexeddb: 5.0.2
+      fake-indexeddb: 6.0.0
       get-port-please: 3.1.2
       h3: 1.12.0
       local-pkg: 0.5.0
@@ -9288,7 +9301,7 @@ snapshots:
       '@types/mdast': 4.0.3
       '@vue/compiler-core': 3.4.33
       consola: 3.2.3
-      debug: 4.3.5
+      debug: 4.3.6
       defu: 6.1.4
       destr: 2.0.3
       detab: 3.0.2
@@ -9311,7 +9324,7 @@ snapshots:
       remark-parse: 11.0.0
       remark-rehype: 11.1.0
       scule: 1.3.0
-      shiki: 1.10.3
+      shiki: 1.12.1
       ufo: 1.5.4
       unified: 11.0.5
       unist-builder: 4.0.0
@@ -11148,7 +11161,7 @@ snapshots:
 
   babel-walk@3.0.0-canary-5:
     dependencies:
-      '@babel/types': 7.24.9
+      '@babel/types': 7.25.2
 
   bail@2.0.2: {}
 
@@ -11233,6 +11246,23 @@ snapshots:
       dotenv: 16.4.5
       giget: 1.2.3
       jiti: 1.21.6
+      mlly: 1.7.1
+      ohash: 1.1.3
+      pathe: 1.1.2
+      perfect-debounce: 1.0.0
+      pkg-types: 1.1.3
+      rc9: 2.1.2
+    optionalDependencies:
+      magicast: 0.3.4
+
+  c12@2.0.0-beta.1(magicast@0.3.4):
+    dependencies:
+      chokidar: 3.6.0
+      confbox: 0.1.7
+      defu: 6.1.4
+      dotenv: 16.4.5
+      giget: 1.2.3
+      jiti: 2.0.0-beta.3
       mlly: 1.7.1
       ohash: 1.1.3
       pathe: 1.1.2
@@ -11458,8 +11488,8 @@ snapshots:
 
   constantinople@4.0.1:
     dependencies:
-      '@babel/parser': 7.24.8
-      '@babel/types': 7.24.9
+      '@babel/parser': 7.25.3
+      '@babel/types': 7.25.2
 
   convert-gitmoji@0.1.3: {}
 
@@ -12078,11 +12108,12 @@ snapshots:
 
   eslint-plugin-no-only-tests@3.1.0: {}
 
-  eslint-plugin-perfectionist@2.11.0(eslint@9.8.0)(typescript@5.5.4)(vue-eslint-parser@9.4.3(eslint@9.8.0)):
+  eslint-plugin-perfectionist@3.1.1(eslint@9.8.0)(typescript@5.5.4)(vue-eslint-parser@9.4.3(eslint@9.8.0)):
     dependencies:
-      '@typescript-eslint/utils': 7.9.0(eslint@9.8.0)(typescript@5.5.4)
+      '@typescript-eslint/types': 8.0.0
+      '@typescript-eslint/utils': 8.0.0(eslint@9.8.0)(typescript@5.5.4)
       eslint: 9.8.0
-      minimatch: 9.0.4
+      minimatch: 10.0.1
       natural-compare-lite: 1.4.0
     optionalDependencies:
       vue-eslint-parser: 9.4.3(eslint@9.8.0)
@@ -12302,7 +12333,7 @@ snapshots:
       pathe: 1.1.2
       ufo: 1.5.4
 
-  fake-indexeddb@5.0.2: {}
+  fake-indexeddb@6.0.0: {}
 
   fast-deep-equal@3.1.3: {}
 
@@ -13097,6 +13128,8 @@ snapshots:
   jiti@1.21.6: {}
 
   jiti@2.0.0-beta.2: {}
+
+  jiti@2.0.0-beta.3: {}
 
   js-beautify@1.14.9:
     dependencies:
@@ -15861,7 +15894,7 @@ snapshots:
 
   vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4)):
     dependencies:
-      '@nuxt/test-utils': 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))
+      '@nuxt/test-utils': 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.35)(vue@3.4.33(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.3)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.14)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.2(vue@3.4.33(typescript@5.5.4)))(vue@3.4.33(typescript@5.5.4))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
@@ -16259,8 +16292,8 @@ snapshots:
 
   with@7.0.2:
     dependencies:
-      '@babel/parser': 7.24.8
-      '@babel/types': 7.24.9
+      '@babel/parser': 7.25.3
+      '@babel/types': 7.25.2
       assert-never: 1.2.1
       babel-walk: 3.0.0-canary-5
 

@@ -20,6 +20,7 @@ declare module 'nitropack' {
     buildAssetsDir: string
     cdnURL: string
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean

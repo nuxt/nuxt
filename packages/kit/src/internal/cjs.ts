@@ -56,7 +56,7 @@ function clearRequireCache (id: string) {
 function getRequireCacheItem (id: string) {
   try {
     return _require.cache[id]
-  } catch (e) {
+  } catch {
     // ignore issues accessing require.cache
   }
 }
