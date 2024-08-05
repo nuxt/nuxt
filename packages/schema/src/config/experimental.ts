@@ -26,7 +26,7 @@ export default defineUntypedSchema({
      *
      * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
-     * See https://github.com/microsoft/TypeScript/pull/51669
+     * @see [TypeScript PR implementing `bundler` module resolution](https://github.com/microsoft/TypeScript/pull/51669)
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
@@ -255,7 +255,7 @@ export default defineUntypedSchema({
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
-     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
+     * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: {
@@ -283,7 +283,7 @@ export default defineUntypedSchema({
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
     headNext: true,
 
@@ -304,7 +304,7 @@ export default defineUntypedSchema({
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
-     * https://github.com/nuxt/nuxt/issues/24770
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
      */
     scanPageMeta: true,
 
@@ -366,7 +366,7 @@ export default defineUntypedSchema({
 
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
-     * @see https://github.com/unjs/unenv
+     * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *

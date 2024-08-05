@@ -8,10 +8,11 @@ import { globby } from 'globby'
 import defu from 'defu'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
 }
 
-const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'dir']
+const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
 const layerSchema = Object.create(null)
 for (const key of layerSchemaKeys) {
   if (key in NuxtConfigSchema) {

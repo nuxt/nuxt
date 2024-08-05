@@ -1,28 +1,38 @@
-<script setup>
+<script setup lang="ts">
 useCookie('accessed-but-not-used')
-useCookie('accessed-with-default-value', () => 'default')
+useCookie('accessed-with-default-value', { default: () => 'default' })
 useCookie('set').value = 'set'
 useCookie('set-to-null').value = null
-useCookie('set-to-null-with-default', () => 'default').value = null
+useCookie<string | null>('set-to-null-with-default', { default: () => 'default' }).value = null
 
 // the next set are all sent by browser
 useCookie('browser-accessed-but-not-used')
-useCookie('browser-accessed-with-default-value', () => 'default')
+useCookie('browser-accessed-with-default-value', { default: () => 'default' })
+useCookie('browser-set').value = 'set'
+// confirm that it only sets one `set-cookie` header
 useCookie('browser-set').value = 'set'
 useCookie('browser-set-to-null').value = null
-useCookie('browser-set-to-null-with-default', () => 'default').value = null
+useCookie<string | null>('browser-set-to-null-with-default', { default: () => 'default' }).value = null
 
-const objectCookie = useCookie('browser-object-default')
+const objectCookie = useCookie<{ foo: string } | undefined>('browser-object-default')
 const objectCookieSecond = useCookie('browser-object-default', {
   default: () => ({ foo: 'bar' }),
 })
+function changeCookie () {
+  if (objectCookie.value!.foo === 'baz') {
+    objectCookie.value!.foo = 'bar'
+  } else {
+    objectCookie.value!.foo = 'baz'
+  }
+}
 </script>
 
 <template>
   <div>
     <div>cookies testing page</div>
+    <pre>{{ objectCookie?.foo }}</pre>
     <pre>{{ objectCookieSecond.foo }}</pre>
-    <button @click="objectCookie.foo === 'baz' ? objectCookie.foo = 'bar' : objectCookie.foo = 'baz'">
+    <button @click="changeCookie">
       Change cookie
     </button>
     <button @click="refreshCookie('browser-object-default')">

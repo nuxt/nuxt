@@ -40,7 +40,7 @@ declare module 'vue' {
     $nuxt: NuxtApp
   }
   interface ComponentInternalInstance {
-    _nuxtOnBeforeMountCbs: Function[]
+    _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
     _nuxtIdIndex?: Record<string, number>
   }
   interface ComponentCustomOptions {

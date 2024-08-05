@@ -12,7 +12,8 @@ declare global {
 
   interface Window {
     cookieStore?: {
-      onchange: (event: any) => void
+      addEventListener: (type: 'change', listener: (event: any) => void) => void
+      removeEventListener: (type: 'change', listener: (event: any) => void) => void
     }
   }
 }
