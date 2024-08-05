@@ -185,6 +185,7 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'

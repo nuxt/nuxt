@@ -5,6 +5,7 @@ import { useNuxtApp } from './nuxt'
 // @ts-expect-error virtual file
 import __appConfig from '#build/app.config.mjs'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 // Workaround for vite HMR with virtual modules

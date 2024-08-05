@@ -19,7 +19,11 @@ export default defineNuxtPlugin({
     }
 
     if (import.meta.server) {
-      nuxtApp.hook('app:rendered', ({ renderResult }) => { renderResult?.html && nextTick(checkIfPageUnused) })
+      nuxtApp.hook('app:rendered', ({ renderResult }) => {
+        if (renderResult?.html) {
+          nextTick(checkIfPageUnused)
+        }
+      })
     } else {
       onNuxtReady(checkIfPageUnused)
     }

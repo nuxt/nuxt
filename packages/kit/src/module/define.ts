@@ -55,10 +55,10 @@ function _defineNuxtModule<
     inlineOptions?: Partial<TOptions>,
     nuxt: Nuxt = useNuxt(),
   ): Promise<
-    TWith extends true
-      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
-      : TOptions
-  > {
+      TWith extends true
+        ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+        : TOptions
+    > {
     const nuxtConfigOptionsKey = module.meta.configKey || module.meta.name
 
     const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[<keyof NuxtOptions> nuxtConfigOptionsKey] : {}
