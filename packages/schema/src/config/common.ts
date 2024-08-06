@@ -179,7 +179,9 @@ export default defineUntypedSchema({
   },
 
   /**
-   * For multi-app projects, the unique name of the Nuxt application.
+   * For multi-app projects, the unique id of the Nuxt application.
+   *
+   * Defaults to `nuxt-app`.
    */
   appId: {
     $resolve: (val: string) => val ?? 'nuxt-app',

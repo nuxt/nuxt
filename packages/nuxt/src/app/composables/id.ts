@@ -7,6 +7,8 @@ const SEPARATOR = '-'
 
 /**
  * Generate an SSR-friendly unique identifier that can be passed to accessibility attributes.
+ *
+ * The generated ID is unique in the context of the current Nuxt instance and key.
  */
 export function useId (): string
 export function useId (key?: string): string {
@@ -24,7 +26,7 @@ export function useId (key?: string): string {
     throw new TypeError('[nuxt] `useId` must be called within a component setup function.')
   }
 
-  nuxtApp._id ||= 0
+  nuxtApp._genId ||= 0
   instance._nuxtIdIndex ||= {}
   instance._nuxtIdIndex[key] ||= 0
 
@@ -32,7 +34,7 @@ export function useId (key?: string): string {
 
   if (import.meta.server) {
     const ids = JSON.parse(instance.attrs[ATTR_KEY] as string | undefined || '{}')
-    ids[instanceIndex] = key + SEPARATOR + nuxtApp._id++
+    ids[instanceIndex] = key + SEPARATOR + nuxtApp._genId++
     instance.attrs[ATTR_KEY] = JSON.stringify(ids)
     return ids[instanceIndex]
   }
@@ -54,5 +56,5 @@ export function useId (key?: string): string {
   }
 
   // pure client-side ids, avoiding potential collision with server-side ids
-  return key + '_' + nuxtApp._id++
+  return key + '_' + nuxtApp._genId++
 }
