@@ -25,8 +25,8 @@ import { appId } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
-function getNuxtAppCtx (appName = appId || 'nuxt-app') {
-  return getContext<NuxtApp>(appName, {
+function getNuxtAppCtx (id = appId || 'nuxt-app') {
+  return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -98,8 +98,6 @@ export interface NuxtPayload {
 }
 
 interface _NuxtApp {
-  /** @internal */
-  _name: string
   vueApp: App<Element>
   versions: Record<string, string>
 
@@ -113,8 +111,15 @@ interface _NuxtApp {
 
   /** @internal */
   _cookies?: Record<string, unknown>
-  /** @internal */
-  _id?: number
+  /**
+   * The id of the Nuxt application.
+   * @internal */
+  _id: string
+  /**
+   * The next id that can be used for generating unique ids via `useId`.
+   * @internal
+   */
+  _genId?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
@@ -244,13 +249,17 @@ export type ObjectPluginInput<Injections extends Record<string, unknown> = Recor
 export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
   ssrContext?: NuxtApp['ssrContext']
+  /**
+   * The id of the Nuxt application, overrides the default id specified in the Nuxt config (default: `nuxt-app`).
+   */
+  id?: NuxtApp['_id']
 }
 
 /** @since 3.0.0 */
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    _name: appId || 'nuxt-app',
+    _id: options.id || appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
     versions: {
@@ -489,7 +498,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  const nuxtAppCtx = getNuxtAppCtx(nuxt._name)
+  const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
@@ -507,13 +516,13 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * @since 3.10.0
  */
 export function tryUseNuxtApp (): NuxtApp | null
-export function tryUseNuxtApp (appName?: string): NuxtApp | null {
+export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(appName).tryUse()
+  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }
@@ -526,9 +535,9 @@ export function tryUseNuxtApp (appName?: string): NuxtApp | null {
  * @since 3.0.0
  */
 export function useNuxtApp (): NuxtApp
-export function useNuxtApp (appName?: string): NuxtApp {
-  // @ts-expect-error internal usage of appName
-  const nuxtAppInstance = tryUseNuxtApp(appName)
+export function useNuxtApp (id?: string): NuxtApp {
+  // @ts-expect-error internal usage of id
+  const nuxtAppInstance = tryUseNuxtApp(id)
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
