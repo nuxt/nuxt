@@ -117,7 +117,7 @@
     "vue": "^3.4.34",
     "vue-bundle-renderer": "^2.1.0",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.4.2"
+    "vue-router": "^4.4.3"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.6.5",
