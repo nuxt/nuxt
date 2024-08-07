@@ -82,7 +82,7 @@
     "nuxt-content-twoslash": "0.1.1",
     "ofetch": "1.3.4",
     "pathe": "1.1.2",
-    "playwright-core": "1.45.3",
+    "playwright-core": "1.46.0",
     "rimraf": "6.0.1",
     "semver": "7.6.3",
     "std-env": "3.7.0",
@@ -91,10 +91,10 @@
     "vitest": "2.0.5",
     "vitest-environment-nuxt": "1.0.0",
     "vue": "3.4.33",
-    "vue-router": "4.4.2",
+    "vue-router": "4.4.3",
     "vue-tsc": "2.0.29"
   },
-  "packageManager": "pnpm@9.6.0",
+  "packageManager": "pnpm@9.7.0",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
