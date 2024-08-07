@@ -660,7 +660,8 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   const response: NuxtIslandResponse['components'] = {}
 
   for (const clientUid in ssrContext.islandContext.components) {
-    const html = ssrContext.teleports?.[clientUid] || ''
+    // remove teleport anchor to avoid hydration issues
+    const html = ssrContext.teleports?.[clientUid].replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
       ...ssrContext.islandContext.components[clientUid],
       html,
