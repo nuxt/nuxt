@@ -18,8 +18,8 @@ export function useScript<T extends Record<string | symbol, any>> (input: UseScr
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useElementScriptTrigger (...args: unknown[]) {
-  renderStubMessage('useElementScriptTrigger')
+export function useScriptTriggerElement (...args: unknown[]) {
+  renderStubMessage('useScriptTriggerElement')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

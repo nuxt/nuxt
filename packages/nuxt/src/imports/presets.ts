@@ -119,7 +119,7 @@ export const scriptsStubsPreset = {
   imports: [
     'useConsentScriptTrigger',
     'useAnalyticsPageEvent',
-    'useElementScriptTrigger',
+    'useScriptTriggerElement',
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',

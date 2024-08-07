@@ -201,7 +201,7 @@ describe('imports:nuxt/scripts', () => {
   const globalScripts = new Set([
     'useScript',
     'useAnalyticsPageEvent',
-    'useElementScriptTrigger',
+    'useScriptTriggerElement',
     'useConsentScriptTrigger',
     // registered separately
     'useScriptGoogleTagManager',
