@@ -440,8 +440,8 @@ importers:
         version: 4.4.3(vue@3.4.34(typescript@5.5.4))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 0.6.5
-        version: 0.6.5(@nuxt/devtools@1.3.9(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.20.0)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.35)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.41)(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vue@3.4.34(typescript@5.5.4))(webpack@5.93.0(esbuild@0.23.0))
+        specifier: 0.6.6
+        version: 0.6.6(@nuxt/devtools@1.3.9(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.20.0)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.35)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.41)(rollup@4.20.0)(typescript@5.5.4)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vue@3.4.34(typescript@5.5.4))(webpack@5.93.0(esbuild@0.23.0))
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
@@ -1903,8 +1903,8 @@ packages:
     peerDependencies:
       webpack: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
 
-  '@nuxt/scripts@0.6.5':
-    resolution: {integrity: sha512-7O9cFwRD/kWItQ68MQDMXxV+jugP+6RFr2d/2ADCp4YO5Wqb1kfKJtaCGHBTzQVLzrGomy38kaw++fI4I9yA+A==}
+  '@nuxt/scripts@0.6.6':
+    resolution: {integrity: sha512-x2lC9L+zdyQEa3QiN0k86X8d2MD9nQTSRBFf3y0t1jEw0wi9MCijUAsBNX+T+ycGXt1yqXNiZlkcty1NGPFS5w==}
 
   '@nuxt/telemetry@2.5.4':
     resolution: {integrity: sha512-KH6wxzsNys69daSO0xUv0LEBAfhwwjK1M+0Cdi1/vxmifCslMIY7lN11B4eywSfscbyVPAYJvANyc7XiVPImBQ==}
@@ -2415,8 +2415,8 @@ packages:
   '@types/file-loader@5.0.4':
     resolution: {integrity: sha512-aB4X92oi5D2nIGI8/kolnJ47btRM2MQjQS4eJgA/VnCD12x0+kP5v7b5beVQWKHLOcquwUXvv6aMt8PmMy9uug==}
 
-  '@types/google.maps@3.55.11':
-    resolution: {integrity: sha512-F3VuPtjKj4UGuyym75pqmgPBOHbT/i7I6/D+4DdtSzbeu2aWZG1ENwpbZOd46uO+PSAz9flJEhxxi+b4MVb4gQ==}
+  '@types/google.maps@3.55.12':
+    resolution: {integrity: sha512-Q8MsLE+YYIrE1H8wdN69YHHAF8h7ApvF5MiMXh/zeCpP9Ut745mV9M0F4X4eobZ2WJe9k8tW2ryYjLa87IO2Sg==}
 
   '@types/hash-sum@1.0.2':
     resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
@@ -7066,8 +7066,13 @@ packages:
     peerDependencies:
       '@vue/compiler-core': ^3.3
 
-  valibot@0.36.0:
-    resolution: {integrity: sha512-CjF1XN4sUce8sBK9TixrDqFM7RwNkuXdJu174/AwmQUB62QbCQADg5lLe8ldBalFgtj1uKj+pKwDJiNo4Mn+eQ==}
+  valibot@0.37.0:
+    resolution: {integrity: sha512-FQz52I8RXgFgOHym3XHYSREbNtkgSjF9prvMFH1nBsRyfL6SfCzoT1GuSDTlbsuPubM7/6Kbw0ZMQb8A+V+VsQ==}
+    peerDependencies:
+      typescript: 5.5.4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
@@ -8357,12 +8362,12 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.93.0
 
-  '@nuxt/scripts@0.6.5(@nuxt/devtools@1.3.9(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.20.0)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.35)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.41)(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vue@3.4.34(typescript@5.5.4))(webpack@5.93.0(esbuild@0.23.0))':
+  '@nuxt/scripts@0.6.6(@nuxt/devtools@1.3.9(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.20.0)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.35)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.41)(rollup@4.20.0)(typescript@5.5.4)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vue@3.4.34(typescript@5.5.4))(webpack@5.93.0(esbuild@0.23.0))':
     dependencies:
       '@nuxt/devtools-kit': 1.3.9(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))
       '@nuxt/devtools-ui-kit': 1.3.9(@nuxt/devtools@1.3.9(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.20.0)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.35)(nuxt@packages+nuxt)(postcss@8.4.41)(rollup@4.20.0)(vite@5.3.5(@types/node@20.14.14)(sass@1.69.4)(terser@5.27.0))(vue@3.4.34(typescript@5.5.4))(webpack@5.93.0(esbuild@0.23.0))
       '@nuxt/kit': link:packages/kit
-      '@types/google.maps': 3.55.11
+      '@types/google.maps': 3.55.12
       '@types/stripe-v3': 3.1.33
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.0.50
@@ -8386,7 +8391,7 @@ snapshots:
       unimport: 3.10.0(rollup@4.20.0)
       unplugin: 1.12.0
       unstorage: 1.10.2(ioredis@5.4.1)
-      valibot: 0.36.0
+      valibot: 0.37.0(typescript@5.5.4)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -8418,6 +8423,7 @@ snapshots:
       - rollup
       - sortablejs
       - supports-color
+      - typescript
       - uWebSockets.js
       - universal-cookie
       - vite
@@ -8976,7 +8982,7 @@ snapshots:
     dependencies:
       '@types/webpack': 4.41.34
 
-  '@types/google.maps@3.55.11': {}
+  '@types/google.maps@3.55.12': {}
 
   '@types/hash-sum@1.0.2': {}
 
@@ -14705,7 +14711,9 @@ snapshots:
     dependencies:
       '@vue/compiler-core': 3.4.35
 
-  valibot@0.36.0: {}
+  valibot@0.37.0(typescript@5.5.4):
+    optionalDependencies:
+      typescript: 5.5.4
 
   validate-npm-package-license@3.0.4:
     dependencies:
