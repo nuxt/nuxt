@@ -122,8 +122,8 @@ export async function getNuxtClientPayload () {
     ...window.__NUXT__,
   }
 
-  if (payloadCache?.config?.public) {
-    payloadCache.config.public = reactive(payloadCache.config.public)
+  if (payloadCache!.config?.public) {
+    payloadCache!.config.public = reactive(payloadCache!.config.public)
   }
 
   return payloadCache
