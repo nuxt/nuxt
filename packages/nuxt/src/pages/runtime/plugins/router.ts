@@ -117,7 +117,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
-    // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
+    // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
     const route = {} as RouteLocationNormalizedLoaded
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
