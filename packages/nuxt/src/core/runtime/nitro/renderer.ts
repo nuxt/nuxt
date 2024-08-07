@@ -1,21 +1,15 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-import {
-  createRenderer,
-  getPrefetchLinks,
-  getPreloadLinks,
-  getRequestDependencies,
-  renderResourceHeaders,
-} from 'vue-bundle-renderer/runtime'
+import { createRenderer, getPrefetchLinks, getPreloadLinks, getRequestDependencies, getResources, renderResourceHeaders } from 'vue-bundle-renderer/runtime'
 import type { Manifest as ClientManifest } from 'vue-bundle-renderer'
-import type { RenderResponse } from 'nitro/types'
+import type { NitroApp, RenderResponse } from 'nitro/types'
 import type { Manifest } from 'vite'
 import type { H3Event } from 'h3'
-import { appendResponseHeader, createError, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
+import { appendResponseHeader, createError, getHeader, getQuery, getResponseStatus, getResponseStatusText, readBody, writeEarlyHints } from 'h3'
 import devalue from '@nuxt/devalue'
 import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
-import { renderToString as _renderToString } from 'vue/server-renderer'
+import { renderToString as _renderToString, renderToWebStream } from 'vue/server-renderer'
 import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
 import type { HeadEntryOptions } from '@unhead/schema'
@@ -337,6 +331,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     for (const id of await getEntryIds()) {
       ssrContext.modules!.add(id)
     }
+  }
+
+  if (!isRenderingIsland && !isRenderingPayload && !isCrawler(event) /* && isWebBrowser(event) */) {
+    return streamedResponse(event, ssrContext, renderer, head, nitroApp)
   }
 
   const _rendered = await renderer.renderToString(ssrContext).catch(async (error) => {
@@ -709,4 +707,193 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
     }
   }
   return html
+}
+
+function renderStreamedHTMLDocument (html: NuxtRenderHTMLContext) {
+  return [
+    '<!DOCTYPE html>' +
+    `<html${joinAttrs(html.htmlAttrs)}>` +
+    `<head>${joinTags(html.head)}</head>` +
+    `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}` +
+    APP_ROOT_OPEN_TAG,
+    // HTML body will be streamed here
+    APP_ROOT_CLOSE_TAG +
+    `</body>` +
+    '</html>',
+  ]
+}
+async function streamedResponse (event: H3Event, ssrContext: NuxtSSRContext, renderer: Awaited<ReturnType<typeof getSSRRenderer>>, head: ReturnType<typeof createServerHead>, nitroApp: NitroApp) {
+  const createApp = await Promise.resolve(getServerEntry()).then(r => 'default' in r ? r.default : r)
+
+  // Create a ReadableStream
+  const stream = new ReadableStream({
+    start (controller) {
+      const render = async () => {
+        const _PAYLOAD_EXTRACTION = import.meta.prerender && process.env.NUXT_PAYLOAD_EXTRACTION && !ssrContext.noSSR
+        const routeOptions = getRouteRules(event)
+        const NO_SCRIPTS = process.env.NUXT_NO_SCRIPTS || routeOptions.experimentalNoScripts
+        const payloadURL = _PAYLOAD_EXTRACTION ? joinURL(ssrContext.runtimeConfig.app.cdnURL || ssrContext.runtimeConfig.app.baseURL, event.path, process.env.NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js') + '?' + ssrContext.runtimeConfig.app.buildId : undefined
+        const inlinedStyles = (process.env.NUXT_INLINE_STYLES) ? await renderInlineStyles(ssrContext.modules ?? []) : []
+
+        // Setup head
+        const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
+        // 1.Extracted payload preloading
+        if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS) {
+          head.push({
+            link: [
+              process.env.NUXT_JSON_PAYLOADS
+                ? { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }
+                : { rel: 'modulepreload', href: payloadURL },
+            ],
+          }, { mode: 'server' })
+        }
+
+        // 2. Styles
+        // cacheable
+        head.push({ style: inlinedStyles })
+        const link: Link[] = []
+        for (const style in styles) {
+          const resource = styles[style]
+          // Do not add links to resources that are inlined (vite v5+)
+          if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
+            continue
+          }
+          link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
+        }
+        head.push({ link }, { mode: 'server' })
+
+        // 5. Scripts
+        if (!routeOptions.experimentalNoScripts) {
+          head.push({
+            script: Object.values(scripts).map(resource => (<Script> {
+              type: resource.module ? 'module' : null,
+              src: renderer.rendererContext.buildAssetsURL(resource.file),
+              defer: resource.module ? null : true,
+              // if we are rendering script tag payloads that import an async payload
+              // we need to ensure this resolves before executing the Nuxt entry
+              tagPosition: (_PAYLOAD_EXTRACTION && !process.env.NUXT_JSON_PAYLOADS) ? 'bodyClose' : 'head',
+              crossorigin: '',
+            })),
+          }, { mode: 'server' })
+        }
+
+        // remove certain tags for nuxt islands
+        const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
+
+        // Create render context
+        const htmlContext: NuxtRenderHTMLContext = {
+          island: false,
+          htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
+          head: normalizeChunks([headTags]),
+          bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
+          bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
+          body: [],
+          bodyAppend: [bodyTags],
+        }
+
+        // Allow hooking into the rendered result
+        await nitroApp.hooks.callHook('render:html', htmlContext, { event })
+        const [open, close] = renderStreamedHTMLDocument(htmlContext)
+        controller.enqueue(open)
+
+        try {
+          const app = await createApp(ssrContext)
+          const vueStream = renderToWebStream(app, ssrContext)
+          const reader = vueStream.getReader()
+          const decoder = new TextDecoder()
+          let result: ReadableStreamReadResult<any>
+          while (result = await reader.read(), !result.done) {
+            controller.enqueue(decoder.decode(result.value))
+          }
+          // TODO: handle type mismatch
+          await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext })
+          controller.enqueue(APP_TELEPORT_OPEN_TAG + (HAS_APP_TELEPORTS ? joinTags([ssrContext.teleports?.[`#${appTeleportAttrs.id}`]]) : '') + APP_TELEPORT_CLOSE_TAG)
+          controller.enqueue(close)
+
+          if (!NO_SCRIPTS) {
+            // 4. Payloads
+            head.push({
+              script: _PAYLOAD_EXTRACTION
+                ? process.env.NUXT_JSON_PAYLOADS
+                  ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+                  : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+                : process.env.NUXT_JSON_PAYLOADS
+                  ? renderPayloadJsonScript({ id: '__NUXT_DATA__', ssrContext, data: ssrContext.payload })
+                  : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
+            }, {
+              mode: 'server',
+              // this should come before another end of body scripts
+              tagPosition: 'bodyClose',
+              tagPriority: 'high',
+            })
+          }
+
+          const { bodyTags } = await renderSSRHead(head, renderSSRHeadOptions)
+          controller.enqueue(joinTags([bodyTags]))
+          controller.close()
+          // console.log(ssrContext.payload?.error)
+
+          if (ssrContext.payload?.error) {
+            // controller.error(ssrContext.payload.error)
+          }
+        } catch (error: any) {
+          if (ssrContext._renderResponse && error.message === 'skipping render') {
+            // skip render
+            controller.close()
+            console.log('skipping render')
+          }
+          //   // We use error to bypass full render if we have an early response we can make
+          //   if (ssrContext._renderResponse && error.message === 'skipping render') { return {} as ReturnType<typeof renderer['renderToString']> }
+
+          //   // Use explicitly thrown error in preference to subsequent rendering errors
+          //   const _err = (!ssrError && ssrContext.payload?.error) || error
+          //   await ssrContext.nuxt?.hooks.callHook('app:error', _err)
+          //   throw _err
+          // })
+          // await ssrContext.nuxt?.hooks.callHook('app:rendered', { ssrContext, renderResult: _rendered })
+
+          // if (ssrContext._renderResponse) { return ssrContext._renderResponse }
+
+          // // Handle errors
+          // if (ssrContext.payload?.error && !ssrError) {
+          //   throw ssrContext.payload.error
+          // }
+          controller.error(error)
+          console.log('error in stream')
+        }
+      }
+      render()
+    },
+  })
+
+  const headers: Record<string, string> = {
+    'content-type': 'text/html;charset=utf-8',
+    'x-powered-by': 'Nuxt',
+  }
+
+  const resourceHeaders = renderResourceHeaders(ssrContext, renderer.rendererContext)
+
+  if (resourceHeaders.link) {
+    headers.link = resourceHeaders.link
+  }
+
+  const streamedResponse = {
+    body: stream,
+    statusCode: getResponseStatus(event),
+    statusMessage: getResponseStatusText(event),
+    headers,
+  } satisfies RenderResponse
+
+  return streamedResponse
+}
+
+function isWebBrowser (event: H3Event) {
+  const agent = getHeader(event, 'user-agent')
+  return agent && agent.includes('Mozilla')
+}
+
+const BOT_RE = /bot\b|index|spider|facebookexternalhit|crawl|wget|slurp|mediapartners-google|whatsapp/i
+function isCrawler (event: H3Event) {
+  const agent = getHeader(event, 'user-agent')
+  return agent && BOT_RE.test(agent)
 }
