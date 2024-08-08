@@ -40,6 +40,7 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
 export function useCookie<T = string | null | undefined> (name: string, _opts: CookieOptions<T> & { readonly: true }): Readonly<CookieRef<T>>
 export function useCookie<T = string | null | undefined> (name: string, _opts?: CookieOptions<T>): CookieRef<T> {
   const opts = { ...CookieDefaults, ..._opts }
+  opts.filter ??= key => key === name
   const cookies = readRawCookies(opts) || {}
 
   let delay: number | undefined
