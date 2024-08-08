@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"205k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"211k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1346k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1348k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -58,6 +58,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "db0",
         "devalue",
         "entities",
+        "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "source-map-js",
@@ -73,7 +74,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"528k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"535k"`)
 
     const modules = await analyzeSizes('node_modules/**/*', serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"80.3k"`)
