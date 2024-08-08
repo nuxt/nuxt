@@ -57,6 +57,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/shared",
         "devalue",
         "entities",
+        "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "source-map-js",
