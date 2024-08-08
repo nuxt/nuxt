@@ -200,9 +200,9 @@ describe('imports:nuxt/scripts', () => {
   const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
   const globalScripts = new Set([
     'useScript',
-    'useAnalyticsPageEvent',
+    'useScriptEventPage',
     'useScriptTriggerElement',
-    'useConsentScriptTrigger',
+    'useScriptTriggerConsent',
     // registered separately
     'useScriptGoogleTagManager',
     'useScriptGoogleAnalytics',
