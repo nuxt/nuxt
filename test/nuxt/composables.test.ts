@@ -692,32 +692,16 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(0)
   })
 
-  it('preset test cookie', () => {
-    const foo = useCookie('foo', {
-      default: () => 'Foo',
-      maxAge: 60 * 60,
-    })
-    foo.value = 'Foo'
-
-    const bar = useCookie<{ s2: number }>('bar', {
-      default: () => ({ s2: -1 }),
-      maxAge: 60 * 60,
-    })
-    bar.value.s2++
-
-    const bazCookie = useCookie<{ s2: number }>('baz', {
-      default: () => ({ s2: -1 }),
-      maxAge: 60 * 60,
-    })
-    bazCookie.value.s2++
-  })
-
   it('cookie decode function should be invoked once', () => {
+    // Pre-set cookies
+    document.cookie = 'foo=Foo'
+    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
+    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
+
     let barCallCount = 0
     const bazCookie = useCookie<{ s2: number }>('baz', {
       default: () => ({ s2: -1 }),
-      maxAge: 60 * 60,
-      decode (value: string) {
+      decode (value) {
         barCallCount++
         return destr(decodeURIComponent(value))
       },
@@ -726,20 +710,18 @@ describe('useCookie', () => {
     expect(bazCookie.value.s2).toEqual(1)
     expect(barCallCount).toBe(1)
 
-    let baCallCount = 0
-    const baCookie = useCookie<{ s3: number }>('ba', {
+    let quxCallCount = 0
+    const quxCookie = useCookie<{ s3: number }>('qux', {
       default: () => ({ s3: -1 }),
-      filter: (key: string) => {
-        return key === 'bar' || key === 'baz'
-      },
-      decode (value: string) {
-        baCallCount++
+      filter: key => key === 'bar' || key === 'baz',
+      decode (value) {
+        quxCallCount++
         return destr(decodeURIComponent(value))
       },
     })
-    baCookie.value.s3++
-    expect(baCookie.value.s3).toBe(0)
-    expect(baCallCount).toBe(2)
+    quxCookie.value.s3++
+    expect(quxCookie.value.s3).toBe(0)
+    expect(quxCallCount).toBe(2)
   })
 
   it('should not watch custom cookie refs when shallow', () => {
