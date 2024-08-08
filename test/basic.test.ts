@@ -2221,7 +2221,7 @@ describe('component islands', () => {
         "multiplier": 1,
       }
     `)
-      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<!--teleport start anchor--><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
+      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
     })
   }
 
