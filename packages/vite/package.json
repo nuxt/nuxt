@@ -61,7 +61,7 @@
     "strip-literal": "^2.1.0",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^1.12.0",
+    "unplugin": "^1.12.1",
     "vite": "^5.4.0",
     "vite-node": "^2.0.5",
     "vite-plugin-checker": "^0.7.2",
