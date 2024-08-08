@@ -102,6 +102,7 @@
 <script setup lang="ts">
 // bypass client import protection to ensure this is treeshaken from .client components
 import BreaksServer from '~~/components/BreaksServer.client'
+
 const displayHidden = ref(false)
 type Comp = { add: () => void }
 const stringStatefulComp = ref<Comp>(null)

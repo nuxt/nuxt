@@ -11,6 +11,6 @@
 <script setup lang="ts">
 const clientSetupScript = ref<{ $el: HTMLElement }>()
 onMounted(() => {
-  console.log(clientSetupScript.value?.$el as HTMLElement ? 'has $el' : 'no $el') 
+  console.log(clientSetupScript.value?.$el as HTMLElement ? 'has $el' : 'no $el')
 })
 </script>
