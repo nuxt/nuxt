@@ -130,6 +130,14 @@ declare module '#app' {
   }
 }
 
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties extends NuxtAppInjections { }
+}
+
+declare module '@vue/runtime-dom' {
+  interface ComponentCustomProperties extends NuxtAppInjections { }
+}
+
 declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
