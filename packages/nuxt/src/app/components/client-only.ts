@@ -68,7 +68,6 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     const nuxtApp = useNuxtApp()
     const mounted$ = ref(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
- 
 
     if (import.meta.server || nuxtApp.isHydrating) {
       const attrs = { ...instance.attrs }
