@@ -59,7 +59,7 @@
       class="no-state-hidden"
     />
 
-    <WrapClientComponent v-if="displayHidden" />
+    <WrapClientComponent v-if="show" />
     <button
       class="test-ref-1"
       @click="stringStatefulComp.add"
@@ -91,18 +91,13 @@
     >
       Show all
     </button>
-    <button
-      @click="displayHidden = !displayHidden"
-    >
-      Display hidden
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
 // bypass client import protection to ensure this is treeshaken from .client components
 import BreaksServer from '~~/components/BreaksServer.client'
-const displayHidden = ref(false)
+
 type Comp = { add: () => void }
 const stringStatefulComp = ref<Comp>(null)
 const stringStatefulScriptComp = ref<Comp>(null)
