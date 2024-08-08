@@ -38,7 +38,7 @@ function _loadAsyncComponent (component: Component) {
 }
 
 /** @since 3.0.0 */
-export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
+export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<unknown>> } = useRouter()): Promise<void> {
   if (import.meta.server) { return }
 
   const { path, matched } = router.resolve(to)
@@ -61,7 +61,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     .filter(component => typeof component === 'function')
 
   for (const component of components) {
-    const promise = Promise.resolve((component as Function)())
+    const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
       .finally(() => promises.splice(promises.indexOf(promise)))
     promises.push(promise)

@@ -77,7 +77,7 @@ interface RouterHooks {
 interface Router {
   currentRoute: Ref<Route>
   isReady: () => Promise<void>
-  options: {}
+  options: Record<string, unknown>
   install: () => Promise<void>
   // Navigation
   push: (url: string) => Promise<void>

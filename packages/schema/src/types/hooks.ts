@@ -60,6 +60,7 @@ export type NuxtLayout = {
   file: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ImportPresetWithDeprecation extends InlinePreset {
 }
 
