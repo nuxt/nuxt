@@ -1,5 +1,6 @@
 import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
+import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import { getFragmentHTML } from './utils'
 
@@ -42,7 +43,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   const clone = { ...component }
 
   if (clone.render) {
-    // override the component render (non script setup component)
+    // override the component render (non script setup component) or dev mode
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => {
       // import.meta.client for server-side treeshakking
       if (import.meta.client && ($setup.mounted$ ?? ctx.mounted$)) {
@@ -65,7 +66,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(false)
+    const mounted$ = ref(!nuxtApp.isHydrating)
     const instance = getCurrentInstance()!
 
     if (import.meta.server || nuxtApp.isHydrating) {
@@ -87,14 +88,13 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
       mounted$.value = true
     })
 
-    return Promise.resolve(component.setup?.(props, ctx) || {})
-      .then((setupState) => {
+    const setupState = component.setup?.(props, ctx) || {}
+
+    if (isPromise(setupState)) {
+      return Promise.resolve(setupState).then((setupState) => {
         if (typeof setupState !== 'function') {
           setupState = setupState || {}
           setupState.mounted$ = mounted$
-          if (import.meta.client && !nuxtApp.isHydrating) {
-            setupState.mounted$ = true
-          }
           return setupState
         }
         return (...args: any[]) => {
@@ -109,6 +109,9 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           }
         }
       })
+    } else {
+      return typeof setupState === 'function' ? setupState : ({ ...setupState, mounted$ })
+    }
   }
 
   cache.set(component, clone)

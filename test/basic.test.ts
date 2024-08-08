@@ -398,6 +398,7 @@ describe('pages', () => {
     await Promise.all(hiddenSelectors.map(selector => page.locator(selector).isVisible()))
       .then(results => results.forEach(isVisible => expect(isVisible).toBeTruthy()))
 
+    await page.waitForEvent('console', consoleLog => consoleLog.text() === 'has $el')
     expect(pageErrors).toEqual([])
     await page.close()
     // don't expect any errors or warning on client-side navigation
