@@ -55,6 +55,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
 }, { framework: 'rollup' }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (treeshakeTemplatePlugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
       sourceType: 'module',
@@ -79,6 +80,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
     build: { sourcemap: false },
     define: {},
   })
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (plugin.transform! as Function).call({
     parse: (code: string, opts: any = {}) => Parser.parse(code, {
       sourceType: 'module',

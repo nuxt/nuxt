@@ -130,6 +130,14 @@ declare module '#app' {
   }
 }
 
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties extends NuxtAppInjections { }
+}
+
+declare module '@vue/runtime-dom' {
+  interface ComponentCustomProperties extends NuxtAppInjections { }
+}
+
 declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
@@ -341,9 +349,10 @@ import { defuFn } from 'defu'
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
+import { updateAppConfig } from '#app/config'
+
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
-  const { updateAppConfig } = await import('#app/config')
   import.meta.hot.accept((newModule) => {
     updateAppConfig(newModule.default)
   })

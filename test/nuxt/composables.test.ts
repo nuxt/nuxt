@@ -2,6 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
+import { destr } from 'destr'
 
 import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
@@ -486,7 +487,7 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -501,7 +502,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -516,7 +517,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()
@@ -689,6 +690,38 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(-1)
     user.value.score++
     expect(computedVal.value).toBe(0)
+  })
+
+  it('cookie decode function should be invoked once', () => {
+    // Pre-set cookies
+    document.cookie = 'foo=Foo'
+    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
+    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
+
+    let barCallCount = 0
+    const bazCookie = useCookie<{ s2: number }>('baz', {
+      default: () => ({ s2: -1 }),
+      decode (value) {
+        barCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    bazCookie.value.s2++
+    expect(bazCookie.value.s2).toEqual(1)
+    expect(barCallCount).toBe(1)
+
+    let quxCallCount = 0
+    const quxCookie = useCookie<{ s3: number }>('qux', {
+      default: () => ({ s3: -1 }),
+      filter: key => key === 'bar' || key === 'baz',
+      decode (value) {
+        quxCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    quxCookie.value.s3++
+    expect(quxCookie.value.s3).toBe(0)
+    expect(quxCallCount).toBe(2)
   })
 
   it('should not watch custom cookie refs when shallow', () => {
