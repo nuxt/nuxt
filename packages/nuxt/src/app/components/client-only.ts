@@ -66,8 +66,9 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(!nuxtApp.isHydrating)
+    const mounted$ = ref(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
+ 
 
     if (import.meta.server || nuxtApp.isHydrating) {
       const attrs = { ...instance.attrs }
@@ -87,7 +88,6 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     onMounted(() => {
       mounted$.value = true
     })
-
     const setupState = component.setup?.(props, ctx) || {}
 
     if (isPromise(setupState)) {
@@ -110,7 +110,11 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
         }
       })
     } else {
-      return typeof setupState === 'function' ? setupState : ({ ...setupState, mounted$ })
+      return typeof setupState === 'function'
+        ? (...args: any[]) => mounted$.value
+            ? h(setupState(...args))
+            : h('div', ctx.attrs)
+        : ({ ...setupState, mounted$ })
     }
   }
 
