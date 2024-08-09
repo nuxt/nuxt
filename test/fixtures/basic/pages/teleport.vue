@@ -1,6 +1,6 @@
 <template>
   <div>
-    <teleport to="body">
+    <teleport to="#teleports">
       <div>Teleport</div>
     </teleport>
     <h1>Normal content</h1>
