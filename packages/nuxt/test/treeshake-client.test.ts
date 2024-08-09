@@ -127,10 +127,10 @@ describe('treeshake client only in ssr', () => {
     const ssrResult = await SFCCompile(`SomeComponent${state.index}.vue`, WithClientOnly, state.options, true)
 
     const treeshaken = await treeshake(ssrResult)
-    const [_, scopeId] = clientResult.match(/_pushScopeId\("(.*)"\)/)!
+    const [_, scopeId] = clientResult.match(/['"]__scopeId['"],\s*['"](data-v-[^'"]+)['"]/)!
 
     // ensure the id is correctly passed between server and client
-    expect(clientResult).toContain(`pushScopeId("${scopeId}")`)
+    expect(clientResult).toContain(`'__scopeId',"${scopeId}"`)
     expect(treeshaken).toContain(`<div ${scopeId}>`)
 
     expect(clientResult).toContain('should-be-treeshaken')
