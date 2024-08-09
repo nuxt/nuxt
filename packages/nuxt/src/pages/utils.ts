@@ -13,7 +13,7 @@ import { walk } from 'estree-walker'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
-import { uniqueBy } from '../core/utils'
+import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
 import { distDir } from '../dirs'
 
@@ -58,7 +58,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   // sort scanned files using en-US locale to make the result consistent across different system locales
   scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
-  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
+  const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
     shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
   })
 
@@ -144,7 +144,12 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !augmentedPages.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      Object.assign(route, await getRouteMeta(fileContent, route.file))
+      const routeMeta = await getRouteMeta(fileContent, route.file)
+      if (route.meta) {
+        routeMeta.meta = { ...routeMeta.meta, ...route.meta }
+      }
+
+      Object.assign(route, routeMeta)
       augmentedPages.add(route.file)
     }
 
@@ -183,7 +188,8 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
 
   if (absolutePath in metaCache) { return metaCache[absolutePath] }
 
-  const script = extractScriptContent(contents)
+  const loader = getLoader(absolutePath)
+  const script = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : { code: contents, loader }
   if (!script) {
     metaCache[absolutePath] = {}
     return {}

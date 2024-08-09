@@ -533,8 +533,7 @@ describe('pages', () => {
     await clientInitialPage.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/client-only-page/normal')
 
     // that page should be client rendered
-    // TODO: investigate why multiple elements are appearing on page
-    expect(await clientInitialPage.locator('#server-rendered').first().textContent()).toMatchInlineSnapshot('"false"')
+    expect(await clientInitialPage.locator('#server-rendered').textContent()).toMatchInlineSnapshot('"false"')
     // and not contain any errors or warnings
     expect(errors.length).toBe(0)
 
@@ -591,7 +590,7 @@ describe('nuxt composables', () => {
       },
     })
     const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/"')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/"')
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -2127,7 +2126,7 @@ describe('component islands', () => {
             "props": [],
           },
           "fallback": {
-            "fallback": "<!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><!--teleport anchor-->",
+            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
                 "t": "fall",
@@ -2138,7 +2137,7 @@ describe('component islands', () => {
             ],
           },
           "hello": {
-            "fallback": "<!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
+            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
             "props": [
               {
                 "t": 0,
@@ -2222,7 +2221,7 @@ describe('component islands', () => {
         "multiplier": 1,
       }
     `)
-      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot('"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"')
+      expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
     })
   }
 
@@ -2604,7 +2603,7 @@ describe('teleports', () => {
     const html = await $fetch<string>('/nuxt-teleport')
 
     // Teleport is appended to body, after the __nuxt div
-    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div></div><span id="nuxt-teleport"><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div></div><span id="nuxt-teleport"><!--teleport start anchor--><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
   })
 })
 

@@ -66,7 +66,7 @@ export default defineUntypedSchema({
      * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
      * @example
      * ```js
-     transpile: [({ isLegacy }) => isLegacy && 'ky']
+     * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */

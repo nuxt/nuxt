@@ -42,6 +42,7 @@ export interface PageMeta {
 }
 
 declare module 'vue-router' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface RouteMeta extends UnwrapRef<PageMeta> {}
 }
 
@@ -60,7 +61,7 @@ export const definePageMeta = (meta: PageMeta): void => {
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
-      if (isRouteComponent || isRenderingServerPage) {
+      if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
         // don't warn if it's being used in a route component (or server page)
         return
       }
