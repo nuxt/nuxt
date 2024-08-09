@@ -27,6 +27,7 @@ export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig
 
 export type NuxtPage = {
   name?: string
+  group?: string
   path: string
   file?: string
   meta?: Record<string, any>

@@ -23,6 +23,7 @@ enum SegmentParserState {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 enum SegmentTokenType {
@@ -30,6 +31,7 @@ enum SegmentTokenType {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 interface SegmentToken {
@@ -93,6 +95,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     const route: NuxtPage = {
       name: '',
       path: '',
+      group: undefined,
       file: file.absolutePath,
       children: [],
     }
@@ -101,6 +104,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     let parent = routes
 
     const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith(')')) {
+      continue
+    }
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
@@ -115,10 +121,14 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
-      const segmentName = tokens.map(({ value }) => value).join('')
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
+      const groupName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? value : '').join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
+      if (groupName) {
+        route.group = groupName
+      }
 
       // ex: parent.vue + parent/child.vue
       const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
@@ -328,7 +338,9 @@ function parseSegment (segment: string) {
             ? SegmentTokenType.dynamic
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
-              : SegmentTokenType.catchall,
+              : state === SegmentParserState.catchall
+                ? SegmentTokenType.catchall
+                : SegmentTokenType.group,
       value: buffer,
     })
 
@@ -341,8 +353,8 @@ function parseSegment (segment: string) {
     switch (state) {
       case SegmentParserState.initial:
         buffer = ''
-        if (c === '[') {
-          state = SegmentParserState.dynamic
+        if (c === '[' || c === '(') {
+          state = c === '[' ? SegmentParserState.dynamic : SegmentParserState.group
         } else {
           i--
           state = SegmentParserState.static
@@ -350,9 +362,9 @@ function parseSegment (segment: string) {
         break
 
       case SegmentParserState.static:
-        if (c === '[') {
+        if (c === '[' || c === '(') {
           consumeBuffer()
-          state = SegmentParserState.dynamic
+          state = c === '[' ? SegmentParserState.dynamic : SegmentParserState.group
         } else {
           buffer += c
         }
@@ -361,6 +373,7 @@ function parseSegment (segment: string) {
       case SegmentParserState.catchall:
       case SegmentParserState.dynamic:
       case SegmentParserState.optional:
+      case SegmentParserState.group:
         if (buffer === '...') {
           buffer = ''
           state = SegmentParserState.catchall
@@ -375,12 +388,17 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
+        } else if (c === ')' && state === SegmentParserState.group) {
+          if (!buffer) {
+            throw new Error('Empty group')
+          } else {
+            consumeBuffer()
+          }
+          state = SegmentParserState.initial
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
-        } else {
-
-          // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }
+
         break
     }
     i++
