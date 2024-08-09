@@ -1,10 +1,11 @@
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import createResolver from 'postcss-import-resolver'
 import { interopDefault } from 'mlly'
-import { requireModule, tryResolveModule } from '@nuxt/kit'
+import { requireModule, resolveAlias, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'postcss'
+import { isAbsolute, resolve } from 'pathe'
 
 const isPureObject = (obj: unknown): obj is object => obj !== null && !Array.isArray(obj) && typeof obj === 'object'
 
@@ -47,16 +48,25 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
-      const path = await tryResolveModule(pluginName, nuxt.options.modulesDir)
-
+      let pluginPath: string | undefined = resolveAlias(pluginName, nuxt.options.alias)
       let pluginFn: (opts: Record<string, any>) => Plugin
+
+      if (pluginPath[0] === '.') {
+        pluginPath = resolve(nuxt.options.rootDir, pluginPath)
+      }
+
+      const path = await tryResolveModule(pluginPath, nuxt.options.modulesDir)
+
       // TODO: use jiti v2
       if (path) {
         pluginFn = await import(pathToFileURL(path).href).then(interopDefault)
       } else {
-        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\` with ESM. Please report this as a bug.`)
+        // warn for libraries, not for local plugins
+        if (!isAbsolute(pluginPath)) {
+          console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\` with ESM. Please report this as a bug.`)
+        }
         // fall back to cjs
-        pluginFn = requireModule(pluginName, { paths: [cwd] })
+        pluginFn = requireModule(pluginPath, { paths: [cwd] })
       }
       if (typeof pluginFn === 'function') {
         plugins.push(pluginFn(pluginOptions))
