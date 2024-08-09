@@ -348,6 +348,7 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'home',
           path: '/',
           file: `${pagesDir}/index.vue`,
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
           children: [],
         },
       ],
