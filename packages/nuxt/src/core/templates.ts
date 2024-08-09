@@ -117,7 +117,7 @@ export const pluginsDeclaration: NuxtTemplate = {
       const pluginPath = resolve(typesDir, plugin.src)
       const relativePath = relative(typesDir, pluginPath)
 
-      const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?js$/, '.d.$<letter>ts')
+      const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
