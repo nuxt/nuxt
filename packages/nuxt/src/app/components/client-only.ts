@@ -1,4 +1,4 @@
-import { cloneVNode, createElementBlock, createStaticVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
+import { cloneVNode, createElementBlock, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, onMounted, provide, ref } from 'vue'
 import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from 'vue'
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
@@ -66,7 +66,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(nuxtApp.isHydrating === false)
+    const mounted$ = ref(import.meta.client && nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
 
     if (import.meta.server || nuxtApp.isHydrating) {
@@ -109,11 +109,18 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
         }
       })
     } else {
-      return typeof setupState === 'function'
-        ? (...args: any[]) => mounted$.value
-            ? h(setupState(...args))
-            : h('div', ctx.attrs)
-        : ({ ...setupState, mounted$ })
+      if (typeof setupState === 'function') {
+        return (...args: any[]) => {
+          if (mounted$.value) {
+            return h(setupState(...args), ctx.attrs)
+          }
+          const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
+          return import.meta.client
+            ? createStaticVNode(fragment.join(''), fragment.length) :
+            h('div', ctx.attrs)
+        }
+      }
+      return Object.assign(setupState, { mounted$ })
     }
   }
 
