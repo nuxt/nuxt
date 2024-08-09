@@ -233,7 +233,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:sources', (sources) => {
       const routerImports = sources.find(s => s.from === '#app/composables/router' && s.imports.includes('onBeforeRouteLeave'))
       if (routerImports) {
-        routerImports.from = 'vue-router'
+        routerImports.from = 'vue-router/dist/vue-router.d.ts'
       }
     })
 
@@ -336,7 +336,7 @@ export default defineNuxtModule({
     nuxt.hook('imports:extend', (imports) => {
       imports.push(
         { name: 'definePageMeta', as: 'definePageMeta', from: resolve(runtimeDir, 'composables') },
-        { name: 'useLink', as: 'useLink', from: 'vue-router' },
+        { name: 'useLink', as: 'useLink', from: 'vue-router/dist/vue-router.d.ts' },
       )
       if (nuxt.options.experimental.inlineRouteRules) {
         imports.push({ name: 'defineRouteRules', as: 'defineRouteRules', from: resolve(runtimeDir, 'composables') })
