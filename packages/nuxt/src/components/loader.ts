@@ -21,7 +21,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
-
+  const clientDelayedComponentRuntime = resolve(distDir, 'components/runtime/client-delayed-component')
   return {
     name: 'nuxt:components-loader',
     enforce: 'post',
@@ -41,13 +41,16 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const imports = new Set<string>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
-
+      const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
-        const component = findComponent(components, name, options.mode)
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?(Idle|Visible|idle-|visible-|Event|event-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
+        const normalComponent = findComponent(components, name, options.mode)
+        const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
+        const component = normalComponent || modifierComponent
+
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install && tryUseNuxt()?.options.test === false) {
+          if (component._internal_install && nuxt?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
@@ -73,8 +76,31 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
 
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
-            identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            if (modifier && normalComponent && nuxt?.options.experimental.delayedHydration === true) {
+              switch (modifier) {
+                case 'Visible':
+                case 'visible-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOComponent' }]))
+                  identifier += '_delayedIO'
+                  imports.add(`const ${identifier} = createLazyIOComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  break
+                case 'Event':
+                case 'event-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyEventComponent' }]))
+                  identifier += '_delayedEvent'
+                  imports.add(`const ${identifier} = createLazyEventComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  break
+                case 'Idle':
+                case 'idle-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkComponent' }]))
+                  identifier += '_delayedNetwork'
+                  imports.add(`const ${identifier} = createLazyNetworkComponent(__defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)))`)
+                  break
+              }
+            } else {
+              identifier += '_lazy'
+              imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            }
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
