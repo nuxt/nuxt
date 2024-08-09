@@ -148,6 +148,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   if (!ctx.nuxt.options.ssr) {
+    await writeManifest(ctx)
     await onBuild()
     return
   }
