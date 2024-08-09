@@ -240,14 +240,16 @@ export function useAsyncData<
   options.dedupe = options.dedupe ?? 'cancel'
 
   // TODO: make more precise when v4 lands
-  const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
+  // Currently we get the cachedData (result of options.getCachedData) and
+  // use it to derive the hasCachedData boolean
+  const cachedData = options.getCachedData(key, nuxtApp)
+  const hasCachedData = () => cachedData !== undefined
 
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
-    const cachedData = options.getCachedData!(key, nuxtApp)
     nuxtApp._asyncData[key] = {
       data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
       pending: ref(!hasCachedData()),
@@ -271,9 +273,23 @@ export function useAsyncData<
       }
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
-    // Avoid fetching same key that is already fetched
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return Promise.resolve(options.getCachedData!(key, nuxtApp))
+    // Avoid fetching same key that is already fetched in either case where we
+    // are in the _initial request or if we are still isHydrating and that
+    // opts._initial is undefined or true
+    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
+      // First assign the data cached already fetched once
+      let localCachedData = cachedData
+
+      // If we're not doing the initial fetch, update the cached data to
+      // see if there's an update to it
+      if (!opts._initial) {
+        localCachedData = options.getCachedData!(key, nuxtApp)
+      }
+
+      // If we have a cached data resolve with it
+      if (localCachedData) {
+        return Promise.resolve(localCachedData)
+      }
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
