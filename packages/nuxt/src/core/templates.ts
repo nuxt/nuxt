@@ -312,9 +312,16 @@ declare module 'nitropack/types' {
 
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
-  getContents: () => `
-export const useRuntimeConfig = () => window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config || {}
-`,
+  getContents: ({ nuxt }) => {
+    const appId = JSON.stringify(nuxt.options.appId)
+    return [
+      'export const useRuntimeConfig = () => ',
+      (!nuxt.options.future.multiApp
+        ? 'window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config'
+        : `window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config`)
+        || {},
+    ].join('\n')
+  },
 }
 
 export const appConfigDeclarationTemplate: NuxtTemplate = {
@@ -459,6 +466,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
+      `export const runningMultiApp = ${!!ctx.nuxt.options.future.multiApp}`,
     ].join('\n\n')
   },
 }
