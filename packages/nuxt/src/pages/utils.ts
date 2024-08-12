@@ -95,7 +95,6 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     const route: NuxtPage = {
       name: '',
       path: '',
-      group: undefined,
       file: file.absolutePath,
       children: [],
     }
@@ -122,13 +121,9 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 
       const tokens = parseSegment(segment)
       const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
-      const groupName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? value : '').join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
-      if (groupName) {
-        route.group = groupName
-      }
 
       // ex: parent.vue + parent/child.vue
       const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
