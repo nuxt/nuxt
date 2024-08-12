@@ -352,8 +352,10 @@ function parseSegment (segment: string) {
     switch (state) {
       case SegmentParserState.initial:
         buffer = ''
-        if (c === '[' || c === '(') {
-          state = c === '[' ? SegmentParserState.dynamic : SegmentParserState.group
+        if (c === '[') {
+          state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          state = SegmentParserState.group
         } else {
           i--
           state = SegmentParserState.static
@@ -361,9 +363,12 @@ function parseSegment (segment: string) {
         break
 
       case SegmentParserState.static:
-        if (c === '[' || c === '(') {
+        if (c === '[') {
           consumeBuffer()
-          state = c === '[' ? SegmentParserState.dynamic : SegmentParserState.group
+          state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          consumeBuffer()
+          state = SegmentParserState.group
         } else {
           buffer += c
         }
@@ -396,8 +401,9 @@ function parseSegment (segment: string) {
           state = SegmentParserState.initial
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
+        } else {
+          // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }
-
         break
     }
     i++
