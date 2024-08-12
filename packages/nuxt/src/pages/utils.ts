@@ -23,6 +23,7 @@ enum SegmentParserState {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 enum SegmentTokenType {
@@ -30,6 +31,7 @@ enum SegmentTokenType {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 interface SegmentToken {
@@ -115,7 +117,13 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
-      const segmentName = tokens.map(({ value }) => value).join('')
+
+      // Skip group segments
+      if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        continue
+      }
+
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
@@ -298,7 +306,9 @@ function getRoutePath (tokens: SegmentToken[]): string {
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
-            : encodePath(token.value).replace(/:/g, '\\:'))
+            : token.type === SegmentTokenType.group
+              ? ''
+              : encodePath(token.value).replace(/:/g, '\\:'))
     )
   }, '/')
 }
@@ -328,7 +338,9 @@ function parseSegment (segment: string) {
             ? SegmentTokenType.dynamic
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
-              : SegmentTokenType.catchall,
+              : state === SegmentParserState.catchall
+                ? SegmentTokenType.catchall
+                : SegmentTokenType.group,
       value: buffer,
     })
 
@@ -343,6 +355,8 @@ function parseSegment (segment: string) {
         buffer = ''
         if (c === '[') {
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          state = SegmentParserState.group
         } else {
           i--
           state = SegmentParserState.static
@@ -353,6 +367,9 @@ function parseSegment (segment: string) {
         if (c === '[') {
           consumeBuffer()
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          consumeBuffer()
+          state = SegmentParserState.group
         } else {
           buffer += c
         }
@@ -361,6 +378,7 @@ function parseSegment (segment: string) {
       case SegmentParserState.catchall:
       case SegmentParserState.dynamic:
       case SegmentParserState.optional:
+      case SegmentParserState.group:
         if (buffer === '...') {
           buffer = ''
           state = SegmentParserState.catchall
@@ -375,10 +393,16 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
+        } else if (c === ')' && state === SegmentParserState.group) {
+          if (!buffer) {
+            throw new Error('Empty group')
+          } else {
+            consumeBuffer()
+          }
+          state = SegmentParserState.initial
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
-
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }
         break

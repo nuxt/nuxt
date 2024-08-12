@@ -572,6 +572,14 @@ describe('pages', () => {
 
     await normalInitialPage.close()
   })
+
+  it('groups routes', async () => {
+    for (const targetRoute of ['/group-page', '/nested-group/group-page', '/nested-group']) {
+      const { status } = await fetch(targetRoute)
+
+      expect(status).toBe(200)
+    }
+  })
 })
 
 describe('nuxt composables', () => {
