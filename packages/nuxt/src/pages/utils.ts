@@ -103,9 +103,6 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     let parent = routes
 
     const lastSegment = segments[segments.length - 1]
-    if (lastSegment.endsWith(')')) {
-      continue
-    }
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
@@ -120,6 +117,12 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
+
+      // Skip group segments
+      if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        continue
+      }
+
       const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
@@ -302,7 +305,9 @@ function getRoutePath (tokens: SegmentToken[]): string {
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
-            : encodePath(token.value).replace(/:/g, '\\:'))
+            : token.type === SegmentTokenType.group
+              ? ''
+              : encodePath(token.value).replace(/:/g, '\\:'))
     )
   }, '/')
 }
