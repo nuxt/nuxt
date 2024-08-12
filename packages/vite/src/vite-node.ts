@@ -15,8 +15,6 @@ import { isCSS } from './utils'
 import { createIsExternal } from './utils/external'
 import { transpile } from './utils/transpile'
 
-const NEED_FRAME_ERRORS = ['PARSE_ERROR']
-
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 fixed for adding middlewares after setup
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
@@ -141,7 +139,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         web: [],
       },
     })
-    
+
     const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
@@ -164,11 +162,10 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
           code: 'VITE_ERROR',
           id: moduleId,
           stack: '',
-          message: err.message,
           ...err,
         }
 
-        if (!errorData.frame && NEED_FRAME_ERRORS.includes(errorData.code)) {
+        if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
           errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
         }
         throw createError({ data: errorData })
