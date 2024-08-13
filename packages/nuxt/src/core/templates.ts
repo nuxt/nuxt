@@ -186,24 +186,24 @@ export const schemaTemplate: NuxtTemplate = {
       ...modules.flatMap(([configKey, importName, mod]) => {
         let link: string | undefined
 
-        // If it's not a local module, provide a link
+        // If it's not a local module, provide a link based on its name
         if (!mod.meta?.rawPath) {
           link = `https://www.npmjs.com/package/${importName}`
+        }
 
-          if (typeof mod.meta?.docs === 'string') {
-            link = mod.meta.docs
-          } else if (mod.meta?.repository) {
-            if (typeof mod.meta.repository === 'string') {
-              link = mod.meta.repository
-            } else if (typeof mod.meta.repository.url === 'string') {
-              link = mod.meta.repository.url
-            }
-            if (link?.startsWith('git+')) {
-              link = link.replace(/^git\+/, '')
-            }
-            if (!link?.startsWith('http')) {
-              link = 'https://github.com/' + link
-            }
+        if (typeof mod.meta?.docs === 'string') {
+          link = mod.meta.docs
+        } else if (mod.meta?.repository) {
+          if (typeof mod.meta.repository === 'string') {
+            link = mod.meta.repository
+          } else if (typeof mod.meta.repository.url === 'string') {
+            link = mod.meta.repository.url
+          }
+          if (link?.startsWith('git+')) {
+            link = link.replace(/^git\+/, '')
+          }
+          if (link && !link?.startsWith('http')) {
+            link = 'https://github.com/' + link
           }
         }
 
