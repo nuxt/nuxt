@@ -56,7 +56,7 @@
     "@eslint/js": "9.9.0",
     "@nuxt/eslint-config": "0.5.0",
     "@nuxt/kit": "workspace:*",
-    "@nuxt/test-utils": "3.14.0",
+    "@nuxt/test-utils": "3.14.1",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",

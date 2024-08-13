@@ -42,8 +42,8 @@ importers:
         specifier: workspace:*
         version: link:packages/kit
       '@nuxt/test-utils':
-        specifier: 3.14.0
-        version: 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
+        specifier: 3.14.1
+        version: 3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -1913,8 +1913,8 @@ packages:
     resolution: {integrity: sha512-KH6wxzsNys69daSO0xUv0LEBAfhwwjK1M+0Cdi1/vxmifCslMIY7lN11B4eywSfscbyVPAYJvANyc7XiVPImBQ==}
     hasBin: true
 
-  '@nuxt/test-utils@3.14.0':
-    resolution: {integrity: sha512-8HJOvGChQ70s6RKduKlrNABJXizNCLodBRbgepa4RYA3QFv2KrTxLvlHlhEUwd9r2E55LcQacv9P7Er47Z2GaA==}
+  '@nuxt/test-utils@3.14.1':
+    resolution: {integrity: sha512-D8F18hnOHQSarKnzsLORRXzFPlI9Y5fcQFRKwJgGhnejlIRX6sFvVnyl2SDgCvoV+F2x2czQsdGkwg51iWAshA==}
     engines: {node: '>=18.20.4'}
     peerDependencies:
       '@cucumber/cucumber': ^10.3.1
@@ -8621,7 +8621,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.7.0
 
-  '@nuxt/test-utils@3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))':
+  '@nuxt/test-utils@3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
@@ -15289,7 +15289,7 @@ snapshots:
 
   vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4)):
     dependencies:
-      '@nuxt/test-utils': 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
+      '@nuxt/test-utils': 3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
