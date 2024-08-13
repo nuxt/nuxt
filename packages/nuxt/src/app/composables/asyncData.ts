@@ -240,14 +240,15 @@ export function useAsyncData<
   options.dedupe = options.dedupe ?? 'cancel'
 
   // Create or use a shared asyncData entity
+  const initialCachedData = options.getCachedData!(key, nuxtApp)
+  const hasCachedData = typeof initialCachedData !== 'undefined'
+
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
-    const cachedData = options.getCachedData!(key, nuxtApp)
-    const hasCachedData = typeof cachedData !== 'undefined'
     nuxtApp._asyncData[key] = {
-      data: _ref(hasCachedData ? cachedData : options.default!()),
+      data: _ref(hasCachedData ? initialCachedData : options.default!()),
       pending: ref(!hasCachedData),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
@@ -270,9 +271,11 @@ export function useAsyncData<
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    const cachedData = opts._initial ? nuxtApp._asyncData[key]!.data.value : options.getCachedData!(key, nuxtApp)
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && typeof cachedData !== 'undefined') {
-      return Promise.resolve(cachedData)
+    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
+      const cachedData = opts._initial ? initialCachedData : options.getCachedData!(key, nuxtApp)
+      if (typeof cachedData !== 'undefined') {
+        return Promise.resolve(cachedData)
+      }
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -361,7 +364,7 @@ export function useAsyncData<
       onUnmounted(() => cbs.splice(0, cbs.length))
     }
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || typeof nuxtApp._asyncData[key].data.value !== 'undefined')) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || typeof initialCachedData !== 'undefined')) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
