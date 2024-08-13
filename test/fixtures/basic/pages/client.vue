@@ -1,7 +1,7 @@
 <script setup lang="ts">
 // explicit import to bypass client import protection
 import BreaksServer from '../components/BreaksServer.client'
-// ensure treeshake-client-only module remove theses imports without breaking
+// ensure treeshake-client-only module remove these imports without breaking
 import TestGlobal from '../components/global/TestGlobal.vue'
 // direct import of .client components should be treeshaken
 import { FunctionalComponent, LazyClientOnlyScript } from '#components'

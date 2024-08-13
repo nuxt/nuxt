@@ -601,6 +601,37 @@ describe('pages:generateRoutesFromFiles', () => {
         },
       ],
     },
+    {
+      description: 'should handle route groups',
+      files: [
+        { path: `${pagesDir}/(foo)/index.vue` },
+        { path: `${pagesDir}/(foo)/about.vue` },
+        { path: `${pagesDir}/(bar)/about/index.vue` },
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/(foo)/index.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          path: '/about',
+          file: `${pagesDir}/(foo)/about.vue`,
+          meta: undefined,
+          children: [
+
+            {
+              name: 'about',
+              path: '',
+              file: `${pagesDir}/(bar)/about/index.vue`,
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}

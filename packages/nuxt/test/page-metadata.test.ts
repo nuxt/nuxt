@@ -10,6 +10,16 @@ describe('page metadata', () => {
     expect(await getRouteMeta('<template><div>Hi</div></template>', filePath)).toEqual({})
   })
 
+  it('should extract metadata from JS/JSX files', async () => {
+    const fileContents = `definePageMeta({ name: 'bar' })`
+    for (const ext of ['js', 'jsx', 'ts', 'tsx', 'mjs', 'cjs']) {
+      const meta = await getRouteMeta(fileContents, `/app/pages/index.${ext}`)
+      expect(meta).toStrictEqual({
+        name: 'bar',
+      })
+    }
+  })
+
   it('should use and invalidate cache', async () => {
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
     const meta = await getRouteMeta(fileContents, filePath)
