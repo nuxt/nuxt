@@ -239,20 +239,16 @@ export function useAsyncData<
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
 
-  // TODO: make more precise when v4 lands
-  // Currently we get the cachedData (result of options.getCachedData) and
-  // use it to derive the hasCachedData boolean
-  const cachedData = options.getCachedData(key, nuxtApp)
-  const hasCachedData = () => cachedData !== undefined
-
   // Create or use a shared asyncData entity
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
+    const cachedData = options.getCachedData!(key, nuxtApp)
+    const hasCachedData = typeof cachedData !== 'undefined'
     nuxtApp._asyncData[key] = {
-      data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
-      pending: ref(!hasCachedData()),
+      data: _ref(hasCachedData ? cachedData : options.default!()),
+      pending: ref(!hasCachedData),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
       _default: options.default!,
@@ -273,23 +269,10 @@ export function useAsyncData<
       }
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
-    // Avoid fetching same key that is already fetched in either case where we
-    // are in the _initial request or if we are still isHydrating and that
-    // opts._initial is undefined or true
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
-      // First assign the data cached already fetched once
-      let localCachedData = cachedData
-
-      // If we're not doing the initial fetch, update the cached data to
-      // see if there's an update to it
-      if (!opts._initial) {
-        localCachedData = options.getCachedData!(key, nuxtApp)
-      }
-
-      // If we have a cached data resolve with it
-      if (localCachedData) {
-        return Promise.resolve(localCachedData)
-      }
+    // Avoid fetching same key that is already fetched
+    const cachedData = opts._initial ? nuxtApp._asyncData[key]!.data.value : options.getCachedData!(key, nuxtApp)
+    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && typeof cachedData !== 'undefined') {
+      return Promise.resolve(cachedData)
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -378,7 +361,7 @@ export function useAsyncData<
       onUnmounted(() => cbs.splice(0, cbs.length))
     }
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData())) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || typeof nuxtApp._asyncData[key].data.value !== 'undefined')) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
