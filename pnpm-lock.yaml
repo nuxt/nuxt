@@ -31,8 +31,8 @@ importers:
         specifier: workspace:*
         version: link:packages/kit
       '@nuxt/test-utils':
-        specifier: 3.14.0
-        version: 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
+        specifier: 3.14.1
+        version: 3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -2178,8 +2178,8 @@ packages:
     resolution: {integrity: sha512-KH6wxzsNys69daSO0xUv0LEBAfhwwjK1M+0Cdi1/vxmifCslMIY7lN11B4eywSfscbyVPAYJvANyc7XiVPImBQ==}
     hasBin: true
 
-  '@nuxt/test-utils@3.14.0':
-    resolution: {integrity: sha512-8HJOvGChQ70s6RKduKlrNABJXizNCLodBRbgepa4RYA3QFv2KrTxLvlHlhEUwd9r2E55LcQacv9P7Er47Z2GaA==}
+  '@nuxt/test-utils@3.14.1':
+    resolution: {integrity: sha512-D8F18hnOHQSarKnzsLORRXzFPlI9Y5fcQFRKwJgGhnejlIRX6sFvVnyl2SDgCvoV+F2x2czQsdGkwg51iWAshA==}
     engines: {node: '>=18.20.4'}
     peerDependencies:
       '@cucumber/cucumber': ^10.3.1
@@ -4934,9 +4934,6 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-
-  h3-nightly@2.0.0-1718872656.6765a6e:
-    resolution: {integrity: sha512-LQ8hHOIzk+agD1p0K7UosByKuzDAKGLTnYsP0syV/XMr9E7pWmoaDSWkGdWjtLR9O3hinNqrXU1NW0kTmhiSag==}
 
   h3@1.12.0:
     resolution: {integrity: sha512-Zi/CcNeWBXDrFNlV0hUBJQR9F7a96RjMeAZweW/ZWkR9fuXrMcvKnSA63f/zZ9l0GgQOZDVHGvXivNN9PWOwhA==}
@@ -8998,7 +8995,7 @@ snapshots:
       '@vueuse/core': 10.11.0(vue@3.4.37(typescript@5.5.4))
       consola: 3.2.3
       defu: 6.1.4
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: 1.12.0
       magic-string: 0.30.11
       mlly: 1.7.1
       ofetch: 1.3.4
@@ -9073,7 +9070,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.7.0
 
-  '@nuxt/test-utils@3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))':
+  '@nuxt/test-utils@3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
@@ -12534,21 +12531,6 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3-nightly@2.0.0-1718872656.6765a6e:
-    dependencies:
-      cookie-es: 1.2.2
-      crossws: 0.2.4
-      defu: 6.1.4
-      destr: 2.0.3
-      iron-webcrypto: 1.2.1
-      ohash: 1.1.3
-      radix3: 1.1.2
-      ufo: 1.5.4
-      uncrypto: 0.1.3
-      unenv: 1.10.0
-    transitivePeerDependencies:
-      - uWebSockets.js
-
   h3@1.12.0:
     dependencies:
       cookie-es: 1.2.2
@@ -15762,7 +15744,7 @@ snapshots:
 
   vitest-environment-nuxt@1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4)):
     dependencies:
-      '@nuxt/test-utils': 3.14.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
+      '@nuxt/test-utils': 3.14.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.37)(vue@3.4.37(typescript@5.5.4)))(@vue/test-utils@2.4.6)(h3@1.12.0)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.7(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.46.0)(vite@5.4.0(@types/node@20.14.15)(sass@1.69.4)(terser@5.27.0))(vitest@2.0.5(@types/node@20.14.15)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.3(vue@3.4.37(typescript@5.5.4)))(vue@3.4.37(typescript@5.5.4))
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
