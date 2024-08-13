@@ -224,6 +224,17 @@ describe('useAsyncData', () => {
     `)
   })
 
+  it('should only call getCachedData once', async () => {
+    const getCachedData = vi.fn(() => ({ val: false }))
+    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData })
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": false,
+      }
+    `)
+    expect(getCachedData).toHaveBeenCalledTimes(1)
+  })
+
   it('should use default while pending', async () => {
     const promise = useAsyncData(() => Promise.resolve('test'), { default: () => 'default' })
     const { data, pending } = promise
