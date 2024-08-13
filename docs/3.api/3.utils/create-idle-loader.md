@@ -12,7 +12,7 @@ You can use this utility to customize the timeout of delayed hydration component
 
 ## Parameters
 
-- `options`: `{ timeout }`
+- `timeout` : `number`
 
 ## Example
 
@@ -21,7 +21,7 @@ If you would like to give a timeout of 5 seconds for the components:
 ```vue [pages/index.vue]
 <template>
   <div>
-    <LazyIdleMyComponent :hydrate="createIdleLoader({timeout: 3000})"/>
+    <LazyIdleMyComponent :hydrate="createIdleLoader(5000)"/>
   </div>
 <template>
 ```
@@ -29,5 +29,5 @@ If you would like to give a timeout of 5 seconds for the components:
 ::
 
 ::read-more{to="https://developer.mozilla.org/en-US/docs/Web/API/Window/requestIdleCallback"}
-This is based on the `requestIdleCallback` web API, and therefore only accepts the timeout prop, which should be a number.
+This is based on the `requestIdleCallback` web API, and therefore only accepts the time in milliseconds for the max idle callback duration, which should be a number.
 ::

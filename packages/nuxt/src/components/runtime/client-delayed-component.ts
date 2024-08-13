@@ -1,11 +1,7 @@
-import { createStaticVNode, defineComponent, getCurrentInstance, h, onBeforeUnmount, onMounted, ref } from 'vue'
-import type { Component, ComponentInternalInstance, Ref } from 'vue'
+import { defineAsyncComponent, defineComponent, getCurrentInstance, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnVisible } from 'vue'
+import type { AsyncComponentLoader } from 'vue'
 // import ClientOnly from '#app/components/client-only'
-import { getFragmentHTML } from '#app/components/utils'
 import { useNuxtApp } from '#app/nuxt'
-import { cancelIdleCallback, requestIdleCallback } from '#app/compat/idle-callback'
-import { onNuxtReady } from '#app'
-import { useIntersectionObserver } from '#app/utils'
 
 function elementIsVisibleInViewport (el: Element) {
   const { top, left, bottom, right } = el.getBoundingClientRect()
@@ -16,7 +12,7 @@ function elementIsVisibleInViewport (el: Element) {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIOComponent = (componentLoader: Component) => {
+export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
@@ -26,104 +22,48 @@ export const createLazyIOComponent = (componentLoader: Component) => {
 
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
-      const hasIntersected = ref(false)
-      const el: Ref<Element | null> = ref(null)
-      let unobserve: (() => void) | null = null
 
-      // todo can be refactored
-      if (instance.vnode.el && nuxt.isHydrating) {
-        hasIntersected.value = elementIsVisibleInViewport(instance.vnode.el as Element)
+      if (instance.vnode.el && nuxt.isHydrating && elementIsVisibleInViewport(instance.vnode.el as Element)) {
+        return h(componentLoader, attrs)
       }
 
-      if (!hasIntersected.value) {
-        onMounted(() => {
-          const observer = useIntersectionObserver(attrs.hydrate as Partial<IntersectionObserverInit> | undefined)
-          unobserve = observer!.observe(el.value as Element, () => {
-            hasIntersected.value = true
-            unobserve?.()
-            unobserve = null
-          })
-        })
-      }
-      onBeforeUnmount(() => {
-        unobserve?.()
-        unobserve = null
-      })
-      return () => {
-        return h('div', { ref: el }, [
-          hasIntersected.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null,
-        ])
-      }
+      return () => h(defineAsyncComponent({
+        loader: componentLoader,
+        hydrate: hydrateOnVisible(attrs.hydrate as IntersectionObserverInit | undefined),
+      }))
     },
   })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyNetworkComponent = (componentLoader: Component) => {
+export const createLazyNetworkComponent = (componentLoader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
         return () => h(componentLoader, attrs)
       }
-      const nuxt = useNuxtApp()
-      const instance = getCurrentInstance()!
-      const isIdle = ref(false)
-      let idleHandle: number | null = null
-      onMounted(() => {
-        onNuxtReady(() => {
-          idleHandle = requestIdleCallback(() => {
-            isIdle.value = true
-            cancelIdleCallback(idleHandle as unknown as number)
-            idleHandle = null
-          }, attrs.hydrate ?? { timeout: 10000 })
-        })
+      return () => defineAsyncComponent({
+        loader: componentLoader,
+        hydrate: hydrateOnIdle(attrs.hydrate as number | undefined),
       })
-      onBeforeUnmount(() => {
-        if (idleHandle) {
-          cancelIdleCallback(idleHandle as unknown as number)
-          idleHandle = null
-        }
-      })
-      return () => isIdle.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null
     },
   })
 }
 
-const eventsMapper = new WeakMap<ComponentInternalInstance, (() => void)[]>()
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyEventComponent = (componentLoader: Component) => {
+export const createLazyEventComponent = (componentLoader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
         return () => h(componentLoader, attrs)
       }
-      const nuxt = useNuxtApp()
-      const instance = getCurrentInstance()!
-      const isTriggered = ref(false)
-      const events: string[] = attrs.hydrate as string[] ?? ['mouseover']
-
-      const registeredEvents: (() => void)[] = []
-      if (!eventsMapper.has(instance)) {
-        onMounted(() => {
-          events.forEach((event) => {
-            const handler = () => {
-              isTriggered.value = true
-              registeredEvents.forEach(remove => remove())
-              eventsMapper.delete(instance)
-            }
-            instance.vnode.el?.addEventListener(event, handler)
-            registeredEvents.push(() => instance.vnode.el?.removeEventListener(event, handler))
-          })
-          eventsMapper.set(instance, registeredEvents)
-        })
-      }
-      onBeforeUnmount(() => {
-        registeredEvents?.forEach(remove => remove())
-        eventsMapper.delete(instance)
-      })
-      return () => isTriggered.value ? h(componentLoader, attrs) : (instance.vnode.el && nuxt.isHydrating) ? createStaticVNode(getFragmentHTML(instance.vnode.el ?? null, true)?.join('') || '', 1) : null
+      const events: Array<keyof HTMLElementEventMap> = attrs.hydrate as Array<keyof HTMLElementEventMap> ?? ['mouseover']
+      return () => h(defineAsyncComponent({
+        loader: componentLoader,
+        hydrate: hydrateOnInteraction(events),
+      }))
     },
   })
 }
