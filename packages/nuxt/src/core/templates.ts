@@ -199,11 +199,13 @@ export const schemaTemplate: NuxtTemplate = {
           } else if (typeof mod.meta.repository.url === 'string') {
             link = mod.meta.repository.url
           }
-          if (link?.startsWith('git+')) {
-            link = link.replace(/^git\+/, '')
-          }
-          if (link && !link?.startsWith('http')) {
-            link = 'https://github.com/' + link
+          if (link) {
+            if (link.startsWith('git+')) {
+              link = link.replace(/^git\+/, '')
+            }
+            if (!link.startsWith('http')) {
+              link = 'https://github.com/' + link
+            }
           }
         }
 
