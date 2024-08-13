@@ -99,7 +99,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
         },
         plugins: [
           // add resolver for files in public assets directories
-          VitePublicDirsPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server }),
+          VitePublicDirsPlugin.vite({
+            dev: nuxt.options.dev,
+            sourcemap: !!nuxt.options.sourcemap.server,
+            baseURL: nuxt.options.app.baseURL,
+          }),
           composableKeysPlugin.vite({
             sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
             rootDir: nuxt.options.rootDir,

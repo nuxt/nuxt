@@ -234,6 +234,25 @@
       "path": ""/parent"",
     },
   ],
+  "should handle route groups": [
+    {
+      "component": "() => import("pages/(foo)/index.vue").then(m => m.default || m)",
+      "name": ""index"",
+      "path": ""/"",
+    },
+    {
+      "children": [
+        {
+          "component": "() => import("pages/(bar)/about/index.vue").then(m => m.default || m)",
+          "name": ""about"",
+          "path": """",
+        },
+      ],
+      "component": "() => import("pages/(foo)/about.vue").then(m => m.default || m)",
+      "name": "mockMeta?.name",
+      "path": ""/about"",
+    },
+  ],
   "should handle trailing slashes with index routes": [
     {
       "children": [
