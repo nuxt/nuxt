@@ -152,7 +152,7 @@ export function useFetch<
   let controller: AbortController
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
-    controller?.abort?.('Duplicate request detected and aborted.')
+    controller?.abort?.('Request aborted as another request to the same endpoint was initiated.')
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
     /**
