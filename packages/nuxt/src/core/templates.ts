@@ -168,36 +168,74 @@ const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
-    const moduleInfo = nuxt.options._installedModules.map(m => ({
-      ...m.meta,
-      importName: m.entryPath || m.meta?.name,
-    })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
-
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName), meta])
+
+    const modules = nuxt.options._installedModules
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
+      .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
+
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    const moduleOptionsInterface = [
-      ...modules.map(([configKey, importName]) =>
-        `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
-      ),
-      modules.length > 0 ? `  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, meta]) => `[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
-    ]
+
+    const moduleOptionsInterface = (jsdocTags: boolean) => [
+      ...modules.flatMap(([configKey, importName, mod]) => {
+        let link: string | undefined
+
+        // If it's not a local module, provide a link based on its name
+        if (!mod.meta?.rawPath) {
+          link = `https://www.npmjs.com/package/${importName}`
+        }
+
+        if (typeof mod.meta?.docs === 'string') {
+          link = mod.meta.docs
+        } else if (mod.meta?.repository) {
+          if (typeof mod.meta.repository === 'string') {
+            link = mod.meta.repository
+          } else if (typeof mod.meta.repository.url === 'string') {
+            link = mod.meta.repository.url
+          }
+          if (link) {
+            if (link.startsWith('git+')) {
+              link = link.replace(/^git\+/, '')
+            }
+            if (!link.startsWith('http')) {
+              link = 'https://github.com/' + link
+            }
+          }
+        }
+
+        return [
+          `    /**`,
+          `     * Configuration for \`${importName}\``,
+          ...jsdocTags && link
+            ? [
+                `     * @see ${link}`,
+              ]
+            : [],
+          `     */`,
+          `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
+        ]
+      }),
+      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+    ].filter(Boolean)
+
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
       '  interface NuxtConfig {',
-      moduleOptionsInterface,
+      // TypeScript will duplicate the jsdoc tags if we augment it twice
+      // So here we only generate tags for `nuxt/schema`
+      ...moduleOptionsInterface(false),
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
       '  interface NuxtConfig {',
-      moduleOptionsInterface,
+      ...moduleOptionsInterface(true),
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
