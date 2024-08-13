@@ -1,5 +1,5 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'pathe'
+import { dirname, resolve } from 'pathe'
 
 import type { Plugin as RollupPlugin } from 'rollup'
 import type { Plugin as VitePlugin } from 'vite'
@@ -17,7 +17,7 @@ export const createSourcemapPreserver = () => {
       for (const chunk of Object.values(bundle)) {
         if (chunk.type !== 'chunk' || !chunk.map) { continue }
 
-        const id = join(outputDir, chunk.fileName)
+        const id = resolve(outputDir, chunk.fileName)
         ids.add(id)
         const dest = id + '.map.json'
         await mkdir(dirname(dest), { recursive: true })
