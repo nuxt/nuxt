@@ -85,6 +85,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
+            symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
             constBindings: true,
           },
         },
@@ -148,6 +149,7 @@ export async function buildServer (ctx: ViteBuildContext) {
   }
 
   if (!ctx.nuxt.options.ssr) {
+    await writeManifest(ctx)
     await onBuild()
     return
   }

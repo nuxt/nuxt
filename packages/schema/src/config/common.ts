@@ -14,9 +14,9 @@ export default defineUntypedSchema({
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
-   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
-   * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
-   * @see https://github.com/unjs/giget
+   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
+   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
+   * @see [`giget` documentation](https://github.com/unjs/giget)
    * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
@@ -179,7 +179,9 @@ export default defineUntypedSchema({
   },
 
   /**
-   * For multi-app projects, the unique name of the Nuxt application.
+   * For multi-app projects, the unique id of the Nuxt application.
+   *
+   * Defaults to `nuxt-app`.
    */
   appId: {
     $resolve: (val: string) => val ?? 'nuxt-app',

@@ -72,6 +72,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           : outputOptions.assetFileNames({
             type: 'asset',
             name: `${fileName}-styles.mjs`,
+            originalFileName: `${fileName}-styles.mjs`,
             source: '',
           })
 
@@ -97,6 +98,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       this.emitFile({
         type: 'asset',
         fileName: 'styles.mjs',
+        originalFileName: 'styles.mjs',
         source:
           [
             'const interopDefault = r => r.default || r || []',
