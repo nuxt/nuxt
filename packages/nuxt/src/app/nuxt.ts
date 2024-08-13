@@ -311,7 +311,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = !runningMultiApp ? window.__NUXT__ : window.__NUXT__?.[nuxtApp._name]
+    const __NUXT__ = !runningMultiApp ? window.__NUXT__ : window.__NUXT__?.[nuxtApp._id]
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {
