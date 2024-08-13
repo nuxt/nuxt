@@ -1,0 +1,17 @@
+name: reproduire-sur-stackblitz
+on:
+    issues:
+        types:
+            opened
+
+permissions:
+    issues: write
+
+jobs:
+    reproduire-sur-stackblitz:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: huang-julien/reproduire-sur-stackblitz@v1.0.0
+              with:
+                reproduction-heading: '### Reproduction'
