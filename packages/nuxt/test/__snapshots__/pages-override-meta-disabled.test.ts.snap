@@ -339,6 +339,34 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should handle route groups": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/(foo)/index.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "index"",
+      "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "component": "() => import("pages/(bar)/about/index.vue").then(m => m.default || m)",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "about"",
+          "path": "mockMeta?.path ?? """,
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/(foo)/about.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? undefined",
+      "path": "mockMeta?.path ?? "/about"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should handle trailing slashes with index routes": [
     {
       "alias": "mockMeta?.alias || []",

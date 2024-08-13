@@ -1,6 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
-import type { Nuxt } from '@nuxt/schema'
+import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { importModule, tryImportModule } from '../internal/esm'
 import type { LoadNuxtConfigOptions } from './config'
@@ -16,7 +16,7 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
   opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
-  opts.overrides = opts.overrides || (opts as any).config as {} /* backwards compat */ || {}
+  opts.overrides = opts.overrides || (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev

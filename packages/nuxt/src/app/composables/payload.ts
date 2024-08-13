@@ -1,7 +1,7 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance, onServerPrefetch } from 'vue'
+import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 
@@ -127,6 +127,10 @@ export async function getNuxtClientPayload () {
     ...inlineData,
     ...externalData,
     ...(!runningMultiApp ? window.__NUXT__ : window.__NUXT__![appId]),
+  }
+
+  if (payloadCache!.config?.public) {
+    payloadCache!.config.public = reactive(payloadCache!.config.public)
   }
 
   return payloadCache
