@@ -31,14 +31,10 @@ declare global {
   }
 }
 
-declare module 'vue' {
+declare module '@vue/runtime-core' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface App<HostElement> {
     $nuxt: NuxtApp
-  }
-  interface ComponentInternalInstance {
-    _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
-    _nuxtIdIndex?: Record<string, number>
   }
   interface ComponentCustomOptions {
     /**
@@ -47,10 +43,11 @@ declare module 'vue' {
      */
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
-}
-
-declare module '@vue/runtime-core' {
   interface ComponentCustomProperties {
     $nuxt: NuxtApp
+  }
+  interface ComponentInternalInstance {
+    _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
+    _nuxtIdIndex?: Record<string, number>
   }
 }
