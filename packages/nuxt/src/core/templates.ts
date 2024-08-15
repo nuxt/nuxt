@@ -246,7 +246,7 @@ export const schemaTemplate: NuxtTemplate = {
           indentation: 2,
         }),
       '}',
-      `declare module 'vue' {
+      `declare module '@vue/runtime-core' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }
