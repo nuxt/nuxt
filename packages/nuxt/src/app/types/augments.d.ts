@@ -36,9 +36,6 @@ declare module 'vue' {
   interface App<HostElement> {
     $nuxt: NuxtApp
   }
-  interface ComponentCustomProperties {
-    $nuxt: NuxtApp
-  }
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
     _nuxtIdIndex?: Record<string, number>
@@ -49,5 +46,11 @@ declare module 'vue' {
      * It will not be executed when using `defineComponent`.
      */
     head?(nuxtApp: NuxtApp): UseHeadInput
+  }
+}
+
+declare module '@vue/runtime-core' {
+  interface ComponentCustomProperties {
+    $nuxt: NuxtApp
   }
 }
