@@ -3,6 +3,7 @@ import type { ComponentInternalInstance, ComponentOptions, InjectionKey } from '
 import { isPromise } from '@vue/shared'
 import { useNuxtApp } from '../nuxt'
 import { getFragmentHTML } from './utils'
+import ServerPlaceholder from './server-placeholder'
 
 export const clientOnlySymbol: InjectionKey<boolean> = Symbol.for('nuxt:client-only')
 
@@ -36,6 +37,9 @@ const cache = new WeakMap()
 
 /* @__NO_SIDE_EFFECTS__ */
 export function createClientOnly<T extends ComponentOptions> (component: T) {
+  if (import.meta.server) {
+    return ServerPlaceholder
+  }
   if (cache.has(component)) {
     return cache.get(component)
   }
@@ -45,15 +49,14 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
   if (clone.render) {
     // override the component render (non script setup component) or dev mode
     clone.render = (ctx: any, cache: any, $props: any, $setup: any, $data: any, $options: any) => {
-      // import.meta.client for server-side treeshakking
-      if (import.meta.client && ($setup.mounted$ ?? ctx.mounted$)) {
+      if ($setup.mounted$ ?? ctx.mounted$) {
         const res = component.render?.bind(ctx)(ctx, cache, $props, $setup, $data, $options)
         return (res.children === null || typeof res.children === 'string')
           ? cloneVNode(res)
           : h(res)
       } else {
         const fragment = getFragmentHTML(ctx._.vnode.el ?? null) ?? ['<div></div>']
-        return import.meta.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.$attrs ?? ctx._.attrs)
+        return createStaticVNode(fragment.join(''), fragment.length)
       }
     }
   } else if (clone.template) {
@@ -66,10 +69,10 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
 
   clone.setup = (props, ctx) => {
     const nuxtApp = useNuxtApp()
-    const mounted$ = ref(import.meta.client && nuxtApp.isHydrating === false)
+    const mounted$ = ref(nuxtApp.isHydrating === false)
     const instance = getCurrentInstance()!
 
-    if (import.meta.server || nuxtApp.isHydrating) {
+    if (nuxtApp.isHydrating) {
       const attrs = { ...instance.attrs }
       // remove existing directives during hydration
       const directives = extractDirectives(instance)
@@ -97,14 +100,14 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
           return setupState
         }
         return (...args: any[]) => {
-          if (import.meta.client && (mounted$.value || !nuxtApp.isHydrating)) {
+          if (mounted$.value || !nuxtApp.isHydrating) {
             const res = setupState(...args)
             return (res.children === null || typeof res.children === 'string')
               ? cloneVNode(res)
               : h(res)
           } else {
             const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
-            return import.meta.client ? createStaticVNode(fragment.join(''), fragment.length) : h('div', ctx.attrs)
+            return createStaticVNode(fragment.join(''), fragment.length)
           }
         }
       })
@@ -115,9 +118,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
             return h(setupState(...args), ctx.attrs)
           }
           const fragment = getFragmentHTML(instance?.vnode.el ?? null) ?? ['<div></div>']
-          return import.meta.client
-            ? createStaticVNode(fragment.join(''), fragment.length) :
-            h('div', ctx.attrs)
+          return createStaticVNode(fragment.join(''), fragment.length)
         }
       }
       return Object.assign(setupState, { mounted$ })
