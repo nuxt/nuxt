@@ -291,6 +291,9 @@ importers:
       '@unhead/vue':
         specifier: ^1.9.16
         version: 1.9.16(vue@3.4.37(typescript@5.5.4))
+      '@vue/runtime-core':
+        specifier: ^3.4.37
+        version: 3.4.37
       '@vue/shared':
         specifier: ^3.4.37
         version: 3.4.37
