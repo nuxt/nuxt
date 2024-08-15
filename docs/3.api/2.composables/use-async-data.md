@@ -72,7 +72,7 @@ const { data: posts } = await useAsyncData(
   - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
-  - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
