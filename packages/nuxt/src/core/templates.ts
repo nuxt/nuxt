@@ -254,11 +254,13 @@ export const schemaTemplate: NuxtTemplate = {
           indentation: 2,
         }),
       '}',
-      `declare module 'vue' {
-        interface ComponentCustomProperties {
-          $config: RuntimeConfig
-        }
-      }`,
+      ...['vue', '@vue/runtime-core', '@vue/runtime-dom'].flatMap(mod => [
+        `declare module '${mod}' {`,
+        '  interface ComponentCustomProperties {',
+        '    $config: RuntimeConfig',
+        '  }',
+        `}`,
+      ]),
     ].join('\n')
   },
 }
