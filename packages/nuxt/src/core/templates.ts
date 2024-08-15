@@ -147,7 +147,7 @@ declare module '#app' {
   }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   interface ComponentCustomProperties extends NuxtAppInjections { }
 }
 
@@ -246,7 +246,7 @@ export const schemaTemplate: NuxtTemplate = {
           indentation: 2,
         }),
       '}',
-      `declare module '@vue/runtime-core' {
+      `declare module 'vue' {
         interface ComponentCustomProperties {
           $config: RuntimeConfig
         }

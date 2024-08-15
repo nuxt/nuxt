@@ -31,17 +31,10 @@ declare global {
   }
 }
 
-declare module '@vue/runtime-core' {
+declare module 'vue' {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface App<HostElement> {
     $nuxt: NuxtApp
-  }
-  interface ComponentCustomOptions {
-    /**
-     * Available exclusively for `defineNuxtComponent`.
-     * It will not be executed when using `defineComponent`.
-     */
-    head?(nuxtApp: NuxtApp): UseHeadInput
   }
   interface ComponentCustomProperties {
     $nuxt: NuxtApp
@@ -49,5 +42,12 @@ declare module '@vue/runtime-core' {
   interface ComponentInternalInstance {
     _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
     _nuxtIdIndex?: Record<string, number>
+  }
+  interface ComponentCustomOptions {
+    /**
+     * Available exclusively for `defineNuxtComponent`.
+     * It will not be executed when using `defineComponent`.
+     */
+    head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
