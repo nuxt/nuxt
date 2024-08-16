@@ -11,7 +11,7 @@ jobs:
     reproduire-sur-stackblitz:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - uses: huang-julien/reproduire-sur-stackblitz@v1.0.0
               with:
                 reproduction-heading: '### Reproduction'
