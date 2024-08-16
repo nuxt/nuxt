@@ -17,14 +17,14 @@ export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => 
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(componentLoader, attrs)
+        return () => h(defineAsyncComponent(componentLoader), attrs)
       }
 
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
 
       if (instance.vnode.el && nuxt.isHydrating && elementIsVisibleInViewport(instance.vnode.el as Element)) {
-        return h(componentLoader, attrs)
+        return () => h(defineAsyncComponent(componentLoader), attrs)
       }
 
       return () => h(defineAsyncComponent({
@@ -41,7 +41,7 @@ export const createLazyNetworkComponent = (componentLoader: AsyncComponentLoader
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(componentLoader, attrs)
+        return () => h(defineAsyncComponent(componentLoader), attrs)
       }
       return () => defineAsyncComponent({
         loader: componentLoader,
@@ -57,7 +57,7 @@ export const createLazyEventComponent = (componentLoader: AsyncComponentLoader) 
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(componentLoader, attrs)
+        return () => h(defineAsyncComponent(componentLoader), attrs)
       }
       const events: Array<keyof HTMLElementEventMap> = attrs.hydrate as Array<keyof HTMLElementEventMap> ?? ['mouseover']
       return () => h(defineAsyncComponent({
