@@ -1,5 +1,5 @@
 import { defineAsyncComponent, defineComponent, getCurrentInstance, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnVisible } from 'vue'
-import type { AsyncComponentLoader } from 'vue'
+import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
 // import ClientOnly from '#app/components/client-only'
 import { useNuxtApp } from '#app/nuxt'
 
@@ -11,6 +11,12 @@ function elementIsVisibleInViewport (el: Element) {
     ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
 }
 
+function delayedHydrationComponent(loader: AsyncComponentLoader, hydrate: HydrationStrategy) {
+  return defineAsyncComponent({
+    loader,
+    hydrate
+  })
+}
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => {
   return defineComponent({
@@ -27,10 +33,7 @@ export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => 
         return () => h(defineAsyncComponent(componentLoader), attrs)
       }
 
-      return () => h(defineAsyncComponent({
-        loader: componentLoader,
-        hydrate: hydrateOnVisible(attrs.hydrate as IntersectionObserverInit | undefined),
-      }))
+      return () => h(delayedHydrationComponent(componentLoader, hydrateOnVisible(attrs.hydrate as IntersectionObserverInit | undefined)))
     },
   })
 }
@@ -43,10 +46,7 @@ export const createLazyNetworkComponent = (componentLoader: AsyncComponentLoader
       if (import.meta.server) {
         return () => h(defineAsyncComponent(componentLoader), attrs)
       }
-      return () => defineAsyncComponent({
-        loader: componentLoader,
-        hydrate: hydrateOnIdle(attrs.hydrate as number | undefined),
-      })
+      return () => h(delayedHydrationComponent(componentLoader, hydrateOnIdle(attrs.hydrate as number | undefined)))
     },
   })
 }
@@ -60,10 +60,7 @@ export const createLazyEventComponent = (componentLoader: AsyncComponentLoader) 
         return () => h(defineAsyncComponent(componentLoader), attrs)
       }
       const events: Array<keyof HTMLElementEventMap> = attrs.hydrate as Array<keyof HTMLElementEventMap> ?? ['mouseover']
-      return () => h(defineAsyncComponent({
-        loader: componentLoader,
-        hydrate: hydrateOnInteraction(events),
-      }))
+      return () => h(delayedHydrationComponent(componentLoader, hydrateOnInteraction(events)))
     },
   })
 }
