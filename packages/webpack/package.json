@@ -60,7 +60,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^1.12.1",
+    "unplugin": "^1.12.2",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.0",
     "vue-loader": "^17.4.2",
@@ -80,7 +80,7 @@
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.20.0",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.4.37"
+    "vue": "3.4.38"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
