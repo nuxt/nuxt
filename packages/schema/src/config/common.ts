@@ -597,7 +597,7 @@ export default defineUntypedSchema({
 
 function provideFallbackValues (obj: Record<string, any>) {
   for (const key in obj) {
-    if (typeof obj[key] === 'undefined' || obj[key] === null) {
+    if (typeof obj[key] === 'undefined') {
       obj[key] = ''
     } else if (typeof obj[key] === 'object') {
       provideFallbackValues(obj[key])
