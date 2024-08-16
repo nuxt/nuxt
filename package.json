@@ -96,7 +96,7 @@
     "typescript": "5.5.4",
     "ufo": "1.5.4",
     "vitest": "2.0.5",
-    "vitest-environment-nuxt": "1.0.0",
+    "vitest-environment-nuxt": "1.0.1",
     "vue": "3.4.38",
     "vue-router": "4.4.3",
     "vue-tsc": "2.0.29"
