@@ -29,13 +29,13 @@
     "@types/estree": "1.0.5",
     "rollup": "4.20.0",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.4.37"
+    "vue": "3.4.38"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
     "@rollup/plugin-replace": "^5.0.7",
     "@vitejs/plugin-vue": "^5.1.2",
-    "@vitejs/plugin-vue-jsx": "^4.0.0",
+    "@vitejs/plugin-vue-jsx": "^4.0.1",
     "autoprefixer": "^10.4.20",
     "clear": "^0.1.0",
     "consola": "^3.2.3",
@@ -61,8 +61,8 @@
     "strip-literal": "^2.1.0",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^1.12.1",
-    "vite": "^5.4.0",
+    "unplugin": "^1.12.2",
+    "vite": "^5.4.1",
     "vite-node": "^2.0.5",
     "vite-plugin-checker": "^0.7.2",
     "vue-bundle-renderer": "^2.1.0"
