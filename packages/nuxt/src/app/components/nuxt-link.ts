@@ -314,8 +314,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
-      function shouldPrefetch () {
-        return props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection() && !prefetched.value
+      function shouldPrefetch (mode: 'visibility' | 'interaction') {
+        return (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : props.prefetchOn?.[mode]) && props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection() && !prefetched.value
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
@@ -331,7 +331,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       if (import.meta.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        if (shouldPrefetch() && (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : props.prefetchOn?.visibility)) {
+        if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number
           let unobserve: (() => void) | null = null
@@ -376,8 +376,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
             custom: props.custom,
-            onPointerenter: (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'interaction' : props.prefetchOn?.interaction) && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
-            onFocus: (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'interaction' : props.prefetchOn?.interaction) && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
+            onPointerenter: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
+            onFocus: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
