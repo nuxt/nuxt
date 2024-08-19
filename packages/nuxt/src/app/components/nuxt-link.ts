@@ -62,10 +62,9 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
   /**
    * Allows to control when to prefetch links. By default, prefetch is triggered only on visibility.
    */
-  prefetchTriggers?: Partial<{
+  prefetchOn?: 'visibility' | 'interaction' | Partial<{
     visibility: boolean
-    focus: boolean
-    hover: boolean
+    interaction: boolean
   }>
   /**
    * Escape hatch to disable `prefetch` attribute.
@@ -247,13 +246,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         default: undefined,
         required: false,
       },
-      prefetchTriggers: {
-        type: Object as PropType<NuxtLinkProps['prefetchTriggers']>,
+      prefetchOn: {
+        type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
         default: {
           visibility: true,
-          focus: false,
-          hover: false,
-        } satisfies NuxtLinkProps['prefetchTriggers'],
+          interaction: false,
+        } satisfies NuxtLinkProps['prefetchOn'],
         required: false,
       },
       noPrefetch: {
@@ -333,7 +331,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
       if (import.meta.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        if (shouldPrefetch() && props.prefetchTriggers?.visibility) {
+        if (shouldPrefetch() && (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : props.prefetchOn?.visibility)) {
           const nuxtApp = useNuxtApp()
           let idleId: number
           let unobserve: (() => void) | null = null
@@ -378,8 +376,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
             custom: props.custom,
-            onPointerenter: (props.prefetchTriggers?.focus || props.prefetchTriggers?.hover) && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
-            onFocus: props.prefetchTriggers?.focus && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
+            onPointerenter: (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'interaction' : props.prefetchOn?.interaction) && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
+            onFocus: (typeof props.prefetchOn === 'string' ? props.prefetchOn === 'interaction' : props.prefetchOn?.interaction) && shouldPrefetch() ? prefetch.bind(null, undefined) : undefined,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
