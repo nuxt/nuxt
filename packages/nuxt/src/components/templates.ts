@@ -70,7 +70,11 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
+    if (!nuxt.options.experimental.componentIslands) {
+      return 'export const islandComponents = {}'
+    }
+
     const components = app.components
     const pages = app.pages
     const islands = components.filter(component =>
@@ -119,14 +123,6 @@ ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-}
-
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
-declare module '@vue/runtime-dom' {
-  export interface GlobalComponents extends _GlobalComponents { }
 }
 
 declare module 'vue' {

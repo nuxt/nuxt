@@ -11,7 +11,6 @@ import { readPackageJSON } from 'pkg-types'
 import { tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
-import { getNodeModulesPaths } from './internal/cjs'
 import { resolveNuxtModule } from './resolve'
 
 /**
@@ -159,6 +158,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
     include.add(join(relative, 'runtime'))
     exclude.add(join(relative, 'runtime/server'))
+    include.add(join(relative, 'dist/runtime'))
+    exclude.add(join(relative, 'dist/runtime/server'))
   }
 
   const isV4 = nuxt.options.future?.compatibilityVersion === 4
@@ -191,6 +192,7 @@ export async function _generateTypes (nuxt: Nuxt) {
         'ESNext',
         'dom',
         'dom.iterable',
+        'webworker',
       ],
       /* JSX support for Vue */
       jsx: 'preserve',
@@ -228,10 +230,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
     }
-    let absolutePath = resolve(basePath, aliases[alias])
+    let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias], nuxt.options.modulesDir)
+      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
@@ -251,7 +253,7 @@ export async function _generateTypes (nuxt: Nuxt) {
         // remove extension
         ? relativePath.replace(/\b\.\w+$/g, '')
         // non-existent file probably shouldn't be resolved
-        : aliases[alias]
+        : aliases[alias]!
 
       tsConfig.compilerOptions.paths[alias] = [path]
 
@@ -265,7 +267,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   await Promise.all([...nuxt.options.modules, ...nuxt.options._modules].map(async (id) => {
     if (typeof id !== 'string') { return }
 
-    const pkg = await readPackageJSON(id, { url: getNodeModulesPaths(nuxt.options.modulesDir) }).catch(() => null)
+    const pkg = await readPackageJSON(id, { url: nuxt.options.modulesDir }).catch(() => null)
     references.push(({ types: pkg?.name || id }))
   }))
 
@@ -334,7 +336,7 @@ function renderAttrs (obj: Record<string, string>) {
   return attrs.join(' ')
 }
 
-function renderAttr (key: string, value: string) {
+function renderAttr (key: string, value?: string) {
   return value ? `${key}="${value}"` : ''
 }
 

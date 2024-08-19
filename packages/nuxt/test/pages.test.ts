@@ -20,7 +20,7 @@ describe('pages:generateRoutesFromFiles', () => {
 
   const tests: Array<{
     description: string
-    files?: Array<{ path: string, template?: string }>
+    files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
     normalized?: Record<string, any>[]
     error?: string
@@ -554,6 +554,84 @@ describe('pages:generateRoutesFromFiles', () => {
         },
       ],
     },
+    {
+      description: 'route.meta generated from file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-meta.vue`,
+          meta: {
+            test: 1,
+          },
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-meta',
+          path: '/page-with-meta',
+          file: `${pagesDir}/page-with-meta.vue`,
+          children: [],
+          meta: { test: 1 },
+        },
+      ],
+    },
+    {
+      description: 'should merge route.meta with meta from file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-meta.vue`,
+          meta: {
+            test: 1,
+          },
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              hello: 'world'
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-meta',
+          path: '/page-with-meta',
+          file: `${pagesDir}/page-with-meta.vue`,
+          children: [],
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1 },
+        },
+      ],
+    },
+    {
+      description: 'should handle route groups',
+      files: [
+        { path: `${pagesDir}/(foo)/index.vue` },
+        { path: `${pagesDir}/(foo)/about.vue` },
+        { path: `${pagesDir}/(bar)/about/index.vue` },
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/(foo)/index.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          path: '/about',
+          file: `${pagesDir}/(foo)/about.vue`,
+          meta: undefined,
+          children: [
+
+            {
+              name: 'about',
+              path: '',
+              file: `${pagesDir}/(bar)/about/index.vue`,
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}
@@ -572,7 +650,13 @@ describe('pages:generateRoutesFromFiles', () => {
             shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
-          })))
+          }))).map((route, index) => {
+            return {
+              ...route,
+              meta: test.files![index].meta,
+            }
+          })
+
           await augmentPages(result, vfs)
         } catch (error: any) {
           expect(error.message).toEqual(test.error)

@@ -10,7 +10,7 @@ interface Envs {
 
 export function transpile (envs: Envs): Array<string | RegExp> {
   const nuxt = useNuxt()
-  const transpile: Array<string | RegExp> = []
+  const transpile: RegExp[] = []
 
   for (let pattern of nuxt.options.build.transpile) {
     if (typeof pattern === 'function') {

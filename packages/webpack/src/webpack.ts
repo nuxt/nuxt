@@ -28,12 +28,12 @@ import { dynamicRequire } from './nitro/plugins/dynamic-require'
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   registerVirtualModules()
 
-  const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
+  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
-    applyPresets(ctx, preset)
+    await applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
-  })
+  }))
 
   /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
   const nitro = useNitro()

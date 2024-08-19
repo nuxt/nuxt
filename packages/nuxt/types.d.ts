@@ -1,4 +1,6 @@
 /// <reference types="nitro/types" />
+/// <reference path="dist/app/types/augments.d.ts" />
+
 import type { DefineNuxtConfig } from 'nuxt/config'
 import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
 import type { H3Event } from 'h3'
@@ -18,6 +20,7 @@ declare module 'nitro/types' {
     buildAssetsDir: string
     cdnURL: string
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean
@@ -39,6 +42,7 @@ declare module 'nitropack/types' {
     buildAssetsDir: string
     cdnURL: string
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean

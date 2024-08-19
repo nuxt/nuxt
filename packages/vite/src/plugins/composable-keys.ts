@@ -17,7 +17,7 @@ interface ComposableKeysOptions {
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
 }
 
-const stringTypes = ['Literal', 'TemplateLiteral']
+const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
 const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 
@@ -182,7 +182,7 @@ class ScopeTracker {
   leaveScope () {
     this.scopeIndexStack.pop()
     this.curScopeKey = this.getKey()
-    this.scopeIndexStack[this.scopeIndexStack.length - 1]++
+    this.scopeIndexStack[this.scopeIndexStack.length - 1]!++
   }
 }
 
@@ -255,9 +255,9 @@ export function detectImportNames (code: string, composableMeta: Record<string, 
   for (const i of findStaticImports(code)) {
     if (NUXT_IMPORT_RE.test(i.specifier)) { continue }
 
-    const { namedImports, defaultImport, namespacedImport } = parseStaticImport(i)
-    for (const name in namedImports || {}) {
-      addName(namedImports![name], i.specifier)
+    const { namedImports = {}, defaultImport, namespacedImport } = parseStaticImport(i)
+    for (const name in namedImports) {
+      addName(namedImports[name]!, i.specifier)
     }
     if (defaultImport) {
       addName(defaultImport, i.specifier)

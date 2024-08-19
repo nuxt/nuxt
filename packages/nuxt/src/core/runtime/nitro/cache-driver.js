@@ -1,10 +1,18 @@
+// @ts-check
+
 import { defineDriver } from 'unstorage'
 import fsDriver from 'unstorage/drivers/fs-lite'
 import lruCache from 'unstorage/drivers/lru-cache'
 
-const normalizeFsKey = (item: string) => item.replaceAll(':', '_')
+/**
+ * @param {string} item
+ */
+const normalizeFsKey = item => item.replaceAll(':', '_')
 
-export default defineDriver((opts: { base: string }) => {
+/**
+ * @param {{ base: string }} opts
+ */
+export default defineDriver((opts) => {
   const fs = fsDriver({ base: opts.base })
   const lru = lruCache({ max: 1000 })
 

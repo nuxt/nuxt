@@ -2,14 +2,16 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
+import defu from 'defu'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
+import { createSourcemapPreserver } from './plugins/nitro-sourcemap'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
@@ -85,6 +87,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           entryFileNames: '[name].mjs',
           format: 'module',
           generatedCode: {
+            symbols: true, // temporary fix for https://github.com/vuejs/core/issues/8351,
             constBindings: true,
           },
         },
@@ -97,6 +100,9 @@ export async function buildServer (ctx: ViteBuildContext) {
       },
     },
     server: {
+      warmup: {
+        ssrFiles: [ctx.entry],
+      },
       // https://github.com/vitest-dev/vitest/issues/229#issuecomment-1002685027
       preTransformRequests: false,
       hmr: false,
@@ -104,16 +110,28 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
-    const nitroDependencies = await tryResolveModule('nitro/runtime/meta', ctx.nuxt.options.modulesDir)
-      .then(r => import(r!)).then(r => r.runtimeDependencies || []).catch(() => [])
+    const { runtimeDependencies = [] } = await tryImportModule<typeof import('nitro/runtime/meta')>('nitro/runtime/meta', {
+      paths: ctx.nuxt.options.modulesDir,
+    }) || {}
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
         'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...nitroDependencies,
+        ...runtimeDependencies,
       )
     }
+  }
+
+  // tell rollup's nitro build about the original sources of the generated vite server build
+  if (ctx.nuxt.options.sourcemap.server && !ctx.nuxt.options.dev) {
+    const { vitePlugin, nitroPlugin } = createSourcemapPreserver()
+    serverConfig.plugins!.push(vitePlugin)
+    ctx.nuxt.hook('nitro:build:before', (nitro) => {
+      nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
+        plugins: [nitroPlugin],
+      })
+    })
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig)
@@ -143,10 +161,8 @@ export async function buildServer (ctx: ViteBuildContext) {
     return
   }
 
-  // Write dev client manifest
-  await writeManifest(ctx)
-
   if (!ctx.nuxt.options.ssr) {
+    await writeManifest(ctx)
     await onBuild()
     return
   }
@@ -155,10 +171,10 @@ export async function buildServer (ctx: ViteBuildContext) {
   const viteServer = await vite.createServer(serverConfig)
   ctx.ssrServer = viteServer
 
-  await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
-
   // Close server on exit
   ctx.nuxt.hook('close', () => viteServer.close())
+
+  await ctx.nuxt.callHook('vite:serverCreated', viteServer, { isClient: false, isServer: true })
 
   // Initialize plugins
   await viteServer.pluginContainer.buildStart({})

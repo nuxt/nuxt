@@ -35,6 +35,11 @@ export interface AddRouteMiddlewareOptions {
    * @default false
    */
   override?: boolean
+  /**
+   * Prepend middleware to the list
+   * @default false
+   */
+  prepend?: boolean
 }
 
 export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], options: AddRouteMiddlewareOptions = {}) {
@@ -44,13 +49,15 @@ export function addRouteMiddleware (input: NuxtMiddleware | NuxtMiddleware[], op
     for (const middleware of middlewares) {
       const find = app.middleware.findIndex(item => item.name === middleware.name)
       if (find >= 0) {
-        const foundPath = app.middleware[find].path
+        const foundPath = app.middleware[find]!.path
         if (foundPath === middleware.path) { continue }
         if (options.override === true) {
           app.middleware[find] = { ...middleware }
         } else {
           logger.warn(`'${middleware.name}' middleware already exists at '${foundPath}'. You can set \`override: true\` to replace it.`)
         }
+      } else if (options.prepend === true) {
+        app.middleware.unshift({ ...middleware })
       } else {
         app.middleware.push({ ...middleware })
       }

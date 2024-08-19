@@ -109,7 +109,7 @@ const count = ref(0)
         </NuxtIsland>
       </div>
     </div>
-    <ServerWithClient />
+    <server-with-client />
     <ServerWithNestedClient />
   </div>
 </template>

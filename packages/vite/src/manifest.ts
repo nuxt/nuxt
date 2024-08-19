@@ -5,19 +5,15 @@ import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
-import type { Manifest } from 'vue-bundle-renderer'
 import type { ViteBuildContext } from './vite'
 
-export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) {
-  // Write client manifest for use in vue-bundle-renderer
-  const clientDist = resolve(ctx.nuxt.options.buildDir, 'dist/client')
-  const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
-
-  const devClientManifest: Manifest = {
+export async function writeManifest (ctx: ViteBuildContext) {
+  // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
+  const devClientManifest = {
     '@vite/client': {
       isEntry: true,
       file: '@vite/client',
-      css,
+      css: [],
       module: true,
       resourceType: 'script',
     },
@@ -29,10 +25,12 @@ export async function writeManifest (ctx: ViteBuildContext, css: string[] = []) 
     },
   }
 
+  // Write client manifest for use in vue-bundle-renderer
+  const clientDist = resolve(ctx.nuxt.options.buildDir, 'dist/client')
+  const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
+
   const manifestFile = resolve(clientDist, 'manifest.json')
-  const clientManifest = ctx.nuxt.options.dev
-    ? devClientManifest
-    : JSON.parse(readFileSync(manifestFile, 'utf-8'))
+  const clientManifest = ctx.nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8'))
 
   const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir))
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
