@@ -60,7 +60,7 @@
     "vue-loader": "17.4.2",
     "vue-router": "4.4.3",
     "webpack": "5.93.0",
-    "webpack-dev-middleware": "7.3.0"
+    "webpack-dev-middleware": "7.4.0"
   },
   "dependencies": {
     "compatx": "^0.1.8",
