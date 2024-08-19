@@ -96,7 +96,7 @@ export async function isPrerendered (url = useRoute().path) {
   return !!rules.prerender && !rules.redirect
 }
 
-let payloadCache: any = null
+let payloadCache: NuxtPayload | null = null
 
 /** @since 3.4.0 */
 export async function getNuxtClientPayload () {
