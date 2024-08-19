@@ -26,7 +26,7 @@ declare global {
   }
 
   interface Window {
-    __NUXT__?: Record<string, any>
+    __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
 }

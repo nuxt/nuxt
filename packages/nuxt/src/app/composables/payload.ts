@@ -9,7 +9,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -107,7 +107,7 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = document.getElementById('__NUXT_DATA__')
+  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
   if (!el) {
     return {} as Partial<NuxtPayload>
   }
@@ -119,7 +119,7 @@ export async function getNuxtClientPayload () {
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__,
+    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
   }
 
   if (payloadCache!.config?.public) {
