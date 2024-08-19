@@ -115,7 +115,7 @@ export function parseData (html: string) {
     }
   }
 
-  const regexp = /<script type="application\/json" data-nuxt-data="nuxt-app"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/
+  const regexp = /<script type="application\/json" data-nuxt-data="[^"]+"(?<attrs>[^>]+)>(?<script>.*?)<\/script>/
   const { script, attrs = '' } = html.match(regexp)?.groups || {}
   const _attrs: Record<string, string> = {}
   for (const attr of attrs.matchAll(/( |^)(?<key>[\w-]+)="(?<value>[^"]+)"/g)) {
