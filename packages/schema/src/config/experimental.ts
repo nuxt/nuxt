@@ -345,6 +345,10 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
+        prefetch: true,
+        prefetchOn: {
+          visibility: true,
+        },
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
