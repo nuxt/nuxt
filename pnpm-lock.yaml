@@ -588,8 +588,8 @@ importers:
         specifier: 5.93.0
         version: 5.93.0
       webpack-dev-middleware:
-        specifier: 7.3.0
-        version: 7.3.0(webpack@5.93.0)
+        specifier: 7.4.0
+        version: 7.4.0(webpack@5.93.0)
 
   packages/ui-templates:
     devDependencies:
@@ -823,8 +823,8 @@ importers:
         specifier: ^4.11.1
         version: 4.11.1
       mini-css-extract-plugin:
-        specifier: ^2.9.0
-        version: 2.9.0(webpack@5.93.0)
+        specifier: ^2.9.1
+        version: 2.9.1(webpack@5.93.0)
       mlly:
         specifier: ^1.7.1
         version: 1.7.1
@@ -886,8 +886,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.3.0
-        version: 7.3.0(webpack@5.93.0)
+        specifier: ^7.4.0
+        version: 7.4.0(webpack@5.93.0)
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -5622,8 +5622,8 @@ packages:
     resolution: {integrity: sha512-I9jwMn07Sy/IwOj3zVkVik2JTvgpaykDZEigL6Rx6N9LbMywwUSMtxET+7lVoDLLd3O3IXwJwvuuns8UB/HeAg==}
     engines: {node: '>=4'}
 
-  mini-css-extract-plugin@2.9.0:
-    resolution: {integrity: sha512-Zs1YsZVfemekSZG+44vBsYTLQORkPMwnlv+aehcxK/NLKC+EGhDB39/YePYYqx/sTk6NnYpuqikhSn7+JIevTA==}
+  mini-css-extract-plugin@2.9.1:
+    resolution: {integrity: sha512-+Vyi+GCCOHnrJ2VPS+6aPoXN2k2jgUzDRhTFLjjTBn23qyXJXkjUWQgTL+mXpF5/A8ixLdCc6kWsoeOjKGejKQ==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
       webpack: ^5.0.0
@@ -7613,8 +7613,8 @@ packages:
     engines: {node: '>= 10.13.0'}
     hasBin: true
 
-  webpack-dev-middleware@7.3.0:
-    resolution: {integrity: sha512-xD2qnNew+F6KwOGZR7kWdbIou/ud7cVqLEXeK1q0nHcNsX/u7ul/fSdlOTX4ntSL5FNFy7ZJJXbf0piF591JYw==}
+  webpack-dev-middleware@7.4.0:
+    resolution: {integrity: sha512-o2Pe3n+vhx+OTwKhdV0EAA84XhcGYC5Jo2OSNRzU6V1chl/GOUz91xBHfMutsBp0GULP5zuQ30Hb9mv5xoxf7Q==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: ^5.0.0
@@ -13215,7 +13215,7 @@ snapshots:
 
   min-indent@1.0.1: {}
 
-  mini-css-extract-plugin@2.9.0(webpack@5.93.0):
+  mini-css-extract-plugin@2.9.1(webpack@5.93.0):
     dependencies:
       schema-utils: 4.2.0
       tapable: 2.2.1
@@ -15628,7 +15628,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.3.0(webpack@5.93.0):
+  webpack-dev-middleware@7.4.0(webpack@5.93.0):
     dependencies:
       colorette: 2.0.20
       memfs: 4.11.1
