@@ -45,7 +45,6 @@ export default defineUntypedSchema({
           'vue',
           '@vue/runtime-core',
           '@vue/compiler-sfc',
-          '@vue/runtime-dom',
           'vue-router',
           'vue-router/auto-routes',
           'unplugin-vue-router/client',
