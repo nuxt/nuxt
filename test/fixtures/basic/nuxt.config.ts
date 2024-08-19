@@ -31,7 +31,6 @@ export default defineNuxtConfig({
       include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
     },
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   appId: 'nuxt-app-basic',
   build: {
@@ -68,7 +67,6 @@ export default defineNuxtConfig({
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
     },
-    output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
       routes: [
         '/random/a',

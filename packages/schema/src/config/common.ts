@@ -175,7 +175,29 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => resolve(await get('rootDir') as string, val || '.nuxt'),
+    $resolve: async (val: string | undefined, get): Promise<string> => {
+      const rootDir = await get('rootDir') as string
+
+      if (val) {
+        return resolve(rootDir, val)
+      }
+
+      const defaultBuildDir = resolve(rootDir, '.nuxt')
+
+      const isDev = await get('dev') as boolean
+      if (isDev) {
+        return defaultBuildDir
+      }
+
+      // TODO: nuxi CLI should ensure .nuxt dir exists
+      if (!existsSync(defaultBuildDir)) {
+        // This is to ensure that types continue to work for CI builds
+        return defaultBuildDir
+      }
+
+      // TODO: handle build caching + using buildId in directory
+      return resolve(rootDir, 'node_modules/.cache/nuxt/builds', 'production')
+    },
   },
 
   /**

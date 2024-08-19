@@ -14,8 +14,6 @@ await setup({
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite',
-    buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
   },
 })
 
