@@ -31,7 +31,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, runningMultiApp } from '#internal/nuxt.config.mjs'
+import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -424,14 +424,13 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: getPrefetchLinks(ssrContext, renderer.rendererContext) as Link[],
     }, headEntryOptions)
     // 4. Payloads
-    const nuxtDataId = !runningMultiApp ? '__NUXT_DATA__' : 'nuxt-data'
     head.push({
       script: _PAYLOAD_EXTRACTION
         ? process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: nuxtDataId, ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
+          ? renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
           : renderPayloadScript({ ssrContext, data: splitPayload(ssrContext).initial, src: payloadURL })
         : process.env.NUXT_JSON_PAYLOADS
-          ? renderPayloadJsonScript({ id: nuxtDataId, ssrContext, data: ssrContext.payload })
+          ? renderPayloadJsonScript({ ssrContext, data: ssrContext.payload })
           : renderPayloadScript({ ssrContext, data: ssrContext.payload }),
     }, {
       ...headEntryOptions,
@@ -587,25 +586,27 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
   } satisfies RenderResponse
 }
 
-function renderPayloadJsonScript (opts: { id: string, ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
+function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
   const contents = opts.data ? stringify(opts.data, opts.ssrContext._payloadReducers) : ''
-  const selector = !runningMultiApp ? ({ id: opts.id }) : ({ [`data-${opts.id}`]: appId })
   const payload: Script = {
     'type': 'application/json',
     'innerHTML': contents,
-    ...selector,
+    'data-nuxt-data': appId,
     'data-ssr': !(process.env.NUXT_NO_SSR || opts.ssrContext.noSSR),
+  }
+  if (!multiApp) {
+    payload.id = '__NUXT_DATA__'
   }
   if (opts.src) {
     payload['data-src'] = opts.src
   }
   const config = uneval(opts.ssrContext.config)
-  const singleAppPayload = `window.__NUXT__={};window.__NUXT__.config=${config}`
-  const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
   return [
     payload,
     {
-      innerHTML: !runningMultiApp ? singleAppPayload : multiAppPayload,
+      innerHTML: multiApp
+        ? `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
+        : `window.__NUXT__={};window.__NUXT__.config=${config}`,
     },
   ]
 }
@@ -620,7 +621,7 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
     return [
       {
         type: 'module',
-        innerHTML: !runningMultiApp ? singleAppPayload : multiAppPayload,
+        innerHTML: multiApp ? multiAppPayload : singleAppPayload,
       },
     ]
   }
@@ -628,7 +629,7 @@ function renderPayloadScript (opts: { ssrContext: NuxtSSRContext, data?: any, sr
   const multiAppPayload = `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]=${nuxtData}`
   return [
     {
-      innerHTML: !runningMultiApp ? singleAppPayload : multiAppPayload,
+      innerHTML: multiApp ? multiAppPayload : singleAppPayload,
     },
   ]
 }

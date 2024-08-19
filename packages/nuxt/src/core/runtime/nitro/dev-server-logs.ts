@@ -14,7 +14,7 @@ import type { NitroApp } from 'nitro/types'
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
 // @ts-expect-error virtual file
-import { appId, runningMultiApp } from '#internal/nuxt.config.mjs'
+import { appId } from '#internal/nuxt.config.mjs'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
@@ -76,9 +76,8 @@ export default (nitroApp: NitroApp) => {
   nitroApp.hooks.hook('render:html', (htmlContext) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
-    const attribute = !runningMultiApp ? 'id="__NUXT_LOGS__"' : `data-nuxt-logs="${appId}"`
     try {
-      htmlContext.bodyAppend.unshift(`<script type="application/json" ${attribute}>${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
+      htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
       console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.`)
