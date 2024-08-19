@@ -189,16 +189,14 @@ export default defineUntypedSchema({
         return defaultBuildDir
       }
 
-      const buildId = await get('buildId') as string
-
       // TODO: nuxi CLI should ensure .nuxt dir exists
       if (!existsSync(defaultBuildDir)) {
         // This is to ensure that types continue to work for CI builds
         return defaultBuildDir
       }
 
-      // TODO: handle build caching
-      return resolve(rootDir, 'node_modules/.cache/nuxt/builds', buildId)
+      // TODO: handle build caching + using buildId in directory
+      return resolve(rootDir, 'node_modules/.cache/nuxt/builds', 'production')
     },
   },
 
