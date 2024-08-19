@@ -3,9 +3,11 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 
+import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+
 describe('nuxt-link:prefetch', () => {
   it('should prefetch on visibility by default', async () => {
-    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+    const component = defineNuxtLink(nuxtLinkDefaults)
 
     const { observer } = useMockObserver()
 
@@ -23,8 +25,8 @@ describe('nuxt-link:prefetch', () => {
     expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
   })
 
-  it('should prefetch with custom `prefetchOn`', async () => {
-    const component = defineNuxtLink({ componentName: 'NuxtLink' })
+  it('should prefetch with custom string `prefetchOn`', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
     const nuxtApp = useNuxtApp()
     nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
 
@@ -42,6 +44,30 @@ describe('nuxt-link:prefetch', () => {
 
     await wrapper.find('a').trigger('pointerenter')
     expect(nuxtApp.hooks.callHook).toHaveBeenCalledTimes(1)
+  })
+
+  it('should prefetch with custom object `prefetchOn`', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    const { observer } = useMockObserver()
+    await mountSuspended(component, { props: { to: '/to', prefetchOn: { interaction: true } } })
+
+    await observer.trigger()
+    expect(nuxtApp.hooks.callHook).toHaveBeenCalled()
+  })
+
+  it('should prefetch with custom object `prefetchOn` overriding default', async () => {
+    const component = defineNuxtLink(nuxtLinkDefaults)
+    const nuxtApp = useNuxtApp()
+    nuxtApp.hooks.callHook = vi.fn(() => Promise.resolve())
+
+    const { observer } = useMockObserver()
+    await mountSuspended(component, { props: { to: '/to', prefetchOn: { interaction: true, visibility: false } } })
+
+    await observer.trigger()
+    expect(nuxtApp.hooks.callHook).not.toHaveBeenCalled()
   })
 })
 

@@ -60,7 +60,7 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
    */
   prefetch?: boolean
   /**
-   * Allows to control when to prefetch links. By default, prefetch is triggered only on visibility.
+   * Allows controlling when to prefetch links. By default, prefetch is triggered only on visibility.
    */
   prefetchOn?: 'visibility' | 'interaction' | Partial<{
     visibility: boolean
@@ -78,7 +78,7 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
  */
 export interface NuxtLinkOptions extends
   Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
-  Partial<Pick<NuxtLinkProps, 'prefetchedClass'>> {
+  Partial<Pick<NuxtLinkProps, 'prefetch' | 'prefetchedClass'>> {
   /**
    * The name of the component.
    * @default "NuxtLink"
@@ -93,6 +93,11 @@ export interface NuxtLinkOptions extends
    * If unset or not matching the valid values `append` or `remove`, it will be ignored.
    */
   trailingSlash?: 'append' | 'remove'
+
+  /**
+   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
+   */
+  prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
 }
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -248,7 +253,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       },
       prefetchOn: {
         type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
-        default: {
+        default: options.prefetchOn || {
           visibility: true,
           interaction: false,
         } satisfies NuxtLinkProps['prefetchOn'],
@@ -315,11 +320,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
-        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : props.prefetchOn?.[mode]) && props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
+        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
         if (prefetched.value) { return }
+
+        prefetched.value = true
 
         const path = typeof to.value === 'string'
           ? to.value
@@ -328,7 +335,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
           !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
-        prefetched.value = true
       }
 
       if (import.meta.client) {
