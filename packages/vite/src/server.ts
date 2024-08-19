@@ -5,11 +5,13 @@ import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
 import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
+import defu from 'defu'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
 import { writeManifest } from './manifest'
 import { transpile } from './utils/transpile'
+import { createSourcemapPreserver } from './plugins/nitro-sourcemap'
 
 export async function buildServer (ctx: ViteBuildContext) {
   const helper = ctx.nuxt.options.nitro.imports !== false ? '' : 'globalThis.'
@@ -119,6 +121,17 @@ export async function buildServer (ctx: ViteBuildContext) {
         ...runtimeDependencies,
       )
     }
+  }
+
+  // tell rollup's nitro build about the original sources of the generated vite server build
+  if (ctx.nuxt.options.sourcemap.server && !ctx.nuxt.options.dev) {
+    const { vitePlugin, nitroPlugin } = createSourcemapPreserver()
+    serverConfig.plugins!.push(vitePlugin)
+    ctx.nuxt.hook('nitro:build:before', (nitro) => {
+      nitro.options.rollupConfig = defu(nitro.options.rollupConfig, {
+        plugins: [nitroPlugin],
+      })
+    })
   }
 
   serverConfig.customLogger = createViteLogger(serverConfig)

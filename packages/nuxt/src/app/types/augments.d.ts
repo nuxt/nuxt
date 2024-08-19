@@ -51,23 +51,3 @@ declare module 'vue' {
     head?(nuxtApp: NuxtApp): UseHeadInput
   }
 }
-
-declare module '@vue/runtime-core' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface App<HostElement> {
-    $nuxt: NuxtApp
-  }
-  interface ComponentCustomProperties {
-    $nuxt: NuxtApp
-  }
-}
-
-declare module '@vue/runtime-dom' {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface App<HostElement> {
-    $nuxt: NuxtApp
-  }
-  interface ComponentCustomProperties {
-    $nuxt: NuxtApp
-  }
-}
