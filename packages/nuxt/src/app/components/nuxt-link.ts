@@ -315,10 +315,12 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
-        return (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : props.prefetchOn?.[mode]) && props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection() && !prefetched.value
+        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : props.prefetchOn?.[mode]) && props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
+        if (prefetched.value) { return }
+
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
