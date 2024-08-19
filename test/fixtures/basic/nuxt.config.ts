@@ -89,7 +89,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      needsFallback: undefined,
+      needsUndefinedFallback: undefined,
+      needsNullFallback: null,
     },
   },
   modules: [

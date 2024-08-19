@@ -124,7 +124,8 @@ describe('pages', () => {
     expect(html).toContain('Hello Nuxt 3!')
     // should inject runtime config
     expect(html).toContain('RuntimeConfig | testConfig: 123')
-    expect(html).toContain('needsFallback:')
+    expect(html).toContain('needsUndefinedFallback:')
+    expect(html).toContain('needsNullFallback:')
     // composables auto import
     expect(html).toContain('Composable | foo: auto imported from ~/composables/foo.ts')
     expect(html).toContain('Composable | bar: auto imported from ~/utils/useBar.ts')
