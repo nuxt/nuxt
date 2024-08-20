@@ -10,10 +10,10 @@ function elementIsVisibleInViewport (el: Element) {
     ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
 }
 
-function delayedHydrationComponent(loader: AsyncComponentLoader, hydrate: HydrationStrategy) {
+function delayedHydrationComponent (loader: AsyncComponentLoader, hydrate: HydrationStrategy) {
   return defineAsyncComponent({
     loader,
-    hydrate
+    hydrate,
   })
 }
 
