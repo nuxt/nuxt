@@ -1,6 +1,5 @@
 import { defineAsyncComponent, defineComponent, getCurrentInstance, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnVisible } from 'vue'
 import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
-// import ClientOnly from '#app/components/client-only'
 import { useNuxtApp } from '#app/nuxt'
 
 function elementIsVisibleInViewport (el: Element) {
@@ -17,6 +16,7 @@ function delayedHydrationComponent(loader: AsyncComponentLoader, hydrate: Hydrat
     hydrate
   })
 }
+
 /* @__NO_SIDE_EFFECTS__ */
 export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => {
   return defineComponent({
