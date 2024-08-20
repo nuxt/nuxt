@@ -128,14 +128,6 @@ interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: Array<keyof HTMLElementEventMap>}>`).join('\n')}
 }
 
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
-declare module '@vue/runtime-dom' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }

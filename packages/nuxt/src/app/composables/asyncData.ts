@@ -84,7 +84,7 @@ export interface AsyncDataOptions<
    */
   immediate?: boolean
   /**
-   * Return data in a deep ref object (it is true by default). It can be set to false to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+   * Return data in a deep ref object (it is false by default). It can be set to false to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
    */
   deep?: boolean
   /**
@@ -350,7 +350,7 @@ export function useAsyncData<
   if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
-    if (import.meta.dev && !nuxtApp.isHydrating && (!instance || instance?.isMounted)) {
+    if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
       // @ts-expect-error private property
       console.warn(`[nuxt] [${options._functionName || 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
     }

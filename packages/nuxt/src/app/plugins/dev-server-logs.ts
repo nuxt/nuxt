@@ -40,7 +40,8 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   }
 
   if (typeof window !== 'undefined') {
-    const content = document.getElementById('__NUXT_LOGS__')?.textContent
+    const nuxtLogsElement = document.querySelector(`[data-nuxt-logs="${nuxtApp._name}"]`)
+    const content = nuxtLogsElement?.textContent
     const logs = content ? parse(content, { ...devRevivers, ...nuxtApp._payloadRevivers }) as LogObject[] : []
     await nuxtApp.hooks.callHook('dev:ssr-logs', logs)
   }
