@@ -2694,23 +2694,16 @@ describe('lazy import components', () => {
   it('lazy load delayed hydration comps at the right time', async () => {
     expect(html).toContain('This should be visible at first with network!')
     const { page } = await renderPage('/lazy-import-components')
-    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
     const component = await page.locator('#lazyevent')
     const rect = (await component.boundingBox())!
-    const resp = page.waitForResponse(response =>
-      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
-    )
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
-    await resp
+    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
-    const resp2 = page.waitForResponse(response =>
-      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with viewport!')),
-    )
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-    await resp2
+    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
     await page.close()
   })
@@ -2724,11 +2717,8 @@ describe('lazy import components', () => {
     await page.waitForTimeout(500)
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
-    const resp = page.waitForResponse(response =>
-      response.status() === 200 && response.text().then(text => text.includes('This shouldn\'t be visible at first with events!')),
-    )
     await page.locator('#lazyevent2').click()
-    await resp
+    await page.waitForLoadState('networkidle')
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
     await page.close()
