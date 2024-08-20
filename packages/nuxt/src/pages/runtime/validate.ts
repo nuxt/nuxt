@@ -14,8 +14,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   const error = createError({
-    statusCode: result && result.statusCode || 404,
-    statusMessage: result && result.statusMessage || `Page Not Found: ${to.fullPath}`,
+    statusCode: (result && result.statusCode) || 404,
+    statusMessage: (result && result.statusMessage) || `Page Not Found: ${to.fullPath}`,
     data: {
       path: to.fullPath,
     },
