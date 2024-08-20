@@ -209,6 +209,45 @@ describe('pages', () => {
     await page.close()
   })
 
+  it('validates routes with custom statusCode and statusMessage', async () => {
+    const CUSTOM_ERROR_CODE = 401
+    const CUSTOM_ERROR_MESSAGE = 'Custom error message'
+    const ERROR_PAGE_TEXT = 'This is the error page'
+    const PAGE_TEXT = 'You should not see this'
+
+    // Check status code and message on fetch
+    const res = await fetch('/validate-custom-error')
+    const serverText = await res.text()
+
+    expect(res.status).toEqual(CUSTOM_ERROR_CODE)
+    expect(serverText).toContain(CUSTOM_ERROR_MESSAGE)
+    expect(serverText).not.toContain(PAGE_TEXT)
+
+    // Client-side navigation
+    const { page } = await renderPage('/navigate-to-validate-custom-error')
+    await page.getByText('should throw a 401 error with custom message').click()
+    // error.vue has an h1 tag
+    await page.waitForSelector('h1')
+
+    const clientText = await page.innerText('body')
+
+    expect(clientText).toContain(CUSTOM_ERROR_MESSAGE)
+    expect(clientText).toContain(ERROR_PAGE_TEXT)
+    expect(clientText).not.toContain(PAGE_TEXT)
+
+    await page.close()
+
+    // Server-side navigation
+    const { page: serverPage } = await renderPage('/validate-custom-error')
+    const serverPageText = await serverPage.innerText('body')
+
+    expect(serverPageText).toContain(CUSTOM_ERROR_MESSAGE)
+    expect(serverPageText).toContain(ERROR_PAGE_TEXT)
+    expect(serverPageText).not.toContain(PAGE_TEXT)
+
+    await serverPage.close()
+  })
+
   it('returns 500 when there is an infinite redirect', async () => {
     const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
