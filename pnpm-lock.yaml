@@ -231,8 +231,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       unimport:
-        specifier: ^3.10.1
-        version: 3.10.1(rollup@4.21.0)
+        specifier: ^3.11.0
+        version: 3.11.0(rollup@4.21.0)
       untyped:
         specifier: ^1.4.2
         version: 1.4.2
@@ -415,8 +415,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       unimport:
-        specifier: ^3.10.1
-        version: 3.10.1(rollup@4.21.0)
+        specifier: ^3.11.0
+        version: 3.11.0(rollup@4.21.0)
       unplugin:
         specifier: ^1.12.2
         version: 1.12.2
@@ -503,8 +503,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       unimport:
-        specifier: ^3.10.1
-        version: 3.10.1(rollup@4.21.0)
+        specifier: ^3.11.0
+        version: 3.11.0(rollup@4.21.0)
       untyped:
         specifier: ^1.4.2
         version: 1.4.2
@@ -588,8 +588,8 @@ importers:
         specifier: 5.93.0
         version: 5.93.0
       webpack-dev-middleware:
-        specifier: 7.4.1
-        version: 7.4.1(webpack@5.93.0)
+        specifier: 7.4.2
+        version: 7.4.2(webpack@5.93.0)
 
   packages/ui-templates:
     devDependencies:
@@ -886,8 +886,8 @@ importers:
         specifier: ^4.10.2
         version: 4.10.2
       webpack-dev-middleware:
-        specifier: ^7.4.1
-        version: 7.4.1(webpack@5.93.0)
+        specifier: ^7.4.2
+        version: 7.4.2(webpack@5.93.0)
       webpack-hot-middleware:
         specifier: ^2.26.1
         version: 2.26.1
@@ -7030,8 +7030,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@3.10.1:
-    resolution: {integrity: sha512-gK0oqn2SyPEjmp5O0Epu13xmX1Pfn4MwpJNlntXUauV0wN8Hhod+BNjDjqQ4ZpOSCt17MCLjGqUXqUhAiJuhOw==}
+  unimport@3.11.0:
+    resolution: {integrity: sha512-mPrvWwy+li8TLUeglC7CIREFAbeEMkJ8X2Bhxg4iLdh+HraxjFyxqWv8V+4lzekoGHChx9ofv1qGOfvHBJBl0A==}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -7475,8 +7475,8 @@ packages:
     engines: {node: '>= 10.13.0'}
     hasBin: true
 
-  webpack-dev-middleware@7.4.1:
-    resolution: {integrity: sha512-/t6KpZw/bnmCR0VKILjJT05mWecbf1aIM2VxCJUvBbg0iXqaQJFxbJ4PCrsY4iBH7PGwnccm4BYyoP1G+lGfAA==}
+  webpack-dev-middleware@7.4.2:
+    resolution: {integrity: sha512-xOO8n6eggxnwYpy1NlzUKpvrjfJTvae5/D6WOK0S2LSo7vjmo5gCM1DbLUmFqrMTJP+W/0YZNctm7jasWvLuBA==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
       webpack: ^5.0.0
@@ -8450,7 +8450,7 @@ snapshots:
       semver: 7.6.3
       simple-git: 3.25.0
       sirv: 2.0.4
-      unimport: 3.10.1(rollup@4.21.0)
+      unimport: 3.11.0(rollup@4.21.0)
       vite: 5.4.2(@types/node@20.16.1)(sass@1.69.4)(terser@5.27.0)
       vite-plugin-inspect: 0.8.6(@nuxt/kit@packages+kit)(rollup@4.21.0)(vite@5.4.2(@types/node@20.16.1)(sass@1.69.4)(terser@5.27.0))
       vite-plugin-vue-inspector: 5.1.3(vite@5.4.2(@types/node@20.16.1)(sass@1.69.4)(terser@5.27.0))
@@ -8530,7 +8530,7 @@ snapshots:
       std-env: 3.7.0
       third-party-capital: 2.3.0
       ufo: 1.5.4
-      unimport: 3.10.1(rollup@4.21.0)
+      unimport: 3.11.0(rollup@4.21.0)
       unplugin: 1.12.2
       unstorage: 1.10.2(ioredis@5.4.1)
       valibot: 0.38.0(typescript@5.5.4)
@@ -13172,7 +13172,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.10.0
-      unimport: 3.10.1(rollup@4.21.0)
+      unimport: 3.11.0(rollup@4.21.0)
       unstorage: 1.10.2(ioredis@5.4.1)
       untyped: 1.4.2
       unwasm: 0.3.9
@@ -13264,7 +13264,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.10.0
-      unimport: 3.10.1(rollup@4.21.0)
+      unimport: 3.11.0(rollup@4.21.0)
       unstorage: 1.10.2(ioredis@5.4.1)
       unwasm: 0.3.9
     transitivePeerDependencies:
@@ -14825,7 +14825,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.1
 
-  unimport@3.10.1(rollup@4.21.0):
+  unimport@3.11.0(rollup@4.21.0):
     dependencies:
       '@rollup/pluginutils': 5.1.0(rollup@4.21.0)
       acorn: 8.12.1
@@ -15404,7 +15404,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  webpack-dev-middleware@7.4.1(webpack@5.93.0):
+  webpack-dev-middleware@7.4.2(webpack@5.93.0):
     dependencies:
       colorette: 2.0.20
       memfs: 4.11.1
