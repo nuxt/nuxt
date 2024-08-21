@@ -34,7 +34,7 @@ export async function renderPage (path = '/') {
   page.on('request', (req) => {
     try {
       requests.push(req.url().replace(url('/'), '/'))
-    } catch (err) {
+    } catch {
       // TODO
     }
   })

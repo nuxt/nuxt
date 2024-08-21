@@ -158,6 +158,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     const relative = relativeWithDot(nuxt.options.buildDir, path)
     include.add(join(relative, 'runtime'))
     exclude.add(join(relative, 'runtime/server'))
+    include.add(join(relative, 'dist/runtime'))
+    exclude.add(join(relative, 'dist/runtime/server'))
   }
 
   const isV4 = nuxt.options.future?.compatibilityVersion === 4

@@ -17,6 +17,16 @@
       "path": ""/"",
     },
   ],
+  "route.meta generated from file": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "name": "mockMeta?.name ?? "page-with-meta"",
+      "path": "mockMeta?.path ?? "/page-with-meta"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should allow pages with `:` in their path": [
     {
       "alias": "mockMeta?.alias || []",
@@ -329,6 +339,34 @@
       "redirect": "mockMeta?.redirect",
     },
   ],
+  "should handle route groups": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/(foo)/index.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? "index"",
+      "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+    {
+      "alias": "mockMeta?.alias || []",
+      "children": [
+        {
+          "alias": "mockMeta?.alias || []",
+          "component": "() => import("pages/(bar)/about/index.vue").then(m => m.default || m)",
+          "meta": "mockMeta || {}",
+          "name": "mockMeta?.name ?? "about"",
+          "path": "mockMeta?.path ?? """,
+          "redirect": "mockMeta?.redirect",
+        },
+      ],
+      "component": "() => import("pages/(foo)/about.vue").then(m => m.default || m)",
+      "meta": "mockMeta || {}",
+      "name": "mockMeta?.name ?? undefined",
+      "path": "mockMeta?.path ?? "/about"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
   "should handle trailing slashes with index routes": [
     {
       "alias": "mockMeta?.alias || []",
@@ -346,6 +384,16 @@
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
+      "redirect": "mockMeta?.redirect",
+    },
+  ],
+  "should merge route.meta with meta from file": [
+    {
+      "alias": "mockMeta?.alias || []",
+      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
+      "name": "mockMeta?.name ?? "page-with-meta"",
+      "path": "mockMeta?.path ?? "/page-with-meta"",
       "redirect": "mockMeta?.redirect",
     },
   ],

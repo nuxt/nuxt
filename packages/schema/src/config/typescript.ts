@@ -45,7 +45,6 @@ export default defineUntypedSchema({
           'vue',
           '@vue/runtime-core',
           '@vue/compiler-sfc',
-          '@vue/runtime-dom',
           'vue-router',
           'vue-router/auto-routes',
           'unplugin-vue-router/client',
@@ -66,7 +65,7 @@ export default defineUntypedSchema({
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`.
      * Requires to install `typescript` and `vue-tsc` as dev dependencies.
-     * @see https://nuxt.com/docs/guide/concepts/typescript
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/guide/concepts/typescript)
      * @type {boolean | 'build'}
      */
     typeCheck: false,

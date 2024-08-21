@@ -29,11 +29,13 @@ const viteTransform = async (source: string, id: string, selectiveClient = false
     selectiveClient,
   }, { framework: 'vite' }) as Plugin
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (vitePlugin.transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
 
 const webpackTransform = async (source: string, id: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await ((pluginWebpack as UnpluginOptions).transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
