@@ -58,6 +58,41 @@ describe('page metadata', () => {
     `)
   })
 
+  it('should extract serialisable metadata from files with multiple blocks', async () => {
+    const meta = await getRouteMeta(`
+    <script lang="ts">
+    export default {
+      name: 'thing'
+    }
+    </script>
+    <script setup>
+    definePageMeta({
+      name: 'some-custom-name',
+      path: '/some-custom-path',
+      validate: () => true,
+      middleware: [
+        function () {},
+      ],
+      otherValue: {
+        foo: 'bar',
+      },
+    })
+    </script>
+    `, filePath)
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "meta": {
+          "__nuxt_dynamic_meta_key": Set {
+            "meta",
+          },
+        },
+        "name": "some-custom-name",
+        "path": "/some-custom-path",
+      }
+    `)
+  })
+
   it('should extract serialisable metadata in options api', async () => {
     const meta = await getRouteMeta(`
     <script>
