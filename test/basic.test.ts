@@ -2150,7 +2150,11 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": [],
+        "head": [
+          {
+            "style": [],
+          },
+        ],
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
       }
@@ -2171,8 +2175,9 @@ describe('component islands', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "head": [
-          {},
-          {},
+          {
+            "style": [],
+          },
         ],
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
@@ -2240,9 +2245,6 @@ describe('component islands', () => {
         "components": {},
         "head": [
           {
-            "link": [],
-          },
-          {
             "style": [],
           },
         ],
@@ -2271,8 +2273,9 @@ describe('component islands', () => {
         {
           "components": {},
           "head": [
-            {},
-            {},
+            {
+              "style": [],
+            },
           ],
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
