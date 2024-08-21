@@ -85,7 +85,7 @@ jobs:
         run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@883d8588e56d1753a8a58c1c86e88976f0c23449 # v3.26.3
+        uses: github/codeql-action/init@f0f3afee809481da311ca3a6ff1ff51d81dbeb24 # v3.26.4
         with:
           languages: javascript
           queries: +security-and-quality
@@ -97,7 +97,7 @@ jobs:
           path: packages
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@883d8588e56d1753a8a58c1c86e88976f0c23449 # v3.26.3
+        uses: github/codeql-action/analyze@f0f3afee809481da311ca3a6ff1ff51d81dbeb24 # v3.26.4
         with:
           category: "/language:javascript"
 
