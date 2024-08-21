@@ -253,10 +253,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       },
       prefetchOn: {
         type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
-        default: options.prefetchOn || {
-          visibility: true,
-          interaction: false,
-        } satisfies NuxtLinkProps['prefetchOn'],
+        default: undefined,
         required: false,
       },
       noPrefetch: {
