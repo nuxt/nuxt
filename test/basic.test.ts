@@ -2150,11 +2150,7 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": [
-          {
-            "style": [],
-          },
-        ],
+        "head": [],
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
       }
@@ -2242,15 +2238,45 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "components": {},
-        "head": [
-          {
-            "style": [],
+        "head": [],
+        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
+        "slots": {
+          "default": {
+            "props": [],
           },
-        ],
-        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
-        "props": {},
-        "slots": {},
+          "fallback": {
+            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><!--teleport anchor-->",
+            "props": [
+              {
+                "t": "fall",
+              },
+              {
+                "t": "back",
+              },
+            ],
+          },
+          "hello": {
+            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
+            "props": [
+              {
+                "t": 0,
+              },
+              {
+                "t": 1,
+              },
+              {
+                "t": 2,
+              },
+            ],
+          },
+          "test": {
+            "props": [
+              {
+                "count": 3,
+              },
+            ],
+          },
+        },
       }
     `)
   })
@@ -2270,24 +2296,24 @@ describe('component islands', () => {
       const teleportsEntries = Object.entries(components || {})
 
       expect(result).toMatchInlineSnapshot(`
+      {
+        "components": {},
+        "head": [],
+        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
+        "props": {},
+        "slots": {},
+      }
+    `)
+      expect(teleportsEntries).toHaveLength(1)
+      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
+      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
         {
           "components": {},
-          "head": [
-            {
-              "style": [],
-            },
-          ],
+          "head": [],
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
         }
       `)
-      expect(teleportsEntries).toHaveLength(1)
-      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
-      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
-      {
-        "multiplier": 1,
-      }
-    `)
       expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
     })
   }
