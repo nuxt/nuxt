@@ -31,10 +31,6 @@ patchedDependencies:
 importers:
 
   .:
-    dependencies:
-      '@unhead/vue':
-        specifier: ^1.9.16
-        version: 1.9.16(vue@3.4.38(typescript@5.5.4))
     devDependencies:
       '@eslint/js':
         specifier: 9.9.0
@@ -66,6 +62,9 @@ importers:
       '@unhead/schema':
         specifier: 1.9.16
         version: 1.9.16
+      '@unhead/vue':
+        specifier: ^1.9.16
+        version: 1.9.16(vue@3.4.38(typescript@5.5.4))
       '@vitejs/plugin-vue':
         specifier: 5.1.2
         version: 5.1.2(vite@5.4.1(@types/node@20.15.0)(sass@1.69.4)(terser@5.27.0))(vue@3.4.38(typescript@5.5.4))
