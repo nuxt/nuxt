@@ -462,7 +462,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Response for component islands
   if (isRenderingIsland && islandContext) {
     // re-push inlined styles - head is reset by the island renderer
-    head.push({ style: inlinedStyles })
+    if (inlinedStyles.length) {
+      head.push({ style: inlinedStyles })
+    }
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: (head.headEntries().map(h => resolveUnrefHeadInput(h.input) as Head)),
