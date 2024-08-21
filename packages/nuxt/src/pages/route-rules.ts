@@ -18,30 +18,33 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
   }
   if (!ROUTE_RULE_RE.test(code)) { return null }
 
-  const script = extractScriptContent(code)
-  code = script?.code || code
-
   let rule: NitroRouteConfig | null = null
+  const contents = extractScriptContent(code)
+  for (const script of contents) {
+    if (rule) { break }
 
-  const js = await transform(code, { loader: script?.loader || 'ts' })
-  walk(parse(js.code, {
-    sourceType: 'module',
-    ecmaVersion: 'latest',
-  }) as Node, {
-    enter (_node) {
-      if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-      const node = _node as CallExpression & { start: number, end: number }
-      const name = 'name' in node.callee && node.callee.name
-      if (name === 'defineRouteRules') {
-        const rulesString = js.code.slice(node.start, node.end)
-        try {
-          rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
-        } catch {
-          throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
+    code = script?.code || code
+
+    const js = await transform(code, { loader: script?.loader || 'ts' })
+    walk(parse(js.code, {
+      sourceType: 'module',
+      ecmaVersion: 'latest',
+    }) as Node, {
+      enter (_node) {
+        if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
+        const node = _node as CallExpression & { start: number, end: number }
+        const name = 'name' in node.callee && node.callee.name
+        if (name === 'defineRouteRules') {
+          const rulesString = js.code.slice(node.start, node.end)
+          try {
+            rule = JSON.parse(runInNewContext(rulesString.replace('defineRouteRules', 'JSON.stringify'), {}))
+          } catch {
+            throw new Error('[nuxt] Error parsing route rules. They should be JSON-serializable.')
+          }
         }
-      }
-    },
-  })
+      },
+    })
+  }
 
   ruleCache[code] = rule
   return rule
