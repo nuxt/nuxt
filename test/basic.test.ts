@@ -2238,7 +2238,16 @@ describe('component islands', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "components": {},
-        "head": [],
+        "head": [
+          {
+            "link": [
+              {
+                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                "rel": "stylesheet",
+              },
+            ],
+          },
+        ],
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
