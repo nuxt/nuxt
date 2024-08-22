@@ -2321,13 +2321,6 @@ describe('component islands', () => {
               },
             ],
           },
-          {
-            "style": [
-              {
-                "innerHTML": "pre[data-v-xxxxx]{color:blue}",
-              },
-            ],
-          },
         ]
       `)
     } else if (isDev() && !isWebpack) {
