@@ -47,8 +47,7 @@ export const defineNuxtComponent: typeof defineComponent =
       _fetchKeyBase: key,
       ...options,
       setup (props, ctx) {
-        const res = setup ? setup(props, ctx) : {}
-        const result = Promise.resolve(res).then(() => res || {})
+        const res = setup ? Promise.resolve(setup(props, ctx)).then(r => r || {}) : {}
         const promises: Promise<any>[] = []
         if (options.asyncData) {
           promises.push(runLegacyAsyncData(res, options.asyncData))
@@ -59,9 +58,9 @@ export const defineNuxtComponent: typeof defineComponent =
           useHead(typeof options.head === 'function' ? () => options.head(nuxtApp) : options.head)
         }
 
-        return Promise.resolve(result)
+        return Promise.resolve(res)
           .then(() => Promise.all(promises))
-          .then(() => result)
+          .then(() => res)
           .finally(() => {
             promises.length = 0
           })
