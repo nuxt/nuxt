@@ -16,11 +16,10 @@ import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { HeadEntryOptions } from '@unhead/schema'
+import type { Head, HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
+import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useRuntimeConfig, useStorage } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
@@ -80,10 +79,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: {
-    link: (Record<string, string>)[]
-    style: ({ innerHTML: string, key: string })[]
-  }
+  head: Head[]
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -289,6 +285,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const head = createServerHead({
     plugins: unheadPlugins,
   })
+
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
   if (!isRenderingIsland) {
@@ -395,7 +392,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 2. Styles
-  head.push({ style: inlinedStyles })
+  if (inlinedStyles.length) {
+    head.push({ style: inlinedStyles })
+  }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
     for (const style in styles) {
@@ -412,7 +411,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
     }
-    head.push({ link }, headEntryOptions)
+    if (link.length) {
+      head.push({ link }, headEntryOptions)
+    }
   }
 
   if (!NO_SCRIPTS && !isRenderingIsland) {
@@ -478,20 +479,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: NuxtIslandResponse['head'] = {
-      link: [],
-      style: [],
-    }
-    for (const tag of await head.resolveTags()) {
-      if (tag.tag === 'link') {
-        islandHead.link.push({ key: 'island-link-' + hash(tag.props), ...tag.props })
-      } else if (tag.tag === 'style' && tag.innerHTML) {
-        islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
-      }
-    }
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: islandHead,
+      head: (head.headEntries().map(h => resolveUnrefHeadInput(h.input) as Head)),
       html: getServerComponentHTML(htmlContext.body),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
