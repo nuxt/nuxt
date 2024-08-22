@@ -63,7 +63,7 @@
     "@types/node": "20.16.1",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.10.0",
-    "@unhead/vue": "^1.10.0",
+    "@unhead/vue": "1.10.0",
     "@vitejs/plugin-vue": "5.1.2",
     "@vitest/coverage-v8": "2.0.5",
     "@vue/test-utils": "2.4.6",
