@@ -471,6 +471,11 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         islandHead[key as keyof Head] = value
       }
     }
+
+    // TODO: remove for v4
+    islandHead.link = islandHead.link || []
+    islandHead.style = islandHead.style || []
+
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,
