@@ -78,7 +78,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head[]
+  head: Head
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -461,9 +461,24 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
+    const islandHead: Head = {}
+    for (const entry of head.headEntries()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+        const currentValue = islandHead[key as keyof Head]
+        if (Array.isArray(currentValue)) {
+          currentValue.push(...value)
+        }
+        islandHead[key as keyof Head] = value
+      }
+    }
+
+    // TODO: remove for v4
+    islandHead.link = islandHead.link || []
+    islandHead.style = islandHead.style || []
+
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
-      head: (head.headEntries().map(h => resolveUnrefHeadInput(h.input) as Head)),
+      head: islandHead,
       html: getServerComponentHTML(_rendered.html),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
