@@ -82,6 +82,7 @@
     <NuxtIsland
       ref="island"
       name="AsyncServerComponent"
+      :props="{ count: 34 }"
     />
     <ServerOnlyComponent
       class="server-only"
