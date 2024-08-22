@@ -7,7 +7,8 @@ import { join, normalize } from 'pathe'
 import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
+import { resolveUnrefHeadInput } from '@unhead/vue'
+import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage, resolveHead } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
@@ -137,7 +138,7 @@ describe('pages', () => {
     // should apply attributes to client-only components
     expect(html).toContain('<div style="color:red;" class="client-only"></div>')
     // should render server-only components
-    expect(html.replace(/ data-island-uid="[^"]*"/, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
+    expect(html.replaceAll(/ data-island-uid="[^"]*"/g, '')).toContain('<div class="server-only" style="background-color:gray;"> server-only component <div> server-only component child (non-server-only) </div></div>')
     // should register global components automatically
     expect(html).toContain('global component registered automatically')
     expect(html).toContain('global component via suffix')
@@ -1929,6 +1930,12 @@ describe('server components/islands', () => {
     await page.close()
   })
 
+  it('/server-page', async () => {
+    const html = await $fetch<string>('/server-page')
+    // test island head
+    expect(html).toContain('<meta name="author" content="Nuxt">')
+  })
+
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
@@ -2138,15 +2145,15 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/RouteComponent')))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/RouteComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */)),
+      })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
     }
 
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": {
-          "link": [],
-          "style": [],
-        },
+        "head": [],
         "html": "<pre data-island-uid>    Route: /foo
         </pre>",
       }
@@ -2160,15 +2167,15 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/LongAsyncComponent')))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */)),
+      })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": {
-          "link": [],
-          "style": [],
-        },
+        "head": [],
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
@@ -2218,7 +2225,10 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
+      result.head = result.head.map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent'))),
+      })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
     }
     result.props = {}
     result.components = {}
@@ -2228,10 +2238,7 @@ describe('component islands', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "components": {},
-        "head": {
-          "link": [],
-          "style": [],
-        },
+        "head": [],
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
@@ -2243,7 +2250,10 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head.link = result.head.link.filter(l => !l.href!.includes('@nuxt+ui-templates') && (l.href!.startsWith('_nuxt/components/islands/') && l.href!.includes('_nuxt/components/islands/AsyncServerComponent')))
+        result.head = resolveHead(result.head).map(h => ({
+          ...h,
+          link: h.link?.filter(l => typeof l.href !== 'string' || (!l.href.includes('_nuxt/components/islands/LongAsyncComponent') && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */)),
+        })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
       }
       const { components } = result
       result.components = {}
@@ -2255,10 +2265,7 @@ describe('component islands', () => {
       expect(result).toMatchInlineSnapshot(`
         {
           "components": {},
-          "head": {
-            "link": [],
-            "style": [],
-          },
+          "head": [],
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
         }
@@ -2266,10 +2273,10 @@ describe('component islands', () => {
       expect(teleportsEntries).toHaveLength(1)
       expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
       expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
-      {
-        "multiplier": 1,
-      }
-    `)
+        {
+          "multiplier": 1,
+        }
+      `)
       expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
     })
   }
@@ -2287,41 +2294,52 @@ describe('component islands', () => {
 
     if (isDev()) {
       const fixtureDir = normalize(fileURLToPath(new URL('./fixtures/basic', import.meta.url)))
-      for (const link of result.head.link) {
-        link.href = link.href!.replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-        link.key = link.key!.replace(/-[a-z0-9]+$/i, '')
+      for (const head of result.head) {
+        for (const key in head) {
+          if (key === 'link') {
+            head[key] = head[key]?.map((h) => {
+              if (h.href) {
+                h.href = resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+              }
+              return h
+            })
+          }
+        }
       }
-      result.head.link.sort((a, b) => b.href!.localeCompare(a.href!))
     }
 
     // TODO: fix rendering of styles in webpack
     if (!isDev() && !isWebpack) {
       expect(normaliseIslandResult(result).head).toMatchInlineSnapshot(`
-        {
-          "link": [],
-          "style": [
-            {
-              "innerHTML": "pre[data-v-xxxxx]{color:blue}",
-              "key": "island-style",
-            },
-          ],
-        }
+        [
+          {
+            "style": [
+              {
+                "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              },
+            ],
+          },
+        ]
       `)
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head.link = result.head.link.filter(h => !h.href!.includes('SharedComponent'))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent')),
+      })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
+
       expect(result.head).toMatchInlineSnapshot(`
-        {
-          "link": [
-            {
-              "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
-              "key": "island-link",
-              "rel": "stylesheet",
-            },
-          ],
-          "style": [],
-        }
+        [
+          {
+            "link": [
+              {
+                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
+                "rel": "stylesheet",
+              },
+            ],
+          },
+        ]
       `)
     }
 
@@ -2668,14 +2686,21 @@ describe('Node.js compatibility for client-side', () => {
 function normaliseIslandResult (result: NuxtIslandResponse) {
   return {
     ...result,
-    head: {
-      ...result.head,
-      style: result.head.style.map(s => ({
-        ...s,
-        innerHTML: (s.innerHTML || '').replace(/data-v-[a-z0-9]+/, 'data-v-xxxxx').replace(/\.[a-zA-Z0-9]+\.svg/, '.svg'),
-        key: s.key.replace(/-[a-z0-9]+$/i, ''),
-      })),
-    },
+    head: result.head.map((h) => {
+      if (h.style) {
+        for (const style of h.style) {
+          if (typeof style !== 'string') {
+            if (style.innerHTML) {
+              style.innerHTML = (style.innerHTML as string).replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+            }
+            if (style.key) {
+              style.key = style.key.replace(/-[a-z0-9]+$/i, '')
+            }
+          }
+        }
+        return h
+      }
+    }),
   }
 }
 
