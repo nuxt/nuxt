@@ -2145,7 +2145,10 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head = resolveHead(result.head).filter(h => h.tag !== 'link' && h.href?.includes('_nuxt/components/islands/RouteComponent'))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('_nuxt/components/islands/RouteComponent')),
+      }))
     }
 
     expect(result).toMatchInlineSnapshot(`
@@ -2164,8 +2167,10 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head = resolveHead(result.head)
-        .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' && (v.href?.includes('_nuxt/components/islands/LongAsyncComponent')))))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('_nuxt/components/islands/LongAsyncComponent')),
+      }))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
@@ -2247,8 +2252,10 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head = resolveHead(result.head)
-          .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' && (v.href?.includes('_nuxt/components/islands/LongAsyncComponent')))))
+        result.head = resolveHead(result.head).map(h => ({
+          ...h,
+          link: h.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('_nuxt/components/islands/LongAsyncComponent')),
+        }))
       }
       const { components } = result
       result.components = {}
@@ -2326,8 +2333,10 @@ describe('component islands', () => {
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head = resolveHead(result.head)
-        .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' || (!v.href?.includes('SharedComponent')))))
+      result.head = resolveHead(result.head).map(h => ({
+        ...h,
+        link: h.link?.filter(l => typeof l.href !== 'string' || !l.href.includes('SharedComponent')),
+      }))
 
       expect(result.head).toMatchInlineSnapshot(`
         [
