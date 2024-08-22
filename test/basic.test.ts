@@ -8,7 +8,7 @@ import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, u
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { resolveUnrefHeadInput } from '@unhead/vue'
-import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, removeNuxtTemplateLink, renderPage } from './utils'
+import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage, resolveHead } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
 
@@ -2145,7 +2145,7 @@ describe('component islands', () => {
 
     result.html = result.html.replace(/ data-island-uid="[^"]*"/g, '')
     if (isDev()) {
-      result.head = removeNuxtTemplateLink(result.head).filter(h => h.tag !== 'link' && h.href?.includes('_nuxt/components/islands/RouteComponent'))
+      result.head = resolveHead(result.head).filter(h => h.tag !== 'link' && h.href?.includes('_nuxt/components/islands/RouteComponent'))
     }
 
     expect(result).toMatchInlineSnapshot(`
@@ -2164,17 +2164,13 @@ describe('component islands', () => {
       }),
     }))
     if (isDev()) {
-      result.head = removeNuxtTemplateLink(result.head)
+      result.head = resolveHead(result.head)
         .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' && (v.href?.includes('_nuxt/components/islands/LongAsyncComponent')))))
     }
     result.html = result.html.replaceAll(/ (data-island-uid|data-island-component)="([^"]*)"/g, '')
     expect(result).toMatchInlineSnapshot(`
       {
-        "head": [
-          {
-            "style": [],
-          },
-        ],
+        "head": [],
         "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
         "slots": {
           "default": {
@@ -2226,7 +2222,7 @@ describe('component islands', () => {
     if (isDev()) {
       result.head = result.head.map((h) => {
         if (h.link) {
-          h.link = h.link.filter(h => (!(h.href! as string).includes('@nuxt+ui-templates') && ((h.href! as string).startsWith('_nuxt/components/islands/') && (h.href! as string).includes('_nuxt/components/islands/AsyncServerComponent'))))
+          h.link = h.link.filter(h => (((h.href! as string).startsWith('_nuxt/components/islands/') && (h.href! as string).includes('_nuxt/components/islands/AsyncServerComponent'))))
         }
         return h
       })
@@ -2238,45 +2234,11 @@ describe('component islands', () => {
 
     expect(result).toMatchInlineSnapshot(`
       {
+        "components": {},
         "head": [],
-        "html": "<div data-island-uid><div> count is above 2 </div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--> that was very long ... <div id="long-async-component-count">3</div>  <!--[--><div style="display: contents;" data-island-uid data-island-slot="test"><!--teleport start--><!--teleport end--></div><!--]--><p>hello world !!!</p><!--[--><div style="display: contents;" data-island-uid data-island-slot="hello"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--><!--[--><div style="display: contents;" data-island-uid data-island-slot="fallback"><!--teleport start--><!--teleport end--></div><!--teleport start--><!--teleport end--><!--]--></div>",
-        "slots": {
-          "default": {
-            "props": [],
-          },
-          "fallback": {
-            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div>fall slot -- index: 0</div><div class="fallback-slot-content"> wonderful fallback </div></div><div style="display:contents;"><div>back slot -- index: 1</div><div class="fallback-slot-content"> wonderful fallback </div></div><!--]--><!--teleport anchor-->",
-            "props": [
-              {
-                "t": "fall",
-              },
-              {
-                "t": "back",
-              },
-            ],
-          },
-          "hello": {
-            "fallback": "<!--teleport start anchor--><!--[--><div style="display:contents;"><div> fallback slot -- index: 0</div></div><div style="display:contents;"><div> fallback slot -- index: 1</div></div><div style="display:contents;"><div> fallback slot -- index: 2</div></div><!--]--><!--teleport anchor-->",
-            "props": [
-              {
-                "t": 0,
-              },
-              {
-                "t": 1,
-              },
-              {
-                "t": 2,
-              },
-            ],
-          },
-          "test": {
-            "props": [
-              {
-                "count": 3,
-              },
-            ],
-          },
-        },
+        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
+        "props": {},
+        "slots": {},
       }
     `)
   })
@@ -2285,7 +2247,7 @@ describe('component islands', () => {
     it('render server component with selective client hydration', async () => {
       const result = await $fetch<NuxtIslandResponse>('/__nuxt_island/ServerWithClient')
       if (isDev()) {
-        result.head = removeNuxtTemplateLink(result.head)
+        result.head = resolveHead(result.head)
           .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' && (v.href?.includes('_nuxt/components/islands/LongAsyncComponent')))))
       }
       const { components } = result
@@ -2296,22 +2258,18 @@ describe('component islands', () => {
       const teleportsEntries = Object.entries(components || {})
 
       expect(result).toMatchInlineSnapshot(`
-      {
-        "components": {},
-        "head": [],
-        "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
-        "props": {},
-        "slots": {},
-      }
-    `)
-      expect(teleportsEntries).toHaveLength(1)
-      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
-      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
         {
           "components": {},
           "head": [],
           "html": "<div data-island-uid> ServerWithClient.server.vue : <p>count: 0</p> This component should not be preloaded <div><!--[--><div>a</div><div>b</div><div>c</div><!--]--></div> This is not interactive <div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><div class="interactive-component-wrapper" style="border:solid 1px red;"> The component below is not a slot but declared as interactive <!--[--><div style="display: contents;" data-island-uid data-island-component="Counter"></div><!--teleport start--><!--teleport end--><!--]--></div></div>",
           "slots": {},
+        }
+      `)
+      expect(teleportsEntries).toHaveLength(1)
+      expect(teleportsEntries[0]![0].startsWith('Counter-')).toBeTruthy()
+      expect(teleportsEntries[0]![1].props).toMatchInlineSnapshot(`
+        {
+          "multiplier": 1,
         }
       `)
       expect(teleportsEntries[0]![1].html).toMatchInlineSnapshot(`"<div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--teleport anchor-->"`)
@@ -2371,7 +2329,7 @@ describe('component islands', () => {
     } else if (isDev() && !isWebpack) {
       // TODO: resolve dev bug triggered by earlier fetch of /vueuse-head page
       // https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/core/runtime/nitro/renderer.ts#L139
-      result.head = removeNuxtTemplateLink(result.head)
+      result.head = resolveHead(result.head)
         .map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' || (!v.href?.includes('SharedComponent')))))
 
       expect(result.head).toMatchInlineSnapshot(`

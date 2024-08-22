@@ -129,7 +129,6 @@ export function parseData (html: string) {
   }
 }
 
-export function removeNuxtTemplateLink (head: Head[]) {
-  const h = head.map(i => resolveUnrefHeadInput(i) as Head)
-  return h.map(h => Object.fromEntries(Object.entries(h).filter(([key, v]) => key !== 'link' || !v.href?.includes('@nuxt+ui-templates'))))
+export function resolveHead (head: Head[]) {
+  return head.map(i => resolveUnrefHeadInput(i) as Head)
 }
