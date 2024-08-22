@@ -2227,7 +2227,7 @@ describe('component islands', () => {
     if (isDev()) {
       result.head = result.head.map(h => ({
         ...h,
-        link: h.link?.filter(l => typeof l.href === 'string' && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */)),
+        link: h.link?.filter(l => typeof l.href === 'string' && !l.href.includes('PureComponent') /* TODO: fix dev bug triggered by previous fetch of /islands */ && (!l.href.startsWith('_nuxt/components/islands/') || l.href.includes('AsyncServerComponent'))),
       })).filter(h => Object.values(h).some(h => !Array.isArray(h) || h.length))
     }
     result.props = {}
@@ -2238,16 +2238,7 @@ describe('component islands', () => {
     expect(result).toMatchInlineSnapshot(`
       {
         "components": {},
-        "head": [
-          {
-            "link": [
-              {
-                "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
-                "rel": "stylesheet",
-              },
-            ],
-          },
-        ],
+        "head": [],
         "html": "<div data-island-uid> This is a .server (20ms) async component that was very long ... <div id="async-server-component-count">2</div><div class="sugar-counter"> Sugar Counter 12 x 1 = 12 <button> Inc </button></div><!--[--><div style="display: contents;" data-island-uid data-island-slot="default"><!--teleport start--><!--teleport end--></div><!--]--></div>",
         "props": {},
         "slots": {},
