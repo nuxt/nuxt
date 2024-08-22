@@ -47,8 +47,7 @@ export const defineNuxtComponent: typeof defineComponent =
       _fetchKeyBase: key,
       ...options,
       setup (props, ctx) {
-        const nuxtApp = useNuxtApp()
-        const res = setup ? Promise.resolve(nuxtApp.runWithContext(() => setup(props, ctx))).then(r => r || {}) : {}
+        const res = setup ? setup(props, ctx) : {}
 
         const promises: Promise<any>[] = []
         if (options.asyncData) {
