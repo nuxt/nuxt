@@ -248,9 +248,10 @@ export default defineComponent({
 
     if (import.meta.server || nuxtApp.isHydrating) {
       // re-push head into active head instance
-      (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head?.forEach((h) => {
-        head.push(h)
-      })
+      const responseHead = (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head
+      if (responseHead) {
+        head.push(responseHead)
+      }
     }
 
     return (_ctx: any, _cache: any) => {
