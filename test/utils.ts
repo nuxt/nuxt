@@ -5,8 +5,6 @@ import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
 import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
-import type { Head } from '@unhead/vue'
-import { resolveUnrefHeadInput } from '@unhead/vue'
 
 export const isRenderingJson = process.env.TEST_PAYLOAD !== 'js'
 
@@ -127,8 +125,4 @@ export function parseData (html: string) {
     script: parsePayload(script || ''),
     attrs: _attrs,
   }
-}
-
-export function resolveHead (head: Head[]) {
-  return head.map(i => resolveUnrefHeadInput(i) as Head)
 }
