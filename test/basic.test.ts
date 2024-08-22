@@ -2301,9 +2301,6 @@ describe('component islands', () => {
           }
         }
       }
-
-      // todo : why do we need to sort ?
-      // result.head.filter(h => h.tag === 'link').sort((a, b) => b.props.href!.localeCompare(a.props.href!))
     }
 
     // TODO: fix rendering of styles in webpack
