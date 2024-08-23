@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, setResponseHeader, setResponseHeaders } from 'h3'
-import { getCurrentInstance } from 'vue'
+import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, getResponseHeaders, removeResponseHeader, setResponseHeader, setResponseHeaders } from 'h3'
+import { computed, getCurrentInstance } from 'vue'
 import { useServerHead } from '@unhead/vue'
 
 import type { NuxtApp } from '../nuxt'
@@ -61,11 +61,25 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   }
 }
 
-/** @since 3.11.3 */
-export function useResponseHeader (header: string, value: string) {
-  if (import.meta.client) { return undefined }
+/** @since 3.13.1 */
+export function useResponseHeader (header: string) {
+  if (import.meta.client) { return {} }
+
   const event = useRequestEvent()
-  return event ? setResponseHeader(event, header, value) : undefined
+  if (!event) { return {} }
+
+  return computed({
+    get () {
+      return getResponseHeader(event, header)
+    },
+    set (newValue) {
+      if (!newValue) {
+        return removeResponseHeader(event, header)
+      }
+
+      return setResponseHeader(event, header, newValue)
+    },
+  })
 }
 
 /** @since 3.11.3 */
