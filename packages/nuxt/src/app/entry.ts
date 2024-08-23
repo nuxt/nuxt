@@ -15,7 +15,7 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appId, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -52,8 +52,8 @@ if (import.meta.client) {
     if (vueAppPromise) { return vueAppPromise }
 
     const isSSR = Boolean(
-      (multiApp ? window.__NUXT__?.[appId] : window.__NUXT__)?.serverRendered ??
-      (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
+      window.__NUXT__?.[appId]?.serverRendered ??
+      (document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement)?.dataset.ssr === 'true',
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
