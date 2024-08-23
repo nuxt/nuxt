@@ -17,7 +17,7 @@ export interface WebpackConfigContext {
   transpile: RegExp[]
 }
 
-type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void
+type WebpackConfigPreset = (ctx: WebpackConfigContext, options?: object) => void | Promise<void>
 type WebpackConfigPresetItem = WebpackConfigPreset | [WebpackConfigPreset, any]
 
 export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
@@ -37,12 +37,12 @@ export function createWebpackConfigContext (nuxt: Nuxt): WebpackConfigContext {
   }
 }
 
-export function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
+export async function applyPresets (ctx: WebpackConfigContext, presets: WebpackConfigPresetItem | WebpackConfigPresetItem[]) {
   for (const preset of toArray(presets)) {
     if (Array.isArray(preset)) {
-      preset[0](ctx, preset[1])
+      await preset[0](ctx, preset[1])
     } else {
-      preset(ctx)
+      await preset(ctx)
     }
   }
 }
@@ -55,7 +55,7 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
   }
 
   if (typeof fileName === 'string' && ctx.options.dev) {
-    const hash = /\[(chunkhash|contenthash|hash)(?::(\d+))?]/.exec(fileName)
+    const hash = /\[(chunkhash|contenthash|hash)(?::\d+)?\]/.exec(fileName)
     if (hash) {
       logger.warn(`Notice: Please do not use ${hash[1]} in dev mode to prevent memory leak`)
     }

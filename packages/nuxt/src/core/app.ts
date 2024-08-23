@@ -1,7 +1,7 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { compileTemplate as _compileTemplate, findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath, templateUtils } from '@nuxt/kit'
+import { findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import * as defaultTemplates from './templates'
@@ -53,16 +53,14 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   }
 
   // Compile templates into vfs
-  // TODO: remove utils in v4
-  const templateContext = { utils: templateUtils, nuxt, app }
-  const compileTemplate = nuxt.options.experimental.compileTemplate ? _compileTemplate : futureCompileTemplate
+  const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
 
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
-    const mark = performance.mark(fullPath)
+    const start = performance.now()
     const oldContents = nuxt.vfs[fullPath]
     const contents = await compileTemplate(template, templateContext).catch((e) => {
       logger.error(`Could not compile template \`${template.filename}\`.`)
@@ -85,8 +83,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.measure(fullPath, mark?.name) // TODO: remove when Node 14 reaches EOL
-    const setupTime = perf ? Math.round((perf.duration * 100)) / 100 : 0 // TODO: remove when Node 14 reaches EOL
+    const perf = performance.now() - start
+    const setupTime = Math.round((perf * 100)) / 100
 
     if (nuxt.options.debug || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
@@ -113,7 +111,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 }
 
 /** @internal */
-async function futureCompileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
+async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt, app: NuxtApp, utils?: unknown }) {
   delete ctx.utils
 
   if (template.src) {
@@ -179,7 +177,12 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   app.middleware = []
   for (const config of reversedConfigs) {
     const middlewareDir = (config.rootDir === nuxt.options.rootDir ? nuxt.options : config).dir?.middleware || 'middleware'
-    const middlewareFiles = await resolveFiles(config.srcDir, `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`)
+    const middlewareFiles = await resolveFiles(config.srcDir, [
+      `${middlewareDir}/*{${nuxt.options.extensions.join(',')}}`,
+      ...nuxt.options.future.compatibilityVersion === 4
+        ? [`${middlewareDir}/*/index{${nuxt.options.extensions.join(',')}}`]
+        : [],
+    ])
     for (const file of middlewareFiles) {
       const name = getNameFromPath(file)
       if (!name) {
@@ -200,7 +203,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
       ...config.srcDir
         ? await resolveFiles(config.srcDir, [
           `${pluginDir}/*{${nuxt.options.extensions.join(',')}}`,
-          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`, // TODO: remove, only scan top-level plugins #18418
+          `${pluginDir}/*/index{${nuxt.options.extensions.join(',')}}`,
         ])
         : [],
     ].map(plugin => normalizePlugin(plugin as NuxtPlugin)))

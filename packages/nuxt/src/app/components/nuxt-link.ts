@@ -7,11 +7,11 @@ import type {
   VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
-import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from '#vue-router'
+import type { RouteLocation, RouteLocationRaw, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
 import { hasProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { preloadRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
-import { navigateTo, useRouter } from '../composables/router'
+import { navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 
@@ -60,6 +60,13 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
    */
   prefetch?: boolean
   /**
+   * Allows controlling when to prefetch links. By default, prefetch is triggered only on visibility.
+   */
+  prefetchOn?: 'visibility' | 'interaction' | Partial<{
+    visibility: boolean
+    interaction: boolean
+  }>
+  /**
    * Escape hatch to disable `prefetch` attribute.
    */
   noPrefetch?: boolean
@@ -70,8 +77,8 @@ export interface NuxtLinkProps extends Omit<RouterLinkProps, 'to'> {
  * @see https://nuxt.com/docs/api/components/nuxt-link
  */
 export interface NuxtLinkOptions extends
-  Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>,
-  Pick<NuxtLinkProps, 'prefetchedClass'> {
+  Partial<Pick<RouterLinkProps, 'activeClass' | 'exactActiveClass'>>,
+  Partial<Pick<NuxtLinkProps, 'prefetch' | 'prefetchedClass'>> {
   /**
    * The name of the component.
    * @default "NuxtLink"
@@ -86,6 +93,11 @@ export interface NuxtLinkOptions extends
    * If unset or not matching the valid values `append` or `remove`, it will be ignored.
    */
   trailingSlash?: 'append' | 'remove'
+
+  /**
+   * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
+   */
+  prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
 }
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -124,33 +136,16 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     const router = useRouter()
     const config = useRuntimeConfig()
 
-    // Resolving `to` value from `to` and `href` props
-    const to: ComputedRef<string | RouteLocationRaw> = computed(() => {
-      checkPropConflicts(props, 'to', 'href')
-      const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
-      return resolveTrailingSlashBehavior(path, router.resolve)
-    })
+    const hasTarget = computed(() => !!props.target && props.target !== '_self')
 
     // Lazily check whether to.value has a protocol
-    const isAbsoluteUrl = computed(() => typeof to.value === 'string' && hasProtocol(to.value, { acceptRelative: true }))
-
-    // Resolves `to` value if it's a route location object
-    const href = computed(() => (typeof to.value === 'object'
-      ? router.resolve(to.value)?.href ?? null
-      : (to.value && !props.external && !isAbsoluteUrl.value)
-          ? resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve) as string
-          : to.value
-    ))
+    const isAbsoluteUrl = computed(() => {
+      const path = props.to || props.href || ''
+      return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
+    })
 
     const builtinRouterLink = resolveComponent('RouterLink') as string | typeof RouterLink
     const useBuiltinLink = builtinRouterLink && typeof builtinRouterLink !== 'string' ? builtinRouterLink.useLink : undefined
-
-    const link = useBuiltinLink?.({
-      ...props,
-      to: to.value,
-    })
-
-    const hasTarget = computed(() => props.target && props.target !== '_self')
 
     // Resolving link type
     const isExternal = computed<boolean>(() => {
@@ -159,17 +154,42 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         return true
       }
 
-      // When `target` prop is set, link is external
-      if (hasTarget.value) {
-        return true
-      }
+      const path = props.to || props.href || ''
 
       // When `to` is a route object then it's an internal link
-      if (typeof to.value === 'object') {
+      if (typeof path === 'object') {
         return false
       }
 
-      return to.value === '' || isAbsoluteUrl.value
+      return path === '' || isAbsoluteUrl.value
+    })
+
+    // Resolving `to` value from `to` and `href` props
+    const to: ComputedRef<RouteLocationRaw> = computed(() => {
+      checkPropConflicts(props, 'to', 'href')
+      const path = props.to || props.href || '' // Defaults to empty string (won't render any `href` attribute)
+      if (isExternal.value) { return path }
+      return resolveTrailingSlashBehavior(path, router.resolve)
+    })
+
+    const link = isExternal.value ? undefined : useBuiltinLink?.({ ...props, to })
+
+    // Resolves `to` value if it's a route location object
+    const href = computed(() => {
+      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+
+      if (isExternal.value) {
+        const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
+        // separately resolve route objects with a 'name' property and without 'path'
+        const href = typeof path === 'object' ? router.resolve(path).href : path
+        return resolveTrailingSlashBehavior(href, router.resolve /* will not be called */) as string
+      }
+
+      if (typeof to.value === 'object') {
+        return router.resolve(to.value)?.href ?? null
+      }
+
+      return resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve /* will not be called */)
     })
 
     return {
@@ -183,10 +203,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
       async navigate () {
-        await navigateTo(href.value, { replace: props.replace, external: props.external })
+        await navigateTo(href.value, { replace: props.replace, external: isExternal.value || hasTarget.value })
       },
     } satisfies ReturnType<typeof useLink> & {
-      to: ComputedRef<string | RouteLocationRaw>
+      to: ComputedRef<RouteLocationRaw>
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
@@ -228,6 +248,11 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       // Prefetching
       prefetch: {
         type: Boolean as PropType<NuxtLinkProps['prefetch']>,
+        default: undefined,
+        required: false,
+      },
+      prefetchOn: {
+        type: [String, Object] as PropType<NuxtLinkProps['prefetchOn']>,
         default: undefined,
         required: false,
       },
@@ -291,10 +316,27 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const el = import.meta.server ? undefined : ref<HTMLElement | null>(null)
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
+      function shouldPrefetch (mode: 'visibility' | 'interaction') {
+        return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
+      }
+
+      async function prefetch (nuxtApp = useNuxtApp()) {
+        if (prefetched.value) { return }
+
+        prefetched.value = true
+
+        const path = typeof to.value === 'string'
+          ? to.value
+          : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+        await Promise.all([
+          nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
+          !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
+        ])
+      }
+
       if (import.meta.client) {
         checkPropConflicts(props, 'prefetch', 'noPrefetch')
-        const shouldPrefetch = props.prefetch !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
-        if (shouldPrefetch) {
+        if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
           let idleId: number
           let unobserve: (() => void) | null = null
@@ -306,13 +348,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
                   unobserve = observer!.observe(el.value as HTMLElement, async () => {
                     unobserve?.()
                     unobserve = null
-
-                    const path = typeof to.value === 'string' ? to.value : router.resolve(to.value).fullPath
-                    await Promise.all([
-                      nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
-                      !isExternal.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
-                    ])
-                    prefetched.value = true
+                    await prefetch(nuxtApp)
                   })
                 }
               })
@@ -336,7 +372,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value) {
+        if (!isExternal.value && !hasTarget.value) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -345,6 +381,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
             custom: props.custom,
+            onPointerenter: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
+            onFocus: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
@@ -408,7 +446,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             },
             rel,
             target,
-            isExternal: isExternal.value,
+            isExternal: isExternal.value || hasTarget.value,
             isActive: false,
             isExactActive: false,
           })

@@ -77,7 +77,7 @@ interface RouterHooks {
 interface Router {
   currentRoute: Ref<Route>
   isReady: () => Promise<void>
-  options: {}
+  options: Record<string, unknown>
   install: () => Promise<void>
   // Navigation
   push: (url: string) => Promise<void>
@@ -226,6 +226,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       })
     }
 
+    // @ts-expect-error vue-router types diverge from our Route type above
     nuxtApp._route = route
 
     // Handle middleware

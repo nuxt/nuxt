@@ -1,13 +1,14 @@
 import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { join } from 'pathe'
-import { createCommonJS, findExports } from 'mlly'
+import { findExports } from 'mlly'
 import * as VueFunctions from 'vue'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import type { Plugin } from 'vite'
+import { registry as scriptRegistry } from '@nuxt/scripts/registry'
 import { TransformPlugin } from '../src/imports/transform'
-import { defaultPresets } from '../src/imports/presets'
+import { defaultPresets, scriptsStubsPreset } from '../src/imports/presets'
 
 describe('imports:transform', () => {
   const imports: Import[] = [
@@ -22,6 +23,7 @@ describe('imports:transform', () => {
 
   const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' }) as Plugin
   const transform = async (source: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
     return typeof result === 'string' ? result : result?.code
   }
@@ -58,8 +60,8 @@ const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServer
 
 describe('imports:nuxt', () => {
   try {
-    const { __dirname } = createCommonJS(import.meta.url)
-    const entrypointContents = readFileSync(join(__dirname, '../src/app/composables/index.ts'), 'utf8')
+    const entrypointPath = fileURLToPath(new URL('../src/app/composables/index.ts', import.meta.url))
+    const entrypointContents = readFileSync(entrypointPath, 'utf8')
 
     const names = findExports(entrypointContents).flatMap(i => i.names || i.name)
     for (let name of names) {
@@ -192,4 +194,25 @@ describe('imports:vue', () => {
       expect(defaultPresets.find(a => a.from === 'vue')!.imports).toContain(name)
     })
   }
+})
+
+describe('imports:nuxt/scripts', () => {
+  const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
+  const globalScripts = new Set([
+    'useScript',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
+    'useScriptTriggerConsent',
+    // registered separately
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAnalytics',
+  ])
+  it.each(scriptsStubsPreset.imports)(`should register %s from @nuxt/scripts`, (name) => {
+    if (globalScripts.has(name)) { return }
+
+    expect(scripts).toContain(name)
+  })
+  it.each(scripts)(`should register %s from @nuxt/scripts`, (name) => {
+    expect(scriptsStubsPreset.imports).toContain(name)
+  })
 })

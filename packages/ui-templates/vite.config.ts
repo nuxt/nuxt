@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { join } from 'node:path'
+import { resolve } from 'node:path'
 import { readdirSync } from 'node:fs'
 
 import { defineConfig } from 'vite'
@@ -8,7 +8,8 @@ import UnoCSS from 'unocss/vite'
 import { DevRenderingPlugin } from './lib/dev'
 import { RenderPlugin } from './lib/render'
 
-const r = (...path: string[]) => fileURLToPath(new URL(join(...path), import.meta.url))
+const rootDir = fileURLToPath(new URL('.', import.meta.url))
+const r = (...path: string[]) => resolve(rootDir, ...path)
 
 export default defineConfig({
   build: {
@@ -32,7 +33,7 @@ export default defineConfig({
   ],
   server: {
     fs: {
-      allow: ['./templates', __dirname],
+      allow: ['./templates', rootDir],
     },
   },
 })

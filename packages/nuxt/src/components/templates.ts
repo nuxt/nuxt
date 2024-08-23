@@ -70,7 +70,11 @@ export const componentNamesTemplate: NuxtTemplate = {
 
 export const componentsIslandsTemplate: NuxtTemplate = {
   // components.islands.mjs'
-  getContents ({ app }) {
+  getContents ({ app, nuxt }) {
+    if (!nuxt.options.experimental.componentIslands) {
+      return 'export const islandComponents = {}'
+    }
+
     const components = app.components
     const pages = app.pages
     const islands = components.filter(component =>
@@ -104,29 +108,21 @@ export const componentsTypeTemplate = {
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(buildDir, c.filePath).replace(/(?<=\w)\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/(?<=\w)\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+        ? relative(buildDir, c.filePath).replace(/\b\.(?!vue)\w+$/g, '')
+        : c.filePath.replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
       return [
         c.pascalName,
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
       ]
     })
 
-    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+    const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-}
-
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
-declare module '@vue/runtime-dom' {
-  export interface GlobalComponents extends _GlobalComponents { }
 }
 
 declare module 'vue' {

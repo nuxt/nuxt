@@ -31,11 +31,6 @@ if (componentIslands) {
     }
     return {
       html: '',
-      state: {},
-      head: {
-        link: [],
-        style: [],
-      },
       ...result,
     }
   }
@@ -49,7 +44,6 @@ export default defineNuxtPlugin({
       definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
-    // For backwards compatibility - TODO: remove later
-    window.__NUXT__ = nuxtApp.payload
+    delete window.__NUXT__
   },
 })

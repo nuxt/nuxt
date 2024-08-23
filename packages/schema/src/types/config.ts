@@ -3,7 +3,7 @@ import type { ServerOptions as ViteServerOptions, UserConfig as ViteUserConfig }
 import type { Options as VuePluginOptions } from '@vitejs/plugin-vue'
 import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
-import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
+import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
@@ -11,6 +11,7 @@ import type { AppHeadMetaObject } from './head'
 
 export type { SchemaDefinition } from 'untyped'
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? { [P in keyof T]?: DeepPartial<T[P]> } : T
 
 export type UpperSnakeCase<S extends string> = Uppercase<SnakeCase<S>>
@@ -33,6 +34,7 @@ type Overrideable<T extends Record<string, any>, Path extends string = ''> = {
 
 type RuntimeConfigNamespace = Record<string, unknown>
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PublicRuntimeConfig extends RuntimeConfigNamespace { }
 
 export interface RuntimeConfig extends RuntimeConfigNamespace {
@@ -75,9 +77,10 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack' | 'postcss'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
+  postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
@@ -100,12 +103,6 @@ export interface ViteConfig extends Omit<ViteUserConfig, 'publicDir'> {
    * @see [@vitejs/plugin-vue-jsx.](https://github.com/vitejs/vite-plugin-vue/tree/main/packages/plugin-vue-jsx)
    */
   vueJsx?: VueJsxPluginOptions
-
-  /**
-   * Bundler for dev time server-side rendering.
-   * @default 'vite-node'
-   */
-  devBundler?: 'vite-node' | 'legacy'
 
   /**
    * Warmup vite entrypoint caches on dev startup.
@@ -141,12 +138,15 @@ export interface AppConfigInput extends CustomAppConfig {
   server?: never
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+type Serializable<T> = T extends Function ? never : T extends Promise<infer U> ? Serializable<U> : T extends string & {} ? T : T extends Record<string, any> ? { [K in keyof T]: Serializable<T[K]> } : T
+
 export interface NuxtAppConfig {
-  head: AppHeadMetaObject
-  layoutTransition: boolean | TransitionProps
-  pageTransition: boolean | TransitionProps
+  head: Serializable<AppHeadMetaObject>
+  layoutTransition: boolean | Serializable<TransitionProps>
+  pageTransition: boolean | Serializable<TransitionProps>
   viewTransition?: boolean | 'always'
-  keepalive: boolean | KeepAliveProps
+  keepalive: boolean | Serializable<KeepAliveProps>
 }
 
 export interface AppConfig {

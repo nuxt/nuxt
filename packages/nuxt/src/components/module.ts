@@ -13,12 +13,12 @@ import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
-const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch (_e) { return false } }
+const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
   return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
 }
 
-const DEFAULT_COMPONENTS_DIRS_RE = /\/components(\/global|\/islands)?$/
+const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
 
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
@@ -121,11 +121,7 @@ export default defineNuxtModule<ComponentsOptions>({
     // component-names.mjs
     addTemplate(componentNamesTemplate)
     // components.islands.mjs
-    if (nuxt.options.experimental.componentIslands) {
-      addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
-    } else {
-      addTemplate({ filename: 'components.islands.mjs', getContents: () => 'export const islandComponents = {}' })
-    }
+    addTemplate({ ...componentsIslandsTemplate, filename: 'components.islands.mjs' })
 
     if (componentOptions.generateMetadata) {
       addTemplate(componentsMetadataTemplate)
@@ -216,7 +212,7 @@ export default defineNuxtModule<ComponentsOptions>({
       const mode = isClient ? 'client' : 'server'
 
       config.plugins = config.plugins || []
-      if (nuxt.options.experimental.treeshakeClientOnly && isServer) {
+      if (isServer) {
         config.plugins.push(TreeShakeTemplatePlugin.vite({
           sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
@@ -285,7 +281,7 @@ export default defineNuxtModule<ComponentsOptions>({
       configs.forEach((config) => {
         const mode = config.name === 'client' ? 'client' : 'server'
         config.plugins = config.plugins || []
-        if (nuxt.options.experimental.treeshakeClientOnly && mode === 'server') {
+        if (mode === 'server') {
           config.plugins.push(TreeShakeTemplatePlugin.webpack({
             sourcemap: !!nuxt.options.sourcemap[mode],
             getComponents,

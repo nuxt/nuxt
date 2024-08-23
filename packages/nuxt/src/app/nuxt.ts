@@ -1,13 +1,13 @@
-import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive } from 'vue'
+import { effectScope, getCurrentInstance, getCurrentScope, hasInjectionContext, reactive, shallowReactive } from 'vue'
 import type { App, EffectScope, Ref, VNode, onErrorCaptured } from 'vue'
-import type { RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { HookCallback, Hookable } from 'hookable'
 import { createHooks } from 'hookable'
 import { getContext } from 'unctx'
 import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
-import type { RenderResponse } from 'nitropack'
+import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
 
@@ -20,13 +20,13 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
+// @ts-expect-error virtual file
+import { appId, multiApp } from '#build/nuxt.config.mjs'
+
 import type { NuxtAppLiterals } from '#app'
 
-// @ts-expect-error virtual import
-import { buildId } from '#build/nuxt.config.mjs'
-
-function getNuxtAppCtx (appName?: string) {
-  return getContext<NuxtApp>(appName || buildId || 'nuxt-app', {
+function getNuxtAppCtx (id = appId || 'nuxt-app') {
+  return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
 }
@@ -67,7 +67,7 @@ export interface NuxtSSRContext extends SSRContext {
   /** whether we are rendering an SSR error */
   error?: boolean
   nuxt: _NuxtApp
-  payload: NuxtPayload
+  payload: Partial<NuxtPayload>
   head: VueHeadClient<MergeHead>
   /** This is used solely to render runtime config with SPA renderer. */
   config?: Pick<RuntimeConfig, 'public' | 'app'>
@@ -92,16 +92,13 @@ export interface NuxtPayload {
   state: Record<string, any>
   once: Set<string>
   config?: Pick<RuntimeConfig, 'public' | 'app'>
-  error?: NuxtError | null
-  _errors: Record<string, NuxtError | null>
+  error?: NuxtError | undefined
+  _errors: Record<string, NuxtError | undefined>
   [key: string]: unknown
 }
 
 interface _NuxtApp {
-  /** @internal */
-  _name: string
   vueApp: App<Element>
-  globalName: string
   versions: Record<string, string>
 
   hooks: Hookable<RuntimeNuxtHooks>
@@ -113,17 +110,31 @@ interface _NuxtApp {
   [key: string]: unknown
 
   /** @internal */
-  _id?: number
+  _cookies?: Record<string, unknown>
+  /**
+   * The id of the Nuxt application.
+   * @internal */
+  _id: string
+  /**
+   * The next id that can be used for generating unique ids via `useId`.
+   * @internal
+   */
+  _genId?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */
   _asyncDataPromises: Record<string, Promise<any> | undefined>
   /** @internal */
   _asyncData: Record<string, {
-    data: Ref<any>
+    data: Ref<unknown>
+    /**
+     * @deprecated This may be removed in a future major version.
+     */
     pending: Ref<boolean>
-    error: Ref<Error | null>
+    error: Ref<Error | undefined>
     status: Ref<AsyncDataRequestStatus>
+    /** @internal */
+    _default: () => unknown
   } | undefined>
 
   /** @internal */
@@ -178,6 +189,7 @@ interface _NuxtApp {
   provide: (name: string, value: any) => void
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtApp extends _NuxtApp {}
 
 export const NuxtPluginIndicator = '__nuxt_plugin'
@@ -237,27 +249,28 @@ export type ObjectPluginInput<Injections extends Record<string, unknown> = Recor
 export interface CreateOptions {
   vueApp: NuxtApp['vueApp']
   ssrContext?: NuxtApp['ssrContext']
-  globalName?: NuxtApp['globalName']
+  /**
+   * The id of the Nuxt application, overrides the default id specified in the Nuxt config (default: `nuxt-app`).
+   */
+  id?: NuxtApp['_id']
 }
 
 /** @since 3.0.0 */
 export function createNuxtApp (options: CreateOptions) {
   let hydratingCount = 0
   const nuxtApp: NuxtApp = {
-    name: buildId,
+    _id: options.id || appId || 'nuxt-app',
     _scope: effectScope(),
     provide: undefined,
-    globalName: 'nuxt',
     versions: {
       get nuxt () { return __NUXT_VERSION__ },
       get vue () { return nuxtApp.vueApp.version },
     },
-    payload: reactive({
-      data: {},
-      state: {},
+    payload: shallowReactive({
+      data: shallowReactive({}),
+      state: reactive({}),
       once: new Set<string>(),
-      _errors: {},
-      ...(import.meta.client ? window.__NUXT__ ?? {} : { serverRendered: true }),
+      _errors: shallowReactive({}),
     }),
     static: {
       data: {},
@@ -288,10 +301,34 @@ export function createNuxtApp (options: CreateOptions) {
       }
     },
     _asyncDataPromises: {},
-    _asyncData: {},
+    _asyncData: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
   } as any as NuxtApp
+
+  if (import.meta.server) {
+    nuxtApp.payload.serverRendered = true
+  }
+
+  if (import.meta.client) {
+    const __NUXT__ = multiApp ? window.__NUXT__?.[nuxtApp._id] : window.__NUXT__
+    // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
+    if (__NUXT__) {
+      for (const key in __NUXT__) {
+        switch (key) {
+          case 'data':
+          case 'state':
+          case '_errors':
+            // Preserve reactivity for non-rich payload support
+            Object.assign(nuxtApp.payload[key], __NUXT__[key])
+            break
+
+          default:
+            nuxtApp.payload[key] = __NUXT__[key]
+        }
+      }
+    }
+  }
 
   nuxtApp.hooks = createHooks<RuntimeNuxtHooks>()
   nuxtApp.hook = nuxtApp.hooks.hook
@@ -358,16 +395,20 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
-  nuxtApp.provide('config', runtimeConfig)
+  nuxtApp.provide('config', import.meta.client && import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
 
   return nuxtApp
 }
 
-/** @since 3.0.0 */
-export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
+/** @since 3.12.0 */
+export function registerPluginHooks (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (plugin.hooks) {
     nuxtApp.hooks.addHooks(plugin.hooks)
   }
+}
+
+/** @since 3.0.0 */
+export async function applyPlugin (nuxtApp: NuxtApp, plugin: Plugin & ObjectPlugin<any>) {
   if (typeof plugin === 'function') {
     const { provide } = await nuxtApp.runWithContext(() => plugin(nuxtApp)) || {}
     if (provide && typeof provide === 'object') {
@@ -416,6 +457,11 @@ export async function applyPlugins (nuxtApp: NuxtApp, plugins: Array<Plugin & Ob
 
   for (const plugin of plugins) {
     if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    registerPluginHooks(nuxtApp, plugin)
+  }
+
+  for (const plugin of plugins) {
+    if (import.meta.server && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
     await executePlugin(plugin)
   }
 
@@ -455,7 +501,7 @@ export function isNuxtPlugin (plugin: unknown) {
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  const nuxtAppCtx = getNuxtAppCtx(nuxt._name)
+  const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
     return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
@@ -473,13 +519,13 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * @since 3.10.0
  */
 export function tryUseNuxtApp (): NuxtApp | null
-export function tryUseNuxtApp (appName?: string): NuxtApp | null {
+export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(appName).tryUse()
+  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }
@@ -492,9 +538,9 @@ export function tryUseNuxtApp (appName?: string): NuxtApp | null {
  * @since 3.0.0
  */
 export function useNuxtApp (): NuxtApp
-export function useNuxtApp (appName?: string): NuxtApp {
-  // @ts-expect-error internal usage of appName
-  const nuxtAppInstance = tryUseNuxtApp(appName)
+export function useNuxtApp (id?: string): NuxtApp {
+  // @ts-expect-error internal usage of id
+  const nuxtAppInstance = tryUseNuxtApp(id)
 
   if (!nuxtAppInstance) {
     if (import.meta.dev) {
@@ -520,4 +566,25 @@ function defineGetter<K extends string | number | symbol, V> (obj: Record<K, V>,
 /** @since 3.0.0 */
 export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
+}
+
+/**
+ * Configure error getter on runtime secret property access that doesn't exist on the client side
+ */
+const loggedKeys = new Set<string>()
+function wrappedConfig (runtimeConfig: Record<string, unknown>) {
+  if (!import.meta.dev || import.meta.server) { return runtimeConfig }
+  const keys = Object.keys(runtimeConfig).map(key => `\`${key}\``)
+  const lastKey = keys.pop()
+  return new Proxy(runtimeConfig, {
+    get (target, p, receiver) {
+      if (typeof p === 'string' && p !== 'public' && !(p in target) && !p.startsWith('__v') /* vue check for reactivity, e.g. `__v_isRef` */) {
+        if (!loggedKeys.has(p)) {
+          loggedKeys.add(p)
+          console.warn(`[nuxt] Could not access \`${p}\`. The only available runtime config keys on the client side are ${keys.join(', ')} and ${lastKey}. See https://nuxt.com/docs/guide/going-further/runtime-config for more information.`)
+        }
+      }
+      return Reflect.get(target, p, receiver)
+    },
+  })
 }

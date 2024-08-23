@@ -1,11 +1,11 @@
-import { join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 
-const r = (...path: string[]) => resolve(join(__dirname, '..', ...path))
+const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
 
 async function main () {
-  const templates = await globby(r('dist/templates/*.js'))
+  const templates = await glob(['dist/templates/*.js'], { cwd: templatesRoot })
   for (const file of templates) {
     const { template } = await import(file)
     const updated = template({
