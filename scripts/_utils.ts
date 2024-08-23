@@ -2,7 +2,7 @@ import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { exec } from 'tinyexec'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
@@ -43,7 +43,7 @@ export async function loadPackage (dir: string) {
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await globby(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = (await glob(['packages/*'], { onlyDirectories: true })).sort()
 
   const packages: Package[] = []
 
