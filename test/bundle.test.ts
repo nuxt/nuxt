@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
@@ -18,7 +18,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   // Identical behaviour between inline/external vue options as this should only affect the server build
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
-      const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
+      const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))
       expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"108k"`)
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
@@ -34,7 +34,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"211k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1351k"`)
 
     const packages = modules.files
@@ -74,7 +74,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"535k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
     expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"82.1k"`)
 
     const packages = modules.files
@@ -94,8 +94,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
-async function analyzeSizes (pattern: string | string[], rootDir: string) {
-  const files: string[] = await globby(pattern, { cwd: rootDir })
+async function analyzeSizes (pattern: string[], rootDir: string) {
+  const files: string[] = await glob(pattern, { cwd: rootDir })
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)
