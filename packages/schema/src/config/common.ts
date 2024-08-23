@@ -372,6 +372,11 @@ export default defineUntypedSchema({
     plugins: 'plugins',
 
     /**
+     * The shared directory. This directory is shared between the app and the server.
+     */
+    shared: 'shared',
+
+    /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
      * and copied across into your `dist` folder when your app is generated.
      */
@@ -440,12 +445,13 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val: Record<string, string>, get): Promise<Record<string, string>> => {
-      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')]) as [string, string, string, string]
+      const [srcDir, rootDir, assetsDir, publicDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('dir.shared')]) as [string, string, string, string, string]
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
+        '#shared': resolve(rootDir, sharedDir),
         [basename(assetsDir)]: resolve(srcDir, assetsDir),
         [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
