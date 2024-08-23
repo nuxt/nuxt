@@ -129,8 +129,8 @@ importers:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.4)
       nuxi:
-        specifier: 3.12.0
-        version: 3.12.0
+        specifier: 3.13.0
+        version: 3.13.0
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -367,8 +367,8 @@ importers:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(@opentelemetry/api@1.9.0)(encoding@0.1.13)(typescript@5.5.4)
       nuxi:
-        specifier: ^3.12.0
-        version: 3.12.0
+        specifier: ^3.13.0
+        version: 3.13.0
       nypm:
         specifier: ^0.3.9
         version: 0.3.9
@@ -5508,8 +5508,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxi@3.12.0:
-    resolution: {integrity: sha512-6vRdiXTw9SajEQOUi6Ze/XaIXzy1q/sD5UqHQSv3yqTu7Pot5S7fEihNXV8LpcgLz+9HzjVt70r7jYe7R99c2w==}
+  nuxi@3.13.0:
+    resolution: {integrity: sha512-15cnHePX+A0Vwwpgj/X+BQGcGulJQr6ddzfMXpvevpEsuAr/hHe5HioHVqYwqMSqiQLVtZLhPxeVOrg8eJn09Q==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -12806,7 +12806,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxi@3.12.0:
+  nuxi@3.13.0:
     optionalDependencies:
       fsevents: 2.3.3
 
