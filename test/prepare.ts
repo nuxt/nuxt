@@ -3,7 +3,7 @@ import { rm } from 'node:fs/promises'
 
 import { globby } from 'globby'
 
-import { execa } from 'execa'
+import { exec } from 'tinyexec'
 
 async function initTesting () {
   const dirs = await globby('*', {
@@ -20,7 +20,7 @@ async function initTesting () {
   ])
 
   await Promise.all(
-    dirs.map(dir => execa('pnpm', ['nuxi', 'prepare'], { cwd: dir })),
+    dirs.map(dir => exec('pnpm', ['nuxi', 'prepare'], { nodeOptions: { cwd: dir } })),
   )
 }
 
