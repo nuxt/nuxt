@@ -45,6 +45,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       .map(m => m.entryPath!),
   )
 
+  const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -62,6 +64,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
+      dirs: isNuxtV4
+        ? [
+            resolve(nuxt.options.rootDir, 'shared', 'utils'),
+            resolve(nuxt.options.rootDir, 'shared', 'types'),
+          ]
+        : [],
       imports: [
         {
           as: '__buildAssetsURL',
