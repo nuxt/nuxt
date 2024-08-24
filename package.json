@@ -53,7 +53,7 @@
     "vue": "3.4.38"
   },
   "devDependencies": {
-    "@eslint/js": "9.9.0",
+    "@eslint/js": "9.9.1",
     "@nuxt/eslint-config": "0.5.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.14.1",
@@ -74,7 +74,7 @@
     "cssnano": "7.0.5",
     "destr": "2.0.3",
     "devalue": "5.0.0",
-    "eslint": "9.9.0",
+    "eslint": "9.9.1",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "3.2.0",
     "eslint-typegen": "0.3.1",
@@ -93,7 +93,7 @@
     "semver": "7.6.3",
     "std-env": "3.7.0",
     "tinyexec": "0.2.0",
-    "tinyglobby": "0.2.2",
+    "tinyglobby": "0.2.5",
     "typescript": "5.5.4",
     "ufo": "1.5.4",
     "vitest": "2.0.5",
