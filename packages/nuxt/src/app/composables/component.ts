@@ -1,5 +1,5 @@
 import { getCurrentInstance, reactive, toRefs } from 'vue'
-import type { DefineComponent, defineComponent } from 'vue'
+import type { ComponentInternalInstance, DefineComponent, defineComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -9,10 +9,8 @@ import { createError } from './error'
 
 export const NuxtComponentIndicator = '__nuxt_component'
 
-async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, fn: (nuxtApp: NuxtApp) => Promise<Record<string, any>>) {
+async function runLegacyAsyncData (res: Record<string, any> | Promise<Record<string, any>>, vm: ComponentInternalInstance, route: ReturnType<typeof useRoute>, fn: (nuxtApp: NuxtApp) => Promise<Record<string, any>>) {
   const nuxtApp = useNuxtApp()
-  const route = useRoute()
-  const vm = getCurrentInstance()!
   const { fetchKey, _fetchKeyBase } = vm.proxy!.$options
   const key = (typeof fetchKey === 'function' ? fetchKey(() => '') : fetchKey) ||
     ([_fetchKeyBase, route.fullPath, route.matched.findIndex(r => Object.values(r.components || {}).includes(vm.type))].join(':'))
@@ -51,7 +49,9 @@ export const defineNuxtComponent: typeof defineComponent =
         const res = setup ? Promise.resolve(setup(props, ctx)).then(r => r || {}) : {}
         const promises: Promise<any>[] = []
         if (options.asyncData) {
-          promises.push(nuxtApp.runWithContext(() => runLegacyAsyncData(res, options.asyncData)))
+          const route = useRoute()
+          const vm = getCurrentInstance()!
+          promises.push(nuxtApp.runWithContext(() => runLegacyAsyncData(res, vm, route, options.asyncData)))
         }
 
         if (options.head) {
