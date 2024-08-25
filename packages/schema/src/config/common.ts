@@ -156,9 +156,7 @@ export default defineUntypedSchema({
    */
   serverDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-
-      return resolve(isV4 ? await get('rootDir') as string : await get('srcDir') as string, val ?? 'server')
+      return resolve(await get('rootDir') as string, val ?? 'server')
     },
   },
 
