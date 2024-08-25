@@ -73,7 +73,7 @@ export const createLazyMediaComponent = (componentLoader: AsyncComponentLoader) 
       if (import.meta.server) {
         return () => h(defineAsyncComponent(componentLoader), attrs)
       }
-      return () => h(delayedHydrationComponent(componentLoader, hydrateOnMediaQuery(attrs.hydrate as string | undefined)))
+      return () => h(delayedHydrationComponent(componentLoader, hydrateOnMediaQuery(attrs.hydrate as string | undefined ?? '')))
     },
   })
 }

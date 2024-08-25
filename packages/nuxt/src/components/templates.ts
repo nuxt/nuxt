@@ -126,6 +126,9 @@ interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DefineComponent<{hydrate?: IdleRequestOptions}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: Array<keyof HTMLElementEventMap>}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyIf${pascalName}': ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyNever${pascalName}': ${type}`).join('\n')}
 }
 
 declare module 'vue' {
@@ -137,6 +140,9 @@ ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${
 ${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DefineComponent<{hydrate?: IdleRequestOptions}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DefineComponent<{hydrate?: Array<keyof HTMLElementEventMap>}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyIf${pascalName}: ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyNever${pascalName}: ${type}`).join('\n')}
 
 export const componentNames: string[]
 `
