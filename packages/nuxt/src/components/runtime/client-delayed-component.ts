@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, getCurrentInstance, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnVisible } from 'vue'
+import { defineAsyncComponent, defineComponent, getCurrentInstance, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, ref, watch } from 'vue'
 import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 
@@ -61,6 +61,41 @@ export const createLazyEventComponent = (componentLoader: AsyncComponentLoader) 
       }
       const events: Array<keyof HTMLElementEventMap> = attrs.hydrate as Array<keyof HTMLElementEventMap> ?? ['mouseover']
       return () => h(delayedHydrationComponent(componentLoader, hydrateOnInteraction(events)))
+    },
+  })
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyMediaComponent = (componentLoader: AsyncComponentLoader) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      if (import.meta.server) {
+        return () => h(defineAsyncComponent(componentLoader), attrs)
+      }
+      return () => h(delayedHydrationComponent(componentLoader, hydrateOnMediaQuery(attrs.hydrate as string | undefined)))
+    },
+  })
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyIfComponent = (componentLoader: AsyncComponentLoader) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      if (import.meta.server) {
+        return () => h(defineAsyncComponent(componentLoader), attrs)
+      }
+      const shouldHydrate = ref(!!(attrs.hydrate ?? true))
+      if (shouldHydrate.value) {
+        return () => h(defineAsyncComponent(componentLoader), attrs)
+      }
+
+      const strategy: HydrationStrategy = (hydrate) => {
+        const unwatch = watch(shouldHydrate, () => hydrate(), { once: true })
+        return () => unwatch()
+      }
+      return () => h(delayedHydrationComponent(componentLoader, strategy))
     },
   })
 }
