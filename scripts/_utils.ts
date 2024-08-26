@@ -1,7 +1,7 @@
-import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
+import { compare } from 'semver'
 import { glob } from 'tinyglobby'
 import { exec } from 'tinyexec'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
@@ -106,17 +106,35 @@ export async function determineBumpType () {
   return determineSemverChange(commits, config)
 }
 
+export async function getLatestTag () {
+  const { stdout: latestTag } = await exec('git', ['describe', '--tags', '--abbrev=0'])
+  return latestTag.trim()
+}
+
+export async function getLatestReleasedTag () {
+  const latestReleasedTag = await exec('git', ['tag', '-l']).then(r => r.stdout.trim().split('\n').filter(t => /v3\.\d+\.\d+/.test(t)).sort(compare)).then(r => r.pop()!.trim())
+  return latestReleasedTag
+}
+
+export async function getPreviousReleasedCommits () {
+  const config = await loadChangelogConfig(process.cwd())
+  const latestTag = await getLatestTag()
+  const latestReleasedTag = await getLatestReleasedTag()
+  const commits = parseCommits(await getGitDiff(latestTag, latestReleasedTag), config)
+  return commits
+}
+
 export async function getLatestCommits () {
   const config = await loadChangelogConfig(process.cwd())
-  const { stdout: latestTag } = await exec('git', ['describe', '--tags', '--abbrev=0'])
+  const latestTag = await getLatestTag()
 
-  return parseCommits(await getGitDiff(latestTag.trim()), config)
+  return parseCommits(await getGitDiff(latestTag), config)
 }
 
 export async function getContributors () {
   const contributors = [] as Array<{ name: string, username: string }>
   const emails = new Set<string>()
-  const latestTag = execSync('git describe --tags --abbrev=0').toString().trim()
+  const latestTag = await getLatestTag()
   const rawCommits = await getGitDiff(latestTag)
   for (const commit of rawCommits) {
     if (emails.has(commit.author.email) || commit.author.name === 'renovate[bot]') { continue }
