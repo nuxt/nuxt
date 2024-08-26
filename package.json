@@ -42,7 +42,7 @@
     "@types/node": "20.16.1",
     "magic-string": "^0.30.11",
     "nuxt": "workspace:*",
-    "rollup": "^4.21.0",
+    "rollup": "^4.21.1",
     "vite": "5.4.2",
     "vue": "3.4.38"
   },
@@ -86,8 +86,8 @@
     "rimraf": "6.0.1",
     "semver": "7.6.3",
     "std-env": "3.7.0",
-    "tinyexec": "0.2.0",
-    "tinyglobby": "0.2.2",
+    "tinyexec": "0.3.0",
+    "tinyglobby": "0.2.5",
     "typescript": "5.5.4",
     "ufo": "1.5.4",
     "vitest": "2.0.5",
@@ -96,7 +96,7 @@
     "vue-router": "4.4.3",
     "vue-tsc": "2.0.29"
   },
-  "packageManager": "pnpm@9.8.0",
+  "packageManager": "pnpm@9.9.0",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
