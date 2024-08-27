@@ -827,9 +827,11 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
   }
 }
 
-const _getDefaultNuxtConfig = () => /* js */
-  `// https://nuxt.com/docs/api/configuration/nuxt-config
+const _getDefaultNuxtConfig = () => {
+  const todaysDate = formatDate(new Date())
+  return /* js */ `// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  devtools: { enabled: true }
+  compatibilityDate: '${todaysDate}'
 })
 `
+}
