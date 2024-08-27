@@ -1,4 +1,5 @@
-import { readFile, stat } from 'node:fs/promises'
+import { open } from 'node:fs/promises'
+import type { FileHandle } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { isIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
@@ -110,7 +111,7 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
   const fileEntries = await Promise.all(
     files.map((fileName) => {
       if (!opts.shouldIgnore?.(fileName)) {
-        return readFileWithMeta(dir, fileName, opts.noData)
+        return readFileWithMeta(dir, fileName)
       }
     }),
   )
@@ -118,25 +119,39 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
   return fileEntries.filter(Boolean) as FileWithMeta[]
 }
 
-async function readFileWithMeta (dir: string, fileName: string, noData?: boolean): Promise<FileWithMeta | undefined> {
-  try {
-    const filePath = resolve(dir, fileName)
+async function readFileWithMeta (dir: string, fileName: string, count = 0): Promise<FileWithMeta | undefined> {
+  let file: FileHandle | undefined = undefined
 
-    const stats = await stat(filePath)
-    if (!stats?.isFile()) {
+  try {
+    file = await open(resolve(dir, fileName))
+    const stats = await file.stat()
+
+    if (!stats?.isFile()) { return }
+
+    const mtime = stats.mtime.getTime()
+    const data = await file.readFile()
+
+    // retry if file has changed during read
+    if ((await file.stat()).mtime.getTime() !== mtime) {
+      if (count < 5) {
+        return readFileWithMeta(dir, fileName, count + 1)
+      }
+      console.warn(`Failed to read file \`${fileName}\` as it changed during read.`)
       return
     }
 
     return {
       name: fileName,
-      data: noData ? undefined : await readFile(filePath),
+      data,
       attrs: {
-        mtime: stats.mtime.getTime(),
+        mtime,
         size: stats.size,
       },
-    } satisfies FileWithMeta
+    }
   } catch (err) {
     console.warn(`Failed to read file \`${fileName}\`:`, err)
+  } finally {
+    await file?.close()
   }
 }
 
