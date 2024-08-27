@@ -1,7 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
-import { cp } from 'node:fs/promises'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -13,7 +12,6 @@ import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
-import consola from 'consola'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
@@ -536,24 +534,10 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       return build(nitro)
     }
 
-    const foldersToCache = {
-      dir: nitro.options.output.dir,
-      server: nitro.options.output.serverDir,
-      public: nitro.options.output.publicDir,
-    }
     if (nuxt.options.experimental.buildCache) {
-      const { hash: cacheId } = await getNitroHash(nuxt)
-      const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
-      if (existsSync(cacheDir)) {
-        for (const [key, folder] of Object.entries(foldersToCache)) {
-          if (existsSync(folder)) {
-            await cp(join(cacheDir, key), folder, { recursive: true })
-          }
-        }
-
-        await symlinkDist()
-        consola.success('Restored Nuxt Nitro server from cache.')
-        return
+      const { restoreCache } = await getNitroHash(nuxt)
+      if (await restoreCache()) {
+        return await symlinkDist()
       }
     }
     await prepare(nitro)
@@ -566,13 +550,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     await symlinkDist()
 
     if (nuxt.options.experimental.buildCache) {
-      const { hash: cacheId } = await getNitroHash(nuxt)
-      const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
-      for (const [key, folder] of Object.entries(foldersToCache)) {
-        if (existsSync(folder)) {
-          await cp(folder, join(cacheDir, key), { recursive: true })
-        }
-      }
+      const { collectCache } = await getNitroHash(nuxt)
+      await collectCache(Object.values(nitro.options.output))
     }
   })
 

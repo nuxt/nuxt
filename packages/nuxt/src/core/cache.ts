@@ -1,12 +1,115 @@
-import { open } from 'node:fs/promises'
+import { mkdir, open, readFile, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { resolve } from 'node:path'
+import { existsSync } from 'node:fs'
 import { isIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, murmurHash, objectHash } from 'ohash'
 import { glob } from 'tinyglobby'
-import _consola from 'consola'
-import { isAbsolute, join, relative } from 'pathe'
+import _consola, { consola } from 'consola'
+import { dirname, isAbsolute, join, relative } from 'pathe'
+import { createTar, parseTar } from 'nanotar'
+import type { TarFileInput } from 'nanotar'
+
+export async function getVueHash (nuxt: Nuxt) {
+  const id = 'vue'
+
+  const { hash } = await getHashes(nuxt, {
+    id,
+    cwd: layer => layer.config?.srcDir,
+    patterns: layer => [
+      join(relative(layer.cwd, layer.config.srcDir), '**'),
+      `!${join(relative(layer.cwd, layer.config.serverDir || 'server'), '**')}/**`,
+      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
+      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
+      '!node_modules/**',
+      '!nuxt.config.*',
+    ],
+    configOverrides: {
+      buildId: undefined,
+      serverDir: undefined,
+      nitro: undefined,
+      devServer: undefined,
+      runtimeConfig: undefined,
+      logLevel: undefined,
+      devServerHandlers: undefined,
+      generate: undefined,
+      devtools: undefined,
+    },
+  })
+
+  const cacheFile = join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
+
+  return {
+    hash,
+    async collectCache () {
+      const start = Date.now()
+      await writeCache(nuxt.options.buildDir, nuxt.options.buildDir, cacheFile)
+      const elapsed = Date.now() - start
+      consola.success(`Cached Vue client and server builds in \`${elapsed}ms\`.`)
+    },
+    async restoreCache () {
+      const start = Date.now()
+      const res = await restoreCache(nuxt.options.buildDir, cacheFile)
+      const elapsed = Date.now() - start
+      if (res) {
+        consola.success(`Vue build cache restored in \`${elapsed}ms\`.`)
+      }
+      return res
+    },
+  }
+}
+
+export async function getNitroHash (nuxt: Nuxt) {
+  const id = 'nitro'
+
+  const { hash } = await getHashes(nuxt, {
+    id,
+    cwd: layer => layer.cwd,
+    patterns: layer => [
+      relative(layer.cwd, join(nuxt.options.serverDir, '**')),
+      relative(layer.cwd, join(nuxt.options.buildDir, 'dist/server/**')),
+      ...Object.values({
+        ...nuxt.options.dir,
+        ...layer.config.dir,
+        public: undefined,
+        static: undefined,
+      }).filter(Boolean).map(dir => isAbsolute(dir!) ? `!${relative(layer.cwd, dir!)}/**` : `!${dir}/**`),
+      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
+      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
+    ],
+    configOverrides: {
+      buildId: undefined,
+      vite: undefined,
+      webpack: undefined,
+      postcss: undefined,
+    },
+  })
+
+  // TODO: provider?
+  const cacheFile = join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
+
+  return {
+    hash,
+    async collectCache (outputDirs: string[]) {
+      const start = Date.now()
+      await writeCache(nuxt.options.rootDir, outputDirs, cacheFile)
+      const elapsed = Date.now() - start
+      consola.success(`Cached Nuxt Nitro server build in \`${elapsed}ms\`.`)
+    },
+    async restoreCache () {
+      const start = Date.now()
+      const res = await restoreCache(nuxt.options.rootDir, cacheFile)
+      const elapsed = Date.now() - start
+      if (res) {
+        consola.success(`Restored Nuxt Nitro server from cache in \`${elapsed}ms\`.`)
+      }
+      return res
+    },
+  }
+}
+
+// internal
 
 type HashSource = { name: string, data: any }
 type Hashes = { hash: string, sources: HashSource[] }
@@ -19,18 +122,18 @@ interface GetHashOptions {
 }
 
 async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> {
-  if ((nuxt as any)[`_${options.id}`]) {
-    return (nuxt as any)[`_${options.id}`]
+  if ((nuxt as any)[`_${options.id}BuildHash`]) {
+    return (nuxt as any)[`_${options.id}BuildHash`]
   }
 
+  const start = Date.now()
   const hashSources: HashSource[] = []
 
   // Layers
   let layerCtr = 0
   for (const layer of nuxt.options._layers) {
-    if (layer.cwd.includes('node_modules')) {
-      continue
-    }
+    if (layer.cwd.includes('node_modules')) { continue }
+
     const layerName = `layer#${layerCtr++}`
     hashSources.push({
       name: `${layerName}:config`,
@@ -48,6 +151,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
       shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      cwd: nuxt.options.rootDir,
       patterns: options.patterns(layer),
     })
 
@@ -58,6 +162,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
 
     const rootFiles = await readFilesRecursive(layer.config?.rootDir || layer.cwd, {
       shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
+      cwd: nuxt.options.rootDir,
       patterns: [
         '.nuxtrc',
         '.npmrc',
@@ -76,17 +181,18 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
     })
   }
 
-  const res = ((nuxt as any)[`_${options.id}`] = {
+  const res = ((nuxt as any)[`_${options.id}BuildHash`] = {
     hash: hash(hashSources),
     sources: hashSources,
   })
 
+  const elapsed = Date.now() - start
+  consola.debug(`Computed \`${options.id}\` build hash in \`${elapsed}ms\`.`)
+
   return res
 }
 
-type FileWithMeta = {
-  name: string
-  data?: Buffer
+type FileWithMeta = TarFileInput & {
   attrs: {
     mtime: number
     size: number
@@ -95,8 +201,8 @@ type FileWithMeta = {
 
 interface ReadFilesRecursiveOptions {
   shouldIgnore?: (name: string) => boolean
-  noData?: boolean
   patterns: string[]
+  cwd: string
 }
 
 async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecursiveOptions): Promise<FileWithMeta[]> {
@@ -104,35 +210,36 @@ async function readFilesRecursive (dir: string | string[], opts: ReadFilesRecurs
     return (await Promise.all(dir.map(d => readFilesRecursive(d, opts)))).flat()
   }
 
-  const files = await glob(opts.patterns, {
-    cwd: dir,
-  })
+  const files = await glob(opts.patterns, { cwd: dir })
 
-  const fileEntries = await Promise.all(
-    files.map((fileName) => {
-      if (!opts.shouldIgnore?.(fileName)) {
-        return readFileWithMeta(dir, fileName)
+  const fileEntries = await Promise.all(files.map(async (fileName) => {
+    if (!opts.shouldIgnore?.(fileName)) {
+      const file = await readFileWithMeta(dir, fileName)
+      if (!file) { return }
+      return {
+        ...file,
+        name: relative(opts.cwd, join(dir, file.name)),
       }
-    }),
-  )
+    }
+  }))
 
   return fileEntries.filter(Boolean) as FileWithMeta[]
 }
 
 async function readFileWithMeta (dir: string, fileName: string, count = 0): Promise<FileWithMeta | undefined> {
-  let file: FileHandle | undefined = undefined
+  let fd: FileHandle | undefined = undefined
 
   try {
-    file = await open(resolve(dir, fileName))
-    const stats = await file.stat()
+    fd = await open(resolve(dir, fileName))
+    const stats = await fd.stat()
 
     if (!stats?.isFile()) { return }
 
     const mtime = stats.mtime.getTime()
-    const data = await file.readFile()
+    const data = await fd.readFile()
 
     // retry if file has changed during read
-    if ((await file.stat()).mtime.getTime() !== mtime) {
+    if ((await fd.stat()).mtime.getTime() !== mtime) {
       if (count < 5) {
         return readFileWithMeta(dir, fileName, count + 1)
       }
@@ -151,55 +258,48 @@ async function readFileWithMeta (dir: string, fileName: string, count = 0): Prom
   } catch (err) {
     console.warn(`Failed to read file \`${fileName}\`:`, err)
   } finally {
-    await file?.close()
+    await fd?.close()
   }
 }
 
-export function getVueHash (nuxt: Nuxt) {
-  return getHashes(nuxt, {
-    id: 'vueBuildHash',
-    cwd: layer => layer.config?.srcDir,
-    patterns: layer => [
-      join(relative(layer.cwd, layer.config.srcDir), '**'),
-      `!${join(relative(layer.cwd, layer.config.serverDir || 'server'), '**')}/**`,
-      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
-      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
-      '!node_modules/**',
-      '!nuxt.config.*',
-    ],
-    configOverrides: {
-      serverDir: undefined,
-      nitro: undefined,
-      devServer: undefined,
-      runtimeConfig: undefined,
-      logLevel: undefined,
-      devServerHandlers: undefined,
-      generate: undefined,
-      devtools: undefined,
-    },
-  })
+async function restoreCache (cwd: string, cacheFile: string) {
+  if (!existsSync(cacheFile)) {
+    return false
+  }
+
+  const files = parseTar(await readFile(cacheFile))
+  for (const file of files) {
+    let fd: FileHandle | undefined = undefined
+    try {
+      const filePath = resolve(cwd, file.name)
+      await mkdir(dirname(filePath), { recursive: true })
+
+      fd = await open(filePath, 'w')
+
+      const stats = await fd.stat().catch(() => null)
+      if (stats?.isFile() && stats.size) {
+        const lastModified = Number.parseInt(file.attrs?.mtime?.toString().padEnd(13, '0') || '0')
+        if (stats.mtime.getTime() >= lastModified) {
+          consola.debug(`Skipping \`${file.name}\` (up to date or newer than cache)`)
+          continue
+        }
+      }
+      await fd.writeFile(file.data!)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      await fd?.close()
+    }
+  }
+  return true
 }
 
-export function getNitroHash (nuxt: Nuxt) {
-  return getHashes(nuxt, {
-    id: 'nitroBuildHash',
-    cwd: layer => layer.cwd,
-    patterns: layer => [
-      relative(layer.cwd, join(nuxt.options.serverDir, '**')),
-      relative(layer.cwd, join(nuxt.options.buildDir, 'dist/server/**')),
-      ...Object.values({
-        ...nuxt.options.dir,
-        ...layer.config.dir,
-        public: undefined,
-        static: undefined,
-      }).filter(Boolean).map(dir => isAbsolute(dir!) ? `!${relative(layer.cwd, dir!)}/**` : `!${dir}/**`),
-      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
-      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
-    ],
-    configOverrides: {
-      vite: undefined,
-      webpack: undefined,
-      postcss: undefined,
-    },
+async function writeCache (cwd: string, sources: string | string[], cacheFile: string) {
+  const fileEntries = await readFilesRecursive(sources, {
+    patterns: ['**/*', '!analyze/**'],
+    cwd,
   })
+  const tarData = createTar(fileEntries)
+  await mkdir(dirname(cacheFile), { recursive: true })
+  await writeFile(cacheFile, tarData)
 }
