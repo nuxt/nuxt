@@ -241,6 +241,7 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    buildCache: true,
     serverAppConfig: true,
     typedPages: true,
     clientFallback: true,
