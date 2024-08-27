@@ -1,13 +1,17 @@
+import { existsSync } from 'node:fs'
+import { cp } from 'node:fs/promises'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
 import { importModule, isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
-import { normalize, relative, resolve } from 'pathe'
+import { join, normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
+import consola from 'consola'
 
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
+import { getVueHash } from './cache'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -40,16 +44,38 @@ export async function build (nuxt: Nuxt) {
     })
   }
 
-  await nuxt.callHook('build:before')
-  if (!nuxt.options._prepare) {
-    await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
-    await nuxt.callHook('build:done')
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    const { hash: cacheId } = await getVueHash(nuxt)
+    const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/vue', cacheId)
+    if (existsSync(cacheDir)) {
+      await cp(cacheDir, join(nuxt.options.buildDir, 'dist'), { recursive: true })
+      consola.success('Restored Vue client and server builds from cache.')
+      await nuxt.callHook('build:done')
 
-    if (!nuxt.options.dev) {
       await nuxt.callHook('close', nuxt)
+      return
     }
-  } else {
+  }
+
+  await nuxt.callHook('build:before')
+  if (nuxt.options._prepare) {
     nuxt.hook('prepare:types', () => nuxt.close())
+    return
+  }
+
+  if (nuxt.options.dev) {
+    checkForExternalConfigurationFiles()
+  }
+
+  await bundle(nuxt)
+  await nuxt.callHook('build:done')
+
+  if (!nuxt.options.dev) {
+    if (nuxt.options.experimental.buildCache) {
+      const { hash: cacheId } = await getVueHash(nuxt)
+      await cp(join(nuxt.options.buildDir, 'dist'), join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/vue', cacheId), { recursive: true })
+    }
+    await nuxt.callHook('close', nuxt)
   }
 }
 

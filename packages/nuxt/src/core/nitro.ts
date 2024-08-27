@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { existsSync, promises as fsp, readFileSync } from 'node:fs'
 import { cpus } from 'node:os'
+import { cp } from 'node:fs/promises'
 import { join, relative, resolve } from 'pathe'
 import { createRouter as createRadixRouter, exportMatcher, toRouteMatcher } from 'radix3'
 import { joinURL, withTrailingSlash } from 'ufo'
@@ -12,11 +13,13 @@ import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
+import consola from 'consola'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { getNitroHash } from './cache'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -517,24 +520,54 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  async function symlinkDist () {
+    if (nitro.options.static) {
+      const distDir = resolve(nuxt.options.rootDir, 'dist')
+      if (!existsSync(distDir)) {
+        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+      }
+    }
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
     if (nuxt.options.dev) {
-      await build(nitro)
-    } else {
-      await prepare(nitro)
-      await prerender(nitro)
+      return build(nitro)
+    }
 
-      logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
-
-      if (nitro.options.static) {
-        const distDir = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+    const foldersToCache = {
+      dir: nitro.options.output.dir,
+      server: nitro.options.output.serverDir,
+      public: nitro.options.output.publicDir,
+    }
+    if (nuxt.options.experimental.buildCache) {
+      const { hash: cacheId } = await getNitroHash(nuxt)
+      const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
+      if (existsSync(cacheDir)) {
+        for (const [key, folder] of Object.entries(foldersToCache)) {
+          await cp(join(cacheDir, key), folder, { recursive: true })
         }
+
+        await symlinkDist()
+        consola.success('Restored Nuxt Nitro server from cache.')
+        return
+      }
+    }
+    await prepare(nitro)
+    await prerender(nitro)
+
+    logger.restoreAll()
+    await build(nitro)
+    logger.wrapAll()
+
+    await symlinkDist()
+
+    if (nuxt.options.experimental.buildCache) {
+      const { hash: cacheId } = await getNitroHash(nuxt)
+      const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
+      for (const [key, folder] of Object.entries(foldersToCache)) {
+        await cp(folder, join(cacheDir, key), { recursive: true })
       }
     }
   })

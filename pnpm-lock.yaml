@@ -402,6 +402,9 @@ importers:
       strip-literal:
         specifier: ^2.1.0
         version: 2.1.0
+      tinyglobby:
+        specifier: 0.2.5
+        version: 0.2.5
       ufo:
         specifier: ^1.5.4
         version: 1.5.4
