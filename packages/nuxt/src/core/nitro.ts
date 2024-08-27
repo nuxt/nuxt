@@ -546,7 +546,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
       if (existsSync(cacheDir)) {
         for (const [key, folder] of Object.entries(foldersToCache)) {
-          await cp(join(cacheDir, key), folder, { recursive: true })
+          if (existsSync(folder)) {
+            await cp(join(cacheDir, key), folder, { recursive: true })
+          }
         }
 
         await symlinkDist()
@@ -567,7 +569,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       const { hash: cacheId } = await getNitroHash(nuxt)
       const cacheDir = join(nuxt.options.rootDir, 'node_modules/.cache/nuxt/builds/nitro', cacheId)
       for (const [key, folder] of Object.entries(foldersToCache)) {
-        await cp(folder, join(cacheDir, key), { recursive: true })
+        if (existsSync(folder)) {
+          await cp(folder, join(cacheDir, key), { recursive: true })
+        }
       }
     }
   })
