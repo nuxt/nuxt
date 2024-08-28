@@ -10,92 +10,83 @@ function elementIsVisibleInViewport (el: Element) {
     ((left > 0 && left < innerWidth) || (right > 0 && right < innerWidth))
 }
 
-function delayedHydrationComponent (loader: AsyncComponentLoader, hydrate: HydrationStrategy) {
-  return defineAsyncComponent({
-    loader,
-    hydrate,
-  })
-}
-
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIOComponent = (componentLoader: AsyncComponentLoader) => {
+export const createLazyIOComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+        return () => h(defineAsyncComponent(loader), attrs)
       }
 
       const nuxt = useNuxtApp()
       const instance = getCurrentInstance()!
 
       if (instance.vnode.el && nuxt.isHydrating && elementIsVisibleInViewport(instance.vnode.el as Element)) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+        return () => h(defineAsyncComponent(loader), attrs)
       }
 
-      return () => h(delayedHydrationComponent(componentLoader, hydrateOnVisible(attrs.hydrate as IntersectionObserverInit | undefined)))
+      return () => h(defineAsyncComponent({ loader, hydrate: hydrateOnVisible(attrs.hydrate as IntersectionObserverInit | undefined) }))
     },
   })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyNetworkComponent = (componentLoader: AsyncComponentLoader) => {
+export const createLazyNetworkComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+        return () => h(defineAsyncComponent(loader), attrs)
       }
-      return () => h(delayedHydrationComponent(componentLoader, hydrateOnIdle(attrs.hydrate as number | undefined)))
+      return () => h(defineAsyncComponent({ loader, hydrate: hydrateOnIdle(attrs.hydrate as number | undefined) }))
     },
   })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyEventComponent = (componentLoader: AsyncComponentLoader) => {
+export const createLazyEventComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
       if (import.meta.server) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+        return () => h(defineAsyncComponent(loader), attrs)
       }
       const events: Array<keyof HTMLElementEventMap> = attrs.hydrate as Array<keyof HTMLElementEventMap> ?? ['mouseover']
-      return () => h(delayedHydrationComponent(componentLoader, hydrateOnInteraction(events)))
+      return () => h(defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(events) }))
     },
   })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyMediaComponent = (componentLoader: AsyncComponentLoader) => {
+export const createLazyMediaComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
-      if (import.meta.server) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+      const media = attrs.hydrate as string | undefined
+      if (import.meta.server || !media) {
+        return () => h(defineAsyncComponent(loader), attrs)
       }
-      return () => h(delayedHydrationComponent(componentLoader, hydrateOnMediaQuery(attrs.hydrate as string | undefined ?? '')))
+      return () => h(defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(attrs.hydrate as string | undefined ?? '') }))
     },
   })
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIfComponent = (componentLoader: AsyncComponentLoader) => {
+export const createLazyIfComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
-      if (import.meta.server) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
+      const condition = !!(attrs.hydrate ?? true)
+      if (import.meta.server || condition) {
+        return () => h(defineAsyncComponent(loader), attrs)
       }
-      const shouldHydrate = ref(!!(attrs.hydrate ?? true))
-      if (shouldHydrate.value) {
-        return () => h(defineAsyncComponent(componentLoader), attrs)
-      }
-
+      const shouldHydrate = ref(condition)
       const strategy: HydrationStrategy = (hydrate) => {
         const unwatch = watch(shouldHydrate, () => hydrate(), { once: true })
         return () => unwatch()
       }
-      return () => h(delayedHydrationComponent(componentLoader, strategy))
+      return () => h(defineAsyncComponent({ loader, hydrate: strategy }))
     },
   })
 }
