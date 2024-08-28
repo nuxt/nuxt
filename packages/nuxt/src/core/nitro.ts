@@ -517,26 +517,30 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  async function symlinkDist () {
+    if (nitro.options.static) {
+      const distDir = resolve(nuxt.options.rootDir, 'dist')
+      if (!existsSync(distDir)) {
+        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+      }
+    }
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
     if (nuxt.options.dev) {
-      await build(nitro)
-    } else {
-      await prepare(nitro)
-      await prerender(nitro)
-
-      logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
-
-      if (nitro.options.static) {
-        const distDir = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
-        }
-      }
+      return build(nitro)
     }
+
+    await prepare(nitro)
+    await prerender(nitro)
+
+    logger.restoreAll()
+    await build(nitro)
+    logger.wrapAll()
+
+    await symlinkDist()
   })
 
   // nuxt dev
