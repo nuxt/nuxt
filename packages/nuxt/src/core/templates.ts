@@ -191,7 +191,7 @@ export const schemaTemplate: NuxtTemplate = {
       }
     }
 
-    const moduleOptionsInterface = (jsdocTags: boolean) => [
+    const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
       ...modules.flatMap(([configKey, importName, mod]) => {
         let link: string | undefined
 
@@ -221,30 +221,32 @@ export const schemaTemplate: NuxtTemplate = {
         return [
           `    /**`,
           `     * Configuration for \`${importName}\``,
-          ...jsdocTags && link
-            ? [
-                `     * @see ${link}`,
-              ]
-            : [],
+          ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
         ]
       }),
-      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+      modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
       // TypeScript will duplicate the jsdoc tags if we augment it twice
       // So here we only generate tags for `nuxt/schema`
-      ...moduleOptionsInterface(false),
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: true }),
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
-      ...moduleOptionsInterface(true),
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
