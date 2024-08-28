@@ -20,9 +20,9 @@ export async function getVueHash (nuxt: Nuxt) {
     cwd: layer => layer.config?.srcDir,
     patterns: layer => [
       join(relative(layer.cwd, layer.config.srcDir), '**'),
-      `!${join(relative(layer.cwd, layer.config.serverDir || 'server'), '**')}/**`,
-      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
-      `!${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
+      `!${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
+      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+      `!${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
       '!node_modules/**',
       '!nuxt.config.*',
     ],
@@ -68,7 +68,8 @@ export async function getNitroHash (nuxt: Nuxt) {
     id,
     cwd: layer => layer.cwd,
     patterns: layer => [
-      relative(layer.cwd, join(nuxt.options.serverDir, '**')),
+      `${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
+      join(relative(layer.cwd, layer.config.srcDir), 'app.config.*'),
       relative(layer.cwd, join(nuxt.options.buildDir, 'dist/server/**')),
       ...Object.values({
         ...nuxt.options.dir,
@@ -76,8 +77,8 @@ export async function getNitroHash (nuxt: Nuxt) {
         public: undefined,
         static: undefined,
       }).filter(Boolean).map(dir => isAbsolute(dir!) ? `!${relative(layer.cwd, dir!)}/**` : `!${dir}/**`),
-      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.public))}/**`,
-      `${relative(layer.cwd, resolve(nuxt.options.srcDir, nuxt.options.dir.static))}/**`,
+      `${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
+      `${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
     ],
     configOverrides: {
       buildId: undefined,
