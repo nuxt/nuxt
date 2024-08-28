@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -6,6 +7,7 @@ import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { NuxtConfigSchema } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
+import { join } from 'pathe'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -46,6 +48,11 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
+
+  const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
+  if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
+    nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
+  }
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
