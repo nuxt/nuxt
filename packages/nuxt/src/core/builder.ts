@@ -8,7 +8,7 @@ import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
-import { getVueHash } from './cache'
+import { cleanupCaches, getVueHash } from './cache'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -42,11 +42,13 @@ export async function build (nuxt: Nuxt) {
   }
 
   if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
-    const { restoreCache } = await getVueHash(nuxt)
+    const { restoreCache, collectCache } = await getVueHash(nuxt)
     if (await restoreCache()) {
       await nuxt.callHook('build:done')
       return await nuxt.callHook('close', nuxt)
     }
+    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
   }
 
   await nuxt.callHook('build:before')
@@ -60,13 +62,6 @@ export async function build (nuxt: Nuxt) {
   }
 
   await bundle(nuxt)
-
-  if (!nuxt.options.dev && nuxt.options.experimental.buildCache) {
-    nuxt.hooks.hookOnce('nitro:build:before', async () => {
-      const { collectCache } = await getVueHash(nuxt)
-      await collectCache()
-    })
-  }
 
   await nuxt.callHook('build:done')
 

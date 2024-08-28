@@ -1,4 +1,4 @@
-import { mkdir, open, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import type { FileHandle } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
@@ -114,6 +114,25 @@ export async function getNitroHash (nuxt: Nuxt) {
       }
       return res
     },
+  }
+}
+
+export async function cleanupCaches (nuxt: Nuxt) {
+  const start = Date.now()
+  const caches = await glob(['*/*.tar'], {
+    cwd: join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds'),
+    absolute: true,
+  })
+  if (caches.length >= 10) {
+    const cachesWithMeta = await Promise.all(caches.map(async (cache) => {
+      return [cache, await stat(cache).then(r => r.mtime.getTime()).catch(() => 0)] as const
+    }))
+    cachesWithMeta.sort((a, b) => a[1] - b[1])
+    for (const [cache] of cachesWithMeta.slice(0, cachesWithMeta.length - 10)) {
+      await unlink(cache)
+    }
+    const elapsed = Date.now() - start
+    consola.success(`Cleaned up old build caches in \`${elapsed}ms\`.`)
   }
 }
 
