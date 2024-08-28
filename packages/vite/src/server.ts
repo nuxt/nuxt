@@ -116,7 +116,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'unstorage', 'hookable',
+        'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
         ...runtimeDependencies,
       )
