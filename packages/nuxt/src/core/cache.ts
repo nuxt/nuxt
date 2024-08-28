@@ -53,7 +53,7 @@ export async function getVueHash (nuxt: Nuxt) {
       const res = await restoreCache(nuxt.options.buildDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
-        consola.success(`Vue build cache restored in \`${elapsed}ms\`.`)
+        consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
@@ -102,7 +102,7 @@ export async function getNitroHash (nuxt: Nuxt) {
       const res = await restoreCache(nuxt.options.rootDir, cacheFile)
       const elapsed = Date.now() - start
       if (res) {
-        consola.success(`Restored Nuxt Nitro server from cache in \`${elapsed}ms\`.`)
+        consola.success(`Restored Nuxt Nitro server build from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
