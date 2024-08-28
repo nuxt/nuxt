@@ -10,6 +10,7 @@ import _consola, { consola } from 'consola'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
+import type { Nitro } from 'nitro/types'
 
 export async function getVueHash (nuxt: Nuxt) {
   const id = 'vue'
@@ -83,6 +84,12 @@ export async function getNitroHash (nuxt: Nuxt) {
       vite: undefined,
       webpack: undefined,
       postcss: undefined,
+      nitro: {
+        ...((nuxt as any)._nitro as Nitro).options,
+        runtimeConfig: undefined,
+        _c12: undefined,
+        _config: undefined,
+      },
     },
   })
 
@@ -118,7 +125,7 @@ interface GetHashOptions {
   id: string
   cwd: (layer: NuxtConfigLayer) => string
   patterns: (layer: NuxtConfigLayer) => string[]
-  configOverrides: Partial<Record<keyof NuxtConfig, undefined>>
+  configOverrides: Partial<Record<keyof NuxtConfig, unknown>>
 }
 
 async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> {
