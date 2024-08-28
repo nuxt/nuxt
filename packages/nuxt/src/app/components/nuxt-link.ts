@@ -381,13 +381,15 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
             replace: props.replace,
             ariaCurrentValue: props.ariaCurrentValue,
             custom: props.custom,
-            onPointerenter: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
-            onFocus: shouldPrefetch('interaction') ? prefetch.bind(null, undefined) : undefined,
           }
 
           // `custom` API cannot support fallthrough attributes as the slot
           // may render fragment or text root nodes (#14897, #19375)
           if (!props.custom) {
+            if (shouldPrefetch('interaction')) {
+              routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
+              routerLinkProps.onFocus = prefetch.bind(null, undefined)
+            }
             if (prefetched.value) {
               routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
             }
@@ -427,6 +429,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           return slots.default({
             href: href.value,
             navigate,
+            prefetch,
             get route () {
               if (!href.value) { return undefined }
 
