@@ -5,6 +5,7 @@
     <LazyNCompServer message="lazy-named-comp-server" />
     <LazyEventDelayedEvent id="lazyevent" />
     <LazyEventView />
+    <LazyVisibleDelayedVisible />
     <LazyNeverDelayedNever />
     <LazyEventDelayedEvent
       id="lazyevent2"

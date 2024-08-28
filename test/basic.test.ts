@@ -2709,7 +2709,7 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This shouldn\'t be visible at first with conditions!').all()).toHaveLength(2)
     await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
     await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(1)
+    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(2)
     expect(await page.locator('body').getByText('This should always be visible!').all()).toHaveLength(1)
     await page.close()
   })
