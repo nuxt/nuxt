@@ -120,11 +120,21 @@ export const pluginsDeclaration: NuxtTemplate = {
       const relativePath = relative(typesDir, pluginPath)
 
       const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
+      // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
       }
 
+      const incorrectDeclaration = pluginPath.replace(/\.[cm]jsx?$/, '.d.ts')
+      // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
+      // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
+      if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
+        tsImports.push(relativePath.replace(/\.[cm](jsx?)$/, '.$1'))
+        continue
+      }
+
+      // if there is no declaration we only want to remove the extension if it's a TypeScript file
       if (exists(pluginPath)) {
         if (TS_RE.test(pluginPath)) {
           tsImports.push(relativePath.replace(EXTENSION_RE, ''))
