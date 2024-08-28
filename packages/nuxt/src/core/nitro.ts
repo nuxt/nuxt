@@ -17,7 +17,6 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
-import { getNitroHash } from './cache'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -534,12 +533,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       return build(nitro)
     }
 
-    if (nuxt.options.experimental.buildCache) {
-      const { restoreCache } = await getNitroHash(nuxt)
-      if (await restoreCache()) {
-        return await symlinkDist()
-      }
-    }
     await prepare(nitro)
     await prerender(nitro)
 
@@ -548,11 +541,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     logger.wrapAll()
 
     await symlinkDist()
-
-    if (nuxt.options.experimental.buildCache) {
-      const { collectCache } = await getNitroHash(nuxt)
-      await collectCache(Object.values(nitro.options.output))
-    }
   })
 
   // nuxt dev

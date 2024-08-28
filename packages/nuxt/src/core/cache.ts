@@ -7,10 +7,9 @@ import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, murmurHash, objectHash } from 'ohash'
 import { glob } from 'tinyglobby'
 import _consola, { consola } from 'consola'
-import { dirname, isAbsolute, join, relative } from 'pathe'
+import { dirname, join, relative } from 'pathe'
 import { createTar, parseTar } from 'nanotar'
 import type { TarFileInput } from 'nanotar'
-import type { Nitro } from 'nitro/types'
 
 export async function getVueHash (nuxt: Nuxt) {
   const id = 'vue'
@@ -55,62 +54,6 @@ export async function getVueHash (nuxt: Nuxt) {
       const elapsed = Date.now() - start
       if (res) {
         consola.success(`Restored Vue client and server builds from cache in \`${elapsed}ms\`.`)
-      }
-      return res
-    },
-  }
-}
-
-export async function getNitroHash (nuxt: Nuxt) {
-  const id = 'nitro'
-
-  const { hash } = await getHashes(nuxt, {
-    id,
-    cwd: layer => layer.cwd,
-    patterns: layer => [
-      `${relative(layer.cwd, layer.config.serverDir || join(layer.cwd, 'server'))}/**`,
-      join(relative(layer.cwd, layer.config.srcDir), 'app.config.*'),
-      relative(layer.cwd, join(nuxt.options.buildDir, 'dist/server/**')),
-      ...Object.values({
-        ...nuxt.options.dir,
-        ...layer.config.dir,
-        public: undefined,
-        static: undefined,
-      }).filter(Boolean).map(dir => isAbsolute(dir!) ? `!${relative(layer.cwd, dir!)}/**` : `!${dir}/**`),
-      `${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.public || 'public'))}/**`,
-      `${relative(layer.cwd, resolve(layer.config.srcDir || layer.cwd, layer.config.dir?.static || 'public'))}/**`,
-    ],
-    configOverrides: {
-      buildId: undefined,
-      vite: undefined,
-      webpack: undefined,
-      postcss: undefined,
-      nitro: {
-        ...((nuxt as any)._nitro as Nitro).options,
-        runtimeConfig: undefined,
-        _c12: undefined,
-        _config: undefined,
-      },
-    },
-  })
-
-  // TODO: provider?
-  const cacheFile = join(nuxt.options.workspaceDir, 'node_modules/.cache/nuxt/builds', id, hash + '.tar')
-
-  return {
-    hash,
-    async collectCache (outputDirs: string[]) {
-      const start = Date.now()
-      await writeCache(nuxt.options.rootDir, outputDirs, cacheFile)
-      const elapsed = Date.now() - start
-      consola.success(`Cached Nuxt Nitro server build in \`${elapsed}ms\`.`)
-    },
-    async restoreCache () {
-      const start = Date.now()
-      const res = await restoreCache(nuxt.options.rootDir, cacheFile)
-      const elapsed = Date.now() - start
-      if (res) {
-        consola.success(`Restored Nuxt Nitro server build from cache in \`${elapsed}ms\`.`)
       }
       return res
     },
