@@ -1,13 +1,13 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { copyFile } from 'node:fs/promises'
-import { basename, dirname, join, resolve } from 'pathe'
+import { basename, dirname, join } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlMinifier from 'html-minifier'
-import { globby } from 'globby'
+import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
 import { version } from '../../nuxt/package.json'
@@ -26,7 +26,10 @@ export const RenderPlugin = () => {
     enforce: 'post',
     async writeBundle () {
       const critters = new Critters({ path: outputDir })
-      const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
+      const htmlFiles = await glob(['templates/**/*.html'], {
+        cwd: outputDir,
+        absolute: true,
+      })
 
       const templateExports: Array<{
         exportName: string

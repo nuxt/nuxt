@@ -15,11 +15,13 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:')) || exclude.some(e => id.startsWith(e))) {
         return
       }
-      id = normalize(id)
-      id = resolveAlias(id, nuxt.options.alias)
-      const { dir } = parseNodeModulePath(importer)
-      return await this.resolve?.(id, dir || pkgDir, { skipSelf: true }) ?? await resolvePath(id, {
-        url: [dir || pkgDir, ...nuxt.options.modulesDir],
+
+      const normalisedId = resolveAlias(normalize(id), nuxt.options.alias)
+      const normalisedImporter = importer.replace(/^\0?virtual:(?:nuxt:)?/, '')
+      const dir = parseNodeModulePath(normalisedImporter).dir || pkgDir
+
+      return await this.resolve?.(normalisedId, dir, { skipSelf: true }) ?? await resolvePath(id, {
+        url: [dir, ...nuxt.options.modulesDir],
         // TODO: respect nitro runtime conditions
         conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require'],
       }).catch(() => {
