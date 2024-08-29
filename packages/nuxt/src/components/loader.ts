@@ -79,7 +79,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
             if (options.defaultCompNameToAutoImport) {
-              imports.add(`const ${identifier}_dev = Object.assign(${identifier}, { name: ${JSON.stringify(component.pascalName)} })`)
+              imports.add(`const ${identifier}_dev = Object.assign(${identifier}, { name: (c.${component.export ?? 'default'} || c)?.name ?? ${JSON.stringify(component.pascalName)} })`)
               identifier += '_dev'
             }
             if (isClientOnly) {
