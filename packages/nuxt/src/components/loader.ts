@@ -112,7 +112,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
                 case 'never-':
                   imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   identifier += '_delayedNever'
-                  imports.add(`const ${identifier} = __defineAsyncComponent({loader: ${dynamicImport}, hydrate: () => {})`)
+                  imports.add(`const ${identifier} = __defineAsyncComponent({loader: ${dynamicImport}, hydrate: () => {}})`)
                   break
               }
             } else {
