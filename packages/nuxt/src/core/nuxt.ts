@@ -252,8 +252,8 @@ async function initNuxt (nuxt: Nuxt) {
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
   }
-  addVitePlugin(() => CustodioPlugin.vite({ ...config, error: false }), { client: false })
-  addVitePlugin(() => CustodioPlugin.vite({ ...config, error: true }), { server: false })
+  addVitePlugin(() => Object.assign(CustodioPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(CustodioPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
   addWebpackPlugin(() => CustodioPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
