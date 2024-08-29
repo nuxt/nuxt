@@ -348,6 +348,9 @@ importers:
       ignore:
         specifier: ^5.3.2
         version: 5.3.2
+      impound:
+        specifier: ^0.1.0
+        version: 0.1.0(rollup@4.21.1)
       jiti:
         specifier: 2.0.0-beta.3
         version: 2.0.0-beta.3
@@ -4660,6 +4663,9 @@ packages:
 
   importx@0.4.3:
     resolution: {integrity: sha512-x6E6OxmWq/SUaj7wDeDeSjyHP+rMUbEaqJ5fw0uEtC/FTX9ocxNMFJ+ONnpJIsRpFz3ya6qJAK4orwSKqw0BSQ==}
+
+  impound@0.1.0:
+    resolution: {integrity: sha512-F9nJgOsDc3tysjN74edE0vGPEQrU7DAje6g5nNAL5Jc9Tv4JW3mH7XMGne+EaadTniDXLeUrVR21opkNfWO1zQ==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -11802,6 +11808,16 @@ snapshots:
       tsx: 4.16.5
     transitivePeerDependencies:
       - supports-color
+
+  impound@0.1.0(rollup@4.21.1):
+    dependencies:
+      '@rollup/pluginutils': 5.1.0(rollup@4.21.1)
+      mlly: 1.7.1
+      pathe: 1.1.2
+      unenv: 1.10.0
+      unplugin: 1.12.2
+    transitivePeerDependencies:
+      - rollup
 
   imurmurhash@0.1.4: {}
 
