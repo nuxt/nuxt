@@ -315,6 +315,9 @@ importers:
       cookie-es:
         specifier: ^1.2.2
         version: 1.2.2
+      custodio:
+        specifier: ^0.0.1
+        version: 0.0.1(rollup@4.21.1)
       defu:
         specifier: ^6.1.4
         version: 6.1.4
@@ -3716,6 +3719,9 @@ packages:
 
   cuint@0.2.2:
     resolution: {integrity: sha512-d4ZVpCW31eWwCMe1YT3ur7mUDnTXbgwyzaL320DrcRT45rfjYxkt5QWLrmOJ+/UEAI2+fQgKe/fCjR8l4TpRgw==}
+
+  custodio@0.0.1:
+    resolution: {integrity: sha512-nNdyjl7sJLnPlLMv4nYmfKlBRaVCYwrXTb7Zw48KIlaAV7tpCsCUSZM0SdaKJT0eniGlOZpZEsJ+geavWG9Fbw==}
 
   db0@0.1.4:
     resolution: {integrity: sha512-Ft6eCwONYxlwLjBXSJxw0t0RYtA5gW9mq8JfBXn9TtC0nDPlqePAhpv9v4g9aONBi6JI1OXHTKKkUYGd+BOrCA==}
@@ -10672,6 +10678,16 @@ snapshots:
   csstype@3.1.3: {}
 
   cuint@0.2.2: {}
+
+  custodio@0.0.1(rollup@4.21.1):
+    dependencies:
+      '@rollup/pluginutils': 5.1.0(rollup@4.21.1)
+      mlly: 1.7.1
+      pathe: 1.1.2
+      unenv: 1.10.0
+      unplugin: 1.12.2
+    transitivePeerDependencies:
+      - rollup
 
   db0@0.1.4: {}
 
