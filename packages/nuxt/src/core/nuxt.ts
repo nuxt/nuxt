@@ -15,13 +15,14 @@ import { colorize } from 'consola/utils'
 import { updateConfig } from 'c12/update'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
-
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
-
+import { ImpoundPlugin } from 'impound'
+import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
+
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -31,7 +32,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
@@ -245,15 +246,15 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
-  const config = {
-    rootDir: nuxt.options.rootDir,
+  const config: ImpoundOptions = {
+    cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
-    modulesDir: nuxt.options.modulesDir,
   }
-  addVitePlugin(() => ImportProtectionPlugin.vite(config))
-  addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))

@@ -1,7 +1,4 @@
-import { createUnplugin } from 'unplugin'
-import { logger } from '@nuxt/kit'
-import { resolvePath } from 'mlly'
-import { isAbsolute, join, relative, resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import escapeRE from 'escape-string-regexp'
 import type { NuxtOptions } from 'nuxt/schema'
 
@@ -53,41 +50,3 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 
   return patterns
 }
-
-export const ImportProtectionPlugin = createUnplugin(function (options: ImportProtectionOptions) {
-  const cache: Record<string, Map<string | RegExp, boolean>> = {}
-  const importersToExclude = options?.exclude || []
-  const proxy = resolvePath('unenv/runtime/mock/proxy', { url: options.modulesDir })
-  return {
-    name: 'nuxt:import-protection',
-    enforce: 'pre',
-    resolveId (id, importer) {
-      if (!importer) { return }
-      if (id[0] === '.') {
-        id = join(importer, '..', id)
-      }
-      if (isAbsolute(id)) {
-        id = relative(options.rootDir, id)
-      }
-      if (importersToExclude.some(p => typeof p === 'string' ? importer === p : p.test(importer))) { return }
-
-      const invalidImports = options.patterns.filter(([pattern]) => pattern instanceof RegExp ? pattern.test(id) : pattern === id)
-      let matched = false
-      for (const match of invalidImports) {
-        cache[id] = cache[id] || new Map()
-        const [pattern, warning] = match
-        // Skip if already warned
-        if (cache[id].has(pattern)) { continue }
-
-        const relativeImporter = isAbsolute(importer) ? relative(options.rootDir, importer) : importer
-        logger.error(warning || 'Invalid import', `[importing \`${id}\` from \`${relativeImporter}\`]`)
-        cache[id].set(pattern, true)
-        matched = true
-      }
-      if (matched) {
-        return proxy
-      }
-      return null
-    },
-  }
-})

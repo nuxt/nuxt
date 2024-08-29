@@ -1,7 +1,7 @@
-import { fileURLToPath } from 'node:url'
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
+import { ImpoundPlugin } from 'impound'
+import { nuxtImportProtections } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
@@ -39,9 +39,8 @@ describe('import protection', () => {
 })
 
 const transformWithImportProtection = (id: string, importer: string) => {
-  const plugin = ImportProtectionPlugin.rollup({
-    rootDir: '/root',
-    modulesDir: [fileURLToPath(new URL('..', import.meta.url))],
+  const plugin = ImpoundPlugin.rollup({
+    cwd: '/root',
     patterns: nuxtImportProtections({
       options: {
         modules: ['some-nuxt-module'],
@@ -51,5 +50,5 @@ const transformWithImportProtection = (id: string, importer: string) => {
     }),
   })
 
-  return (plugin as any).resolveId(id, importer)
+  return (plugin as any).resolveId.call({ error: () => {} }, id, importer)
 }

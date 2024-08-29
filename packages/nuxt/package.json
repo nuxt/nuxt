@@ -75,6 +75,7 @@
     "compatx": "^0.1.8",
     "consola": "^3.2.3",
     "cookie-es": "^1.2.2",
+    "impound": "^0.1.0",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "devalue": "^5.0.0",
