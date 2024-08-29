@@ -1,6 +1,6 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { CustodioPlugin } from 'custodio'
+import { ImpoundPlugin } from 'impound'
 import { nuxtImportProtections } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
 
@@ -39,7 +39,7 @@ describe('import protection', () => {
 })
 
 const transformWithImportProtection = (id: string, importer: string) => {
-  const plugin = CustodioPlugin.rollup({
+  const plugin = ImpoundPlugin.rollup({
     cwd: '/root',
     patterns: nuxtImportProtections({
       options: {

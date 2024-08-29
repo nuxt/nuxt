@@ -17,8 +17,8 @@ import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
-import { CustodioPlugin } from 'custodio'
-import type { CustodioOptions } from 'custodio'
+import { ImpoundPlugin } from 'impound'
+import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
@@ -246,15 +246,15 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
-  const config: CustodioOptions = {
+  const config: ImpoundOptions = {
     cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
   }
-  addVitePlugin(() => Object.assign(CustodioPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(CustodioPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => CustodioPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))

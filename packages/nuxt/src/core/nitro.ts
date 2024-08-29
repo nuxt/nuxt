@@ -11,7 +11,7 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
-import { CustodioPlugin } from 'custodio'
+import { ImpoundPlugin } from 'impound'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
@@ -359,7 +359,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
   nitroConfig.rollupConfig!.plugins!.push(
-    CustodioPlugin.rollup({
+    ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
       patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
