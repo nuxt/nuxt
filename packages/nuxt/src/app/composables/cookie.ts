@@ -103,13 +103,17 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (store) {
+      /* event is of type CookieChangeEvent */
       const changeHandler = (event: any) => {
-        // The cookieStore API does not include the cookies that have
-        // been set to null, so we need to check the cookies object
-        const cookie = event.changed.find((c: any) => c.name === name)
+        const changedCookie = event.changed.find((c: any) => c.name === name)
+        const removedCookie = event.deleted.find((c: any) => c.name === name)
 
-        if (cookie || cookies[name] !== null) {
-          handleChange({ value: cookie?.value ?? null })
+        if (changedCookie) {
+          handleChange({ value: changedCookie.value })
+        }
+
+        if (removedCookie) {
+          handleChange({ value: null })
         }
       }
       store.addEventListener('change', changeHandler)
