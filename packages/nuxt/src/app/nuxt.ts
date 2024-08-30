@@ -360,8 +360,6 @@ export function createNuxtApp (options: CreateOptions) {
     if (nuxtApp.ssrContext) {
       // Expose nuxt to the renderContext
       nuxtApp.ssrContext.nuxt = nuxtApp
-      // Expose payload types
-      nuxtApp.ssrContext._payloadReducers = {}
       // Expose current path
       nuxtApp.payload.path = nuxtApp.ssrContext.url
     }
