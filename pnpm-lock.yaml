@@ -2629,6 +2629,11 @@ packages:
   '@typescript/vfs@1.5.0':
     resolution: {integrity: sha512-AJS307bPgbsZZ9ggCT3wwpg3VbTKMFNHfaY/uF0ahSkYYrPF2dSSKDNIDIQAHm9qJqbLvCsSJH7yN4Vs/CsMMg==}
 
+  '@typescript/vfs@1.6.0':
+    resolution: {integrity: sha512-hvJUjNVeBMp77qPINuUvYXj4FyWeeMMKZkxEATEU3hqBAQ7qdTBCUFT7Sp0Zu0faeEtFf+ldXxMEDr/bk73ISg==}
+    peerDependencies:
+      typescript: '*'
+
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
@@ -2946,6 +2951,14 @@ packages:
 
   '@vue/devtools-shared@7.3.4':
     resolution: {integrity: sha512-5S5cHh7oWLZdboujnLteR3rT8UGfKHfA34aGLyFRB/B5TqBxmeLW1Rq32xW6TCDEy4isoYsYHGwJVp6DQcpiDA==}
+
+  '@vue/language-core@2.0.29':
+    resolution: {integrity: sha512-o2qz9JPjhdoVj8D2+9bDXbaI4q2uZTHQA/dbyZT4Bj1FR9viZxDJnLcKVHfxdn6wsOzRgpqIzJEEmSSvgMvDTQ==}
+    peerDependencies:
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   '@vue/language-core@2.1.4':
     resolution: {integrity: sha512-i8pfAgNjTNjabBX1xRsuV6aRw2E8bdQXwd5H8m3cUkTVJju3QN5nfdoXET0uK+yXsuloNJPzo6PXFujRRPNmMA==}
@@ -6756,11 +6769,19 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
+  twoslash-protocol@0.2.10:
+    resolution: {integrity: sha512-9sFHqPUexUPKAZM2e0dbAh0Hwkxd5fqSKWWMQ8Ah+O6MeYEUDGuWUUw5aUfS6veAqo+24VfV3xF0Vj0ZbH7x3Q==}
+
   twoslash-protocol@0.2.9:
     resolution: {integrity: sha512-uKQl8UboT6JU4VAtYaSI3DbNtgaNhFaTpCSMy/n3tRl5lMlMhrjiuNKdqx15xjcviconuGJ9oObkz1h9zJFrJg==}
 
-  twoslash-vue@0.2.9:
-    resolution: {integrity: sha512-1f/AMB7jvifOMWjG2xdqnEywmkt+U2xef2TBfXugZasNDkqeTwdHCRGafi37Kk6smyzYYj2JLemMECfdSjWwoQ==}
+  twoslash-vue@0.2.10:
+    resolution: {integrity: sha512-h3ShboisgFDGJCp+Y8q7oNY7jUmZmsWwh8CGXsSfK8R10aUeA2QvjZoWeqDfc7VKQPhrjwaUv8mVXuQOk8QWww==}
+    peerDependencies:
+      typescript: '*'
+
+  twoslash@0.2.10:
+    resolution: {integrity: sha512-EBnFbGSD7VtPYCYe8tnx5wDzTfQ2wDS10J89BnTr97Zu2+wRD/CskNLPvvDEZofb37mLSce/YuTP8GgGj+vSOg==}
     peerDependencies:
       typescript: '*'
 
@@ -8791,7 +8812,7 @@ snapshots:
       mdast-util-to-hast: 13.2.0
       shiki: 1.12.1
       twoslash: 0.2.9(typescript@5.5.4)
-      twoslash-vue: 0.2.9(typescript@5.5.4)
+      twoslash-vue: 0.2.10(typescript@5.5.4)
       vue: 3.4.38(typescript@5.5.4)
     transitivePeerDependencies:
       - '@nuxt/kit'
@@ -9098,6 +9119,13 @@ snapshots:
   '@typescript/vfs@1.5.0':
     dependencies:
       debug: 4.3.6
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript/vfs@1.6.0(typescript@5.5.4)':
+    dependencies:
+      debug: 4.3.6
+      typescript: 5.5.4
     transitivePeerDependencies:
       - supports-color
 
@@ -9717,6 +9745,19 @@ snapshots:
   '@vue/devtools-shared@7.3.4':
     dependencies:
       rfdc: 1.4.1
+
+  '@vue/language-core@2.0.29(typescript@5.5.4)':
+    dependencies:
+      '@volar/language-core': 2.4.1
+      '@vue/compiler-dom': 3.4.38
+      '@vue/compiler-vue2': 2.7.16
+      '@vue/shared': 3.4.38
+      computeds: 0.0.1
+      minimatch: 9.0.4
+      muggle-string: 0.4.1
+      path-browserify: 1.0.1
+    optionalDependencies:
+      typescript: 5.5.4
 
   '@vue/language-core@2.1.4(typescript@5.5.4)':
     dependencies:
@@ -14085,13 +14126,23 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
+  twoslash-protocol@0.2.10: {}
+
   twoslash-protocol@0.2.9: {}
 
-  twoslash-vue@0.2.9(typescript@5.5.4):
+  twoslash-vue@0.2.10(typescript@5.5.4):
     dependencies:
-      '@vue/language-core': 2.1.4(typescript@5.5.4)
-      twoslash: 0.2.9(typescript@5.5.4)
-      twoslash-protocol: 0.2.9
+      '@vue/language-core': 2.0.29(typescript@5.5.4)
+      twoslash: 0.2.10(typescript@5.5.4)
+      twoslash-protocol: 0.2.10
+      typescript: 5.5.4
+    transitivePeerDependencies:
+      - supports-color
+
+  twoslash@0.2.10(typescript@5.5.4):
+    dependencies:
+      '@typescript/vfs': 1.6.0(typescript@5.5.4)
+      twoslash-protocol: 0.2.10
       typescript: 5.5.4
     transitivePeerDependencies:
       - supports-color
