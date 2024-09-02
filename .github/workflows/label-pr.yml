@@ -1,4 +1,4 @@
-name: Label PR
+name: chore
 
 on:
   pull_request_target:

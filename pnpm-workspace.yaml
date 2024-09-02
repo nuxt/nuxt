@@ -1,4 +1,6 @@
 packages:
   - "packages/**"
+  - "!packages/nuxi"
+  - "!packages/test-utils"
   - "playground"
   - "test/fixtures/*"
