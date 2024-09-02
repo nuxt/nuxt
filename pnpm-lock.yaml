@@ -146,6 +146,9 @@ importers:
       semver:
         specifier: 7.6.3
         version: 7.6.3
+      sherif:
+        specifier: 1.0.0
+        version: 1.0.0
       std-env:
         specifier: 3.7.0
         version: 3.7.0
@@ -1035,6 +1038,8 @@ importers:
       vue:
         specifier: 3.4.38
         version: 3.4.38(typescript@5.5.4)
+
+  test/fixtures/remote-provider: {}
 
   test/fixtures/runtime-compiler:
     dependencies:
@@ -6383,6 +6388,40 @@ packages:
 
   shell-quote@1.8.1:
     resolution: {integrity: sha512-6j1W9l1iAs/4xYBI1SYOVZyFcCis9b4KCLQ8fgAGG07QvzaRLVVRQvAy85yNmmZSjYjg4MWh4gNvlPujU/5LpA==}
+
+  sherif-darwin-arm64@1.0.0:
+    resolution: {integrity: sha512-BRzDsWGjdZ6JqaDQ0HdcpapfHcnZyN24wUWpnFkljZOH78N+vB4qr+wwhmM7oyePJiO4pZWEoIBvzVT4cn1+3g==}
+    cpu: [arm64]
+    os: [darwin]
+
+  sherif-darwin-x64@1.0.0:
+    resolution: {integrity: sha512-forkTw6v2N2sjvDdHGL+MqSPdLc0e7Z0v9BsmSdIKv5kdCPncVn6tRv/4xfAE7q+Xqa2a2bH9EEXppGb4gR3Tw==}
+    cpu: [x64]
+    os: [darwin]
+
+  sherif-linux-arm64@1.0.0:
+    resolution: {integrity: sha512-psjD3YupFQtphWbwptM8EnU2jRkS6cnhxdxqJhMG9/yJpGsk99JD4tEmrDq0j/+T9UXZ5g7kXvQZXzocl3J62A==}
+    cpu: [arm64]
+    os: [linux]
+
+  sherif-linux-x64@1.0.0:
+    resolution: {integrity: sha512-4VM2Z0xfKOEEkZ2bZppq4PAxP4RYC2eWyUq23Jl/nQFeoPMQpA9IkF51UGzxZT4WZ2kZDFftgyJeB09yPvd1CA==}
+    cpu: [x64]
+    os: [linux]
+
+  sherif-windows-arm64@1.0.0:
+    resolution: {integrity: sha512-tSEzytTz3guhKLtdMCKWWru6UtmuCXD+0RsUWcqOMpzPBZZwvSr7OrTc83z8Oabmo8k6SJ5fvQeg33JSthgTqw==}
+    cpu: [arm64]
+    os: [win32]
+
+  sherif-windows-x64@1.0.0:
+    resolution: {integrity: sha512-R/KXUHBWVPU9hSlWS+Gea/ogP1h/3q/Dm/quqGrVq+MN/F+fiRsJlU52EAjAJ6G5r/4RsvQddD1ova8MKsffdw==}
+    cpu: [x64]
+    os: [win32]
+
+  sherif@1.0.0:
+    resolution: {integrity: sha512-x5gZqXmBT0G6Xnr2N63FwbMjaOikk/mPszl2bl3pnDMMyRi89w1ynAfcdIJpOyqZXW445418zkMIXAkQEfEtHw==}
+    hasBin: true
 
   shiki@1.1.2:
     resolution: {integrity: sha512-qNzFwTv5uhEDNUIwp7wHjsrffVeLbmOgWnM5mZZhoiz7G2qAUvqVfUzuWfieD45/YAKipzCtdV9SndacKtABow==}
@@ -13881,6 +13920,33 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.8.1: {}
+
+  sherif-darwin-arm64@1.0.0:
+    optional: true
+
+  sherif-darwin-x64@1.0.0:
+    optional: true
+
+  sherif-linux-arm64@1.0.0:
+    optional: true
+
+  sherif-linux-x64@1.0.0:
+    optional: true
+
+  sherif-windows-arm64@1.0.0:
+    optional: true
+
+  sherif-windows-x64@1.0.0:
+    optional: true
+
+  sherif@1.0.0:
+    optionalDependencies:
+      sherif-darwin-arm64: 1.0.0
+      sherif-darwin-x64: 1.0.0
+      sherif-linux-arm64: 1.0.0
+      sherif-linux-x64: 1.0.0
+      sherif-windows-arm64: 1.0.0
+      sherif-windows-x64: 1.0.0
 
   shiki@1.1.2:
     dependencies:

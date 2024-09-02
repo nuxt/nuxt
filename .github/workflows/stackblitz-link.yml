@@ -1,0 +1,17 @@
+name: chore
+on:
+  issues:
+    types:
+      opened
+
+permissions:
+  issues: write
+
+jobs:
+  stackblitz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: huang-julien/reproduire-sur-stackblitz@v1.0.1
+        with:
+          reproduction-heading: '### Reproduction'

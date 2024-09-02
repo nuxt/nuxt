@@ -1,4 +1,4 @@
-name: Close incomplete issues
+name: chore
 on:
   workflow_dispatch:
   schedule:

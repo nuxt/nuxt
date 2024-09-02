@@ -91,6 +91,7 @@
     "playwright-core": "1.46.1",
     "rimraf": "6.0.1",
     "semver": "7.6.3",
+    "sherif": "1.0.0",
     "std-env": "3.7.0",
     "tinyexec": "0.3.0",
     "tinyglobby": "0.2.5",
