@@ -15,7 +15,6 @@ interface LoaderOptions {
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
-  defaultCompNameToAutoImport: boolean
 }
 
 export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
@@ -78,6 +77,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
+
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
               identifier += '_wrapped'

@@ -237,7 +237,6 @@ export default defineNuxtModule<ComponentsOptions>({
         mode,
         transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
         experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
-        defaultCompNameToAutoImport: nuxt.options.dev || nuxt.options.test,
       }))
 
       if (nuxt.options.experimental.componentIslands) {
@@ -307,7 +306,6 @@ export default defineNuxtModule<ComponentsOptions>({
           mode,
           transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
           experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
-          defaultCompNameToAutoImport: nuxt.options.dev || nuxt.options.test,
         }))
 
         if (nuxt.options.experimental.componentIslands) {
