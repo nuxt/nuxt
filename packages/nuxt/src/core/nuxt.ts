@@ -1,6 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
-import { join, normalize, relative, resolve } from 'pathe'
+import { join, normalize, sep as pathSep, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
@@ -118,9 +118,13 @@ async function initNuxt (nuxt: Nuxt) {
       }
 
       try {
+        let cwd = normalize(nuxt.options.rootDir)
+        if (!cwd.endsWith(pathSep)) {
+          cwd += pathSep
+        }
         const res = await updateConfig({
           configFile: 'nuxt.config',
-          cwd: nuxt.options.rootDir,
+          cwd,
           async onCreate ({ configFile }) {
             const shallCreate = await consola.prompt(`Do you want to create ${colorize('cyan', relative(nuxt.options.rootDir, configFile))}?`, {
               type: 'confirm',
@@ -135,7 +139,6 @@ async function initNuxt (nuxt: Nuxt) {
             config.compatibilityDate = todaysDate
           },
         })
-
         if (res?.configFile) {
           nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(todaysDate)
           consola.success(`Compatibility date set to \`${todaysDate}\` in \`${relative(nuxt.options.rootDir, res.configFile)}\``)
