@@ -103,6 +103,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
     if (!shouldShowPrompt) {
+      // eslint-disable-next-line no-console
       console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
@@ -112,6 +113,7 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
+        // eslint-disable-next-line no-console
         console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         return
       }
@@ -146,6 +148,7 @@ async function initNuxt (nuxt: Nuxt) {
         consola.error(`Failed to update config: ${message}`)
       }
 
+      // eslint-disable-next-line no-console
       console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
@@ -155,6 +158,7 @@ async function initNuxt (nuxt: Nuxt) {
       nitro.hooks.hookOnce('compiled', () => {
         warnedAboutCompatDate = true
         // Print warning
+        // eslint-disable-next-line no-console
         console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
         if (shouldShowPrompt) { promptAndUpdate() }
       })
@@ -665,6 +669,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
   if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+    // eslint-disable-next-line no-console
     console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
