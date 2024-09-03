@@ -75,13 +75,9 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => ${options.defaultCompNameToAutoImport ? `Object.assign(c.${component.export ?? 'default'} || c, {name: (c.${component.export ?? 'default'} || c)?.name ?? ${JSON.stringify(component.pascalName)}})` : `c.${component.export ?? 'default'} || c`})${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
-            if (options.defaultCompNameToAutoImport) {
-              imports.add(`const ${identifier}_dev = Object.assign(${identifier}, { name: (c.${component.export ?? 'default'} || c)?.name ?? ${JSON.stringify(component.pascalName)} })`)
-              identifier += '_dev'
-            }
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
               identifier += '_wrapped'

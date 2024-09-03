@@ -1,6 +1,6 @@
 import fs, { statSync } from 'node:fs'
 import { join, normalize, relative, resolve } from 'pathe'
-import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -11,6 +11,7 @@ import { loaderPlugin } from './loader'
 import { TreeShakeTemplatePlugin } from './tree-shake'
 import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
 import { createTransformPlugin } from './transform'
+import { nameDevPlugin } from './nameDev'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -40,6 +41,12 @@ export default defineNuxtModule<ComponentsOptions>({
       return (mode && mode !== 'all')
         ? context.components.filter(c => c.mode === mode || c.mode === 'all' || (c.mode === 'server' && !context.components.some(otherComponent => otherComponent.mode !== 'server' && otherComponent.pascalName === c.pascalName)))
         : context.components
+    }
+
+    if (nuxt.options.dev || nuxt.options.test) {
+      addBuildPlugin(nameDevPlugin({
+        components: getComponents,
+      }))
     }
 
     const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {
