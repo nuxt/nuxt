@@ -2,8 +2,8 @@ import { execSync } from 'node:child_process'
 import { promises as fsp } from 'node:fs'
 import { $fetch } from 'ofetch'
 import { resolve } from 'pathe'
-import { globby } from 'globby'
-import { execaSync } from 'execa'
+import { glob } from 'tinyglobby'
+import { exec } from 'tinyexec'
 import { determineSemverChange, getGitDiff, loadChangelogConfig, parseCommits } from 'changelogen'
 
 export interface Dep {
@@ -43,7 +43,7 @@ export async function loadPackage (dir: string) {
 
 export async function loadWorkspace (dir: string) {
   const workspacePkg = await loadPackage(dir)
-  const pkgDirs = (await globby(['packages/*'], { onlyDirectories: true })).sort()
+  const pkgDirs = (await glob(['packages/*'], { onlyDirectories: true })).sort()
 
   const packages: Package[] = []
 
@@ -108,9 +108,9 @@ export async function determineBumpType () {
 
 export async function getLatestCommits () {
   const config = await loadChangelogConfig(process.cwd())
-  const latestTag = execaSync('git', ['describe', '--tags', '--abbrev=0']).stdout
+  const { stdout: latestTag } = await exec('git', ['describe', '--tags', '--abbrev=0'])
 
-  return parseCommits(await getGitDiff(latestTag), config)
+  return parseCommits(await getGitDiff(latestTag.trim()), config)
 }
 
 export async function getContributors () {

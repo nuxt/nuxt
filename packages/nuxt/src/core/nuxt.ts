@@ -15,13 +15,14 @@ import { colorize } from 'consola/utils'
 import { updateConfig } from 'c12/update'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
-
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
-
+import { ImpoundPlugin } from 'impound'
+import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
+
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -31,7 +32,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
@@ -102,6 +103,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
     if (!shouldShowPrompt) {
+      // eslint-disable-next-line no-console
       console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
@@ -111,6 +113,7 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
+        // eslint-disable-next-line no-console
         console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         return
       }
@@ -145,6 +148,7 @@ async function initNuxt (nuxt: Nuxt) {
         consola.error(`Failed to update config: ${message}`)
       }
 
+      // eslint-disable-next-line no-console
       console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
@@ -154,6 +158,7 @@ async function initNuxt (nuxt: Nuxt) {
       nitro.hooks.hookOnce('compiled', () => {
         warnedAboutCompatDate = true
         // Print warning
+        // eslint-disable-next-line no-console
         console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
         if (shouldShowPrompt) { promptAndUpdate() }
       })
@@ -245,15 +250,15 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
-  const config = {
-    rootDir: nuxt.options.rootDir,
+  const config: ImpoundOptions = {
+    cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
-    modulesDir: nuxt.options.modulesDir,
   }
-  addVitePlugin(() => ImportProtectionPlugin.vite(config))
-  addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
@@ -664,6 +669,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
   if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
+    // eslint-disable-next-line no-console
     console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 

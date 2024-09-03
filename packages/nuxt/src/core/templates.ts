@@ -134,11 +134,21 @@ export const pluginsDeclaration: NuxtTemplate = {
       const relativePath = relative(typesDir, pluginPath)
 
       const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
+      // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
       }
 
+      const incorrectDeclaration = pluginPath.replace(/\.[cm]jsx?$/, '.d.ts')
+      // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
+      // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
+      if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
+        tsImports.push(relativePath.replace(/\.[cm](jsx?)$/, '.$1'))
+        continue
+      }
+
+      // if there is no declaration we only want to remove the extension if it's a TypeScript file
       if (exists(pluginPath)) {
         if (TS_RE.test(pluginPath)) {
           tsImports.push(relativePath.replace(EXTENSION_RE, ''))
@@ -181,36 +191,76 @@ const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
-    const moduleInfo = nuxt.options._installedModules.map(m => ({
-      ...m.meta,
-      importName: m.entryPath || m.meta?.name,
-    })).filter(m => m.configKey && m.name && !adHocModules.includes(m.name))
-
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
-    const modules = moduleInfo.map(meta => [genString(meta.configKey), getImportName(meta.importName), meta])
+
+    const modules = nuxt.options._installedModules
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
+      .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
+
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
       if (key !== 'public') {
         privateRuntimeConfig[key] = nuxt.options.runtimeConfig[key]
       }
     }
-    const moduleOptionsInterface = [
-      ...modules.map(([configKey, importName]) =>
-        `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
-      ),
-      modules.length > 0 ? `  modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, meta]) => `[${genString(meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
-    ]
+
+    const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
+      ...modules.flatMap(([configKey, importName, mod]) => {
+        let link: string | undefined
+
+        // If it's not a local module, provide a link based on its name
+        if (!mod.meta?.rawPath) {
+          link = `https://www.npmjs.com/package/${importName}`
+        }
+
+        if (typeof mod.meta?.docs === 'string') {
+          link = mod.meta.docs
+        } else if (mod.meta?.repository) {
+          if (typeof mod.meta.repository === 'string') {
+            link = mod.meta.repository
+          } else if (typeof mod.meta.repository.url === 'string') {
+            link = mod.meta.repository.url
+          }
+          if (link) {
+            if (link.startsWith('git+')) {
+              link = link.replace(/^git\+/, '')
+            }
+            if (!link.startsWith('http')) {
+              link = 'https://github.com/' + link
+            }
+          }
+        }
+
+        return [
+          `    /**`,
+          `     * Configuration for \`${importName}\``,
+          ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
+          `     */`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
+        ]
+      }),
+      modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+    ].filter(Boolean)
+
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
-      moduleOptionsInterface,
+      // TypeScript will duplicate the jsdoc tags if we augment it twice
+      // So here we only generate tags for `nuxt/schema`
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: true }),
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
-      moduleOptionsInterface,
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {

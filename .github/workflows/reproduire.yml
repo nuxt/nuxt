@@ -1,4 +1,4 @@
-name: Reproduire
+name: chore
 on:
   issues:
     types: [labeled]
