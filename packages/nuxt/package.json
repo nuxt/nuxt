@@ -68,7 +68,7 @@
     "@unhead/dom": "^1.10.4",
     "@unhead/ssr": "^1.10.4",
     "@unhead/vue": "^1.10.4",
-    "@vue/shared": "^3.4.38",
+    "@vue/shared": "^3.5.0",
     "acorn": "8.12.1",
     "c12": "^1.11.2",
     "chokidar": "^3.6.0",
