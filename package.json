@@ -50,7 +50,7 @@
     "typescript": "5.5.4",
     "unbuild": "3.0.0-rc.7",
     "vite": "5.4.2",
-    "vue": "3.4.38"
+    "vue": "3.5.0"
   },
   "devDependencies": {
     "@eslint/js": "9.9.1",
@@ -99,7 +99,7 @@
     "ufo": "1.5.4",
     "vitest": "2.0.5",
     "vitest-environment-nuxt": "1.0.1",
-    "vue": "3.4.38",
+    "vue": "3.5.0",
     "vue-router": "4.4.3",
     "vue-tsc": "2.1.4"
   },
