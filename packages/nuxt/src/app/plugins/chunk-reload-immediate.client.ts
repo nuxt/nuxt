@@ -1,6 +1,6 @@
 import { defineNuxtPlugin } from '../nuxt'
 import { reloadNuxtApp } from '../composables/chunk'
-import { addRouteMiddleware } from '../../../../kit/src'
+import { addRouteMiddleware } from '../composables/router'
 
 const reloadNuxtApp_ = (path: string) => { reloadNuxtApp({ persistState: true, path }) }
 
