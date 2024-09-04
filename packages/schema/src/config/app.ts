@@ -31,11 +31,10 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Vue Experimental: Enable reactive destructure for `defineProps`
-     * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
+     * Enable reactive destructure for `defineProps`
      * @type {boolean}
      */
-    propsDestructure: false,
+    propsDestructure: true,
   },
 
   /**
