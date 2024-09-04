@@ -73,7 +73,7 @@
     "case-police": "0.7.0",
     "changelogen": "0.5.5",
     "consola": "3.2.3",
-    "cssnano": "7.0.5",
+    "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.0.0",
     "eslint": "9.9.1",
@@ -103,7 +103,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.1",
     "vue-router": "4.4.3",
-    "vue-tsc": "2.1.4"
+    "vue-tsc": "2.1.6"
   },
   "packageManager": "pnpm@9.9.0",
   "engines": {
