@@ -22,6 +22,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
       },
     ],
     virtualImports: ['#components'],
+    injectAtEnd: true,
   })
 
   function getComponentsImports (): Import[] {
