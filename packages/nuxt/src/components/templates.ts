@@ -125,14 +125,6 @@ interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
 }
 
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
-declare module '@vue/runtime-dom' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }

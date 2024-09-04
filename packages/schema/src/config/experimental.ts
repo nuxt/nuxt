@@ -348,6 +348,10 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
+        prefetch: true,
+        prefetchOn: {
+          visibility: true,
+        },
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
@@ -381,5 +385,12 @@ export default defineUntypedSchema({
      * It can reduce INP when navigating on prerendered routes.
      */
     navigationRepaint: true,
+
+    /**
+     * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
+     *
+     * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
+     */
+    buildCache: false,
   },
 })

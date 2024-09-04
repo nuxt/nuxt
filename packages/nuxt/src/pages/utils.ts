@@ -23,6 +23,7 @@ enum SegmentParserState {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 enum SegmentTokenType {
@@ -30,6 +31,7 @@ enum SegmentTokenType {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 interface SegmentToken {
@@ -115,7 +117,13 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
-      const segmentName = tokens.map(({ value }) => value).join('')
+
+      // Skip group segments
+      if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        continue
+      }
+
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
@@ -160,21 +168,23 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   return augmentedPages
 }
 
-const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/i
+const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/gi
 export function extractScriptContent (html: string) {
-  const groups = html.match(SFC_SCRIPT_RE)?.groups || {}
-
-  if (groups.content) {
-    return {
-      loader: groups.attrs.includes('tsx') ? 'tsx' : 'ts',
-      code: groups.content.trim(),
-    } as const
+  const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
+  for (const match of html.matchAll(SFC_SCRIPT_RE)) {
+    if (match?.groups?.content) {
+      contents.push({
+        loader: match.groups.attrs.includes('tsx') ? 'tsx' : 'ts',
+        code: match.groups.content.trim(),
+      })
+    }
   }
 
-  return null
+  return contents
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
+const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
@@ -189,100 +199,101 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
   if (absolutePath in metaCache) { return metaCache[absolutePath] }
 
   const loader = getLoader(absolutePath)
-  const script = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : { code: contents, loader }
-  if (!script) {
+  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
+  if (!scriptBlocks) {
     metaCache[absolutePath] = {}
     return {}
   }
-
-  if (!PAGE_META_RE.test(script.code)) {
-    metaCache[absolutePath] = {}
-    return {}
-  }
-
-  const js = await transform(script.code, { loader: script.loader })
-  const ast = parse(js.code, {
-    sourceType: 'module',
-    ecmaVersion: 'latest',
-    ranges: true,
-  }) as unknown as Program
 
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
-  const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
-  const dynamicProperties = new Set<keyof NuxtPage>()
 
-  let foundMeta = false
+  for (const script of scriptBlocks) {
+    if (!PAGE_META_RE.test(script.code)) {
+      continue
+    }
 
-  walk(ast, {
-    enter (node) {
-      if (foundMeta) { return }
+    const js = await transform(script.code, { loader: script.loader })
+    const ast = parse(js.code, {
+      sourceType: 'module',
+      ecmaVersion: 'latest',
+      ranges: true,
+    }) as unknown as Program
 
-      if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
+    const dynamicProperties = new Set<keyof NuxtPage>()
 
-      foundMeta = true
-      const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+    let foundMeta = false
 
-      for (const key of extractionKeys) {
-        const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
-        if (!property) { continue }
+    walk(ast, {
+      enter (node) {
+        if (foundMeta) { return }
 
-        if (property.value.type === 'ObjectExpression') {
-          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
-          try {
-            extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
-          } catch {
-            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-            dynamicProperties.add(key)
-            continue
-          }
-        }
+        if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
 
-        if (property.value.type === 'ArrayExpression') {
-          const values: string[] = []
-          for (const element of property.value.elements) {
-            if (!element) {
-              continue
-            }
-            if (element.type !== 'Literal' || typeof element.value !== 'string') {
-              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+        foundMeta = true
+        const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+
+        for (const key of extractionKeys) {
+          const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
+          if (!property) { continue }
+
+          if (property.value.type === 'ObjectExpression') {
+            const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+            try {
+              extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
+            } catch {
+              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
               dynamicProperties.add(key)
               continue
             }
-            values.push(element.value)
           }
-          extractedMeta[key] = values
-          continue
+
+          if (property.value.type === 'ArrayExpression') {
+            const values: string[] = []
+            for (const element of property.value.elements) {
+              if (!element) {
+                continue
+              }
+              if (element.type !== 'Literal' || typeof element.value !== 'string') {
+                console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+                dynamicProperties.add(key)
+                continue
+              }
+              values.push(element.value)
+            }
+            extractedMeta[key] = values
+            continue
+          }
+
+          if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
+            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+            dynamicProperties.add(key)
+            continue
+          }
+          extractedMeta[key] = property.value.value
         }
 
-        if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
-          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
-          dynamicProperties.add(key)
-          continue
+        for (const property of pageMetaArgument.properties) {
+          if (property.type !== 'Property') {
+            continue
+          }
+          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
+          if (!isIdentifierOrLiteral) {
+            continue
+          }
+          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
+          if (!(extractionKeys as unknown as string[]).includes(name)) {
+            dynamicProperties.add('meta')
+            break
+          }
         }
-        extractedMeta[key] = property.value.value
-      }
 
-      for (const property of pageMetaArgument.properties) {
-        if (property.type !== 'Property') {
-          continue
+        if (dynamicProperties.size) {
+          extractedMeta.meta ??= {}
+          extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
         }
-        const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
-        if (!isIdentifierOrLiteral) {
-          continue
-        }
-        const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-        if (!(extractionKeys as unknown as string[]).includes(name)) {
-          dynamicProperties.add('meta')
-          break
-        }
-      }
-
-      if (dynamicProperties.size) {
-        extractedMeta.meta ??= {}
-        extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
-      }
-    },
-  })
+      },
+    })
+  }
 
   metaCache[absolutePath] = extractedMeta
   return extractedMeta
@@ -298,7 +309,9 @@ function getRoutePath (tokens: SegmentToken[]): string {
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
-            : encodePath(token.value).replace(/:/g, '\\:'))
+            : token.type === SegmentTokenType.group
+              ? ''
+              : encodePath(token.value).replace(/:/g, '\\:'))
     )
   }, '/')
 }
@@ -328,7 +341,9 @@ function parseSegment (segment: string) {
             ? SegmentTokenType.dynamic
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
-              : SegmentTokenType.catchall,
+              : state === SegmentParserState.catchall
+                ? SegmentTokenType.catchall
+                : SegmentTokenType.group,
       value: buffer,
     })
 
@@ -343,6 +358,8 @@ function parseSegment (segment: string) {
         buffer = ''
         if (c === '[') {
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          state = SegmentParserState.group
         } else {
           i--
           state = SegmentParserState.static
@@ -353,6 +370,9 @@ function parseSegment (segment: string) {
         if (c === '[') {
           consumeBuffer()
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          consumeBuffer()
+          state = SegmentParserState.group
         } else {
           buffer += c
         }
@@ -361,6 +381,7 @@ function parseSegment (segment: string) {
       case SegmentParserState.catchall:
       case SegmentParserState.dynamic:
       case SegmentParserState.optional:
+      case SegmentParserState.group:
         if (buffer === '...') {
           buffer = ''
           state = SegmentParserState.catchall
@@ -375,10 +396,16 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
+        } else if (c === ')' && state === SegmentParserState.group) {
+          if (!buffer) {
+            throw new Error('Empty group')
+          } else {
+            consumeBuffer()
+          }
+          state = SegmentParserState.initial
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
-
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }
         break

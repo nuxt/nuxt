@@ -21,7 +21,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 import type { ViewTransition } from './plugins/view-transitions.client'
 
 // @ts-expect-error virtual file
-import { appId } from '#build/nuxt.config.mjs'
+import { appId, multiApp } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -267,6 +267,7 @@ export function createNuxtApp (options: CreateOptions) {
       get vue () { return nuxtApp.vueApp.version },
     },
     payload: shallowReactive({
+      ...options.ssrContext?.payload || {},
       data: shallowReactive({}),
       state: reactive({}),
       once: new Set<string>(),
@@ -310,19 +311,36 @@ export function createNuxtApp (options: CreateOptions) {
     nuxtApp.payload.serverRendered = true
   }
 
-  // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
-  if (import.meta.client && window.__NUXT__) {
-    for (const key in window.__NUXT__) {
-      switch (key) {
-        case 'data':
-        case 'state':
-        case '_errors':
-          // Preserve reactivity for non-rich payload support
-          Object.assign(nuxtApp.payload[key], window.__NUXT__[key])
-          break
+  if (import.meta.server && nuxtApp.ssrContext) {
+    nuxtApp.payload.path = nuxtApp.ssrContext.url
 
-        default:
-          nuxtApp.payload[key] = window.__NUXT__[key]
+    // Expose nuxt to the renderContext
+    nuxtApp.ssrContext.nuxt = nuxtApp
+    nuxtApp.ssrContext.payload = nuxtApp.payload
+
+    // Expose client runtime-config to the payload
+    nuxtApp.ssrContext.config = {
+      public: nuxtApp.ssrContext.runtimeConfig.public,
+      app: nuxtApp.ssrContext.runtimeConfig.app,
+    }
+  }
+
+  if (import.meta.client) {
+    const __NUXT__ = multiApp ? window.__NUXT__?.[nuxtApp._id] : window.__NUXT__
+    // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
+    if (__NUXT__) {
+      for (const key in __NUXT__) {
+        switch (key) {
+          case 'data':
+          case 'state':
+          case '_errors':
+            // Preserve reactivity for non-rich payload support
+            Object.assign(nuxtApp.payload[key], __NUXT__[key])
+            break
+
+          default:
+            nuxtApp.payload[key] = __NUXT__[key]
+        }
       }
     }
   }
@@ -352,29 +370,6 @@ export function createNuxtApp (options: CreateOptions) {
   // Inject $nuxt
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
-
-  if (import.meta.server) {
-    if (nuxtApp.ssrContext) {
-      // Expose nuxt to the renderContext
-      nuxtApp.ssrContext.nuxt = nuxtApp
-      // Expose payload types
-      nuxtApp.ssrContext._payloadReducers = {}
-      // Expose current path
-      nuxtApp.payload.path = nuxtApp.ssrContext.url
-    }
-    // Expose to server renderer to create payload
-    nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
-    if (nuxtApp.ssrContext!.payload) {
-      Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
-    }
-    nuxtApp.ssrContext!.payload = nuxtApp.payload
-
-    // Expose client runtime-config to the payload
-    nuxtApp.ssrContext!.config = {
-      public: options.ssrContext!.runtimeConfig.public,
-      app: options.ssrContext!.runtimeConfig.app,
-    }
-  }
 
   // Listen to chunk load errors
   if (import.meta.client) {

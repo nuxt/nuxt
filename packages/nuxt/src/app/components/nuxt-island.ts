@@ -3,7 +3,7 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { useHead } from '@unhead/vue'
+import { injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -96,7 +96,7 @@ export default defineComponent({
       if (result.props) { toRevive.props = result.props }
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
-
+      if (result.head) { toRevive.head = result.head }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -158,8 +158,7 @@ export default defineComponent({
       return html
     })
 
-    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
-    useHead(cHead)
+    const head = injectHead()
 
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
@@ -199,8 +198,7 @@ export default defineComponent({
       }
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-        cHead.value.link = res.head.link
-        cHead.value.style = res.head.style
+
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
@@ -246,6 +244,14 @@ export default defineComponent({
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
+    }
+
+    if (import.meta.server || nuxtApp.isHydrating) {
+      // re-push head into active head instance
+      const responseHead = (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head
+      if (responseHead) {
+        head.push(responseHead)
+      }
     }
 
     return (_ctx: any, _cache: any) => {

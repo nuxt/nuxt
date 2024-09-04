@@ -38,6 +38,7 @@ Apart from dynamic parameters and query parameters, `useRoute()` also provides t
 
 - `fullPath`: encoded URL associated with the current route that contains path, query and hash
 - `hash`: decoded hash section of the URL that starts with a #
+- `query`: access route query parameters
 - `matched`: array of normalized matched routes with current route location
 - `meta`: custom data attached to the record
 - `name`: unique name for the route record

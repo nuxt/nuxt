@@ -106,10 +106,6 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
-    imports: ['useId'],
-    from: '#app/composables/id',
-  },
-  {
     imports: ['useRouteAnnouncer'],
     from: '#app/composables/route-announcer',
   },
@@ -231,6 +227,10 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 

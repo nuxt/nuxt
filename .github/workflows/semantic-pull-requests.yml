@@ -1,4 +1,4 @@
-name: Semantic pull request
+name: chore
 
 on:
   pull_request_target:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  main:
+  semantic-pr:
     permissions:
       pull-requests: read  # for amannn/action-semantic-pull-request to analyze PRs
       statuses: write  # for amannn/action-semantic-pull-request to mark status of analyzed PR

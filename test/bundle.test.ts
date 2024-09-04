@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { execaCommand } from 'execa'
-import { globby } from 'globby'
+import { exec } from 'tinyexec'
+import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
@@ -10,16 +10,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   beforeAll(async () => {
     await Promise.all([
-      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'false' } }),
-      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'true' } }),
+      exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'false' } } }),
+      exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'true' } } }),
     ])
   }, 120 * 1000)
 
   // Identical behaviour between inline/external vue options as this should only affect the server build
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
-      const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"107k"`)
+      const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"113k"`)
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
           "_nuxt/entry.js",
@@ -32,10 +32,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"211k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"205k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1348k"`)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1382k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -58,7 +58,6 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "db0",
         "devalue",
         "entities",
-        "entities/dist/commonjs",
         "estree-walker",
         "hookable",
         "source-map-js",
@@ -74,10 +73,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"535k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"551k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"80.3k"`)
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"86.9k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -97,8 +96,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
-async function analyzeSizes (pattern: string | string[], rootDir: string) {
-  const files: string[] = await globby(pattern, { cwd: rootDir })
+async function analyzeSizes (pattern: string[], rootDir: string) {
+  const files: string[] = await glob(pattern, { cwd: rootDir })
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)

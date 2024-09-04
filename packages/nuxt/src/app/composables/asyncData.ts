@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
-import type { Ref, WatchSource } from 'vue'
+import type { MultiWatchSources, Ref } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -34,7 +34,7 @@ export type KeysOf<T> = Array<
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
 
-export type MultiWatchSources = (WatchSource<unknown> | object)[]
+export type { MultiWatchSources }
 
 export type NoInfer<T> = [T][T extends any ? 0 : never]
 
@@ -84,7 +84,7 @@ export interface AsyncDataOptions<
    */
   immediate?: boolean
   /**
-   * Return data in a deep ref object (it is true by default). It can be set to false to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+   * Return data in a deep ref object (it is false by default). It can be set to false to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
    */
   deep?: boolean
   /**
@@ -239,18 +239,17 @@ export function useAsyncData<
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
 
-  // TODO: make more precise when v4 lands
-  const hasCachedData = () => options.getCachedData!(key, nuxtApp) !== undefined
-
   // Create or use a shared asyncData entity
+  const initialCachedData = options.getCachedData!(key, nuxtApp)
+  const hasCachedData = typeof initialCachedData !== 'undefined'
+
   if (!nuxtApp._asyncData[key] || !options.immediate) {
     nuxtApp.payload._errors[key] ??= undefined
 
     const _ref = options.deep ? ref : shallowRef
-    const cachedData = options.getCachedData!(key, nuxtApp)
     nuxtApp._asyncData[key] = {
-      data: _ref(typeof cachedData !== 'undefined' ? cachedData : options.default!()),
-      pending: ref(!hasCachedData()),
+      data: _ref(hasCachedData ? initialCachedData : options.default!()),
+      pending: ref(!hasCachedData),
       error: toRef(nuxtApp.payload._errors, key),
       status: ref('idle'),
       _default: options.default!,
@@ -272,8 +271,11 @@ export function useAsyncData<
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false)) && hasCachedData()) {
-      return Promise.resolve(options.getCachedData!(key, nuxtApp))
+    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
+      const cachedData = opts._initial ? initialCachedData : options.getCachedData!(key, nuxtApp)
+      if (typeof cachedData !== 'undefined') {
+        return Promise.resolve(cachedData)
+      }
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -348,7 +350,7 @@ export function useAsyncData<
   if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
-    if (import.meta.dev && !nuxtApp.isHydrating && (!instance || instance?.isMounted)) {
+    if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
       // @ts-expect-error private property
       console.warn(`[nuxt] [${options._functionName || 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
     }
@@ -362,7 +364,7 @@ export function useAsyncData<
       onUnmounted(() => cbs.splice(0, cbs.length))
     }
 
-    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || hasCachedData())) {
+    if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || typeof initialCachedData !== 'undefined')) {
       // 1. Hydration (server: true): no fetch
       asyncData.pending.value = false
       asyncData.status.value = asyncData.error.value ? 'error' : 'success'
