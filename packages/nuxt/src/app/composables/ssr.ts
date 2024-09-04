@@ -1,5 +1,5 @@
 import type { H3Event } from 'h3'
-import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, getResponseHeaders, removeResponseHeader, setResponseHeader, setResponseHeaders } from 'h3'
+import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
 import { computed, getCurrentInstance } from 'vue'
 import { useServerHead } from '@unhead/vue'
 
@@ -61,7 +61,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   }
 }
 
-/** @since 3.13.1 */
+/** @since 3.13.2 */
 export function useResponseHeader (header: string) {
   if (import.meta.client) { return {} }
 
@@ -80,13 +80,6 @@ export function useResponseHeader (header: string) {
       return setResponseHeader(event, header, newValue)
     },
   })
-}
-
-/** @since 3.11.3 */
-export function useResponseHeaders (headers: Record<string, string>) {
-  if (import.meta.client) { return undefined }
-  const event = useRequestEvent()
-  return event ? setResponseHeaders(event, headers) : undefined
 }
 
 /** @since 3.8.0 */
