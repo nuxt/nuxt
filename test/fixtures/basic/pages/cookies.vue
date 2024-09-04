@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import CookieComponent from '../components/ComponentUsingCookie.vue'
+import { useCookieManager } from '../composables/cookie-manager'
+
 useCookie('accessed-but-not-used')
 useCookie('accessed-with-default-value', { default: () => 'default' })
 useCookie('set').value = 'set'
@@ -25,6 +28,8 @@ function changeCookie () {
     objectCookie.value!.foo = 'baz'
   }
 }
+
+const { showCookieBanner, toggle } = useCookieManager()
 </script>
 
 <template>
@@ -37,6 +42,17 @@ function changeCookie () {
     </button>
     <button @click="refreshCookie('browser-object-default')">
       Refresh cookie
+    </button>
+
+    <CookieComponent />
+    <div
+      v-if="showCookieBanner"
+      id="parent-banner"
+    >
+      parent banner
+    </div>
+    <button @click="toggle">
+      Toggle cookie banner
     </button>
   </div>
 </template>

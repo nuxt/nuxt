@@ -11,12 +11,13 @@ import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
+import { ImpoundPlugin } from 'impound'
 import type { Nuxt, NuxtOptions } from 'nuxt/schema'
 import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
-import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { nuxtImportProtections } from './plugins/import-protection'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -358,9 +359,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
   nitroConfig.rollupConfig!.plugins!.push(
-    ImportProtectionPlugin.rollup({
-      rootDir: nuxt.options.rootDir,
-      modulesDir: nuxt.options.modulesDir,
+    ImpoundPlugin.rollup({
+      cwd: nuxt.options.rootDir,
       patterns: nuxtImportProtections(nuxt, { isNitro: true }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
     }),
@@ -517,26 +517,30 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  async function symlinkDist () {
+    if (nitro.options.static) {
+      const distDir = resolve(nuxt.options.rootDir, 'dist')
+      if (!existsSync(distDir)) {
+        await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
+      }
+    }
+  }
+
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
     if (nuxt.options.dev) {
-      await build(nitro)
-    } else {
-      await prepare(nitro)
-      await prerender(nitro)
-
-      logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
-
-      if (nitro.options.static) {
-        const distDir = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(distDir)) {
-          await fsp.symlink(nitro.options.output.publicDir, distDir, 'junction').catch(() => {})
-        }
-      }
+      return build(nitro)
     }
+
+    await prepare(nitro)
+    await prerender(nitro)
+
+    logger.restoreAll()
+    await build(nitro)
+    logger.wrapAll()
+
+    await symlinkDist()
   })
 
   // nuxt dev

@@ -1,4 +1,4 @@
-name: Check links with Lychee
+name: docs
 
 on:
   pull_request:

@@ -56,7 +56,7 @@ describe('imports:transform', () => {
   })
 })
 
-const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
   try {
@@ -171,7 +171,6 @@ const excludedVueHelpers = [
   'hydrate',
   'initDirectivesForSSR',
   'render',
-  'useCssVars',
   'vModelCheckbox',
   'vModelDynamic',
   'vModelRadio',
@@ -183,6 +182,13 @@ const excludedVueHelpers = [
   'ErrorCodes',
   'TrackOpTypes',
   'TriggerOpTypes',
+  'useHost',
+  'hydrateOnVisible',
+  'hydrateOnMediaQuery',
+  'hydrateOnInteraction',
+  'hydrateOnIdle',
+  'onWatcherCleanup',
+  'getCurrentWatcher',
 ]
 
 describe('imports:vue', () => {
