@@ -42,7 +42,10 @@
     "@types/node": "20.16.4",
     "magic-string": "^0.30.11",
     "nuxt": "workspace:*",
-    "rollup": "^4.21.2",
+    "postcss": "8.4.45",
+    "rollup": "4.21.2",
+    "typescript": "5.5.4",
+    "ufo": "1.5.4",
     "vite": "5.4.3",
     "vue": "3.5.1"
   },
