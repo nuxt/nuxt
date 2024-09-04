@@ -30,7 +30,7 @@
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
-    "cssnano": "^7.0.5",
+    "cssnano": "^7.0.6",
     "defu": "^6.1.4",
     "esbuild-loader": "^4.2.2",
     "escape-string-regexp": "^5.0.0",
