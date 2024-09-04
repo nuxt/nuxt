@@ -1,10 +1,10 @@
 import { defineDriver } from 'unstorage'
-import fsDriver from 'unstorage/drivers/fs-lite'
+import fsDriver, { type FSStorageOptions } from 'unstorage/drivers/fs-lite'
 import lruCache from 'unstorage/drivers/lru-cache'
 
 const normalizeFsKey = (item: string) => item.replaceAll(':', '_')
 
-export default defineDriver((opts: { base: string }) => {
+export default defineDriver((opts: FSStorageOptions) => {
   const fs = fsDriver({ base: opts.base })
   const lru = lruCache({ max: 1000 })
 
@@ -12,8 +12,8 @@ export default defineDriver((opts: { base: string }) => {
     ...fs, // fall back to file system - only the bottom three methods are used in renderer
     async setItem (key, value, opts) {
       await Promise.all([
-        fs.setItem(normalizeFsKey(key), value, opts),
-        lru.setItem(key, value, opts),
+        fs.setItem?.(normalizeFsKey(key), value, opts),
+        lru.setItem?.(key, value, opts),
       ])
     },
     async hasItem (key, opts) {
