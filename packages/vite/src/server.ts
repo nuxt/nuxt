@@ -6,6 +6,7 @@ import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
+import type { Nitro } from 'nitro/types'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
@@ -56,6 +57,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       noDiscovery: true,
     },
     resolve: {
+      conditions: ((ctx.nuxt as any)._nitro as Nitro)?.options.exportConditions,
       alias: {
         '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
