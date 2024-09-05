@@ -5,7 +5,7 @@ definePageMeta({
     const nuxtApp = useNuxtApp()
     if (import.meta.client && from !== to && !nuxtApp.isHydrating) {
       // trigger a loading error when navigated to via client-side navigation
-      await import(/* webpackIgnore: true */ /* @vite-ignore */ `some-non-exis${''}ting-module`)
+      await import(`~/chunk-error`)
     }
   },
 })

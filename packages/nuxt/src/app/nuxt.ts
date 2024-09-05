@@ -373,10 +373,6 @@ export function createNuxtApp (options: CreateOptions) {
 
   // Listen to chunk load errors
   if (import.meta.client) {
-    window.addEventListener('nuxt.preloadError', (event) => {
-      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-    })
-
     window.useNuxtApp = window.useNuxtApp || useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
