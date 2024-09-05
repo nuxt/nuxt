@@ -190,6 +190,13 @@ export interface NuxtHooks {
   'pages:extend': (pages: NuxtPage[]) => HookResult
 
   /**
+   * Called after pages routes are resolved.
+   * @param pages Array containing resolved pages
+   * @returns Promise
+   */
+  'pages:resolved': (pages: NuxtPage[]) => HookResult
+
+  /**
    * Called when resolving `app/router.options` files. It allows modifying the detected router options files
    * and adding new ones.
    *
