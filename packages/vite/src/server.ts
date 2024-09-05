@@ -6,6 +6,7 @@ import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
+import type { Nitro } from 'nitro/types'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
@@ -56,6 +57,7 @@ export async function buildServer (ctx: ViteBuildContext) {
       noDiscovery: true,
     },
     resolve: {
+      conditions: ((ctx.nuxt as any)._nitro as Nitro)?.options.exportConditions,
       alias: {
         '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
         '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
@@ -117,6 +119,8 @@ export async function buildServer (ctx: ViteBuildContext) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
         'unhead', '@unhead/ssr', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
+        // ensure we only have one version of vue if nitro is going to inline anyway
+        ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
         ...runtimeDependencies,
       )
@@ -142,6 +146,20 @@ export async function buildServer (ctx: ViteBuildContext) {
     vuePlugin(serverConfig.vue),
     viteJsxPlugin(serverConfig.vueJsx),
   )
+
+  if (!ctx.nuxt.options.dev) {
+    serverConfig.plugins!.push({
+      name: 'nuxt:nitro:vue-feature-flags',
+      configResolved (config) {
+        for (const key in config.define) {
+          if (key.startsWith('__VUE')) {
+            // tree-shake vue feature flags for non-node targets
+            ((ctx.nuxt as any)._nitro as Nitro).options.replace[key] = config.define[key]
+          }
+        }
+      },
+    })
+  }
 
   await ctx.nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })
 

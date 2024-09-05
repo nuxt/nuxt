@@ -293,6 +293,9 @@ importers:
       '@unhead/dom':
         specifier: ^1.10.4
         version: 1.10.4
+      '@unhead/shared':
+        specifier: ^1.10.4
+        version: 1.10.4
       '@unhead/ssr':
         specifier: ^1.10.4
         version: 1.10.4
@@ -431,6 +434,9 @@ importers:
       unenv:
         specifier: ^1.10.0
         version: 1.10.0
+      unhead:
+        specifier: ^1.10.4
+        version: 1.10.4
       unimport:
         specifier: ^3.11.1
         version: 3.11.1(rollup@4.21.2)(webpack-sources@3.2.3)
@@ -945,24 +951,9 @@ importers:
 
   playground:
     dependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.2
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
-      unhead:
-        specifier: latest
-        version: 1.10.4
-      vue:
-        specifier: 3.5.2
-        version: 3.5.2(typescript@5.5.4)
 
   test/fixtures/basic:
     dependencies:
@@ -973,27 +964,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
-      '@unhead/dom':
-        specifier: latest
-        version: 1.10.4
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.2
-      iron-webcrypto:
-        specifier: latest
-        version: 1.2.1
       ufo:
         specifier: 1.5.4
         version: 1.5.4
-      unhead:
-        specifier: latest
-        version: 1.10.4
       unplugin:
         specifier: latest
         version: 1.13.1(webpack-sources@3.2.3)
@@ -1028,18 +1004,12 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.2
-        version: 3.5.2(typescript@5.5.4)
 
   test/fixtures/minimal-types:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.2
-        version: 3.5.2(typescript@5.5.4)
 
   test/fixtures/remote-provider: {}
 
@@ -1048,44 +1018,16 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-    devDependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.2
-      unhead:
-        specifier: latest
-        version: 1.10.4
 
   test/fixtures/suspense:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.2
-        version: 3.5.2(typescript@5.5.4)
     devDependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.2
       typescript:
         specifier: 5.5.4
         version: 5.5.4
-      unhead:
-        specifier: latest
-        version: 1.10.4
 
 packages:
 
