@@ -107,7 +107,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       ],
     },
     resolve: {
-      conditions: [ctx.nuxt.options.dev ? 'development' : 'production', 'web', 'browser', 'import', 'module', 'default', 'require'],
+      conditions: [ctx.nuxt.options.dev ? 'development' : 'production', 'web', 'browser', 'import', 'module', 'default'],
       alias: {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
