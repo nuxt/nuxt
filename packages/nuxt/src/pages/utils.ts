@@ -71,8 +71,8 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   await nuxt.callHook('pages:extend', pages)
   if (shouldAugment) {
     await augmentPages(pages, nuxt.vfs)
-    await nuxt.callHook('pages:resolved', pages)
   }
+  await nuxt.callHook('pages:resolved', pages)
 
   return pages
 }
