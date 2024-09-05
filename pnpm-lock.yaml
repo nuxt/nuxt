@@ -2821,14 +2821,8 @@ packages:
     peerDependencies:
       '@babel/core': ^7.0.0-0
 
-  '@vue/compiler-core@3.5.1':
-    resolution: {integrity: sha512-WdjF+NSgFYdWttHevHw5uaJFtKPalhmxhlu2uREj8cLP0uyKKIR60/JvSZNTp0x+NSd63iTiORQTx3+tt55NWQ==}
-
   '@vue/compiler-core@3.5.2':
     resolution: {integrity: sha512-1aP7FL2GkqfcskHWGg3lfWQpJnrmewKc+rNJ/hq9WNaAw4BEyJ5QbNChnqmbw+tJ409zdy1XWmUeXXMrCKJcQQ==}
-
-  '@vue/compiler-dom@3.5.1':
-    resolution: {integrity: sha512-Ao23fB1lINo18HLCbJVApvzd9OQe8MgmQSgyY5+umbWj2w92w9KykVmJ4Iv2US5nak3ixc2B+7Km7JTNhQ8kSQ==}
 
   '@vue/compiler-dom@3.5.2':
     resolution: {integrity: sha512-QY4DpT8ZIUyu/ZA5gErpSEDocGNEbHmpkZIC/d5jbp/rUF0iOJNigAy3HCCKc0PMMhDlrcysO3ufQ6Ab4MpEcQ==}
@@ -2883,9 +2877,6 @@ packages:
     resolution: {integrity: sha512-3POhYCA8KfbmuDuUiNbMXnpdh9pwE4SvAqo7VvACjklLkf3AaMkY3TvV7APeEa/WQezrnL+E4X2ASpJsKeS4cQ==}
     peerDependencies:
       vue: 3.5.2
-
-  '@vue/shared@3.5.1':
-    resolution: {integrity: sha512-NdcTRoO4KuW2RSFgpE2c+E/R/ZHaRzWPxAGxhmxZaaqLh6nYCXx7lc9a88ioqOCxCaV2SFJmujkxbUScW7dNsQ==}
 
   '@vue/shared@3.5.2':
     resolution: {integrity: sha512-Ce89WNFBzcDca/AgFTxgX4/K4iAyF7oFIp8Z5aBbFBNbtpwnQr+5pZOoHndxnjE2h+YFcipVMzs9UL11XB6dwA==}
@@ -5299,10 +5290,6 @@ packages:
     resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  minimatch@9.0.4:
-    resolution: {integrity: sha512-KqWh+VchfxcMNRAJjj2tnsSJdNbHsVgnkBhTNrW7AjVo6OvLtxw8zfT9oLw1JSohlFzJ8jCoTgaoXvJ+kHt6fw==}
-    engines: {node: '>=16 || 14 >=14.17'}
-
   minimatch@9.0.5:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -5927,10 +5914,6 @@ packages:
     engines: {node: ^18.12.0 || ^20.9.0 || >=22.0}
     peerDependencies:
       postcss: 8.4.45
-
-  postcss-selector-parser@6.1.1:
-    resolution: {integrity: sha512-b4dlw/9V8A71rLIDsSwVmak9z2DuBUB7CA1/wSdelNEzqsjoSPeADTWNO09lpH49Diy3/JIZ2bSPB1dI3LJCHg==}
-    engines: {node: '>=4'}
 
   postcss-selector-parser@6.1.2:
     resolution: {integrity: sha512-Q8qQfPiZ+THO/3ZrOrO0cJJKfpYCagtMUkXbnEfmgUjwXg6z/WBeOyS9APBBPCTSiDV+s4SwQGu8yFsiMRIudg==}
@@ -8321,8 +8304,8 @@ snapshots:
 
   '@nuxt/eslint-plugin@0.5.5(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)':
     dependencies:
-      '@typescript-eslint/types': 8.3.0
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
+      '@typescript-eslint/types': 8.4.0
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
       eslint: 9.9.1(jiti@2.0.0-beta.3)
     transitivePeerDependencies:
       - supports-color
@@ -8857,7 +8840,7 @@ snapshots:
   '@stylistic/eslint-plugin@2.7.2(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)':
     dependencies:
       '@types/eslint': 9.6.1
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
       eslint: 9.9.1(jiti@2.0.0-beta.3)
       eslint-visitor-keys: 4.0.0
       espree: 10.1.0
@@ -9117,7 +9100,7 @@ snapshots:
       debug: 4.3.6(supports-color@9.4.0)
       fast-glob: 3.3.2
       is-glob: 4.0.3
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
@@ -9592,14 +9575,6 @@ snapshots:
       '@babel/parser': 7.25.3
       '@vue/compiler-sfc': 3.5.2
 
-  '@vue/compiler-core@3.5.1':
-    dependencies:
-      '@babel/parser': 7.25.3
-      '@vue/shared': 3.5.1
-      entities: 4.5.0
-      estree-walker: 2.0.2
-      source-map-js: 1.2.0
-
   '@vue/compiler-core@3.5.2':
     dependencies:
       '@babel/parser': 7.25.3
@@ -9607,11 +9582,6 @@ snapshots:
       entities: 4.5.0
       estree-walker: 2.0.2
       source-map-js: 1.2.0
-
-  '@vue/compiler-dom@3.5.1':
-    dependencies:
-      '@vue/compiler-core': 3.5.1
-      '@vue/shared': 3.5.1
 
   '@vue/compiler-dom@3.5.2':
     dependencies:
@@ -9670,11 +9640,11 @@ snapshots:
   '@vue/language-core@2.0.29(typescript@5.5.4)':
     dependencies:
       '@volar/language-core': 2.4.1
-      '@vue/compiler-dom': 3.5.1
+      '@vue/compiler-dom': 3.5.2
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.2
       computeds: 0.0.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
     optionalDependencies:
@@ -9683,11 +9653,11 @@ snapshots:
   '@vue/language-core@2.1.6(typescript@5.5.4)':
     dependencies:
       '@volar/language-core': 2.4.1
-      '@vue/compiler-dom': 3.5.1
+      '@vue/compiler-dom': 3.5.2
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.2
       computeds: 0.0.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
     optionalDependencies:
@@ -9714,8 +9684,6 @@ snapshots:
       '@vue/compiler-ssr': 3.5.2
       '@vue/shared': 3.5.2
       vue: 3.5.2(typescript@5.5.4)
-
-  '@vue/shared@3.5.1': {}
 
   '@vue/shared@3.5.2': {}
 
@@ -10840,15 +10808,15 @@ snapshots:
 
   eslint-plugin-import-x@4.1.1(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4):
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.3.0(typescript@5.5.4)
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.4.0(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@2.0.0-beta.3))(typescript@5.5.4)
       debug: 4.3.6(supports-color@9.4.0)
       doctrine: 3.0.0
       eslint: 9.9.1(jiti@2.0.0-beta.3)
       eslint-import-resolver-node: 0.3.9
       get-tsconfig: 4.7.6
       is-glob: 4.0.3
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       semver: 7.6.3
       stable-hash: 0.0.4
       tslib: 2.7.0
@@ -10926,7 +10894,7 @@ snapshots:
       globals: 13.24.0
       natural-compare: 1.4.0
       nth-check: 2.1.1
-      postcss-selector-parser: 6.1.1
+      postcss-selector-parser: 6.1.2
       semver: 7.6.3
       vue-eslint-parser: 9.4.3(eslint@9.9.1(jiti@2.0.0-beta.3))
       xml-name-validator: 4.0.0
@@ -11297,7 +11265,7 @@ snapshots:
     dependencies:
       foreground-child: 3.1.1
       jackspeak: 3.1.2
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       minipass: 7.1.2
       path-scurry: 1.11.1
 
@@ -12100,7 +12068,7 @@ snapshots:
       jsonc-parser: 3.2.1
       jsonpointer: 5.0.1
       markdownlint: 0.34.0
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       run-con: 1.3.2
       smol-toml: 1.2.0
 
@@ -12489,10 +12457,6 @@ snapshots:
       brace-expansion: 2.0.1
 
   minimatch@9.0.1:
-    dependencies:
-      brace-expansion: 2.0.1
-
-  minimatch@9.0.4:
     dependencies:
       brace-expansion: 2.0.1
 
@@ -13194,13 +13158,13 @@ snapshots:
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.45)
       postcss: 8.4.45
-      postcss-selector-parser: 6.1.1
+      postcss-selector-parser: 6.1.2
       postcss-value-parser: 4.2.0
 
   postcss-modules-scope@3.2.0(postcss@8.4.45):
     dependencies:
       postcss: 8.4.45
-      postcss-selector-parser: 6.1.1
+      postcss-selector-parser: 6.1.2
 
   postcss-modules-values@4.0.0(postcss@8.4.45):
     dependencies:
@@ -13210,7 +13174,7 @@ snapshots:
   postcss-nested@6.0.1(postcss@8.4.45):
     dependencies:
       postcss: 8.4.45
-      postcss-selector-parser: 6.1.1
+      postcss-selector-parser: 6.1.2
 
   postcss-normalize-charset@7.0.0(postcss@8.4.45):
     dependencies:
@@ -13273,11 +13237,6 @@ snapshots:
     dependencies:
       postcss: 8.4.45
       postcss-value-parser: 4.2.0
-
-  postcss-selector-parser@6.1.1:
-    dependencies:
-      cssesc: 3.0.0
-      util-deprecate: 1.0.2
 
   postcss-selector-parser@6.1.2:
     dependencies:
@@ -14104,7 +14063,7 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 10.4.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
 
   text-table@0.2.0: {}
 
@@ -14632,7 +14591,7 @@ snapshots:
       '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.25.2)
       '@babel/plugin-transform-typescript': 7.24.7(@babel/core@7.25.2)
       '@vue/babel-plugin-jsx': 1.2.2(@babel/core@7.25.2)
-      '@vue/compiler-dom': 3.5.1
+      '@vue/compiler-dom': 3.5.2
       kolorist: 1.8.0
       magic-string: 0.30.11
       vite: 5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0)
