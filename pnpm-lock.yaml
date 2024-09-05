@@ -289,6 +289,9 @@ importers:
       '@unhead/dom':
         specifier: ^1.10.4
         version: 1.10.4
+      '@unhead/shared':
+        specifier: ^1.10.4
+        version: 1.10.4
       '@unhead/ssr':
         specifier: ^1.10.4
         version: 1.10.4
@@ -427,6 +430,9 @@ importers:
       unenv:
         specifier: ^1.10.0
         version: 1.10.0
+      unhead:
+        specifier: ^1.10.4
+        version: 1.10.4
       unimport:
         specifier: ^3.11.1
         version: 3.11.1(rollup@4.21.2)(webpack-sources@3.2.3)
@@ -932,24 +938,9 @@ importers:
 
   playground:
     dependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.1
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
-      unhead:
-        specifier: latest
-        version: 1.10.4
-      vue:
-        specifier: 3.5.1
-        version: 3.5.1(typescript@5.5.4)
 
   test/fixtures/basic:
     dependencies:
@@ -960,27 +951,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
     devDependencies:
-      '@unhead/dom':
-        specifier: latest
-        version: 1.10.4
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
       '@vue/devtools-api':
         specifier: latest
         version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.1
-      iron-webcrypto:
-        specifier: latest
-        version: 1.2.1
       ufo:
         specifier: 1.5.4
         version: 1.5.4
-      unhead:
-        specifier: latest
-        version: 1.10.4
       unplugin:
         specifier: latest
         version: 1.13.1(webpack-sources@3.2.3)
@@ -1015,18 +991,12 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.1
-        version: 3.5.1(typescript@5.5.4)
 
   test/fixtures/minimal-types:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.1
-        version: 3.5.1(typescript@5.5.4)
 
   test/fixtures/remote-provider: {}
 
@@ -1035,44 +1005,16 @@ importers:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-    devDependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.1
-      unhead:
-        specifier: latest
-        version: 1.10.4
 
   test/fixtures/suspense:
     dependencies:
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
-      vue:
-        specifier: 3.5.1
-        version: 3.5.1(typescript@5.5.4)
     devDependencies:
-      '@unhead/shared':
-        specifier: latest
-        version: 1.10.4
-      '@vue/devtools-api':
-        specifier: latest
-        version: 6.6.3
-      '@vue/shared':
-        specifier: latest
-        version: 3.5.1
       typescript:
         specifier: 5.5.4
         version: 5.5.4
-      unhead:
-        specifier: latest
-        version: 1.10.4
 
 packages:
 
@@ -5303,10 +5245,6 @@ packages:
     resolution: {integrity: sha512-0jWhJpD/MdhPXwPuiRkCbfYfSKp2qnn2eOc279qI7f+osl/l+prKSrvhg157zSYvx/1nmgn2NqdT6k2Z7zSH9w==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  minimatch@9.0.4:
-    resolution: {integrity: sha512-KqWh+VchfxcMNRAJjj2tnsSJdNbHsVgnkBhTNrW7AjVo6OvLtxw8zfT9oLw1JSohlFzJ8jCoTgaoXvJ+kHt6fw==}
-    engines: {node: '>=16 || 14 >=14.17'}
-
   minimatch@9.0.5:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -8310,8 +8248,8 @@ snapshots:
 
   '@nuxt/eslint-plugin@0.5.5(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
-      '@typescript-eslint/types': 8.3.0
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/types': 8.4.0
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
       eslint: 9.9.1(jiti@1.21.6)
     transitivePeerDependencies:
       - supports-color
@@ -8739,7 +8677,7 @@ snapshots:
   '@stylistic/eslint-plugin@2.7.2(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)':
     dependencies:
       '@types/eslint': 9.6.1
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
       eslint: 9.9.1(jiti@1.21.6)
       eslint-visitor-keys: 4.0.0
       espree: 10.1.0
@@ -8999,7 +8937,7 @@ snapshots:
       debug: 4.3.6
       fast-glob: 3.3.2
       is-glob: 4.0.3
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       semver: 7.6.3
       ts-api-utils: 1.3.0(typescript@5.5.4)
     optionalDependencies:
@@ -9525,7 +9463,7 @@ snapshots:
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.1
       computeds: 0.0.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
     optionalDependencies:
@@ -9538,7 +9476,7 @@ snapshots:
       '@vue/compiler-vue2': 2.7.16
       '@vue/shared': 3.5.1
       computeds: 0.0.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       muggle-string: 0.4.1
       path-browserify: 1.0.1
     optionalDependencies:
@@ -10705,15 +10643,15 @@ snapshots:
 
   eslint-plugin-import-x@4.1.1(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4):
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.3.0(typescript@5.5.4)
-      '@typescript-eslint/utils': 8.3.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
+      '@typescript-eslint/typescript-estree': 8.4.0(typescript@5.5.4)
+      '@typescript-eslint/utils': 8.4.0(eslint@9.9.1(jiti@1.21.6))(typescript@5.5.4)
       debug: 4.3.6
       doctrine: 3.0.0
       eslint: 9.9.1(jiti@1.21.6)
       eslint-import-resolver-node: 0.3.9
       get-tsconfig: 4.7.6
       is-glob: 4.0.3
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       semver: 7.6.3
       stable-hash: 0.0.4
       tslib: 2.7.0
@@ -11162,7 +11100,7 @@ snapshots:
     dependencies:
       foreground-child: 3.1.1
       jackspeak: 3.1.2
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       minipass: 7.1.2
       path-scurry: 1.11.1
 
@@ -11958,7 +11896,7 @@ snapshots:
       jsonc-parser: 3.2.1
       jsonpointer: 5.0.1
       markdownlint: 0.34.0
-      minimatch: 9.0.4
+      minimatch: 9.0.5
       run-con: 1.3.2
       smol-toml: 1.2.0
 
@@ -12347,10 +12285,6 @@ snapshots:
       brace-expansion: 2.0.1
 
   minimatch@9.0.1:
-    dependencies:
-      brace-expansion: 2.0.1
-
-  minimatch@9.0.4:
     dependencies:
       brace-expansion: 2.0.1
 
@@ -13843,7 +13777,7 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 10.4.1
-      minimatch: 9.0.4
+      minimatch: 9.0.5
 
   text-table@0.2.0: {}
 

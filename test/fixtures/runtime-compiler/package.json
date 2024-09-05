@@ -6,11 +6,5 @@
   },
   "dependencies": {
     "nuxt": "workspace:*"
-  },
-  "devDependencies": {
-    "@unhead/shared": "latest",
-    "@vue/devtools-api": "latest",
-    "@vue/shared": "latest",
-    "unhead": "latest"
   }
 }
