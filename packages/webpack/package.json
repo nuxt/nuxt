@@ -80,7 +80,7 @@
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.21.2",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.1"
+    "vue": "3.5.2"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
