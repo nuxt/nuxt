@@ -145,6 +145,20 @@ export async function buildServer (ctx: ViteBuildContext) {
     viteJsxPlugin(serverConfig.vueJsx),
   )
 
+  if (!ctx.nuxt.options.dev) {
+    serverConfig.plugins!.push({
+      name: 'nuxt:nitro:vue-feature-flags',
+      configResolved (config) {
+        for (const key in config.define) {
+          if (key.startsWith('__VUE')) {
+            // tree-shake vue feature flags for non-node targets
+            ((ctx.nuxt as any)._nitro as Nitro).options.replace[key] = config.define[key]
+          }
+        }
+      },
+    })
+  }
+
   await ctx.nuxt.callHook('vite:configResolved', serverConfig, { isClient: false, isServer: true })
 
   const onBuild = () => ctx.nuxt.callHook('vite:compiled')
