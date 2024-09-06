@@ -126,6 +126,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         export: 'default',
         // by default, give priority to scanned components
         priority: dir.priority ?? 1,
+        // @ts-expect-error untyped property
+        _scanned: true,
       }
 
       if (typeof dir.extendComponent === 'function') {

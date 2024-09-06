@@ -128,6 +128,19 @@ export async function buildClient (ctx: ViteBuildContext) {
       },
     },
     plugins: [
+      {
+        name: 'nuxt:import-conditions',
+        enforce: 'post',
+        config (_config, env) {
+          if (env.mode !== 'test') {
+            return {
+              resolve: {
+                conditions: [ctx.nuxt.options.dev ? 'development' : 'production', 'web', 'browser', 'import', 'module', 'default'],
+              },
+            }
+          }
+        },
+      },
       devStyleSSRPlugin({
         srcDir: ctx.nuxt.options.srcDir,
         buildAssetsURL: joinURL(ctx.nuxt.options.app.baseURL, ctx.nuxt.options.app.buildAssetsDir),
