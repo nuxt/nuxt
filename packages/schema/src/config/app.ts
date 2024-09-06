@@ -35,6 +35,12 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     propsDestructure: true,
+
+    /**
+     * Configure a prefix for all IDs generated via `useId()` inside this application.
+     * @type {string | undefined}
+     */
+    idPrefix: undefined,
   },
 
   /**
