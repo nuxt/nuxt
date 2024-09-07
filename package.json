@@ -55,7 +55,7 @@
     "vue": "3.5.3"
   },
   "devDependencies": {
-    "@eslint/js": "9.9.1",
+    "@eslint/js": "9.10.0",
     "@nuxt/eslint-config": "0.5.6",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.14.1",
@@ -76,9 +76,9 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.0.0",
-    "eslint": "9.9.1",
+    "eslint": "9.10.0",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "3.4.0",
+    "eslint-plugin-perfectionist": "3.5.0",
     "eslint-typegen": "0.3.1",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "15.7.3",
