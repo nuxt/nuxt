@@ -114,7 +114,7 @@ function useAsyncData<DataT, DataE>(
   key: string,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): Promise<AsyncData<DataT, DataE>
+): Promise<AsyncData<DataT, DataE>>
 
 type AsyncDataOptions<DataT> = {
   server?: boolean
