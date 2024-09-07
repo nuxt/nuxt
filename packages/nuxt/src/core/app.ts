@@ -169,7 +169,10 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] = app.layouts[name] || { name, file }
+      if (app.layouts[name]) {
+        logger.warn(`Duplicate layout file detected: \`~/${relative(nuxt.options.srcDir, file)}\` overrides \`~/${relative(nuxt.options.srcDir, app.layouts[name].file)}\`.`)
+      }
+      app.layouts[name] = { name, file }
     }
   }
 

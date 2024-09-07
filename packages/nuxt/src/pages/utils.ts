@@ -52,9 +52,29 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   )
 
   const scannedFiles: ScannedFile[] = []
+  const relativePathMap = new Map<string, ScannedFile[]>()
+
   for (const dir of pagesDirs) {
     const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
-    scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
+    for (const file of files) {
+      const relativePath = relative(dir, file)
+      const scannedFile = { relativePath, absolutePath: file }
+
+      // Warn for duplicated pages
+      if (!relativePathMap.has(relativePath)) {
+        relativePathMap.set(relativePath, [scannedFile])
+      } else {
+        const existingFiles = relativePathMap.get(relativePath)
+        if (existingFiles) {
+          existingFiles.push(scannedFile)
+        }
+
+        logger.warn(`Duplicate page found for relative path: ${relativePath}`)
+        logger.warn(`  - ${scannedFile.absolutePath}`)
+      }
+
+      scannedFiles.push(scannedFile)
+    }
   }
 
   // sort scanned files using en-US locale to make the result consistent across different system locales
