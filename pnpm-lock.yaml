@@ -466,8 +466,8 @@ importers:
         version: 4.4.3(vue@3.5.3(typescript@5.5.4))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 0.8.3
-        version: 0.8.3(@nuxt/devtools@1.4.1(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.21.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.3)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.45)(rollup@4.21.2)(typescript@5.5.4)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(vue@3.5.3(typescript@5.5.4))(webpack-sources@3.2.3)(webpack@5.94.0(esbuild@0.23.1))
+        specifier: 0.8.4
+        version: 0.8.4(@nuxt/devtools@1.4.1(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.21.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.3)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.45)(rollup@4.21.2)(typescript@5.5.4)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(vue@3.5.3(typescript@5.5.4))(webpack-sources@3.2.3)(webpack@5.94.0(esbuild@0.23.1))
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
@@ -1875,8 +1875,8 @@ packages:
     peerDependencies:
       webpack: ^2.0.0 || ^3.0.0 || ^4.0.0 || ^5.0.0
 
-  '@nuxt/scripts@0.8.3':
-    resolution: {integrity: sha512-1Vxwd964oyfzcUaJvVqpShuCWn8bdNKwqNfUq5KwQEpC8lR6IItvHh6RK/W5ZzhUk6/b2MizSTJ82chYILT0Ow==}
+  '@nuxt/scripts@0.8.4':
+    resolution: {integrity: sha512-OHsytvxTCgBvVWBCXOWklouCi5nNsD2yFAmEIn6YJMc98zadmlnqTnaKmroRuzxqWJRsNboSBqllPl8mJpztDQ==}
 
   '@nuxt/telemetry@2.5.4':
     resolution: {integrity: sha512-KH6wxzsNys69daSO0xUv0LEBAfhwwjK1M+0Cdi1/vxmifCslMIY7lN11B4eywSfscbyVPAYJvANyc7XiVPImBQ==}
@@ -2277,6 +2277,9 @@ packages:
   '@shikijs/core@1.16.1':
     resolution: {integrity: sha512-aI0hBtw+a6KsJp2jcD4YuQqKpeCbURMZbhHVozDknJpm+KJqeMRkEnfBC8BaKE/5XC+uofPgCLsa/TkTk0Ba0w==}
 
+  '@shikijs/core@1.16.2':
+    resolution: {integrity: sha512-XSVH5OZCvE4WLMgdoBqfPMYmGHGmCC3OgZhw0S7KcSi2XKZ+5oHGe71GFnTljgdOxvxx5WrRks6QoTLKrl1eAA==}
+
   '@shikijs/transformers@1.1.2':
     resolution: {integrity: sha512-tldkUMW7RBkU2F6eXbiRMw3ja+hQer1EjwhD2NGOv6K0pgZdVp3JKjU8uisRtg65tyBqrVHq7zlLHVk7EKmUZA==}
 
@@ -2357,8 +2360,8 @@ packages:
   '@types/file-loader@5.0.4':
     resolution: {integrity: sha512-aB4X92oi5D2nIGI8/kolnJ47btRM2MQjQS4eJgA/VnCD12x0+kP5v7b5beVQWKHLOcquwUXvv6aMt8PmMy9uug==}
 
-  '@types/google.maps@3.57.0':
-    resolution: {integrity: sha512-8X/HqaUXob25aVslslO84p9ESInpOQd3lMxW085IxqZZ1opRuFfwx2/c1JIUFVvCkkK+sCQHFDJ+Kw60Gsi1qA==}
+  '@types/google.maps@3.58.0':
+    resolution: {integrity: sha512-rZPrbNHoGxeY70uuQYFLGQqcz5mLd3pZy0u286GSugvN7PLFsHNRF2wN2QXtUgNiC33IC0LX+MD3LGAC3wN7Eg==}
 
   '@types/hash-sum@1.0.2':
     resolution: {integrity: sha512-UP28RddqY8xcU0SCEp9YKutQICXpaAq9N8U2klqF5hegGha7KzTOL8EdhIIV3bOSGBzjEpN9bU/d+nNZBdJYVw==}
@@ -2536,17 +2539,31 @@ packages:
   '@unhead/dom@1.10.4':
     resolution: {integrity: sha512-ehMy9k6efo4GTLmiP27wCtywWYdiggrP3m7h6kD/d1uhfORH3yCgsd4yXQnmDoSbsMyX6GlY5DBzy5bnYPp/Xw==}
 
+  '@unhead/dom@1.11.0-beta.1':
+    resolution: {integrity: sha512-ucKwEwkfcbTcfxqSKGF8m6HYwtEWW78K9ttmO1wc0y8mAOrJofMYELQyw2O6XDkr2TVwoKNfxpcA/PR9PEcN2g==}
+
   '@unhead/schema@1.10.4':
     resolution: {integrity: sha512-nX9sJgKPy2t4GHB9ky/vkMLbYqXl9Num5NZToTr0rKrIGkshzHhUrbn/EiHreIjcGI1eIpu+edniCDIwGTJgmw==}
 
+  '@unhead/schema@1.11.0-beta.1':
+    resolution: {integrity: sha512-SyOHQwmjEv2yoDcasha6xtzCV7/b81pDtk69izVBvrbHrW6IAUYfpUcgW0eroMj3wmbAOICvaU6O6NXGdsZv4w==}
+
   '@unhead/shared@1.10.4':
     resolution: {integrity: sha512-C5wsps9i/XCBObMVQUrbXPvZG17a/e5yL0IsxpICaT4QSiZAj9v7JrNQ5WpM5JOZVMKRI5MYRdafNDw3iSmqZg==}
+
+  '@unhead/shared@1.11.0-beta.1':
+    resolution: {integrity: sha512-VjVwAJ7mES6ziV2V2XYaWxfgKIcdqLkllfHVp8MrYm3DpCWUC37ZwsczGpibJAfoKLS+kP8d3noF8b/9pc3HAQ==}
 
   '@unhead/ssr@1.10.4':
     resolution: {integrity: sha512-2nDG08q9bTvMB24YGNJCXimAs1vuG9yVa01i/Et1B2y4P8qhweXOxnialGmt5j8xeXwPFUBCe36tC5kLCSuJoQ==}
 
   '@unhead/vue@1.10.4':
     resolution: {integrity: sha512-Q45F/KOvDeitc8GkfkPY45V8Dmw1m1b9A/aHM5A2BwRV8GyoRV+HRWVw5h02e0AO1TsICvcW8tI90qeCM2oGSA==}
+    peerDependencies:
+      vue: 3.5.3
+
+  '@unhead/vue@1.11.0-beta.1':
+    resolution: {integrity: sha512-1aUZaNKU4TAT2bS01YMPfcX5LLfrDdsrmXmhfsLVkdJnkXRqjejzG1/f+NmsniAKv0/eXU9nniJeMOHUb76nng==}
     peerDependencies:
       vue: 3.5.3
 
@@ -6302,6 +6319,9 @@ packages:
   shiki@1.16.1:
     resolution: {integrity: sha512-tCJIMaxDVB1mEIJ5TvfZU7kCPB5eo9fli5+21Olc/bmyv+w8kye3JOp+LZRmGkAyT71hrkefQhTiY+o9mBikRQ==}
 
+  shiki@1.16.2:
+    resolution: {integrity: sha512-gSym0hZf5a1U0iDPsdoOAZbvoi+e0c6c3NKAi03FoSLTm7oG20tum29+gk0wzzivOasn3loxfGUPT+jZXIUbWg==}
+
   side-channel@1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
 
@@ -6748,6 +6768,9 @@ packages:
 
   unhead@1.10.4:
     resolution: {integrity: sha512-qKiYhgZ4IuDbylP409cdwK/8WEIi5cOSIBei/OXzxFs4uxiTZHSSa8NC1qPu2kooxHqxyoXGBw8ARms9zOsbxw==}
+
+  unhead@1.11.0-beta.1:
+    resolution: {integrity: sha512-pUhuWQ9LaDRzZ7Xz9YeMSEp0dVSJ8JlGdNVXUqfWzOqA3AZv8BZPVUH5mZbbaN2gWIOyEdCIGIXoCz0mBd21SQ==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8253,16 +8276,16 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.94.0
 
-  '@nuxt/scripts@0.8.3(@nuxt/devtools@1.4.1(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.21.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.3)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.45)(rollup@4.21.2)(typescript@5.5.4)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(vue@3.5.3(typescript@5.5.4))(webpack-sources@3.2.3)(webpack@5.94.0(esbuild@0.23.1))':
+  '@nuxt/scripts@0.8.4(@nuxt/devtools@1.4.1(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.21.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.3)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.45)(rollup@4.21.2)(typescript@5.5.4)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(vue@3.5.3(typescript@5.5.4))(webpack-sources@3.2.3)(webpack@5.94.0(esbuild@0.23.1))':
     dependencies:
       '@nuxt/devtools-kit': 1.4.1(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))
       '@nuxt/devtools-ui-kit': 1.4.1(@nuxt/devtools@1.4.1(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.21.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.3)(nuxt@packages+nuxt)(postcss@8.4.45)(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))(vue@3.5.3(typescript@5.5.4))(webpack@5.94.0(esbuild@0.23.1))
       '@nuxt/kit': link:packages/kit
-      '@types/google.maps': 3.57.0
+      '@types/google.maps': 3.58.0
       '@types/stripe-v3': 3.1.33
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.1.0
-      '@unhead/vue': 1.10.4(vue@3.5.3(typescript@5.5.4))
+      '@unhead/vue': 1.11.0-beta.1(vue@3.5.3(typescript@5.5.4))
       '@vueuse/core': 11.0.3(vue@3.5.3(typescript@5.5.4))
       consola: 3.2.3
       defu: 6.1.4
@@ -8274,7 +8297,7 @@ snapshots:
       pathe: 1.1.2
       pkg-types: 1.2.0
       semver: 7.6.3
-      shiki: 1.16.1
+      shiki: 1.16.2
       sirv: 2.0.4
       std-env: 3.7.0
       third-party-capital: 2.3.0
@@ -8729,6 +8752,11 @@ snapshots:
       '@shikijs/vscode-textmate': 9.2.0
       '@types/hast': 3.0.4
 
+  '@shikijs/core@1.16.2':
+    dependencies:
+      '@shikijs/vscode-textmate': 9.2.0
+      '@types/hast': 3.0.4
+
   '@shikijs/transformers@1.1.2':
     dependencies:
       shiki: 1.1.2
@@ -8838,7 +8866,7 @@ snapshots:
     dependencies:
       '@types/webpack': 4.41.34
 
-  '@types/google.maps@3.57.0': {}
+  '@types/google.maps@3.58.0': {}
 
   '@types/hash-sum@1.0.2': {}
 
@@ -9065,7 +9093,17 @@ snapshots:
       '@unhead/schema': 1.10.4
       '@unhead/shared': 1.10.4
 
+  '@unhead/dom@1.11.0-beta.1':
+    dependencies:
+      '@unhead/schema': 1.11.0-beta.1
+      '@unhead/shared': 1.11.0-beta.1
+
   '@unhead/schema@1.10.4':
+    dependencies:
+      hookable: 5.5.3
+      zhead: 2.2.4
+
+  '@unhead/schema@1.11.0-beta.1':
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
@@ -9073,6 +9111,10 @@ snapshots:
   '@unhead/shared@1.10.4':
     dependencies:
       '@unhead/schema': 1.10.4
+
+  '@unhead/shared@1.11.0-beta.1':
+    dependencies:
+      '@unhead/schema': 1.11.0-beta.1
 
   '@unhead/ssr@1.10.4':
     dependencies:
@@ -9085,6 +9127,15 @@ snapshots:
       '@unhead/shared': 1.10.4
       hookable: 5.5.3
       unhead: 1.10.4
+      vue: 3.5.3(typescript@5.5.4)
+
+  '@unhead/vue@1.11.0-beta.1(vue@3.5.3(typescript@5.5.4))':
+    dependencies:
+      '@unhead/schema': 1.11.0-beta.1
+      '@unhead/shared': 1.11.0-beta.1
+      defu: 6.1.4
+      hookable: 5.5.3
+      unhead: 1.11.0-beta.1
       vue: 3.5.3(typescript@5.5.4)
 
   '@unocss/astro@0.62.3(rollup@4.21.2)(vite@5.4.3(@types/node@20.16.5)(sass@1.69.4)(terser@5.27.0))':
@@ -13729,6 +13780,12 @@ snapshots:
       '@shikijs/vscode-textmate': 9.2.0
       '@types/hast': 3.0.4
 
+  shiki@1.16.2:
+    dependencies:
+      '@shikijs/core': 1.16.2
+      '@shikijs/vscode-textmate': 9.2.0
+      '@types/hast': 3.0.4
+
   side-channel@1.0.4:
     dependencies:
       call-bind: 1.0.7
@@ -14168,6 +14225,13 @@ snapshots:
       '@unhead/dom': 1.10.4
       '@unhead/schema': 1.10.4
       '@unhead/shared': 1.10.4
+      hookable: 5.5.3
+
+  unhead@1.11.0-beta.1:
+    dependencies:
+      '@unhead/dom': 1.11.0-beta.1
+      '@unhead/schema': 1.11.0-beta.1
+      '@unhead/shared': 1.11.0-beta.1
       hookable: 5.5.3
 
   unicode-emoji-modifier-base@1.0.0: {}
