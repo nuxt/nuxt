@@ -11,9 +11,7 @@ if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
       const e = new Event('nuxt:preloadError', { cancelable: true })
       e.payload = error
       window.dispatchEvent(e)
-      if (!e.defaultPrevented) {
-        throw error
-      }
+      throw error
     });
   };
 };`

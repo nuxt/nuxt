@@ -1164,12 +1164,12 @@ describe('errors', () => {
   })
 
   // TODO: need to create test for webpack
-  it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
+  it.runIf(!isDev())('should handle chunk loading errors', async () => {
     const { page, consoleLogs } = await renderPage('/')
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
     expect(await page.innerText('div')).toContain('Some value: 3')
-    await page.route('*', route => route.abort('timedout'), { times: 1 })
+    await page.route(/.*/, route => route.abort('timedout'), { times: 1 })
     await page.getByText('Chunk error').click()
     await page.waitForURL(url('/chunk-error'))
     expect(consoleLogs.map(c => c.text).join('')).toContain('Failed to load resource')
