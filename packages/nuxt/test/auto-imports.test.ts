@@ -18,6 +18,7 @@ describe('imports:transform', () => {
   ]
 
   const ctx = createUnimport({
+    injectAtEnd: true,
     imports,
   })
 

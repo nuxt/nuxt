@@ -40,6 +40,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     // Create a context to share state between module internals
     const ctx = createUnimport({
+      injectAtEnd: true,
       ...options,
       addons: {
         vueTemplate: options.autoImport,
