@@ -33,7 +33,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
     ].filter(Boolean).join(' ')
-    console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   if (event.handled) { return }
