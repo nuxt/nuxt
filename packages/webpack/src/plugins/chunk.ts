@@ -8,9 +8,11 @@ if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
   var _ensureChunk = ${webpack.RuntimeGlobals.ensureChunk};
   ${webpack.RuntimeGlobals.ensureChunk} = function (chunkId) {
     return Promise.resolve(_ensureChunk(chunkId)).catch(error => {
-      useNuxtApp?.().callHook('app:chunkError', { error });
-      if (!error.defaultPrevented) {
-        throw error;
+      const e = new Event('nuxt:preloadError', { cancelable: true })
+      e.payload = error
+      window.dispatchEvent(e)
+      if (!e.defaultPrevented) {
+        throw error
       }
     });
   };

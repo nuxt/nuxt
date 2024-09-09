@@ -516,6 +516,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
+      `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
     ].join('\n\n')
   },
 }
