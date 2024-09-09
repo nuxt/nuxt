@@ -37,10 +37,15 @@ export default defineUntypedSchema({
     propsDestructure: true,
 
     /**
-     * Configure a prefix for all IDs generated via `useId()` inside this application.
-     * @type {string | undefined}
+     * Vue app configuration.
      */
-    idPrefix: undefined,
+    config: {
+      /**
+       * Configure a prefix for all IDs generated via `useId()` inside this application.
+       * @type {string | undefined}
+       */
+      idPrefix: undefined,
+    },
   },
 
   /**
