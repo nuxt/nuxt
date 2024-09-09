@@ -1,9 +1,10 @@
 import { existsSync } from 'node:fs'
-import { addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
+import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory } from '../utils'
@@ -15,7 +16,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     name: 'imports',
     configKey: 'imports',
   },
-  defaults: {
+  defaults: nuxt => ({
     autoImport: true,
     scan: true,
     presets: defaultPresets,
@@ -23,11 +24,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     imports: [],
     dirs: [],
     transform: {
-      include: [],
+      include: [
+        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+      ],
       exclude: undefined,
     },
     virtualImports: ['#imports'],
-  },
+  }),
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
@@ -92,8 +95,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
     // Transform to inject imports in production mode
-    addVitePlugin(() => TransformPlugin.vite({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => TransformPlugin.webpack({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
