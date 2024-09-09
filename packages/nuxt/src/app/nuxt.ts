@@ -18,7 +18,6 @@ import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
-import type { ViewTransition } from './plugins/view-transitions.client'
 
 // @ts-expect-error virtual file
 import { appId, multiApp } from '#build/nuxt.config.mjs'

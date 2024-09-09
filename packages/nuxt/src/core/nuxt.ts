@@ -257,7 +257,8 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(prehydrateTransformPlugin(nuxt))
