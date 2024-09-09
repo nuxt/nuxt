@@ -78,7 +78,7 @@ export interface NuxtBuilder {
 }
 
 // Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack' | 'postcss' | 'vue' | 'sourcemap'> {
+export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'builder' | 'postcss' | 'webpack'> {
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder

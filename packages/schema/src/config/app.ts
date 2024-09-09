@@ -40,7 +40,6 @@ export default defineUntypedSchema({
      * It is possible to pass configure the Vue app globally. Only serializable options
      * may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
      * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
-     * @type {Partial<typeof import('vue').AppConfig>}
      */
     config: undefined,
   },
