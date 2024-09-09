@@ -1,0 +1,42 @@
+diff --git a/dist/node/chunks/dep-BaOMuo4I.js b/dist/node/chunks/dep-BaOMuo4I.js
+index 65fc54a15fe62bb0535f33b1180ba449a8977707..f570d86be6d35b2e5960ae51e9bfb780d6974e14 100644
+--- a/dist/node/chunks/dep-BaOMuo4I.js
++++ b/dist/node/chunks/dep-BaOMuo4I.js
+@@ -64469,7 +64469,7 @@ function preload(baseModule, deps, importerUrl) {
+       "meta[property=csp-nonce]"
+     );
+     const cspNonce = cspNonceMeta?.nonce || cspNonceMeta?.getAttribute("nonce");
+-    promise = Promise.all(
++    promise = Promise.allSettled(
+       deps.map((dep) => {
+         dep = assetsURL(dep, importerUrl);
+         if (dep in seen) return;
+@@ -64510,15 +64510,20 @@ function preload(baseModule, deps, importerUrl) {
+       })
+     );
+   }
+-  return promise.then(() => baseModule()).catch((err) => {
+-    const e = new Event("vite:preloadError", {
+-      cancelable: true
+-    });
+-    e.payload = err;
+-    window.dispatchEvent(e);
+-    if (!e.defaultPrevented) {
+-      throw err;
++  return promise.then((res) => {
++    for (const item of res || []) {
++      if (item.status !== 'rejected') continue
++
++      const e = new Event('vite:preloadError', {
++        cancelable: true,
++      })
++      e.payload = item.reason
++      window.dispatchEvent(e)
++      if (!e.defaultPrevented) {
++        throw item.reason
++      }
+     }
++    return baseModule()
+   });
+ }
+ function buildImportAnalysisPlugin(config) {
