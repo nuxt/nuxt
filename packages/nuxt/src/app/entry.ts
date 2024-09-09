@@ -15,15 +15,13 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appId, multiApp, vueAppConfigIdPrefix, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
 if (import.meta.server) {
   entry = async function createNuxtAppServer (ssrContext: CreateOptions['ssrContext']) {
     const vueApp = createApp(RootComponent)
-
-    vueApp.config.idPrefix = vueAppConfigIdPrefix
 
     const nuxt = createNuxtApp({ vueApp, ssrContext })
 
@@ -58,8 +56,6 @@ if (import.meta.client) {
       (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
-
-    vueApp.config.idPrefix = vueAppConfigIdPrefix
 
     const nuxt = createNuxtApp({ vueApp })
 

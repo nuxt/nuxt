@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -603,6 +603,21 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.navigationRepaint) {
     addPlugin({
       src: resolve(nuxt.options.appDir, 'plugins/navigation-repaint.client'),
+    })
+  }
+
+  if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
+    addPluginTemplate({
+      filename: 'vue-app-config.mjs',
+      getContents: () => `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:vue-app-config',
+  enforce: 'pre',
+  setup (nuxtApp) {
+    ${Object.keys(nuxt.options.vue.config!).map(k => `    nuxtApp.vueApp.config[${JSON.stringify(k)}] = ${JSON.stringify(nuxt.options.vue.config![k as 'idPrefix'])}`).join('\n')}
+  }
+})`,
     })
   }
 
