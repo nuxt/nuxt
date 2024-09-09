@@ -20,8 +20,8 @@ export default defineDriver((opts) => {
     ...fs, // fall back to file system - only the bottom three methods are used in renderer
     async setItem (key, value, opts) {
       await Promise.all([
-        fs.setItem(normalizeFsKey(key), value, opts),
-        lru.setItem(key, value, opts),
+        fs.setItem?.(normalizeFsKey(key), value, opts),
+        lru.setItem?.(key, value, opts),
       ])
     },
     async hasItem (key, opts) {
