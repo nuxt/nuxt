@@ -2,6 +2,8 @@ import { defineComponent, onErrorCaptured, ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export default defineComponent({
+  name: 'NuxtErrorBoundary',
+  inheritAttrs: false,
   emits: {
     error (_error: unknown) {
       return true
