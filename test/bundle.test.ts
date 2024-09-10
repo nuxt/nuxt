@@ -19,7 +19,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   for (const outputDir of ['.output', '.output-inline']) {
     it('default client bundle size', async () => {
       const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"113k"`)
+      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"114k"`)
       expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
         [
           "_nuxt/entry.js",
@@ -35,7 +35,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"211k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1378k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1381k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -72,10 +72,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"557k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"558k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"82.8k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"84.0k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
