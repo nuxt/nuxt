@@ -171,7 +171,7 @@ export default defineNuxtModule<ComponentsOptions>({
       for (const component of newComponents) {
         if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && !existsSync(component.filePath)) {
           // attempt to resolve component path
-          component.filePath = await resolvePath(component.filePath)
+          component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
         }
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
