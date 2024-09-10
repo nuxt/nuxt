@@ -275,7 +275,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext (fn: any) {
+    runWithContext <T>(fn: () => T) {
       if (nuxtApp._scope.active && !getCurrentScope()) {
         return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
