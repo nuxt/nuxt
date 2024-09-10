@@ -41,6 +41,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "20.16.5",
     "magic-string": "^0.30.11",
+    "nitropack": "npm:nitropack-nightly@latest",
     "nuxt": "workspace:*",
     "postcss": "8.4.45",
     "rollup": "4.21.2",
