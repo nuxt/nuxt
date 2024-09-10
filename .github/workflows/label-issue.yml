@@ -1,0 +1,27 @@
+name: chore
+
+on:
+  issues:
+    types:
+      - opened
+
+jobs:
+  add-pr-labels:
+    name: Add labels
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    if: github.repository == 'nuxt/nuxt'
+    steps:
+      - uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            # add 'pending triage' label if issue is created with no labels
+            if (context.payload.issue.labels.length === 0) {
+              github.rest.issues.addLabels({
+                issue_number: pullRequest.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: ['pending triage']
+              })
+            }
