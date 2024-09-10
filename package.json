@@ -40,6 +40,7 @@
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "20.16.5",
+    "h3": "npm:h3-nightly@1.12.1-1725475511.19b975d",
     "magic-string": "^0.30.11",
     "nitropack": "npm:nitropack-nightly@2.10.0-28766719.d3880b9e",
     "nuxt": "workspace:*",
