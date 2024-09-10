@@ -170,21 +170,21 @@ describe('normalizeRoutes', () => {
 
     const { routes, imports } = normalizeRoutes([page], new Set(), true)
     expect({ routes, imports }).toMatchInlineSnapshot(`
+      {
+        "imports": Set {
+          "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
+        },
+        "routes": "[
         {
-          "imports": Set {
-            "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
-          },
-          "routes": "[
-          {
-            name: "some-custom-name",
-            path: indexN6pT4Un8hYMeta?.path ?? "/",
-            meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
-            redirect: "/",
-            component: () => import("/app/pages/index.vue").then(m => m.default || m)
-          }
-        ]",
+          name: "some-custom-name",
+          path: indexN6pT4Un8hYMeta?.path ?? "/",
+          meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
+          redirect: "/",
+          component: () => import("/app/pages/index.vue")
         }
-      `)
+      ]",
+      }
+    `)
   })
 
   it('should produce valid route objects when used without extracted meta', () => {
@@ -195,21 +195,21 @@ describe('normalizeRoutes', () => {
 
     const { routes, imports } = normalizeRoutes([page], new Set())
     expect({ routes, imports }).toMatchInlineSnapshot(`
+      {
+        "imports": Set {
+          "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
+        },
+        "routes": "[
         {
-          "imports": Set {
-            "import { default as indexN6pT4Un8hYMeta } from "/app/pages/index.vue?macro=true";",
-          },
-          "routes": "[
-          {
-            name: indexN6pT4Un8hYMeta?.name ?? undefined,
-            path: indexN6pT4Un8hYMeta?.path ?? "/",
-            meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
-            alias: indexN6pT4Un8hYMeta?.alias || [],
-            redirect: indexN6pT4Un8hYMeta?.redirect,
-            component: () => import("/app/pages/index.vue").then(m => m.default || m)
-          }
-        ]",
+          name: indexN6pT4Un8hYMeta?.name ?? undefined,
+          path: indexN6pT4Un8hYMeta?.path ?? "/",
+          meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
+          alias: indexN6pT4Un8hYMeta?.alias || [],
+          redirect: indexN6pT4Un8hYMeta?.redirect,
+          component: () => import("/app/pages/index.vue")
         }
-      `)
+      ]",
+      }
+    `)
   })
 })

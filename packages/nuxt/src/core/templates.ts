@@ -279,7 +279,7 @@ export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
+      return [name, genDynamicImport(file)]
     }))
     return [
       `export default ${layoutsObject}`,

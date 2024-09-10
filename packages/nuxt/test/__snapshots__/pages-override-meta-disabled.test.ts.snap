@@ -2,7 +2,7 @@
   "pushed route, skips generation from file": [
     {
       "alias": "["pushed-route-alias"].concat(mockMeta?.alias || [])",
-      "component": "() => import("pages/route-file.vue").then(m => m.default || m)",
+      "component": "() => import("pages/route-file.vue")",
       "meta": "{ ...(mockMeta || {}), ...{"someMetaData":true} }",
       "name": "mockMeta?.name ?? "pushed-route"",
       "path": "mockMeta?.path ?? "/"",
@@ -20,7 +20,7 @@
   "route.meta generated from file": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "component": "() => import("pages/page-with-meta.vue")",
       "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
       "name": "mockMeta?.name ?? "page-with-meta"",
       "path": "mockMeta?.path ?? "/page-with-meta"",
@@ -30,7 +30,7 @@
   "should allow pages with `:` in their path": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/test:name.vue").then(m => m.default || m)",
+      "component": "() => import("pages/test:name.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "test:name"",
       "path": "mockMeta?.path ?? "/test\\:name"",
@@ -46,7 +46,7 @@
           "children": [
             {
               "alias": "mockMeta?.alias || []",
-              "component": "() => import("pages/param/index/index.vue").then(m => m.default || m)",
+              "component": "() => import("pages/param/index/index.vue")",
               "meta": "mockMeta || {}",
               "name": "mockMeta?.name ?? "param-index"",
               "path": "mockMeta?.path ?? """,
@@ -54,14 +54,14 @@
             },
             {
               "alias": "mockMeta?.alias || []",
-              "component": "() => import("layer/pages/param/index/sibling.vue").then(m => m.default || m)",
+              "component": "() => import("layer/pages/param/index/sibling.vue")",
               "meta": "mockMeta || {}",
               "name": "mockMeta?.name ?? "param-index-sibling"",
               "path": "mockMeta?.path ?? "sibling"",
               "redirect": "mockMeta?.redirect",
             },
           ],
-          "component": "() => import("layer/pages/param/index.vue").then(m => m.default || m)",
+          "component": "() => import("layer/pages/param/index.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? undefined",
           "path": "mockMeta?.path ?? """,
@@ -69,14 +69,14 @@
         },
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/param/sibling.vue").then(m => m.default || m)",
+          "component": "() => import("pages/param/sibling.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "param-sibling"",
           "path": "mockMeta?.path ?? "sibling"",
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/param.vue").then(m => m.default || m)",
+      "component": "() => import("pages/param.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? undefined",
       "path": "mockMeta?.path ?? "/param"",
@@ -87,7 +87,7 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("layer/pages/wrapper-expose/other/index.vue").then(m => m.default || m)",
+          "component": "() => import("layer/pages/wrapper-expose/other/index.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "wrapper-expose-other"",
           "path": "mockMeta?.path ?? """,
@@ -95,14 +95,14 @@
         },
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/wrapper-expose/other/sibling.vue").then(m => m.default || m)",
+          "component": "() => import("pages/wrapper-expose/other/sibling.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "wrapper-expose-other-sibling"",
           "path": "mockMeta?.path ?? "sibling"",
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/wrapper-expose/other.vue").then(m => m.default || m)",
+      "component": "() => import("pages/wrapper-expose/other.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? undefined",
       "path": "mockMeta?.path ?? "/wrapper-expose/other"",
@@ -112,7 +112,7 @@
   "should extract serializable values and override fallback when normalized with `overrideMeta: true`": [
     {
       "alias": "["sweet-home"].concat(mockMeta?.alias || [])",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "home"",
       "path": "mockMeta?.path ?? "/"",
@@ -122,7 +122,7 @@
   "should generate correct catch-all route": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[...slug].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[...slug].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "slug"",
       "path": "mockMeta?.path ?? "/:slug(.*)*"",
@@ -130,7 +130,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
@@ -140,7 +140,7 @@
   "should generate correct dynamic routes": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
@@ -148,7 +148,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[slug].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[slug].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "slug"",
       "path": "mockMeta?.path ?? "/:slug()"",
@@ -159,14 +159,14 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/[[foo]]/index.vue").then(m => m.default || m)",
+          "component": "() => import("pages/[[foo]]/index.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "foo"",
           "path": "mockMeta?.path ?? """,
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/[[foo]]").then(m => m.default || m)",
+      "component": "() => import("pages/[[foo]]")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? undefined",
       "path": "mockMeta?.path ?? "/:foo?"",
@@ -174,7 +174,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/optional/[[opt]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/optional/[[opt]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "optional-opt"",
       "path": "mockMeta?.path ?? "/optional/:opt?"",
@@ -182,7 +182,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/optional/prefix-[[opt]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/optional/prefix-[[opt]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "optional-prefix-opt"",
       "path": "mockMeta?.path ?? "/optional/prefix-:opt?"",
@@ -190,7 +190,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/optional/[[opt]]-postfix.vue").then(m => m.default || m)",
+      "component": "() => import("pages/optional/[[opt]]-postfix.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "optional-opt-postfix"",
       "path": "mockMeta?.path ?? "/optional/:opt?-postfix"",
@@ -198,7 +198,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/optional/prefix-[[opt]]-postfix.vue").then(m => m.default || m)",
+      "component": "() => import("pages/optional/prefix-[[opt]]-postfix.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "optional-prefix-opt-postfix"",
       "path": "mockMeta?.path ?? "/optional/prefix-:opt?-postfix"",
@@ -206,7 +206,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[bar]/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/[bar]/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "bar"",
       "path": "mockMeta?.path ?? "/:bar()"",
@@ -214,7 +214,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/nonopt/[slug].vue").then(m => m.default || m)",
+      "component": "() => import("pages/nonopt/[slug].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "nonopt-slug"",
       "path": "mockMeta?.path ?? "/nonopt/:slug()"",
@@ -222,7 +222,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/opt/[[slug]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/opt/[[slug]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "opt-slug"",
       "path": "mockMeta?.path ?? "/opt/:slug?"",
@@ -230,7 +230,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[[sub]]/route-[slug].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[[sub]]/route-[slug].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "sub-route-slug"",
       "path": "mockMeta?.path ?? "/:sub?/route-:slug()"",
@@ -240,7 +240,7 @@
   "should generate correct id for catchall (order 1)": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[...stories].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[...stories].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "stories"",
       "path": "mockMeta?.path ?? "/:stories(.*)*"",
@@ -248,7 +248,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/stories/[id].vue").then(m => m.default || m)",
+      "component": "() => import("pages/stories/[id].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "stories-id"",
       "path": "mockMeta?.path ?? "/stories/:id()"",
@@ -258,7 +258,7 @@
   "should generate correct id for catchall (order 2)": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/stories/[id].vue").then(m => m.default || m)",
+      "component": "() => import("pages/stories/[id].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "stories-id"",
       "path": "mockMeta?.path ?? "/stories/:id()"",
@@ -266,7 +266,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[...stories].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[...stories].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "stories"",
       "path": "mockMeta?.path ?? "/:stories(.*)*"",
@@ -276,7 +276,7 @@
   "should generate correct route for kebab-case file": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/kebab-case.vue").then(m => m.default || m)",
+      "component": "() => import("pages/kebab-case.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "kebab-case"",
       "path": "mockMeta?.path ?? "/kebab-case"",
@@ -286,7 +286,7 @@
   "should generate correct route for snake_case file": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/snake_case.vue").then(m => m.default || m)",
+      "component": "() => import("pages/snake_case.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "snake_case"",
       "path": "mockMeta?.path ?? "/snake_case"",
@@ -296,7 +296,7 @@
   "should generate correct routes for index pages": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
@@ -304,7 +304,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/parent/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/parent/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "parent"",
       "path": "mockMeta?.path ?? "/parent"",
@@ -312,7 +312,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/parent/child/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/parent/child/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "parent-child"",
       "path": "mockMeta?.path ?? "/parent/child"",
@@ -325,14 +325,14 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/parent/child.vue").then(m => m.default || m)",
+          "component": "() => import("pages/parent/child.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "parent-child"",
           "path": "mockMeta?.path ?? "child"",
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/parent.vue").then(m => m.default || m)",
+      "component": "() => import("pages/parent.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "parent"",
       "path": "mockMeta?.path ?? "/parent"",
@@ -342,7 +342,7 @@
   "should handle route groups": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/(foo)/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/(foo)/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
@@ -353,14 +353,14 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/(bar)/about/index.vue").then(m => m.default || m)",
+          "component": "() => import("pages/(bar)/about/index.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "about"",
           "path": "mockMeta?.path ?? """,
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/(foo)/about.vue").then(m => m.default || m)",
+      "component": "() => import("pages/(foo)/about.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? undefined",
       "path": "mockMeta?.path ?? "/about"",
@@ -373,14 +373,14 @@
       "children": [
         {
           "alias": "mockMeta?.alias || []",
-          "component": "() => import("pages/index/index/all.vue").then(m => m.default || m)",
+          "component": "() => import("pages/index/index/all.vue")",
           "meta": "mockMeta || {}",
           "name": "mockMeta?.name ?? "index-index-all"",
           "path": "mockMeta?.path ?? "all"",
           "redirect": "mockMeta?.redirect",
         },
       ],
-      "component": "() => import("pages/index/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
@@ -390,7 +390,7 @@
   "should merge route.meta with meta from file": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/page-with-meta.vue").then(m => m.default || m)",
+      "component": "() => import("pages/page-with-meta.vue")",
       "meta": "{ ...(mockMeta || {}), ...{"test":1} }",
       "name": "mockMeta?.name ?? "page-with-meta"",
       "path": "mockMeta?.path ?? "/page-with-meta"",
@@ -400,7 +400,7 @@
   "should not generate colliding route names when hyphens are in file name": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/parent/[child].vue").then(m => m.default || m)",
+      "component": "() => import("pages/parent/[child].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "parent-child"",
       "path": "mockMeta?.path ?? "/parent/:child()"",
@@ -408,7 +408,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/parent-[child].vue").then(m => m.default || m)",
+      "component": "() => import("pages/parent-[child].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "parent-child"",
       "path": "mockMeta?.path ?? "/parent-:child()"",
@@ -418,7 +418,7 @@
   "should not merge required param as a child of optional param": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[[foo]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[[foo]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "foo"",
       "path": "mockMeta?.path ?? "/:foo?"",
@@ -426,7 +426,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[foo].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[foo].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "foo"",
       "path": "mockMeta?.path ?? "/:foo()"",
@@ -436,7 +436,7 @@
   "should only allow "_" & "." as special character for dynamic route": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[a1_1a].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[a1_1a].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "a1_1a"",
       "path": "mockMeta?.path ?? "/:a1_1a()"",
@@ -444,7 +444,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[b2.2b].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[b2.2b].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "b2.2b"",
       "path": "mockMeta?.path ?? "/:b2.2b()"",
@@ -452,7 +452,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[b2]_[2b].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[b2]_[2b].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "b2_2b"",
       "path": "mockMeta?.path ?? "/:b2()_:2b()"",
@@ -460,7 +460,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[[c3@3c]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[[c3@3c]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "c33c"",
       "path": "mockMeta?.path ?? "/:c33c?"",
@@ -468,7 +468,7 @@
     },
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/[[d4-4d]].vue").then(m => m.default || m)",
+      "component": "() => import("pages/[[d4-4d]].vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "d44d"",
       "path": "mockMeta?.path ?? "/:d44d?"",
@@ -478,7 +478,7 @@
   "should properly override route name if definePageMeta name override is defined.": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "home"",
       "path": "mockMeta?.path ?? "/"",
@@ -488,7 +488,7 @@
   "should use fallbacks when normalized with `overrideMeta: true`": [
     {
       "alias": "mockMeta?.alias || []",
-      "component": "() => import("pages/index.vue").then(m => m.default || m)",
+      "component": "() => import("pages/index.vue")",
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "index"",
       "path": "mockMeta?.path ?? "/"",
