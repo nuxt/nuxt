@@ -69,7 +69,7 @@ export const createLazyMediaComponent = (loader: AsyncComponentLoader) => {
       const instance = getCurrentInstance()!
       onNuxtReady(() => ready.value = true)
       // This one, unlike others, can cause a hydration mismatch even a whole minute after the page loads. Given a query of min-width: 1200px, with a small window, the moment the window expands to at least 1200 it hydrates and causes a hydration mismatch.
-      return () => ready.value ? h(defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(attrs.hydrate ?? '(min-width: 1px)') })) : nuxt.isHydrating && instance.vnode.el ? h('div', attrs) : null
+      return () => ready.value ? h(defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(attrs.hydrate as string ?? '(min-width: 1px)') })) : nuxt.isHydrating && instance.vnode.el ? h('div', attrs) : null
     },
   })
 }
