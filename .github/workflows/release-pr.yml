@@ -39,7 +39,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
           COMMENT_AT: ${{ github.event.comment.created_at }}
         run: |
-          pr="$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/${GH_REPO}/pulls/${PR_NUMBER})"
+          pr="$(gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/"${GH_REPO}"/pulls/"${PR_NUMBER}")"
           head_sha="$(echo "$pr" | jq -r .head.sha)"
           updated_at="$(echo "$pr" | jq -r .updated_at)"
 
@@ -47,7 +47,7 @@ jobs:
               exit 1
           fi
 
-          echo "head_sha=$head_sha" >> $GITHUB_OUTPUT
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           ref: ${{ steps.pr.outputs.head_sha }}

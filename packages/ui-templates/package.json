@@ -18,11 +18,10 @@
     "test": "pnpm lint && pnpm build"
   },
   "devDependencies": {
-    "@types/html-minifier": "4.0.5",
     "@unocss/reset": "0.62.3",
     "critters": "0.0.24",
-    "html-minifier": "4.0.0",
     "html-validate": "8.22.0",
+    "htmlnano": "^2.1.1",
     "jiti": "2.0.0-beta.3",
     "knitwork": "1.1.0",
     "pathe": "1.1.2",

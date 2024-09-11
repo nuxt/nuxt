@@ -48,6 +48,7 @@
     "nuxt": "workspace:*",
     "postcss": "8.4.45",
     "rollup": "4.21.2",
+    "send": ">=0.19.0",
     "typescript": "5.6.2",
     "ufo": "1.5.4",
     "unbuild": "3.0.0-rc.7",
