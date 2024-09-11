@@ -71,31 +71,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
       const ast = parse(template[0])
       await walk(ast, (node) => {
         if (node.type === ELEMENT_NODE) {
-          if (node.name === 'slot') {
-            const { attributes, children, loc } = node
-
-            const slotName = attributes.name ?? 'default'
-
-            if (attributes.name) { delete attributes.name }
-            if (attributes['v-bind']) {
-              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
-            }
-            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes)
-            // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
-
-            if (children.length) {
-              // pass slot fallback to NuxtTeleportSsrSlot fallback
-              const attrString = attributeToString(attributes)
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
-            }
-
-            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-          } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
+          if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
             const { loc, attributes } = node
             const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'

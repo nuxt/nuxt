@@ -1,8 +1,11 @@
-import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import { createVNode, h } from 'vue'
+import type { Component, DefineComponent, RendererNode, VNode, renderSlot } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
+import NuxtTeleportIslandSlot from './nuxt-teleport-island-slot'
+import NuxtTeleportClient from './nuxt-teleport-island-component'
+import { useNuxtApp } from '#app'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -154,4 +157,75 @@ function isStartFragment (element: RendererNode) {
 
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
+}
+
+/**
+ * convert a component to wrap all slots with a teleport
+ */
+export function withIslandTeleport (component: DefineComponent) {
+  if (import.meta.client) { return component }
+  return {
+    ...component,
+    render: renderForIsland(component.render),
+    setup: setupForIsland(component.setup),
+  } as DefineComponent
+}
+
+/**
+ * export
+ */
+
+function renderForIsland (render: any) {
+  if (!render) { return undefined }
+
+  return (ctx, _cache, $props, $setup, $data, $options) => {
+
+    const _ctx = {
+      ...ctx,
+      $slots: {
+        ...ctx.$slots,
+        ...Object.keys(ctx.$slots).reduce((acc, key) => {
+          acc[key] = (...args: any) => {
+            return h(NuxtTeleportIslandSlot, {
+              name: key,
+              props: [args],
+            }, { default: () => ctx.$slots[key]?.(...args) })
+          }
+          return acc
+        }, {}),
+      },
+    }
+    for (const key in ctx.$slots) {
+      ctx.$slots[key] = (...args: any) => {
+        return h(NuxtTeleportIslandSlot, {
+          name: key,
+          props: [args],
+        }, { default: () => ctx.$slots[key]?.(...args) })
+      }
+    }
+    console.log('renderForIsland', _ctx, ctx, $setup)
+    return render(_ctx, _cache, $props, $setup, $data, $options)
+  }
+}
+
+function setupForIsland (setup: (props, ctx) => any) {
+  if(!setup) { return}
+  return (props, ctx) => {
+    // const slots = Object.keys(ctx.slots).reduce((acc, key) => {
+      
+    //   return Object.assign(acc, {[key]: (...args: any) => {
+    //     return createVNode(NuxtTeleportIslandSlot, {
+    //       name: key,
+    //     }, { default: () => ctx.slots[key]?.(...args) })
+    //   }})
+    // }, {}) 
+    for(const key in ctx.slots) {
+      ctx.slots[key] = (...args: any) => {
+        return createVNode(NuxtTeleportIslandSlot, {
+          name: key,
+        }, { default: () => ctx.slots[key]?.(...args) })
+      }
+    }
+      return setup?.(props, ctx)
+  }
 }

@@ -2,6 +2,7 @@ import { defineComponent, getCurrentInstance, h, ref } from 'vue'
 import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered } from '#app/composables/payload'
+import { withIslandTeleport } from '#app/components/utils'
 
 /* @__NO_SIDE_EFFECTS__ */
 export const createServerComponent = (name: string) => {
@@ -11,15 +12,15 @@ export const createServerComponent = (name: string) => {
     props: { lazy: Boolean },
     emits: ['error'],
     setup (props, { attrs, slots, expose, emit }) {
-      const vm = getCurrentInstance()
+       const vm = getCurrentInstance()
       const islandRef = ref<null | typeof NuxtIsland>(null)
 
       expose({
         refresh: () => islandRef.value?.refresh(),
       })
-
+      console.log(slots.default?.toString())
       return () => {
-        return h(NuxtIsland, {
+        return h( withIslandTeleport(NuxtIsland), {
           name,
           lazy: props.lazy,
           props: attrs,

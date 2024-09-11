@@ -1,5 +1,6 @@
 import type { VNode } from 'vue'
 import { Teleport, createVNode, defineComponent, h, inject } from 'vue'
+import consola from 'consola'
 import { useNuxtApp } from '../nuxt'
 import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
 
@@ -20,10 +21,12 @@ export default defineComponent({
      */
     props: {
       type: Object as () => Array<any>,
+      default: () => [],
     },
   },
   setup (props, { slots }) {
-    const nuxtApp = useNuxtApp()
+     const nuxtApp = useNuxtApp()
+     console.log(slots.default?.toString())
     const islandContext = nuxtApp.ssrContext?.islandContext
     if (!islandContext) {
       return () => slots.default?.()[0]

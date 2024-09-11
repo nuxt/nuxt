@@ -238,6 +238,7 @@ export default defineNuxtConfig({
     },
   },
   features: {
+    devLogs: false,
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {

@@ -34,7 +34,6 @@ export default defineComponent({
 
     // if there's already a teleport parent, we don't need to teleport or to render the wrapped component client side
     if (!nuxtApp.ssrContext?.islandContext || !props.nuxtClient || inject(NuxtTeleportIslandSymbol, false)) { return () => slots.default?.() }
-
     provide(NuxtTeleportIslandSymbol, props.to)
     const islandContext = nuxtApp.ssrContext!.islandContext!
 

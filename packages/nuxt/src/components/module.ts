@@ -238,9 +238,9 @@ export default defineNuxtModule<ComponentsOptions>({
 
       if (nuxt.options.experimental.componentIslands) {
         const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+        writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
 
         if (isClient && selectiveClient) {
-          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           if (!nuxt.options.dev) {
             config.plugins.push(componentsChunkPlugin.vite({
               getComponents,

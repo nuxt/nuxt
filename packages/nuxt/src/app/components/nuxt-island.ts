@@ -75,7 +75,8 @@ export default defineComponent({
   },
   emits: ['error'],
   async setup (props, { slots, expose, emit }) {
-    let canTeleport = import.meta.server
+    console.log(slots.default?.toString())
+     let canTeleport = import.meta.server
     const teleportKey = ref(0)
     const key = ref(0)
     const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))

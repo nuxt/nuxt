@@ -33,7 +33,8 @@ import type { NuxtPayload, NuxtSSRContext } from '#app'
 import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
-
+import consola from 'consola'
+ 
 // @ts-expect-error private property consumed by vite-generated url helpers
 globalThis.__buildAssetsURL = buildAssetsURL
 // @ts-expect-error private property consumed by vite-generated url helpers
@@ -473,6 +474,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     // TODO: remove for v4
     islandHead.link = islandHead.link || []
     islandHead.style = islandHead.style || []
+    consola.log('teleports', ssrContext.teleports)
 
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
@@ -655,7 +657,7 @@ function getServerComponentHTML (body: string): string {
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
-const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*;(.*)$/
+const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*$/
 
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
@@ -668,12 +670,13 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   }
   return response
 }
+const logger = consola
 
+logger.wrapConsole()
 function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
-
-  for (const clientUid in ssrContext.islandContext.components) {
+   for (const clientUid in ssrContext.islandContext.components) {
     // remove teleport anchor to avoid hydration issues
     const html = ssrContext.teleports?.[clientUid].replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
@@ -688,10 +691,9 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
 function getComponentSlotTeleport (teleports: Record<string, string>) {
   const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
-
-  for (const [key, value] of entries) {
-    const match = key.match(SSR_CLIENT_SLOT_MARKER)
-    if (match) {
+   for (const [key, value] of entries) {
+     const match = key.match(SSR_CLIENT_SLOT_MARKER)
+     if (match) {
       const [, slot] = match
       if (!slot) { continue }
       slots[slot] = value

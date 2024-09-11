@@ -41,6 +41,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const imports = new Set<string>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
+      imports.add(genImport(resolve(distDir, 'app/components/utils'), [{ name: 'withIslandTeleport' }]))
 
       // replace `_resolveComponent("...")` to direct import
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
@@ -59,6 +60,8 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
+            imports.add(`const ${identifier}_converted = withIslandTeleport(${identifier})`)
+            identifier += '_converted'
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
@@ -70,13 +73,14 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             imports.add(genImport('#app/components/client-only', [{ name: 'createClientOnly' }]))
             identifier += '_client'
           }
-
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => withIslandTeleport(c.${component.export ?? 'default'} || c))${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
           } else {
             imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
+            imports.add(`const ${identifier}_converted = withIslandTeleport(${identifier})`)
+            identifier += '_converted'
 
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
