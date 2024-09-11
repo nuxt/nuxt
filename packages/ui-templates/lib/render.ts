@@ -74,7 +74,7 @@ export const RenderPlugin = () => {
         // Inline our scripts
         const scriptSources: [string, string][] = []
 
-        for (const [block, src] of html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/gi)) {
+        for (const [block, src] of html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g)) {
           if (src?.match(/^\/.*\.js$/)) {
             scriptSources.push([block, src])
           }
@@ -124,7 +124,7 @@ export const RenderPlugin = () => {
           .match(/<body[^>]*>([\s\S]*)<\/body>/)?.[0]
           .replace(/(?<=<\/|<)body/g, 'div')
           .replace(/messages\./g, '')
-          .replace(/<script[^>]*>([\s\S]*?)<\/script>/gi, '')
+          .replace(/<script[^>]*>([\s\S]*?)<\/script>/g, '')
           .replace(/<a href="(\/[^"]*)"([^>]*)>([\s\S]*)<\/a>/g, '<NuxtLink to="$1"$2>\n$3\n</NuxtLink>')
 
           .replace(/<([^>]+) ([a-z]+)="([^"]*)(\{\{\s*(\w+)\s*\}\})([^"]*)"([^>]*)>/g, '<$1 :$2="`$3${$5}$6`"$7>')
