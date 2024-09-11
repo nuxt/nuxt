@@ -26,6 +26,6 @@ jobs:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       # From https://github.com/rhysd/actionlint/blob/main/docs/usage.md#use-actionlint-on-github-actions
       - name: Check workflow files
-        uses: docker://rhysd/actionlint:1.7.1
+        uses: docker://rhysd/actionlint:1.7.1@sha256:c6a00dfcb3c7ffb2f22363ded22ce3d789ea4c6a1862b11a2f7716c56c2509af
         with:
           args: -color
