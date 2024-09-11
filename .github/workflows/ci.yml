@@ -87,6 +87,16 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
+          config: |
+            paths:
+            - 'packages/*/dist/**'
+            - 'packages/nuxt/bin/**'
+            - 'packages/schema/schema/**'
+            paths-ignore:
+            - 'test/**'
+            - '**/*.spec.ts'
+            - '**/*.test.ts'
+            - '**/__snapshots__/**'
           languages: javascript
           queries: +security-and-quality
 
