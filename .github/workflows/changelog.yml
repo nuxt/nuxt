@@ -6,9 +6,7 @@ on:
       - main
       - 3.x
 
-permissions:
-  pull-requests: write
-  contents: write
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -18,6 +16,10 @@ jobs:
   update:
     if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
     runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+      contents: write
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
