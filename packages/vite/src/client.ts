@@ -11,7 +11,6 @@ import { defu } from 'defu'
 import { env, nodeless } from 'unenv'
 import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
-import { chunkErrorPlugin } from './plugins/chunk-error'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
 import { runtimePathsPlugin } from './plugins/paths'
@@ -165,11 +164,6 @@ export async function buildClient (ctx: ViteBuildContext) {
   // to detect whether to inject production or development code (such as HMR code)
   if (!ctx.nuxt.options.dev) {
     clientConfig.server!.hmr = false
-  }
-
-  // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-  if (ctx.nuxt.options.experimental.emitRouteChunkError) {
-    clientConfig.plugins!.push(chunkErrorPlugin({ sourcemap: !!ctx.nuxt.options.sourcemap.client }))
   }
 
   // Inject an h3-based CORS handler in preference to vite's
