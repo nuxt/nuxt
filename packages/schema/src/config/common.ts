@@ -295,7 +295,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
