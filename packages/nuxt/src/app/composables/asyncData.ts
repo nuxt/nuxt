@@ -1,5 +1,5 @@
 import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
-import type { Ref, WatchSource } from 'vue'
+import type { MultiWatchSources, Ref } from 'vue'
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -34,7 +34,7 @@ export type KeysOf<T> = Array<
 
 export type KeyOfRes<Transform extends _Transform> = KeysOf<ReturnType<Transform>>
 
-export type MultiWatchSources = (WatchSource<unknown> | object)[]
+export type { MultiWatchSources }
 
 export type NoInfer<T> = [T][T extends any ? 0 : never]
 

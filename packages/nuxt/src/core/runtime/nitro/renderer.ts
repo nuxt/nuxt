@@ -16,11 +16,10 @@ import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { hash } from 'ohash'
 import { propsToString, renderSSRHead } from '@unhead/ssr'
-import type { HeadEntryOptions } from '@unhead/schema'
+import type { Head, HeadEntryOptions } from '@unhead/schema'
 import type { Link, Script, Style } from '@unhead/vue'
-import { createServerHead } from '@unhead/vue'
+import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 
@@ -79,10 +78,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: {
-    link: (Record<string, string>)[]
-    style: ({ innerHTML: string, key: string })[]
-  }
+  head: Head
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -162,9 +158,7 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const renderToString = (ssrContext: NuxtSSRContext) => {
     const config = useRuntimeConfig(ssrContext.event)
     ssrContext.modules = ssrContext.modules || new Set<string>()
-    ssrContext!.payload = {
-      serverRendered: false,
-    }
+    ssrContext.payload.serverRendered = false
     ssrContext.config = {
       public: config.public,
       app: config.app,
@@ -288,6 +282,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   const head = createServerHead({
     plugins: unheadPlugins,
   })
+
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }
   if (!isRenderingIsland) {
@@ -308,7 +303,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     error: !!ssrError,
     nuxt: undefined!, /* NuxtApp */
     payload: (ssrError ? { error: ssrError } : {}) as NuxtPayload,
-    _payloadReducers: {},
+    _payloadReducers: Object.create(null),
     modules: new Set(),
     islandContext,
   }
@@ -394,7 +389,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
 
   // 2. Styles
-  head.push({ style: inlinedStyles })
+  if (inlinedStyles.length) {
+    head.push({ style: inlinedStyles })
+  }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
     for (const style in styles) {
@@ -411,7 +408,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
       }
     }
-    head.push({ link }, headEntryOptions)
+    if (link.length) {
+      head.push({ link }, headEntryOptions)
+    }
   }
 
   if (!NO_SCRIPTS && !isRenderingIsland) {
@@ -460,17 +459,21 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: NuxtIslandResponse['head'] = {
-      link: [],
-      style: [],
-    }
-    for (const tag of await head.resolveTags()) {
-      if (tag.tag === 'link') {
-        islandHead.link.push({ key: 'island-link-' + hash(tag.props), ...tag.props })
-      } else if (tag.tag === 'style' && tag.innerHTML) {
-        islandHead.style.push({ key: 'island-style-' + hash(tag.innerHTML), innerHTML: tag.innerHTML })
+    const islandHead: Head = {}
+    for (const entry of head.headEntries()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+        const currentValue = islandHead[key as keyof Head]
+        if (Array.isArray(currentValue)) {
+          currentValue.push(...value)
+        }
+        islandHead[key as keyof Head] = value
       }
     }
+
+    // TODO: remove for v4
+    islandHead.link = islandHead.link || []
+    islandHead.style = islandHead.style || []
+
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,

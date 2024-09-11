@@ -27,6 +27,7 @@ export const RouteProvider = defineComponent({
     for (const key in props.route) {
       Object.defineProperty(route, key, {
         get: () => previousKey === props.renderKey ? props.route[key as keyof RouteLocationNormalizedLoaded] : previousRoute[key as keyof RouteLocationNormalizedLoaded],
+        enumerable: true,
       })
     }
 

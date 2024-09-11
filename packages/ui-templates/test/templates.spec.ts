@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { readFileSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
-import { execaCommand } from 'execa'
+import { exec } from 'tinyexec'
 import { format } from 'prettier'
 import { createJiti } from 'jiti'
 // @ts-expect-error types not valid for bundler resolution
@@ -12,10 +12,12 @@ const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', im
 
 describe('template', () => {
   beforeAll(async () => {
-    await execaCommand('pnpm build', {
-      cwd: fileURLToPath(new URL('..', import.meta.url)),
-      env: {
-        OUTPUT_DIR: './node_modules/.temp/dist',
+    await exec('pnpm', ['build'], {
+      nodeOptions: {
+        cwd: fileURLToPath(new URL('..', import.meta.url)),
+        env: {
+          OUTPUT_DIR: './node_modules/.temp/dist',
+        },
       },
     })
   })
