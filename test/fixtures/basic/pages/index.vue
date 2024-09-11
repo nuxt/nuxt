@@ -36,8 +36,8 @@
       Immediate remove unmounted
     </NuxtLink>
     <NuxtLink
+      no-prefetch
       to="/chunk-error"
-      :prefetch="false"
     >
       Chunk error
     </NuxtLink>

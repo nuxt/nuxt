@@ -8,6 +8,7 @@ import { createError } from '../composables/error'
 import { islandComponents } from '#build/components.islands.mjs'
 
 export default defineComponent({
+  name: 'IslandRenderer',
   props: {
     context: {
       type: Object as () => { name: string, props?: Record<string, any> },

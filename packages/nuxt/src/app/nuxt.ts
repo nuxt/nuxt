@@ -20,7 +20,7 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 
 // @ts-expect-error virtual file
-import { appId, multiApp } from '#build/nuxt.config.mjs'
+import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -370,12 +370,14 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
-  // Listen to chunk load errors
   if (import.meta.client) {
-    window.addEventListener('nuxt.preloadError', (event) => {
-      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-    })
-
+    // Listen to chunk load errors
+    if (chunkErrorEvent) {
+      window.addEventListener(chunkErrorEvent, (event) => {
+        nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+        event.preventDefault()
+      })
+    }
     window.useNuxtApp = window.useNuxtApp || useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
