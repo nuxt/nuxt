@@ -24,7 +24,7 @@ interface ComponentChunkOptions {
   buildDir: string
 }
 
-const SCRIPT_RE = /<script[^>]*>/g
+const SCRIPT_RE = /<script[^>]*>/gi
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
 const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
