@@ -20,7 +20,7 @@ import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
 
 // @ts-expect-error virtual file
-import { appId, multiApp } from '#build/nuxt.config.mjs'
+import { appId } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -325,7 +325,7 @@ export function createNuxtApp (options: CreateOptions) {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = multiApp ? window.__NUXT__?.[nuxtApp._id] : window.__NUXT__
+    const __NUXT__ = window.__NUXT__?.[nuxtApp._id]
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {
