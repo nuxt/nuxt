@@ -6,6 +6,8 @@ on:
     types:
       - closed
 
+permissions: {}
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
