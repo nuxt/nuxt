@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
 import { genObjectFromRawEntries } from 'knitwork'
-import htmlMinifier from 'html-minifier'
+import { minify } from 'html-minifier-terser'
 import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
@@ -87,7 +87,7 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
-        html = htmlMinifier.minify(html, { collapseWhitespace: true })
+        html = await minify(html, { collapseWhitespace: true })
 
         if (!isCompleteHTML) {
           html = html.replace('<html><head></head><body>', '')
