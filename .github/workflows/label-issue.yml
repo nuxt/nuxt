@@ -20,7 +20,7 @@ jobs:
             // add 'pending triage' label if issue is created with no labels
             if (context.payload.issue.labels.length === 0) {
               github.rest.issues.addLabels({
-                issue_number: issue.number,
+                issue_number: context.payload.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 labels: ['pending triage']
