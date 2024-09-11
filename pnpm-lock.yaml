@@ -627,7 +627,7 @@ importers:
         specifier: 8.22.0
         version: 8.22.0(vitest@1.6.0(@types/node@20.16.5)(happy-dom@15.7.3)(sass@1.78.0)(terser@5.32.0))
       htmlnano:
-        specifier: ^2.1.1
+        specifier: 2.1.1
         version: 2.1.1(cssnano@7.0.6(postcss@8.4.45))(postcss@8.4.45)(relateurl@0.2.7)(svgo@3.3.2)(terser@5.32.0)(typescript@5.6.2)
       jiti:
         specifier: 2.0.0-beta.3
