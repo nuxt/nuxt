@@ -2,62 +2,53 @@
 
 exports[`template > produces correct output for error-404 template 1`] = `
 ".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
+  background: linear-gradient(45deg, #00dc82, #36e4da 50%, #0047e1);
+  bottom: -30vh;
   filter: blur(20vh);
   height: 40vh;
-  bottom: -30vh;
 }
 .gradient-border {
-  position: relative;
-  border-radius: 0.5rem;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
+  position: relative;
 }
 @media (prefers-color-scheme: light) {
   .gradient-border {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: hsla(0, 0%, 100%, 0.3);
   }
-  .gradient-border::before {
+  .gradient-border:before {
     background: linear-gradient(
       90deg,
-      #e2e2e2 0%,
+      #e2e2e2,
       #e2e2e2 25%,
       #00dc82 50%,
       #36e4da 75%,
-      #0047e1 100%
+      #0047e1
     );
   }
 }
 @media (prefers-color-scheme: dark) {
   .gradient-border {
-    background-color: rgba(20, 20, 20, 0.3);
+    background-color: hsla(0, 0%, 8%, 0.3);
   }
-  .gradient-border::before {
+  .gradient-border:before {
     background: linear-gradient(
       90deg,
-      #303030 0%,
+      #303030,
       #303030 25%,
       #00dc82 50%,
       #36e4da 75%,
-      #0047e1 100%
+      #0047e1
     );
   }
 }
-.gradient-border::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 0.5rem;
-  padding: 2px;
-  width: 100%;
+.gradient-border:before {
   background-size: 400% auto;
-  opacity: 0.5;
-  transition:
-    background-position 0.3s ease-in-out,
-    opacity 0.2s ease-in-out;
+  border-radius: 0.5rem;
+  bottom: 0;
+  content: "";
+  left: 0;
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
     linear-gradient(#fff 0 0);
@@ -66,8 +57,17 @@ exports[`template > produces correct output for error-404 template 1`] = `
     linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
+  opacity: 0.5;
+  padding: 2px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition:
+    background-position 0.3s ease-in-out,
+    opacity 0.2s ease-in-out;
+  width: 100%;
 }
-.gradient-border:hover::before {
+.gradient-border:hover:before {
   background-position: -50% 0;
   opacity: 1;
 }
@@ -135,8 +135,8 @@ exports[`template > produces correct output for error-404 template 1`] = `
   padding-right: 2rem;
 }
 .py-2 {
-  padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
 }
 .text-center {
   text-align: center;
@@ -174,10 +174,10 @@ exports[`template > produces correct output for error-404 template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .antialiased {
   -webkit-font-smoothing: antialiased;
@@ -203,8 +203,8 @@ exports[`template > produces correct output for error-404 template 1`] = `
     padding-right: 1.5rem;
   }
   .sm\\:py-3 {
-    padding-top: 0.75rem;
     padding-bottom: 0.75rem;
+    padding-top: 0.75rem;
   }
   .sm\\:text-4xl {
     font-size: 2.25rem;
@@ -220,37 +220,37 @@ exports[`template > produces correct output for error-404 template 1`] = `
 
 exports[`template > produces correct output for error-404 template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1 {
   font-size: inherit;
@@ -265,8 +265,8 @@ p {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -290,15 +290,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -323,7 +323,7 @@ p {
 
 exports[`template > produces correct output for error-500 template 1`] = `
 ".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
+  background: linear-gradient(45deg, #00dc82, #36e4da 50%, #0047e1);
   filter: blur(20vh);
 }
 .fixed {
@@ -406,10 +406,10 @@ exports[`template > produces correct output for error-500 template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .antialiased {
   -webkit-font-smoothing: antialiased;
@@ -440,37 +440,37 @@ exports[`template > produces correct output for error-500 template 1`] = `
 
 exports[`template > produces correct output for error-500 template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1 {
   font-size: inherit;
@@ -481,8 +481,8 @@ p {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -506,15 +506,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -539,11 +539,11 @@ p {
 
 exports[`template > produces correct output for error-dev template 1`] = `
 ".spotlight {
-  background: linear-gradient(45deg, #00dc82 0%, #36e4da 50%, #0047e1 100%);
-  opacity: 0.8;
+  background: linear-gradient(45deg, #00dc82, #36e4da 50%, #0047e1);
+  bottom: -40vh;
   filter: blur(30vh);
   height: 60vh;
-  bottom: -40vh;
+  opacity: 0.8;
 }
 .fixed {
   position: fixed;
@@ -635,10 +635,10 @@ exports[`template > produces correct output for error-dev template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .antialiased {
   -webkit-font-smoothing: antialiased;
@@ -672,37 +672,37 @@ exports[`template > produces correct output for error-dev template 1`] = `
 
 exports[`template > produces correct output for error-dev template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1 {
   font-size: inherit;
@@ -719,8 +719,8 @@ pre {
     Courier New,
     monospace;
   font-feature-settings: normal;
-  font-variation-settings: normal;
   font-size: 1em;
+  font-variation-settings: normal;
 }
 h1,
 p,
@@ -728,8 +728,8 @@ pre {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -753,15 +753,15 @@ pre {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -786,50 +786,45 @@ pre {
 
 exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
-  background: repeating-linear-gradient(
-    to right,
-    #36e4da 0%,
-    #1de0b1 25%,
-    #00dc82 50%,
-    #1de0b1 75%,
-    #36e4da 100%
-  );
-  height: 100px;
-  background-size: 200% auto;
-  background-position: 0 0;
   animation: gradient 2s infinite;
   animation-fill-mode: forwards;
   animation-timing-function: linear;
-  position: fixed;
+  background: repeating-linear-gradient(
+    90deg,
+    #36e4da 0,
+    #1de0b1 25%,
+    #00dc82 50%,
+    #1de0b1 75%,
+    #36e4da
+  );
+  background-position: 0 0;
+  background-size: 200% auto;
   bottom: 0;
-  left: 0;
-  right: 0;
+  height: 100px;
   height: 5px;
+  left: 0;
+  position: fixed;
+  right: 0;
 }
 .visual-effects .nuxt-loader-bar {
-  height: 100px;
   bottom: -50px;
+  filter: blur(100px);
+  height: 100px;
   left: -50px;
   right: -50px;
-  filter: blur(100px);
 }
 .visual-effects .mouse-gradient {
-  background: repeating-linear-gradient(
-    to right,
-    #00dc82 0%,
-    #1de0b1 50%,
-    #36e4da 100%
-  );
+  background: repeating-linear-gradient(90deg, #00dc82 0, #1de0b1 50%, #36e4da);
   filter: blur(100px);
   opacity: 0.5;
 }
 #animation-toggle {
-  position: fixed;
-  padding: 10px;
-  top: 0;
-  right: 0;
-  transition: opacity 0.4s ease-in;
   opacity: 0;
+  padding: 10px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: opacity 0.4s ease-in;
 }
 #animation-toggle:hover {
   opacity: 0.8;
@@ -838,14 +833,14 @@ exports[`template > produces correct output for loading template 1`] = `
   0% {
     background-position: 0 0;
   }
-  100% {
+  to {
     background-position: -200% 0;
   }
 }
 @media (prefers-color-scheme: dark) {
-  html,
-  body {
-    color: white;
+  body,
+  html {
+    color: #fff;
     color-scheme: dark;
   }
   .nuxt-loader-bar {
@@ -853,58 +848,58 @@ exports[`template > produces correct output for loading template 1`] = `
   }
 }
 *,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 a {
-  color: inherit;
   text-decoration: inherit;
+}
+a,
+button {
+  color: inherit;
 }
 button {
   font-family: inherit;
   font-feature-settings: inherit;
-  font-variation-settings: inherit;
   font-size: 100%;
+  font-variation-settings: inherit;
   font-weight: inherit;
   line-height: inherit;
-  color: inherit;
   margin: 0;
   padding: 0;
-}
-button {
   text-transform: none;
 }
-button,
-[type="button"] {
+[type="button"],
+button {
   -webkit-appearance: button;
   background-color: transparent;
   background-image: none;
@@ -917,8 +912,8 @@ svg {
   vertical-align: middle;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -942,15 +937,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -1017,9 +1012,9 @@ svg {
   text-align: center;
 }
 .transition-opacity {
+  transition-duration: 0.15s;
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.15s;
 }
 @media (prefers-color-scheme: dark) {
   .dark\\:bg-black {
@@ -1032,12 +1027,12 @@ svg {
 
 exports[`template > produces correct output for loading template 2`] = `
 "#animation-toggle {
-  position: fixed;
-  padding: 10px;
-  top: 0;
-  right: 0;
-  transition: opacity 0.4s ease-in;
   opacity: 0;
+  padding: 10px;
+  position: fixed;
+  right: 0;
+  top: 0;
+  transition: opacity 0.4s ease-in;
 }
 #animation-toggle:hover {
   opacity: 0.8;
@@ -1046,70 +1041,70 @@ exports[`template > produces correct output for loading template 2`] = `
   0% {
     background-position: 0 0;
   }
-  100% {
+  to {
     background-position: -200% 0;
   }
 }
 @media (prefers-color-scheme: dark) {
-  html,
-  body {
-    color: white;
+  body,
+  html {
+    color: #fff;
     color-scheme: dark;
   }
 }
 *,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 a {
-  color: inherit;
   text-decoration: inherit;
+}
+a,
+button {
+  color: inherit;
 }
 button {
   font-family: inherit;
   font-feature-settings: inherit;
-  font-variation-settings: inherit;
   font-size: 100%;
+  font-variation-settings: inherit;
   font-weight: inherit;
   line-height: inherit;
-  color: inherit;
   margin: 0;
   padding: 0;
-}
-button {
   text-transform: none;
 }
-button,
-[type="button"] {
+[type="button"],
+button {
   -webkit-appearance: button;
   background-color: transparent;
   background-image: none;
@@ -1122,8 +1117,8 @@ svg {
   vertical-align: middle;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -1147,15 +1142,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -1181,67 +1176,67 @@ svg {
 exports[`template > produces correct output for welcome template 1`] = `
 "@media (prefers-color-scheme: light) {
   .get-started-gradient-border {
-    background: linear-gradient(to right, #ffffff, #ffffff),
-      linear-gradient(to right, #00dc82, #1de0b1, #36e4da);
+    background: linear-gradient(90deg, #fff, #fff),
+      linear-gradient(90deg, #00dc82, #1de0b1, #36e4da);
   }
   .gradient-border-modules {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(247, 209, 76),
+      #f7d14c,
       rgba(247, 209, 76, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(247, 209, 76)
+      hsla(0, 0%, 100%, 0.8),
+      #f7d14c
     );
   }
   .gradient-border-examples {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(141, 234, 255),
+      #8deaff,
       rgba(141, 234, 255, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(141, 234, 255)
+      hsla(0, 0%, 100%, 0.8),
+      #8deaff
     );
   }
   .gradient-border-documentation {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(0, 220, 130),
+      #00dc82,
       rgba(0, 220, 130, 0.6),
-      rgba(255, 255, 255, 0.8),
-      rgba(0, 220, 130)
+      hsla(0, 0%, 100%, 0.8),
+      #00dc82
     );
   }
 }
 @media (prefers-color-scheme: dark) {
   .get-started-gradient-border {
-    background: linear-gradient(to right, #18181b, #18181b),
-      linear-gradient(to right, #00dc82, #1de0b1, #36e4da);
+    background: linear-gradient(90deg, #18181b, #18181b),
+      linear-gradient(90deg, #00dc82, #1de0b1, #36e4da);
   }
   .gradient-border-modules {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(247, 209, 76),
-      rgba(163, 129, 8),
-      rgba(255, 255, 255, 0.3),
-      rgba(163, 129, 8)
+      #f7d14c,
+      #a38108,
+      hsla(0, 0%, 100%, 0.3),
+      #a38108
     );
   }
   .gradient-border-examples {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(141, 234, 255),
-      rgba(0, 138, 169),
-      rgba(255, 255, 255, 0.3),
-      rgba(0, 138, 169)
+      #8deaff,
+      #008aa9,
+      hsla(0, 0%, 100%, 0.3),
+      #008aa9
     );
   }
   .gradient-border-documentation {
     background: linear-gradient(
       var(--gradient-angle),
-      rgba(0, 220, 130),
-      rgba(0, 63, 37),
-      rgba(255, 255, 255, 0.2),
-      rgba(0, 63, 37)
+      #00dc82,
+      #003f25,
+      hsla(0, 0%, 100%, 0.2),
+      #003f25
     );
   }
 }
@@ -1261,14 +1256,14 @@ exports[`template > produces correct output for welcome template 1`] = `
   opacity: 0;
 }
 .gradient-border {
+  border-radius: 12px;
+  left: 0;
   opacity: 0;
   position: absolute;
   top: 0;
-  left: 0;
-  width: calc(100% + 2px);
-  border-radius: 12px;
-  z-index: -1;
   transform: translate(-1px, -1px);
+  width: calc(100% + 2px);
+  z-index: -1;
 }
 .gradient-border-rect {
   height: calc(100% + 2px);
@@ -1284,66 +1279,50 @@ exports[`template > produces correct output for welcome template 1`] = `
 .modules-gradient-right {
   opacity: 0;
 }
-.modules-container:hover > .gradient-border,
+.documentation-container:hover > .gradient-border,
 .examples-container:hover > .gradient-border,
-.documentation-container:hover > .gradient-border {
+.modules-container:hover > .gradient-border {
+  animation: gradient-rotate 5s linear 0s infinite reverse;
   opacity: 1;
-  animation: gradient-rotate 5s cubic-bezier(0, 0, 1, 1) 0s infinite reverse;
   transition: all 0.3s linear;
 }
+.examples-container:hover > .examples-gradient-right,
 .modules-container:hover > .modules-gradient-right {
-  opacity: 0.2;
-}
-.examples-container:hover > .examples-gradient-right {
   opacity: 0.2;
 }
 .examples-gradient-right {
   opacity: 0;
 }
+.documentation-image-color-dark,
 .documentation-image-color-light,
-.documentation-image-color-dark {
-  display: none;
-}
-.modules-image-color-light,
-.modules-image-color-dark {
-  display: none;
-}
+.examples-image-color-dark,
 .examples-image-color-light,
-.examples-image-color-dark {
+.modules-image-color-dark,
+.modules-image-color-light {
   display: none;
 }
 @media (prefers-color-scheme: light) {
   .modules-image-light {
     display: block;
   }
+  .modules-container:hover > a > .modules-image-light,
   .modules-image-dark {
     display: none;
   }
-  .modules-container:hover > a > .modules-image-light {
-    display: none;
-  }
+  .examples-image-light,
   .modules-container:hover > a > .modules-image-color-light {
     display: block;
   }
-  .examples-image-light {
-    display: block;
-  }
+  .examples-container:hover > a > .examples-image-light,
   .examples-image-dark {
     display: none;
   }
-  .examples-container:hover > a > .examples-image-light {
-    display: none;
-  }
+  .documentation-image-light,
   .examples-container:hover > a > .examples-image-color-light {
     display: block;
   }
-  .documentation-image-light {
-    display: block;
-  }
+  .documentation-container:hover > a > div > .documentation-image-light,
   .documentation-image-dark {
-    display: none;
-  }
-  .documentation-container:hover > a > div > .documentation-image-light {
     display: none;
   }
   .documentation-container:hover > a > div > .documentation-image-color-light {
@@ -1389,17 +1368,17 @@ exports[`template > produces correct output for welcome template 1`] = `
   }
 }
 .sr-only {
-  position: absolute;
-  width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
   overflow: hidden;
+  padding: 0;
+  width: 1px;
   clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
   border-width: 0;
+  white-space: nowrap;
 }
-.absolute {
+.absolute,
+.sr-only {
   position: absolute;
 }
 .relative {
@@ -1410,8 +1389,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   right: 0;
 }
 .inset-y-0 {
-  top: 0;
   bottom: 0;
+  top: 0;
 }
 .-top-\\[58px\\] {
   top: -58px;
@@ -1548,7 +1527,7 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-gradient-from: rgb(96 165 250 / var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(96 165 250 / 0) var(--un-gradient-to-position);
+  --un-gradient-to: rgba(96, 165, 250, 0) var(--un-gradient-to-position);
   --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
 }
 .from-green-400 {
@@ -1556,7 +1535,7 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-gradient-from: rgb(55 233 144 / var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(55 233 144 / 0) var(--un-gradient-to-position);
+  --un-gradient-to: rgba(55, 233, 144, 0) var(--un-gradient-to-position);
   --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
 }
 .from-yellow-400 {
@@ -1564,7 +1543,7 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-gradient-from: rgb(250 204 21 / var(--un-from-opacity, 1))
     var(--un-gradient-from-position);
   --un-gradient-to-position: 100%;
-  --un-gradient-to: rgb(250 204 21 / 0) var(--un-gradient-to-position);
+  --un-gradient-to: rgba(250, 204, 21, 0) var(--un-gradient-to-position);
   --un-gradient-stops: var(--un-gradient-from), var(--un-gradient-to);
 }
 .to-transparent {
@@ -1574,12 +1553,14 @@ exports[`template > produces correct output for welcome template 1`] = `
 .bg-gradient-to-l {
   --un-gradient-shape: to left;
   --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
+}
+.bg-gradient-to-l,
+.bg-gradient-to-r {
   background-image: linear-gradient(var(--un-gradient));
 }
 .bg-gradient-to-r {
   --un-gradient-shape: to right;
   --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
-  background-image: linear-gradient(var(--un-gradient));
 }
 .p-1 {
   padding: 0.25rem;
@@ -1593,14 +1574,14 @@ exports[`template > produces correct output for welcome template 1`] = `
   padding-right: 1.25rem;
 }
 .py-14 {
-  padding-top: 3.5rem;
   padding-bottom: 3.5rem;
+  padding-top: 3.5rem;
 }
 .py-6 {
   padding-top: 1.5rem;
-  padding-bottom: 1.5rem;
 }
-.pb-6 {
+.pb-6,
+.py-6 {
   padding-bottom: 1.5rem;
 }
 .pt-\\[58px\\] {
@@ -1669,9 +1650,9 @@ exports[`template > produces correct output for welcome template 1`] = `
     var(--un-shadow);
 }
 .transition-opacity {
+  transition-duration: 0.15s;
   transition-property: opacity;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.15s;
 }
 .duration-300 {
   transition-duration: 0.3s;
@@ -1708,8 +1689,8 @@ exports[`template > produces correct output for welcome template 1`] = `
     --un-text-opacity: 1;
     color: rgb(189 189 189 / var(--un-text-opacity));
   }
-  .dark\\:text-white,
-  .dark\\:hover\\:text-white:hover {
+  .dark\\:hover\\:text-white:hover,
+  .dark\\:text-white {
     --un-text-opacity: 1;
     color: rgb(255 255 255 / var(--un-text-opacity));
   }
@@ -1779,8 +1760,8 @@ exports[`template > produces correct output for welcome template 1`] = `
     padding-right: 2rem;
   }
   .lg\\:py-7 {
-    padding-top: 1.75rem;
     padding-bottom: 1.75rem;
+    padding-top: 1.75rem;
   }
 }
 "
@@ -1796,42 +1777,42 @@ exports[`template > produces correct output for welcome template 2`] = `
   0% {
     --gradient-angle: 0deg;
   }
-  100% {
+  to {
     --gradient-angle: 360deg;
   }
 }
 *,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1,
 h2,
@@ -1846,12 +1827,12 @@ a {
 h1,
 h2,
 h3,
-p {
+p,
+ul {
   margin: 0;
 }
 ul {
   list-style: none;
-  margin: 0;
   padding: 0;
 }
 img,
@@ -1860,12 +1841,12 @@ svg {
   vertical-align: middle;
 }
 img {
-  max-width: 100%;
   height: auto;
+  max-width: 100%;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -1889,15 +1870,15 @@ img {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
