@@ -1,7 +1,6 @@
 import type { Nitro, NitroDevEventHandler, NitroEventHandler } from 'nitropack'
 import type { Import } from 'unimport'
 import { normalize } from 'pathe'
-import type { HTTPMethod } from 'h3'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 
@@ -13,7 +12,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
   return {
-    method: method as HTTPMethod,
+    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace',
     ...handler,
     handler: normalize(handler.handler),
   }
