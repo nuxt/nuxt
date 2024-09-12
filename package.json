@@ -42,7 +42,7 @@
     "@types/node": "20.16.5",
     "h3": "npm:h3-nightly@1.12.1-1725475511.19b975d",
     "magic-string": "^0.30.11",
-    "nitropack": "npm:nitropack-nightly@2.10.0-28767276.7dc8ae55",
+    "nitropack": "npm:nitropack-nightly@2.10.0-28769503.e28a02f7",
     "nuxt": "workspace:*",
     "postcss": "8.4.45",
     "rollup": "4.21.2",
