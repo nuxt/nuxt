@@ -521,7 +521,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file, { interopDefault: true })
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
