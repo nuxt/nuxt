@@ -26,7 +26,7 @@ export default defineNuxtPlugin({
     })
 
     router.onError((error, to) => {
-      if (chunkErrors.has(error)) {
+      if (chunkErrors.has(error) || error.message.includes('Failed to fetch dynamically imported module')) {
         reloadAppAtPath(to)
       }
     })

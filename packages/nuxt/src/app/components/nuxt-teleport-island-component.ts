@@ -18,6 +18,7 @@ export const NuxtTeleportIslandSymbol = Symbol('NuxtTeleportIslandComponent') as
 /* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandComponent',
+  inheritAttrs: false,
   props: {
     to: {
       type: String,

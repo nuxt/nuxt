@@ -51,6 +51,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
 
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
+    enforce: 'post',
     transformInclude (id) {
       id = normalize(id)
       return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id)

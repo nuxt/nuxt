@@ -8,6 +8,8 @@ on:
       - main
       - 3.x
 
+permissions: {}
+
 jobs:
   add-pr-labels:
     name: Add PR labels
