@@ -12,7 +12,7 @@ function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
   const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
   return {
-    method,
+    method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace',
     ...handler,
     handler: normalize(handler.handler),
   }
