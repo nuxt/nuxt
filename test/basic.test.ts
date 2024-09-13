@@ -2776,7 +2776,7 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
     // The default value is immediately truthy, however, there is a hydration mismatch without the hack
-    expect(await page.locator('body').getByText('This should be visible at first with conditions!').all()).toHaveLength(2)
+    expect(await page.locator('body').getByText('This should be visible at first with conditions!').all()).toHaveLength(1)
     const component = page.locator('#lazyevent')
     const rect = (await component.boundingBox())!
     await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
