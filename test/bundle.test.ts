@@ -16,17 +16,22 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   }, 120 * 1000)
 
   // Identical behaviour between inline/external vue options as this should only affect the server build
-  for (const outputDir of ['.output', '.output-inline']) {
-    it('default client bundle size', async () => {
-      const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"114k"`)
-      expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
-        [
-          "_nuxt/entry.js",
-        ]
-      `)
-    })
-  }
+
+  it('default client bundle size', async () => {
+    const [clientStats, clientStatsInlined] = await Promise.all(['.output', '.output-inline']
+      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+
+    expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"114k"`)
+    expect.soft(roundToKilobytes(clientStatsInlined.totalBytes)).toMatchInlineSnapshot(`"114k"`)
+
+    const files = new Set([...clientStats.files, ...clientStatsInlined.files].map(f => f.replace(/\..*\.js/, '.js')))
+
+    expect(files).toMatchInlineSnapshot(`
+      [
+        "_nuxt/entry.js",
+      ]
+    `)
+  })
 
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
