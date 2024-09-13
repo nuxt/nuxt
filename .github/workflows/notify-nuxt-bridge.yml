@@ -4,6 +4,9 @@ on:
     types: [closed]
     paths:
       - "packages/nuxt/src/app/composables/**"
+
+permissions: {}
+
 jobs:
   notify:
     if: github.event.pull_request.merged == true

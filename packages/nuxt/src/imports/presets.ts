@@ -42,7 +42,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/asyncData',
   },
   {
-    imports: ['useHydration', 'createVisibleLoader', 'createIdleLoader', 'createEventLoader'],
+    imports: ['useHydration'],
     from: '#app/composables/hydrate',
   },
   {
@@ -229,12 +229,8 @@ const vuePreset = defineUnimportPreset({
     'useTransitionState',
     'useId',
     'useTemplateRef',
-    'hydrateOnInteraction',
-    'hydrateOnMediaQuery',
-    'hydrateOnVisible',
-    'hydrateOnIdle',
-    'useHost',
     'useShadowRoot',
+    'useCssVars',
   ],
 })
 

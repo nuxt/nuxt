@@ -120,11 +120,21 @@ export const pluginsDeclaration: NuxtTemplate = {
       const relativePath = relative(typesDir, pluginPath)
 
       const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
+      // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
       }
 
+      const incorrectDeclaration = pluginPath.replace(/\.[cm]jsx?$/, '.d.ts')
+      // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
+      // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
+      if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
+        tsImports.push(relativePath.replace(/\.[cm](jsx?)$/, '.$1'))
+        continue
+      }
+
+      // if there is no declaration we only want to remove the extension if it's a TypeScript file
       if (exists(pluginPath)) {
         if (TS_RE.test(pluginPath)) {
           tsImports.push(relativePath.replace(EXTENSION_RE, ''))
@@ -181,7 +191,7 @@ export const schemaTemplate: NuxtTemplate = {
       }
     }
 
-    const moduleOptionsInterface = (jsdocTags: boolean) => [
+    const moduleOptionsInterface = (options: { addJSDocTags: boolean, unresolved: boolean }) => [
       ...modules.flatMap(([configKey, importName, mod]) => {
         let link: string | undefined
 
@@ -211,30 +221,32 @@ export const schemaTemplate: NuxtTemplate = {
         return [
           `    /**`,
           `     * Configuration for \`${importName}\``,
-          ...jsdocTags && link
-            ? [
-                `     * @see ${link}`,
-              ]
-            : [],
+          ...options.addJSDocTags && link ? [`     * @see ${link}`] : [],
           `     */`,
-          `    [${configKey}]?: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? Partial<O> : Record<string, any>`,
+          `    [${configKey}]${options.unresolved ? '?' : ''}: typeof ${genDynamicImport(importName, { wrapper: false })}.default extends NuxtModule<infer O> ? ${options.unresolved ? 'Partial<O>' : 'O'} : Record<string, any>`,
         ]
       }),
-      modules.length > 0 ? `    modules?: (undefined | null | false | NuxtModule | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
+      modules.length > 0 && options.unresolved ? `    modules?: (undefined | null | false | NuxtModule<any> | string | [NuxtModule | string, Record<string, any>] | ${modules.map(([configKey, importName, mod]) => `[${genString(mod.meta?.rawPath || importName)}, Exclude<NuxtConfig[${configKey}], boolean>]`).join(' | ')})[],` : '',
     ].filter(Boolean)
 
     return [
       'import { NuxtModule, RuntimeConfig } from \'@nuxt/schema\'',
       'declare module \'@nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
       // TypeScript will duplicate the jsdoc tags if we augment it twice
       // So here we only generate tags for `nuxt/schema`
-      ...moduleOptionsInterface(false),
+      ...moduleOptionsInterface({ addJSDocTags: false, unresolved: true }),
       '  }',
       '}',
       'declare module \'nuxt/schema\' {',
+      '  interface NuxtOptions {',
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: false }),
+      '  }',
       '  interface NuxtConfig {',
-      ...moduleOptionsInterface(true),
+      ...moduleOptionsInterface({ addJSDocTags: true, unresolved: true }),
       '  }',
       generateTypes(await resolveSchema(privateRuntimeConfig as Record<string, JSValue>),
         {
@@ -267,7 +279,7 @@ export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file, { interopDefault: true })]
+      return [name, genDynamicImport(file)]
     }))
     return [
       `export default ${layoutsObject}`,
@@ -504,6 +516,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
+      `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
     ].join('\n\n')
   },
 }

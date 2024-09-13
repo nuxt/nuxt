@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
-import { basename, relative, resolve } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -156,9 +156,12 @@ export default defineUntypedSchema({
    */
   serverDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-
-      return resolve(isV4 ? await get('rootDir') as string : await get('srcDir') as string, val ?? 'server')
+      if (val) {
+        const rootDir = await get('rootDir') as string
+        return resolve(rootDir, val)
+      }
+      const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+      return join(isV4 ? await get('rootDir') as string : await get('srcDir') as string, 'server')
     },
   },
 
@@ -175,28 +178,9 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => {
+    $resolve: async (val: string | undefined, get) => {
       const rootDir = await get('rootDir') as string
-
-      if (val) {
-        return resolve(rootDir, val)
-      }
-
-      const defaultBuildDir = resolve(rootDir, '.nuxt')
-
-      const isDev = await get('dev') as boolean
-      if (isDev) {
-        return defaultBuildDir
-      }
-
-      // TODO: nuxi CLI should ensure .nuxt dir exists
-      if (!existsSync(defaultBuildDir)) {
-        // This is to ensure that types continue to work for CI builds
-        return defaultBuildDir
-      }
-
-      // TODO: handle build caching + using buildId in directory
-      return resolve(rootDir, 'node_modules/.cache/nuxt/builds', 'production')
+      return resolve(rootDir, val ?? '.nuxt')
     },
   },
 
@@ -311,7 +295,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
