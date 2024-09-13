@@ -15,7 +15,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, Bar } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue';
+      "
+      import Foo from '/Foo.vue';
       import { Bar } from '/Bar.vue';
       "
     `)
@@ -28,7 +29,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=server,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)
@@ -54,7 +56,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=client,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)

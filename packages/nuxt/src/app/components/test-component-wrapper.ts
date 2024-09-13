@@ -7,7 +7,7 @@ import { devRootDir } from '#build/nuxt.config.mjs'
 
 export default (url: string) => defineComponent({
   name: 'NuxtTestComponentWrapper',
-
+  inheritAttrs: false,
   async setup (props, { attrs }) {
     const query = parseQuery(new URL(url, 'http://localhost').search)
     const urlProps = query.props ? destr<Record<string, any>>(query.props as string) : {}
