@@ -114,7 +114,7 @@
     "unctx": "^2.3.1",
     "unenv": "^1.10.0",
     "unhead": "^1.11.2",
-    "unimport": "^3.11.1",
+    "unimport": "^3.12.0",
     "unplugin": "^1.14.1",
     "unplugin-vue-router": "^0.10.8",
     "unstorage": "^1.12.0",
@@ -122,7 +122,7 @@
     "vue": "^3.5.4",
     "vue-bundle-renderer": "^2.1.0",
     "vue-devtools-stub": "^0.1.0",
-    "vue-router": "^4.4.4"
+    "vue-router": "^4.4.5"
   },
   "devDependencies": {
     "@nuxt/scripts": "0.8.5",
