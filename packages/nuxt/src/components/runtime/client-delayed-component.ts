@@ -51,15 +51,11 @@ export const createLazyMediaComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     setup (_, { attrs }) {
-      if (import.meta.server) {
-        return () => h(defineAsyncComponent(loader), attrs)
-      }
-      const ready = ref(false)
-      const nuxt = useNuxtApp()
-      const instance = getCurrentInstance()!
-      onNuxtReady(() => ready.value = true)
-      // This one, unlike others, can cause a hydration mismatch even a whole minute after the page loads. Given a query of min-width: 1200px, with a small window, the moment the window expands to at least 1200 it hydrates and causes a hydration mismatch.
-      return () => ready.value ? h(defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(attrs.hydrate ?? '(min-width: 1px)') })) : nuxt.isHydrating && instance.vnode.el ? h('div', attrs) : null
+      const mediaQuery = attrs.hydrate as string ?? '(min-width: 1px)'
+      const comp = defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(mediaQuery) })
+      const merged = mergeProps(attrs, { 'data-allow-mismatch': '' })
+      // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
+      return () => h(comp, merged)
     },
   })
 }
