@@ -8,10 +8,14 @@ import { pkgDir } from '../../dirs'
 
 export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
   const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite']
+  let conditions: string[]
   return {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
-    async resolveId (id, importer, options) {
+    configResolved (config) {
+      conditions = config.mode === 'test' ? [...config.resolve.conditions, 'import', 'require'] : config.resolve.conditions
+    },
+    async resolveId (id, importer) {
       if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:')) || exclude.some(e => id.startsWith(e))) {
         return
       }
@@ -22,8 +26,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
 
       return await this.resolve?.(normalisedId, dir, { skipSelf: true }) ?? await resolvePath(id, {
         url: [dir, ...nuxt.options.modulesDir],
-        // TODO: respect nitro runtime conditions
-        conditions: options.ssr ? ['node', 'import', 'require'] : ['import', 'require'],
+        conditions,
       }).catch(() => {
         logger.debug('Could not resolve id', id, importer)
         return null

@@ -70,8 +70,6 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    needs:
-      - build
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
@@ -81,25 +79,26 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      - name: Install dependencies
-        run: pnpm install
-
       - name: Initialize CodeQL
         uses: github/codeql-action/init@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
-          languages: javascript
+          config: |
+            paths:
+            - 'packages/*/src/**'
+            - 'packages/nuxt/bin/**'
+            - 'packages/schema/schema/**'
+            paths-ignore:
+            - 'test/**'
+            - '**/*.spec.ts'
+            - '**/*.test.ts'
+            - '**/__snapshots__/**'
+          languages: javascript-typescript
           queries: +security-and-quality
-
-      - name: Restore dist cache
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: dist
-          path: packages
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
         with:
-          category: "/language:javascript"
+          category: "/language:javascript-typescript"
 
   typecheck:
     runs-on: ${{ matrix.os }}

@@ -27,9 +27,9 @@
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.5",
-    "rollup": "4.21.2",
+    "rollup": "4.21.3",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.2"
+    "vue": "3.5.4"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -61,10 +61,10 @@
     "strip-literal": "^2.1.0",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^1.13.1",
-    "vite": "^5.4.3",
+    "unplugin": "^1.14.1",
+    "vite": "^5.4.4",
     "vite-node": "^2.0.5",
-    "vite-plugin-checker": "^0.7.2",
+    "vite-plugin-checker": "^0.8.0",
     "vue-bundle-renderer": "^2.1.0"
   },
   "peerDependencies": {

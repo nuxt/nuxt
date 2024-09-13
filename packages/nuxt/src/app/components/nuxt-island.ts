@@ -45,6 +45,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
 
 export default defineComponent({
   name: 'NuxtIsland',
+  inheritAttrs: false,
   props: {
     name: {
       type: String,
