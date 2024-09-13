@@ -123,9 +123,9 @@ ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DefineComponent<{hydrate?: IdleRequestOptions}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: Array<keyof HTMLElementEventMap>}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyIf${pascalName}': ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyNever${pascalName}': ${type}`).join('\n')}
@@ -137,9 +137,9 @@ declare module 'vue' {
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DefineComponent<{hydrate?: IdleRequestOptions}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DefineComponent<{hydrate?: Array<keyof HTMLElementEventMap>}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyIf${pascalName}: ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyNever${pascalName}: ${type}`).join('\n')}
