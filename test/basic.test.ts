@@ -1165,16 +1165,29 @@ describe('errors', () => {
 
   // TODO: need to create test for webpack
   it.runIf(!isDev())('should handle chunk loading errors', async () => {
-    const { page, consoleLogs } = await renderPage('/')
+    const { page, consoleLogs } = await renderPage()
+    await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
+    await page.goto(url('/'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+
+    const initialLogs = consoleLogs.map(c => c.text).join('')
+    expect(initialLogs).toContain('caught chunk load error')
+    consoleLogs.length = 0
+
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
     expect(await page.innerText('div')).toContain('Some value: 3')
     await page.route(/.*/, route => route.abort('timedout'), { times: 1 })
     await page.getByText('Chunk error').click()
+
     await page.waitForURL(url('/chunk-error'))
-    expect(consoleLogs.map(c => c.text).join('')).toContain('Failed to load resource')
-    expect(await page.innerText('div')).toContain('Chunk error page')
+
+    const logs = consoleLogs.map(c => c.text).join('')
+    expect(logs).toContain('caught chunk load error')
+    expect(logs).toContain('Failed to load resource')
+
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/chunk-error')
+    expect(await page.innerText('div')).toContain('Chunk error page')
     await page.locator('div').getByText('State: 3').waitFor()
 
     await page.close()
