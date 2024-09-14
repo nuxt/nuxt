@@ -2825,6 +2825,20 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This fake lazy event should be visible!').all()).toHaveLength(1)
     expect(await page.locator('body').getByText('This fake lazy event shouldn\'t be visible!').all()).toHaveLength(0)
   })
+  it('handles time-based hydration correctly', async () => {
+    const { page } = await renderPage('/lazy-import-components/time')
+    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(2)
+    await page.waitForTimeout(500)
+    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(1)
+    await page.waitForTimeout(1600) // Some room for falkiness and intermittent lag
+    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(0)
+  })
+  it('handles promise-based hydration correctly', async () => {
+    const { page } = await renderPage('/lazy-import-components/promise')
+    expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(1)
+    await page.waitForTimeout(2100) // Some room for falkiness and intermittent lag
+    expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(0)
+  })
 })
 
 describe('defineNuxtComponent watch duplicate', () => {

@@ -124,6 +124,8 @@ interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyTime${pascalName}': ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyPromise${pascalName}': ${type} & DefineComponent<{hydrate?: Promise<unknown>}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
@@ -138,6 +140,8 @@ declare module 'vue' {
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyTime${pascalName}: ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyPromise${pascalName}: ${type} & DefineComponent<{hydrate?: Promise<unknown>}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}

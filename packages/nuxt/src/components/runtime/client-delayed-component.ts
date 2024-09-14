@@ -69,6 +69,7 @@ export const createLazyIfComponent = (loader: AsyncComponentLoader) => {
       if (shouldHydrate.value) {
         const comp = defineAsyncComponent(loader)
         const merged = mergeProps(attrs, { 'data-allow-mismatch': '' })
+        // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
         return () => h(comp, merged)
       }
       const strategy: HydrationStrategy = (hydrate) => {
@@ -76,8 +77,51 @@ export const createLazyIfComponent = (loader: AsyncComponentLoader) => {
         return () => unwatch()
       }
       const comp = defineAsyncComponent({ loader, hydrate: strategy })
-      // This one seems to work fine whenever the hydration condition is achieved at client side. For example, a hydration condition of a ref greater than 2 with a button to increment causes no hydration mismatch after 3 presses of the button.
       return () => h(comp, attrs)
+    },
+  })
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyTimeComponent = (loader: AsyncComponentLoader) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      const merged = mergeProps(attrs, { 'data-allow-mismatch': '' })
+      if (attrs.hydrate === 0) {
+        const comp = defineAsyncComponent(loader)
+        return () => h(comp, merged)
+      }
+      const strategy: HydrationStrategy = (hydrate) => {
+        const id = setTimeout(hydrate, attrs.hydrate as number | undefined ?? 2000)
+        return () => clearTimeout(id)
+      }
+      const comp = defineAsyncComponent({ loader, hydrate: strategy })
+      // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
+      return () => h(comp, merged)
+    },
+  })
+}
+
+/* @__NO_SIDE_EFFECTS__ */
+export const createLazyPromiseComponent = (loader: AsyncComponentLoader) => {
+  return defineComponent({
+    inheritAttrs: false,
+    setup (_, { attrs }) {
+      const merged = mergeProps(attrs, { 'data-allow-mismatch': '' })
+      // @ts-expect-error Attributes cannot be typed
+      if (!attrs.hydrate || typeof attrs.hydrate.then !== 'function') {
+        const comp = defineAsyncComponent(loader)
+        // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
+        return () => h(comp, merged)
+      }
+      const strategy: HydrationStrategy = (hydrate) => {
+        // @ts-expect-error Attributes cannot be typed
+        attrs.hydrate.then(hydrate)
+        return () => {}
+      }
+      const comp = defineAsyncComponent({ loader, hydrate: strategy })
+      return () => h(comp, merged)
     },
   })
 }

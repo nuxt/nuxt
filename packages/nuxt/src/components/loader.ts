@@ -43,7 +43,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
       const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?(Idle|Visible|idle-|visible-|Event|event-|Media|media-|If|if-|Never|never-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?(Idle|Visible|idle-|visible-|Event|event-|Media|media-|If|if-|Never|never-|Time|time-|Promise|promise-)?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, modifier: string, name: string) => {
         const normalComponent = findComponent(components, name, options.mode)
         const modifierComponent = !normalComponent && modifier ? findComponent(components, modifier + name, options.mode) : null
         const component = normalComponent || modifierComponent
@@ -113,6 +113,18 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
                   imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
                   identifier += '_delayedNever'
                   imports.add(`const ${identifier} = __defineAsyncComponent({loader: ${dynamicImport}, hydrate: () => {}})`)
+                  break
+                case 'Time':
+                case 'time-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                  identifier += '_delayedTime'
+                  imports.add(`const ${identifier} = createLazyTimeComponent(${dynamicImport})`)
+                  break
+                case 'Promise':
+                case 'promise-':
+                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyPromiseComponent' }]))
+                  identifier += '_delayedPromise'
+                  imports.add(`const ${identifier} = createLazyPromiseComponent(${dynamicImport})`)
                   break
               }
             } else {
