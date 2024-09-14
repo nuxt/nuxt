@@ -28,15 +28,13 @@ export default <RouterConfig> {
     }
 
     // Hash routes on the same page, no page hook is fired so resolve here
-    if (to.path === from.path) {
-      if (!to.hash) {
-        if (from.hash) {
-          return { left: 0, top: 0 }
-        }
-
-        // The route isn't changing so keep current scroll position
-        return false
+    if (to.path === from.path && !to.hash) {
+      if (from.hash) {
+        return { left: 0, top: 0 }
       }
+
+      // The route isn't changing so keep current scroll position
+      return false
     }
 
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
