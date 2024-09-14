@@ -2839,6 +2839,16 @@ describe('lazy import components', () => {
     await page.waitForTimeout(2100) // Some room for falkiness and intermittent lag
     expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(0)
   })
+  it('keeps reactivity with models', async () => {
+    const { page } = await renderPage('/lazy-import-components/model')
+    expect(await page.locator('#count').textContent()).toBe('0')
+    await page.locator('#count').click()
+    for (let i = 0; i < 10; i++) {
+      expect(await page.locator('#count').textContent()).toBe(`${i}`)
+      await page.locator('#inc').click()
+    }
+    expect(await page.locator('#count').textContent()).toBe('10')
+  })
 })
 
 describe('defineNuxtComponent watch duplicate', () => {
