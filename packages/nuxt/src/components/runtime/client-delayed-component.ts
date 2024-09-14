@@ -1,4 +1,4 @@
-import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, ref, watch } from 'vue'
+import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInteraction, hydrateOnMediaQuery, hydrateOnVisible, mergeProps, watch } from 'vue'
 import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
 
 /* @__NO_SIDE_EFFECTS__ */
