@@ -5,7 +5,7 @@ import { pascalCase } from 'scule'
 import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger } from '@nuxt/kit'
+import { logger, tryUseNuxt } from '@nuxt/kit'
 import { distDir } from '../dirs'
 import { isVue } from '../core/utils'
 
@@ -43,11 +43,11 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
       const s = new MagicString(code)
 
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy)?([^'"]*?)["'][\s,]*[^)]*\)/g, (full: string, lazy: string, name: string) => {
+      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install) {
+          if (component._internal_install && tryUseNuxt()?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
             import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
@@ -58,7 +58,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
             imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
-            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(name)})`)
+            imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
@@ -74,9 +74,9 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           if (lazy) {
             imports.add(genImport('vue', [{ name: 'defineAsyncComponent', as: '__defineAsyncComponent' }]))
             identifier += '_lazy'
-            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: true })}${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
+            imports.add(`const ${identifier} = __defineAsyncComponent(${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)${isClientOnly ? '.then(c => createClientOnly(c))' : ''})`)
           } else {
-            imports.add(genImport(component.filePath, [{ name: component.export, as: identifier }]))
+            imports.add(genImport(component.filePath, [{ name: component._raw ? 'default' : component.export, as: identifier }]))
 
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
@@ -99,10 +99,10 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })
 

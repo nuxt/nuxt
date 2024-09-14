@@ -6,7 +6,7 @@ export default defineUntypedSchema({
    *
    * Any components in the directories configured here can be used throughout your
    * pages, layouts (and other components) without needing to explicitly import them.
-   * @see https://nuxt.com/docs/guide/directory-structure/components
+   * @see [`components/` directory documentation](https://nuxt.com/docs/guide/directory-structure/components)
    * @type {boolean | typeof import('../src/types/components').ComponentsOptions | typeof import('../src/types/components').ComponentsOptions['dirs']}
    */
   components: {
@@ -18,12 +18,12 @@ export default defineUntypedSchema({
         return { dirs: [{ path: '~/components/global', global: true }, '~/components'] }
       }
       return val
-    }
+    },
   },
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
-   * @see [Nuxt 3 documentation](https://nuxt.com/docs/guide/directory-structure/composables)
+   * @see [Nuxt documentation](https://nuxt.com/docs/guide/directory-structure/composables)
    * @type {typeof import('../src/types/imports').ImportsOptions}
    */
   imports: {
@@ -40,7 +40,7 @@ export default defineUntypedSchema({
      * }
      * ```
      */
-    dirs: []
+    dirs: [],
   },
 
   /**
@@ -64,5 +64,5 @@ export default defineUntypedSchema({
    * @see  [Nuxt DevTools](https://devtools.nuxt.com/) for more information.
    * @type { { enabled: boolean, [key: string]: any } }
    */
-  devtools: {}
+  devtools: {},
 })

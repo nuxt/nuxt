@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+jobs:
+  release:
+    if: github.repository == 'nuxt/nuxt' && (startsWith(github.event.head_commit.message, 'v3.') || startsWith(github.event.head_commit.message, 'v4.'))
+    concurrency:
+      group: release
+    permissions:
+      id-token: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        with:
+          fetch-depth: 0
+      - run: corepack enable
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+        with:
+          node-version: 20
+          registry-url: "https://registry.npmjs.org/"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build (stub)
+        run: pnpm dev:prepare
+
+      - name: Release
+        run: ./scripts/release.sh
+        env:
+          NODE_AUTH_TOKEN: ${{secrets.RELEASE_NODE_AUTH_TOKEN}}
+          NPM_CONFIG_PROVENANCE: true

@@ -2,8 +2,9 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import destr from 'destr'
-import type { RouteLocationNormalized } from '#vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
+// @ts-expect-error virtual file
+import { START_LOCATION } from '#build/pages'
 
 /**
  * Internal utility
@@ -29,13 +30,13 @@ function generateRouteKey (route: RouteLocationNormalized) {
  * return true if the route has been changed with a page change during navigation
  */
 export function isChangingPage (to: RouteLocationNormalized, from: RouteLocationNormalized) {
-  if (to === from) { return false }
+  if (to === from || from === START_LOCATION) { return false }
 
   // If route keys are different then it will result in a rerender
   if (generateRouteKey(to) !== generateRouteKey(from)) { return true }
 
   const areComponentsSame = to.matched.every((comp, index) =>
-    comp.components && comp.components.default === from.matched[index]?.components?.default
+    comp.components && comp.components.default === from.matched[index]?.components?.default,
   )
   if (areComponentsSame) {
     return false
@@ -43,7 +44,6 @@ export function isChangingPage (to: RouteLocationNormalized, from: RouteLocation
   return true
 }
 
-// eslint-disable-next-line no-use-before-define
 export type SSRBuffer = SSRBufferItem[] & { hasAsync?: boolean }
 export type SSRBufferItem = string | SSRBuffer | Promise<SSRBuffer>
 
@@ -70,26 +70,8 @@ export function createBuffer () {
       if (isPromise(item) || (isArray(item) && item.hasAsync)) {
         buffer.hasAsync = true
       }
-    }
+    },
   }
-}
-
-const TRANSLATE_RE = /&(nbsp|amp|quot|lt|gt);/g
-const NUMSTR_RE = /&#(\d+);/gi
-export function decodeHtmlEntities (html: string) {
-  const translateDict = {
-    nbsp: ' ',
-    amp: '&',
-    quot: '"',
-    lt: '<',
-    gt: '>'
-  } as const
-  return html.replace(TRANSLATE_RE, function (_, entity: keyof typeof translateDict) {
-    return translateDict[entity]
-  }).replace(NUMSTR_RE, function (_, numStr: string) {
-    const num = parseInt(numStr, 10)
-    return String.fromCharCode(num)
-  })
 }
 
 /**
@@ -104,7 +86,7 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
-    const array = []
+    const array: number[] = []
     for (let i = 0; i < source; i++) {
       array[i] = i
     }
@@ -112,7 +94,7 @@ export function vforToArray (source: any): any[] {
   } else if (isObject(source)) {
     if (source[Symbol.iterator as any]) {
       return Array.from(source as Iterable<any>, item =>
-        item
+        item,
       )
     } else {
       const keys = Object.keys(source)
@@ -141,7 +123,7 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     if (withoutSlots) {
       const clone = element.cloneNode(true)
-      clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n: Element) => { n.innerHTML = '' })
+      clone.querySelectorAll('[data-island-slot]').forEach((n: Element) => { n.innerHTML = '' })
       return [clone.outerHTML]
     }
     return [element.outerHTML]
@@ -156,7 +138,7 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     } else if (!isStartFragment(element)) {
       const clone = element.cloneNode(true) as Element
       if (withoutSlots) {
-        clone.querySelectorAll('[nuxt-ssr-slot-name]').forEach((n) => { n.innerHTML = '' })
+        clone.querySelectorAll('[data-island-slot]').forEach((n) => { n.innerHTML = '' })
       }
       blocks.push(clone.outerHTML)
     }
@@ -172,16 +154,4 @@ function isStartFragment (element: RendererNode) {
 
 function isEndFragment (element: RendererNode) {
   return element.nodeName === '#comment' && element.nodeValue === ']'
-}
-const SLOT_PROPS_RE = /<div[^>]*nuxt-ssr-slot-name="([^"]*)" nuxt-ssr-slot-data="([^"]*)"[^/|>]*>/g
-
-export function getSlotProps (html: string) {
-  const slotsDivs = html.matchAll(SLOT_PROPS_RE)
-  const data: Record<string, any> = {}
-  for (const slot of slotsDivs) {
-    const [_, slotName, json] = slot
-    const slotData = destr(decodeHtmlEntities(json))
-    data[slotName] = slotData
-  }
-  return data
 }

@@ -2,7 +2,7 @@
 // https://containers.dev/implementors/json_reference/
 {
   "name": "nuxt-devcontainer",
-  "dockerFile": "Dockerfile",
+  "build": { "dockerfile": "Dockerfile" },
   "features": {},
   "customizations": {
     "vscode": {
@@ -15,6 +15,8 @@
       ]
     }
   },
-  "postStartCommand": "pnpm install && pnpm build:stub",
-  "mounts": ["type=volume,target=${containerWorkspaceFolder}/node_modules"]
+  "postStartCommand": "pnpm install && pnpm dev:prepare",
+  "mounts": [
+    "type=volume,target=${containerWorkspaceFolder}/node_modules"
+  ]
 }

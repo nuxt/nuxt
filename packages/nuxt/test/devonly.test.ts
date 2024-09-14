@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest'
 import type { Plugin } from 'vite'
 import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
 import { normalizeLineEndings } from './utils'
+
 const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
 
 const viteTransform = async (source: string, id: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (pluginVite.transform! as Function)(source, id)
   return typeof result === 'string' ? result : result?.code
 }
@@ -55,5 +57,28 @@ describe('test devonly transform ', () => {
     expect(result).not.toContain('DevOnly')
     expect(result).not.toContain('lazy-dev-only')
     expect(result).not.toContain('LazyDevOnly')
+  })
+
+  it('should not remove class -> nuxt#24491', async () => {
+    const source = `<template>
+    <DevOnly>
+      <div class="red">This is red.</div>
+      <template #fallback>
+        <div class="red">This should also be red.</div>
+      </template>
+    </DevOnly>
+  </template>
+  `
+
+    const result = await viteTransform(source, 'some id')
+
+    expect(result).toMatchInlineSnapshot(`
+      "<template>
+          
+              <div class="red">This should also be red.</div>
+            
+        </template>
+        "
+    `)
   })
 })

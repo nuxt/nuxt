@@ -1,4 +1,4 @@
-name: Docs
+name: docs
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     # autofix workflow will be triggered instead for PRs
     branches:
       - main
+      - 3.x
       - "!v[0-9]*"
 
 # Remove default permissions of GITHUB_TOKEN for security
@@ -20,9 +21,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@8f152de45cc393bb48ce5d89d36b731f54556e65 # v4.0.0
+      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
         with:
           node-version: 20
           cache: "pnpm"
@@ -30,5 +31,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Build (stub)
+        run: pnpm dev:prepare
+
       - name: Lint (docs)
         run: pnpm lint:docs
+
+      - name: Build Nuxt
+        run: pnpm build
+
+      - name: Typecheck (docs)
+        run: pnpm typecheck:docs

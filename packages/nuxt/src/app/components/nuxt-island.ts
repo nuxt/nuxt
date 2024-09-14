@@ -1,52 +1,84 @@
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, watch } from 'vue'
+import type { Component, PropType, VNode } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { useHead } from '@unhead/vue'
+import { injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
+import { join } from 'pathe'
 
-// eslint-disable-next-line import/no-restricted-paths
-import type { NuxtIslandResponse } from '../../core/runtime/nitro/renderer'
+import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
-import { getFragmentHTML, getSlotProps } from './utils'
+import { getFragmentHTML } from './utils'
 
 // @ts-expect-error virtual file
-import { remoteComponentIslands } from '#build/nuxt.config.mjs'
+import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 
 const pKey = '_islandPromises'
-const SSR_UID_RE = /nuxt-ssr-component-uid="([^"]*)"/
-const UID_ATTR = /nuxt-ssr-component-uid(="([^"]*)")?/
-const SLOTNAME_RE = /nuxt-ssr-slot-name="([^"]*)"/g
-const SLOT_FALLBACK_RE = /<div nuxt-slot-fallback-start="([^"]*)"[^>]*><\/div>(((?!<div nuxt-slot-fallback-end[^>]*>)[\s\S])*)<div nuxt-slot-fallback-end[^>]*><\/div>/g
+const SSR_UID_RE = /data-island-uid="([^"]*)"/
+const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
+const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
+const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
 
-let id = 0
+let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
+
+const components = import.meta.client ? new Map<string, Component>() : undefined
+
+async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
+  const promises: Array<Promise<void>> = []
+
+  for (const component in paths) {
+    if (!(components!.has(component))) {
+      promises.push((async () => {
+        const chunkSource = join(source, paths[component].chunk)
+        const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
+        components!.set(component, c)
+      })())
+    }
+  }
+  await Promise.all(promises)
+}
 
 export default defineComponent({
   name: 'NuxtIsland',
+  inheritAttrs: false,
   props: {
     name: {
       type: String,
-      required: true
+      required: true,
     },
     lazy: Boolean,
     props: {
       type: Object,
-      default: () => undefined
+      default: () => undefined,
     },
     context: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
+    },
+    scopeId: {
+      type: String as PropType<string | undefined | null>,
+      default: () => undefined,
     },
     source: {
       type: String,
-      default: () => undefined
-    }
+      default: () => undefined,
+    },
+    dangerouslyLoadClientComponents: {
+      type: Boolean,
+      default: false,
+    },
   },
-  async setup (props, { slots }) {
+  emits: ['error'],
+  async setup (props, { slots, expose, emit }) {
+    let canTeleport = import.meta.server
+    const teleportKey = ref(0)
+    const key = ref(0)
+    const canLoadClientComponent = computed(() => selectiveClient && (props.dangerouslyLoadClientComponents || !props.source))
     const error = ref<unknown>(null)
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
@@ -54,61 +86,85 @@ export default defineComponent({
     const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
+
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
-    const eventFetch = import.meta.server ? event.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
+    const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
-    onMounted(() => { mounted.value = true })
+    onMounted(() => { mounted.value = true; teleportKey.value++ })
 
     function setPayload (key: string, result: NuxtIslandResponse) {
+      const toRevive: Partial<NuxtIslandResponse> = {}
+      if (result.props) { toRevive.props = result.props }
+      if (result.slots) { toRevive.slots = result.slots }
+      if (result.components) { toRevive.components = result.components }
+      if (result.head) { toRevive.head = result.head }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
           ...(import.meta.server && import.meta.prerender)
             ? {}
-            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } }
+            : { params: { ...props.context, props: props.props ? JSON.stringify(props.props) : undefined } },
+          result: toRevive,
         },
-        ...result
+        ...result,
+      }
+    }
+
+    const payloads: Partial<Pick<NuxtIslandResponse, 'slots' | 'components'>> = {}
+
+    if (instance.vnode.el) {
+      const slots = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.slots
+      if (slots) { payloads.slots = slots }
+      if (selectiveClient) {
+        const components = toRaw(nuxtApp.payload.data[`${props.name}_${hashId.value}`])?.components
+        if (components) { payloads.components = components }
       }
     }
 
     const ssrHTML = ref<string>('')
-    if (import.meta.client) {
-      const renderedHTML = getFragmentHTML(instance.vnode?.el ?? null)?.join('') ?? ''
-      if (renderedHTML && nuxtApp.isHydrating) {
-        setPayload(`${props.name}_${hashId.value}`, {
-          html: getFragmentHTML(instance.vnode?.el ?? null, true)?.join('') ?? '',
-          state: {},
-          head: {
-            link: [],
-            style: []
-          }
-        })
-      }
-      ssrHTML.value = renderedHTML
+
+    if (import.meta.client && instance.vnode?.el) {
+      ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
+      const key = `${props.name}_${hashId.value}`
+      nuxtApp.payload.data[key] ||= {}
+      nuxtApp.payload.data[key].html = ssrHTML.value
     }
-    const slotProps = computed(() => getSlotProps(ssrHTML.value))
+
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
-
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
-      return ssrHTML.value.replace(SLOT_FALLBACK_RE, (full, slotName, content) => {
-        // remove fallback to insert slots
-        if (currentSlots.includes(slotName)) {
-          return ''
+      let html = ssrHTML.value
+
+      if (props.scopeId) {
+        html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
+      }
+
+      if (import.meta.client && !canLoadClientComponent.value) {
+        for (const [key, value] of Object.entries(payloads.components || {})) {
+          html = html.replace(new RegExp(` data-island-uid="${uid.value}" data-island-component="${key}"[^>]*>`), (full) => {
+            return full + value.html
+          })
         }
-        return content
-      })
+      }
+
+      if (payloads.slots) {
+        return html.replaceAll(SLOT_FALLBACK_RE, (full, slotName) => {
+          if (!currentSlots.includes(slotName)) {
+            return full + (payloads.slots?.[slotName]?.fallback || '')
+          }
+          return full
+        })
+      }
+      return html
     })
-    function setUid () {
-      uid.value = ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId() as string
-    }
-    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
-    useHead(cHead)
+
+    const head = injectHead()
 
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
-      if (nuxtApp.payload.data[key] && !force) { return nuxtApp.payload.data[key] }
+
+      if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
       const url = remoteComponentIslands && props.source ? new URL(`/__nuxt_island/${key}.json`, props.source).href : `/__nuxt_island/${key}.json`
 
@@ -120,20 +176,20 @@ export default defineComponent({
       // $fetch handles the app.baseURL in dev
       const r = await eventFetch(withQuery(((import.meta.dev && import.meta.client) || props.source) ? url : joinURL(config.app.baseURL ?? '', url), {
         ...props.context,
-        props: props.props ? JSON.stringify(props.props) : undefined
+        props: props.props ? JSON.stringify(props.props) : undefined,
       }))
       const result = import.meta.server || !import.meta.dev ? await r.json() : (r as FetchResponse<NuxtIslandResponse>)._data
       // TODO: support passing on more headers
       if (import.meta.server && import.meta.prerender) {
         const hints = r.headers.get('x-nitro-prerender')
         if (hints) {
-          appendResponseHeader(event, 'x-nitro-prerender', hints)
+          appendResponseHeader(event!, 'x-nitro-prerender', hints)
         }
       }
       setPayload(key, result)
       return result
     }
-    const key = ref(0)
+
     async function fetchComponent (force = false) {
       nuxtApp[pKey] = nuxtApp[pKey] || {}
       if (!nuxtApp[pKey][uid.value]) {
@@ -143,22 +199,35 @@ export default defineComponent({
       }
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-        cHead.value.link = res.head.link
-        cHead.value.style = res.head.style
-        ssrHTML.value = res.html.replace(UID_ATTR, () => {
-          return `nuxt-ssr-component-uid="${getId()}"`
-        })
+
+        ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
+        payloads.slots = res.slots || {}
+        payloads.components = res.components || {}
+
+        if (selectiveClient && import.meta.client) {
+          if (canLoadClientComponent.value && res.components) {
+            await loadComponents(props.source, res.components)
+          }
+        }
+
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
-          await nextTick()
+          nextTick(() => {
+            canTeleport = true
+            teleportKey.value++
+          })
         }
-        setUid()
       } catch (e) {
         error.value = e
+        emit('error', e)
       }
     }
+
+    expose({
+      refresh: () => fetchComponent(true),
+    })
 
     if (import.meta.hot) {
       import.meta.hot.on(`nuxt-server-component:${props.name}`, () => {
@@ -167,32 +236,84 @@ export default defineComponent({
     }
 
     if (import.meta.client) {
-      watch(props, debounce(() => fetchComponent(), 100))
+      watch(props, debounce(() => fetchComponent(), 100), { deep: true })
     }
 
-    if (import.meta.client && !nuxtApp.isHydrating && props.lazy) {
+    if (import.meta.client && !instance.vnode.el && props.lazy) {
       fetchComponent()
-    } else if (import.meta.server || !nuxtApp.isHydrating || !nuxtApp.payload.serverRendered) {
+    } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
+    } else if (selectiveClient && canLoadClientComponent.value) {
+      await loadComponents(props.source, payloads.components)
     }
 
-    return () => {
-      if ((!html.value || error.value) && slots.fallback) {
-        return [slots.fallback({ error: error.value })]
+    if (import.meta.server || nuxtApp.isHydrating) {
+      // re-push head into active head instance
+      const responseHead = (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head
+      if (responseHead) {
+        head.push(responseHead)
       }
-      const nodes = [createVNode(Fragment, {
-        key: key.value
-      }, [h(createStaticVNode(html.value || '<div></div>', 1))])]
-      if (uid.value && (mounted.value || nuxtApp.isHydrating || import.meta.server)) {
-        for (const slot in slots) {
-          if (availableSlots.value.includes(slot)) {
-            nodes.push(createVNode(Teleport, { to: import.meta.client ? `[nuxt-ssr-component-uid='${uid.value}'] [nuxt-ssr-slot-name='${slot}']` : `uid=${uid.value};slot=${slot}` }, {
-              default: () => (slotProps.value[slot] ?? [undefined]).map((data: any) => slots[slot]?.(data))
-            }))
-          }
-        }
-      }
-      return nodes
     }
-  }
+
+    return (_ctx: any, _cache: any) => {
+      if (!html.value || error.value) {
+        return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
+      }
+      return [
+        withMemo([key.value], () => {
+          return createVNode(Fragment, { key: key.value }, [h(createStaticVNode(html.value || '<div></div>', 1))])
+        }, _cache, 0),
+
+        // should away be triggered ONE tick after re-rendering the static node
+        withMemo([teleportKey.value], () => {
+          const teleports: Array<VNode> = []
+          // this is used to force trigger Teleport when vue makes the diff between old and new node
+          const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
+
+          if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
+            for (const slot in slots) {
+              if (availableSlots.value.includes(slot)) {
+                teleports.push(createVNode(Teleport,
+                  // use different selectors for even and odd teleportKey to force trigger the teleport
+                  { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
+                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
+                )
+              }
+            }
+            if (selectiveClient) {
+              if (import.meta.server) {
+                if (payloads.components) {
+                  for (const [id, info] of Object.entries(payloads.components)) {
+                    const { html, slots } = info
+                    let replaced = html.replaceAll('data-island-uid', `data-island-uid="${uid.value}"`)
+                    for (const slot in slots) {
+                      replaced = replaced.replaceAll(`data-island-slot="${slot}">`, full => full + slots[slot])
+                    }
+                    teleports.push(createVNode(Teleport, { to: `uid=${uid.value};client=${id}` }, {
+                      default: () => [createStaticVNode(replaced, 1)],
+                    }))
+                  }
+                }
+              } else if (canLoadClientComponent.value && payloads.components) {
+                for (const [id, info] of Object.entries(payloads.components)) {
+                  const { props, slots } = info
+                  const component = components!.get(id)!
+                  // use different selectors for even and odd teleportKey to force trigger the teleport
+                  const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
+                    default: () => {
+                      return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1),
+                      ]))))]
+                    },
+                  })
+                  teleports.push(vnode)
+                }
+              }
+            }
+          }
+
+          return h(Fragment, teleports)
+        }, _cache, 1),
+      ]
+    }
+  },
 })

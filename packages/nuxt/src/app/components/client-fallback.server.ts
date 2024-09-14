@@ -1,6 +1,6 @@
 import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
-// eslint-disable-next-line
+
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
 import { useNuxtApp } from '../nuxt'
@@ -11,39 +11,40 @@ const NuxtClientFallbackServer = defineComponent({
   inheritAttrs: false,
   props: {
     uid: {
-      type: String
+      type: String,
     },
     fallbackTag: {
       type: String,
-      default: () => 'div'
+      default: () => 'div',
     },
     fallback: {
       type: String,
-      default: () => ''
+      default: () => '',
     },
     placeholder: {
-      type: String
+      type: String,
     },
     placeholderTag: {
-      type: String
+      type: String,
     },
     keepFallback: {
       type: Boolean,
-      default: () => false
-    }
+      default: () => false,
+    },
   },
   emits: {
     'ssr-error' (_error: unknown) {
       return true
-    }
+    },
   },
   async setup (props, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
     const nuxtApp = useNuxtApp()
+    const error = useState<boolean | undefined>(`${props.uid}`)
 
     onErrorCaptured((err) => {
-      useState(`${props.uid}`, () => true)
+      error.value = true
       ssrFailed.value = true
       ctx.emit('ssr-error', err)
       return false
@@ -86,7 +87,7 @@ const NuxtClientFallbackServer = defineComponent({
       push(ctx.ssrVNodes.getBuffer())
       push('<!--]-->')
     }
-  }
+  },
 })
 
 export default NuxtClientFallbackServer

@@ -5,6 +5,8 @@
     <div id="async-server-component-count">
       {{ count }}
     </div>
+
+    <Counter :multiplier="1" />
     <slot />
   </div>
 </template>

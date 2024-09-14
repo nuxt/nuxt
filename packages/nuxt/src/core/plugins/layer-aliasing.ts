@@ -1,8 +1,7 @@
-import { existsSync, readdirSync } from 'node:fs'
 import { createUnplugin } from 'unplugin'
 import type { NuxtConfigLayer } from 'nuxt/schema'
 import { resolveAlias } from '@nuxt/kit'
-import { join, normalize, relative } from 'pathe'
+import { normalize } from 'pathe'
 import MagicString from 'magic-string'
 
 interface LayerAliasingOptions {
@@ -17,22 +16,18 @@ const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
 const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
 
 export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions) => {
-  const aliases = Object.fromEntries(options.layers.map((l) => {
-    const srcDir = l.config.srcDir || l.cwd
-    const rootDir = l.config.rootDir || l.cwd
-    const publicDir = join(srcDir, l.config?.dir?.public || 'public')
+  const aliases: Record<string, Record<string, string>> = {}
+  for (const layer of options.layers) {
+    const srcDir = layer.config.srcDir || layer.cwd
+    const rootDir = layer.config.rootDir || layer.cwd
 
-    return [srcDir, {
-      aliases: {
-        '~': l.config?.alias?.['~'] || srcDir,
-        '@': l.config?.alias?.['@'] || srcDir,
-        '~~': l.config?.alias?.['~~'] || rootDir,
-        '@@': l.config?.alias?.['@@'] || rootDir
-      },
-      prefix: relative(options.root, publicDir),
-      publicDir: !options.dev && existsSync(publicDir) && publicDir
-    }]
-  }))
+    aliases[srcDir] = {
+      '~': layer.config?.alias?.['~'] || srcDir,
+      '@': layer.config?.alias?.['@'] || srcDir,
+      '~~': layer.config?.alias?.['~~'] || rootDir,
+      '@@': layer.config?.alias?.['@@'] || rootDir,
+    }
+  }
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
   return {
@@ -47,18 +42,12 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
           const layer = layers.find(l => importer.startsWith(l))
           if (!layer) { return }
 
-          const publicDir = aliases[layer].publicDir
-          if (id.startsWith('/') && publicDir && readdirSync(publicDir).some(file => file === id.slice(1) || id.startsWith('/' + file + '/'))) {
-            const resolvedId = '/' + join(aliases[layer].prefix, id.slice(1))
-            return await this.resolve(resolvedId, importer, { skipSelf: true })
-          }
-
-          const resolvedId = resolveAlias(id, aliases[layer].aliases)
+          const resolvedId = resolveAlias(id, aliases[layer])
           if (resolvedId !== id) {
             return await this.resolve(resolvedId, importer, { skipSelf: true })
           }
-        }
-      }
+        },
+      },
     },
 
     // webpack-only transform
@@ -75,14 +64,14 @@ export const LayerAliasingPlugin = createUnplugin((options: LayerAliasingOptions
       if (!layer || !ALIAS_RE_SINGLE.test(code)) { return }
 
       const s = new MagicString(code)
-      s.replace(ALIAS_RE, r => aliases[layer].aliases[r as '~'] || r)
+      s.replace(ALIAS_RE, r => aliases[layer][r as '~'] || r)
 
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined
+          map: options.sourcemap ? s.generateMap({ hires: true }) : undefined,
         }
       }
-    }
+    },
   }
 })

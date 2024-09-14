@@ -1,23 +1,28 @@
-import { defineVitestConfig } from 'nuxt-vitest/config'
+import { defineVitestConfig } from '@nuxt/test-utils/config'
 
 export default defineVitestConfig({
-  // TODO: investigate
-  define: {
-    'import.meta.test': true
-  },
   test: {
     dir: './test/nuxt',
+    coverage: {
+      include: ['packages/nuxt/src/app'],
+    },
     environment: 'nuxt',
+    setupFiles: [
+      './test/setup-runtime.ts',
+    ],
     environmentOptions: {
       nuxt: {
         overrides: {
-          appConfig: {
-            nuxt: {
-              buildId: 'override'
-            }
-          }
-        }
-      }
-    }
-  }
+          runtimeConfig: {
+            app: {
+              buildId: 'override',
+            },
+          },
+          experimental: {
+            appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+          },
+        },
+      },
+    },
+  },
 })

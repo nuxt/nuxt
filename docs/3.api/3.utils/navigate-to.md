@@ -8,11 +8,17 @@ links:
     size: xs
 ---
 
-::callout
-`navigateTo` is available on both server side and client side.
+::note
+`navigateTo` is available on both client and server side (but not within Nitro routes).
 ::
 
 ## Usage
+
+`navigateTo` is available on both server side and client side. It can be used within the [Nuxt context](/docs/guide/going-further/nuxt-app#the-nuxt-context), or directly, to perform page navigation.
+
+::tip
+To send a redirect from a server endpoint, use [`sendRedirect`](https://h3.unjs.io/utils/response#sendredirectevent-location-code) instead.
+::
 
 ### Within a Vue Component
 
@@ -50,6 +56,18 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### External URL
 
+The `external` parameter in `navigateTo` influences how navigating to URLs is handled:
+
+- **Without `external: true`**:
+  - Internal URLs navigate as expected.
+  - External URLs throw an error.
+
+- **With `external: true`**:
+  - Internal URLs navigate with a full-page reload.
+  - External URLs navigate as expected.
+
+#### Example
+
 ```vue
 <script setup lang="ts">
 // will throw an error;
@@ -68,7 +86,7 @@ await navigateTo('https://nuxt.com', {
 ```vue
 <script setup lang="ts">
 // will open 'https://nuxt.com' in a new tab
-await navigateTo('https://nuxt.com', {  
+await navigateTo('https://nuxt.com', {
   open: {
     target: '_blank',
     windowFeatures: {
@@ -93,7 +111,7 @@ interface NavigateToOptions {
 }
 ```
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 Make sure to always use `await` or `return` on result of `navigateTo` when calling it.
 ::
 
@@ -101,7 +119,7 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 
 ### `to`
 
-**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/RouteLocation.html) | `undefined` | `null`
+**Type**: [`RouteLocationRaw`](https://router.vuejs.org/api/interfaces/RouteLocationOptions.html#Interface-RouteLocationOptions) | `undefined` | `null`
 
 **Default**: `'/'`
 
@@ -182,13 +200,13 @@ An object accepting the following properties:
     - `top` or `screenY` (optional)
 
       **Type**: `number`
-  
+
     - `noopener` (optional)
 
       **Type**: `boolean`
 
     - `noreferrer` (optional)
-  
+
       **Type**: `boolean`
 
     Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.

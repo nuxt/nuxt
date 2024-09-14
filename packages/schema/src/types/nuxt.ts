@@ -16,6 +16,10 @@ export interface NuxtPlugin {
    * Default Nuxt priorities can be seen at [here](https://github.com/nuxt/nuxt/blob/9904849bc87c53dfbd3ea3528140a5684c63c8d8/packages/nuxt/src/core/plugins/plugin-metadata.ts#L15-L34).
    */
   order?: number
+  /**
+   * @internal
+   */
+  name?: string
 }
 
 // Internal type for simpler NuxtTemplate interface extension
@@ -32,7 +36,8 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   /** The resolved path to the source file to be template */
   src?: string
   /** Provided compile option instead of src */
-  getContents?: (data: Options) => string | Promise<string>
+
+  getContents?: (data: { nuxt: Nuxt, app: NuxtApp, options: Options }) => string | Promise<string>
   /** Write to filesystem */
   write?: boolean
 }
@@ -40,13 +45,16 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
 export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string
+  modified?: boolean
 }
 
-export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write'> {
+export interface NuxtTypeTemplate<Options = TemplateDefaultOptions> extends Omit<NuxtTemplate<Options>, 'write' | 'filename'> {
+  filename: `${string}.d.ts`
   write?: true
 }
 
 type _TemplatePlugin<Options> = Omit<NuxtPlugin, 'src'> & NuxtTemplate<Options>
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtPluginTemplate<Options = TemplateDefaultOptions> extends _TemplatePlugin<Options> { }
 
 export interface NuxtApp {
@@ -68,7 +76,6 @@ export interface Nuxt {
   // Private fields.
   _version: string
   _ignore?: Ignore
-  _ignorePatterns?: string[]
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions

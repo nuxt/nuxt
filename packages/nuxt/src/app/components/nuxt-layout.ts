@@ -2,10 +2,9 @@ import type { DefineComponent, MaybeRef, VNode } from 'vue'
 import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
-// eslint-disable-next-line import/no-restricted-paths
 import type { PageMeta } from '../../pages/runtime/composables'
 
-import { useRoute } from '../composables/router'
+import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
 import { _wrapIf } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
@@ -23,7 +22,7 @@ const LayoutLoader = defineComponent({
   inheritAttrs: false,
   props: {
     name: String,
-    layoutProps: Object
+    layoutProps: Object,
   },
   async setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
@@ -32,7 +31,7 @@ const LayoutLoader = defineComponent({
     const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
 
     return () => h(LayoutComponent, props.layoutProps, context.slots)
-  }
+  },
 })
 
 export default defineComponent({
@@ -41,8 +40,12 @@ export default defineComponent({
   props: {
     name: {
       type: [String, Boolean, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout'],
-      default: null
-    }
+      default: null,
+    },
+    fallback: {
+      type: [String, Object] as unknown as () => unknown extends PageMeta['layout'] ? MaybeRef<string> : PageMeta['layout'],
+      default: null,
+    },
   },
   setup (props, context) {
     const nuxtApp = useNuxtApp()
@@ -50,19 +53,34 @@ export default defineComponent({
     const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
-    const layout = computed(() => unref(props.name) ?? route.meta.layout as string ?? 'default')
+    const layout = computed(() => {
+      let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
+      if (layout && !(layout in layouts)) {
+        if (import.meta.dev && layout !== 'default') {
+          console.warn(`Invalid layout \`${layout}\` selected.`)
+        }
+        if (props.fallback) {
+          layout = unref(props.fallback)
+        }
+      }
+      return layout
+    })
 
     const layoutRef = ref()
     context.expose({ layoutRef })
 
     const done = nuxtApp.deferHydration()
+    if (import.meta.client && nuxtApp.isHydrating) {
+      const removeErrorHook = nuxtApp.hooks.hookOnce('app:error', done)
+      useRouter().beforeEach(removeErrorHook)
+    }
+
+    if (import.meta.dev) {
+      nuxtApp._isNuxtLayoutUsed = true
+    }
 
     return () => {
       const hasLayout = layout.value && layout.value in layouts
-      if (import.meta.dev && layout.value && !hasLayout && layout.value !== 'default') {
-        console.warn(`Invalid layout \`${layout.value}\` selected.`)
-      }
-
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
@@ -75,14 +93,14 @@ export default defineComponent({
               key: layout.value || undefined,
               name: layout.value,
               shouldProvide: !props.name,
-              hasTransition: !!transitionProps
-            }, context.slots)
-        })
+              hasTransition: !!transitionProps,
+            }, context.slots),
+        }),
       }).default()
     }
-  }
+  },
 }) as unknown as DefineComponent<{
-  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined;
+  name?: (unknown extends PageMeta['layout'] ? MaybeRef<string | false> : PageMeta['layout']) | undefined
 }>
 
 const LayoutProvider = defineComponent({
@@ -90,17 +108,17 @@ const LayoutProvider = defineComponent({
   inheritAttrs: false,
   props: {
     name: {
-      type: [String, Boolean] as unknown as () => string | false
+      type: [String, Boolean] as unknown as () => string | false,
     },
     layoutProps: {
-      type: Object
+      type: Object,
     },
     hasTransition: {
-      type: Boolean
+      type: Boolean,
     },
     shouldProvide: {
-      type: Boolean
-    }
+      type: Boolean,
+    },
   },
   setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
@@ -108,7 +126,7 @@ const LayoutProvider = defineComponent({
     const name = props.name
     if (props.shouldProvide) {
       provide(LayoutMetaSymbol, {
-        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default')
+        isCurrent: (route: RouteLocationNormalizedLoaded) => name === (route.meta.layout ?? 'default'),
       })
     }
 
@@ -140,7 +158,7 @@ const LayoutProvider = defineComponent({
         vnode = h(
           LayoutLoader,
           { key: name, layoutProps: props.layoutProps, name },
-          context.slots
+          context.slots,
         )
 
         return vnode
@@ -149,8 +167,8 @@ const LayoutProvider = defineComponent({
       return h(
         LayoutLoader,
         { key: name, layoutProps: props.layoutProps, name },
-        context.slots
+        context.slots,
       )
     }
-  }
+  },
 })

@@ -3,7 +3,7 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   declaration: true,
   entries: [
-    'src/index'
+    'src/index',
   ],
   dependencies: [
     '@nuxt/kit',
@@ -15,9 +15,9 @@ export default defineBuildConfig({
     'css-loader',
     'file-loader',
     'url-loader',
-    'vue'
+    'vue',
   ],
   externals: [
-    '@nuxt/schema'
-  ]
+    '@nuxt/schema',
+  ],
 })

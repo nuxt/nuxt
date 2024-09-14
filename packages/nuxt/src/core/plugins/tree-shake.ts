@@ -31,8 +31,8 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
 
       const s = new MagicString(code)
       const strippedCode = stripLiteral(code)
-      for (const match of strippedCode.matchAll(COMPOSABLE_RE_GLOBAL) || []) {
-        s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} /*#__PURE__*/ false && ${match[2]}`)
+      for (const match of strippedCode.matchAll(COMPOSABLE_RE_GLOBAL)) {
+        s.overwrite(match.index!, match.index! + match[0].length, `${match[1]} false && /*@__PURE__*/ ${match[2]}`)
       }
 
       if (s.hasChanged()) {
@@ -40,9 +40,9 @@ export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComp
           code: s.toString(),
           map: options.sourcemap
             ? s.generateMap({ hires: true })
-            : undefined
+            : undefined,
         }
       }
-    }
+    },
   }
 })

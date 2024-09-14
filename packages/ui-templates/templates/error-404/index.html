@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
+    <script type="module" src="/styles.ts"></script>
+  </head>
+  <body class="font-sans antialiased bg-white dark:bg-[#020420] text-[#020420] tracking-wide dark:text-white grid min-h-screen place-content-center overflow-hidden ">
+    <div class="max-w-520px text-center">
+      <h1 class="text-[80px] sm:text-[110px] font-semibold mb-4 tabular-nums leading-none">{{ messages.statusCode }}</h1>
+      <h2 class="text-2xl font-semibold sm:text-3xl mb-2">{{ messages.statusMessage }}</h2>
+      <p class="text-[#64748B] text-md mb-4 px-2">{{ messages.description }}</p>
+      <div class="w-full flex items-center justify-center">
+        <a href="/" class="underline underline-offset-3 text-sm font-medium hover:text-[#00DC82]">
+          {{ messages.backHome }}
+        </a>
+     </div>
+    </div>
+  </body>
+</html>

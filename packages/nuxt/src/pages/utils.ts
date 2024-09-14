@@ -1,17 +1,21 @@
+import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
-import { logger, resolveFiles, useNuxt } from '@nuxt/kit'
+import { logger, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { transform } from 'esbuild'
 import { parse } from 'acorn'
+import { walk } from 'estree-walker'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
-import { uniqueBy } from '../core/utils'
+import { getLoader, uniqueBy } from '../core/utils'
+import { toArray } from '../utils'
+import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -19,6 +23,7 @@ enum SegmentParserState {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 enum SegmentTokenType {
@@ -26,6 +31,7 @@ enum SegmentTokenType {
   dynamic,
   optional,
   catchall,
+  group,
 }
 
 interface SegmentToken {
@@ -42,7 +48,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   const nuxt = useNuxt()
 
   const pagesDirs = nuxt.options._layers.map(
-    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages')
+    layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
 
   const scannedFiles: ScannedFile[] = []
@@ -50,14 +56,35 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     const files = await resolveFiles(dir, `**/*{${nuxt.options.extensions.join(',')}}`)
     scannedFiles.push(...files.map(file => ({ relativePath: relative(dir, file), absolutePath: file })))
   }
-  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath))
 
-  const allRoutes = await generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), nuxt.options.experimental.typedPages, nuxt.vfs)
+  // sort scanned files using en-US locale to make the result consistent across different system locales
+  scannedFiles.sort((a, b) => a.relativePath.localeCompare(b.relativePath, 'en-US'))
 
-  return uniqueBy(allRoutes, 'path')
+  const allRoutes = generateRoutesFromFiles(uniqueBy(scannedFiles, 'relativePath'), {
+    shouldUseServerComponents: !!nuxt.options.experimental.componentIslands,
+  })
+
+  const pages = uniqueBy(allRoutes, 'path')
+
+  const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
+
+  if (shouldAugment) {
+    const augmentedPages = await augmentPages(pages, nuxt.vfs)
+    await nuxt.callHook('pages:extend', pages)
+    await augmentPages(pages, nuxt.vfs, augmentedPages)
+    augmentedPages.clear()
+  } else {
+    await nuxt.callHook('pages:extend', pages)
+  }
+
+  return pages
 }
 
-export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtractBuildMeta = false, vfs?: Record<string, string>): Promise<NuxtPage[]> {
+type GenerateRoutesFromFilesOptions = {
+  shouldUseServerComponents?: boolean
+}
+
+export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
   for (const file of files) {
@@ -69,17 +96,34 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
       name: '',
       path: '',
       file: file.absolutePath,
-      children: []
+      children: [],
     }
 
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
+    const lastSegment = segments[segments.length - 1]
+    if (lastSegment.endsWith('.server')) {
+      segments[segments.length - 1] = lastSegment.replace('.server', '')
+      if (options.shouldUseServerComponents) {
+        route.mode = 'server'
+      }
+    } else if (lastSegment.endsWith('.client')) {
+      segments[segments.length - 1] = lastSegment.replace('.client', '')
+      route.mode = 'client'
+    }
+
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
 
       const tokens = parseSegment(segment)
-      const segmentName = tokens.map(({ value }) => value).join('')
+
+      // Skip group segments
+      if (tokens.every(token => token.type === SegmentTokenType.group)) {
+        continue
+      }
+
+      const segmentName = tokens.map(({ value, type }) => type === SegmentTokenType.group ? '' : value).join('')
 
       // ex: parent/[slug].vue -> parent-slug
       route.name += (route.name && '/') + segmentName
@@ -98,52 +142,161 @@ export async function generateRoutesFromFiles (files: ScannedFile[], shouldExtra
       }
     }
 
-    if (shouldExtractBuildMeta && vfs) {
-      const fileContent = file.absolutePath in vfs ? vfs[file.absolutePath] : fs.readFileSync(file.absolutePath, 'utf-8')
-      const overrideRouteName = await getRouteName(fileContent)
-      if (overrideRouteName) {
-        route.name = overrideRouteName
-      }
-    }
-
     parent.push(route)
   }
 
   return prepareRoutes(routes)
 }
 
-const SFC_SCRIPT_RE = /<script\s*[^>]*>([\s\S]*?)<\/script\s*[^>]*>/i
-export function extractScriptContent (html: string) {
-  const match = html.match(SFC_SCRIPT_RE)
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<string>()) {
+  for (const route of routes) {
+    if (route.file && !augmentedPages.has(route.file)) {
+      const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
+      const routeMeta = await getRouteMeta(fileContent, route.file)
+      if (route.meta) {
+        routeMeta.meta = { ...routeMeta.meta, ...route.meta }
+      }
 
-  if (match && match[1]) {
-    return match[1].trim()
+      Object.assign(route, routeMeta)
+      augmentedPages.add(route.file)
+    }
+
+    if (route.children && route.children.length > 0) {
+      await augmentPages(route.children, vfs, augmentedPages)
+    }
   }
-
-  return null
+  return augmentedPages
 }
 
-const PAGE_META_RE = /(definePageMeta\([\s\S]*?\))/
+const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/gi
+export function extractScriptContent (html: string) {
+  const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
+  for (const match of html.matchAll(SFC_SCRIPT_RE)) {
+    if (match?.groups?.content) {
+      contents.push({
+        loader: match.groups.attrs.includes('tsx') ? 'tsx' : 'ts',
+        code: match.groups.content.trim(),
+      })
+    }
+  }
 
-async function getRouteName (file: string) {
-  const script = extractScriptContent(file)
-  if (!script) { return null }
+  return contents
+}
 
-  if (!PAGE_META_RE.test(script)) { return null }
+const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
+const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
+const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
-  const js = await transform(script, { loader: 'ts' })
-  const ast = parse(js.code, {
-    sourceType: 'module',
-    ecmaVersion: 'latest'
-  }) as unknown as Program
-  const pageMetaAST = ast.body.find(node => node.type === 'ExpressionStatement' && node.expression.type === 'CallExpression' && node.expression.callee.type === 'Identifier' && node.expression.callee.name === 'definePageMeta')
-  if (!pageMetaAST) { return null }
+const pageContentsCache: Record<string, string> = {}
+const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
+export async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+  // set/update pageContentsCache, invalidate metaCache on cache mismatch
+  if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
+    pageContentsCache[absolutePath] = contents
+    delete metaCache[absolutePath]
+  }
 
-  const pageMetaArgument = ((pageMetaAST as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
-  const nameProperty = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === 'name') as Property
-  if (!nameProperty || nameProperty.value.type !== 'Literal' || typeof nameProperty.value.value !== 'string') { return null }
+  if (absolutePath in metaCache) { return metaCache[absolutePath] }
 
-  return nameProperty.value.value
+  const loader = getLoader(absolutePath)
+  const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
+  if (!scriptBlocks) {
+    metaCache[absolutePath] = {}
+    return {}
+  }
+
+  const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
+
+  for (const script of scriptBlocks) {
+    if (!PAGE_META_RE.test(script.code)) {
+      continue
+    }
+
+    const js = await transform(script.code, { loader: script.loader })
+    const ast = parse(js.code, {
+      sourceType: 'module',
+      ecmaVersion: 'latest',
+      ranges: true,
+    }) as unknown as Program
+
+    const dynamicProperties = new Set<keyof NuxtPage>()
+
+    let foundMeta = false
+
+    walk(ast, {
+      enter (node) {
+        if (foundMeta) { return }
+
+        if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
+
+        foundMeta = true
+        const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+
+        for (const key of extractionKeys) {
+          const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
+          if (!property) { continue }
+
+          if (property.value.type === 'ObjectExpression') {
+            const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+            try {
+              extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
+            } catch {
+              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+              dynamicProperties.add(key)
+              continue
+            }
+          }
+
+          if (property.value.type === 'ArrayExpression') {
+            const values: string[] = []
+            for (const element of property.value.elements) {
+              if (!element) {
+                continue
+              }
+              if (element.type !== 'Literal' || typeof element.value !== 'string') {
+                console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+                dynamicProperties.add(key)
+                continue
+              }
+              values.push(element.value)
+            }
+            extractedMeta[key] = values
+            continue
+          }
+
+          if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
+            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+            dynamicProperties.add(key)
+            continue
+          }
+          extractedMeta[key] = property.value.value
+        }
+
+        for (const property of pageMetaArgument.properties) {
+          if (property.type !== 'Property') {
+            continue
+          }
+          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
+          if (!isIdentifierOrLiteral) {
+            continue
+          }
+          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
+          if (!(extractionKeys as unknown as string[]).includes(name)) {
+            dynamicProperties.add('meta')
+            break
+          }
+        }
+
+        if (dynamicProperties.size) {
+          extractedMeta.meta ??= {}
+          extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
+        }
+      },
+    })
+  }
+
+  metaCache[absolutePath] = extractedMeta
+  return extractedMeta
 }
 
 function getRoutePath (tokens: SegmentToken[]): string {
@@ -156,12 +309,14 @@ function getRoutePath (tokens: SegmentToken[]): string {
           ? `:${token.value}()`
           : token.type === SegmentTokenType.catchall
             ? `:${token.value}(.*)*`
-            : encodePath(token.value).replace(/:/g, '\\:'))
+            : token.type === SegmentTokenType.group
+              ? ''
+              : encodePath(token.value).replace(/:/g, '\\:'))
     )
   }, '/')
 }
 
-const PARAM_CHAR_RE = /[\w\d_.]/
+const PARAM_CHAR_RE = /[\w.]/
 
 function parseSegment (segment: string) {
   let state: SegmentParserState = SegmentParserState.initial
@@ -186,8 +341,10 @@ function parseSegment (segment: string) {
             ? SegmentTokenType.dynamic
             : state === SegmentParserState.optional
               ? SegmentTokenType.optional
-              : SegmentTokenType.catchall,
-      value: buffer
+              : state === SegmentParserState.catchall
+                ? SegmentTokenType.catchall
+                : SegmentTokenType.group,
+      value: buffer,
     })
 
     buffer = ''
@@ -201,6 +358,8 @@ function parseSegment (segment: string) {
         buffer = ''
         if (c === '[') {
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          state = SegmentParserState.group
         } else {
           i--
           state = SegmentParserState.static
@@ -211,6 +370,9 @@ function parseSegment (segment: string) {
         if (c === '[') {
           consumeBuffer()
           state = SegmentParserState.dynamic
+        } else if (c === '(') {
+          consumeBuffer()
+          state = SegmentParserState.group
         } else {
           buffer += c
         }
@@ -219,6 +381,7 @@ function parseSegment (segment: string) {
       case SegmentParserState.catchall:
       case SegmentParserState.dynamic:
       case SegmentParserState.optional:
+      case SegmentParserState.group:
         if (buffer === '...') {
           buffer = ''
           state = SegmentParserState.catchall
@@ -233,10 +396,16 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
+        } else if (c === ')' && state === SegmentParserState.group) {
+          if (!buffer) {
+            throw new Error('Empty group')
+          } else {
+            consumeBuffer()
+          }
+          state = SegmentParserState.initial
         } else if (PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
-
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
         }
         break
@@ -278,7 +447,7 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
     }
 
     // Remove leading / if children route
-    if (parent && route.path.startsWith('/')) {
+    if (parent && route.path[0] === '/') {
       route.path = route.path.slice(1)
     }
 
@@ -298,47 +467,130 @@ function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<s
   return routes
 }
 
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set()): { imports: Set<string>, routes: string } {
+function serializeRouteValue (value: any, skipSerialisation = false) {
+  if (skipSerialisation || value === undefined) { return undefined }
+  return JSON.stringify(value)
+}
+
+type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
+type NormalizedRouteKeys = (keyof NormalizedRoute)[]
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
-      const route = Object.fromEntries(
-        Object.entries(page)
-          .filter(([key, value]) => key !== 'file' && (Array.isArray(value) ? value.length : value))
-          .map(([key, value]) => [key, JSON.stringify(value)])
-      ) as Record<Exclude<keyof NuxtPage, 'file'>, string> & { component?: string }
+      const markedDynamic = page.meta?.[DYNAMIC_META_KEY] ?? new Set()
+      const metaFiltered: Record<string, any> = {}
+      let skipMeta = true
+      for (const key in page.meta || {}) {
+        if (key !== DYNAMIC_META_KEY && page.meta![key] !== undefined) {
+          skipMeta = false
+          metaFiltered[key] = page.meta![key]
+        }
+      }
+      const skipAlias = toArray(page.alias).every(val => !val)
+
+      const route: NormalizedRoute = {
+        path: serializeRouteValue(page.path),
+        name: serializeRouteValue(page.name),
+        meta: serializeRouteValue(metaFiltered, skipMeta),
+        alias: serializeRouteValue(toArray(page.alias), skipAlias),
+        redirect: serializeRouteValue(page.redirect),
+      }
+
+      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+        if (route[key] === undefined) {
+          delete route[key]
+        }
+      }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports).routes
+        route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
       if (!page.file) {
-        for (const key of ['name', 'path', 'meta', 'alias', 'redirect'] as const) {
-          if (page[key]) { route[key] = JSON.stringify(page[key]) }
-        }
         return route
       }
 
       const file = normalize(page.file)
-      const metaImportName = genSafeVariableName(filename(file) + hash(file)) + 'Meta'
+      const pageImportName = genSafeVariableName(filename(file) + hash(file))
+      const metaImportName = pageImportName + 'Meta'
       metaImports.add(genImport(`${file}?macro=true`, [{ name: 'default', as: metaImportName }]))
 
-      let aliasCode = `${metaImportName}?.alias || []`
-      const alias = Array.isArray(page.alias) ? page.alias : [page.alias].filter(Boolean)
-      if (alias.length) {
-        aliasCode = `${JSON.stringify(alias)}.concat(${aliasCode})`
+      if (page._sync) {
+        metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      route.name = `${metaImportName}?.name ?? ${page.name ? JSON.stringify(page.name) : 'undefined'}`
-      route.path = `${metaImportName}?.path ?? ${JSON.stringify(page.path)}`
-      route.meta = page.meta && Object.values(page.meta).filter(value => value !== undefined).length ? `{...(${metaImportName} || {}), ...${JSON.stringify(page.meta)}}` : `${metaImportName} || {}`
-      route.alias = aliasCode
-      route.redirect = page.redirect ? JSON.stringify(page.redirect) : `${metaImportName}?.redirect || undefined`
-      route.component = genDynamicImport(file, { interopDefault: true })
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
 
-      return route
-    }))
+      const metaRoute: NormalizedRoute = {
+        name: `${metaImportName}?.name ?? ${route.name}`,
+        path: `${metaImportName}?.path ?? ${route.path}`,
+        meta: `${metaImportName} || {}`,
+        alias: `${metaImportName}?.alias || []`,
+        redirect: `${metaImportName}?.redirect`,
+        component: page.mode === 'server'
+          ? `() => createIslandPage(${route.name})`
+          : page.mode === 'client'
+            ? `() => createClientPage(${pageImport})`
+            : pageImport,
+      }
+
+      if (page.mode === 'server') {
+        metaImports.add(`
+let _createIslandPage
+async function createIslandPage (name) {
+  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  return _createIslandPage(name)
+};`)
+      } else if (page.mode === 'client') {
+        metaImports.add(`
+let _createClientPage
+async function createClientPage(loader) {
+  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  return _createClientPage(loader);
+}`)
+      }
+
+      if (route.children) {
+        metaRoute.children = route.children
+      }
+
+      if (route.meta) {
+        metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
+      }
+
+      if (overrideMeta) {
+        // skip and retain fallback if marked dynamic
+        // set to extracted value or fallback if none extracted
+        for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) { continue }
+          metaRoute[key] = route[key] ?? `${metaImportName}?.${key}`
+        }
+
+        // set to extracted value or delete if none extracted
+        for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+          if (markedDynamic.has(key)) { continue }
+
+          if (route[key] == null) {
+            delete metaRoute[key]
+            continue
+          }
+
+          metaRoute[key] = route[key]
+        }
+      } else {
+        if (route.alias != null) {
+          metaRoute.alias = `${route.alias}.concat(${metaImportName}?.alias || [])`
+        }
+
+        if (route.redirect != null) {
+          metaRoute.redirect = route.redirect
+        }
+      }
+
+      return metaRoute
+    })),
   }
 }
 
@@ -351,5 +603,12 @@ export function pathToNitroGlob (path: string) {
     return null
   }
 
-  return path.replace(/\/(?:[^:/]+)?:\w+.*$/, '/**')
+  return path.replace(/\/[^:/]*:\w.*$/, '/**')
+}
+
+export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
+  return [
+    joinURL(parent, page.path),
+    ...page.children?.flatMap(child => resolveRoutePaths(child, joinURL(parent, page.path))) || [],
+  ]
 }

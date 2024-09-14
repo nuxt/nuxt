@@ -1,23 +1,25 @@
-import { hasProtocol, joinURL } from 'ufo'
+import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtPayload } from '../nuxt'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
   hash?: string
 }
 
-export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record<string, any> | Promise<Record<string, any>> | null {
+/** @since 3.0.0 */
+export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  const payloadURL = _getPayloadURL(url, opts)
+  const payloadURL = await _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
   if (payloadURL in cache) {
@@ -37,29 +39,35 @@ export function loadPayload (url: string, opts: LoadPayloadOptions = {}): Record
   })
   return cache[payloadURL]
 }
-
-export function preloadPayload (url: string, opts: LoadPayloadOptions = {}) {
-  const payloadURL = _getPayloadURL(url, opts)
-  useHead({
-    link: [
-      { rel: 'modulepreload', href: payloadURL }
-    ]
+/** @since 3.0.0 */
+export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<void> {
+  const nuxtApp = useNuxtApp()
+  const promise = _getPayloadURL(url, opts).then((payloadURL) => {
+    nuxtApp.runWithContext(() => useHead({
+      link: [
+        { rel: 'modulepreload', href: payloadURL },
+      ],
+    }))
   })
+  if (import.meta.server) {
+    onServerPrefetch(() => promise)
+  }
+  return promise
 }
 
 // --- Internal ---
 
-const extension = renderJsonPayloads ? 'json' : 'js'
-function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+const filename = renderJsonPayloads ? '_payload.json' : '_payload.js'
+async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   const u = new URL(url, 'http://localhost')
-  if (u.search) {
-    throw new Error('Payload URL cannot contain search params: ' + url)
-  }
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw new Error('Payload URL must not include hostname: ' + url)
   }
-  const hash = opts.hash || (opts.fresh ? Date.now() : '')
-  return joinURL(useRuntimeConfig().app.baseURL, u.pathname, hash ? `_payload.${hash}.${extension}` : `_payload.${extension}`)
+  const config = useRuntimeConfig()
+  const hash = opts.hash || (opts.fresh ? Date.now() : config.app.buildId)
+  const cdnURL = config.app.cdnURL
+  const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
+  return joinURL(baseOrCdnURL, u.pathname, filename + (hash ? `?${hash}` : ''))
 }
 
 async function _importPayload (payloadURL: string) {
@@ -75,10 +83,11 @@ async function _importPayload (payloadURL: string) {
   }
   return null
 }
-
+/** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
   // Note: Alternative for server is checking x-nitro-prerender header
   if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  url = withoutTrailingSlash(url)
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
@@ -87,43 +96,50 @@ export async function isPrerendered (url = useRoute().path) {
   return !!rules.prerender && !rules.redirect
 }
 
-let payloadCache: any = null
+let payloadCache: NuxtPayload | null = null
+
+/** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
-    return
+    return null
   }
   if (payloadCache) {
     return payloadCache
   }
 
-  const el = document.getElementById('__NUXT_DATA__')
+  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
   if (!el) {
-    return {}
+    return {} as Partial<NuxtPayload>
   }
 
-  const inlineData = parsePayload(el.textContent || '')
+  const inlineData = await parsePayload(el.textContent || '')
 
   const externalData = el.dataset.src ? await _importPayload(el.dataset.src) : undefined
 
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__
+    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
+  }
+
+  if (payloadCache!.config?.public) {
+    payloadCache!.config.public = reactive(payloadCache!.config.public)
   }
 
   return payloadCache
 }
 
-export function parsePayload (payload: string) {
-  return parse(payload, useNuxtApp()._payloadRevivers)
+export async function parsePayload (payload: string) {
+  return await parse(payload, useNuxtApp()._payloadRevivers)
 }
 
 /**
  * This is an experimental function for configuring passing rich data from server -> client.
+ * @since 3.4.0
  */
 export function definePayloadReducer (
   name: string,
-  reduce: (data: any) => any
+  reduce: (data: any) => any,
 ) {
   if (import.meta.server) {
     useNuxtApp().ssrContext!._payloadReducers[name] = reduce
@@ -134,10 +150,11 @@ export function definePayloadReducer (
  * This is an experimental function for configuring passing rich data from server -> client.
  *
  * This function _must_ be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.
+ * @since 3.4.0
  */
 export function definePayloadReviver (
   name: string,
-  revive: (data: any) => any | undefined
+  revive: (data: any) => any | undefined,
 ) {
   if (import.meta.dev && getCurrentInstance()) {
     console.warn('[nuxt] [definePayloadReviver] This function must be called in a Nuxt plugin that is `unshift`ed to the beginning of the Nuxt plugins array.')

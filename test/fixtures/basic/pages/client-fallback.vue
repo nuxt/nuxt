@@ -18,7 +18,7 @@
       <!-- don't render if one child fails in ssr -->
       <NuxtClientFallback>
         <BreakInSetup />
-        <SugarCounter
+        <Counter
           id="sugar-counter"
           :multiplier="multiplier"
         />
@@ -28,7 +28,7 @@
         <div>
           <BreakInSetup />
         </div>
-        <SugarCounter :multiplier="multiplier" />
+        <Counter :multiplier="multiplier" />
       </NuxtClientFallback>
       <!-- should be rendered -->
       <NuxtClientFallback fallback-tag="p">

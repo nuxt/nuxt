@@ -2,9 +2,11 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
+import { destr } from 'destr'
 
-import { registerEndpoint } from 'nuxt-vitest/utils'
+import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
+import { hasProtocol } from 'ufo'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -14,34 +16,53 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
+import { callOnce } from '#app/composables/once'
+import { useLoadingIndicator } from '#app/composables/loading-indicator'
+import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { encodeURL, resolveRouteObject } from '#app/composables/router'
 
-vi.mock('#app/compat/idle-callback', () => ({
-  requestIdleCallback: (cb: Function) => cb()
-}))
+registerEndpoint('/api/test', defineEventHandler(event => ({
+  method: event.method,
+  headers: Object.fromEntries(event.headers.entries()),
+})))
 
-const timestamp = Date.now()
-registerEndpoint('/_nuxt/builds/latest.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp
-})))
-registerEndpoint('/_nuxt/builds/meta/override.json', defineEventHandler(() => ({
-  id: 'override',
-  timestamp,
-  matcher: {
-    static: {
-      '/': null,
-      '/pre': null,
-      '/pre/test': { redirect: true }
-    },
-    wildcard: { '/pre': { prerender: true } },
-    dynamic: {}
-  },
-  prerendered: ['/specific-prerendered']
-})))
+describe('app config', () => {
+  it('can be updated', () => {
+    const appConfig = useAppConfig()
+    expect(appConfig).toStrictEqual({ nuxt: {} })
+
+    type UpdateAppConfig = Parameters<typeof updateAppConfig>[0]
+
+    const initConfig: UpdateAppConfig = {
+      new: 'value',
+      nuxt: { nested: 42 },
+      regExp: /foo/g,
+      date: new Date(1111, 11, 11),
+      arr: [1, 2, 3],
+    }
+    updateAppConfig(initConfig)
+    expect(appConfig).toStrictEqual(initConfig)
+
+    const newConfig: UpdateAppConfig = {
+      nuxt: { anotherNested: 24 },
+      regExp: /bar/g,
+      date: new Date(2222, 12, 12),
+      arr: [4, 5],
+    }
+    updateAppConfig(newConfig)
+    expect(appConfig).toStrictEqual({
+      ...initConfig,
+      ...newConfig,
+      nuxt: { ...initConfig.nuxt, ...newConfig.nuxt },
+      arr: [4, 5, 3],
+    })
+  })
+})
 
 describe('composables', () => {
   it('are all tested', () => {
     const testedComposables: string[] = [
+      'useRouteAnnouncer',
       'clearNuxtData',
       'refreshNuxtData',
       'useAsyncData',
@@ -52,27 +73,32 @@ describe('composables', () => {
       'showError',
       'useError',
       'getAppManifest',
+      'useHydration',
       'getRouteRules',
       'onNuxtReady',
+      'callOnce',
       'setResponseStatus',
       'prerenderRoutes',
       'useRequestEvent',
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useCookie',
       'clearNuxtState',
       'useState',
-      'useRequestURL'
+      'useRequestURL',
+      'useRoute',
+      'navigateTo',
+      'abortNavigation',
+      'setPageLayout',
+      'defineNuxtComponent',
     ]
     const skippedComposables: string[] = [
-      'abortNavigation',
       'addRouteMiddleware',
-      'defineNuxtComponent',
       'defineNuxtRouteMiddleware',
       'definePayloadReducer',
       'definePayloadReviver',
       'loadPayload',
-      'navigateTo',
       'onBeforeRouteLeave',
       'onBeforeRouteUpdate',
       'prefetchComponents',
@@ -80,17 +106,17 @@ describe('composables', () => {
       'preloadPayload',
       'preloadRouteComponents',
       'reloadNuxtApp',
-      'setPageLayout',
-      'useCookie',
+      'refreshCookie',
+      'onPrehydrate',
+      'useId',
       'useFetch',
       'useHead',
-      'useHydration',
       'useLazyFetch',
       'useLazyAsyncData',
-      'useRoute',
       'useRouter',
       'useSeoMeta',
-      'useServerSeoMeta'
+      'useServerSeoMeta',
+      'usePreviewMode',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -107,10 +133,11 @@ describe('useAsyncData', () => {
         "status",
         "execute",
         "refresh",
+        "clear",
       ]
     `)
     expect(res instanceof Promise).toBeTruthy()
-    expect(res.data.value).toBe(null)
+    expect(res.data.value).toBe(undefined)
     await res
     expect(res.data.value).toBe('test')
   })
@@ -122,7 +149,7 @@ describe('useAsyncData', () => {
     expect(immediate.pending.value).toBe(false)
 
     const nonimmediate = await useAsyncData(() => Promise.resolve('test'), { immediate: false })
-    expect(nonimmediate.data.value).toBe(null)
+    expect(nonimmediate.data.value).toBe(undefined)
     expect(nonimmediate.status.value).toBe('idle')
     expect(nonimmediate.pending.value).toBe(true)
   })
@@ -146,10 +173,10 @@ describe('useAsyncData', () => {
 
   // https://github.com/nuxt/nuxt/issues/23411
   it('should initialize with error set to null when immediate: false', async () => {
-    const { error, execute } = useAsyncData(() => ({}), { immediate: false })
-    expect(error.value).toBe(null)
+    const { error, execute } = useAsyncData(() => Promise.resolve({}), { immediate: false })
+    expect(error.value).toBe(undefined)
     await execute()
-    expect(error.value).toBe(null)
+    expect(error.value).toBe(undefined)
   })
 
   it('should be accessible with useNuxtData', async () => {
@@ -184,13 +211,36 @@ describe('useAsyncData', () => {
     expect(data.data.value).toMatchInlineSnapshot('"test"')
   })
 
+  it('should be clearable', async () => {
+    const { data, error, pending, status, clear } = await useAsyncData(() => Promise.resolve('test'))
+    expect(data.value).toBe('test')
+
+    clear()
+
+    expect(data.value).toBeUndefined()
+    expect(error.value).toBe(undefined)
+    expect(pending.value).toBe(false)
+    expect(status.value).toBe('idle')
+  })
+
   it('allows custom access to a cache', async () => {
-    const { data } = await useAsyncData(() => ({ val: true }), { getCachedData: () => ({ val: false }) })
+    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData: () => ({ val: false }) })
     expect(data.value).toMatchInlineSnapshot(`
       {
         "val": false,
       }
     `)
+  })
+
+  it('should only call getCachedData once', async () => {
+    const getCachedData = vi.fn(() => ({ val: false }))
+    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData })
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": false,
+      }
+    `)
+    expect(getCachedData).toHaveBeenCalledTimes(1)
   })
 
   it('should use default while pending', async () => {
@@ -207,6 +257,91 @@ describe('useAsyncData', () => {
   it('should use default after reject', async () => {
     const { data } = await useAsyncData(() => Promise.reject(new Error('test')), { default: () => 'default' })
     expect(data.value).toMatchInlineSnapshot('"default"')
+  })
+
+  it('should execute the promise function once when dedupe option is "defer" for multiple calls', () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the promise function multiple times when dedupe option is not specified for multiple calls', () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn)
+
+    expect(promiseFn).toHaveBeenCalledTimes(3)
+  })
+
+  it('should execute the promise function as per dedupe option when different dedupe options are used for multiple calls', () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+    useAsyncData('dedupedKey', promiseFn)
+    useAsyncData('dedupedKey', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should be synced with useNuxtData', async () => {
+    const { data: nuxtData } = useNuxtData('nuxtdata-sync')
+    const promise = useAsyncData('nuxtdata-sync', () => Promise.resolve('test'), { default: () => 'default' })
+    const { data: fetchData } = promise
+
+    expect(fetchData.value).toMatchInlineSnapshot('"default"')
+
+    nuxtData.value = 'before-fetch'
+    expect(fetchData.value).toMatchInlineSnapshot('"before-fetch"')
+
+    await promise
+    expect(fetchData.value).toMatchInlineSnapshot('"test"')
+    expect(nuxtData.value).toMatchInlineSnapshot('"test"')
+
+    nuxtData.value = 'new value'
+    expect(fetchData.value).toMatchInlineSnapshot('"new value"')
+    fetchData.value = 'another value'
+    expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
+  })
+})
+
+describe('useFetch', () => {
+  it('should match with/without computed values', async () => {
+    const nuxtApp = useNuxtApp()
+    const getPayloadEntries = () => Object.keys(nuxtApp.payload.data).length
+    const baseCount = getPayloadEntries()
+
+    await useFetch('/api/test')
+    expect(getPayloadEntries()).toBe(baseCount + 1)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: 'POST' }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { method: ref('POST') }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 2)
+
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { query: { id: '3' } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { query: { id: ref('3') } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { params: { id: '3' } }, '')
+    /* @ts-expect-error Overriding auto-key */
+    await useFetch('/api/test', { params: { id: ref('3') } }, '')
+    expect.soft(getPayloadEntries()).toBe(baseCount + 3)
+  })
+
+  it('should timeout', async () => {
+    const { status, error } = await useFetch(
+      // @ts-expect-error should resolve to a string
+      () => new Promise(resolve => setTimeout(resolve, 5000)),
+      { timeout: 1 },
+    )
+    await new Promise(resolve => setTimeout(resolve, 2))
+    expect(status.value).toBe('error')
+    expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
   })
 })
 
@@ -233,20 +368,20 @@ describe('errors', () => {
   })
 
   it('global nuxt errors', () => {
-    const err = useError()
-    expect(err.value).toBeUndefined()
+    const error = useError()
+    expect(error.value).toBeUndefined()
     showError('new error')
-    expect(err.value).toMatchInlineSnapshot('[Error: new error]')
+    expect(error.value).toMatchInlineSnapshot('[Error: new error]')
     clearError()
-    // TODO: should this return to being undefined?
-    expect(err.value).toBeNull()
+    expect(error.value).toBe(undefined)
   })
 })
 
 describe('onNuxtReady', () => {
-  it('should call callback immediately once nuxt is hydrated', () => {
+  it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
+    await new Promise(resolve => setTimeout(resolve, 1))
     expect(fn).toHaveBeenCalled()
   })
 })
@@ -259,6 +394,20 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+  })
+})
+
+describe('useHydration', () => {
+  it('should hydrate value from payload', async () => {
+    let val: any
+    const nuxtApp = useNuxtApp()
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('undefined')
+
+    nuxtApp.payload.key = 'from payload'
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(val).toMatchInlineSnapshot('"from payload"')
   })
 })
 
@@ -328,9 +477,56 @@ describe('url', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect loading state to be changed by hooks', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+
+    await nuxtApp.callHook('page:loading:end')
+    expect(isLoading.value).toBeFalsy()
+    vi.mocked(setTimeout).mockRestore()
+  })
+})
+
+describe('loading state', () => {
+  it('expect loading state to be changed by force starting/stoping', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish } = useLoadingIndicator()
+    expect(isLoading.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    expect(isLoading.value).toBeTruthy()
+    start()
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
+  })
+})
+
+describe('loading state', () => {
+  it('expect error from loading state to be changed by finish({ error: true })', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { error, start, finish } = useLoadingIndicator()
+    expect(error.value).toBeFalsy()
+    await nuxtApp.callHook('page:loading:start')
+    start()
+    finish({ error: true })
+    expect(error.value).toBeTruthy()
+    start()
+    expect(error.value).toBeFalsy()
+    finish()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
+    // @ts-expect-error timestamp is not optional
     delete manifest.timestamp
     expect(manifest).toMatchInlineSnapshot(`
       {
@@ -372,9 +568,229 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
   })
   it('isPrerendered', async () => {
     expect(await isPrerendered('/specific-prerendered')).toBeTruthy()
-    expect(await isPrerendered('/prerendered/test')).toBeTruthy()
+    expect(await isPrerendered('/prerendered/test')).toBeFalsy()
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+})
+
+describe('routing utilities: `navigateTo`', () => {
+  it('navigateTo should disallow navigation to external URLs by default', () => {
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot('[Error: Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.]')
+    expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
+  })
+  it('navigateTo should disallow navigation to data/script URLs', () => {
+    const urls = [
+      ['data:alert("hi")', 'data'],
+      ['\0data:alert("hi")', 'data'],
+    ]
+    for (const [url, protocol] of urls) {
+      expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
+    }
+  })
+})
+
+describe('routing utilities: `resolveRouteObject`', () => {
+  it('resolveRouteObject should correctly resolve a route object', () => {
+    expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
+    expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+})
+
+describe('routing utilities: `encodeURL`', () => {
+  const encode = (url: string) => {
+    const isExternal = hasProtocol(url, { acceptRelative: true })
+    return encodeURL(url, isExternal)
+  }
+  it('encodeURL should correctly encode a URL', () => {
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
+    expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
+    expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
+    expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+})
+
+describe('routing utilities: `useRoute`', () => {
+  it('should show provide a mock route', () => {
+    expect(useRoute()).toMatchObject({
+      fullPath: '/',
+      hash: '',
+      href: '/',
+      matched: [],
+      meta: {},
+      name: undefined,
+      params: {},
+      path: '/',
+      query: {},
+      redirectedFrom: undefined,
+    })
+  })
+})
+
+describe('routing utilities: `abortNavigation`', () => {
+  it('should throw an error if one is provided', () => {
+    const error = useError()
+    expect(() => abortNavigation({ message: 'Page not found' })).toThrowErrorMatchingInlineSnapshot('[Error: Page not found]')
+    expect(error.value).toBe(undefined)
+  })
+  it('should block navigation if no error is provided', () => {
+    expect(abortNavigation()).toMatchInlineSnapshot('false')
+  })
+})
+
+describe('routing utilities: `setPageLayout`', () => {
+  it('should set layout on page metadata if run outside middleware', () => {
+    const route = useRoute()
+    expect(route.meta.layout).toBeUndefined()
+    setPageLayout('custom')
+    expect(route.meta.layout).toEqual('custom')
+    route.meta.layout = undefined
+  })
+
+  it('should not set layout directly if run within middleware', () => {
+    const route = useRoute()
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    setPageLayout('custom')
+    expect(route.meta.layout).toBeUndefined()
+    nuxtApp._processingMiddleware = false
+  })
+})
+
+describe('defineNuxtComponent', () => {
+  it('should produce a Vue component', async () => {
+    const wrapper = await mountSuspended(defineNuxtComponent({
+      render: () => h('div', 'hi there'),
+    }))
+    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
+  })
+  it.todo('should support Options API asyncData')
+  it.todo('should support Options API head')
+})
+
+describe('useCookie', () => {
+  it('should watch custom cookie refs', () => {
+    const user = useCookie('userInfo', {
+      default: () => ({ score: -1 }),
+      maxAge: 60 * 60,
+    })
+    const computedVal = computed(() => user.value.score)
+    expect(computedVal.value).toBe(-1)
+    user.value.score++
+    expect(computedVal.value).toBe(0)
+  })
+
+  it('cookie decode function should be invoked once', () => {
+    // Pre-set cookies
+    document.cookie = 'foo=Foo'
+    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
+    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
+
+    let barCallCount = 0
+    const bazCookie = useCookie<{ s2: number }>('baz', {
+      default: () => ({ s2: -1 }),
+      decode (value) {
+        barCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    bazCookie.value.s2++
+    expect(bazCookie.value.s2).toEqual(1)
+    expect(barCallCount).toBe(1)
+
+    let quxCallCount = 0
+    const quxCookie = useCookie<{ s3: number }>('qux', {
+      default: () => ({ s3: -1 }),
+      filter: key => key === 'bar' || key === 'baz',
+      decode (value) {
+        quxCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    quxCookie.value.s3++
+    expect(quxCookie.value.s3).toBe(0)
+    expect(quxCallCount).toBe(2)
+  })
+
+  it('should not watch custom cookie refs when shallow', () => {
+    for (const value of ['shallow', false] as const) {
+      const user = useCookie('shallowUserInfo', {
+        default: () => ({ score: -1 }),
+        maxAge: 60 * 60,
+        watch: value,
+      })
+      const computedVal = computed(() => user.value.score)
+      expect(computedVal.value).toBe(-1)
+      user.value.score++
+      expect(computedVal.value).toBe(-1)
+    }
+  })
+})
+
+describe('callOnce', () => {
+  it('should only call composable once', async () => {
+    const fn = vi.fn()
+    const execute = () => callOnce(fn)
+    await execute()
+    await execute()
+    expect(fn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should only call composable once when called in parallel', async () => {
+    const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+    const execute = () => callOnce(fn)
+    await Promise.all([execute(), execute(), execute()])
+    expect(fn).toHaveBeenCalledTimes(1)
+
+    const fnSync = vi.fn().mockImplementation(() => {})
+    const executeSync = () => callOnce(fnSync)
+    await Promise.all([executeSync(), executeSync(), executeSync()])
+    expect(fnSync).toHaveBeenCalledTimes(1)
+  })
+
+  it('should use key to dedupe', async () => {
+    const fn = vi.fn()
+    const execute = (key?: string) => callOnce(key, fn)
+    await execute('first')
+    await execute('first')
+    await execute('second')
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('route announcer', () => {
+  it('should create a route announcer with default politeness', () => {
+    const announcer = useRouteAnnouncer()
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should create a route announcer with provided politeness', () => {
+    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message and politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.set('Test message with politeness', 'assertive')
+    expect(announcer.message.value).toBe('Test message with politeness')
+    expect(announcer.politeness.value).toBe('assertive')
+  })
+
+  it('should set message with polite politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.polite('Test message polite')
+    expect(announcer.message.value).toBe('Test message polite')
+    expect(announcer.politeness.value).toBe('polite')
+  })
+
+  it('should set message with assertive politeness', () => {
+    const announcer = useRouteAnnouncer()
+    announcer.assertive('Test message assertive')
+    expect(announcer.message.value).toBe('Test message assertive')
+    expect(announcer.politeness.value).toBe('assertive')
   })
 })

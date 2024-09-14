@@ -31,5 +31,7 @@ const lazy = useRoute().query.lazy === 'true'
         :count="42"
       />
     </section>
+
+    <ServerWithClient :lazy="lazy" />
   </div>
 </template>

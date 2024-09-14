@@ -1,6 +1,7 @@
 import type { Configuration as WebpackConfig, WebpackPluginInstance } from 'webpack'
 import type { UserConfig as ViteConfig, Plugin as VitePlugin } from 'vite'
 import { useNuxt } from './context'
+import { toArray } from './utils'
 
 export interface ExtendConfigOptions {
   /**
@@ -29,8 +30,10 @@ export interface ExtendConfigOptions {
   prepend?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
 
 /**
@@ -41,7 +44,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
  */
 export function extendWebpackConfig (
   fn: ((config: WebpackConfig) => void),
-  options: ExtendWebpackConfigOptions = {}
+  options: ExtendWebpackConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 
@@ -73,7 +76,7 @@ export function extendWebpackConfig (
  */
 export function extendViteConfig (
   fn: ((config: ViteConfig) => void),
-  options: ExtendViteConfigOptions = {}
+  options: ExtendViteConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 
@@ -108,11 +111,7 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 
@@ -125,11 +124,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
     config.plugins = config.plugins || []
-    if (Array.isArray(plugin)) {
-      config.plugins[method](...plugin)
-    } else {
-      config.plugins[method](plugin)
-    }
+    config.plugins[method](...toArray(plugin))
   }, options)
 }
 

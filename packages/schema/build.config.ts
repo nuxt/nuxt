@@ -9,18 +9,22 @@ export default defineBuildConfig({
       name: 'config',
       builder: 'untyped',
       defaults: {
+        srcDir: '/<srcDir>/',
+        workspaceDir: '/<workspaceDir>/',
         rootDir: '/<rootDir>/',
         vite: {
-          base: '/'
-        }
-      }
+          base: '/',
+        },
+      },
     },
     'src/index',
-    'src/builder-env'
+    'src/builder-env',
   ],
   externals: [
     // Type imports
     '#app/components/nuxt-link',
+    'cssnano',
+    'autoprefixer',
     'ofetch',
     'vue-router',
     '@nuxt/telemetry',
@@ -29,6 +33,7 @@ export default defineBuildConfig({
     'vue',
     'unctx',
     'hookable',
+    'nitro',
     'nitropack',
     'webpack',
     'webpack-bundle-analyzer',
@@ -50,9 +55,12 @@ export default defineBuildConfig({
     'pug',
     'sass-loader',
     'c12',
+    'unenv',
+    '@vue/language-core',
     // Implicit
     '@vue/compiler-core',
+    '@vue/compiler-sfc',
     '@vue/shared',
-    'untyped'
-  ]
+    'untyped',
+  ],
 })

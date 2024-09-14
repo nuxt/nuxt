@@ -3,9 +3,12 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils'
+import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
+
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack'
 
@@ -20,9 +23,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
       builder: isWebpack ? 'webpack' : 'vite',
-      buildDir: process.env.NITRO_BUILD_DIR,
-      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } }
-    }
+    },
   })
 
   describe('hmr', () => {
@@ -48,7 +49,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => page.title(),
-        'Basic fixture HMR'
+        'Basic fixture HMR',
       )
 
       // content HMR
@@ -71,8 +72,8 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
     it('should detect new routes', async () => {
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
-        true
+        () => $fetch<string>('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
+        true,
       )
 
       // write new page route
@@ -80,15 +81,15 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
 
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
-        true
+        () => $fetch<string>('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
+        true,
       )
     })
 
     it('should hot reload route rules', async () => {
       await expectWithPolling(
         () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'added in routeRules').catch(() => null),
-        true
+        true,
       )
 
       // write new page route
@@ -97,9 +98,55 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await expectWithPolling(
         () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev').catch(() => null),
-        true
+        true,
       )
     })
+
+    it('should HMR islands', async () => {
+      const { page, pageErrors, consoleLogs } = await renderPage('/server-component-hmr')
+
+      let hmrId = 0
+      const resolveHmrId = async () => {
+        const node = await page.$('#hmr-id')
+        const text = await node?.innerText() || ''
+        return Number(text.trim().split(':')[1]?.trim() || '')
+      }
+      const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
+      const triggerHmr = async () => fsp.writeFile(
+        componentPath,
+        (await fsp.readFile(componentPath, 'utf8'))
+          .replace(`ref(${hmrId++})`, `ref(${hmrId})`),
+      )
+
+      // initial state
+      await expectWithPolling(
+        resolveHmrId,
+        0,
+      )
+
+      // first edit
+      await triggerHmr()
+      await expectWithPolling(
+        resolveHmrId,
+        1,
+      )
+
+      // just in-case
+      await triggerHmr()
+      await expectWithPolling(
+        resolveHmrId,
+        2,
+      )
+
+      // ensure no errors
+      const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
+      const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warn')
+      expect(pageErrors).toEqual([])
+      expect(consoleLogErrors).toEqual([])
+      expect(consoleLogWarnings).toEqual([])
+
+      await page.close()
+    }, 60_000)
   })
 } else {
   describe.skip('hmr', () => {})

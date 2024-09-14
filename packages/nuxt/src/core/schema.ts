@@ -1,47 +1,39 @@
 import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { pathToFileURL } from 'node:url'
-import { dirname, resolve } from 'pathe'
-import chokidar from 'chokidar'
-import { interopDefault } from 'mlly'
+import { fileURLToPath } from 'node:url'
+import { resolve } from 'pathe'
+import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, logger, tryResolveModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, importModule, logger, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
-  resolveSchema as resolveUntypedSchema
+  resolveSchema as resolveUntypedSchema,
 } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
-// @ts-expect-error TODO: add upstream type
 import untypedPlugin from 'untyped/babel-plugin'
-import jiti from 'jiti'
+import { createJiti } from 'jiti'
 
 export default defineNuxtModule({
   meta: {
-    name: 'nuxt-config-schema'
+    name: 'nuxt-config-schema',
   },
   async setup (_, nuxt) {
-    if (!nuxt.options.experimental.configSchema) {
-      return
-    }
     const resolver = createResolver(import.meta.url)
 
     // Initialize untyped/jiti loader
-    const _resolveSchema = jiti(dirname(import.meta.url), {
-      esmResolve: true,
+    const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
       interopDefault: true,
       cache: false,
-      requireCache: false,
       transformOptions: {
         babel: {
-          plugins: [untypedPlugin]
-        }
-      }
+          plugins: [untypedPlugin],
+        },
+      },
     })
 
     // Register module types
     nuxt.hook('prepare:types', async (ctx) => {
-      ctx.references.push({ path: 'nuxt-config-schema' })
       ctx.references.push({ path: 'schema/nuxt.schema.d.ts' })
       if (nuxt.options._prepare) {
         await writeSchema(schema)
@@ -67,10 +59,10 @@ export default defineNuxtModule({
       if (nuxt.options.experimental.watcher === 'parcel') {
         const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
         if (watcherPath) {
-          const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+          const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
           for (const layer of nuxt.options._layers) {
             const subscription = await subscribe(layer.config.rootDir, onChange, {
-              ignore: ['!nuxt.schema.*']
+              ignore: ['!nuxt.schema.*'],
             })
             nuxt.hook('close', () => subscription.unsubscribe())
           }
@@ -80,11 +72,11 @@ export default defineNuxtModule({
       }
 
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
-        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*')
+        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
       ))
-      const watcher = chokidar.watch(filesToWatch, {
+      const watcher = watch(filesToWatch, {
         ...nuxt.options.watchers.chokidar,
-        ignoreInitial: true
+        ignoreInitial: true,
       })
       watcher.on('all', onChange)
       nuxt.hook('close', () => watcher.close())
@@ -104,12 +96,13 @@ export default defineNuxtModule({
         if (filePath && existsSync(filePath)) {
           let loadedConfig: SchemaDefinition
           try {
-            loadedConfig = _resolveSchema(filePath)
+            // TODO: fix type for second argument of `import`
+            loadedConfig = await _resolveSchema.import(filePath, {}) as SchemaDefinition
           } catch (err) {
             logger.warn(
               'Unable to load schema from',
               filePath,
-              err
+              err,
             )
             continue
           }
@@ -122,7 +115,7 @@ export default defineNuxtModule({
 
       // Resolve and merge schemas
       const schemas = await Promise.all(
-        schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef))
+        schemaDefs.map(schemaDef => resolveUntypedSchema(schemaDef)),
       )
 
       // Merge after normalization
@@ -141,13 +134,13 @@ export default defineNuxtModule({
       await writeFile(
         resolve(nuxt.options.buildDir, 'schema/nuxt.schema.json'),
         JSON.stringify(schema, null, 2),
-        'utf8'
+        'utf8',
       )
       const _types = generateTypes(schema, {
         addExport: true,
         interfaceName: 'NuxtCustomSchema',
         partial: true,
-        allowExtraKeys: false
+        allowExtraKeys: false,
       })
       const types =
         _types +
@@ -169,10 +162,10 @@ declare module 'nuxt/schema' {
 `
       const typesPath = resolve(
         nuxt.options.buildDir,
-        'schema/nuxt.schema.d.ts'
+        'schema/nuxt.schema.d.ts',
       )
       await writeFile(typesPath, types, 'utf8')
       await nuxt.hooks.callHook('schema:written')
     }
-  }
+  },
 })

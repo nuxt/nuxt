@@ -1,3 +1,3 @@
 export default {
-  fromLayer: true
+  fromLayer: true,
 }
