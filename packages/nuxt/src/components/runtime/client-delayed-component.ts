@@ -11,10 +11,12 @@ export const createLazyIOComponent = (loader: AsyncComponentLoader) => {
         required: false,
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       const comp = defineAsyncComponent({ loader, hydrate: hydrateOnVisible(props.hydrate as IntersectionObserverInit | undefined) })
       // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -29,14 +31,16 @@ export const createLazyNetworkComponent = (loader: AsyncComponentLoader) => {
         required: false,
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       if (props.hydrate === 0) {
         const comp = defineAsyncComponent(loader)
-        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
       }
       const comp = defineAsyncComponent({ loader, hydrate: hydrateOnIdle(props.hydrate) })
       // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -52,11 +56,13 @@ export const createLazyEventComponent = (loader: AsyncComponentLoader) => {
         default: 'mouseover',
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       // @ts-expect-error Cannot type HTMLElementEventMap in props
       const comp = defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(props.hydrate) })
       // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -72,10 +78,12 @@ export const createLazyMediaComponent = (loader: AsyncComponentLoader) => {
         default: '(min-width: 1px)',
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       const comp = defineAsyncComponent({ loader, hydrate: hydrateOnMediaQuery(props.hydrate) })
       // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -91,18 +99,20 @@ export const createLazyIfComponent = (loader: AsyncComponentLoader) => {
         default: true,
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       if (props.hydrate) {
         const comp = defineAsyncComponent(loader)
         // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
       }
       const strategy: HydrationStrategy = (hydrate) => {
         const unwatch = watch(() => props.hydrate, () => hydrate(), { once: true })
         return () => unwatch()
       }
       const comp = defineAsyncComponent({ loader, hydrate: strategy })
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -118,10 +128,12 @@ export const createLazyTimeComponent = (loader: AsyncComponentLoader) => {
         default: 2000,
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       if (props.hydrate === 0) {
         const comp = defineAsyncComponent(loader)
-        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
       }
       const strategy: HydrationStrategy = (hydrate) => {
         const id = setTimeout(hydrate, props.hydrate)
@@ -129,7 +141,7 @@ export const createLazyTimeComponent = (loader: AsyncComponentLoader) => {
       }
       const comp = defineAsyncComponent({ loader, hydrate: strategy })
       // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }
@@ -144,11 +156,13 @@ export const createLazyPromiseComponent = (loader: AsyncComponentLoader) => {
         required: false,
       },
     },
-    setup (props, { attrs }) {
+    emits: ['hydrated'],
+    setup (props, { attrs, emit }) {
+      const hydrated = () => { emit('hydrated') }
       if (!props.hydrate || typeof props.hydrate.then !== 'function') {
         const comp = defineAsyncComponent(loader)
         // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
-        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+        return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
       }
       const strategy: HydrationStrategy = (hydrate) => {
         // @ts-expect-error TS does not see hydrate as non-null
@@ -156,7 +170,7 @@ export const createLazyPromiseComponent = (loader: AsyncComponentLoader) => {
         return () => {}
       }
       const comp = defineAsyncComponent({ loader, hydrate: strategy })
-      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '' }))
+      return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
     },
   })
 }

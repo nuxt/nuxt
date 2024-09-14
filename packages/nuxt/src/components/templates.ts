@@ -115,21 +115,22 @@ export const componentsTypeTemplate = {
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
       ]
     })
-
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+    const delayedType = 'type DelayedComponent<T> = DefineComponent<{hydrate?: T},{},{},{},{},{},{},{hydrated: void}>'
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
+${nuxt.options.experimental.delayedHydration ? delayedType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyTime${pascalName}': ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyPromise${pascalName}': ${type} & DefineComponent<{hydrate?: Promise<unknown>}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'LazyIf${pascalName}': ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyIdle${pascalName}': ${type} & DelayedComponent<number>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyTime${pascalName}': ${type} & DelayedComponent<number>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyPromise${pascalName}': ${type} & DelayedComponent<Promise<unknown>>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyVisible${pascalName}': ${type} & DelayedComponent<IntersectionObserverInit>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyEvent${pascalName}': ${type} & DelayedComponent<keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyMedia${pascalName}': ${type} & DelayedComponent<string>`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'LazyIf${pascalName}': ${type} & DelayedComponent<unknown>`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'LazyNever${pascalName}': ${type}`).join('\n')}
 }
 
@@ -139,13 +140,13 @@ declare module 'vue' {
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyTime${pascalName}: ${type} & DefineComponent<{hydrate?: number}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyPromise${pascalName}: ${type} & DefineComponent<{hydrate?: Promise<unknown>}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DefineComponent<{hydrate?: Partial<IntersectionObserverInit>}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DefineComponent<{hydrate?: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DefineComponent<{hydrate?: string}>`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const LazyIf${pascalName}: ${type} & DefineComponent<{hydrate?: unknown}>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyIdle${pascalName}: ${type} & DelayedComponent<number>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyTime${pascalName}: ${type} & DelayedComponent<number>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyPromise${pascalName}: ${type} & DelayedComponent<Promise<unknown>>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyVisible${pascalName}: ${type} & DelayedComponent<IntersectionObserverInit>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyEvent${pascalName}: ${type} & DelayedComponent<keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyMedia${pascalName}: ${type} & DelayedComponent<string>`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const LazyIf${pascalName}: ${type} & DelayedComponent<unknown>`).join('\n')}
 ${componentTypes.map(([pascalName, type]) => `export const LazyNever${pascalName}: ${type}`).join('\n')}
 
 export const componentNames: string[]

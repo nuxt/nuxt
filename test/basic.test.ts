@@ -2840,14 +2840,19 @@ describe('lazy import components', () => {
     expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(0)
   })
   it('keeps reactivity with models', async () => {
-    const { page } = await renderPage('/lazy-import-components/model')
+    const { page } = await renderPage('/lazy-import-components/model-event')
     expect(await page.locator('#count').textContent()).toBe('0')
-    await page.locator('#count').click()
     for (let i = 0; i < 10; i++) {
       expect(await page.locator('#count').textContent()).toBe(`${i}`)
       await page.locator('#inc').click()
     }
     expect(await page.locator('#count').textContent()).toBe('10')
+  })
+  it('emits hydration events', async () => {
+    const { page, consoleLogs } = await renderPage('/lazy-import-components/model-event')
+    expect(consoleLogs.some(log => log.type === 'log' && log.text === 'Component hydrated')).toBeFalsy()
+    await page.locator('#count').click()
+    expect(consoleLogs.some(log => log.type === 'log' && log.text === 'Component hydrated')).toBeTruthy()
   })
 })
 
