@@ -29,7 +29,7 @@
     "@types/estree": "1.0.5",
     "rollup": "4.21.3",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.4"
+    "vue": "3.5.5"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
