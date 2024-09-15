@@ -40,8 +40,8 @@ export default defineNuxtPlugin({
   name: 'nuxt:revive-payload:client',
   order: -30,
   async setup (nuxtApp) {
-    for (const reviver in revivers) {
-      definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])
+    for (const [name, revive] of Object.entries(revivers)) {
+      definePayloadReviver(name, revive)
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
     delete window.__NUXT__

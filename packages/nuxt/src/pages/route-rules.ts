@@ -14,7 +14,7 @@ const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
 export async function extractRouteRules (code: string): Promise<NitroRouteConfig | null> {
   if (code in ruleCache) {
-    return ruleCache[code]
+    return ruleCache[code] || null
   }
   if (!ROUTE_RULE_RE.test(code)) { return null }
 

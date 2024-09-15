@@ -78,7 +78,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 
             if (attributes.name) { delete attributes.name }
             if (attributes['v-bind']) {
-              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']
+              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
             }
             const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
             const bindings = getPropsToString(attributes)
@@ -136,7 +136,7 @@ export const islandsTransform = createUnplugin((options: ServerOnlyComponentTran
 function extractAttributes (attributes: Record<string, string>, names: string[]) {
   const extracted: Record<string, string> = {}
   for (const name of names) {
-    if (name in attributes) {
+    if (attributes[name]) {
       extracted[name] = attributes[name]
       delete attributes[name]
     }

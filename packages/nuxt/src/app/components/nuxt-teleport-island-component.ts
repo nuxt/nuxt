@@ -40,19 +40,19 @@ export default defineComponent({
 
     return () => {
       const slot = slots.default!()[0]
-      const slotType = slot.type as ExtendedComponent
+      const slotType = slot?.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
 
       islandContext.components[props.to] = {
         chunk: import.meta.dev ? nuxtApp.$config.app.buildAssetsDir + paths[name] : paths[name],
-        props: slot.props || {},
+        props: slot?.props || {},
       }
 
       return [h('div', {
         'style': 'display: contents;',
         'data-island-uid': '',
         'data-island-component': props.to,
-      }, []), h(Teleport, { to: props.to }, slot)]
+      }, []), h(Teleport as any, { to: props.to }, slot)]
     }
   },
 })

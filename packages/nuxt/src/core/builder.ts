@@ -139,7 +139,7 @@ function createGranularWatcher () {
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
         watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
+        watchers[path]?.on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
         nuxt.hook('close', () => watchers[path]?.close())
       }
     })

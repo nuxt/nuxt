@@ -247,7 +247,7 @@ export default defineNuxtModule({
       ]
     })
 
-    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+    function isPage (file: string, pages = nuxt.apps.default?.pages): boolean {
       if (!pages) { return false }
       return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
     }
@@ -360,25 +360,28 @@ export default defineNuxtModule({
       const updatePage = async function updatePage (path: string) {
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
-        try {
-          const extractedRule = await extractRouteRules(code)
-          if (extractedRule) {
-            if (!glob) {
-              const relativePath = relative(nuxt.options.srcDir, path)
-              logger.error(`Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
-              return
-            }
 
-            inlineRules[glob] = extractedRule
-          } else if (glob) {
-            delete inlineRules[glob]
-          }
-        } catch (e: any) {
-          if (e.toString().includes('Error parsing route rules')) {
-            const relativePath = relative(nuxt.options.srcDir, path)
-            logger.error(`Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
-          } else {
-            logger.error(e)
+        if (code) {
+          try {
+            const extractedRule = await extractRouteRules(code)
+            if (extractedRule) {
+              if (!glob) {
+                const relativePath = relative(nuxt.options.srcDir, path)
+                logger.error(`Could not set inline route rules in \`~/${relativePath}\` as it could not be mapped to a Nitro route.`)
+                return
+              }
+
+              inlineRules[glob] = extractedRule
+            } else if (glob) {
+              delete inlineRules[glob]
+            }
+          } catch (e: any) {
+            if (e.toString().includes('Error parsing route rules')) {
+              const relativePath = relative(nuxt.options.srcDir, path)
+              logger.error(`Error parsing route rules within \`~/${relativePath}\`. They should be JSON-serializable.`)
+            } else {
+              logger.error(e)
+            }
           }
         }
       }
@@ -410,7 +413,7 @@ export default defineNuxtModule({
         let resolvedRoutes: string[]
         for (const path in nitro.options.routeRules) {
           const rule = nitro.options.routeRules[path]
-          if (!rule.redirect) { continue }
+          if (!rule?.redirect) { continue }
           resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
           // skip if there's already a route matching this path
           if (resolvedRoutes.includes(path)) { continue }
@@ -456,11 +459,11 @@ export default defineNuxtModule({
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
       for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+        if (manifest[key]?.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key]!.src!)))) {
           delete manifest[key]
           continue
         }
-        if (manifest[key].isEntry) {
+        if (manifest[key]?.isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
         }

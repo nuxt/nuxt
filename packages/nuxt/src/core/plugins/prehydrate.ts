@@ -32,7 +32,7 @@ export function prehydrateTransformPlugin (nuxt: Nuxt) {
           const node = _node as SimpleCallExpression & { start: number, end: number }
           const name = 'name' in node.callee && node.callee.name
           if (name === 'onPrehydrate') {
-            if (node.arguments[0].type !== 'ArrowFunctionExpression' && node.arguments[0].type !== 'FunctionExpression') { return }
+            if (node.arguments[0]?.type !== 'ArrowFunctionExpression' && node.arguments[0]?.type !== 'FunctionExpression') { return }
 
             const needsAttr = node.arguments[0].params.length > 0
             const { start, end } = node.arguments[0] as Node & { start: number, end: number }

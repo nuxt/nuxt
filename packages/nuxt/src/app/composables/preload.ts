@@ -14,7 +14,7 @@ export const preloadComponents = async (components: string | string[]) => {
   const nuxtApp = useNuxtApp()
 
   components = toArray(components)
-  await Promise.all(components.map(name => _loadAsyncComponent(nuxtApp.vueApp._context.components[name])))
+  await Promise.all(components.map(name => _loadAsyncComponent(nuxtApp.vueApp._context.components[name]!)))
 }
 
 /**

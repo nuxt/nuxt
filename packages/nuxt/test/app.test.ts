@@ -94,7 +94,7 @@ describe('resolveApp', () => {
       'layouts/other.vue',
     ])
     // Middleware are not resolved in a nested manner
-    expect(app.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
+    expect(app?.middleware.filter(m => m.path.startsWith('<rootDir>'))).toMatchInlineSnapshot(`
       [
         {
           "global": false,
@@ -103,7 +103,7 @@ describe('resolveApp', () => {
         },
       ]
     `)
-    expect(app.layouts).toMatchInlineSnapshot(`
+    expect(app?.layouts).toMatchInlineSnapshot(`
       {
         "default": {
           "file": "<rootDir>/layouts/default/index.vue",
@@ -137,7 +137,7 @@ describe('resolveApp', () => {
         contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
       },
     ])
-    const fixturePlugins = app.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
+    const fixturePlugins = app?.plugins.filter(p => !('getContents' in p) && p.src.includes('<rootDir>')).map(p => p.src)
     // TODO: support overriding named plugins
     expect(fixturePlugins).toMatchInlineSnapshot(`
       [
@@ -174,7 +174,7 @@ describe('resolveApp', () => {
         contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
       },
     ])
-    const fixtureMiddleware = app.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
+    const fixtureMiddleware = app?.middleware.filter(p => p.path.includes('<rootDir>')).map(p => p.path)
     // TODO: fix this
     expect(fixtureMiddleware).toMatchInlineSnapshot(`
       [
@@ -203,7 +203,7 @@ describe('resolveApp', () => {
         contents: 'export default defineNuxtConfig({ extends: [\'./layer2\', \'./layer1\'] })',
       },
     ])
-    expect(app.layouts).toMatchInlineSnapshot(`
+    expect(app?.layouts).toMatchInlineSnapshot(`
       {
         "default": {
           "file": "<rootDir>/layouts/default.vue",
@@ -228,7 +228,7 @@ describe('resolveApp', () => {
       'layouts/some.vue',
       'layouts/SomeOther/layout.ts',
     ])
-    expect(app.layouts).toMatchInlineSnapshot(`
+    expect(app?.layouts).toMatchInlineSnapshot(`
       {
         "default": {
           "file": "<rootDir>/layouts/default.vue",
@@ -280,25 +280,33 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   const app = createApp(nuxt)
   await resolveApp(nuxt, app)
 
-  const normaliseToRepo = (id?: string | null) =>
-    id?.replace(rootDir, '<rootDir>').replace(repoRoot, '<repoRoot>').replace(/.*node_modules\//, '')
+  const normaliseToRepo = (id: string) =>
+    id.replace(rootDir, '<rootDir>').replace(repoRoot, '<repoRoot>').replace(/.*node_modules\//, '')
 
-  app.dir = normaliseToRepo(app.dir)!
+  app.dir = normaliseToRepo(app.dir)
 
   const componentKeys = ['rootComponent', 'errorComponent', 'mainComponent'] as const
-  for (const _key of componentKeys) {
-    const key = _key as typeof componentKeys[number]
+
+  for (const key of componentKeys) {
+    if (!app[key]) {
+      return
+    }
+
     app[key] = normaliseToRepo(app[key])
   }
   for (const plugin of app.plugins) {
-    plugin.src = normaliseToRepo(plugin.src)!
+    plugin.src = normaliseToRepo(plugin.src)
   }
   for (const mw of app.middleware) {
-    mw.path = normaliseToRepo(mw.path)!
+    mw.path = normaliseToRepo(mw.path)
   }
 
   for (const layout in app.layouts) {
-    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)!
+    if (!app.layouts[layout]) {
+      return
+    }
+
+    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)
   }
 
   await nuxt.close()

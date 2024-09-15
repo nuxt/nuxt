@@ -325,7 +325,10 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Render 103 Early Hints
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
-    writeEarlyHints(event, link)
+
+    if (link) {
+      writeEarlyHints(event, link)
+    }
   }
 
   if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
@@ -394,8 +397,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
-    for (const style in styles) {
-      const resource = styles[style]
+    for (const resource of Object.values(styles)) {
       // Do not add links to resources that are inlined (vite v5+)
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
         continue
@@ -567,7 +569,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
     if (mod in styleMap) {
-      for (const style of await styleMap[mod]()) {
+      for (const style of await styleMap[mod]!()) {
         inlinedStyles.add(style)
       }
     }
@@ -650,7 +652,7 @@ function splitPayload (ssrContext: NuxtSSRContext) {
  */
 function getServerComponentHTML (body: string): string {
   const match = body.match(ROOT_NODE_REGEX)
-  return match ? match[1] : body[0]
+  return (match ? match[1] : body[0])!
 }
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
@@ -661,6 +663,10 @@ function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse[
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
   for (const slot in ssrContext.islandContext.slots) {
+    if (!ssrContext.islandContext.slots[slot]) {
+      return
+    }
+
     response[slot] = {
       ...ssrContext.islandContext.slots[slot],
       fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
@@ -674,8 +680,12 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   const response: NuxtIslandResponse['components'] = {}
 
   for (const clientUid in ssrContext.islandContext.components) {
+    if (!ssrContext.islandContext.components[clientUid]) {
+      return
+    }
+
     // remove teleport anchor to avoid hydration issues
-    const html = ssrContext.teleports?.[clientUid].replaceAll('<!--teleport start anchor-->', '') || ''
+    const html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
       ...ssrContext.islandContext.components[clientUid],
       html,
@@ -725,3 +735,7 @@ function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string) {
   }
   return html
 }
+
+// to.path === from.path && ((from.hash && !to.hash) || from.hash === to.hash)
+
+// to.path === from.path && ((from.hash === to.hash && from.hash) || (from.hash === to.hash && !to.hash))

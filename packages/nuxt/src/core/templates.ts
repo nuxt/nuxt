@@ -434,7 +434,7 @@ if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
 
 ${app.configs.map((id: string, index: number) => `import ${`cfg${index}`} from ${JSON.stringify(id)}`).join('\n')}
 
-export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}`).concat(['inlineConfig']).join(', ')})
+export default /*@__PURE__*/ defuFn(${app.configs.map((_id: string, index: number) => `cfg${index}` as string).concat(['inlineConfig']).join(', ')})
 `
   },
 }

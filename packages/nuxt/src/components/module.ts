@@ -101,7 +101,7 @@ export default defineNuxtModule<ComponentsOptions>({
             '**/*{M,.m,-m}ixin.{js,ts,jsx,tsx}', // ignore mixins
             '**/*.d.{cts,mts,ts}', // .d.ts files
             ...(dirOptions.ignore || []),
-          ],
+          ] as string[],
           transpile: (transpile === 'auto' ? dirPath.includes('node_modules') : transpile),
         }
       }).filter(d => d.enabled)
@@ -141,7 +141,7 @@ export default defineNuxtModule<ComponentsOptions>({
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
 
       for (const key in manifest) {
-        if (manifest[key].isEntry) {
+        if (manifest[key]?.isEntry) {
           manifest[key].dynamicImports =
             manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
         }

@@ -56,7 +56,7 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
           const node = _node as AcornNode<Node>
           if (isSsrRender(node)) {
             const [componentCall, _, children] = node.arguments
-            if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
+            if (componentCall?.type === 'Identifier' || componentCall?.type === 'MemberExpression' || componentCall?.type === 'CallExpression') {
               const componentName = getComponentName(node)
               const isClientComponent = COMPONENTS_IDENTIFIERS_RE.test(componentName)
               const isClientOnlyComponent = CLIENT_ONLY_NAME_RE.test(componentName)
@@ -137,7 +137,7 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
           const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
           const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
           if (returnedVariableDeclaration) {
-            const init = returnedVariableDeclaration.declarations[0].init as ObjectExpression
+            const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression
             removePropertyFromObject(init, name, magicString)
           }
         }

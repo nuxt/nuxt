@@ -19,7 +19,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('default client bundle size', async () => {
     const [clientStats, clientStatsInlined] = await Promise.all(['.output', '.output-inline']
-      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))),
+    ) as [Awaited<ReturnType<typeof analyzeSizes>>, Awaited<ReturnType<typeof analyzeSizes>>]
 
     expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"114k"`)
     expect.soft(roundToKilobytes(clientStatsInlined.totalBytes)).toMatchInlineSnapshot(`"114k"`)

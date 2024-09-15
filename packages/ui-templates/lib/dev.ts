@@ -31,7 +31,11 @@ export const DevRenderingPlugin = () => {
       const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/g)
       let templateString = chunks.shift()
       for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
-        const value = runInNewContext(expression[1].trim(), {
+        const code = expression[1]
+        if (!code) {
+          return
+        }
+        const value = runInNewContext(code.trim(), {
           version,
           messages: { ...genericMessages, ...messages },
         })

@@ -72,7 +72,7 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     const augmentedPages = await augmentPages(pages, nuxt.vfs)
     await nuxt.callHook('pages:extend', pages)
     await augmentPages(pages, nuxt.vfs, augmentedPages)
-    augmentedPages.clear()
+    augmentedPages?.clear()
   } else {
     await nuxt.callHook('pages:extend', pages)
   }
@@ -103,19 +103,17 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     let parent = routes
 
     const lastSegment = segments[segments.length - 1]
-    if (lastSegment.endsWith('.server')) {
+    if (lastSegment?.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
         route.mode = 'server'
       }
-    } else if (lastSegment.endsWith('.client')) {
+    } else if (lastSegment?.endsWith('.client')) {
       segments[segments.length - 1] = lastSegment.replace('.client', '')
       route.mode = 'client'
     }
 
-    for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i]
-
+    for (const segment in segments) {
       const tokens = parseSegment(segment)
 
       // Skip group segments
@@ -152,7 +150,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !augmentedPages.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file)
+      const routeMeta = await getRouteMeta(fileContent!, route.file)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -174,7 +172,7 @@ export function extractScriptContent (html: string) {
   for (const match of html.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
       contents.push({
-        loader: match.groups.attrs.includes('tsx') ? 'tsx' : 'ts',
+        loader: match.groups.attrs?.includes('tsx') ? 'tsx' : 'ts',
         code: match.groups.content.trim(),
       })
     }
@@ -196,7 +194,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     delete metaCache[absolutePath]
   }
 
-  if (absolutePath in metaCache) { return metaCache[absolutePath] }
+  if (absolutePath in metaCache) { return metaCache[absolutePath] || {} }
 
   const loader = getLoader(absolutePath)
   const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
@@ -403,7 +401,7 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
-        } else if (PARAM_CHAR_RE.test(c)) {
+        } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)

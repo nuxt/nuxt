@@ -28,15 +28,15 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
-async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
+async function loadComponents (source = appBaseURL, paths: NonNullable<NuxtIslandResponse['components']>) {
   const promises: Array<Promise<void>> = []
 
-  for (const component in paths) {
-    if (!(components!.has(component))) {
+  for (const [name, component] of Object.entries(paths)) {
+    if (!(components!.has(name))) {
       promises.push((async () => {
-        const chunkSource = join(source, paths[component].chunk)
+        const chunkSource = join(source, component.chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
-        components!.set(component, c)
+        components!.set(name, c)
       })())
     }
   }
@@ -243,7 +243,7 @@ export default defineComponent({
       fetchComponent()
     } else if (import.meta.server || !instance.vnode.el || !nuxtApp.payload.serverRendered) {
       await fetchComponent()
-    } else if (selectiveClient && canLoadClientComponent.value) {
+    } else if (selectiveClient && canLoadClientComponent.value && payloads.components) {
       await loadComponents(props.source, payloads.components)
     }
 
@@ -276,7 +276,7 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
+                  { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
                 )
               }
             }
