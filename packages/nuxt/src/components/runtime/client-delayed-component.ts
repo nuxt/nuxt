@@ -159,14 +159,13 @@ export const createLazyPromiseComponent = (loader: AsyncComponentLoader) => {
     emits: ['hydrated'],
     setup (props, { attrs, emit }) {
       const hydrated = () => { emit('hydrated') }
-      if (!props.hydrate || typeof props.hydrate.then !== 'function') {
+      if (!props.hydrate) {
         const comp = defineAsyncComponent(loader)
         // TODO: fix hydration mismatches on Vue's side. The data-allow-mismatch is ideally a temporary solution due to Vue's SSR limitation with hydrated content.
         return () => h(comp, mergeProps(attrs, { 'data-allow-mismatch': '', 'onVnodeMounted': hydrated }))
       }
       const strategy: HydrationStrategy = (hydrate) => {
-        // @ts-expect-error TS does not see hydrate as non-null
-        props.hydrate.then(hydrate)
+        props.hydrate!.then(hydrate)
         return () => {}
       }
       const comp = defineAsyncComponent({ loader, hydrate: strategy })
