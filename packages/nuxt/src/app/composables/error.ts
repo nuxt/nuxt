@@ -3,19 +3,13 @@ import { createError as createH3Error } from 'h3'
 import { toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
+import type { NuxtPayload } from '../nuxt'
 import { useRouter } from './router'
 
 export const NUXT_ERROR_SIGNATURE = '__nuxt_error'
 
 /** @since 3.0.0 */
-export const useError = (): Ref<Error | {
-  url: string
-  statusCode: number
-  statusMessage: string
-  message: string
-  description: string
-  data: unknown
-}> => toRef(useNuxtApp().payload, 'error')
+export const useError = () => toRef(useNuxtApp().payload, 'error') as Ref<NuxtPayload['error']>
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface NuxtError<DataT = unknown> extends H3Error<DataT> {}
