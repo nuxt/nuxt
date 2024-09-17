@@ -576,8 +576,8 @@ importers:
         specifier: 1.12.0
         version: 1.12.0
       ignore:
-        specifier: 6.0.1
-        version: 6.0.1
+        specifier: 6.0.2
+        version: 6.0.2
       nitropack:
         specifier: 2.9.7
         version: 2.9.7(magicast@0.3.5)(webpack-sources@3.2.3)
@@ -4627,6 +4627,11 @@ packages:
 
   ignore@6.0.1:
     resolution: {integrity: sha512-9hCx6FGveEYzwsldacntlq0RdPsTjOAALVL4nqi1O8JU6OIzzchHELMNE9f+6ZMtuHG1vd+owvczaMhu6EM2Xw==}
+    engines: {node: '>= 4'}
+    deprecated: this package has been deprecated due to issues
+
+  ignore@6.0.2:
+    resolution: {integrity: sha512-InwqeHHN2XpumIkMvpl/DCJVrAHgCsG5+cn1XlnLWGwtZBm8QJfSusItfrwx81CTp5agNZqpKU2J/ccC5nGT4A==}
     engines: {node: '>= 4'}
 
   image-meta@0.2.1:
@@ -11704,6 +11709,8 @@ snapshots:
   ignore@5.3.2: {}
 
   ignore@6.0.1: {}
+
+  ignore@6.0.2: {}
 
   image-meta@0.2.1: {}
 
