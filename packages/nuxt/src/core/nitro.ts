@@ -545,6 +545,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
+    nuxt.hook('webpack:compile', ({ name, compiler }) => {
+      if (name === 'server') {
+        const memfs = compiler.outputFileSystem as typeof import('node:fs')
+        nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+      }
+    })
     nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
