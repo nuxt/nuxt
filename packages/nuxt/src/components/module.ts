@@ -1,5 +1,5 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
-import { join, normalize, relative, resolve } from 'pathe'
+import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
@@ -169,7 +169,7 @@ export default defineNuxtModule<ComponentsOptions>({
       await nuxt.callHook('components:extend', newComponents)
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {
-        if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && !existsSync(component.filePath)) {
+        if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
           // attempt to resolve component path
           component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
         }
