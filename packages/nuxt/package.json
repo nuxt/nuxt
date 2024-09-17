@@ -86,7 +86,7 @@
     "globby": "^14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "hookable": "^5.5.3",
-    "ignore": "^5.3.2",
+    "ignore": "^6.0.1",
     "impound": "^0.1.0",
     "jiti": "^2.0.0-beta.3",
     "klona": "^2.0.6",
