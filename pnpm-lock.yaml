@@ -210,8 +210,8 @@ importers:
         specifier: ^2.0.0
         version: 2.0.0
       ignore:
-        specifier: ^5.3.2
-        version: 5.3.2
+        specifier: ^6.0.1
+        version: 6.0.1
       jiti:
         specifier: 2.0.0-beta.3
         version: 2.0.0-beta.3
@@ -355,8 +355,8 @@ importers:
         specifier: ^5.5.3
         version: 5.5.3
       ignore:
-        specifier: ^5.3.2
-        version: 5.3.2
+        specifier: ^6.0.1
+        version: 6.0.1
       impound:
         specifier: ^0.1.0
         version: 0.1.0(rollup@4.21.3)(webpack-sources@3.2.3)
@@ -576,8 +576,8 @@ importers:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       ignore:
-        specifier: 5.3.2
-        version: 5.3.2
+        specifier: 6.0.1
+        version: 6.0.1
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(typescript@5.6.2)(webpack-sources@3.2.3)
@@ -4431,6 +4431,10 @@ packages:
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
+    engines: {node: '>= 4'}
+
+  ignore@6.0.1:
+    resolution: {integrity: sha512-9hCx6FGveEYzwsldacntlq0RdPsTjOAALVL4nqi1O8JU6OIzzchHELMNE9f+6ZMtuHG1vd+owvczaMhu6EM2Xw==}
     engines: {node: '>= 4'}
 
   image-meta@0.2.1:
@@ -11344,6 +11348,8 @@ snapshots:
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
+
+  ignore@6.0.1: {}
 
   image-meta@0.2.1: {}
 
