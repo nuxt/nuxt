@@ -580,8 +580,8 @@ importers:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       ignore:
-        specifier: 6.0.1
-        version: 6.0.1
+        specifier: 6.0.2
+        version: 6.0.2
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(typescript@5.6.2)(webpack-sources@3.2.3)
@@ -4531,6 +4531,11 @@ packages:
 
   ignore@6.0.1:
     resolution: {integrity: sha512-9hCx6FGveEYzwsldacntlq0RdPsTjOAALVL4nqi1O8JU6OIzzchHELMNE9f+6ZMtuHG1vd+owvczaMhu6EM2Xw==}
+    engines: {node: '>= 4'}
+    deprecated: this package has been deprecated due to issues
+
+  ignore@6.0.2:
+    resolution: {integrity: sha512-InwqeHHN2XpumIkMvpl/DCJVrAHgCsG5+cn1XlnLWGwtZBm8QJfSusItfrwx81CTp5agNZqpKU2J/ccC5nGT4A==}
     engines: {node: '>= 4'}
 
   image-meta@0.2.1:
@@ -11626,6 +11631,8 @@ snapshots:
   ignore@5.3.2: {}
 
   ignore@6.0.1: {}
+
+  ignore@6.0.2: {}
 
   image-meta@0.2.1: {}
 
