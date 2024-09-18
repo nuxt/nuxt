@@ -247,7 +247,7 @@ export default defineNuxtModule({
       ]
     })
 
-    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+    function isPage (file: string, pages = nuxt.apps.default?.pages): boolean {
       if (!pages) { return false }
       return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
     }
@@ -359,7 +359,7 @@ export default defineNuxtModule({
 
       const updatePage = async function updatePage (path: string) {
         const glob = pageToGlobMap[path]
-        const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
+        const code = path in nuxt.vfs ? nuxt.vfs[path]! : await readFile(path!, 'utf-8')
         try {
           const extractedRule = await extractRouteRules(code)
           if (extractedRule) {
@@ -408,8 +408,7 @@ export default defineNuxtModule({
       nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
         let resolvedRoutes: string[]
-        for (const path in nitro.options.routeRules) {
-          const rule = nitro.options.routeRules[path]
+        for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
           if (!rule.redirect) { continue }
           resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
           // skip if there's already a route matching this path
@@ -455,14 +454,14 @@ export default defineNuxtModule({
       if (nuxt.options.dev) { return }
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
-      for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+      for (const [key, chunk] of Object.entries(manifest)) {
+        if (chunk.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, chunk.src!)))) {
           delete manifest[key]
           continue
         }
-        if (manifest[key].isEntry) {
-          manifest[key].dynamicImports =
-            manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+        if (chunk.isEntry) {
+          chunk.dynamicImports =
+            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
     })

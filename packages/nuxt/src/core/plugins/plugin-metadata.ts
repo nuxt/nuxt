@@ -70,7 +70,7 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
       }
 
       const plugin = node.arguments[0]
-      if (plugin.type === 'ObjectExpression') {
+      if (plugin?.type === 'ObjectExpression') {
         meta = defu(extractMetaFromObject(plugin.properties), meta)
       }
 
@@ -122,7 +122,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
     name: 'nuxt:remove-plugin-metadata',
     transform (code, id) {
       id = normalize(id)
-      const plugin = nuxt.apps.default.plugins.find(p => p.src === id)
+      const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
 
       const s = new MagicString(code)
