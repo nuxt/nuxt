@@ -33,9 +33,10 @@ export default class VueSSRClientPlugin {
       const stats = compilation.getStats().toJson()
 
       const initialFiles = new Set<string>()
-      for (const name in stats.entrypoints!) {
-        const entryAssets = stats.entrypoints![name]!.assets!
-        for (const asset of entryAssets) {
+      for (const { assets } of Object.values(stats.entrypoints!)) {
+        if (!assets) { continue }
+
+        for (const asset of assets) {
           const file = asset.name
           if ((isJS(file) || isCSS(file)) && !isHotUpdate(file)) {
             initialFiles.add(file)
@@ -71,52 +72,53 @@ export default class VueSSRClientPlugin {
       }
 
       const { entrypoints = {}, namedChunkGroups = {} } = stats
-      const assetModules = stats.modules!.filter(m => m.assets!.length)
-      const fileToIndex = (file: string) => webpackManifest.all.indexOf(file)
-      stats.modules!.forEach((m) => {
+      const fileToIndex = (file: string | number) => webpackManifest.all.indexOf(String(file))
+      for (const m of stats.modules!) {
         // Ignore modules duplicated in multiple chunks
-        if (m.chunks!.length === 1) {
-          const [cid] = m.chunks!
-          const chunk = stats.chunks!.find(c => c.id === cid)
-          if (!chunk || !chunk.files || !cid) {
-            return
-          }
-          const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
-          const filesSet = new Set(chunk.files.map(fileToIndex).filter(i => i !== -1))
+        if (m.chunks?.length !== 1) { continue }
 
-          for (const chunkName of chunk.names!) {
-            if (!entrypoints[chunkName]) {
-              const chunkGroup = namedChunkGroups[chunkName]
-              if (chunkGroup) {
-                for (const asset of chunkGroup.assets!) {
-                  filesSet.add(fileToIndex(asset.name))
-                }
-              }
-            }
-          }
-
-          const files = Array.from(filesSet)
-          webpackManifest.modules[hash(id)] = files
-
-          // In production mode, modules may be concatenated by scope hoisting
-          // Include ConcatenatedModule for not losing module-component mapping
-          if (Array.isArray(m.modules)) {
-            for (const concatenatedModule of m.modules) {
-              const id = hash(concatenatedModule.identifier!.replace(/\s\w+$/, ''))
-              if (!webpackManifest.modules[id]) {
-                webpackManifest.modules[id] = files
-              }
-            }
-          }
-
-          // Find all asset modules associated with the same chunk
-          assetModules.forEach((m) => {
-            if (m.chunks!.includes(cid)) {
-              files.push(...(m.assets as string[]).map(fileToIndex))
-            }
-          })
+        const [cid] = m.chunks
+        const chunk = stats.chunks!.find(c => c.id === cid)
+        if (!chunk || !chunk.files || !cid) {
+          continue
         }
-      })
+        const id = m.identifier!.replace(/\s\w+$/, '') // remove appended hash
+        const filesSet = new Set(chunk.files.map(fileToIndex).filter(i => i !== -1))
+
+        for (const chunkName of chunk.names!) {
+          if (!entrypoints[chunkName]) {
+            const chunkGroup = namedChunkGroups[chunkName]
+            if (chunkGroup) {
+              for (const asset of chunkGroup.assets!) {
+                filesSet.add(fileToIndex(asset.name))
+              }
+            }
+          }
+        }
+
+        const files = Array.from(filesSet)
+        webpackManifest.modules[hash(id)] = files
+
+        // In production mode, modules may be concatenated by scope hoisting
+        // Include ConcatenatedModule for not losing module-component mapping
+        if (Array.isArray(m.modules)) {
+          for (const concatenatedModule of m.modules) {
+            const id = hash(concatenatedModule.identifier!.replace(/\s\w+$/, ''))
+            if (!webpackManifest.modules[id]) {
+              webpackManifest.modules[id] = files
+            }
+          }
+        }
+
+        // Find all asset modules associated with the same chunk
+        if (stats.modules) {
+          for (const m of stats.modules) {
+            if (m.assets?.length && m.chunks?.includes(cid)) {
+              files.push(...m.assets.map(fileToIndex))
+            }
+          }
+        }
+      }
 
       const manifest = normalizeWebpackManifest(webpackManifest as any)
       await this.options.nuxt.callHook('build:manifest', manifest)

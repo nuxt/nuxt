@@ -142,9 +142,9 @@ function createGranularWatcher () {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        const pathWatcher = watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, p)) : normalize(p)))
+        pathWatcher.on('all', (event, p) => nuxt.callHook('builder:watch', event, nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, p)) : normalize(p)))
         nuxt.hook('close', () => watchers[path]?.close())
       }
     })
