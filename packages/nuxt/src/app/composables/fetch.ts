@@ -155,7 +155,7 @@ export function useFetch<
   let controller: AbortController
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
-    controller?.abort?.('Request aborted as another request to the same endpoint was initiated.')
+    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
     /**
@@ -167,7 +167,7 @@ export function useFetch<
     const timeoutLength = toValue(opts.timeout)
     let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort('Request aborted due to timeout.'), timeoutLength)
+      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
