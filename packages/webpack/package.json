@@ -44,7 +44,7 @@
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.11",
-    "memfs": "^4.11.1",
+    "memfs": "^4.11.2",
     "mini-css-extract-plugin": "^2.9.1",
     "mlly": "^1.7.1",
     "ohash": "^1.1.4",
