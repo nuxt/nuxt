@@ -72,8 +72,7 @@ export default class VueSSRClientPlugin {
       }
 
       const { entrypoints = {}, namedChunkGroups = {} } = stats
-      const assetModules = stats.modules!.filter(m => m.assets!.length)
-      const fileToIndex = (file: string) => webpackManifest.all.indexOf(file)
+      const fileToIndex = (file: string | number) => webpackManifest.all.indexOf(String(file))
       for (const m of stats.modules!) {
         // Ignore modules duplicated in multiple chunks
         if (m.chunks?.length !== 1) { continue }
@@ -112,11 +111,13 @@ export default class VueSSRClientPlugin {
         }
 
         // Find all asset modules associated with the same chunk
-        assetModules.forEach((m) => {
-          if (m.chunks!.includes(cid)) {
-            files.push(...(m.assets as string[]).map(fileToIndex))
+        if (stats.modules) {
+          for (const m of stats.modules) {
+            if (m.assets?.length && m.chunks?.includes(cid)) {
+              files.push(...m.assets.map(fileToIndex))
+            }
           }
-        })
+        }
       }
 
       const manifest = normalizeWebpackManifest(webpackManifest as any)
