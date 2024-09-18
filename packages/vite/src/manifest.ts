@@ -5,11 +5,13 @@ import { relative, resolve } from 'pathe'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
+import type { Manifest as RendererManifest } from 'vue-bundle-renderer'
+import type { Manifest as ViteClientManifest } from 'vite'
 import type { ViteBuildContext } from './vite'
 
 export async function writeManifest (ctx: ViteBuildContext) {
   // This is only used for ssr: false - when ssr is enabled we use vite-node runtime manifest
-  const devClientManifest = {
+  const devClientManifest: RendererManifest = {
     '@vite/client': {
       isEntry: true,
       file: '@vite/client',
@@ -30,17 +32,17 @@ export async function writeManifest (ctx: ViteBuildContext) {
   const serverDist = resolve(ctx.nuxt.options.buildDir, 'dist/server')
 
   const manifestFile = resolve(clientDist, 'manifest.json')
-  const clientManifest = ctx.nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8'))
+  const clientManifest = ctx.nuxt.options.dev ? devClientManifest : JSON.parse(readFileSync(manifestFile, 'utf-8')) as ViteClientManifest
+  const manifestEntries = Object.values(clientManifest)
 
   const buildAssetsDir = withTrailingSlash(withoutLeadingSlash(ctx.nuxt.options.app.buildAssetsDir))
   const BASE_RE = new RegExp(`^${escapeRE(buildAssetsDir)}`)
 
-  for (const key in clientManifest) {
-    const entry = clientManifest[key]
+  for (const entry of manifestEntries) {
     if (entry.file) {
       entry.file = entry.file.replace(BASE_RE, '')
     }
-    for (const item of ['css', 'assets']) {
+    for (const item of ['css', 'assets'] as const) {
       if (entry[item]) {
         entry[item] = entry[item].map((i: string) => i.replace(BASE_RE, ''))
       }
@@ -50,12 +52,11 @@ export async function writeManifest (ctx: ViteBuildContext) {
   await mkdir(serverDist, { recursive: true })
 
   if (ctx.config.build?.cssCodeSplit === false) {
-    for (const key in clientManifest as Record<string, { file?: string }>) {
-      const val = clientManifest[key]
-      if (val.file?.endsWith('.css')) {
+    for (const entry of manifestEntries) {
+      if (entry.file?.endsWith('.css')) {
         const key = relative(ctx.config.root!, ctx.entry)
-        clientManifest[key].css ||= []
-        clientManifest[key].css!.push(val.file)
+        clientManifest[key]!.css ||= []
+        ;(clientManifest[key]!.css as string[]).push(entry.file)
         break
       }
     }

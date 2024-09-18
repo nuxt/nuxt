@@ -653,7 +653,7 @@ describe('pages:generateRoutesFromFiles', () => {
           }))).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index].meta,
+              meta: test.files![index]!.meta,
             }
           })
 
