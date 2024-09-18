@@ -146,7 +146,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           ecmaVersion: 'latest',
         }) as Node, {
           enter (_node) {
-            if (_node.type === 'ImportSpecifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
+            if (_node.type === 'ImportSpecifier' && _node.imported.type === 'Identifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
               wrapperNames.add(_node.local.name)
             }
             if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
