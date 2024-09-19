@@ -79,7 +79,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
     let error: unknown
     for (const path of paths) {
       try {
