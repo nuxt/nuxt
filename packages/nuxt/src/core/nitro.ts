@@ -529,11 +529,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
+    await prepare(nitro)
     if (nuxt.options.dev) {
       return build(nitro)
     }
 
-    await prepare(nitro)
     await prerender(nitro)
 
     logger.restoreAll()
