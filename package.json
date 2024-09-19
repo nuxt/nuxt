@@ -76,7 +76,7 @@
     "@vue/test-utils": "2.4.6",
     "autoprefixer": "10.4.20",
     "case-police": "0.7.0",
-    "changelogen": "0.5.5",
+    "changelogen": "0.5.7",
     "consola": "3.2.3",
     "cssnano": "7.0.6",
     "destr": "2.0.3",
