@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
-import { computed, getCurrentInstance } from 'vue'
+import { computed, getCurrentInstance, ref } from 'vue'
 import { useServerHead } from '@unhead/vue'
 
 import type { NuxtApp } from '../nuxt'
@@ -63,10 +63,26 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
 
 /** @since 3.14.0 */
 export function useResponseHeader (header: string) {
-  if (import.meta.client) { return {} }
+  if (import.meta.client) {
+    if (import.meta.dev) {
+      return computed({
+        get: () => undefined,
+        set: () => console.warn('[nuxt] Setting response headers is not supported in the browser.'),
+      })
+    }
+    return ref()
+  }
 
   const event = useRequestEvent()
-  if (!event) { return {} }
+  if (!event) {
+    if (import.meta.dev) {
+      return computed({
+        get: () => undefined,
+        set: () => console.warn('[nuxt] Setting response headers is not supported in the browser.'),
+      })
+    }
+    return ref()
+  }
 
   return computed({
     get () {

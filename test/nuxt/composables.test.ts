@@ -395,7 +395,7 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
-    expect(useResponseHeader()).toEqual({})
+    expect(useResponseHeader('x-test').value).toBeUndefined()
   })
 })
 
