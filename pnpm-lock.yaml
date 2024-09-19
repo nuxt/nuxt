@@ -834,9 +834,6 @@ importers:
       jiti:
         specifier: ^2.0.0-rc.1
         version: 2.0.0-rc.1
-      knitwork:
-        specifier: ^1.1.0
-        version: 1.1.0
       lodash-es:
         specifier: 4.17.21
         version: 4.17.21
@@ -966,7 +963,7 @@ importers:
         specifier: latest
         version: 7.4.5
       postcss:
-        specifier: ^8.4.47
+        specifier: 8.4.47
         version: 8.4.47
       ufo:
         specifier: 1.5.4
