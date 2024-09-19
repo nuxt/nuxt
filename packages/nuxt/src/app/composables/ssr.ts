@@ -61,7 +61,7 @@ export function setResponseStatus (arg1: H3Event | number | undefined, arg2?: nu
   }
 }
 
-/** @since 3.13.2 */
+/** @since 3.14.0 */
 export function useResponseHeader (header: string) {
   if (import.meta.client) { return {} }
 
