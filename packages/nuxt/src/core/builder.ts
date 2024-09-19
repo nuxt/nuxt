@@ -138,9 +138,9 @@ function createGranularWatcher () {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
-        nuxt.hook('close', () => watchers[path]?.close())
+        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        pathWatcher.on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
+        nuxt.hook('close', () => pathWatcher?.close())
       }
     })
     watcher.on('ready', () => {
