@@ -79,7 +79,6 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    let error: unknown
     const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
 
     for (const parentURL of nuxt.options.modulesDir) {
@@ -94,15 +93,16 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
             buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
           }
           break
-        } catch (_err: unknown) {
-          error = _err
+        } catch (error: unknown) {
+          const code = (error as Error & { code?: string }).code
+          if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT') {
+            continue
+          }
+          logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
+          throw error
         }
       }
       if (typeof nuxtModule !== 'string') { break }
-    }
-    if (typeof nuxtModule !== 'function' && error) {
-      logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
-      throw error
     }
   }
 
