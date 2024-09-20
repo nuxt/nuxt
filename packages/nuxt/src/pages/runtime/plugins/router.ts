@@ -251,8 +251,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
           fatal: false,
           statusMessage: `Page not found: ${to.fullPath}`,
           data: {
-            path: to.fullPath
-          }
+            path: to.fullPath,
+          },
         })))
       }
     })
