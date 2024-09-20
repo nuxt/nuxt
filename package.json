@@ -39,9 +39,9 @@
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@vue/compiler-core": "3.5.6",
-    "@vue/compiler-dom": "3.5.6",
-    "@vue/shared": "3.5.6",
+    "@vue/compiler-core": "3.5.7",
+    "@vue/compiler-dom": "3.5.7",
+    "@vue/shared": "3.5.7",
     "@types/node": "20.16.5",
     "c12": "2.0.0-beta.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
@@ -56,11 +56,11 @@
     "typescript": "5.6.2",
     "ufo": "1.5.4",
     "unbuild": "3.0.0-rc.7",
-    "vite": "5.4.6",
-    "vue": "3.5.6"
+    "vite": "5.4.7",
+    "vue": "3.5.7"
   },
   "devDependencies": {
-    "@eslint/js": "9.10.0",
+    "@eslint/js": "9.11.0",
     "@nuxt/eslint-config": "0.5.7",
     "@nuxt/kit": "workspace:*",
     "@nuxt/test-utils": "3.14.2",
@@ -81,7 +81,7 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.0.0",
-    "eslint": "9.10.0",
+    "eslint": "9.11.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "3.6.0",
     "eslint-typegen": "0.3.2",
@@ -106,11 +106,11 @@
     "ufo": "1.5.4",
     "vitest": "2.1.1",
     "vitest-environment-nuxt": "1.0.1",
-    "vue": "3.5.6",
+    "vue": "3.5.7",
     "vue-router": "4.4.5",
     "vue-tsc": "2.1.6"
   },
-  "packageManager": "pnpm@9.10.0",
+  "packageManager": "pnpm@9.11.0",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
