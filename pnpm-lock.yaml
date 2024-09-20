@@ -4482,9 +4482,6 @@ packages:
   hast-util-raw@9.0.4:
     resolution: {integrity: sha512-LHE65TD2YiNsHD3YuXcKPHXPLuYh/gjp12mOfU8jxSrm1f/yJpsb0F/KKljS6U9LJoP0Ux+tCe8iJ2AsPzTdgA==}
 
-  hast-util-to-html@9.0.2:
-    resolution: {integrity: sha512-RP5wNpj5nm1Z8cloDv4Sl4RS8jH5HYa0v93YB6Wb4poEzgMo/dAAL0KcT4974dCjcNG5pkLqTImeFHHCwwfY3g==}
-
   hast-util-to-html@9.0.3:
     resolution: {integrity: sha512-M17uBDzMJ9RPCqLMO92gNNUDuBSq10a25SDBI08iCCxmorf4Yy6sYHK57n9WAbRAAaU+DuR4W6GN9K4DFZesYg==}
 
@@ -8366,7 +8363,7 @@ snapshots:
 
   '@nuxt/scripts@0.9.2(@nuxt/devtools@1.5.0(rollup@4.22.2)(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))(vue@3.5.7(typescript@5.6.2))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.22.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.7)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.22.2)(typescript@5.6.2)(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))(vue@3.5.7(typescript@5.6.2))(webpack-sources@3.2.3)(webpack@5.94.0(esbuild@0.23.1))':
     dependencies:
-      '@nuxt/devtools-kit': 1.4.2(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))
+      '@nuxt/devtools-kit': 1.5.0(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))
       '@nuxt/devtools-ui-kit': 1.4.2(@nuxt/devtools@1.5.0(rollup@4.22.2)(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))(vue@3.5.7(typescript@5.6.2))(webpack-sources@3.2.3))(@unocss/webpack@0.62.3(rollup@4.22.2)(webpack@5.94.0(esbuild@0.23.1)))(@vue/compiler-core@3.5.7)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.22.2)(vite@5.4.7(@types/node@20.16.5)(sass@1.78.0)(terser@5.32.0))(vue@3.5.7(typescript@5.6.2))(webpack@5.94.0(esbuild@0.23.1))
       '@nuxt/kit': link:packages/kit
       '@types/google.maps': 3.58.0
@@ -8730,7 +8727,7 @@ snapshots:
       '@shikijs/types': 1.17.0
       '@shikijs/vscode-textmate': 9.2.2
       '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.2
+      hast-util-to-html: 9.0.3
 
   '@shikijs/core@1.17.6':
     dependencies:
@@ -8739,7 +8736,7 @@ snapshots:
       '@shikijs/types': 1.17.6
       '@shikijs/vscode-textmate': 9.2.2
       '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.2
+      hast-util-to-html: 9.0.3
 
   '@shikijs/core@1.18.0':
     dependencies:
@@ -11512,20 +11509,6 @@ snapshots:
       unist-util-visit: 5.0.0
       vfile: 6.0.3
       web-namespaces: 2.0.1
-      zwitch: 2.0.4
-
-  hast-util-to-html@9.0.2:
-    dependencies:
-      '@types/hast': 3.0.4
-      '@types/unist': 3.0.3
-      ccount: 2.0.1
-      comma-separated-tokens: 2.0.3
-      hast-util-whitespace: 3.0.0
-      html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
-      property-information: 6.5.0
-      space-separated-tokens: 2.0.2
-      stringify-entities: 4.0.4
       zwitch: 2.0.4
 
   hast-util-to-html@9.0.3:
