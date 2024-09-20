@@ -51,7 +51,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.47",
-    "rollup": "4.22.0",
+    "rollup": "4.22.2",
     "send": ">=0.19.0",
     "typescript": "5.6.2",
     "ufo": "1.5.4",
