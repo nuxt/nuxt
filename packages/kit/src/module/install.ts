@@ -79,23 +79,26 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
     let error: unknown
-    for (const path of paths) {
-      try {
-        const src = jiti.esmResolve(path)
-        nuxtModule = await jiti.import(src) as NuxtModule
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
 
-        // nuxt-module-builder generates a module.json with metadata including the version
-        const moduleMetadataPath = join(dirname(src), 'module.json')
-        if (existsSync(moduleMetadataPath)) {
-          buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+    for (const parentURL of nuxt.options.modulesDir) {
+      for (const path of paths) {
+        try {
+          const src = jiti.esmResolve(path, { parentURL })
+          nuxtModule = await jiti.import(src) as NuxtModule
+
+          // nuxt-module-builder generates a module.json with metadata including the version
+          const moduleMetadataPath = join(dirname(src), 'module.json')
+          if (existsSync(moduleMetadataPath)) {
+            buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+          }
+          break
+        } catch (_err: unknown) {
+          error = _err
         }
-        break
-      } catch (_err: unknown) {
-        error = _err
-        continue
       }
+      if (typeof nuxtModule !== 'string') { break }
     }
     if (typeof nuxtModule !== 'function' && error) {
       logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
