@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -179,13 +179,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
-  const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
     const subpath = _subpath ? '/' + _subpath : ''
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
 
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
@@ -345,10 +345,10 @@ async function initNuxt (nuxt: Nuxt) {
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
   if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
-      for (const file in manifest) {
-        if (manifest[file].resourceType === 'script') {
-          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
-          manifest[file].file = ''
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.resourceType === 'script') {
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
+          chunk.file = ''
         }
       }
     })
@@ -603,6 +603,21 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.navigationRepaint) {
     addPlugin({
       src: resolve(nuxt.options.appDir, 'plugins/navigation-repaint.client'),
+    })
+  }
+
+  if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
+    addPluginTemplate({
+      filename: 'vue-app-config.mjs',
+      getContents: () => `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:vue-app-config',
+  enforce: 'pre',
+  setup (nuxtApp) {
+    ${Object.keys(nuxt.options.vue.config!).map(k => `    nuxtApp.vueApp.config[${JSON.stringify(k)}] = ${JSON.stringify(nuxt.options.vue.config![k as 'idPrefix'])}`).join('\n')}
+  }
+})`,
     })
   }
 

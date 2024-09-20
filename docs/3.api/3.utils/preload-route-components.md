@@ -10,7 +10,7 @@ links:
 
 Preloading routes loads the components of a given route that the user might navigate to in future. This ensures that the components are available earlier and less likely to block the navigation, improving performance.
 
-::tip{icon="i-ph-rocket-launch-duotone" color="gray"}
+::tip{icon="i-ph-rocket-launch" color="gray"}
 Nuxt already automatically preloads the necessary routes if you're using the `NuxtLink` component.
 ::
 

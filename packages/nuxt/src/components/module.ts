@@ -140,10 +140,10 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('build:manifest', (manifest) => {
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
 
-      for (const key in manifest) {
-        if (manifest[key].isEntry) {
-          manifest[key].dynamicImports =
-            manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry) {
+          chunk.dynamicImports =
+            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
     })
