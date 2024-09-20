@@ -49,17 +49,18 @@ export async function getPostcssConfig (nuxt: Nuxt) {
       const pluginOptions = postcssOptions.plugins[pluginName]
       if (!pluginOptions) { continue }
 
-    let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
-    for (const parentURL of nuxt.options.modulesDir) {
-      pluginFn = await jiti.import(pluginName, { parentURL, try: true }) as (opts: Record<string, any>) => Plugin
-      if (typeof pluginFn === 'function') {
-        plugins.push(pluginFn(pluginOptions))
-        break
+      let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
+      for (const parentURL of nuxt.options.modulesDir) {
+        pluginFn = await jiti.import(pluginName, { parentURL, try: true }) as (opts: Record<string, any>) => Plugin
+        if (typeof pluginFn === 'function') {
+          plugins.push(pluginFn(pluginOptions))
+          break
+        }
       }
-    }
 
-    if (typeof pluginFn !== 'function') {
-      console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
+      if (typeof pluginFn !== 'function') {
+        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
+      }
     }
 
     // @ts-expect-error we are mutating type here from object to array
