@@ -28,7 +28,8 @@ The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFet
 <script setup lang="ts">
   // This will forward the user's headers to the `/api/foo` event handler
   // Result: { cookies: { foo: 'bar' } }
-  const { data: forwarded } = await useAsyncData(() => useRequestFetch()('/api/cookies'))
+  const requestFetch = useRequestFetch()
+  const { data: forwarded } = await useAsyncData(() => requestFetch('/api/cookies'))
   
   // This will NOT forward anything
   // Result: { cookies: {} }
