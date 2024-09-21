@@ -29,7 +29,7 @@
     "@types/estree": "1.0.6",
     "rollup": "4.22.2",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.6"
+    "vue": "3.5.7"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -62,7 +62,7 @@
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
     "unplugin": "^1.14.1",
-    "vite": "^5.4.6",
+    "vite": "^5.4.7",
     "vite-node": "^2.1.1",
     "vite-plugin-checker": "^0.8.0",
     "vue-bundle-renderer": "^2.1.0"
