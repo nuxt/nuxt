@@ -84,7 +84,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     for (const parentURL of nuxt.options.modulesDir) {
       for (const path of paths) {
         try {
-          const src = jiti.esmResolve(path, { parentURL })
+          const src = jiti.esmResolve(path, { parentURL: parentURL.replace(/\/node_modules\/?$/, '') })
           nuxtModule = await jiti.import(src) as NuxtModule
 
           // nuxt-module-builder generates a module.json with metadata including the version

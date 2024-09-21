@@ -51,7 +51,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
 
       let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
       for (const parentURL of nuxt.options.modulesDir) {
-        pluginFn = await jiti.import(pluginName, { parentURL, try: true }) as (opts: Record<string, any>) => Plugin
+        pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true }) as (opts: Record<string, any>) => Plugin
         if (typeof pluginFn === 'function') {
           plugins.push(pluginFn(pluginOptions))
           break

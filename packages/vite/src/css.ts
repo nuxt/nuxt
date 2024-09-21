@@ -29,7 +29,7 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
 
     let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
     for (const parentURL of nuxt.options.modulesDir) {
-      pluginFn = await jiti.import(pluginName, { parentURL, try: true }) as (opts: Record<string, any>) => Plugin
+      pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true }) as (opts: Record<string, any>) => Plugin
       if (typeof pluginFn === 'function') {
         css.postcss.plugins.push(pluginFn(pluginOptions))
         break
