@@ -30,11 +30,6 @@ overrides:
   vite: 5.4.7
   vue: 3.5.7
 
-patchedDependencies:
-  ofetch@1.3.4:
-    hash: nxc3eojzwynarpj453xzxqr2f4
-    path: patches/ofetch@1.3.4.patch
-
 importers:
 
   .:
@@ -4373,9 +4368,6 @@ packages:
   hast-util-raw@9.0.4:
     resolution: {integrity: sha512-LHE65TD2YiNsHD3YuXcKPHXPLuYh/gjp12mOfU8jxSrm1f/yJpsb0F/KKljS6U9LJoP0Ux+tCe8iJ2AsPzTdgA==}
 
-  hast-util-to-html@9.0.2:
-    resolution: {integrity: sha512-RP5wNpj5nm1Z8cloDv4Sl4RS8jH5HYa0v93YB6Wb4poEzgMo/dAAL0KcT4974dCjcNG5pkLqTImeFHHCwwfY3g==}
-
   hast-util-to-html@9.0.3:
     resolution: {integrity: sha512-M17uBDzMJ9RPCqLMO92gNNUDuBSq10a25SDBI08iCCxmorf4Yy6sYHK57n9WAbRAAaU+DuR4W6GN9K4DFZesYg==}
 
@@ -5474,9 +5466,6 @@ packages:
   object.assign@4.1.5:
     resolution: {integrity: sha512-byy+U7gp+FVwmyzKPYhW2h5l3crpmGsxl7X2s8y43IgxvG4g3QZ6CffDtsNQy1WsmZpQbO+ybo0AlW7TY6DcBQ==}
     engines: {node: '>= 0.4'}
-
-  ofetch@1.3.4:
-    resolution: {integrity: sha512-KLIET85ik3vhEfS+3fDlc/BAZiAp+43QEC/yCo5zkNoY2YaKvNkOaFr/6wCFgFH1kuYQM5pMNi0Tg8koiIemtw==}
 
   ofetch@1.4.0:
     resolution: {integrity: sha512-MuHgsEhU6zGeX+EMh+8mSMrYTnsqJQQrpM00Q6QHMKNqQ0bKy0B43tk8tL1wg+CnsSTy1kg4Ir2T5Ig6rD+dfQ==}
@@ -8637,7 +8626,7 @@ snapshots:
       '@shikijs/types': 1.17.0
       '@shikijs/vscode-textmate': 9.2.2
       '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.2
+      hast-util-to-html: 9.0.3
 
   '@shikijs/core@1.17.6':
     dependencies:
@@ -8646,7 +8635,7 @@ snapshots:
       '@shikijs/types': 1.17.6
       '@shikijs/vscode-textmate': 9.2.2
       '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.2
+      hast-util-to-html: 9.0.3
 
   '@shikijs/core@1.18.0':
     dependencies:
@@ -11418,20 +11407,6 @@ snapshots:
       web-namespaces: 2.0.1
       zwitch: 2.0.4
 
-  hast-util-to-html@9.0.2:
-    dependencies:
-      '@types/hast': 3.0.4
-      '@types/unist': 3.0.3
-      ccount: 2.0.1
-      comma-separated-tokens: 2.0.3
-      hast-util-whitespace: 3.0.0
-      html-void-elements: 3.0.0
-      mdast-util-to-hast: 13.2.0
-      property-information: 6.5.0
-      space-separated-tokens: 2.0.2
-      stringify-entities: 4.0.4
-      zwitch: 2.0.4
-
   hast-util-to-html@9.0.3:
     dependencies:
       '@types/hast': 3.0.4
@@ -12607,7 +12582,7 @@ snapshots:
       mlly: 1.7.1
       mri: 1.2.0
       node-fetch-native: 1.6.4
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.0
       ohash: 1.1.4
       openapi-typescript: 7.4.0(typescript@5.6.2)
       pathe: 1.1.2
@@ -12853,12 +12828,6 @@ snapshots:
       define-properties: 1.2.1
       has-symbols: 1.0.3
       object-keys: 1.1.1
-
-  ofetch@1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4):
-    dependencies:
-      destr: 2.0.3
-      node-fetch-native: 1.6.4
-      ufo: 1.5.4
 
   ofetch@1.4.0:
     dependencies:
