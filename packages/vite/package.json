@@ -29,7 +29,7 @@
     "@types/estree": "1.0.6",
     "rollup": "4.22.4",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.7"
+    "vue": "3.5.8"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
@@ -41,7 +41,7 @@
     "consola": "^3.2.3",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
-    "esbuild": "^0.23.1",
+    "esbuild": "^0.24.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "externality": "^1.0.2",
