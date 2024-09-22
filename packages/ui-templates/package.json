@@ -20,7 +20,7 @@
   "devDependencies": {
     "@unocss/reset": "0.62.4",
     "critters": "0.0.24",
-    "html-validate": "8.22.0",
+    "html-validate": "8.23.0",
     "htmlnano": "2.1.1",
     "jiti": "2.0.0-rc.1",
     "knitwork": "1.1.0",
