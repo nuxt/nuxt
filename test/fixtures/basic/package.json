@@ -5,8 +5,8 @@
     "build": "nuxi build"
   },
   "dependencies": {
-    "@nuxt/webpack-builder": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
+    "@nuxt/webpack-builder": "workspace:*",
     "nuxt": "workspace:*"
   },
   "devDependencies": {
