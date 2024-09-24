@@ -1,6 +1,6 @@
-import fs, { statSync } from 'node:fs'
-import { join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, updateTemplates } from '@nuxt/kit'
+import { existsSync, statSync, writeFileSync } from 'node:fs'
+import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -147,10 +147,10 @@ export default defineNuxtModule<ComponentsOptions>({
     nuxt.hook('build:manifest', (manifest) => {
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
 
-      for (const key in manifest) {
-        if (manifest[key].isEntry) {
-          manifest[key].dynamicImports =
-            manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.isEntry) {
+          chunk.dynamicImports =
+            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
     })
@@ -176,6 +176,10 @@ export default defineNuxtModule<ComponentsOptions>({
       await nuxt.callHook('components:extend', newComponents)
       // add server placeholder for .client components server side. issue: #7085
       for (const component of newComponents) {
+        if (!(component as any /* untyped internal property */)._scanned && !(component.filePath in nuxt.vfs) && isAbsolute(component.filePath) && !existsSync(component.filePath)) {
+          // attempt to resolve component path
+          component.filePath = await resolvePath(component.filePath, { fallbackToOriginal: true })
+        }
         if (component.mode === 'client' && !newComponents.some(c => c.pascalName === component.pascalName && c.mode === 'server')) {
           newComponents.push({
             ...component,
@@ -243,17 +247,17 @@ export default defineNuxtModule<ComponentsOptions>({
         const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
 
         if (isClient && selectiveClient) {
-          fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+          writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           if (!nuxt.options.dev) {
             config.plugins.push(componentsChunkPlugin.vite({
               getComponents,
               buildDir: nuxt.options.buildDir,
             }))
           } else {
-            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
+            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), `export const paths = ${JSON.stringify(
               getComponents().filter(c => c.mode === 'client' || c.mode === 'all').reduce((acc, c) => {
                 if (c.filePath.endsWith('.vue') || c.filePath.endsWith('.js') || c.filePath.endsWith('.ts')) { return Object.assign(acc, { [c.pascalName]: `/@fs/${c.filePath}` }) }
-                const filePath = fs.existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : fs.existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
+                const filePath = existsSync(`${c.filePath}.vue`) ? `${c.filePath}.vue` : existsSync(`${c.filePath}.js`) ? `${c.filePath}.js` : `${c.filePath}.ts`
                 return Object.assign(acc, { [c.pascalName]: `/@fs/${filePath}` })
               }, {} as Record<string, string>),
             )}`)
@@ -314,7 +318,7 @@ export default defineNuxtModule<ComponentsOptions>({
               getComponents,
             }))
           } else {
-            fs.writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           }
         }
       })

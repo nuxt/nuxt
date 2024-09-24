@@ -23,7 +23,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
   if (payloadURL in cache) {
-    return cache[payloadURL]
+    return cache[payloadURL] || null
   }
   cache[payloadURL] = isPrerendered(url).then((prerendered) => {
     if (!prerendered) {

@@ -103,9 +103,18 @@ export function useCookie<T = string | null | undefined> (name: string, _opts?: 
     }
 
     if (store) {
+      /* event is of type CookieChangeEvent */
       const changeHandler = (event: any) => {
-        const cookie = event.changed.find((c: any) => c.name === name)
-        if (cookie) { handleChange({ value: cookie.value }) }
+        const changedCookie = event.changed.find((c: any) => c.name === name)
+        const removedCookie = event.deleted.find((c: any) => c.name === name)
+
+        if (changedCookie) {
+          handleChange({ value: changedCookie.value })
+        }
+
+        if (removedCookie) {
+          handleChange({ value: null })
+        }
       }
       store.addEventListener('change', changeHandler)
       if (hasScope) {

@@ -122,6 +122,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
         get: () => _route.value[key as keyof RouteLocation],
+        enumerable: true,
       })
     }
 

@@ -178,28 +178,9 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => {
+    $resolve: async (val: string | undefined, get) => {
       const rootDir = await get('rootDir') as string
-
-      if (val) {
-        return resolve(rootDir, val)
-      }
-
-      const defaultBuildDir = resolve(rootDir, '.nuxt')
-
-      const isDev = await get('dev') as boolean
-      if (isDev) {
-        return defaultBuildDir
-      }
-
-      // TODO: nuxi CLI should ensure .nuxt dir exists
-      if (!existsSync(defaultBuildDir)) {
-        // This is to ensure that types continue to work for CI builds
-        return defaultBuildDir
-      }
-
-      // TODO: handle build caching + using buildId in directory
-      return resolve(rootDir, 'node_modules/.cache/nuxt/builds', 'production')
+      return resolve(rootDir, val ?? '.nuxt')
     },
   },
 
@@ -314,7 +295,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),

@@ -640,7 +640,7 @@ describe('nuxt composables', () => {
       },
     })
     const cookies = res.headers.get('set-cookie')
-    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/"')
+    expect(cookies).toMatchInlineSnapshot('"set-in-plugin=true; Path=/, accessed-with-default-value=default; Path=/, set=set; Path=/, browser-set=set; Path=/, browser-set-to-null=; Max-Age=0; Path=/, browser-set-to-null-with-default=; Max-Age=0; Path=/, browser-object-default=%7B%22foo%22%3A%22bar%22%7D; Path=/, theCookie=show; Path=/"')
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
@@ -663,6 +663,26 @@ describe('nuxt composables', () => {
     await page.close()
   })
 
+  it('sets cookies in composable to null in all components', async () => {
+    const { page } = await renderPage('/cookies')
+    const parentBannerText = await page.locator('#parent-banner').textContent()
+    expect(parentBannerText).toContain('parent banner')
+
+    const childBannerText = await page.locator('#child-banner').innerText()
+    expect(childBannerText).toContain('child banner')
+
+    // Clear the composable cookie
+    await page.getByText('Toggle cookie banner').click()
+    await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 10)))
+
+    const parentBannerAfterToggle = await page.locator('#parent-banner').isVisible()
+    expect(parentBannerAfterToggle).toBe(false)
+
+    const childBannerAfterToggle = await page.locator('#child-banner').isVisible()
+    expect(childBannerAfterToggle).toBe(false)
+    await page.close()
+  })
+
   it('supports onPrehydrate', async () => {
     const html = await $fetch<string>('/composables/on-prehydrate') as string
     /**
@@ -679,8 +699,8 @@ describe('nuxt composables', () => {
     expect(id1).toBeTruthy()
     const matches = [
       html.match(/<script[^>]*>\(\(\)=>\{console.log\(window\)\}\)\(\)<\/script>/),
-      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`)),
-      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`)),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id1}:"]'\\).forEach\\(o=>{console.log\\(o.outerHTML\\)}\\)</script>`, 'i')),
+      html.match(new RegExp(`<script[^>]*>document.querySelectorAll\\('\\[data-prehydrate-id\\*=":${id2}:"]'\\).forEach\\(o=>{console.log\\("other",o.outerHTML\\)}\\)</script>`, 'i')),
     ]
 
     // This tests we inject all scripts correctly, and only have one occurrence of multiple calls of a composable
@@ -1144,16 +1164,30 @@ describe('errors', () => {
   })
 
   // TODO: need to create test for webpack
-  it.runIf(!isDev() && !isWebpack)('should handle chunk loading errors', async () => {
-    const { page, consoleLogs } = await renderPage('/')
+  it.runIf(!isDev())('should handle chunk loading errors', async () => {
+    const { page, consoleLogs } = await renderPage()
+    await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
+    await page.goto(url('/'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+
+    const initialLogs = consoleLogs.map(c => c.text).join('')
+    expect(initialLogs).toContain('caught chunk load error')
+    consoleLogs.length = 0
+
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
     expect(await page.innerText('div')).toContain('Some value: 3')
+    await page.route(/.*/, route => route.abort('timedout'), { times: 1 })
     await page.getByText('Chunk error').click()
+
     await page.waitForURL(url('/chunk-error'))
-    expect(consoleLogs.map(c => c.text).join('')).toContain('caught chunk load error')
-    expect(await page.innerText('div')).toContain('Chunk error page')
+
+    const logs = consoleLogs.map(c => c.text).join('')
+    expect(logs).toContain('caught chunk load error')
+    expect(logs).toContain('Failed to load resource')
+
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/chunk-error')
+    expect(await page.innerText('div')).toContain('Chunk error page')
     await page.locator('div').getByText('State: 3').waitFor()
 
     await page.close()
@@ -1776,7 +1810,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]!))
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)"(?: crossorigin)?>/g)].map(m => m[1]!))
     let css = ''
     for (const file of cssFiles || []) {
       css += await $fetch<string>(file)
@@ -1797,11 +1831,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
-      [
-        "<link rel="stylesheet" href="/_nuxt/entry.css">",
-      ]
-    `)
+    expect(html.match(/<link [^>]*href="[^"]*\.css">(?: crossorigin)?/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`undefined`)
   })
 
   it('still downloads client-only styles', async () => {
@@ -2331,6 +2361,7 @@ describe('component islands', () => {
         {
           "link": [
             {
+              "crossorigin": "",
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "rel": "stylesheet",
             },

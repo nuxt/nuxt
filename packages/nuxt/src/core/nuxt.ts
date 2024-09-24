@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -15,13 +15,14 @@ import { colorize } from 'consola/utils'
 import { updateConfig } from 'c12/update'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
 import type { DateString } from 'compatx'
-
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
-
+import { ImpoundPlugin } from 'impound'
+import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
+
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -31,7 +32,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { ImportProtectionPlugin, nuxtImportProtections } from './plugins/import-protection'
+import { nuxtImportProtections } from './plugins/import-protection'
 import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
@@ -103,7 +104,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
     if (!shouldShowPrompt) {
-      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
     async function promptAndUpdate () {
@@ -112,7 +113,7 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
-        console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+        logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         return
       }
 
@@ -146,7 +147,7 @@ async function initNuxt (nuxt: Nuxt) {
         consola.error(`Failed to update config: ${message}`)
       }
 
-      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
     nuxt.hooks.hookOnce('nitro:init', (nitro) => {
@@ -155,7 +156,7 @@ async function initNuxt (nuxt: Nuxt) {
       nitro.hooks.hookOnce('compiled', () => {
         warnedAboutCompatDate = true
         // Print warning
-        console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
+        logger.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
         if (shouldShowPrompt) { promptAndUpdate() }
       })
     })
@@ -178,13 +179,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
-  const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
     const subpath = _subpath ? '/' + _subpath : ''
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
 
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
@@ -245,18 +246,19 @@ async function initNuxt (nuxt: Nuxt) {
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
   // Add import protection
-  const config = {
-    rootDir: nuxt.options.rootDir,
+  const config: ImpoundOptions = {
+    cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
     patterns: nuxtImportProtections(nuxt),
-    modulesDir: nuxt.options.modulesDir,
   }
-  addVitePlugin(() => ImportProtectionPlugin.vite(config))
-  addWebpackPlugin(() => ImportProtectionPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(prehydrateTransformPlugin(nuxt))
@@ -343,10 +345,10 @@ async function initNuxt (nuxt: Nuxt) {
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
   if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
-      for (const file in manifest) {
-        if (manifest[file].resourceType === 'script') {
-          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
-          manifest[file].file = ''
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.resourceType === 'script') {
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
+          chunk.file = ''
         }
       }
     })
@@ -604,6 +606,21 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
+    addPluginTemplate({
+      filename: 'vue-app-config.mjs',
+      getContents: () => `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:vue-app-config',
+  enforce: 'pre',
+  setup (nuxtApp) {
+    ${Object.keys(nuxt.options.vue.config!).map(k => `    nuxtApp.vueApp.config[${JSON.stringify(k)}] = ${JSON.stringify(nuxt.options.vue.config![k as 'idPrefix'])}`).join('\n')}
+  }
+})`,
+    })
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -664,7 +681,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
   if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
+    logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
   await nuxt.callHook('ready', nuxt)

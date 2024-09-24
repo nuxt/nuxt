@@ -70,7 +70,11 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
 ::
 
-::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
+::warning
+If you encounter the `data` variable destructured from a `useFetch` returns a string and not a JSON parsed object then make sure your component doesn't include an import statement like `import { useFetch } from '@vueuse/core`.
+::
+
+::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
 Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
 ::
 
@@ -143,7 +147,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ```ts [Signature]
 function useFetch<DataT, ErrorT>(
-  url: string | Request | Ref<string | Request> | () => string | Request,
+  url: string | Request | Ref<string | Request> | (() => string) | Request,
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT, ErrorT>>
 

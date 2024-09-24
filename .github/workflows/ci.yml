@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"
@@ -57,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
         with:
           retention-days: 3
           name: dist
@@ -70,36 +70,30 @@ jobs:
       actions: read
       contents: read
       security-events: write
-    needs:
-      - build
 
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
-        with:
-          node-version: 20
-          cache: "pnpm"
-
-      - name: Install dependencies
-        run: pnpm install
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@2c779ab0d087cd7fe7b826087247c2c81f27bfa6 # v3.26.5
+        uses: github/codeql-action/init@294a9d92911152fe08befb9ec03e240add280cb3 # v3.26.8
         with:
-          languages: javascript
+          config: |
+            paths:
+            - 'packages/*/src/**'
+            - 'packages/nuxt/bin/**'
+            - 'packages/schema/schema/**'
+            paths-ignore:
+            - 'test/**'
+            - '**/*.spec.ts'
+            - '**/*.test.ts'
+            - '**/__snapshots__/**'
+          languages: javascript-typescript
           queries: +security-and-quality
 
-      - name: Restore dist cache
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: dist
-          path: packages
-
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@2c779ab0d087cd7fe7b826087247c2c81f27bfa6 # v3.26.5
+        uses: github/codeql-action/analyze@294a9d92911152fe08befb9ec03e240add280cb3 # v3.26.8
         with:
-          category: "/language:javascript"
+          category: "/language:javascript-typescript"
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -115,7 +109,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"
@@ -146,7 +140,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"
@@ -170,7 +164,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"
@@ -221,7 +215,7 @@ jobs:
     steps:
       - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -276,7 +270,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"
@@ -317,7 +311,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"

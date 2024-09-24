@@ -79,27 +79,30 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule]
-    let error: unknown
-    for (const path of paths) {
-      try {
-        const src = jiti.esmResolve(path)
-        nuxtModule = await jiti.import(src) as NuxtModule
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
 
-        // nuxt-module-builder generates a module.json with metadata including the version
-        const moduleMetadataPath = join(dirname(src), 'module.json')
-        if (existsSync(moduleMetadataPath)) {
-          buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+    for (const parentURL of nuxt.options.modulesDir) {
+      for (const path of paths) {
+        try {
+          const src = jiti.esmResolve(path, { parentURL: parentURL.replace(/\/node_modules\/?$/, '') })
+          nuxtModule = await jiti.import(src) as NuxtModule
+
+          // nuxt-module-builder generates a module.json with metadata including the version
+          const moduleMetadataPath = join(dirname(src), 'module.json')
+          if (existsSync(moduleMetadataPath)) {
+            buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
+          }
+          break
+        } catch (error: unknown) {
+          const code = (error as Error & { code?: string }).code
+          if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT') {
+            continue
+          }
+          logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
+          throw error
         }
-        break
-      } catch (_err: unknown) {
-        error = _err
-        continue
       }
-    }
-    if (typeof nuxtModule !== 'function' && error) {
-      logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
-      throw error
+      if (typeof nuxtModule !== 'string') { break }
     }
   }
 

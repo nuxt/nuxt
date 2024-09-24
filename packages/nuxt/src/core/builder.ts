@@ -8,6 +8,7 @@ import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
+import { cleanupCaches, getVueHash } from './cache'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -40,16 +41,32 @@ export async function build (nuxt: Nuxt) {
     })
   }
 
-  await nuxt.callHook('build:before')
-  if (!nuxt.options._prepare) {
-    await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
-    await nuxt.callHook('build:done')
-
-    if (!nuxt.options.dev) {
-      await nuxt.callHook('close', nuxt)
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    const { restoreCache, collectCache } = await getVueHash(nuxt)
+    if (await restoreCache()) {
+      await nuxt.callHook('build:done')
+      return await nuxt.callHook('close', nuxt)
     }
-  } else {
+    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
+  }
+
+  await nuxt.callHook('build:before')
+  if (nuxt.options._prepare) {
     nuxt.hook('prepare:types', () => nuxt.close())
+    return
+  }
+
+  if (nuxt.options.dev) {
+    checkForExternalConfigurationFiles()
+  }
+
+  await bundle(nuxt)
+
+  await nuxt.callHook('build:done')
+
+  if (!nuxt.options.dev) {
+    await nuxt.callHook('close', nuxt)
   }
 }
 
@@ -121,9 +138,9 @@ function createGranularWatcher () {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
-        nuxt.hook('close', () => watchers[path]?.close())
+        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        pathWatcher.on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
+        nuxt.hook('close', () => pathWatcher?.close())
       }
     })
     watcher.on('ready', () => {

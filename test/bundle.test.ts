@@ -16,26 +16,31 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   }, 120 * 1000)
 
   // Identical behaviour between inline/external vue options as this should only affect the server build
-  for (const outputDir of ['.output', '.output-inline']) {
-    it('default client bundle size', async () => {
-      const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot(`"108k"`)
-      expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
-        [
-          "_nuxt/entry.js",
-        ]
-      `)
-    })
-  }
+
+  it('default client bundle size', async () => {
+    const [clientStats, clientStatsInlined] = await Promise.all((['.output', '.output-inline'])
+      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"114k"`)
+    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"114k"`)
+
+    const files = new Set([...clientStats!.files, ...clientStatsInlined!.files].map(f => f.replace(/\..*\.js/, '.js')))
+
+    expect([...files]).toMatchInlineSnapshot(`
+      [
+        "_nuxt/entry.js",
+      ]
+    `)
+  })
 
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"205k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"208k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1355k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1388k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -73,10 +78,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"529k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"557k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"86.1k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"88.2k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
