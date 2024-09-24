@@ -3,7 +3,6 @@ import { normalize, resolve } from 'pathe'
 import TimeFixPlugin from 'time-fix-plugin'
 import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
-import webpack from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
@@ -15,6 +14,8 @@ import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
+
+import { webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -53,14 +54,18 @@ function basePlugins (ctx: WebpackConfigContext) {
 
   // Add timefix-plugin before other plugins
   if (ctx.options.dev) {
-    ctx.config.plugins.push(new TimeFixPlugin())
+    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+      ctx.config.plugins.push(new TimeFixPlugin())
+    }
   }
 
   // User plugins
   ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
   // Ignore empty warnings
-  ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
+  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+    ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
+  }
 
   // Provide env via DefinePlugin
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))

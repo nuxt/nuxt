@@ -1,12 +1,12 @@
 {
-  "name": "@nuxt/webpack-builder",
+  "name": "@nuxt/rspack-builder",
   "version": "3.12.2",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
-    "directory": "packages/webpack"
+    "directory": "packages/rspack"
   },
-  "description": "Webpack bundler for Nuxt",
+  "description": "rspack bundler for Nuxt",
   "homepage": "https://nuxt.com",
   "license": "MIT",
   "type": "module",
@@ -31,6 +31,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
+    "@rspack/core": "npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -44,12 +45,11 @@
     "globby": "^14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "hash-sum": "^2.0.0",
-    "jiti": "^2.0.0-rc.1",
+    "jiti": "^2.0.0-beta.3",
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.11",
-    "memfs": "^4.12.0",
-    "mini-css-extract-plugin": "^2.9.1",
+    "memfs": "^4.11.1",
     "mlly": "^1.7.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -66,9 +66,8 @@
     "unenv": "^1.10.0",
     "unplugin": "^1.14.1",
     "url-loader": "^4.1.1",
-    "vue-bundle-renderer": "^2.1.1",
+    "vue-bundle-renderer": "^2.1.0",
     "vue-loader": "^17.4.2",
-    "webpack": "^5.94.0",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-dev-middleware": "^7.4.2",
     "webpack-hot-middleware": "^2.26.1",
@@ -77,15 +76,14 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901",
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.22.4",
+    "rollup": "4.21.3",
     "unbuild": "3.0.0-rc.7",
-    "vue": "3.5.8"
+    "vue": "3.5.6"
   },
   "peerDependencies": {
     "vue": "^3.3.4"

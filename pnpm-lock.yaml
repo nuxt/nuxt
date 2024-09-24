@@ -493,6 +493,169 @@ importers:
         specifier: 2.1.1
         version: 2.1.1(@types/node@20.16.6)(happy-dom@15.7.4)(sass@1.78.0)(terser@5.32.0)
 
+  packages/rspack:
+    dependencies:
+      '@nuxt/friendly-errors-webpack-plugin':
+        specifier: ^2.6.0
+        version: 2.6.0(webpack@5.94.0)
+      '@nuxt/kit':
+        specifier: workspace:*
+        version: link:../kit
+      '@rspack/core':
+        specifier: npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901
+        version: '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901'
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.4.47)
+      css-loader:
+        specifier: ^7.1.2
+        version: 7.1.2(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(webpack@5.94.0)
+      css-minimizer-webpack-plugin:
+        specifier: ^7.0.0
+        version: 7.0.0(webpack@5.94.0)
+      cssnano:
+        specifier: ^7.0.6
+        version: 7.0.6(postcss@8.4.47)
+      defu:
+        specifier: ^6.1.4
+        version: 6.1.4
+      esbuild-loader:
+        specifier: ^4.2.2
+        version: 4.2.2(webpack@5.94.0)
+      escape-string-regexp:
+        specifier: ^5.0.0
+        version: 5.0.0
+      estree-walker:
+        specifier: ^3.0.3
+        version: 3.0.3
+      file-loader:
+        specifier: ^6.2.0
+        version: 6.2.0(webpack@5.94.0)
+      fork-ts-checker-webpack-plugin:
+        specifier: ^9.0.2
+        version: 9.0.2(typescript@5.6.2)(webpack@5.94.0)
+      globby:
+        specifier: ^14.0.2
+        version: 14.0.2
+      h3:
+        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
+        version: h3-nightly@2.0.0-1718872656.6765a6e
+      hash-sum:
+        specifier: ^2.0.0
+        version: 2.0.0
+      jiti:
+        specifier: 2.0.0-rc.1
+        version: 2.0.0-rc.1
+      knitwork:
+        specifier: ^1.1.0
+        version: 1.1.0
+      lodash-es:
+        specifier: 4.17.21
+        version: 4.17.21
+      magic-string:
+        specifier: ^0.30.11
+        version: 0.30.11
+      memfs:
+        specifier: ^4.11.1
+        version: 4.12.0
+      mlly:
+        specifier: ^1.7.1
+        version: 1.7.1
+      ohash:
+        specifier: 1.1.4
+        version: 1.1.4
+      pathe:
+        specifier: ^1.1.2
+        version: 1.1.2
+      pify:
+        specifier: ^6.1.0
+        version: 6.1.0
+      postcss:
+        specifier: 8.4.47
+        version: 8.4.47
+      postcss-import:
+        specifier: ^16.1.0
+        version: 16.1.0(postcss@8.4.47)
+      postcss-import-resolver:
+        specifier: ^2.0.0
+        version: 2.0.0
+      postcss-loader:
+        specifier: ^8.1.1
+        version: 8.1.1(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(postcss@8.4.47)(typescript@5.6.2)(webpack@5.94.0)
+      postcss-url:
+        specifier: ^10.1.3
+        version: 10.1.3(postcss@8.4.47)
+      pug-plain-loader:
+        specifier: ^1.1.0
+        version: 1.1.0(pug@3.0.3)
+      std-env:
+        specifier: ^3.7.0
+        version: 3.7.0
+      time-fix-plugin:
+        specifier: ^2.0.7
+        version: 2.0.7(webpack@5.94.0)
+      ufo:
+        specifier: 1.5.4
+        version: 1.5.4
+      unenv:
+        specifier: ^1.10.0
+        version: 1.10.0
+      unplugin:
+        specifier: ^1.14.1
+        version: 1.14.1(webpack-sources@3.2.3)
+      url-loader:
+        specifier: ^4.1.1
+        version: 4.1.1(file-loader@6.2.0(webpack@5.94.0))(webpack@5.94.0)
+      vue-bundle-renderer:
+        specifier: ^2.1.0
+        version: 2.1.1
+      vue-loader:
+        specifier: ^17.4.2
+        version: 17.4.2(@vue/compiler-sfc@3.5.8)(vue@3.5.8(typescript@5.6.2))(webpack@5.94.0)
+      webpack-bundle-analyzer:
+        specifier: ^4.10.2
+        version: 4.10.2
+      webpack-dev-middleware:
+        specifier: ^7.4.2
+        version: 7.4.2(webpack@5.94.0)
+      webpack-hot-middleware:
+        specifier: ^2.26.1
+        version: 2.26.1
+      webpack-virtual-modules:
+        specifier: ^0.6.2
+        version: 0.6.2
+      webpackbar:
+        specifier: ^6.0.1
+        version: 6.0.1(webpack@5.94.0)
+    devDependencies:
+      '@nuxt/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@types/hash-sum':
+        specifier: 1.0.2
+        version: 1.0.2
+      '@types/lodash-es':
+        specifier: 4.17.12
+        version: 4.17.12
+      '@types/pify':
+        specifier: 5.0.4
+        version: 5.0.4
+      '@types/webpack-bundle-analyzer':
+        specifier: 4.7.0
+        version: 4.7.0
+      '@types/webpack-hot-middleware':
+        specifier: 2.25.9
+        version: 2.25.9
+      rollup:
+        specifier: 4.22.4
+        version: 4.22.4
+      unbuild:
+        specifier: 3.0.0-rc.7
+        version: 3.0.0-rc.7(sass@1.78.0)(typescript@5.6.2)(vue-tsc@2.1.6(typescript@5.6.2))
+      vue:
+        specifier: 3.5.8
+        version: 3.5.8(typescript@5.6.2)
+
   packages/schema:
     dependencies:
       compatx:
@@ -793,7 +956,7 @@ importers:
         version: 10.4.20(postcss@8.4.47)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(webpack@5.94.0)
+        version: 7.1.2(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(webpack@5.94.0)
       css-minimizer-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.94.0)
@@ -868,7 +1031,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.1.1
-        version: 8.1.1(postcss@8.4.47)(typescript@5.6.2)(webpack@5.94.0)
+        version: 8.1.1(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(postcss@8.4.47)(typescript@5.6.2)(webpack@5.94.0)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.4.47)
@@ -921,6 +1084,9 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
+      '@rspack/core':
+        specifier: npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901
+        version: '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901'
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
@@ -948,6 +1114,12 @@ importers:
 
   playground:
     dependencies:
+      '@nuxt/rspack-builder':
+        specifier: workspace:*
+        version: link:../packages/rspack
+      '@nuxt/webpack-builder':
+        specifier: workspace:*
+        version: link:../packages/webpack
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
@@ -1925,6 +2097,18 @@ packages:
     resolution: {integrity: sha512-Yhlar6v9WQgUp/He7BdgzOz8lqMQ8sU+jkCq7Wx8Myc5YFJLbEe7lgui/V7G1qB1DJykHSGwreceSaD60Y0PUQ==}
     hasBin: true
 
+  '@module-federation/runtime-tools@0.5.1':
+    resolution: {integrity: sha512-nfBedkoZ3/SWyO0hnmaxuz0R0iGPSikHZOAZ0N/dVSQaIzlffUo35B5nlC2wgWIc0JdMZfkwkjZRrnuuDIJbzg==}
+
+  '@module-federation/runtime@0.5.1':
+    resolution: {integrity: sha512-xgiMUWwGLWDrvZc9JibuEbXIbhXg6z2oUkemogSvQ4LKvrl/n0kbqP1Blk669mXzyWbqtSp6PpvNdwaE1aN5xQ==}
+
+  '@module-federation/sdk@0.5.1':
+    resolution: {integrity: sha512-exvchtjNURJJkpqjQ3/opdbfeT2wPKvrbnGnyRkrwW5o3FH1LaST1tkiNviT6OXTexGaVc2DahbdniQHVtQ7pA==}
+
+  '@module-federation/webpack-bundler-runtime@0.5.1':
+    resolution: {integrity: sha512-mMhRFH0k2VjwHt3Jol9JkUsmI/4XlrAoBG3E0o7HoyoPYv1UFOWyqAflfANcUPgbYpvqmyLzDcO+3IT36LXnrA==}
+
   '@netlify/functions@2.8.1':
     resolution: {integrity: sha512-+6wtYdoz0yE06dSa9XkP47tw5zm6g13QMeCwM3MmHx1vn8hzwFa51JtmfraprdkL7amvb7gaNM+OOhQU1h6T8A==}
     engines: {node: '>=14.0.0'}
@@ -2323,6 +2507,67 @@ packages:
     resolution: {integrity: sha512-j8pPKp53/lq9lMXN57S8cFz0MynJk8OWNuUnXct/9KCpKU7DgU3bYMJhwWmcqC0UU29p8Lr0/7KEVcaM6bf47Q==}
     cpu: [x64]
     os: [win32]
+
+  '@rspack/binding-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-11TE00tg9sZ44+lXmpLz5dOWpxm/jId+oWKaSSafjRGMoYzks7X1SA1bba4S7lOO1RF3VVXTE3Q2qZJQpfFBKQ==}
+
+  '@rspack/binding-darwin-arm64-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-TNXe0zYPckgm8o+MdCwDu7NrWhjwvtyt4S8JugmJHglksA6Ew+pmNaaKN1MXh/fwNpwRImA+j/NmeYutVyzRBw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@rspack/binding-darwin-x64-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-wLNu6YsawDkaiJ+fsCzf0Bugk4RpysU2JpN08aTNwAXBDHstY0vrWopD5oqVQr1xFV1YrlgxzOCj75l9lQsKwg==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rspack/binding-linux-arm64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-DGDrI8Z9yi2yjW+U7qdX7/UGTgt+WBjp9rA/CI/0VGxQ/zT459pKjDaCHpCIGnQpRkwZS4tV+cqN2AgJJ2cjhQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rspack/binding-linux-arm64-musl-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-1UeWW7ypBjfQhS1qKZqC6yc4gYWuIpQWh2vfDtJ/6WqK8A1qvvZyWBtu9+Az4zU8ZmhJ98YMRyLRNUXrv7AD/A==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@rspack/binding-linux-x64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-EShIkPRhUjtrzms3P03J2fo0hWsYXM5G0xILXdLAoIyOW7T4sqiZJBaHiQAa+U1JZ9ZZQ1suqcxnKWIgnDJe8Q==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rspack/binding-linux-x64-musl-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-SLsKrH7RQL5rwXmhiMwTvXxP8WFriLzMXnE9Ne7UIFeNu8AD5faue/8WD2kirmXBdSZU6lQqo8z3sx4SK38a0w==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rspack/binding-win32-arm64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-1NtTBBPQ8gr18MfN+gRqZEi6fW6LoH12G1Dw3X7TnEpRKFFzziXNmGOI98BsdwhfbU5xMsKw00zkNdExbhP59w==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@rspack/binding-win32-ia32-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-WrfRrUmaqMj2uPD4oAd1+mzmMM+8rvRtDxkiTzGVh9ZSnAqR0QH50LR9zFmzPPDKb61ePqcT9aBI7PgGQLhzPw==}
+    cpu: [ia32]
+    os: [win32]
+
+  '@rspack/binding-win32-x64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-rWBhrMLHkZoy1vsrVmWLWyjgzlhGn6l4JrjKbwolxn+5zg31EhooMJbdp830Ze0isaByajuqrjohKwnbor9JPA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901':
+    resolution: {integrity: sha512-M/rd0xiv8og24/n4QzR6tSNRMlAYY+pragURjq0Wj5O9VrzXa9jPPCzPCfcEZ1UFP1rekPlqrKIfXcNZnxq7FA==}
+    engines: {node: '>=16.0.0'}
+    peerDependencies:
+      '@swc/helpers': '>=0.5.1'
+    peerDependenciesMeta:
+      '@swc/helpers':
+        optional: true
+
+  '@rspack/lite-tapable@1.0.0':
+    resolution: {integrity: sha512-7MZf4lburSUZoEenwazwUDKHhqyfnLCGnQ/tKcUtztfmVzfjZfRn/EaiT0AKkYGnL2U8AGsw89oUeVyvaOLVCw==}
+    engines: {node: '>=16.0.0'}
 
   '@shikijs/core@1.17.0':
     resolution: {integrity: sha512-Mkk4Mp4bNnW1kytU8I7S5PK5teNSe0iKlfqxPss4sdwnlcU8a2N62Z3te2gVmZfU9t1HF6L3wyWuM43IvEeEsg==}
@@ -8173,6 +8418,22 @@ snapshots:
       - encoding
       - supports-color
 
+  '@module-federation/runtime-tools@0.5.1':
+    dependencies:
+      '@module-federation/runtime': 0.5.1
+      '@module-federation/webpack-bundler-runtime': 0.5.1
+
+  '@module-federation/runtime@0.5.1':
+    dependencies:
+      '@module-federation/sdk': 0.5.1
+
+  '@module-federation/sdk@0.5.1': {}
+
+  '@module-federation/webpack-bundler-runtime@0.5.1':
+    dependencies:
+      '@module-federation/runtime': 0.5.1
+      '@module-federation/sdk': 0.5.1
+
   '@netlify/functions@2.8.1':
     dependencies:
       '@netlify/serverless-functions-api': 1.19.1
@@ -8761,6 +9022,54 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.22.4':
     optional: true
+
+  '@rspack/binding-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optionalDependencies:
+      '@rspack/binding-darwin-arm64': '@rspack/binding-darwin-arm64-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-darwin-x64': '@rspack/binding-darwin-x64-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-linux-arm64-gnu': '@rspack/binding-linux-arm64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-linux-arm64-musl': '@rspack/binding-linux-arm64-musl-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-linux-x64-gnu': '@rspack/binding-linux-x64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-linux-x64-musl': '@rspack/binding-linux-x64-musl-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-win32-arm64-msvc': '@rspack/binding-win32-arm64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-win32-ia32-msvc': '@rspack/binding-win32-ia32-msvc-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/binding-win32-x64-msvc': '@rspack/binding-win32-x64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901'
+
+  '@rspack/binding-darwin-arm64-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-darwin-x64-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-linux-arm64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-linux-arm64-musl-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-linux-x64-gnu-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-linux-x64-musl-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-win32-arm64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-win32-ia32-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/binding-win32-x64-msvc-canary@1.0.6-canary-e7ce3527-20240916151901':
+    optional: true
+
+  '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901':
+    dependencies:
+      '@module-federation/runtime-tools': 0.5.1
+      '@rspack/binding': '@rspack/binding-canary@1.0.6-canary-e7ce3527-20240916151901'
+      '@rspack/lite-tapable': 1.0.0
+      caniuse-lite: 1.0.30001660
+
+  '@rspack/lite-tapable@1.0.0': {}
 
   '@shikijs/core@1.17.0':
     dependencies:
@@ -10386,7 +10695,7 @@ snapshots:
     dependencies:
       postcss: 8.4.47
 
-  css-loader@7.1.2(webpack@5.94.0):
+  css-loader@7.1.2(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(webpack@5.94.0):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.47)
       postcss: 8.4.47
@@ -10397,6 +10706,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.6.3
     optionalDependencies:
+      '@rspack/core': '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901'
       webpack: 5.94.0
 
   css-minimizer-webpack-plugin@7.0.0(webpack@5.94.0):
@@ -13150,13 +13460,14 @@ snapshots:
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-loader@8.1.1(postcss@8.4.47)(typescript@5.6.2)(webpack@5.94.0):
+  postcss-loader@8.1.1(@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901)(postcss@8.4.47)(typescript@5.6.2)(webpack@5.94.0):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.6.2)
       jiti: 2.0.0-rc.1
       postcss: 8.4.47
       semver: 7.6.3
     optionalDependencies:
+      '@rspack/core': '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901'
       webpack: 5.94.0
     transitivePeerDependencies:
       - typescript

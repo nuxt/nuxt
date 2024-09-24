@@ -1,6 +1,6 @@
 import type { Compilation, Compiler } from 'webpack'
-import webpack from 'webpack'
 import { extractQueryPartJS, isJS, validate } from './util'
+import { webpack } from '#builder'
 
 interface VueSSRServerPluginOptions {
   filename: string

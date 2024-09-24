@@ -1,5 +1,4 @@
 import pify from 'pify'
-import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
 import { resolve } from 'pathe'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
@@ -21,6 +20,8 @@ import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
 import { dynamicRequire } from './nitro/plugins/dynamic-require'
+
+import { webpack } from '#builder'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -65,7 +66,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     config.plugins!.push(composableKeysPlugin.webpack({
