@@ -26,6 +26,7 @@ jobs:
             kit
             nuxi
             nuxt
+            rspack
             schema
             test-utils
             ui-templates
