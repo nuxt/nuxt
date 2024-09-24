@@ -1121,12 +1121,6 @@ importers:
 
   playground:
     dependencies:
-      '@nuxt/rspack-builder':
-        specifier: workspace:*
-        version: link:../packages/rspack
-      '@nuxt/webpack-builder':
-        specifier: workspace:*
-        version: link:../packages/webpack
       nuxt:
         specifier: workspace:*
         version: link:../packages/nuxt
