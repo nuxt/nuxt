@@ -8,6 +8,7 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
     name: 'meta',
+    configKey: 'unhead',
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
@@ -52,11 +53,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     // Opt-out feature allowing dependencies using @vueuse/head to work
     const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
-    if (nuxt.options.experimental.polyfillVueUseHead) {
-      // backwards compatibility
-      nuxt.options.alias['@vueuse/head'] = unheadVue
-      addPlugin({ src: resolve(runtimeDir, 'plugins/vueuse-head-polyfill') })
-    }
 
     addTemplate({
       filename: 'unhead-plugins.mjs',

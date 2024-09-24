@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
-      - 2.x
+      - 3.x
 
-permissions:
-  pull-requests: write
-  contents: write
+permissions: {}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
@@ -16,15 +14,19 @@ concurrency:
 
 jobs:
   update:
-    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.')
+    if: github.repository_owner == 'nuxt' && !contains(github.event.head_commit.message, 'v3.') && !contains(github.event.head_commit.message, 'v4.')
     runs-on: ubuntu-latest
 
+    permissions:
+      pull-requests: write
+      contents: write
+
     steps:
-      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@0a44ba7841725637a19e28fa30b79a866c81b0a6 # v4.0.4
         with:
           node-version: 20
           cache: "pnpm"

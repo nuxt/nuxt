@@ -97,6 +97,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const getComponents = async (exportName: string): Promise<Component | null> => {
         const componentNameSegment = exportName === 'default' ? defaultComponentNameSegments : resolveComponentNameSegments(exportName, defaultComponentNameSegments)
         const pascalName = pascalCase(componentNameSegment)
+        if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
+          logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+        }
 
         if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
           warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
@@ -179,3 +182,5 @@ function warnAboutDuplicateComponent (componentName: string, filePath: string, d
     `\n - ${duplicatePath}`,
   )
 }
+
+const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

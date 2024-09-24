@@ -1,14 +1,15 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance, onServerPrefetch } from 'vue'
+import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import type { NuxtPayload } from '../nuxt'
 
 import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -22,7 +23,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
   if (payloadURL in cache) {
-    return cache[payloadURL]
+    return cache[payloadURL] || null
   }
   cache[payloadURL] = isPrerendered(url).then((prerendered) => {
     if (!prerendered) {
@@ -95,19 +96,20 @@ export async function isPrerendered (url = useRoute().path) {
   return !!rules.prerender && !rules.redirect
 }
 
-let payloadCache: any = null
+let payloadCache: NuxtPayload | null = null
+
 /** @since 3.4.0 */
 export async function getNuxtClientPayload () {
   if (import.meta.server) {
-    return
+    return null
   }
   if (payloadCache) {
     return payloadCache
   }
 
-  const el = document.getElementById('__NUXT_DATA__')
+  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
   if (!el) {
-    return {}
+    return {} as Partial<NuxtPayload>
   }
 
   const inlineData = await parsePayload(el.textContent || '')
@@ -117,7 +119,11 @@ export async function getNuxtClientPayload () {
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__,
+    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
+  }
+
+  if (payloadCache!.config?.public) {
+    payloadCache!.config.public = reactive(payloadCache!.config.public)
   }
 
   return payloadCache

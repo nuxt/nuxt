@@ -1,20 +1,38 @@
-import { addTypeTemplate } from 'nuxt/kit'
+import { addTypeTemplate, installModule } from 'nuxt/kit'
 
 export default defineNuxtConfig({
+  compatibilityDate: '2024-06-28',
   experimental: {
     typedPages: true,
     appManifest: true,
   },
   future: {
     typescriptBundlerResolution: process.env.MODULE_RESOLUTION === 'bundler',
-    compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3,
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   theme: './extends/bar',
   extends: [
     './extends/node_modules/foo',
   ],
+  app: {
+    head: {
+      // @ts-expect-error Promises are not allowed
+      title: Promise.resolve('Nuxt Fixture'),
+      // @ts-expect-error Functions are not allowed
+      titleTemplate: title => 'test',
+      meta: [
+        {
+          // Allows unknown property
+          property: 'og:thing',
+          content: '1234567890',
+        },
+      ],
+    },
+    pageTransition: {
+      // @ts-expect-error Functions are not allowed
+      onBeforeEnter: el => console.log(el),
+    },
+  },
   runtimeConfig: {
     baseURL: '',
     baseAPIToken: '',
@@ -42,6 +60,15 @@ export default defineNuxtConfig({
         filename: 'test.d.ts',
         getContents: () => 'declare type Fromage = "cheese"',
       })
+      function _test () {
+        installModule('~/modules/example', {
+          typeTest (val) {
+            // @ts-expect-error module type defines val as boolean
+            const b: string = val
+            return !!b
+          },
+        })
+      }
     },
     './modules/test',
     [

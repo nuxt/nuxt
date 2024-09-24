@@ -23,6 +23,13 @@ export interface ResolvePathOptions {
    * @default false
    */
   virtual?: boolean
+
+  /**
+   * Whether to fallback to the original path if the resolved path does not exist instead of returning the normalized input path.
+   *
+   * @default false
+   */
+  fallbackToOriginal?: boolean
 }
 
 /**
@@ -99,7 +106,7 @@ export async function resolvePath (path: string, opts: ResolvePathOptions = {}):
   }
 
   // Return normalized input
-  return path
+  return opts.fallbackToOriginal ? _path : path
 }
 
 /**
@@ -161,13 +168,13 @@ export function createResolver (base: string | URL): Resolver {
   }
 }
 
-export async function resolveNuxtModule (base: string, paths: string[]) {
-  const resolved = []
+export async function resolveNuxtModule (base: string, paths: string[]): Promise<string[]> {
+  const resolved: string[] = []
   const resolver = createResolver(base)
 
   for (const path of paths) {
     if (path.startsWith(base)) {
-      resolved.push(path.split('/index.ts')[0])
+      resolved.push(path.split('/index.ts')[0]!)
     } else {
       const resolvedPath = await resolver.resolvePath(path)
       resolved.push(resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length))
@@ -202,6 +209,12 @@ function existsInVFS (path: string, nuxt = tryUseNuxt()) {
 }
 
 export async function resolveFiles (path: string, pattern: string | string[], opts: { followSymbolicLinks?: boolean } = {}) {
-  const files = await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })
-  return files.map(p => resolve(path, p)).filter(p => !isIgnored(p)).sort()
+  const files: string[] = []
+  for (const file of await globby(pattern, { cwd: path, followSymbolicLinks: opts.followSymbolicLinks ?? true })) {
+    const p = resolve(path, file)
+    if (!isIgnored(p)) {
+      files.push(p)
+    }
+  }
+  return files.sort()
 }

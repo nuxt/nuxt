@@ -1,9 +1,10 @@
 import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
-import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from '#vue-router'
+import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
+import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
@@ -11,8 +12,8 @@ import type { NavigateToOptions } from '#app/composables/router'
 import { NuxtLayout, NuxtLink, NuxtPage, ServerComponent, WithTypes } from '#components'
 import { useRouter } from '#imports'
 
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
+type DefaultAsyncDataErrorValue = undefined
+type DefaultAsyncDataValue = undefined
 
 interface TestResponse { message: string }
 
@@ -242,6 +243,34 @@ describe('modules', () => {
     // @ts-expect-error we want to ensure we throw type error on invalid key
     defineNuxtConfig({ undeclaredKey: { other: false } })
   })
+
+  it('preserves options in defineNuxtModule setup without `.with()`', () => {
+    defineNuxtModule<{ foo?: string, baz: number }>({
+      defaults: {
+        baz: 100,
+      },
+      setup: (resolvedOptions) => {
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{ foo?: string, baz: number }>()
+      },
+    })
+  })
+
+  it('correctly typed resolved options in defineNuxtModule setup using `.with()`', () => {
+    defineNuxtModule<{
+      foo?: string
+      baz: number
+    }>().with({
+      defaults: {
+        foo: 'bar',
+      },
+      setup: (resolvedOptions) => {
+        expectTypeOf(resolvedOptions).toEqualTypeOf<{
+          foo: string
+          baz?: number | undefined
+        }>()
+      },
+    })
+  })
 })
 
 describe('nuxtApp', () => {
@@ -320,6 +349,7 @@ describe('runtimeConfig', () => {
 
 describe('head', () => {
   it('correctly types nuxt.config options', () => {
+    // @ts-expect-error invalid head option
     defineNuxtConfig({ app: { head: { titleTemplate: () => 'test' } } })
     defineNuxtConfig({
       app: {
@@ -537,6 +567,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       nuxt: {}
       fromLayer: boolean
       fromNuxtConfig: boolean

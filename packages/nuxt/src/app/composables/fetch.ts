@@ -1,5 +1,5 @@
 import type { FetchError, FetchOptions } from 'ofetch'
-import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitropack'
+import type { NitroFetchRequest, TypedInternalResponse, AvailableRouterMethod as _AvailableRouterMethod } from 'nitro/types'
 import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
@@ -7,9 +7,6 @@ import { hash } from 'ohash'
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
-
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 // @ts-expect-error virtual file
 import { fetchDefaults } from '#build/nuxt.config.mjs'
@@ -20,6 +17,7 @@ type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, Lowercase<M>>
 
 type ComputedOptions<T extends Record<string, any>> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
@@ -33,7 +31,7 @@ export interface UseFetchOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
@@ -57,11 +55,11 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
  * See {@link https://nuxt.com/docs/api/composables/use-fetch}
@@ -80,7 +78,7 @@ export function useFetch<
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -89,7 +87,7 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
@@ -154,7 +152,7 @@ export function useFetch<
   let controller: AbortController
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
-    controller?.abort?.()
+    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
     /**
@@ -166,7 +164,7 @@ export function useFetch<
     const timeoutLength = toValue(opts.timeout)
     let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(), timeoutLength)
+      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 
@@ -195,11 +193,11 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -212,7 +210,7 @@ export function useLazyFetch<
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
-): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | DefaultAsyncDataErrorValue>
+): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
   ErrorT = FetchError,
@@ -221,7 +219,7 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DefaultAsyncDataValue,
+  DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,

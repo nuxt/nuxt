@@ -2,7 +2,7 @@ import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
   /** @private */
-  _majorVersion: 3,
+  _majorVersion: 4,
   /** @private */
   _legacyGenerate: false,
   /** @private */
@@ -23,7 +23,10 @@ export default defineUntypedSchema({
   _nuxtConfigFiles: [],
   /** @private */
   appDir: '',
-  /** @private */
+  /**
+   * @private
+   * @type {Array<{ meta: ModuleMeta; timings?: Record<string, number | undefined>; entryPath?: string }>}
+   */
   _installedModules: [],
   /** @private */
   _modules: [],

@@ -1,14 +1,16 @@
 import { fileURLToPath } from 'node:url'
 import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
-import { basename, dirname, join, resolve } from 'pathe'
+import { copyFile } from 'node:fs/promises'
+import { basename, dirname, join } from 'pathe'
 import type { Plugin } from 'vite'
 // @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
 import Critters from 'critters'
 import { genObjectFromRawEntries } from 'knitwork'
-import htmlMinifier from 'html-minifier'
-import { globby } from 'globby'
+import htmlnano from 'htmlnano'
+import { glob } from 'tinyglobby'
 import { camelCase } from 'scule'
 
+import { version } from '../../nuxt/package.json'
 import genericMessages from '../templates/messages.json'
 
 const r = (path: string) => fileURLToPath(new URL(join('..', path), import.meta.url))
@@ -24,9 +26,16 @@ export const RenderPlugin = () => {
     enforce: 'post',
     async writeBundle () {
       const critters = new Critters({ path: outputDir })
-      const htmlFiles = await globby(resolve(outputDir, 'templates/**/*.html'), { absolute: true })
+      const htmlFiles = await glob(['templates/**/*.html'], {
+        cwd: outputDir,
+        absolute: true,
+      })
 
-      const templateExports = []
+      const templateExports: Array<{
+        exportName: string
+        templateName: string
+        types: string
+      }> = []
 
       for (const fileName of htmlFiles) {
         // Infer template name
@@ -43,13 +52,18 @@ export const RenderPlugin = () => {
           // Apply critters to inline styles
           html = await critters.process(html)
         }
+        html = html.replace(/<html[^>]*>/, '<html lang="en">')
         // We no longer need references to external CSS
         html = html.replace(/<link[^>]*>/g, '')
 
         // Inline SVGs
-        const svgSources = Array.from(html.matchAll(/src="([^"]+)"|url([^)]+)/g))
-          .map(m => m[1])
-          .filter(src => src?.match(/\.svg$/))
+        const svgSources: string[] = []
+
+        for (const [_, src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
+          if (src?.match(/\.svg$/)) {
+            svgSources.push(src)
+          }
+        }
 
         for (const src of svgSources) {
           const svg = readFileSync(join(outputDir, src), 'utf-8')
@@ -58,8 +72,13 @@ export const RenderPlugin = () => {
         }
 
         // Inline our scripts
-        const scriptSources = Array.from(html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g))
-          .filter(([_block, src]) => src?.match(/^\/.*\.js$/))
+        const scriptSources: [string, string][] = []
+
+        for (const [block, src] of html.matchAll(/<script[^>]*src="([^"]*)"[^>]*>[\s\S]*?<\/script>/g)) {
+          if (src?.match(/^\/.*\.js$/)) {
+            scriptSources.push([block, src])
+          }
+        }
 
         for (const [scriptBlock, src] of scriptSources) {
           let contents = readFileSync(join(outputDir, src), 'utf-8')
@@ -68,12 +87,14 @@ export const RenderPlugin = () => {
         }
 
         // Minify HTML
-        html = htmlMinifier.minify(html, { collapseWhitespace: true })
+        html = await htmlnano.process(html, { collapseWhitespace: 'aggressive' }).then(r => r.html)
 
         if (!isCompleteHTML) {
           html = html.replace('<html><head></head><body>', '')
           html = html.replace('</body></html>', '')
         }
+
+        html = html.replace(/\{\{ version \}\}/g, version)
 
         // Load messages
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
@@ -82,8 +103,10 @@ export const RenderPlugin = () => {
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let templateString = chunks.shift()
-        for (const expression of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
-          templateString += ` + (${expression[1].trim()}) + ${chunks.shift()}`
+        for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+          if (expression) {
+            templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
+          }
         }
         if (chunks.length > 0) {
           templateString += ' + ' + chunks.join(' + ')
@@ -109,7 +132,7 @@ export const RenderPlugin = () => {
           .replace(/>\{\{\{\s*(\w+)\s*\}\}\}<\/[\w-]*>/g, ' v-html="$1" />')
         // We are not matching <link> <script> and <meta> tags as these aren't used yet in nuxt/ui
         // and should be taken care of wherever this SFC is used
-        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1].replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
+        const title = html.match(/<title[^>]*>([\s\S]*)<\/title>/)?.[1]?.replace(/\{\{([\s\S]+?)\}\}/g, (r) => {
           return `\${${r.slice(2, -2)}}`.replace(/messages\./g, 'props.')
         })
         const styleContent = Array.from(html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)).map(block => block[1]).join('\n')
@@ -118,11 +141,16 @@ export const RenderPlugin = () => {
           if (lastChar && !['}', '.', '@', '*', ':'].includes(lastChar)) {
             return ';' + lastChar
           }
-          return lastChar
+          return lastChar || ''
         }).replace(/@media[^{]*\{\}/g, '')
-        const inlineScripts = Array.from(html.matchAll(/<script>([\s\S]*?)<\/script>/g))
-          .map(block => block[1])
-          .filter(i => !i.includes('const t=document.createElement("link")'))
+
+        const inlineScripts: string[] = []
+        for (const [_, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+          if (i && !i.includes('const t=document.createElement("link")')) {
+            inlineScripts.push(i)
+          }
+        }
+
         const props = genObjectFromRawEntries(Object.entries({ ...genericMessages, ...messages }).map(([key, value]) => [key, {
           type: typeof value === 'string' ? 'String' : typeof value === 'number' ? 'Number' : typeof value === 'boolean' ? 'Boolean' : 'undefined',
           default: JSON.stringify(value),
@@ -166,6 +194,15 @@ export const RenderPlugin = () => {
         // Remove original html file
         unlinkSync(fileName)
         rmdirSync(dirname(fileName))
+      }
+
+      // we manually copy files across rather than using symbolic links for better windows support
+      const nuxtRoot = r('../nuxt')
+      for (const file of ['error-404.vue', 'error-500.vue', 'error-dev.vue', 'welcome.vue']) {
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/app/components', file))
+      }
+      for (const file of ['error-500.ts', 'error-dev.ts']) {
+        await copyFile(r(`dist/templates/${file}`), join(nuxtRoot, 'src/core/runtime/nitro', file))
       }
     },
   }

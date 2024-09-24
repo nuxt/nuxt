@@ -5,7 +5,6 @@ import { defineNuxtPlugin } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'
 // @ts-expect-error virtual file
 import _routes from '#build/routes'
-// @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
 
 let routes: string[]

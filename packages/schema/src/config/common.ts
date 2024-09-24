@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs'
+import { readdir } from 'node:fs/promises'
 import { defineUntypedSchema } from 'untyped'
-import { join, relative, resolve } from 'pathe'
+import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
@@ -13,12 +14,24 @@ export default defineUntypedSchema({
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
-   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
-   * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
-   * @see https://github.com/unjs/giget
+   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
+   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
+   * @see [`giget` documentation](https://github.com/unjs/giget)
    * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
+
+  /**
+   * Specify a compatibility date for your app.
+   *
+   * This is used to control the behavior of presets in Nitro, Nuxt Image
+   * and other modules that may change behavior without a major version bump.
+   *
+   * We plan to improve the tooling around this feature in the future.
+   *
+   * @type {typeof import('compatx').CompatibilityDateSpec}
+   */
+  compatibilityDate: undefined,
 
   /**
    * Extend project from a local or remote source.
@@ -106,6 +119,17 @@ export default defineUntypedSchema({
 
       const srcDir = resolve(rootDir, 'app')
       if (!existsSync(srcDir)) {
+        return rootDir
+      }
+
+      const srcDirFiles = new Set<string>()
+      const files = await readdir(srcDir).catch(() => [])
+      for (const file of files) {
+        if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+          srcDirFiles.add(file)
+        }
+      }
+      if (srcDirFiles.size === 0) {
         for (const file of ['app.vue', 'App.vue']) {
           if (existsSync(resolve(rootDir, file))) {
             return rootDir
@@ -132,9 +156,12 @@ export default defineUntypedSchema({
    */
   serverDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-
-      return resolve(await get('rootDir') as string, (val || isV4) ? 'server' : resolve(await get('srcDir') as string, 'server'))
+      if (val) {
+        const rootDir = await get('rootDir') as string
+        return resolve(rootDir, val)
+      }
+      const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+      return join(isV4 ? await get('rootDir') as string : await get('srcDir') as string, 'server')
     },
   },
 
@@ -151,11 +178,16 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => resolve(await get('rootDir') as string, val || '.nuxt'),
+    $resolve: async (val: string | undefined, get) => {
+      const rootDir = await get('rootDir') as string
+      return resolve(rootDir, val ?? '.nuxt')
+    },
   },
 
   /**
-   * For multi-app projects, the unique name of the Nuxt application.
+   * For multi-app projects, the unique id of the Nuxt application.
+   *
+   * Defaults to `nuxt-app`.
    */
   appId: {
     $resolve: (val: string) => val ?? 'nuxt-app',
@@ -263,7 +295,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
@@ -279,7 +311,8 @@ export default defineUntypedSchema({
       $resolve: async (val: string | undefined, get) => {
         const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
         if (isV4) {
-          return resolve(await get('srcDir') as string, val || '.')
+          const [srcDir, rootDir] = await Promise.all([get('srcDir') as Promise<string>, get('rootDir') as Promise<string>])
+          return resolve(await get('srcDir') as string, val || (srcDir === rootDir ? 'app' : '.'))
         }
         return val || 'app'
       },
@@ -397,8 +430,8 @@ export default defineUntypedSchema({
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [assetsDir]: join(srcDir, assetsDir),
-        [publicDir]: join(srcDir, publicDir),
+        [basename(assetsDir)]: resolve(srcDir, assetsDir),
+        [basename(publicDir)]: resolve(srcDir, publicDir),
         ...val,
       }
     },
@@ -529,7 +562,7 @@ export default defineUntypedSchema({
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '' // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
+   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }

@@ -1,5 +1,5 @@
 import type { Component } from 'vue'
-import type { RouteLocationRaw, Router } from '#vue-router'
+import type { RouteLocationRaw, Router } from 'vue-router'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
 import { useRouter } from './router'
@@ -14,7 +14,12 @@ export const preloadComponents = async (components: string | string[]) => {
   const nuxtApp = useNuxtApp()
 
   components = toArray(components)
-  await Promise.all(components.map(name => _loadAsyncComponent(nuxtApp.vueApp._context.components[name])))
+  await Promise.all(components.map((name) => {
+    const component = nuxtApp.vueApp._context.components[name]
+    if (component) {
+      return _loadAsyncComponent(component)
+    }
+  }))
 }
 
 /**
@@ -23,6 +28,8 @@ export const preloadComponents = async (components: string | string[]) => {
  * @since 3.0.0
  */
 export const prefetchComponents = (components: string | string[]) => {
+  if (import.meta.server) { return }
+
   // TODO
   return preloadComponents(components)
 }
@@ -36,7 +43,7 @@ function _loadAsyncComponent (component: Component) {
 }
 
 /** @since 3.0.0 */
-export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<any>> } = useRouter()): Promise<void> {
+export async function preloadRouteComponents (to: RouteLocationRaw, router: Router & { _routePreloaded?: Set<string>, _preloadPromises?: Array<Promise<unknown>> } = useRouter()): Promise<void> {
   if (import.meta.server) { return }
 
   const { path, matched } = router.resolve(to)
@@ -59,7 +66,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
     .filter(component => typeof component === 'function')
 
   for (const component of components) {
-    const promise = Promise.resolve((component as Function)())
+    const promise = Promise.resolve((component as () => unknown)())
       .catch(() => {})
       .finally(() => promises.splice(promises.indexOf(promise)))
     promises.push(promise)

@@ -1,10 +1,11 @@
+import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
 import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
 import { scanComponents } from '../src/components/scan'
 
-const fixtureDir = resolve(__dirname, 'fixture')
+const fixtureDir = fileURLToPath(new URL('fixture', import.meta.url))
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({
@@ -269,6 +270,8 @@ it('components:scanComponents', async () => {
   for (const c of scannedComponents) {
     // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
+    // @ts-expect-error _scanned is added internally but we don't want it to be in the snapshot
+    delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
 })

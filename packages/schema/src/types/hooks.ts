@@ -6,7 +6,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitropack'
+import type { Nitro, NitroConfig } from 'nitro/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw } from 'vue-router'
 import type { VueCompilerOptions } from '@vue/language-core'
@@ -59,6 +59,7 @@ export type NuxtLayout = {
   file: string
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ImportPresetWithDeprecation extends InlinePreset {
 }
 

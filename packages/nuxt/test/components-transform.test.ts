@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
+import { normalize } from 'pathe'
 
 import { createTransformPlugin } from '../src/components/transform'
 
@@ -14,7 +15,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, Bar } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue';
+      "
+      import Foo from '/Foo.vue';
       import { Bar } from '/Bar.vue';
       "
     `)
@@ -27,7 +29,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=server,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)
@@ -53,7 +56,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=client,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)
@@ -92,7 +96,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)
-    return (typeof result === 'string' ? result : result?.code)?.replaceAll(rootDir, '<repo>/')
+    return (typeof result === 'string' ? result : result?.code)?.replaceAll(normalize(rootDir), '<repo>/')
   }
 }
 
