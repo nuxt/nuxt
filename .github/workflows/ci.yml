@@ -199,12 +199,18 @@ jobs:
         exclude:
           - builder: "webpack"
             payload: "js"
+          - builder: "rspack"
+            payload: "js"
           - manifest: "manifest-off"
             payload: "js"
           - context: "default"
             payload: "js"
           - os: windows-latest
             payload: "js"
+          - env: "dev"
+            builder: "rspack"
+          - manifest: "manifest-off"
+            builder: "rspack"
           - env: "dev"
             builder: "webpack"
           - manifest: "manifest-off"
