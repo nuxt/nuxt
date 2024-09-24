@@ -1,5 +1,8 @@
 import { useNuxt } from '@nuxt/kit'
-import VirtualModulesPlugin from 'webpack-virtual-modules'
+// @ts-expect-error work around jiti issue with module.exports =
+import * as _VirtualModulesPlugin from 'webpack-virtual-modules'
+// @ts-expect-error work around jiti issue with module.exports =
+const VirtualModulesPlugin = (_VirtualModulesPlugin.default || _VirtualModulesPlugin) as typeof import('webpack-virtual-modules')
 
 export function registerVirtualModules () {
   const nuxt = useNuxt()
