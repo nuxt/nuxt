@@ -1,5 +1,5 @@
 import webpack from '@rspack/core'
 
-export const MiniCssExtractPlugin = webpack.CssExtractRspackPlugin
-
+export const builder = 'rspack'
 export { webpack }
+export const MiniCssExtractPlugin = webpack.CssExtractRspackPlugin

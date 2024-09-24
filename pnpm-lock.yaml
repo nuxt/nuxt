@@ -492,6 +492,9 @@ importers:
       vitest:
         specifier: 2.1.1
         version: 2.1.1(@types/node@20.16.6)(happy-dom@15.7.4)(sass@1.78.0)(terser@5.32.0)
+      webpack:
+        specifier: 5.94.0
+        version: 5.94.0(esbuild@0.24.0)
 
   packages/rspack:
     dependencies:

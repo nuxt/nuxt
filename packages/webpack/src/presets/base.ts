@@ -15,7 +15,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
-import { webpack } from '#builder'
+import { builder, webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -98,21 +98,21 @@ function basePlugins (ctx: WebpackConfigContext) {
         reporter: {
           change: (_, { shortPath }) => {
             if (!ctx.isServer) {
-              ctx.nuxt.callHook('webpack:change', shortPath)
+              ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
           done: ({ state }) => {
             if (state.hasErrors) {
-              ctx.nuxt.callHook('webpack:error')
+              ctx.nuxt.callHook(`${builder}:error`)
             } else {
               logger.success(`${state.name} ${state.message}`)
             }
           },
           allDone: () => {
-            ctx.nuxt.callHook('webpack:done')
+            ctx.nuxt.callHook(`${builder}:done`)
           },
           progress ({ statesArray }) {
-            ctx.nuxt.callHook('webpack:progress', statesArray)
+            ctx.nuxt.callHook(`${builder}:progress`, statesArray)
           },
         },
       },
@@ -158,7 +158,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
     /vue-demi/,
-    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/,
+    /(^|\/)nuxt\/(src\/|dist\/)?(app|[^/]+\/runtime)($|\/)/,
   ]
 
   for (let pattern of ctx.options.build.transpile) {

@@ -1,6 +1,7 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import type { Configuration as WebpackConfiguration } from 'webpack'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -281,7 +282,8 @@ export default defineNuxtModule<ComponentsOptions>({
         })
       }
     })
-    nuxt.hook('webpack:config', (configs) => {
+
+    function hook (configs: WebpackConfiguration[]) {
       configs.forEach((config) => {
         const mode = config.name === 'client' ? 'client' : 'server'
         config.plugins = config.plugins || []
@@ -315,6 +317,8 @@ export default defineNuxtModule<ComponentsOptions>({
           }
         }
       })
-    })
+    }
+    nuxt.hook('rspack:config', hook)
+    nuxt.hook('webpack:config', hook)
   },
 })

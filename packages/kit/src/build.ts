@@ -55,7 +55,7 @@ export function extendWebpackConfig (
     return
   }
 
-  nuxt.hook('webpack:config', (configs: WebpackConfig[]) => {
+  function hook (configs: WebpackConfig[]) {
     if (options.server !== false) {
       const config = configs.find(i => i.name === 'server')
       if (config) {
@@ -68,7 +68,10 @@ export function extendWebpackConfig (
         fn(config)
       }
     }
-  })
+  }
+
+  nuxt.hook('webpack:config', hook)
+  nuxt.hook('rspack:config', hook)
 }
 
 /**

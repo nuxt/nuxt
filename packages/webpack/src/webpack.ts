@@ -21,7 +21,7 @@ import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
 import { dynamicRequire } from './nitro/plugins/dynamic-require'
 
-import { webpack } from '#builder'
+import { builder, webpack } from '#builder'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -56,7 +56,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   prerenderRollupPlugins.push(dynamicRequirePlugin)
   rollupPlugins.push(dynamicRequirePlugin)
 
-  await nuxt.callHook('webpack:config', webpackConfigs)
+  await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
@@ -76,7 +76,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }))
   }
 
-  await nuxt.callHook('webpack:configResolved', webpackConfigs)
+  await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
@@ -146,11 +146,11 @@ async function createDevMiddleware (compiler: Compiler) {
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
-  await nuxt.callHook('webpack:compile', { name: compiler.options.name!, compiler })
+  await nuxt.callHook(`${builder}:compile`, { name: compiler.options.name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('webpack:compiled', { name: compiler.options.name!, compiler, stats })
+    await nuxt.callHook(`${builder}:compiled`, { name: compiler.options.name!, compiler, stats })
   })
 
   // --- Dev Build ---

@@ -9,6 +9,7 @@ import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 import { findPath, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule } from '@nuxt/kit'
 import escapeRE from 'escape-string-regexp'
 import { defu } from 'defu'
+import type { Compiler as WebpackCompiler, Configuration as WebpackConfiguration } from 'webpack'
 import { dynamicEventHandler } from 'h3'
 import { isWindows } from 'std-env'
 import { ImpoundPlugin } from 'impound'
@@ -448,7 +449,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         }
       }
     })
-    nuxt.hook('webpack:config', (configuration) => {
+    function hook (configuration: WebpackConfiguration[]) {
       const clientConfig = configuration.find(config => config.name === 'client')
       if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
       if (Array.isArray(clientConfig!.resolve!.alias)) {
@@ -459,7 +460,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       } else {
         clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
       }
-    })
+    }
+    nuxt.hook('webpack:config', hook)
+    nuxt.hook('rspack:config', hook)
   }
 
   // Setup handlers
@@ -545,12 +548,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
-    nuxt.hook('webpack:compile', ({ name, compiler }) => {
+    function webpackHook ({ name, compiler }: { name: string, compiler: WebpackCompiler }) {
       if (name === 'server') {
         const memfs = compiler.outputFileSystem as typeof import('node:fs')
         nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
       }
-    })
+    }
+    nuxt.hook('rspack:compile', webpackHook)
+    nuxt.hook('webpack:compile', webpackHook)
+    nuxt.hook('rspack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 

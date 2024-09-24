@@ -4,4 +4,5 @@ declare module '#builder' {
 
   export const webpack: typeof Webpack
   export const MiniCssExtractPlugin: typeof MiniCssExtractPlugin
+  export const builder: 'webpack' | 'rspack'
 }
