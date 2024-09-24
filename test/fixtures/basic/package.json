@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@nuxt/webpack-builder": "workspace:*",
+    "@nuxt/rspack-builder": "workspace:*",
     "nuxt": "workspace:*"
   },
   "devDependencies": {
