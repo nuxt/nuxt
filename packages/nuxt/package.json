@@ -120,7 +120,7 @@
     "unstorage": "^1.12.0",
     "untyped": "^1.4.2",
     "vue": "^3.5.8",
-    "vue-bundle-renderer": "^2.1.0",
+    "vue-bundle-renderer": "^2.1.1",
     "vue-devtools-stub": "^0.1.0",
     "vue-router": "^4.4.5"
   },
