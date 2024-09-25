@@ -16,7 +16,7 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
       conditions = config.mode === 'test' ? [...config.resolve.conditions, 'import', 'require'] : config.resolve.conditions
     },
     async resolveId (id, importer) {
-      if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:')) || exclude.some(e => id.startsWith(e))) {
+      if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:') && !importer.startsWith('\0virtual:')) || exclude.some(e => id.startsWith(e))) {
         return
       }
 

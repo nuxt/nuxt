@@ -46,6 +46,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -241,6 +242,10 @@ async function initNuxt (nuxt: Nuxt) {
       await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
     }
   }
+
+  // Support Nuxt VFS
+  addBuildPlugin(VirtualFSPlugin(nuxt, 'server'), { client: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, 'client'), { server: false })
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
