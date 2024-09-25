@@ -35,10 +35,10 @@ function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
-export const islandsTransform = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
+export const IslandsTransformPlugin = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
   const isVite = meta.framework === 'vite'
   return {
-    name: 'server-only-component-transform',
+    name: 'nuxt:server-only-component-transform',
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
@@ -164,10 +164,10 @@ function getPropsToString (bindings: Record<string, string>): string {
   }
 }
 
-export const componentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
+export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
   const { buildDir } = options
   return {
-    name: 'componentsChunkPlugin',
+    name: 'nuxt:components-chunk',
     vite: {
       async config (config) {
         const components = options.getComponents()

@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Plugin } from 'vite'
 import type { Component } from '@nuxt/schema'
 import type { UnpluginOptions } from 'unplugin'
-import { islandsTransform } from '../src/components/plugins/islands-transform'
+import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform'
 import { normalizeLineEndings } from './utils'
 
 const getComponents = () => [{
@@ -18,13 +18,13 @@ const getComponents = () => [{
   preload: false,
 }] as Component[]
 
-const pluginWebpack = islandsTransform.raw({
+const pluginWebpack = IslandsTransformPlugin.raw({
   getComponents,
   selectiveClient: true,
 }, { framework: 'webpack', webpack: { compiler: {} as any } })
 
 const viteTransform = async (source: string, id: string, selectiveClient = false) => {
-  const vitePlugin = islandsTransform.raw({
+  const vitePlugin = IslandsTransformPlugin.raw({
     getComponents,
     selectiveClient,
   }, { framework: 'vite' }) as Plugin

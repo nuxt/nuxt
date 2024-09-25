@@ -9,7 +9,7 @@ import { scanComponents } from './scan'
 
 import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
 import { LoaderPlugin } from './plugins/loader'
-import { componentsChunkPlugin, islandsTransform } from './plugins/islands-transform'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
 import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
@@ -243,7 +243,7 @@ export default defineNuxtModule<ComponentsOptions>({
         if (isClient && selectiveClient) {
           writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           if (!nuxt.options.dev) {
-            config.plugins.push(componentsChunkPlugin.vite({
+            config.plugins.push(ComponentsChunkPlugin.vite({
               getComponents,
               buildDir: nuxt.options.buildDir,
             }))
@@ -259,7 +259,7 @@ export default defineNuxtModule<ComponentsOptions>({
         }
 
         if (isServer) {
-          config.plugins.push(islandsTransform.vite({
+          config.plugins.push(IslandsTransformPlugin.vite({
             getComponents,
             selectiveClient,
           }))
@@ -308,7 +308,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
         if (nuxt.options.experimental.componentIslands) {
           if (mode === 'server') {
-            config.plugins.push(islandsTransform.webpack({
+            config.plugins.push(IslandsTransformPlugin.webpack({
               getComponents,
             }))
           } else {
