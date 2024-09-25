@@ -109,6 +109,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       alias: {
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
+        'nitro/runtime': '#build/nitro.client.mjs',
       },
       dedupe: [
         'vue',
