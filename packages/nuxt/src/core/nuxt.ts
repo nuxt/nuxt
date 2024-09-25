@@ -244,8 +244,8 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Support Nuxt VFS
-  addBuildPlugin(VirtualFSPlugin(nuxt, 'server'), { client: false })
-  addBuildPlugin(VirtualFSPlugin(nuxt, 'client'), { server: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'client', alias: { 'nitro/runtime': '#build/nitro.client.mjs' } }), { server: false })
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))

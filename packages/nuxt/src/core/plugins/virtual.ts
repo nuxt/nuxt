@@ -4,11 +4,17 @@ import { createUnplugin } from 'unplugin'
 
 const PREFIX = '\0virtual:nuxt:'
 
-export const VirtualFSPlugin = (nuxt = useNuxt(), mode: 'client' | 'server') => createUnplugin(() => {
+interface VirtualFSPluginOptions {
+  mode: 'client' | 'server'
+  alias?: Record<string, string>
+}
+
+export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOptions) => createUnplugin(() => {
   const extensions = ['', ...nuxt.options.extensions]
+  const alias = { ...nuxt.options.alias, ...options.alias }
 
   const resolveWithExt = (id: string) => {
-    for (const suffix of ['', '.' + mode]) {
+    for (const suffix of ['', '.' + options.mode]) {
       for (const ext of extensions) {
         const rId = id + suffix + ext
         if (rId in nuxt.vfs) {
@@ -24,7 +30,7 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), mode: 'client' | 'server') => 
 
     resolveId (id, importer) {
       const _id = id
-      id = resolveAlias(id, nuxt.options.alias)
+      id = resolveAlias(id, alias)
 
       if (process.platform === 'win32' && isAbsolute(id)) {
         // Add back C: prefix on Windows
