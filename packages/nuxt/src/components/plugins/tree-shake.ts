@@ -20,7 +20,7 @@ const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
 const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
 
-export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplatePluginOptions) => {
+export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
   return {
     name: 'nuxt:tree-shake-template',

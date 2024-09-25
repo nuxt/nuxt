@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -15,7 +15,6 @@ import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
-import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
@@ -423,13 +422,11 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const pageMetaOptions: PageMetaPluginOptions = {
-      dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }
     nuxt.hook('modules:done', () => {
-      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
+      addBuildPlugin(PageMetaPlugin({
+        dev: nuxt.options.dev,
+        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      }))
     })
 
     // Add prefetching support for middleware & layouts
