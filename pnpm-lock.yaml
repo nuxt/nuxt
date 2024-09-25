@@ -249,6 +249,9 @@ importers:
         specifier: ^1.4.2
         version: 1.4.2
     devDependencies:
+      '@rspack/core':
+        specifier: npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901
+        version: '@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901'
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
