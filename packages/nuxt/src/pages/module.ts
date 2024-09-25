@@ -423,13 +423,11 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const pageMetaOptions: PageMetaPluginOptions = {
-      dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }
     nuxt.hook('modules:done', () => {
-      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
+      addBuildPlugin(PageMetaPlugin({
+        dev: nuxt.options.dev,
+        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      }))
     })
 
     // Add prefetching support for middleware & layouts

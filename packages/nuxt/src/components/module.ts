@@ -1,6 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -10,7 +10,7 @@ import { scanComponents } from './scan'
 import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
 import { LoaderPlugin } from './plugins/loader'
 import { componentsChunkPlugin, islandsTransform } from './plugins/islands-transform'
-import { createTransformPlugin } from './plugins/transform'
+import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 
@@ -134,14 +134,8 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate(componentsMetadataTemplate)
     }
 
-    const TransformPluginServer = createTransformPlugin(nuxt, getComponents, 'server')
-    const TransformPluginClient = createTransformPlugin(nuxt, getComponents, 'client')
-
-    addVitePlugin(() => TransformPluginServer.vite(), { server: true, client: false })
-    addVitePlugin(() => TransformPluginClient.vite(), { server: false, client: true })
-
-    addWebpackPlugin(() => TransformPluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(() => TransformPluginClient.webpack(), { server: false, client: true })
+    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'server'), { server: true, client: false })
+    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'client'), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
