@@ -4,7 +4,7 @@ import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
 import { normalize } from 'pathe'
 
-import { createTransformPlugin } from '../src/components/transform'
+import { createTransformPlugin } from '../src/components/plugins/transform'
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {

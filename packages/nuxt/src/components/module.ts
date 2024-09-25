@@ -4,14 +4,15 @@ import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVit
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
-import { clientFallbackAutoIdPlugin } from './client-fallback-auto-id'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
-import { loaderPlugin } from './loader'
-import { TreeShakeTemplatePlugin } from './tree-shake'
-import { componentsChunkPlugin, islandsTransform } from './islandsTransform'
-import { createTransformPlugin } from './transform'
-import { nameDevPlugin } from './nameDev'
+
+import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
+import { LoaderPlugin } from './plugins/loader'
+import { componentsChunkPlugin, islandsTransform } from './plugins/islands-transform'
+import { createTransformPlugin } from './plugins/transform'
+import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
+import { ComponentNamePlugin } from './plugins/component-names'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -44,7 +45,7 @@ export default defineNuxtModule<ComponentsOptions>({
     }
 
     if (nuxt.options.dev || nuxt.options.test) {
-      addBuildPlugin(nameDevPlugin({
+      addBuildPlugin(ComponentNamePlugin({
         components: getComponents,
       }))
     }
@@ -134,14 +135,14 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate(componentsMetadataTemplate)
     }
 
-    const unpluginServer = createTransformPlugin(nuxt, getComponents, 'server')
-    const unpluginClient = createTransformPlugin(nuxt, getComponents, 'client')
+    const TransformPluginServer = createTransformPlugin(nuxt, getComponents, 'server')
+    const TransformPluginClient = createTransformPlugin(nuxt, getComponents, 'client')
 
-    addVitePlugin(() => unpluginServer.vite(), { server: true, client: false })
-    addVitePlugin(() => unpluginClient.vite(), { server: false, client: true })
+    addVitePlugin(() => TransformPluginServer.vite(), { server: true, client: false })
+    addVitePlugin(() => TransformPluginClient.vite(), { server: false, client: true })
 
-    addWebpackPlugin(() => unpluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(() => unpluginClient.webpack(), { server: false, client: true })
+    addWebpackPlugin(() => TransformPluginServer.webpack(), { server: true, client: false })
+    addWebpackPlugin(() => TransformPluginClient.webpack(), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -230,12 +231,12 @@ export default defineNuxtModule<ComponentsOptions>({
         }))
       }
       if (nuxt.options.experimental.clientFallback) {
-        config.plugins.push(clientFallbackAutoIdPlugin.vite({
+        config.plugins.push(ClientFallbackAutoIdPlugin.vite({
           sourcemap: !!nuxt.options.sourcemap[mode],
           rootDir: nuxt.options.rootDir,
         }))
       }
-      config.plugins.push(loaderPlugin.vite({
+      config.plugins.push(LoaderPlugin.vite({
         sourcemap: !!nuxt.options.sourcemap[mode],
         getComponents,
         mode,
@@ -299,12 +300,12 @@ export default defineNuxtModule<ComponentsOptions>({
           }))
         }
         if (nuxt.options.experimental.clientFallback) {
-          config.plugins.push(clientFallbackAutoIdPlugin.webpack({
+          config.plugins.push(ClientFallbackAutoIdPlugin.webpack({
             sourcemap: !!nuxt.options.sourcemap[mode],
             rootDir: nuxt.options.rootDir,
           }))
         }
-        config.plugins.push(loaderPlugin.webpack({
+        config.plugins.push(LoaderPlugin.webpack({
           sourcemap: !!nuxt.options.sourcemap[mode],
           getComponents,
           mode,

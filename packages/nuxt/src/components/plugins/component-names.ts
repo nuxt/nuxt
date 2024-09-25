@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import type { Program } from 'acorn'
 import MagicString from 'magic-string'
 import type { Component } from 'nuxt/schema'
-import { isVue } from '../core/utils'
+import { isVue } from '../../core/utils'
 
 interface NameDevPluginOptions {
   components: () => Component[]
@@ -10,7 +10,7 @@ interface NameDevPluginOptions {
 /**
  * Set the default name of components to their PascalCase name
  */
-export const nameDevPlugin = (options: NameDevPluginOptions) => createUnplugin(() => {
+export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:name-dev-plugin',
     enforce: 'post',

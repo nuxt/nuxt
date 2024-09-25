@@ -6,7 +6,7 @@ import type { AssignmentProperty, CallExpression, Identifier, Literal, MemberExp
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { distDir } from '../dirs'
+import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
