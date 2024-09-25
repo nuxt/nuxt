@@ -90,8 +90,8 @@ importers:
         specifier: 2.0.3
         version: 2.0.3
       devalue:
-        specifier: 5.1.0
-        version: 5.1.0
+        specifier: 5.1.1
+        version: 5.1.1
       eslint:
         specifier: 9.11.1
         version: 9.11.1(jiti@2.0.0)
@@ -331,8 +331,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       devalue:
-        specifier: ^5.1.0
-        version: 5.1.0
+        specifier: ^5.1.1
+        version: 5.1.1
       errx:
         specifier: ^0.1.0
         version: 0.1.0
@@ -3873,8 +3873,8 @@ packages:
     resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
     engines: {node: '>=8'}
 
-  devalue@5.1.0:
-    resolution: {integrity: sha512-N1MxQrdI1KmHTVfiGzEi6J2rEtrGZU1f2CELFpqjqlBwl/KgQDjPpszqySb4W3+w3YWwjt2++OExkh2r6O2VPA==}
+  devalue@5.1.1:
+    resolution: {integrity: sha512-maua5KUiapvEwiEAe+XnlZ3Rh0GD+qI1J/nb9vrJc3muPXvcF/8gXYTWF76+5DAqHyDUtOIImEuo0YKE9mshVw==}
 
   devlop@1.1.0:
     resolution: {integrity: sha512-RWmIqhcFf1lRYBvNmr7qTNuyCt/7/ns2jbpp1+PalgE/rDQcBT0fioSMUpJ93irlUhC5hrg4cYqe6U+0ImW0rA==}
@@ -10614,7 +10614,7 @@ snapshots:
 
   detect-libc@2.0.3: {}
 
-  devalue@5.1.0: {}
+  devalue@5.1.1: {}
 
   devlop@1.1.0:
     dependencies:
