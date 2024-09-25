@@ -42,7 +42,7 @@
     "@vue/compiler-core": "3.5.8",
     "@vue/compiler-dom": "3.5.8",
     "@vue/shared": "3.5.8",
-    "@types/node": "20.16.6",
+    "@types/node": "20.16.7",
     "magic-string": "^0.30.11",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
@@ -51,7 +51,7 @@
     "send": ">=0.19.0",
     "typescript": "5.6.2",
     "ufo": "1.5.4",
-    "vite": "5.4.7",
+    "vite": "5.4.8",
     "vue": "3.5.8"
   },
   "devDependencies": {
@@ -62,7 +62,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
-    "@types/node": "20.16.6",
+    "@types/node": "20.16.7",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.11.6",
     "@unhead/vue": "1.11.6",
