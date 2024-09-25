@@ -85,7 +85,7 @@
     "jiti": "2.0.0",
     "markdownlint-cli": "0.42.0",
     "nitropack": "2.9.7",
-    "nuxi": "3.13.2",
+    "nuxi": "3.14.0",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.1",
     "ofetch": "1.4.0",
