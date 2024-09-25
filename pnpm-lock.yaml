@@ -10,11 +10,11 @@ overrides:
   '@nuxt/ui-templates': workspace:*
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
+  '@types/node': 20.16.8
   '@vue/compiler-core': 3.5.8
   '@vue/compiler-dom': 3.5.8
   '@vue/shared': 3.5.8
-  '@types/node': 20.16.8
-  c12: 2.0.0-beta.2
+  c12: 2.0.0-beta.3
   h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
   jiti: 2.0.0
   magic-string: ^0.30.11
@@ -125,8 +125,8 @@ importers:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(typescript@5.6.2)(webpack-sources@3.2.3)
       nuxi:
-        specifier: 3.13.2
-        version: 3.13.2
+        specifier: 3.14.0
+        version: 3.14.0
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -188,8 +188,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       c12:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(magicast@0.3.5)
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3(magicast@0.3.5)
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -309,8 +309,8 @@ importers:
         specifier: 8.12.1
         version: 8.12.1
       c12:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(magicast@0.3.5)
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3(magicast@0.3.5)
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
@@ -381,8 +381,8 @@ importers:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
         version: nitro-nightly@3.0.0-beta-28665895.e727afda(typescript@5.6.2)(webpack-sources@3.2.3)
       nuxi:
-        specifier: ^3.13.2
-        version: 3.13.2
+        specifier: ^3.14.0
+        version: 3.14.0
       nypm:
         specifier: ^0.3.11
         version: 0.3.11
@@ -566,8 +566,8 @@ importers:
         specifier: 2.1.6
         version: 2.1.6(typescript@5.6.2)
       c12:
-        specifier: 2.0.0-beta.2
-        version: 2.0.0-beta.2(magicast@0.3.5)
+        specifier: 2.0.0-beta.3
+        version: 2.0.0-beta.3(magicast@0.3.5)
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.95.0)
@@ -3270,8 +3270,8 @@ packages:
     peerDependencies:
       esbuild: '>=0.18'
 
-  c12@2.0.0-beta.2:
-    resolution: {integrity: sha512-H9B34RbWju2YPSbJTvg9Lw7dSfLs48HyJMSkzOPorg3ci3ZJTy7KbZZU6r+OUgNi2Jt7U8Ri0Tm5gnLMzms8mA==}
+  c12@2.0.0-beta.3:
+    resolution: {integrity: sha512-KYn7Rlf4Ctu5uK76BtRp3DWqZ6FgREb6DzIly58aiIRpyR+X1ShK13zAlUUYxEao/9q/8w4Uhi+nswlpdarFHg==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -3359,6 +3359,10 @@ packages:
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
+
+  chokidar@4.0.1:
+    resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
+    engines: {node: '>= 14.16.0'}
 
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
@@ -5519,8 +5523,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxi@3.13.2:
-    resolution: {integrity: sha512-yAgpxBcIB2/DWL7dWRZOQa5ULLZQ4AWgYdqtUDbeOZ3KxmY/+fqm8/UJuU7QK81JrccNaZeSI+GLe5BY7RR3cQ==}
+  nuxi@3.14.0:
+    resolution: {integrity: sha512-MhG4QR6D95jQxhnwKfdKXulZ8Yqy1nbpwbotbxY5IcabOzpEeTB8hYn2BFkmYdMUB0no81qpv2ldZmVCT9UsnQ==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -6155,6 +6159,10 @@ packages:
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+
+  readdirp@4.0.1:
+    resolution: {integrity: sha512-GkMg9uOTpIWWKbSsgwb5fA4EavTR+SG/PMPoAY8hkhHfEEY0/vqljY+XHqtDf2cr2IJtoNRDbrrEpZUiZCkYRw==}
+    engines: {node: '>= 14.16.0'}
 
   redis-errors@1.2.0:
     resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==}
@@ -8443,7 +8451,7 @@ snapshots:
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
-      c12: 2.0.0-beta.2(magicast@0.3.5)
+      c12: 2.0.0-beta.3(magicast@0.3.5)
       consola: 3.2.3
       defu: 6.1.4
       destr: 2.0.3
@@ -10068,9 +10076,9 @@ snapshots:
       esbuild: 0.23.1
       load-tsconfig: 0.2.5
 
-  c12@2.0.0-beta.2(magicast@0.3.5):
+  c12@2.0.0-beta.3(magicast@0.3.5):
     dependencies:
-      chokidar: 3.6.0
+      chokidar: 4.0.1
       confbox: 0.1.7
       defu: 6.1.4
       dotenv: 16.4.5
@@ -10145,7 +10153,7 @@ snapshots:
 
   changelogen@0.5.7(magicast@0.3.5):
     dependencies:
-      c12: 2.0.0-beta.2(magicast@0.3.5)
+      c12: 2.0.0-beta.3(magicast@0.3.5)
       colorette: 2.0.20
       consola: 3.2.3
       convert-gitmoji: 0.1.5
@@ -10193,6 +10201,10 @@ snapshots:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.3
+
+  chokidar@4.0.1:
+    dependencies:
+      readdirp: 4.0.1
 
   chownr@2.0.0: {}
 
@@ -12595,7 +12607,7 @@ snapshots:
       '@types/http-proxy': 1.17.15
       '@vercel/nft': 0.27.4
       archiver: 7.0.1
-      c12: 2.0.0-beta.2(magicast@0.3.5)
+      c12: 2.0.0-beta.3(magicast@0.3.5)
       chalk: 5.3.0
       chokidar: 3.6.0
       citty: 0.1.6
@@ -12689,7 +12701,7 @@ snapshots:
       '@types/http-proxy': 1.17.15
       '@vercel/nft': 0.26.5
       archiver: 7.0.1
-      c12: 2.0.0-beta.2(magicast@0.3.5)
+      c12: 2.0.0-beta.3(magicast@0.3.5)
       chalk: 5.3.0
       chokidar: 3.6.0
       citty: 0.1.6
@@ -12825,9 +12837,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxi@3.13.2:
-    optionalDependencies:
-      fsevents: 2.3.3
+  nuxi@3.14.0: {}
 
   nuxt-content-twoslash@0.1.1(@nuxtjs/mdc@0.8.3(webpack-sources@3.2.3)):
     dependencies:
@@ -13500,6 +13510,8 @@ snapshots:
   readdirp@3.6.0:
     dependencies:
       picomatch: 2.3.1
+
+  readdirp@4.0.1: {}
 
   redis-errors@1.2.0: {}
 
