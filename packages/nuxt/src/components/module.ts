@@ -247,7 +247,7 @@ export default defineNuxtModule<ComponentsOptions>({
         },
       }, { server: false })
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }))
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
 
       // TODO: refactor this
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
