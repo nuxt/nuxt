@@ -44,10 +44,9 @@ export default defineNuxtModule<ComponentsOptions>({
         : context.components
     }
 
-    if (nuxt.options.dev || nuxt.options.test) {
-      addBuildPlugin(ComponentNamePlugin({
-        components: getComponents,
-      }))
+    if (nuxt.options.experimental.normalizeComponentNames) {
+      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.client, getComponents }), { server: false })
+      addBuildPlugin(ComponentNamePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
     }
 
     const normalizeDirs = (dir: any, cwd: string, options?: { priority?: number }): ComponentsDir[] => {

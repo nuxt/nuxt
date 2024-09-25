@@ -1,37 +1,44 @@
 import { createUnplugin } from 'unplugin'
-import type { Program } from 'acorn'
 import MagicString from 'magic-string'
 import type { Component } from 'nuxt/schema'
 import { isVue } from '../../core/utils'
 
 interface NameDevPluginOptions {
-  components: () => Component[]
+  sourcemap: boolean
+  getComponents: () => Component[]
 }
 /**
  * Set the default name of components to their PascalCase name
  */
 export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnplugin(() => {
   return {
-    name: 'nuxt:name-dev-plugin',
+    name: 'nuxt:component-name-plugin',
     enforce: 'post',
     transformInclude (id) {
       return isVue(id) || !!id.match(/\.[tj]sx$/)
     },
     transform (code, id) {
-      const component = options.components().find(c => c.filePath === id)
+      const filename = id.match(/([^/\\]+)\.\w+$/)?.[1]
+      if (!filename) {
+        return
+      }
+
+      const component = options.getComponents().find(c => c.filePath === id)
 
       if (!component) {
         return
       }
 
-      const ast = this.parse(code) as Program
+      const NAME_RE = new RegExp(`__name:\\s*['"]${filename}['"]`)
       const s = new MagicString(code)
-      const defaultExport = ast.body.find(node => node.type === 'ExportDefaultDeclaration')
+      s.replace(NAME_RE, `__name: ${JSON.stringify(component.pascalName)}`)
 
-      if (defaultExport) {
-        s.overwrite(defaultExport.declaration.start, defaultExport.declaration.end, `Object.assign(${code.slice(defaultExport.declaration.start, defaultExport.declaration.end)}, { __name: ${JSON.stringify(component.pascalName)} } )`)
+      if (s.hasChanged()) {
         return {
           code: s.toString(),
+          map: options.sourcemap
+            ? s.generateMap({ hires: true })
+            : undefined,
         }
       }
     },
