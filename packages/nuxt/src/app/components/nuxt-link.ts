@@ -480,7 +480,7 @@ type CallbackFn = () => void
 type ObserveFn = (element: Element, callback: CallbackFn) => () => void
 
 function useObserver (): { observe: ObserveFn } | undefined {
-  if (import.meta.server) { return }
+  if (import.meta.server) { return { observe: () => () => {} } }
 
   const nuxtApp = useNuxtApp()
   if (nuxtApp._observer) {
@@ -488,7 +488,6 @@ function useObserver (): { observe: ObserveFn } | undefined {
   }
 
   let observer: IntersectionObserver | null = null
-
   const callbacks = new Map<Element, CallbackFn>()
 
   const observe: ObserveFn = (element, callback) => {
@@ -519,7 +518,6 @@ function useObserver (): { observe: ObserveFn } | undefined {
 
   return _observer
 }
-
 function isSlowConnection () {
   if (import.meta.server) { return }
 
