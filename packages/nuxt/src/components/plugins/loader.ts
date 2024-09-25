@@ -6,8 +6,8 @@ import { resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { distDir } from '../dirs'
-import { isVue } from '../core/utils'
+import { distDir } from '../../dirs'
+import { isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -17,7 +17,7 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
-export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
+export const LoaderPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
@@ -49,7 +49,7 @@ export const loaderPlugin = createUnplugin((options: LoaderOptions) => {
           // @ts-expect-error TODO: refactor to nuxi
           if (component._internal_install && tryUseNuxt()?.options.test === false) {
             // @ts-expect-error TODO: refactor to nuxi
-            import('../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
+            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
