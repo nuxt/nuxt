@@ -4,7 +4,7 @@ import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
 import { normalize } from 'pathe'
 
-import { createTransformPlugin } from '../src/components/plugins/transform'
+import { TransformPlugin } from '../src/components/plugins/transform'
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {
@@ -92,7 +92,7 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       },
     },
   } as Nuxt
-  const plugin = createTransformPlugin(stubNuxt, () => components, mode).vite()
+  const plugin = TransformPlugin(stubNuxt, () => components, mode).vite()
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)

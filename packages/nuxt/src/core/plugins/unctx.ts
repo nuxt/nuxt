@@ -11,7 +11,7 @@ export interface UnctxTransformPluginOptions {
   transformerOptions: TransformerOptions
 }
 
-export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPluginOptions) => {
+export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   const transformer = createTransformer(options.transformerOptions)
   return {
     name: 'unctx:transform',

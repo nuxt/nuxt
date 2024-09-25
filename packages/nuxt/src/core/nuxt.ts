@@ -33,9 +33,7 @@ import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
 import { nuxtImportProtections } from './plugins/import-protection'
-import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
@@ -265,58 +263,45 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
-    addVitePlugin(() => LayerAliasingPlugin.vite({
+    addBuildPlugin(LayerAliasingPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
-    }))
-    addWebpackPlugin(() => LayerAliasingPlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-      dev: nuxt.options.dev,
-      root: nuxt.options.srcDir,
-      // skip top-level layer (user's project) as the aliases will already be correctly resolved
-      layers: nuxt.options._layers.slice(1),
-      transform: true,
     }))
   }
 
   nuxt.hook('modules:done', async () => {
     // Add unctx transform
-    const options = {
+    addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule: await tryResolveModule('unctx', nuxt.options.modulesDir) ?? 'unctx',
       },
-    } satisfies UnctxTransformPluginOptions
-    addVitePlugin(() => UnctxTransformPlugin.vite(options))
-    addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
+    }))
 
     // Add composable tree-shaking optimisations
-    const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: !!nuxt.options.sourcemap.server,
-      composables: nuxt.options.optimization.treeShake.composables.server,
+    if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
+      addBuildPlugin(TreeShakeComposablesPlugin({
+        sourcemap: !!nuxt.options.sourcemap.server,
+        composables: nuxt.options.optimization.treeShake.composables.server,
+      }), { client: false })
     }
-    if (Object.keys(serverTreeShakeOptions.composables).length) {
-      addVitePlugin(() => TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
-      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
-    }
-    const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: !!nuxt.options.sourcemap.client,
-      composables: nuxt.options.optimization.treeShake.composables.client,
-    }
-    if (Object.keys(clientTreeShakeOptions.composables).length) {
-      addVitePlugin(() => TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
-      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
+    if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
+      addBuildPlugin(TreeShakeComposablesPlugin({
+        sourcemap: !!nuxt.options.sourcemap.client,
+        composables: nuxt.options.optimization.treeShake.composables.client,
+      }), { server: false })
     }
   })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addBuildPlugin(DevOnlyPlugin({
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    }))
   }
 
   if (nuxt.options.dev) {
