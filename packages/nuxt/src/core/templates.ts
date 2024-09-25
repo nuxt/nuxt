@@ -360,6 +360,7 @@ declare module 'nitropack/types' {
 
 export const clientConfigTemplate: NuxtTemplate = {
   filename: 'nitro.client.mjs',
+  dst: 'nitro/runtime',
   getContents: ({ nuxt }) => {
     const appId = JSON.stringify(nuxt.options.appId)
     return [
