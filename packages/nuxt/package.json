@@ -78,7 +78,7 @@
     "cookie-es": "^1.2.2",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
-    "devalue": "^5.1.0",
+    "devalue": "^5.1.1",
     "errx": "^0.1.0",
     "esbuild": "^0.24.0",
     "escape-string-regexp": "^5.0.0",
