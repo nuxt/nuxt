@@ -17,7 +17,7 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
-export const LoaderPlugin = createUnplugin((options: LoaderOptions) => {
+export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')

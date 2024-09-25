@@ -18,16 +18,16 @@ const getComponents = () => [{
   preload: false,
 }] as Component[]
 
-const pluginWebpack = IslandsTransformPlugin.raw({
+const pluginWebpack = IslandsTransformPlugin({
   getComponents,
   selectiveClient: true,
-}, { framework: 'webpack', webpack: { compiler: {} as any } })
+}).raw({}, { framework: 'webpack', webpack: { compiler: {} as any } })
 
 const viteTransform = async (source: string, id: string, selectiveClient = false) => {
-  const vitePlugin = IslandsTransformPlugin.raw({
+  const vitePlugin = IslandsTransformPlugin({
     getComponents,
     selectiveClient,
-  }, { framework: 'vite' }) as Plugin
+  }).raw({}, { framework: 'vite' }) as Plugin
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   const result = await (vitePlugin.transform! as Function)(source, id)

@@ -35,14 +35,14 @@ function wrapWithVForDiv (code: string, vfor: string): string {
   return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
 }
 
-export const IslandsTransformPlugin = createUnplugin((options: ServerOnlyComponentTransformPluginOptions, meta) => {
+export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
   const isVite = meta.framework === 'vite'
   return {
     name: 'nuxt:server-only-component-transform',
     enforce: 'pre',
     transformInclude (id) {
       if (!isVue(id)) { return false }
-      if (options.selectiveClient === 'deep') { return true }
+      if (isVite && options.selectiveClient === 'deep') { return true }
       const components = options.getComponents()
 
       const islands = components.filter(component =>
@@ -95,7 +95,7 @@ export const IslandsTransformPlugin = createUnplugin((options: ServerOnlyCompone
             }
 
             s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-          } else if (options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
+          } else if (isVite && options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
             hasNuxtClient = true
             const { loc, attributes } = node
             const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
