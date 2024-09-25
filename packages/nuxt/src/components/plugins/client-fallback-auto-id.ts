@@ -3,7 +3,7 @@ import type { ComponentsOptions } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { isAbsolute, relative } from 'pathe'
 import { hash } from 'ohash'
-import { isVue } from '../core/utils'
+import { isVue } from '../../core/utils'
 
 interface LoaderOptions {
   sourcemap?: boolean
@@ -12,7 +12,7 @@ interface LoaderOptions {
 }
 const CLIENT_FALLBACK_RE = /<(?:NuxtClientFallback|nuxt-client-fallback)(?: [^>]*)?>/
 const CLIENT_FALLBACK_GLOBAL_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/g
-export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions) => {
+export const ClientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
 
