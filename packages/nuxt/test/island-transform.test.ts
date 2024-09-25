@@ -454,7 +454,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
                 "
         `)
 
-        expect(spyOnWarn).toHaveBeenCalledWith('nuxt-client attribute and client components within islands is only supported with Vite. file: hello.server.vue')
+        expect(spyOnWarn).toHaveBeenCalledWith('The `nuxt-client` attribute and client components within islands are only supported with Vite. file: hello.server.vue')
       })
     })
   })

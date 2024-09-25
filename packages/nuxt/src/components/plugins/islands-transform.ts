@@ -70,54 +70,68 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
       const ast = parse(template[0])
       await walk(ast, (node) => {
-        if (node.type === ELEMENT_NODE) {
-          if (node.name === 'slot') {
-            const { attributes, children, loc } = node
-
-            const slotName = attributes.name ?? 'default'
-
-            if (attributes.name) { delete attributes.name }
-            if (attributes['v-bind']) {
-              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
-            }
-            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes)
-            // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
-
-            if (children.length) {
-              // pass slot fallback to NuxtTeleportSsrSlot fallback
-              const attrString = attributeToString(attributes)
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
-            }
-
-            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-          } else if (isVite && options.selectiveClient && ('nuxt-client' in node.attributes || ':nuxt-client' in node.attributes)) {
-            hasNuxtClient = true
-            const { loc, attributes } = node
-            const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-            if (isVite) {
-              const uid = hash(id + node.loc[0].start + node.loc[0].end)
-              const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-
-              let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-              if (wrapperAttributes) {
-                startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-              }
-
-              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" :nuxt-client="${attributeValue}">`)
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-              s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
-            }
-          }
+        if (node.type !== ELEMENT_NODE) {
+          return
         }
+        if (node.name === 'slot') {
+          const { attributes, children, loc } = node
+
+          const slotName = attributes.name ?? 'default'
+
+          if (attributes.name) { delete attributes.name }
+          if (attributes['v-bind']) {
+            attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
+          }
+          const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+          const bindings = getPropsToString(attributes)
+          // add the wrapper
+          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+
+          if (children.length) {
+            // pass slot fallback to NuxtTeleportSsrSlot fallback
+            const attrString = attributeToString(attributes)
+            const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(/:?key="[^"]"/g, '')
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+          } else {
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+          }
+
+          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
+          return
+        }
+
+        if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
+          return
+        }
+
+        hasNuxtClient = true
+
+        if (!isVite || !options.selectiveClient) {
+          return
+        }
+
+        const { loc, attributes } = node
+        const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
+
+        const uid = hash(id + node.loc[0].start + node.loc[0].end)
+        const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+
+        let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+        if (wrapperAttributes) {
+          startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
+        }
+
+        s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" :nuxt-client="${attributeValue}">`)
+        s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+        s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
       })
 
-      if (!isVite && hasNuxtClient) {
-        console.warn(`nuxt-client attribute and client components within islands is only supported with Vite. file: ${id}`)
+      if (hasNuxtClient) {
+        if (!options.selectiveClient) {
+          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
+        } else if (!isVite) {
+          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
+        }
       }
 
       if (s.hasChanged()) {
