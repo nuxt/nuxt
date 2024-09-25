@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import type { Plugin } from 'vite'
 import type { Component } from '@nuxt/schema'
 import type { UnpluginOptions } from 'unplugin'
-import { islandsTransform } from '../src/components/islandsTransform'
+import { islandsTransform } from '../src/components/plugins/islands-transform'
 import { normalizeLineEndings } from './utils'
 
 const getComponents = () => [{

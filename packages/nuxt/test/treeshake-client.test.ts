@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 import { Parser } from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
-import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
+import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
 import { fixtureDir, normalizeLineEndings } from './utils'
 
 // mock due to differences of results between windows and linux
