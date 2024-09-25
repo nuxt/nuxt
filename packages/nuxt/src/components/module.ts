@@ -1,6 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -9,8 +9,8 @@ import { scanComponents } from './scan'
 
 import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
 import { LoaderPlugin } from './plugins/loader'
-import { componentsChunkPlugin, islandsTransform } from './plugins/islands-transform'
-import { createTransformPlugin } from './plugins/transform'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
+import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
 
@@ -134,14 +134,8 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate(componentsMetadataTemplate)
     }
 
-    const TransformPluginServer = createTransformPlugin(nuxt, getComponents, 'server')
-    const TransformPluginClient = createTransformPlugin(nuxt, getComponents, 'client')
-
-    addVitePlugin(() => TransformPluginServer.vite(), { server: true, client: false })
-    addVitePlugin(() => TransformPluginClient.vite(), { server: false, client: true })
-
-    addWebpackPlugin(() => TransformPluginServer.webpack(), { server: true, client: false })
-    addWebpackPlugin(() => TransformPluginClient.webpack(), { server: false, client: true })
+    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'server'), { server: true, client: false })
+    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'client'), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -219,37 +213,50 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    nuxt.hook('vite:extendConfig', (config, { isClient, isServer }) => {
-      const mode = isClient ? 'client' : 'server'
+    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
 
-      config.plugins = config.plugins || []
-      if (isServer) {
-        config.plugins.push(TreeShakeTemplatePlugin.vite({
-          sourcemap: !!nuxt.options.sourcemap[mode],
-          getComponents,
-        }))
-      }
-      if (nuxt.options.experimental.clientFallback) {
-        config.plugins.push(ClientFallbackAutoIdPlugin.vite({
-          sourcemap: !!nuxt.options.sourcemap[mode],
-          rootDir: nuxt.options.rootDir,
-        }))
-      }
-      config.plugins.push(LoaderPlugin.vite({
-        sourcemap: !!nuxt.options.sourcemap[mode],
-        getComponents,
-        mode,
-        transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-        experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
-      }))
+    if (nuxt.options.experimental.clientFallback) {
+      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.client, rootDir: nuxt.options.rootDir }), { server: false })
+      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.server, rootDir: nuxt.options.rootDir }), { client: false })
+    }
 
-      if (nuxt.options.experimental.componentIslands) {
-        const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+    const sharedLoaderOptions = {
+      getComponents,
+      transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
+      experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
+    }
+
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+
+    if (nuxt.options.experimental.componentIslands) {
+      const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+
+      addVitePlugin({
+        name: 'nuxt-server-component-hmr',
+        handleHotUpdate (ctx) {
+          const components = getComponents()
+          const filePath = normalize(ctx.file)
+          const comp = components.find(c => c.filePath === filePath)
+          if (comp?.mode === 'server') {
+            ctx.server.ws.send({
+              event: `nuxt-server-component:${comp.pascalName}`,
+              type: 'custom',
+            })
+          }
+        },
+      }, { server: false })
+
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, selectiveClient }), { client: false })
+
+      // TODO: refactor this
+      nuxt.hook('vite:extendConfig', (config, { isClient }) => {
+        config.plugins = config.plugins || []
 
         if (isClient && selectiveClient) {
           writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           if (!nuxt.options.dev) {
-            config.plugins.push(componentsChunkPlugin.vite({
+            config.plugins.push(ComponentsChunkPlugin.vite({
               getComponents,
               buildDir: nuxt.options.buildDir,
             }))
@@ -263,65 +270,18 @@ export default defineNuxtModule<ComponentsOptions>({
             )}`)
           }
         }
+      })
 
-        if (isServer) {
-          config.plugins.push(islandsTransform.vite({
-            getComponents,
-            selectiveClient,
-          }))
-        }
-      }
-      if (!isServer && nuxt.options.experimental.componentIslands) {
-        config.plugins.push({
-          name: 'nuxt-server-component-hmr',
-          handleHotUpdate (ctx) {
-            const components = getComponents()
-            const filePath = normalize(ctx.file)
-            const comp = components.find(c => c.filePath === filePath)
-            if (comp?.mode === 'server') {
-              ctx.server.ws.send({
-                event: `nuxt-server-component:${comp.pascalName}`,
-                type: 'custom',
-              })
-            }
-          },
-        })
-      }
-    })
-    nuxt.hook('webpack:config', (configs) => {
-      configs.forEach((config) => {
-        const mode = config.name === 'client' ? 'client' : 'server'
-        config.plugins = config.plugins || []
-        if (mode === 'server') {
-          config.plugins.push(TreeShakeTemplatePlugin.webpack({
-            sourcemap: !!nuxt.options.sourcemap[mode],
-            getComponents,
-          }))
-        }
-        if (nuxt.options.experimental.clientFallback) {
-          config.plugins.push(ClientFallbackAutoIdPlugin.webpack({
-            sourcemap: !!nuxt.options.sourcemap[mode],
-            rootDir: nuxt.options.rootDir,
-          }))
-        }
-        config.plugins.push(LoaderPlugin.webpack({
-          sourcemap: !!nuxt.options.sourcemap[mode],
-          getComponents,
-          mode,
-          transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-          experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
-        }))
+      nuxt.hook('webpack:config', (configs) => {
+        configs.forEach((config) => {
+          const mode = config.name === 'client' ? 'client' : 'server'
+          config.plugins = config.plugins || []
 
-        if (nuxt.options.experimental.componentIslands) {
-          if (mode === 'server') {
-            config.plugins.push(islandsTransform.webpack({
-              getComponents,
-            }))
-          } else {
+          if (mode !== 'server') {
             writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
           }
-        }
+        })
       })
-    })
+    }
   },
 })

@@ -10,7 +10,7 @@ import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
 
-export interface PageMetaPluginOptions {
+interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
 }
@@ -36,7 +36,7 @@ if (import.meta.webpackHot) {
   })
 }`
 
-export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) => {
+export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin(() => {
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',

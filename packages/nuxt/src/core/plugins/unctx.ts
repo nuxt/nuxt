@@ -6,12 +6,12 @@ import { isJS, isVue } from '../utils'
 
 const TRANSFORM_MARKER = '/* _processed_nuxt_unctx_transform */\n'
 
-export interface UnctxTransformPluginOptions {
+interface UnctxTransformPluginOptions {
   sourcemap?: boolean
   transformerOptions: TransformerOptions
 }
 
-export const UnctxTransformPlugin = createUnplugin((options: UnctxTransformPluginOptions) => {
+export const UnctxTransformPlugin = (options: UnctxTransformPluginOptions) => createUnplugin(() => {
   const transformer = createTransformer(options.transformerOptions)
   return {
     name: 'unctx:transform',
