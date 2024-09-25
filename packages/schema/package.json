@@ -59,7 +59,7 @@
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
     "vue-router": "4.4.5",
-    "webpack": "5.94.0",
+    "webpack": "5.95.0",
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {
