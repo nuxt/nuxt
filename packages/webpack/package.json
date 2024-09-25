@@ -77,7 +77,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "npm:@rspack/core-canary@1.0.6-canary-e7ce3527-20240916151901",
+    "@rspack/core": "1.0.7",
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
