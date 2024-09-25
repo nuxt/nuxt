@@ -3,7 +3,7 @@ import type { Plugin } from 'vite'
 import { DevOnlyPlugin } from '../src/core/plugins/dev-only'
 import { normalizeLineEndings } from './utils'
 
-const pluginVite = DevOnlyPlugin.raw({}, { framework: 'vite' }) as Plugin
+const pluginVite = DevOnlyPlugin({}).raw({}, { framework: 'vite' }) as Plugin
 
 const viteTransform = async (source: string, id: string) => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
