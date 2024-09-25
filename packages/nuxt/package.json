@@ -96,7 +96,7 @@
     "nanotar": "^0.1.1",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "nuxi": "^3.14.0",
-    "nypm": "^0.3.11",
+    "nypm": "^0.3.12",
     "ofetch": "^1.4.0",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
