@@ -620,6 +620,11 @@ describe('pages', () => {
       expect(status).toBe(200)
     }
   })
+
+  it('prerenders pages hinted with a route rule', async () => {
+    const html = await $fetch('/prerender/test')
+    expect(html).toContain('should be prerendered: true')
+  })
 })
 
 describe('nuxt composables', () => {
