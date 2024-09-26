@@ -3,7 +3,7 @@ import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineCom
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { injectHead, type ActiveHeadEntry, type Head } from '@unhead/vue'
+import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -96,7 +96,7 @@ export default defineComponent({
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
-    onBeforeUnmount(() => { if(activeHead) { activeHead.dispose() } })
+    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
       if (result.props) { toRevive.props = result.props }
