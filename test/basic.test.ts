@@ -1831,7 +1831,13 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    expect(html.match(/<link [^>]*href="[^"]*\.css">(?: crossorigin)?/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`undefined`)
+    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    expect(cssFiles?.length).toBeGreaterThan(0)
+    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+      [
+        "<link rel="stylesheet" href="/_nuxt/entry.css"",
+      ]
+    `)
   })
 
   it('still downloads client-only styles', async () => {
