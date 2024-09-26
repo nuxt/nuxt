@@ -1,7 +1,7 @@
 [![Nuxt banner](./.github/assets/banner.svg)](https://nuxt.com)
 
 # Nuxt
-
+Forked by adamZ
 <p>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
