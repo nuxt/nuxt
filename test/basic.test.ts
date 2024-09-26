@@ -249,6 +249,16 @@ describe('pages', () => {
     await serverPage.close()
   })
 
+  it('should render 404 page even in spa mode', async () => {
+    const { page } = await renderPage('/route-rules/spa')
+
+    await page.getByText('should throw a 404 error').click()
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot(`"Page Not Found: /forbidden"`)
+    expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot(`" Path: /forbidden"`)
+
+    await page.close()
+  })
+
   it('returns 500 when there is an infinite redirect', async () => {
     const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
