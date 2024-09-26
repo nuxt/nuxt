@@ -67,6 +67,7 @@ export default defineNuxtConfig({
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
+      '/prerender/**': { prerender: true },
     },
     output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
