@@ -8,6 +8,8 @@ import { prerenderRoutes } from '#app/composables/ssr'
 // @ts-expect-error virtual file
 import _routes from '#build/routes'
 import routerOptions from '#build/router.options'
+// @ts-expect-error virtual file
+import { crawlLinks } from '#build/nuxt.config.mjs'
 
 let routes: string[]
 
@@ -20,7 +22,7 @@ export default defineNuxtPlugin(async () => {
   if (routes && !routes.length) { return }
 
   const routeRules = useRuntimeConfig().nitro!.routeRules
-  if (routeRules && Object.values(routeRules).some(r => r.prerender)) {
+  if (!crawlLinks && routeRules && Object.values(routeRules).some(r => r.prerender)) {
     _routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: routeRules }))
   }
 
