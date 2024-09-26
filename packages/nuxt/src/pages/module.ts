@@ -278,7 +278,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks) {
+      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
