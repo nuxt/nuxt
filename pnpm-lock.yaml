@@ -234,8 +234,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1(webpack-sources@3.2.3)
       unimport:
-        specifier: ^3.12.0
-        version: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.0
+        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       untyped:
         specifier: ^1.4.2
         version: 1.4.2
@@ -439,8 +439,8 @@ importers:
         specifier: ^1.11.6
         version: 1.11.6
       unimport:
-        specifier: ^3.12.0
-        version: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.0
+        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       unplugin:
         specifier: ^1.14.1
         version: 1.14.1(webpack-sources@3.2.3)
@@ -527,8 +527,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       unimport:
-        specifier: ^3.12.0
-        version: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.0
+        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       untyped:
         specifier: ^1.4.2
         version: 1.4.2
@@ -2357,6 +2357,15 @@ packages:
 
   '@rollup/pluginutils@5.1.0':
     resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: 4.22.4
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+
+  '@rollup/pluginutils@5.1.2':
+    resolution: {integrity: sha512-/FIdS3PyZ39bjZlwqFnWqCOVnW7o963LtKMwQOD0NhQqw22gSr2YY1afu3FxRip4ZCZNsD5jq6Aaz6QV3D/Njw==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
       rollup: 4.22.4
@@ -4502,6 +4511,9 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    resolution: {integrity: sha512-LQ8hHOIzk+agD1p0K7UosByKuzDAKGLTnYsP0syV/XMr9E7pWmoaDSWkGdWjtLR9O3hinNqrXU1NW0kTmhiSag==}
 
   h3@1.12.0:
     resolution: {integrity: sha512-Zi/CcNeWBXDrFNlV0hUBJQR9F7a96RjMeAZweW/ZWkR9fuXrMcvKnSA63f/zZ9l0GgQOZDVHGvXivNN9PWOwhA==}
@@ -6938,8 +6950,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@3.12.0:
-    resolution: {integrity: sha512-5y8dSvNvyevsnw4TBQkIQR1Rjdbb+XjVSwQwxltpnVZrStBvvPkMPcZrh1kg5kY77kpx6+D4Ztd3W6FOBH/y2Q==}
+  unimport@3.13.0:
+    resolution: {integrity: sha512-0WkKsLy8jkcnB38VQdAGvF0N2trJyDbUuHsfXcyrspwgwWTIThiMpvnDNZMVsuNc11SwT2GYzcQ2RnI1TY/xcw==}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -8428,7 +8440,7 @@ snapshots:
       simple-git: 3.27.0
       sirv: 2.0.4
       tinyglobby: 0.2.6
-      unimport: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       vite: 5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0)
       vite-plugin-inspect: 0.8.7(@nuxt/kit@packages+kit)(rollup@4.22.4)(vite@5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0))
       vite-plugin-vue-inspector: 5.2.0(vite@5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0))
@@ -8495,7 +8507,7 @@ snapshots:
       '@vueuse/core': 11.1.0(vue@3.5.8(typescript@5.6.2))
       consola: 3.2.3
       defu: 6.1.4
-      h3: 1.12.0
+      h3: h3-nightly@2.0.0-1718872656.6765a6e
       magic-string: 0.30.11
       mlly: 1.7.1
       ofetch: 1.4.0
@@ -8508,7 +8520,7 @@ snapshots:
       std-env: 3.7.0
       third-party-capital: 2.3.0
       ufo: 1.5.4
-      unimport: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       unplugin: 1.14.1(webpack-sources@3.2.3)
       unstorage: 1.12.0(ioredis@5.4.1)
       valibot: 0.42.1(typescript@5.6.2)
@@ -8793,6 +8805,14 @@ snapshots:
       picomatch: 2.3.1
 
   '@rollup/pluginutils@5.1.0(rollup@4.22.4)':
+    dependencies:
+      '@types/estree': 1.0.6
+      estree-walker: 2.0.2
+      picomatch: 2.3.1
+    optionalDependencies:
+      rollup: 4.22.4
+
+  '@rollup/pluginutils@5.1.2(rollup@4.22.4)':
     dependencies:
       '@types/estree': 1.0.6
       estree-walker: 2.0.2
@@ -11454,6 +11474,21 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    dependencies:
+      cookie-es: 1.2.2
+      crossws: 0.2.4
+      defu: 6.1.4
+      destr: 2.0.3
+      iron-webcrypto: 1.2.1
+      ohash: 1.1.4
+      radix3: 1.1.2
+      ufo: 1.5.4
+      uncrypto: 0.1.3
+      unenv: 1.10.0
+    transitivePeerDependencies:
+      - uWebSockets.js
+
   h3@1.12.0:
     dependencies:
       cookie-es: 1.2.2
@@ -12719,7 +12754,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1(webpack-sources@3.2.3)
       unenv: 1.10.0
-      unimport: 3.12.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
       unstorage: 1.12.0(ioredis@5.4.1)
       unwasm: 0.3.9(webpack-sources@3.2.3)
     transitivePeerDependencies:
@@ -14285,9 +14320,9 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@3.12.0(rollup@4.22.4)(webpack-sources@3.2.3):
+  unimport@3.13.0(rollup@4.22.4)(webpack-sources@3.2.3):
     dependencies:
-      '@rollup/pluginutils': 5.1.0(rollup@4.22.4)
+      '@rollup/pluginutils': 5.1.2(rollup@4.22.4)
       acorn: 8.12.1
       escape-string-regexp: 5.0.0
       estree-walker: 3.0.3
