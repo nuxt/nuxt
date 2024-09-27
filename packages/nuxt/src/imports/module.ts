@@ -54,7 +54,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
       directivesDir = directivesDir.map(dir => normalize(dir))
 
-      // Restart nuxt when composable directories are added/removed
+      // Restart nuxt when directives directories are added/removed
       nuxt.hook('builder:watch', (event, relativePath) => {
         if (!['addDir', 'unlinkDir'].includes(event)) { return }
 
