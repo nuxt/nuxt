@@ -27,9 +27,9 @@
     "@nuxt/schema": "workspace:*",
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.6",
-    "rollup": "4.22.4",
+    "rollup": "4.22.5",
     "unbuild": "3.0.0-rc.8",
-    "vue": "3.5.9"
+    "vue": "3.5.10"
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
