@@ -7,12 +7,12 @@ import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import { normalize, resolve } from 'pathe'
 import { genImport } from 'knitwork'
-import { distDir } from '../dirs'
-import type { getComponentsT } from './module'
+import { distDir } from '../../dirs'
+import type { getComponentsT } from '../module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
-export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
+export function TransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
   const componentUnimport = createUnimport({
     imports: [

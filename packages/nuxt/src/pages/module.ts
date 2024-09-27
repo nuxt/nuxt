@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -8,6 +8,7 @@ import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
@@ -15,7 +16,6 @@ import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
-import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
@@ -278,7 +278,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks) {
+      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -316,7 +316,20 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
+      if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      // Inject page patterns that explicitly match `prerender: true` route rule
+      if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
+        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+        for (const route of prerenderRoutes) {
+          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          if (rules.prerender) {
+            nitro.options.prerender.routes.push(route)
+          }
+        }
+      }
+
+      if (!nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
       // as the rest will be injected at runtime when this is prerendered
@@ -423,13 +436,11 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const pageMetaOptions: PageMetaPluginOptions = {
-      dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }
     nuxt.hook('modules:done', () => {
-      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
+      addBuildPlugin(PageMetaPlugin({
+        dev: nuxt.options.dev,
+        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+      }))
     })
 
     // Add prefetching support for middleware & layouts
