@@ -147,7 +147,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
-    // Inject directives
+    // Auto import directives
     addBuildPlugin(DirectivesPlugin({ addons, dirs: directivesDir, imports: options.imports ?? [], presets }))
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
