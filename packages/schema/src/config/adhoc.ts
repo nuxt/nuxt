@@ -31,7 +31,7 @@ export default defineUntypedSchema({
 
     /**
      * An array of custom directories that will be auto-imported.
-     * Note that this option will not override the default directories (~/composables, ~/utils).
+     * Note that this option will not override the default directories (~/composables, ~/utils, ~/directives).
      * @example
      * ```js
      * imports: {

@@ -11,7 +11,7 @@ export interface ImportsOptions extends UnimportOptions {
   /**
    * Directories to scan for auto imports.
    * @see https://nuxt.com/docs/guide/directory-structure/composables#how-files-are-scanned
-   * @default ['./composables', './utils']
+   * @default ['./composables', './utils', './directives']
    */
   dirs?: string[]
 

@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import type { Import, Unimport } from 'unimport'
+import type { AddonVueDirectivesOptions, AddonsOptions, Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
@@ -10,6 +10,7 @@ import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory } from '../utils'
 import { TransformPlugin } from './transform'
 import { defaultPresets } from './presets'
+import { DirectivesPlugin } from './directives'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -41,14 +42,65 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
+    let directivesDir: string[] = []
+    if (options.scan) {
+      for (const layer of nuxt.options._layers) {
+        // Layer disabled scanning for itself
+        if (layer.config?.imports?.scan === false) {
+          continue
+        }
+        directivesDir.push(resolve(layer.config.srcDir, 'directives'))
+      }
+
+      directivesDir = directivesDir.map(dir => normalize(dir))
+
+      // Restart nuxt when composable directories are added/removed
+      nuxt.hook('builder:watch', (event, relativePath) => {
+        if (!['addDir', 'unlinkDir'].includes(event)) { return }
+
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        if (directivesDir.includes(path)) {
+          logger.info(`Directory \`${relativePath}/\` ${event === 'addDir' ? 'created' : 'removed'}`)
+          return nuxt.callHook('restart')
+        }
+      })
+    }
+
+    // We need to enable vueDirectives when:
+    // - vueDirectives is explicitly set to true or callback enabled
+    // - autoImport is enabled: allow use directives from presets
+    // We also need to resolve the directives from any layer
+    function isDirectiveFactory (): true | AddonVueDirectivesOptions | undefined {
+      if (!options.scan && !options.autoImport) {
+        return undefined
+      }
+
+      if (!options.scan) {
+        return true
+      }
+
+      return {
+        isDirective: (normalizeImportFrom: string) => {
+          return directivesDir.some(dir => normalizeImportFrom.startsWith(dir))
+        },
+      }
+    }
+
+    const { addons: inlineAddons, ...rest } = options
+
+    const addons: AddonsOptions = {
+      addons: inlineAddons && Array.isArray(inlineAddons)
+        ? [...inlineAddons]
+        : [],
+      vueDirectives: isDirectiveFactory(),
+      vueTemplate: options.autoImport,
+    }
+
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
-      ...options,
-      addons: {
-        vueTemplate: options.autoImport,
-        ...options.addons,
-      },
+      ...rest,
+      addons,
       presets,
     })
 
@@ -64,6 +116,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         }
         composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+        composablesDirs.push(resolve(layer.config.srcDir, 'directives'))
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue
@@ -94,6 +147,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     })
     nuxt.options.alias['#imports'] = join(nuxt.options.buildDir, 'imports')
 
+    // Inject directives
+    addBuildPlugin(DirectivesPlugin({ addons, dirs: directivesDir, imports: options.imports ?? [], presets }))
     // Transform to inject imports in production mode
     addBuildPlugin(TransformPlugin({ ctx, options, sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
