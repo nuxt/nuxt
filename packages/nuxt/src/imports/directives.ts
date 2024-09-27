@@ -1,5 +1,6 @@
 import { createUnplugin } from 'unplugin'
-import { type AddonsOptions, type Import, createUnimport } from 'unimport'
+import type { AddonsOptions, Import } from 'unimport'
+import { createUnimport } from 'unimport'
 import type { ImportPresetWithDeprecation } from 'nuxt/schema'
 import MagicString from 'magic-string'
 import { isVue } from '../core/utils'
