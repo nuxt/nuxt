@@ -239,8 +239,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1(webpack-sources@3.2.3)
       unimport:
-        specifier: ^3.13.0
-        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.1
+        version: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       untyped:
         specifier: ^1.5.0
         version: 1.5.0
@@ -438,8 +438,8 @@ importers:
         specifier: ^1.11.6
         version: 1.11.6
       unimport:
-        specifier: ^3.13.0
-        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.1
+        version: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       unplugin:
         specifier: ^1.14.1
         version: 1.14.1(webpack-sources@3.2.3)
@@ -526,8 +526,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       unimport:
-        specifier: ^3.13.0
-        version: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+        specifier: ^3.13.1
+        version: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       untyped:
         specifier: ^1.5.0
         version: 1.5.0
@@ -6886,8 +6886,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@3.13.0:
-    resolution: {integrity: sha512-0WkKsLy8jkcnB38VQdAGvF0N2trJyDbUuHsfXcyrspwgwWTIThiMpvnDNZMVsuNc11SwT2GYzcQ2RnI1TY/xcw==}
+  unimport@3.13.1:
+    resolution: {integrity: sha512-nNrVzcs93yrZQOW77qnyOVHtb68LegvhYFwxFMfuuWScmwQmyVCG/NBuN8tYsaGzgQUVYv34E/af+Cc9u4og4A==}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -8306,7 +8306,7 @@ snapshots:
       simple-git: 3.27.0
       sirv: 2.0.4
       tinyglobby: 0.2.6
-      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       vite: 5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0)
       vite-plugin-inspect: 0.8.7(@nuxt/kit@packages+kit)(rollup@4.22.4)(vite@5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0))
       vite-plugin-vue-inspector: 5.2.0(vite@5.4.8(@types/node@20.16.9)(sass@1.78.0)(terser@5.32.0))
@@ -8386,7 +8386,7 @@ snapshots:
       std-env: 3.7.0
       third-party-capital: 2.3.0
       ufo: 1.5.4
-      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       unplugin: 1.14.1(webpack-sources@3.2.3)
       unstorage: 1.12.0(ioredis@5.4.1)
       valibot: 0.42.1(typescript@5.6.2)
@@ -8521,7 +8521,7 @@ snapshots:
       remark-parse: 11.0.0
       remark-rehype: 11.1.0
       scule: 1.3.0
-      shiki: 1.18.0
+      shiki: 1.20.0
       ufo: 1.5.4
       unified: 11.0.5
       unist-builder: 4.0.0
@@ -12688,7 +12688,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1(webpack-sources@3.2.3)
       unenv: 1.10.0
-      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       unstorage: 1.12.0(ioredis@5.4.1)
       untyped: 1.5.0
       unwasm: 0.3.9(webpack-sources@3.2.3)
@@ -12779,7 +12779,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1(webpack-sources@3.2.3)
       unenv: 1.10.0
-      unimport: 3.13.0(rollup@4.22.4)(webpack-sources@3.2.3)
+      unimport: 3.13.1(rollup@4.22.4)(webpack-sources@3.2.3)
       unstorage: 1.12.0(ioredis@5.4.1)
       unwasm: 0.3.9(webpack-sources@3.2.3)
     transitivePeerDependencies:
@@ -14378,7 +14378,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@3.13.0(rollup@4.22.4)(webpack-sources@3.2.3):
+  unimport@3.13.1(rollup@4.22.4)(webpack-sources@3.2.3):
     dependencies:
       '@rollup/pluginutils': 5.1.2(rollup@4.22.4)
       acorn: 8.12.1
