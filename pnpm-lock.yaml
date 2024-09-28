@@ -183,8 +183,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       c12:
-        specifier: ^1.11.2
-        version: 1.11.2(magicast@0.3.5)
+        specifier: ^2.0.0
+        version: 2.0.0(magicast@0.3.5)
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -310,8 +310,8 @@ importers:
         specifier: 8.12.1
         version: 8.12.1
       c12:
-        specifier: ^1.11.2
-        version: 1.11.2(magicast@0.3.5)
+        specifier: ^2.0.0
+        version: 2.0.0(magicast@0.3.5)
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
@@ -567,8 +567,8 @@ importers:
         specifier: 2.1.6
         version: 2.1.6(typescript@5.6.2)
       c12:
-        specifier: 1.11.2
-        version: 1.11.2(magicast@0.3.5)
+        specifier: 2.0.0
+        version: 2.0.0(magicast@0.3.5)
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.95.0)
@@ -3473,6 +3473,14 @@ packages:
       magicast:
         optional: true
 
+  c12@2.0.0:
+    resolution: {integrity: sha512-lxBXBw++beYvDiZhtIDQYtNpuHs+Fj+VgBxY+CyuDanuDwn8hUNFntvDi+AOZCyr5VQ2+pTFIFzFgRve3nLEtw==}
+    peerDependencies:
+      magicast: ^0.3.5
+    peerDependenciesMeta:
+      magicast:
+        optional: true
+
   cac@6.7.14:
     resolution: {integrity: sha512-b6Ilus+c3RrdDk+JhLKUAQfzzgLEPy6wcXqS7f/xe1EETvsDP6GORG7SFuOs6cID5YkqchW/LXZbX5bc8j7ZcQ==}
     engines: {node: '>=8'}
@@ -3551,6 +3559,10 @@ packages:
   chokidar@3.6.0:
     resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
+
+  chokidar@4.0.1:
+    resolution: {integrity: sha512-n8enUVCED/KVRQlab1hr3MVpcVMvxtZjmEa956u+4YijlmQED223XMSYj2tLuKvr4jcCTzNNMpQDUer72MMmzA==}
+    engines: {node: '>= 14.16.0'}
 
   chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
@@ -5081,10 +5093,6 @@ packages:
     resolution: {integrity: sha512-CJ7e7Abb779OTRv3lomfp7Mns/Sy1+U4pcAx5VbjxCZD5ZM/VJaXPpPjNKjtSvWQy/H86E49REXR34dl1JEz9w==}
     hasBin: true
 
-  jiti@2.0.0-beta.3:
-    resolution: {integrity: sha512-pmfRbVRs/7khFrSAYnSiJ8C0D5GvzkE4Ey2pAvUcJsw1ly/p+7ut27jbJrjY79BpAJQJ4gXYFtK6d1Aub+9baQ==}
-    hasBin: true
-
   js-beautify@1.15.1:
     resolution: {integrity: sha512-ESjNzSlt/sWE8sciZH8kBF8BPlwXPwhR6pWKAw8bw4Bwj+iZcnKW6ONWUutJ7eObuBZQpiIb8S7OYspWrKt7rA==}
     engines: {node: '>=14'}
@@ -6332,6 +6340,10 @@ packages:
   readdirp@3.6.0:
     resolution: {integrity: sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==}
     engines: {node: '>=8.10.0'}
+
+  readdirp@4.0.1:
+    resolution: {integrity: sha512-GkMg9uOTpIWWKbSsgwb5fA4EavTR+SG/PMPoAY8hkhHfEEY0/vqljY+XHqtDf2cr2IJtoNRDbrrEpZUiZCkYRw==}
+    engines: {node: '>= 14.16.0'}
 
   redis-errors@1.2.0:
     resolution: {integrity: sha512-1qny3OExCf0UvUV/5wpYKf2YwPcOqXzkwKKSmKHiE6ZMQs5heeE/c8eXK+PNllPvmjgAbfnsbpkGZWy8cBpn9w==}
@@ -8681,7 +8693,7 @@ snapshots:
       dotenv: 16.4.5
       git-url-parse: 15.0.0
       is-docker: 3.0.0
-      jiti: 1.21.6
+      jiti: 2.0.0
       mri: 1.2.0
       nanoid: 5.0.7
       ofetch: 1.4.0
@@ -10426,6 +10438,23 @@ snapshots:
     optionalDependencies:
       magicast: 0.3.5
 
+  c12@2.0.0(magicast@0.3.5):
+    dependencies:
+      chokidar: 4.0.1
+      confbox: 0.1.7
+      defu: 6.1.4
+      dotenv: 16.4.5
+      giget: 1.2.3
+      jiti: 2.0.0
+      mlly: 1.7.1
+      ohash: 1.1.4
+      pathe: 1.1.2
+      perfect-debounce: 1.0.0
+      pkg-types: 1.2.0
+      rc9: 2.1.2
+    optionalDependencies:
+      magicast: 0.3.5
+
   cac@6.7.14: {}
 
   call-bind@1.0.7:
@@ -10532,6 +10561,10 @@ snapshots:
       readdirp: 3.6.0
     optionalDependencies:
       fsevents: 2.3.3
+
+  chokidar@4.0.1:
+    dependencies:
+      readdirp: 4.0.1
 
   chownr@2.0.0: {}
 
@@ -11969,7 +12002,7 @@ snapshots:
       bundle-require: 5.0.0(esbuild@0.23.1)
       debug: 4.3.7
       esbuild: 0.23.1
-      jiti: 2.0.0-beta.3
+      jiti: 2.0.0
       jiti-v1: jiti@1.21.6
       pathe: 1.1.2
       tsx: 4.19.0
@@ -12251,8 +12284,6 @@ snapshots:
   jiti@1.21.6: {}
 
   jiti@2.0.0: {}
-
-  jiti@2.0.0-beta.3: {}
 
   js-beautify@1.15.1:
     dependencies:
@@ -13757,6 +13788,8 @@ snapshots:
   readdirp@3.6.0:
     dependencies:
       picomatch: 2.3.1
+
+  readdirp@4.0.1: {}
 
   redis-errors@1.2.0: {}
 
