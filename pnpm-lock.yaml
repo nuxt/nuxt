@@ -14,7 +14,7 @@ overrides:
   '@vue/compiler-core': 3.5.10
   '@vue/compiler-dom': 3.5.10
   '@vue/shared': 3.5.10
-  c12: 2.0.0-beta.3
+  c12: 2.0.0
   h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
   jiti: 2.0.0
   magic-string: ^0.30.11
@@ -188,8 +188,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       c12:
-        specifier: 2.0.0-beta.3
-        version: 2.0.0-beta.3(magicast@0.3.5)
+        specifier: 2.0.0
+        version: 2.0.0(magicast@0.3.5)
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -309,8 +309,8 @@ importers:
         specifier: 8.12.1
         version: 8.12.1
       c12:
-        specifier: 2.0.0-beta.3
-        version: 2.0.0-beta.3(magicast@0.3.5)
+        specifier: 2.0.0
+        version: 2.0.0(magicast@0.3.5)
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
@@ -566,8 +566,8 @@ importers:
         specifier: 2.1.6
         version: 2.1.6(typescript@5.6.2)
       c12:
-        specifier: 2.0.0-beta.3
-        version: 2.0.0-beta.3(magicast@0.3.5)
+        specifier: 2.0.0
+        version: 2.0.0(magicast@0.3.5)
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.95.0)
@@ -3354,8 +3354,8 @@ packages:
     peerDependencies:
       esbuild: '>=0.18'
 
-  c12@2.0.0-beta.3:
-    resolution: {integrity: sha512-KYn7Rlf4Ctu5uK76BtRp3DWqZ6FgREb6DzIly58aiIRpyR+X1ShK13zAlUUYxEao/9q/8w4Uhi+nswlpdarFHg==}
+  c12@2.0.0:
+    resolution: {integrity: sha512-lxBXBw++beYvDiZhtIDQYtNpuHs+Fj+VgBxY+CyuDanuDwn8hUNFntvDi+AOZCyr5VQ2+pTFIFzFgRve3nLEtw==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -8561,7 +8561,7 @@ snapshots:
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
-      c12: 2.0.0-beta.3(magicast@0.3.5)
+      c12: 2.0.0(magicast@0.3.5)
       consola: 3.2.3
       defu: 6.1.4
       destr: 2.0.3
@@ -10338,7 +10338,7 @@ snapshots:
       esbuild: 0.23.1
       load-tsconfig: 0.2.5
 
-  c12@2.0.0-beta.3(magicast@0.3.5):
+  c12@2.0.0(magicast@0.3.5):
     dependencies:
       chokidar: 4.0.1
       confbox: 0.1.7
@@ -10415,7 +10415,7 @@ snapshots:
 
   changelogen@0.5.7(magicast@0.3.5):
     dependencies:
-      c12: 2.0.0-beta.3(magicast@0.3.5)
+      c12: 2.0.0(magicast@0.3.5)
       colorette: 2.0.20
       consola: 3.2.3
       convert-gitmoji: 0.1.5
@@ -12887,7 +12887,7 @@ snapshots:
       '@types/http-proxy': 1.17.15
       '@vercel/nft': 0.27.4
       archiver: 7.0.1
-      c12: 2.0.0-beta.3(magicast@0.3.5)
+      c12: 2.0.0(magicast@0.3.5)
       chalk: 5.3.0
       chokidar: 3.6.0
       citty: 0.1.6
@@ -12981,7 +12981,7 @@ snapshots:
       '@types/http-proxy': 1.17.15
       '@vercel/nft': 0.26.5
       archiver: 7.0.1
-      c12: 2.0.0-beta.3(magicast@0.3.5)
+      c12: 2.0.0(magicast@0.3.5)
       chalk: 5.3.0
       chokidar: 3.6.0
       citty: 0.1.6
