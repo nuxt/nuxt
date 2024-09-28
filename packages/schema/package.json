@@ -45,7 +45,7 @@
     "@vue/compiler-core": "3.5.10",
     "@vue/compiler-sfc": "3.5.10",
     "@vue/language-core": "2.1.6",
-    "c12": "2.0.0-beta.3",
+    "c12": "2.0.0",
     "esbuild-loader": "4.2.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "ignore": "6.0.2",
