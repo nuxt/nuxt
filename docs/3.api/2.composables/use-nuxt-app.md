@@ -138,7 +138,7 @@ Nuxt exposes the following properties through `ssrContext`:
 
   Since [Nuxt v3.4](https://nuxt.com/blog/v3-4#payload-enhancements), it is possible to define your own reducer/reviver for types that are not supported by Nuxt.
 
-  ::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=8w6ffRBs8a4" target="_blank"}
+  ::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=8w6ffRBs8a4" target="_blank"}
   Watch a video from Alexander Lichter about serializing payloads, especially with regards to classes.
   ::
 

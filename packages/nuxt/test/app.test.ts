@@ -297,8 +297,8 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
     mw.path = normaliseToRepo(mw.path)!
   }
 
-  for (const layout in app.layouts) {
-    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)!
+  for (const layout of Object.values(app.layouts)) {
+    layout.file = normaliseToRepo(layout.file)!
   }
 
   await nuxt.close()
