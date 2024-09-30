@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@d632683dd7b4114ad314bca15554477dd762a938 # v4.2.0
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@5047c2a4052946424ce139fe111135f6d7c0fe0b # for v1.8.0
+        uses: lycheeverse/lychee-action@897f08a07f689df1a43076f4374af272f66a6dd1 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-
