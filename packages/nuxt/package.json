@@ -107,7 +107,7 @@
     "semver": "^7.6.3",
     "std-env": "^3.7.0",
     "strip-literal": "^2.1.0",
-    "tinyglobby": "0.2.7",
+    "tinyglobby": "0.2.8",
     "ufo": "^1.5.4",
     "ultrahtml": "^1.5.3",
     "uncrypto": "^0.1.3",
