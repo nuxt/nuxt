@@ -53,7 +53,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "unbuild": "3.0.0-rc.8",
     "vite": "5.4.8",
-    "vitest": "2.1.1",
+    "vitest": "2.1.2",
     "webpack": "5.95.0"
   },
   "engines": {
