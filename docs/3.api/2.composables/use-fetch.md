@@ -44,7 +44,7 @@ const { data, status, error, refresh } = await useFetch('/api/modules', {
 
 The above example results in `https://api.nuxt.com/modules?param1=value1&param2=value2`.
 
-You can also handle error of useFetch using custom error stucture
+You can also handle error of useFetch using custom error structure
 ```ts
 interface CustomError {
   message: string
