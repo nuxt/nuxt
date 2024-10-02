@@ -133,7 +133,7 @@
     "@vue/compiler-sfc": "3.5.10",
     "unbuild": "3.0.0-rc.8",
     "vite": "5.4.8",
-    "vitest": "2.1.1"
+    "vitest": "2.1.2"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
