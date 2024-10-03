@@ -40,12 +40,12 @@
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "20.16.10",
-    "@vue/compiler-core": "3.5.10",
-    "@vue/compiler-dom": "3.5.10",
-    "@vue/shared": "3.5.10",
+    "@vue/compiler-core": "3.5.11",
+    "@vue/compiler-dom": "3.5.11",
+    "@vue/shared": "3.5.11",
     "c12": "2.0.0",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
-    "jiti": "2.1.1",
+    "jiti": "2.1.2",
     "magic-string": "^0.30.11",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "nuxt": "workspace:*",
@@ -57,7 +57,7 @@
     "ufo": "1.5.4",
     "unbuild": "3.0.0-rc.8",
     "vite": "5.4.8",
-    "vue": "3.5.10"
+    "vue": "3.5.11"
   },
   "devDependencies": {
     "@eslint/js": "9.11.1",
@@ -87,7 +87,7 @@
     "eslint-typegen": "0.3.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "15.7.4",
-    "jiti": "2.1.1",
+    "jiti": "2.1.2",
     "markdownlint-cli": "0.42.0",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "nuxi": "3.14.0",
@@ -106,7 +106,7 @@
     "ufo": "1.5.4",
     "vitest": "2.1.2",
     "vitest-environment-nuxt": "1.0.1",
-    "vue": "3.5.10",
+    "vue": "3.5.11",
     "vue-router": "4.4.5",
     "vue-tsc": "2.1.6"
   },
