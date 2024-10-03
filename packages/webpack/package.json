@@ -39,7 +39,7 @@
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "h3": "^1.12.0",
     "hash-sum": "^2.0.0",
-    "jiti": "^2.0.0",
+    "jiti": "^2.1.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.11",
     "memfs": "^4.12.0",
