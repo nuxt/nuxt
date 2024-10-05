@@ -27,14 +27,14 @@
   },
   "dependencies": {
     "@nuxt/schema": "workspace:*",
-    "c12": "^2.0.0",
+    "c12": "^2.0.1",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "globby": "^14.0.2",
     "hash-sum": "^2.0.0",
     "ignore": "^6.0.2",
-    "jiti": "^2.1.0",
+    "jiti": "^2.3.1",
     "klona": "^2.0.6",
     "knitwork": "^1.1.0",
     "mlly": "^1.7.1",
@@ -45,7 +45,7 @@
     "ufo": "^1.5.4",
     "unctx": "^2.3.1",
     "unimport": "^3.13.1",
-    "untyped": "^1.5.0"
+    "untyped": "^1.5.1"
   },
   "devDependencies": {
     "@types/hash-sum": "1.0.2",
