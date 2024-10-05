@@ -36,10 +36,7 @@ export async function getPostcssConfig (nuxt: Nuxt) {
     sourceMap: nuxt.options.webpack.cssSourceMap,
   })
 
-  const jiti = createJiti(nuxt.options.rootDir, {
-    interopDefault: true,
-    alias: nuxt.options.alias,
-  })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
   // Keep the order of default plugins
   if (!Array.isArray(postcssOptions.plugins) && isPureObject(postcssOptions.plugins)) {

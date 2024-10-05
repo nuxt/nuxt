@@ -78,10 +78,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
 
-  const jiti = createJiti(nuxt.options.rootDir, {
-    interopDefault: true,
-    alias: nuxt.options.alias,
-  })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
