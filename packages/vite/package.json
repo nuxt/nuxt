@@ -28,7 +28,7 @@
     "@types/clear": "0.1.4",
     "@types/estree": "1.0.6",
     "rollup": "4.24.0",
-    "unbuild": "3.0.0-rc.8",
+    "unbuild": "3.0.0-rc.11",
     "vue": "3.5.11"
   },
   "dependencies": {
@@ -47,7 +47,7 @@
     "externality": "^1.0.2",
     "get-port-please": "^3.1.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
-    "jiti": "^2.1.2",
+    "jiti": "^2.3.1",
     "knitwork": "^1.1.0",
     "magic-string": "^0.30.11",
     "mlly": "^1.7.1",
