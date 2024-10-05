@@ -131,7 +131,7 @@
     "@types/estree": "1.0.6",
     "@vitejs/plugin-vue": "5.1.4",
     "@vue/compiler-sfc": "3.5.11",
-    "unbuild": "3.0.0-rc.8",
+    "unbuild": "3.0.0-rc.10",
     "vite": "5.4.8",
     "vitest": "2.1.2"
   },
