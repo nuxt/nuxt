@@ -8,6 +8,7 @@ import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
@@ -277,7 +278,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks) {
+      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -315,7 +316,20 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
+      if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      // Inject page patterns that explicitly match `prerender: true` route rule
+      if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
+        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+        for (const route of prerenderRoutes) {
+          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          if (rules.prerender) {
+            nitro.options.prerender.routes.push(route)
+          }
+        }
+      }
+
+      if (!nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
       // as the rest will be injected at runtime when this is prerendered

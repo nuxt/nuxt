@@ -620,6 +620,11 @@ describe('pages', () => {
       expect(status).toBe(200)
     }
   })
+
+  it.skipIf(isDev() || isWebpack /* TODO: fix bug with import.meta.prerender being undefined in webpack build */)('prerenders pages hinted with a route rule', async () => {
+    const html = await $fetch('/prerender/test')
+    expect(html).toContain('should be prerendered: true')
+  })
 })
 
 describe('nuxt composables', () => {
@@ -1831,7 +1836,13 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    expect(html.match(/<link [^>]*href="[^"]*\.css">(?: crossorigin)?/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`undefined`)
+    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    expect(cssFiles?.length).toBeGreaterThan(0)
+    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+      [
+        "<link rel="stylesheet" href="/_nuxt/entry.css"",
+      ]
+    `)
   })
 
   it('still downloads client-only styles', async () => {
