@@ -1,5 +1,5 @@
-import { resolveAlias, useNuxt } from '@nuxt/kit'
-import { dirname, isAbsolute, join, resolve } from 'pathe'
+import { findPath, resolveAlias, useNuxt } from '@nuxt/kit'
+import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 
 const PREFIX = '\0virtual:nuxt:'
@@ -27,7 +27,7 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOption
   return {
     name: 'nuxt:virtual',
     enforce: 'pre',
-    resolveId (id, importer) {
+    async resolveId (id, importer) {
       const _id = id
       id = resolveAlias(id, alias)
 
@@ -41,13 +41,17 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOption
         return PREFIX + resolvedId
       }
 
-      if (importer && !isAbsolute(id)) {
-        if (importer.startsWith(PREFIX)) {
-          importer = importer.slice(PREFIX.length)
-        }
-        const resolved = resolveWithExt(join(dirname(importer), id))
+      if (importer && /^\.{1,2}\//.test(id)) {
+        const path = resolve(dirname(withoutPrefix(importer)), id)
+        const resolved = resolveWithExt(path)
         if (resolved) {
           return PREFIX + resolved
+        }
+        if (importer.startsWith(PREFIX)) {
+          const fsPath = await findPath(path, { fallbackToOriginal: false })
+          if (fsPath) {
+            return fsPath
+          }
         }
       }
     },
@@ -58,9 +62,13 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOption
 
     load (id) {
       return {
-        code: nuxt.vfs[id.slice(PREFIX.length)] || '',
+        code: nuxt.vfs[withoutPrefix(id)] || '',
         map: null,
       }
     },
   }
 })
+
+function withoutPrefix (id: string) {
+  return id.startsWith(PREFIX) ? id.slice(PREFIX.length) : id
+}
