@@ -43,6 +43,9 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOption
       }
 
       if (importer && !isAbsolute(id)) {
+        if (importer.startsWith(PREFIX)) {
+          importer = importer.slice(PREFIX.length)
+        }
         const resolved = resolveWithExt(join(dirname(importer), id))
         if (resolved) {
           return PREFIX + resolved
