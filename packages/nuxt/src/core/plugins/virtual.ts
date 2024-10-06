@@ -26,8 +26,7 @@ export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOption
 
   return {
     name: 'nuxt:virtual',
-    enforce: 'post',
-
+    enforce: 'pre',
     resolveId (id, importer) {
       const _id = id
       id = resolveAlias(id, alias)
