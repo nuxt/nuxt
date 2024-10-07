@@ -82,7 +82,7 @@
     "eslint-typegen": "0.3.2",
     "h3": "1.12.0",
     "happy-dom": "15.7.4",
-    "jiti": "2.3.1",
+    "jiti": "2.3.3",
     "markdownlint-cli": "0.42.0",
     "nitropack": "2.9.7",
     "nuxi": "3.14.0",
@@ -105,7 +105,7 @@
     "vue-router": "4.4.5",
     "vue-tsc": "2.1.6"
   },
-  "packageManager": "pnpm@9.12.0",
+  "packageManager": "pnpm@9.12.1",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
