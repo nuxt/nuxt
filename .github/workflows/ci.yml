@@ -256,7 +256,6 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'nuxt/nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
-      !startsWith(github.event.head_commit.message, 'chore') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
       - lint
