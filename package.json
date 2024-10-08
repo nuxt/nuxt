@@ -93,7 +93,7 @@
     "nuxi": "3.14.0",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.1",
-    "ofetch": "1.4.0",
+    "ofetch": "1.4.1",
     "pathe": "1.1.2",
     "playwright-core": "1.48.0",
     "rimraf": "6.0.1",
