@@ -44,21 +44,6 @@ const { data, status, error, refresh } = await useFetch('/api/modules', {
 
 The above example results in `https://api.nuxt.com/modules?param1=value1&param2=value2`.
 
-You can also handle error of useFetch using custom error structure
-```ts
-interface CustomError {
-  message: string
-  statusCode: number
-}
-
-export async function useCustomFetch<T>(url: string | (() => string), options?: UseFetchOptions<T>) {
-  return useFetch<T, FetchError<CustomError>>(url, {
-    ...options,
-    $fetch: useNuxtApp().$customFetch,
-  })
-}
-```
-
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
 ```ts
