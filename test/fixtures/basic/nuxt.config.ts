@@ -66,6 +66,7 @@ export default defineNuxtConfig({
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
+      '/prerender/**': { prerender: true },
     },
     prerender: {
       routes: [
@@ -121,7 +122,7 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return 'virtual.css' }
         },
         load (id) {
-          if (id === 'virtual.css') { return ':root { --virtual: red }' }
+          if (id.includes('virtual.css')) { return ':root { --virtual: red }' }
         },
       }))
       addBuildPlugin(plugin)
