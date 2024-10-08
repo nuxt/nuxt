@@ -73,16 +73,7 @@ export function useResponseHeader (header: string) {
     return ref()
   }
 
-  const event = useRequestEvent()
-  if (!event) {
-    if (import.meta.dev) {
-      return computed({
-        get: () => undefined,
-        set: () => console.warn('[nuxt] Setting response headers is not supported in the browser.'),
-      })
-    }
-    return ref()
-  }
+  const event = useRequestEvent()!
 
   return computed({
     get () {
