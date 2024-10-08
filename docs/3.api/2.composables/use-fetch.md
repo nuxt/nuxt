@@ -50,8 +50,8 @@ You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interce
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
   onRequest({ request, options }) {
     // Set the request headers
-    options.headers = options.headers || {}
-    options.headers.authorization = '...'
+    // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
+    options.headers.set('Authorization', '...')
   },
   onRequestError({ request, options, error }) {
     // Handle the request errors
