@@ -414,8 +414,18 @@ export default defineNuxtModule({
       })
     }
 
+    const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
+    if (nuxt.options.test && nuxt.options.dev) {
+      // add component testing route so 404 won't be triggered
+      nuxt.hook('pages:extend', (routes) => {
+        routes.push({
+          _sync: true,
+          path: '/__nuxt_component_test__/:pathMatch(.*)',
+          file: componentStubPath,
+        })
+      })
+    }
     if (nuxt.options.experimental.appManifest) {
-      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
