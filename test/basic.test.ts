@@ -165,8 +165,7 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
-  // TODO: https://github.com/nuxt/nuxt/pull/29054
-  it.todo('allows routes to be added dynamically', async () => {
+  it('allows routes to be added dynamically', async () => {
     const html = await $fetch<string>('/add-route-test')
     expect(html).toContain('Hello Nuxt 3!')
   })
@@ -248,8 +247,7 @@ describe('pages', () => {
     await serverPage.close()
   })
 
-  it.todo('returns 500 when there is an infinite redirect', async () => {
-    // TODO: Fix infinite redirect without catchall
+  it.runIf(isDev())('returns 500 when there is an infinite redirect', async () => {
     const { status } = await fetch('/catchall/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
   })
@@ -272,8 +270,7 @@ describe('pages', () => {
     await expectNoClientErrors('/catchall/not-found')
   })
 
-  // TODO: https://github.com/nuxt/nuxt/pull/29054
-  it.todo('should render correctly when loaded on a different path', async () => {
+  it('should render correctly when loaded on a different path', async () => {
     const { page, pageErrors } = await renderPage()
     await page.goto(url('/proxy'))
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
@@ -1279,6 +1276,13 @@ describe('middlewares', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('Hello Nuxt 3!')
+  })
+
+  it('should allow redirection from a non-existent route with `ssr: false`', async () => {
+    const page = await createPage('/redirect/catchall')
+
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+    await page.close()
   })
 
   it('should allow aborting navigation on server-side', async () => {
