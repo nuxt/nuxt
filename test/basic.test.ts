@@ -167,8 +167,7 @@ describe('pages', () => {
     expect(headers.get('location')).toEqual('/')
   })
 
-  // TODO: https://github.com/nuxt/nuxt/pull/29054
-  it.todo('allows routes to be added dynamically', async () => {
+  it('allows routes to be added dynamically', async () => {
     const html = await $fetch<string>('/add-route-test')
     expect(html).toContain('Hello Nuxt 3!')
   })
@@ -274,8 +273,7 @@ describe('pages', () => {
     await expectNoClientErrors('/catchall/not-found')
   })
 
-  // TODO: https://github.com/nuxt/nuxt/pull/29054
-  it.todo('should render correctly when loaded on a different path', async () => {
+  it('should render correctly when loaded on a different path', async () => {
     const { page, pageErrors } = await renderPage()
     await page.goto(url('/proxy'))
     await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
