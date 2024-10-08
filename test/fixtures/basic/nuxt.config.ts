@@ -122,7 +122,7 @@ export default defineNuxtConfig({
           if (id === 'virtual.css') { return 'virtual.css' }
         },
         load (id) {
-          if (id === 'virtual.css') { return ':root { --virtual: red }' }
+          if (id.includes('virtual.css')) { return ':root { --virtual: red }' }
         },
       }))
       addBuildPlugin(plugin)
