@@ -8,6 +8,10 @@ links:
     size: xs
 ---
 
+::important
+This composable is available in Nuxt v3.14+.
+::
+
 You can use the built-in [`useResponseHeader`](/docs/api/composables/use-response-header) composable to set any server response header within your pages, components, and plugins.
 
 ```ts
