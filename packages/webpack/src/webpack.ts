@@ -1,15 +1,17 @@
 import pify from 'pify'
 import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
+import { resolve } from 'pathe'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
-import type { OutputFileSystem } from 'webpack-dev-middleware'
+import type { MultiWatching } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
 import { defu } from 'defu'
 import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
-import { logger, useNuxt } from '@nuxt/kit'
+import { logger, useNitro, useNuxt } from '@nuxt/kit'
+import type { InputPluginOption } from 'rollup'
 
 import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
@@ -18,6 +20,7 @@ import { createMFS } from './utils/mfs'
 import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
+import { dynamicRequire } from './nitro/plugins/dynamic-require'
 
 // TODO: Support plugins
 // const plugins: string[] = []
@@ -25,12 +28,32 @@ import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './ut
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   registerVirtualModules()
 
-  const webpackConfigs = [client, ...nuxt.options.ssr ? [server] : []].map((preset) => {
+  const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
-    applyPresets(ctx, preset)
+    await applyPresets(ctx, preset)
     return getWebpackConfig(ctx)
+  }))
+
+  /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
+  const nitro = useNitro()
+  const dynamicRequirePlugin = dynamicRequire({
+    dir: resolve(nuxt.options.buildDir, 'dist/server'),
+    inline:
+      nitro.options.node === false || nitro.options.inlineDynamicImports,
+    ignore: [
+      'client.manifest.mjs',
+      'server.js',
+      'server.cjs',
+      'server.mjs',
+      'server.manifest.mjs',
+    ],
   })
+  const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
+  const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
+
+  prerenderRollupPlugins.push(dynamicRequirePlugin)
+  rollupPlugins.push(dynamicRequirePlugin)
 
   await nuxt.callHook('webpack:config', webpackConfigs)
 
@@ -39,7 +62,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   for (const config of webpackConfigs) {
     config.plugins!.push(DynamicBasePlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server']
+      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
@@ -48,7 +71,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     config.plugins!.push(composableKeysPlugin.webpack({
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
       rootDir: nuxt.options.rootDir,
-      composables: nuxt.options.optimization.keyedComposables
+      composables: nuxt.options.optimization.keyedComposables,
     }))
   }
 
@@ -61,7 +84,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // In dev, write files in memory FS
     if (nuxt.options.dev) {
-      compiler.outputFileSystem = mfs as unknown as OutputFileSystem
+      compiler.outputFileSystem = mfs! as unknown as Compiler['outputFileSystem']
     }
 
     return compiler
@@ -94,7 +117,7 @@ async function createDevMiddleware (compiler: Compiler) {
     publicPath: joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir),
     outputFileSystem: compiler.outputFileSystem as any,
     stats: 'none',
-    ...nuxt.options.webpack.devMiddleware
+    ...nuxt.options.webpack.devMiddleware,
   })
 
   // @ts-expect-error need better types for `pify`
@@ -105,7 +128,7 @@ async function createDevMiddleware (compiler: Compiler) {
     log: false,
     heartbeat: 10000,
     path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
-    ...hotMiddlewareOptions
+    ...hotMiddlewareOptions,
   })
 
   // Register devMiddleware on server
@@ -131,7 +154,7 @@ async function compile (compiler: Compiler) {
 
   // --- Dev Build ---
   if (nuxt.options.dev) {
-    const compilersWatching: Watching[] = []
+    const compilersWatching: Array<Watching | MultiWatching> = []
 
     nuxt.hook('close', async () => {
       await Promise.all(compilersWatching.map(watching => pify(watching.close.bind(watching))()))

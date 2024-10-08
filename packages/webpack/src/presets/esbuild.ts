@@ -16,19 +16,19 @@ export function esbuild (ctx: WebpackConfigContext) {
       loader: 'esbuild-loader',
       exclude: (file) => {
         // Not exclude files outside node_modules
-        file = file.split('node_modules', 2)[1]
-        if (!file) { return false }
+        const lastSegment = file.split('node_modules', 2)[1]
+        if (!lastSegment) { return false }
 
-        return !ctx.transpile.some(module => module.test(file))
+        return !ctx.transpile.some(module => module.test(lastSegment))
       },
       resolve: {
-        fullySpecified: false
+        fullySpecified: false,
       },
       options: {
         target,
         ...ctx.nuxt.options.webpack.loaders.esbuild,
-        loader: 'ts'
-      }
+        loader: 'ts',
+      },
     },
     {
       test: /\.m?[jt]sx$/,
@@ -36,8 +36,8 @@ export function esbuild (ctx: WebpackConfigContext) {
       options: {
         target,
         ...ctx.nuxt.options.webpack.loaders.esbuild,
-        loader: 'tsx'
-      }
-    }
+        loader: 'tsx',
+      },
+    },
   )
 }

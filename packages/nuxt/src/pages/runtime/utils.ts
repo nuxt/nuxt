@@ -1,5 +1,5 @@
 import { KeepAlive, h } from 'vue'
-import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from '#vue-router'
+import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
 type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
@@ -22,6 +22,7 @@ export const wrapInKeepAlive = (props: any, children: any) => {
   return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
 }
 
+/** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
 }

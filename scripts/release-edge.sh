@@ -18,12 +18,18 @@ if [[ ! -z ${NODE_AUTH_TOKEN} ]] ; then
   npm whoami
 fi
 
+# use absolute urls for better rendering on npm
+sed -i.bak 's/\.\/\.github\/assets/https:\/\/github.com\/nuxt\/nuxt\/tree\/main\/\.github\/assets/g' README.md
+
 # Release packages
 for p in packages/* ; do
   if [[ $p == "packages/nuxi" ]] ; then
     continue
   fi
   if [[ $p == "packages/test-utils" ]] ; then
+    continue
+  fi
+  if [[ $p == "packages/ui-templates" ]] ; then
     continue
   fi
   pushd $p
@@ -33,3 +39,5 @@ for p in packages/* ; do
   pnpm publish --access public --no-git-checks --tag $TAG
   popd
 done
+
+mv README.md.bak README.md

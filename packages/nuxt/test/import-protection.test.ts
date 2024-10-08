@@ -1,6 +1,7 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
-import { ImportProtectionPlugin, nuxtImportProtections } from '../src/core/plugins/import-protection'
+import { ImpoundPlugin } from 'impound'
+import { nuxtImportProtections } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
@@ -22,7 +23,7 @@ const testsToTriggerOn = [
   ['/root/node_modules/@nuxt/kit', 'components/Component.vue', true],
   ['some-nuxt-module', 'components/Component.vue', true],
   ['/root/src/server/api/test.ts', 'components/Component.vue', true],
-  ['src/server/api/test.ts', 'components/Component.vue', true]
+  ['src/server/api/test.ts', 'components/Component.vue', true],
 ] as const
 
 describe('import protection', () => {
@@ -38,16 +39,16 @@ describe('import protection', () => {
 })
 
 const transformWithImportProtection = (id: string, importer: string) => {
-  const plugin = ImportProtectionPlugin.rollup({
-    rootDir: '/root',
+  const plugin = ImpoundPlugin.rollup({
+    cwd: '/root',
     patterns: nuxtImportProtections({
       options: {
         modules: ['some-nuxt-module'],
         srcDir: '/root/src/',
-        serverDir: '/root/src/server'
-      } satisfies Partial<NuxtOptions> as NuxtOptions
-    })
+        serverDir: '/root/src/server',
+      } satisfies Partial<NuxtOptions> as NuxtOptions,
+    }),
   })
 
-  return (plugin as any).resolveId(id, importer)
+  return (plugin as any).resolveId.call({ error: () => {} }, id, importer)
 }

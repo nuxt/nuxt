@@ -30,8 +30,10 @@ export interface ExtendConfigOptions {
   prepend?: boolean
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendWebpackConfigOptions extends ExtendConfigOptions {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
 
 /**
@@ -42,7 +44,7 @@ export interface ExtendViteConfigOptions extends ExtendConfigOptions {}
  */
 export function extendWebpackConfig (
   fn: ((config: WebpackConfig) => void),
-  options: ExtendWebpackConfigOptions = {}
+  options: ExtendWebpackConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 
@@ -74,7 +76,7 @@ export function extendWebpackConfig (
  */
 export function extendViteConfig (
   fn: ((config: ViteConfig) => void),
-  options: ExtendViteConfigOptions = {}
+  options: ExtendViteConfigOptions = {},
 ) {
   const nuxt = useNuxt()
 

@@ -9,8 +9,8 @@
 export default defineNuxtComponent({
   asyncData () {
     return {
-      fooParent: 'fooParent'
+      fooParent: 'fooParent',
     }
-  }
+  },
 })
 </script>

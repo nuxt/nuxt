@@ -12,7 +12,7 @@ links:
 
 By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks navigation until its async handler is resolved. `useLazyAsyncData` provides a wrapper around [`useAsyncData`](/docs/api/composables/use-async-data) that triggers navigation before the handler is resolved by setting the `lazy` option to `true`.
 
-::callout
+::note
 `useLazyAsyncData` has the same signature as [`useAsyncData`](/docs/api/composables/use-async-data).
 ::
 
@@ -23,7 +23,7 @@ By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks naviga
 ```vue [pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
-  Handle pending and error states directly within your component's template
+  Handle 'pending' and 'error' states directly within your component's template
 */
 const { status, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 
@@ -40,8 +40,8 @@ watch(count, (newCount) => {
 </template>
 ```
 
-::callout{color="amber" icon="i-ph-warning-duotone"}
+::warning
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching#uselazyasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching"}

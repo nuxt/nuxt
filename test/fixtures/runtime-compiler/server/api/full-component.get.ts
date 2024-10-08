@@ -13,6 +13,6 @@ export default defineEventHandler(() => {
 
             return {fullName, count}
         `,
-    template: '<div>my name is {{ fullName }}, <button id="inc-interactive-count" @click="count++">click here</button> count: <span id="interactive-count">{{count}}</span>. I am defined by Interactive in the setup of App.vue. My full component definition is retrieved from the api </div>'
+    template: '<div>my name is {{ fullName }}, <button id="inc-interactive-count" @click="count++">click here</button> count: <span id="interactive-count">{{count}}</span>. I am defined by Interactive in the setup of App.vue. My full component definition is retrieved from the api </div>',
   }
 })

@@ -39,10 +39,10 @@ export default function virtual (vfs: Record<string, string>): Plugin {
       const idNoPrefix = id.slice(PREFIX.length)
       if (idNoPrefix in vfs) {
         return {
-          code: vfs[idNoPrefix],
-          map: null
+          code: vfs[idNoPrefix] || '',
+          map: null,
         }
       }
-    }
+    },
   }
 }

@@ -129,7 +129,7 @@ interface PageMeta {
 
   - **Type**: `boolean | (to: RouteLocationNormalized, from: RouteLocationNormalized) => boolean`
 
-    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [docs](/docs/guide/directory-structure/pages/#router-options)) for more info.
+    Tell Nuxt to scroll to the top before rendering the page or not. If you want to overwrite the default scroll behavior of Nuxt, you can do so in `~/app/router.options.ts` (see [custom routing](/docs/guide/recipes/custom-routing#using-approuteroptions)) for more info.
 
   **`[key: string]`**
 
@@ -200,7 +200,7 @@ The two routes "/test-category" and "/1234-post" match both `[postId]-[postSlug]
 
 To make sure that we are only matching digits (`\d+`) for `postId` in the `[postId]-[postSlug]` route, we can add the following to the `[postId]-[postSlug].vue` page template:
 
-```vue [pages/[postId]-[postSlug].vue]
+```vue [pages/[postId\\]-[postSlug\\].vue]
 <script setup lang="ts">
 definePageMeta({
   path: '/:postId(\\d+)-:postSlug' 
