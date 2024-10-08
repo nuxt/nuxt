@@ -24,10 +24,7 @@ function fetchManifest () {
   if (!isAppManifestEnabled) {
     throw new Error('[nuxt] app manifest should be enabled with `experimental.appManifest`')
   }
-  manifest = $fetch<NuxtAppManifest>(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`), {
-    method: 'get',
-    responseType: 'json',
-  })
+  manifest = fetch(buildAssetsURL(`builds/meta/${useRuntimeConfig().app.buildId}.json`)).then(r => r.json() as Promise<NuxtAppManifest>)
   manifest.then((m) => {
     matcher = createMatcherFromExport(m.matcher)
   }).catch((e) => {
