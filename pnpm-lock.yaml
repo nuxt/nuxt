@@ -313,8 +313,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1(magicast@0.3.5)
       chokidar:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^4.0.1
+        version: 4.0.1
       compatx:
         specifier: ^0.1.8
         version: 0.1.8
@@ -4633,6 +4633,9 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    resolution: {integrity: sha512-LQ8hHOIzk+agD1p0K7UosByKuzDAKGLTnYsP0syV/XMr9E7pWmoaDSWkGdWjtLR9O3hinNqrXU1NW0kTmhiSag==}
+
   h3@1.12.0:
     resolution: {integrity: sha512-Zi/CcNeWBXDrFNlV0hUBJQR9F7a96RjMeAZweW/ZWkR9fuXrMcvKnSA63f/zZ9l0GgQOZDVHGvXivNN9PWOwhA==}
 
@@ -8657,7 +8660,7 @@ snapshots:
       '@vueuse/core': 11.1.0(vue@3.5.11(typescript@5.6.2))
       consola: 3.2.3
       defu: 6.1.4
-      h3: 1.12.0
+      h3: h3-nightly@2.0.0-1718872656.6765a6e
       magic-string: 0.30.11
       mlly: 1.7.2
       ofetch: 1.4.0
@@ -11816,6 +11819,21 @@ snapshots:
   gzip-size@7.0.0:
     dependencies:
       duplexer: 0.1.2
+
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    dependencies:
+      cookie-es: 1.2.2
+      crossws: 0.2.4
+      defu: 6.1.4
+      destr: 2.0.3
+      iron-webcrypto: 1.2.1
+      ohash: 1.1.4
+      radix3: 1.1.2
+      ufo: 1.5.4
+      uncrypto: 0.1.3
+      unenv: 1.10.0
+    transitivePeerDependencies:
+      - uWebSockets.js
 
   h3@1.12.0:
     dependencies:
