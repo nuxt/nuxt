@@ -312,8 +312,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1(magicast@0.3.5)
       chokidar:
-        specifier: ^3.6.0
-        version: 3.6.0
+        specifier: ^4.0.1
+        version: 4.0.1
       compatx:
         specifier: ^0.1.8
         version: 0.1.8
