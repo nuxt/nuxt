@@ -18,10 +18,7 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
   css.postcss.plugins = []
   const postcssOptions = nuxt.options.postcss
 
-  const jiti = createJiti(nuxt.options.rootDir, {
-    interopDefault: true,
-    alias: nuxt.options.alias,
-  })
+  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
   for (const pluginName of sortPlugins(postcssOptions)) {
     const pluginOptions = postcssOptions.plugins[pluginName]
@@ -29,7 +26,7 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
 
     let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
     for (const parentURL of nuxt.options.modulesDir) {
-      pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true }) as (opts: Record<string, any>) => Plugin
+      pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true, default: true }) as (opts: Record<string, any>) => Plugin
       if (typeof pluginFn === 'function') {
         css.postcss.plugins.push(pluginFn(pluginOptions))
         break
