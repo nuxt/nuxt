@@ -241,6 +241,8 @@ it('components:scanComponents', async () => {
   for (const c of scannedComponents) {
     // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
+    // @ts-expect-error _scanned is added internally but we don't want it to be in the snapshot
+    delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
 })

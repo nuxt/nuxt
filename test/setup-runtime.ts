@@ -4,7 +4,9 @@ import { defineEventHandler } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
 
 vi.mock('#app/compat/idle-callback', () => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   requestIdleCallback: (cb: Function) => cb(),
+  cancelIdleCallback: () => {},
 }))
 
 const timestamp = Date.now()

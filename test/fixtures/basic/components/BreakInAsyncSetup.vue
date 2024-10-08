@@ -3,7 +3,7 @@ async function getData () { }
 await getData()
 
 // break server-side
-const data = window.__NUXT__
+const data = window.useNuxtApp().payload
 </script>
 
 <template>

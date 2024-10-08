@@ -18,11 +18,13 @@ describe('imports:transform', () => {
   ]
 
   const ctx = createUnimport({
+    injectAtEnd: true,
     imports,
   })
 
-  const transformPlugin = TransformPlugin.raw({ ctx, options: { transform: { exclude: [/node_modules/] } } }, { framework: 'rollup' }) as Plugin
+  const transformPlugin = TransformPlugin({ ctx, options: { transform: { exclude: [/node_modules/] } } }).raw({}, { framework: 'rollup' }) as Plugin
   const transform = async (source: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     const result = await (transformPlugin.transform! as Function).call({ error: null, warn: null } as any, source, '')
     return typeof result === 'string' ? result : result?.code
   }
@@ -55,7 +57,7 @@ describe('imports:transform', () => {
   })
 })
 
-const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta']
+const excludedNuxtHelpers = ['useHydration', 'useHead', 'useSeoMeta', 'useServerSeoMeta', 'useId']
 
 describe('imports:nuxt', () => {
   try {
@@ -170,7 +172,6 @@ const excludedVueHelpers = [
   'hydrate',
   'initDirectivesForSSR',
   'render',
-  'useCssVars',
   'vModelCheckbox',
   'vModelDynamic',
   'vModelRadio',
@@ -182,6 +183,13 @@ const excludedVueHelpers = [
   'ErrorCodes',
   'TrackOpTypes',
   'TriggerOpTypes',
+  'useHost',
+  'hydrateOnVisible',
+  'hydrateOnMediaQuery',
+  'hydrateOnInteraction',
+  'hydrateOnIdle',
+  'onWatcherCleanup',
+  'getCurrentWatcher',
 ]
 
 describe('imports:vue', () => {
@@ -199,9 +207,9 @@ describe('imports:nuxt/scripts', () => {
   const scripts = scriptRegistry().map(s => s.import?.name).filter(Boolean)
   const globalScripts = new Set([
     'useScript',
-    'useAnalyticsPageEvent',
-    'useElementScriptTrigger',
-    'useConsentScriptTrigger',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
+    'useScriptTriggerConsent',
     // registered separately
     'useScriptGoogleTagManager',
     'useScriptGoogleAnalytics',

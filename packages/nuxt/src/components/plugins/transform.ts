@@ -7,12 +7,12 @@ import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
 import { normalize, resolve } from 'pathe'
 import { genImport } from 'knitwork'
-import { distDir } from '../dirs'
-import type { getComponentsT } from './module'
+import { distDir } from '../../dirs'
+import type { getComponentsT } from '../module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
-export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
+export function TransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
   const componentUnimport = createUnimport({
     imports: [
@@ -22,6 +22,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
       },
     ],
     virtualImports: ['#components'],
+    injectAtEnd: true,
   })
 
   function getComponentsImports (): Import[] {
@@ -50,6 +51,7 @@ export function createTransformPlugin (nuxt: Nuxt, getComponents: getComponentsT
 
   return createUnplugin(() => ({
     name: 'nuxt:components:imports',
+    enforce: 'post',
     transformInclude (id) {
       id = normalize(id)
       return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id)

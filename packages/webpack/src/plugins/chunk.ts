@@ -7,11 +7,11 @@ const script = `
 if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
   var _ensureChunk = ${webpack.RuntimeGlobals.ensureChunk};
   ${webpack.RuntimeGlobals.ensureChunk} = function (chunkId) {
-    return Promise.resolve(_ensureChunk(chunkId)).catch(err => {
-      const e = new Event("nuxt.preloadError");
-      e.payload = err;
-      window.dispatchEvent(e);
-      throw err;
+    return Promise.resolve(_ensureChunk(chunkId)).catch(error => {
+      const e = new Event('nuxt:preloadError', { cancelable: true })
+      e.payload = error
+      window.dispatchEvent(e)
+      throw error
     });
   };
 };`

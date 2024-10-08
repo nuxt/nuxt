@@ -2,10 +2,11 @@
 
 import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
+import { destr } from 'destr'
 
-import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
+import { hasProtocol } from 'ufo'
 import * as composables from '#app/composables'
 
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
@@ -15,10 +16,10 @@ import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders 
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
+import { encodeURL, resolveRouteObject } from '#app/composables/router'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -28,23 +29,33 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
 describe('app config', () => {
   it('can be updated', () => {
     const appConfig = useAppConfig()
-    expect(appConfig).toMatchInlineSnapshot(`
-      {
-        "nuxt": {},
-      }
-    `)
-    updateAppConfig({
+    expect(appConfig).toStrictEqual({ nuxt: {} })
+
+    type UpdateAppConfig = Parameters<typeof updateAppConfig>[0]
+
+    const initConfig: UpdateAppConfig = {
       new: 'value',
       nuxt: { nested: 42 },
+      regExp: /foo/g,
+      date: new Date(1111, 11, 11),
+      arr: [1, 2, 3],
+    }
+    updateAppConfig(initConfig)
+    expect(appConfig).toStrictEqual(initConfig)
+
+    const newConfig: UpdateAppConfig = {
+      nuxt: { anotherNested: 24 },
+      regExp: /bar/g,
+      date: new Date(2222, 12, 12),
+      arr: [4, 5],
+    }
+    updateAppConfig(newConfig)
+    expect(appConfig).toStrictEqual({
+      ...initConfig,
+      ...newConfig,
+      nuxt: { ...initConfig.nuxt, ...newConfig.nuxt },
+      arr: [4, 5, 3],
     })
-    expect(appConfig).toMatchInlineSnapshot(`
-      {
-        "new": "value",
-        "nuxt": {
-          "nested": 42,
-        },
-      }
-    `)
   })
 })
 
@@ -76,7 +87,6 @@ describe('composables', () => {
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'useId',
       'useRoute',
       'navigateTo',
       'abortNavigation',
@@ -98,6 +108,7 @@ describe('composables', () => {
       'reloadNuxtApp',
       'refreshCookie',
       'onPrehydrate',
+      'useId',
       'useFetch',
       'useHead',
       'useLazyFetch',
@@ -219,6 +230,17 @@ describe('useAsyncData', () => {
         "val": false,
       }
     `)
+  })
+
+  it('should only call getCachedData once', async () => {
+    const getCachedData = vi.fn(() => ({ val: false }))
+    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData })
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": false,
+      }
+    `)
+    expect(getCachedData).toHaveBeenCalledTimes(1)
   })
 
   it('should use default while pending', async () => {
@@ -445,33 +467,6 @@ describe('clearNuxtState', () => {
   })
 })
 
-describe('useId', () => {
-  it('default', () => {
-    const vals = new Set<string>()
-    for (let index = 0; index < 100; index++) {
-      mount(defineComponent({
-        setup () {
-          const id = useId()
-          vals.add(id)
-          return () => h('div', id)
-        },
-      }))
-    }
-    expect(vals.size).toBe(100)
-  })
-
-  it('generates unique ids per-component', () => {
-    const component = defineComponent({
-      setup () {
-        const id = useId()
-        return () => h('div', id)
-      },
-    })
-
-    expect(mount(component).html()).not.toBe(mount(component).html())
-  })
-})
-
 describe('url', () => {
   it('useRequestURL', () => {
     const url = useRequestURL()
@@ -484,7 +479,7 @@ describe('url', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by hooks', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -499,7 +494,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { isLoading, start, finish } = useLoadingIndicator()
     expect(isLoading.value).toBeFalsy()
@@ -514,7 +509,7 @@ describe('loading state', () => {
 
 describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
-    vi.stubGlobal('setTimeout', vi.fn((cb: Function) => cb()))
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
     const nuxtApp = useNuxtApp()
     const { error, start, finish } = useLoadingIndicator()
     expect(error.value).toBeFalsy()
@@ -596,6 +591,29 @@ describe('routing utilities: `navigateTo`', () => {
   })
 })
 
+describe('routing utilities: `resolveRouteObject`', () => {
+  it('resolveRouteObject should correctly resolve a route object', () => {
+    expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
+    expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+})
+
+describe('routing utilities: `encodeURL`', () => {
+  const encode = (url: string) => {
+    const isExternal = hasProtocol(url, { acceptRelative: true })
+    return encodeURL(url, isExternal)
+  }
+  it('encodeURL should correctly encode a URL', () => {
+    expect(encode('https://test.com')).toMatchInlineSnapshot(`"https://test.com/"`)
+    expect(encode('//test.com')).toMatchInlineSnapshot(`"//test.com/"`)
+    expect(encode('mailto:daniel@cœur.com')).toMatchInlineSnapshot(`"mailto:daniel@c%C5%93ur.com"`)
+    const encoded = encode('/cœur?redirected=' + encodeURIComponent('https://google.com'))
+    expect(new URL('/cœur', 'http://localhost').pathname).toMatchInlineSnapshot(`"/c%C5%93ur"`)
+    expect(encoded).toMatchInlineSnapshot(`"/c%C5%93ur?redirected=https%3A%2F%2Fgoogle.com"`)
+    expect(useRouter().resolve(encoded).query.redirected).toMatchInlineSnapshot(`"https://google.com"`)
+  })
+})
+
 describe('routing utilities: `useRoute`', () => {
   it('should show provide a mock route', () => {
     expect(useRoute()).toMatchObject({
@@ -664,6 +682,38 @@ describe('useCookie', () => {
     expect(computedVal.value).toBe(-1)
     user.value.score++
     expect(computedVal.value).toBe(0)
+  })
+
+  it('cookie decode function should be invoked once', () => {
+    // Pre-set cookies
+    document.cookie = 'foo=Foo'
+    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
+    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
+
+    let barCallCount = 0
+    const bazCookie = useCookie<{ s2: number }>('baz', {
+      default: () => ({ s2: -1 }),
+      decode (value) {
+        barCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    bazCookie.value.s2++
+    expect(bazCookie.value.s2).toEqual(1)
+    expect(barCallCount).toBe(1)
+
+    let quxCallCount = 0
+    const quxCookie = useCookie<{ s3: number }>('qux', {
+      default: () => ({ s3: -1 }),
+      filter: key => key === 'bar' || key === 'baz',
+      decode (value) {
+        quxCallCount++
+        return destr(decodeURIComponent(value))
+      },
+    })
+    quxCookie.value.s3++
+    expect(quxCookie.value.s3).toBe(0)
+    expect(quxCallCount).toBe(2)
   })
 
   it('should not watch custom cookie refs when shallow', () => {

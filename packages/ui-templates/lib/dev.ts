@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
 import genericMessages from '../templates/messages.json'
+import { version } from '../../nuxt/package.json'
 
 const templatesRoot = fileURLToPath(new URL('..', import.meta.url))
 
@@ -30,7 +31,8 @@ export const DevRenderingPlugin = () => {
       const chunks = contents.split(/\{{2,3}[^{}]+\}{2,3}/g)
       let templateString = chunks.shift()
       for (const expression of contents.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
-        const value = runInNewContext(expression[1].trim(), {
+        const value = runInNewContext(expression[1]!.trim(), {
+          version,
           messages: { ...genericMessages, ...messages },
         })
         templateString += `${value}${chunks.shift()}`

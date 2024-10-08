@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import type { RouteLocationNormalized } from '#vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -100,7 +100,7 @@ export function vforToArray (source: any): any[] {
       const keys = Object.keys(source)
       const array = new Array(keys.length)
       for (let i = 0, l = keys.length; i < l; i++) {
-        const key = keys[i]
+        const key = keys[i]!
         array[i] = source[key]
       }
       return array

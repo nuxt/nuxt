@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-await navigateTo('/cœur')
+await navigateTo('/cœur?redirected=' + encodeURIComponent('https://google.com'))
 </script>

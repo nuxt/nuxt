@@ -6,8 +6,6 @@ import { logger } from './logger'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
- *
- * Requires Nuxt 2.13+
  */
 export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
@@ -23,8 +21,6 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 
 /**
  * Register a component by its name and filePath.
- *
- * Requires Nuxt 2.13+
  */
 export async function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
@@ -55,7 +51,7 @@ export async function addComponent (opts: AddComponentOptions) {
   nuxt.hook('components:extend', (components: Component[]) => {
     const existingComponentIndex = components.findIndex(c => (c.pascalName === component.pascalName || c.kebabName === component.kebabName) && c.mode === component.mode)
     if (existingComponentIndex !== -1) {
-      const existingComponent = components[existingComponentIndex]
+      const existingComponent = components[existingComponentIndex]!
       const existingPriority = existingComponent.priority ?? 0
       const newPriority = component.priority ?? 0
 

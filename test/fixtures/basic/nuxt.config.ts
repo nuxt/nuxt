@@ -5,13 +5,14 @@ import { createUnplugin } from 'unplugin'
 import { withoutLeadingSlash } from 'ufo'
 
 // (defined in nuxt/src/core/nitro.ts)
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRouteConfig {
     ssr?: boolean
   }
 }
 
 export default defineNuxtConfig({
+  compatibilityDate: '2024-06-28',
   app: {
     pageTransition: true,
     layoutTransition: true,
@@ -30,7 +31,6 @@ export default defineNuxtConfig({
       include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
     },
   },
-  buildDir: process.env.NITRO_BUILD_DIR,
   builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
   appId: 'nuxt-app-basic',
   build: {
@@ -66,8 +66,8 @@ export default defineNuxtConfig({
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },
       '/no-scripts': { experimentalNoScripts: true },
+      '/prerender/**': { prerender: true },
     },
-    output: { dir: process.env.NITRO_OUTPUT_DIR },
     prerender: {
       routes: [
         '/random/a',
@@ -242,16 +242,14 @@ export default defineNuxtConfig({
     inlineStyles: id => !!id && !id.includes('assets.vue'),
   },
   experimental: {
+    serverAppConfig: true,
     typedPages: true,
-    polyfillVueUseHead: true,
-    respectNoSSRHeader: true,
     clientFallback: true,
     restoreState: true,
     clientNodeCompat: true,
     componentIslands: {
       selectiveClient: 'deep',
     },
-    treeshakeClientOnly: true,
     asyncContext: process.env.TEST_CONTEXT === 'async',
     appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',

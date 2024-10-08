@@ -106,10 +106,6 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
-    imports: ['useId'],
-    from: '#app/composables/id',
-  },
-  {
     imports: ['useRouteAnnouncer'],
     from: '#app/composables/route-announcer',
   },
@@ -117,12 +113,13 @@ const granularAppPresets: InlinePreset[] = [
 
 export const scriptsStubsPreset = {
   imports: [
-    'useConsentScriptTrigger',
-    'useAnalyticsPageEvent',
-    'useElementScriptTrigger',
+    'useScriptTriggerConsent',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',
+    'useScriptCrisp',
     'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
     'useScriptFathomAnalytics',
@@ -230,6 +227,10 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 

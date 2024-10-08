@@ -96,6 +96,10 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
 
+      if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
+        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+      }
+
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
         warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
         continue
@@ -122,6 +126,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         export: 'default',
         // by default, give priority to scanned components
         priority: dir.priority ?? 1,
+        // @ts-expect-error untyped property
+        _scanned: true,
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -166,3 +172,5 @@ function warnAboutDuplicateComponent (componentName: string, filePath: string, d
     `\n - ${duplicatePath}`,
   )
 }
+
+const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/
