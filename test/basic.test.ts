@@ -620,6 +620,11 @@ describe('pages', () => {
       expect(status).toBe(200)
     }
   })
+
+  it.skipIf(isDev() || isWebpack /* TODO: fix bug with import.meta.prerender being undefined in webpack build */)('prerenders pages hinted with a route rule', async () => {
+    const html = await $fetch('/prerender/test')
+    expect(html).toContain('should be prerendered: true')
+  })
 })
 
 describe('nuxt composables', () => {
@@ -1810,7 +1815,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]!))
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)"(?: crossorigin)?>/g)].map(m => m[1]!))
     let css = ''
     for (const file of cssFiles || []) {
       css += await $fetch<string>(file)
@@ -1831,9 +1836,11 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    expect(cssFiles?.length).toBeGreaterThan(0)
+    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel="stylesheet" href="/_nuxt/entry.css">",
+        "<link rel="stylesheet" href="/_nuxt/entry.css"",
       ]
     `)
   })
@@ -2365,6 +2372,7 @@ describe('component islands', () => {
         {
           "link": [
             {
+              "crossorigin": "",
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "rel": "stylesheet",
             },

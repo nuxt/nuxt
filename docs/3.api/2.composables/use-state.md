@@ -25,7 +25,7 @@ Because the data inside `useState` will be serialized to JSON, it is important t
 `useState` is a reserved function name transformed by the compiler, so you should not name your own function `useState`.
 ::
 
-::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=mv0WcBABcIk" target="_blank"}
+::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=mv0WcBABcIk" target="_blank"}
 Watch a video from Alexander Lichter about why and when to use `useState()`.
 ::
 

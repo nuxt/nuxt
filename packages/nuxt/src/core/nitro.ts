@@ -102,7 +102,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     baseURL: nuxt.options.app.baseURL,
     virtual: {
       '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config'].replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
@@ -529,11 +529,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // nuxt build/dev
   nuxt.hook('build:done', async () => {
     await nuxt.callHook('nitro:build:before', nitro)
+    await prepare(nitro)
     if (nuxt.options.dev) {
       return build(nitro)
     }
 
-    await prepare(nitro)
     await prerender(nitro)
 
     logger.restoreAll()
