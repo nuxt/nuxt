@@ -62,6 +62,7 @@ export default defineNuxtConfig({
     },
     routeRules: {
       '/route-rules/spa': { ssr: false },
+      '/redirect/catchall': { ssr: false },
       '/head-spa': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       '/hydration/spa-redirection/**': { ssr: false },

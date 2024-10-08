@@ -1278,6 +1278,13 @@ describe('middlewares', () => {
     expect(html).toContain('Hello Nuxt 3!')
   })
 
+  it('should allow redirection from a non-existent route with `ssr: false`', async () => {
+    const page = await createPage('/redirect/catchall')
+
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+    await page.close()
+  })
+
   it('should allow aborting navigation on server-side', async () => {
     const res = await fetch('/?abort', {
       headers: {
