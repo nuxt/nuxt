@@ -563,10 +563,10 @@ importers:
         specifier: ^0.30.11
         version: 0.30.11
       memfs:
-        specifier: ^4.11.1
+        specifier: ^4.13.0
         version: 4.13.0
       mlly:
-        specifier: ^1.7.1
+        specifier: ^1.7.2
         version: 1.7.2
       ohash:
         specifier: 1.1.4
@@ -614,7 +614,7 @@ importers:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.95.0))(webpack@5.95.0)
       vue-bundle-renderer:
-        specifier: ^2.1.0
+        specifier: ^2.1.1
         version: 2.1.1
       vue-loader:
         specifier: ^17.4.2
