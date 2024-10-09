@@ -58,7 +58,7 @@ export const cssTemplate: NuxtTemplate = {
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/client.mjs',
+  filename: 'plugins.client.mjs',
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
@@ -78,7 +78,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 }
 
 export const serverPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/server.mjs',
+  filename: 'plugins.server.mjs',
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)

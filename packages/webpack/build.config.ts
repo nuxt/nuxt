@@ -8,7 +8,6 @@ export default defineBuildConfig({
   dependencies: [
     '@nuxt/kit',
     'unplugin',
-    'webpack-virtual-modules',
     'postcss',
     'postcss-loader',
     'vue-loader',

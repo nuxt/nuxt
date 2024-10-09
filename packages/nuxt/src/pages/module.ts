@@ -52,7 +52,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -487,12 +487,19 @@ export default defineNuxtModule({
       }
     })
 
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
         if (!app.pages) { return 'export default []' }
-        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          serverComponentRuntime,
+          clientComponentRuntime,
+          overrideMeta: nuxt.options.experimental.scanPageMeta,
+        })
         return [...imports, `export default ${routes}`].join('\n')
       },
     })

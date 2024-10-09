@@ -223,13 +223,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude: [...exclude],
   } satisfies TSConfig)
 
-  const aliases: Record<string, string> = {
-    ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir,
-  }
+  const aliases: Record<string, string> = nuxt.options.alias
 
   // Exclude bridge alias types to support Volar
-  const excludedAlias = [/^@vue\/.*$/]
+  const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
