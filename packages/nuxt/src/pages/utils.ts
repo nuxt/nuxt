@@ -15,7 +15,6 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
-import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
