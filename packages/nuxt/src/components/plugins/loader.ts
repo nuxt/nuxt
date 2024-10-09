@@ -2,7 +2,7 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
-import { resolve } from 'pathe'
+import { relative, resolve } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
@@ -21,6 +21,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
+  const nuxt = tryUseNuxt()
 
   return {
     name: 'nuxt:components-loader',
@@ -34,7 +35,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       }
       return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
     },
-    transform (code) {
+    transform (code, id) {
       const components = options.getComponents()
 
       let num = 0
@@ -46,10 +47,14 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
-          // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install && tryUseNuxt()?.options.test === false) {
-            // @ts-expect-error TODO: refactor to nuxi
-            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
+          // TODO: refactor to nuxi
+          const internalInstall = ((component as any)._internal_install) as string
+          if (internalInstall && nuxt?.options.test === false) {
+            if (!nuxt.options.dev) {
+              const relativePath = relative(nuxt.options.rootDir, id)
+              throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
+            }
+            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(internalInstall))
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
