@@ -163,7 +163,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+    const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
