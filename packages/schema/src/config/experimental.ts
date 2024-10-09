@@ -297,8 +297,13 @@ export default defineUntypedSchema({
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
      * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
+     * @type {boolean | 'after-resolve'}
      */
-    scanPageMeta: true,
+    scanPageMeta: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'after-resolve' : true)
+      },
+    },
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant

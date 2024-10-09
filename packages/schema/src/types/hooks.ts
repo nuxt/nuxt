@@ -183,14 +183,14 @@ export interface NuxtHooks {
   'builder:watch': (event: WatchEvent, path: string) => HookResult
 
   /**
-   * Called after pages routes are resolved.
-   * @param pages Array containing resolved pages
+   * Called after page routes are scanned from the file system.
+   * @param pages Array containing scanned pages
    * @returns Promise
    */
   'pages:extend': (pages: NuxtPage[]) => HookResult
 
   /**
-   * Called after pages routes are resolved.
+   * Called after page routes have been augmented with scanned metadata.
    * @param pages Array containing resolved pages
    * @returns Promise
    */
