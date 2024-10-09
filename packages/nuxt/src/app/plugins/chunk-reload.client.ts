@@ -10,7 +10,7 @@ export default defineNuxtPlugin({
     const router = useRouter()
     const config = useRuntimeConfig()
 
-    const chunkErrors = new Set()
+    const chunkErrors = new Set<Error>()
 
     router.beforeEach(() => { chunkErrors.clear() })
     nuxtApp.hook('app:chunkError', ({ error }) => { chunkErrors.add(error) })

@@ -1,10 +1,10 @@
 <template>
   <div>
     <div>navigate-to-forbidden.vue</div>
-    <NuxtLink to="/forbidden">
+    <NuxtLink to="/catchall/forbidden">
       should throw a 404 error
     </NuxtLink>
-    <NuxtLink to="/some-404">
+    <NuxtLink to="/catchall/some-404">
       should be caught by catchall
     </NuxtLink>
   </div>

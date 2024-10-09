@@ -15,7 +15,6 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
-import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -99,7 +98,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     // Array where routes should be added, useful when adding child routes
     let parent = routes
 
-    const lastSegment = segments[segments.length - 1]
+    const lastSegment = segments[segments.length - 1]!
     if (lastSegment.endsWith('.server')) {
       segments[segments.length - 1] = lastSegment.replace('.server', '')
       if (options.shouldUseServerComponents) {
@@ -113,7 +112,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
 
-      const tokens = parseSegment(segment)
+      const tokens = parseSegment(segment!)
 
       // Skip group segments
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
@@ -148,7 +147,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<string>()) {
   for (const route of routes) {
     if (route.file && !augmentedPages.has(route.file)) {
-      const fileContent = route.file in vfs ? vfs[route.file] : fs.readFileSync(await resolvePath(route.file), 'utf-8')
+      const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
       const routeMeta = await getRouteMeta(fileContent, route.file)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
@@ -171,7 +170,7 @@ export function extractScriptContent (html: string) {
   for (const match of html.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
       contents.push({
-        loader: match.groups.attrs.includes('tsx') ? 'tsx' : 'ts',
+        loader: match.groups.attrs?.includes('tsx') ? 'tsx' : 'ts',
         code: match.groups.content.trim(),
       })
     }
@@ -193,7 +192,9 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     delete metaCache[absolutePath]
   }
 
-  if (absolutePath in metaCache) { return metaCache[absolutePath] }
+  if (absolutePath in metaCache && metaCache[absolutePath]) {
+    return metaCache[absolutePath]
+  }
 
   const loader = getLoader(absolutePath)
   const scriptBlocks = !loader ? null : loader === 'vue' ? extractScriptContent(contents) : [{ code: contents, loader }]
@@ -400,7 +401,7 @@ function parseSegment (segment: string) {
             consumeBuffer()
           }
           state = SegmentParserState.initial
-        } else if (PARAM_CHAR_RE.test(c)) {
+        } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
           // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
@@ -471,7 +472,12 @@ function serializeRouteValue (value: any, skipSerialisation = false) {
 
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
+interface NormalizeRoutesOptions {
+  overrideMeta?: boolean
+  serverComponentRuntime: string
+  clientComponentRuntime: string
+}
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -501,7 +507,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes
+        route.children = normalizeRoutes(page.children, metaImports, options).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
@@ -518,7 +524,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(genImport(file, [{ name: 'default', as: pageImportName }]))
       }
 
-      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file, { interopDefault: true })
+      const pageImport = page._sync && page.mode !== 'client' ? pageImportName : genDynamicImport(file)
 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
@@ -537,14 +543,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(`
 let _createIslandPage
 async function createIslandPage (name) {
-  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  _createIslandPage ||= await import(${JSON.stringify(options?.serverComponentRuntime)}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
       } else if (page.mode === 'client') {
         metaImports.add(`
 let _createClientPage
 async function createClientPage(loader) {
-  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  _createClientPage ||= await import(${JSON.stringify(options?.clientComponentRuntime)}).then(r => r.createClientPage)
   return _createClientPage(loader);
 }`)
       }
@@ -557,7 +563,7 @@ async function createClientPage(loader) {
         metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
       }
 
-      if (overrideMeta) {
+      if (options?.overrideMeta) {
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {

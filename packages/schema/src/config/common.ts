@@ -295,7 +295,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
@@ -424,7 +424,7 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val: Record<string, string>, get): Promise<Record<string, string>> => {
-      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')]) as [string, string, string, string]
+      const [srcDir, rootDir, assetsDir, publicDir, buildDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir')]) as [string, string, string, string, string]
       return {
         '~': srcDir,
         '@': srcDir,
@@ -432,6 +432,8 @@ export default defineUntypedSchema({
         '@@': rootDir,
         [basename(assetsDir)]: resolve(srcDir, assetsDir),
         [basename(publicDir)]: resolve(srcDir, publicDir),
+        '#build': buildDir,
+        '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...val,
       }
     },

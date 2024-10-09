@@ -5,12 +5,12 @@ import { isJS, isVue } from '../utils'
 
 type ImportPath = string
 
-export interface TreeShakeComposablesPluginOptions {
+interface TreeShakeComposablesPluginOptions {
   sourcemap?: boolean
   composables: Record<ImportPath, string[]>
 }
 
-export const TreeShakeComposablesPlugin = createUnplugin((options: TreeShakeComposablesPluginOptions) => {
+export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
   /**
    * @todo Use the options import-path to tree-shake composables in a safer way.
    */

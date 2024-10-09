@@ -9,6 +9,7 @@ import { NuxtTeleportIslandSymbol } from './nuxt-teleport-island-component'
 /* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandSlot',
+  inheritAttrs: false,
   props: {
     name: {
       type: String,
