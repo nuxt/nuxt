@@ -12,7 +12,7 @@ import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, par
 
 import type { NuxtIslandResponse } from '#app'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 const isV4 = process.env.TEST_V4 === 'true'
 

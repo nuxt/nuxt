@@ -7,7 +7,7 @@ import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {

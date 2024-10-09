@@ -1,5 +1,4 @@
 import pify from 'pify'
-import webpack from 'webpack'
 import type { NodeMiddleware } from 'h3'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
 import type { MultiWatching } from 'webpack-dev-middleware'
@@ -18,6 +17,8 @@ import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
 
+import { builder, webpack } from '#builder'
+
 // TODO: Support plugins
 // const plugins: string[] = []
 
@@ -29,7 +30,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     return getWebpackConfig(ctx)
   }))
 
-  await nuxt.callHook('webpack:config', webpackConfigs)
+  await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
   // Initialize shared MFS for dev
   const mfs = nuxt.options.dev ? createMFS() : null
@@ -39,7 +40,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
     }))
     // Emit chunk errors if the user has opted in to `experimental.emitRouteChunkError`
-    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError) {
+    if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
     config.plugins!.push(composableKeysPlugin.webpack({
@@ -49,7 +50,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     }))
   }
 
-  await nuxt.callHook('webpack:configResolved', webpackConfigs)
+  await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
 
   // Configure compilers
   const compilers = webpackConfigs.map((config) => {
@@ -119,11 +120,11 @@ async function createDevMiddleware (compiler: Compiler) {
 async function compile (compiler: Compiler) {
   const nuxt = useNuxt()
 
-  await nuxt.callHook('webpack:compile', { name: compiler.options.name!, compiler })
+  await nuxt.callHook(`${builder}:compile`, { name: compiler.options.name!, compiler })
 
   // Load renderer resources after build
   compiler.hooks.done.tap('load-resources', async (stats) => {
-    await nuxt.callHook('webpack:compiled', { name: compiler.options.name!, compiler, stats })
+    await nuxt.callHook(`${builder}:compiled`, { name: compiler.options.name!, compiler, stats })
   })
 
   // --- Dev Build ---

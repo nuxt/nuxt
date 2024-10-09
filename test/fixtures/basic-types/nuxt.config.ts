@@ -11,7 +11,7 @@ export default defineNuxtConfig({
     compatibilityVersion: process.env.TEST_V4 === 'true' ? 4 : 3,
   },
   buildDir: process.env.NITRO_BUILD_DIR,
-  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
+  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   theme: './extends/bar',
   extends: [
     './extends/node_modules/foo',

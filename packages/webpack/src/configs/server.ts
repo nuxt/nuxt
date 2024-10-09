@@ -1,11 +1,11 @@
 import { isAbsolute } from 'pathe'
-import webpack from 'webpack'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
+import { webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 

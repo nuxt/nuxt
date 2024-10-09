@@ -79,7 +79,7 @@ export interface NuxtBuilder {
 // Normalized Nuxt options available as `nuxt.options.*`
 export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack' | 'postcss'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']
