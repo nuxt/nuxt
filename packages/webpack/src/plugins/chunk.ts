@@ -1,9 +1,10 @@
 import type { Compiler } from 'webpack'
-import webpack from 'webpack'
+import { webpack } from '#builder'
 
 const pluginName = 'ChunkErrorPlugin'
 
-const script = `
+export class ChunkErrorPlugin {
+  script = `
 if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
   var _ensureChunk = ${webpack.RuntimeGlobals.ensureChunk};
   ${webpack.RuntimeGlobals.ensureChunk} = function (chunkId) {
@@ -16,12 +17,11 @@ if (typeof ${webpack.RuntimeGlobals.require} !== "undefined") {
   };
 };`
 
-export class ChunkErrorPlugin {
   apply (compiler: Compiler) {
     compiler.hooks.thisCompilation.tap(pluginName, compilation =>
       compilation.mainTemplate.hooks.localVars.tap(
         { name: pluginName, stage: 1 },
-        source => source + script,
+        source => source + this.script,
       ),
     )
   }

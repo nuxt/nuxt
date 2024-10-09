@@ -7,14 +7,15 @@ import { consola } from 'consola'
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
+    $resolve: async (val: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
       const map: Record<string, string> = {
+        rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }

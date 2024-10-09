@@ -52,7 +52,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -414,8 +414,18 @@ export default defineNuxtModule({
       })
     }
 
+    const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
+    if (nuxt.options.test && nuxt.options.dev) {
+      // add component testing route so 404 won't be triggered
+      nuxt.hook('pages:extend', (routes) => {
+        routes.push({
+          _sync: true,
+          path: '/__nuxt_component_test__/:pathMatch(.*)',
+          file: componentStubPath,
+        })
+      })
+    }
     if (nuxt.options.experimental.appManifest) {
-      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
@@ -477,12 +487,19 @@ export default defineNuxtModule({
       }
     })
 
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
         if (!app.pages) { return 'export default []' }
-        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          serverComponentRuntime,
+          clientComponentRuntime,
+          overrideMeta: nuxt.options.experimental.scanPageMeta,
+        })
         return [...imports, `export default ${routes}`].join('\n')
       },
     })

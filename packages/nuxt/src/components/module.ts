@@ -1,6 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -32,7 +32,7 @@ export default defineNuxtModule<ComponentsOptions>({
   defaults: {
     dirs: [],
   },
-  setup (componentOptions, nuxt) {
+  async setup (componentOptions, nuxt) {
     let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[],
@@ -134,8 +134,9 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate(componentsMetadataTemplate)
     }
 
-    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'server'), { server: true, client: false })
-    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'client'), { server: false, client: true })
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'server' }), { server: true, client: false })
+    addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'client' }), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -162,7 +163,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+    const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
@@ -222,6 +223,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const sharedLoaderOptions = {
       getComponents,
+      serverComponentRuntime,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
@@ -272,16 +274,18 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
 
-      nuxt.hook('webpack:config', (configs) => {
-        configs.forEach((config) => {
-          const mode = config.name === 'client' ? 'client' : 'server'
-          config.plugins = config.plugins || []
+      for (const key of ['rspack:config', 'webpack:config'] as const) {
+        nuxt.hook(key, (configs) => {
+          configs.forEach((config) => {
+            const mode = config.name === 'client' ? 'client' : 'server'
+            config.plugins = config.plugins || []
 
-          if (mode !== 'server') {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          }
+            if (mode !== 'server') {
+              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            }
+          })
         })
-      })
+      }
     }
   },
 })

@@ -33,8 +33,9 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
       const components = options.getComponents()
 
       if (!regexpMap.has(components)) {
+        const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
         const clientOnlyComponents = components
-          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && other.filePath !== resolve(distDir, 'app/components/server-placeholder')))
+          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && !other.filePath.startsWith(serverPlaceholderPath)))
           .flatMap(c => [c.pascalName, c.kebabName.replaceAll('-', '_')])
           .concat(['ClientOnly', 'client_only'])
 
