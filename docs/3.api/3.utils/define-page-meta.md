@@ -38,6 +38,7 @@ interface PageMeta {
   key?: false | string | ((route: RouteLocationNormalizedLoaded) => string)
   keepalive?: boolean | KeepAliveProps
   layout?: false | LayoutKey | Ref<LayoutKey> | ComputedRef<LayoutKey>
+  isolate?: boolean 
   middleware?: MiddlewareKey | NavigationGuard | Array<MiddlewareKey | NavigationGuard>
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
   [key: string]: unknown
@@ -88,6 +89,11 @@ interface PageMeta {
 
     Set `key` value when you need more control over when the `<NuxtPage>` component is re-rendered.
 
+  **`isolate`**
+  - Type: boolean
+    
+    Set to `true` when you do not want the page to inherit from your `app.vue`.
+  
   **`layout`**
 
   - **Type**: `false` | `LayoutKey` | `Ref<LayoutKey>` | `ComputedRef<LayoutKey>`

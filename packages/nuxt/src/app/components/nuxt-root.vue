@@ -13,6 +13,7 @@
       :is="SingleRenderer"
       v-else-if="SingleRenderer"
     />
+    <NuxtPage v-else-if="route?.meta?.isolate" />
     <AppComponent v-else />
   </Suspense>
 </template>
@@ -43,8 +44,9 @@ const url = import.meta.server ? nuxtApp.ssrContext.url : window.location.pathna
 const SingleRenderer = import.meta.test && import.meta.dev && import.meta.server && url.startsWith('/__nuxt_component_test__/') && defineAsyncComponent(() => import('#build/test-component-wrapper.mjs')
   .then(r => r.default(import.meta.server ? url : window.location.href)))
 
+const route = useRoute()
 // Inject default route (outside of pages) as active route
-provide(PageRouteSymbol, useRoute())
+provide(PageRouteSymbol, route)
 
 // vue:setup hook
 const results = nuxtApp.hooks.callHookWith(hooks => hooks.map(hook => hook()), 'vue:setup')
