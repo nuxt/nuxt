@@ -35,11 +35,11 @@
   },
   "resolutions": {
     "@nuxt/kit": "workspace:*",
+    "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@nuxt/rspack-builder": "workspace:*",
     "@types/node": "20.16.11",
     "@vue/compiler-core": "3.5.11",
     "@vue/compiler-dom": "3.5.11",
