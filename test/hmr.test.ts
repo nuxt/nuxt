@@ -10,7 +10,7 @@ import { expectWithPolling, renderPage } from './utils'
 // TODO: update @nuxt/test-utils
 const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {

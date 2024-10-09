@@ -497,9 +497,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   const envMap = {
     // defaults from `builder` based on package name
+    '@nuxt/rspack-builder': '@rspack/core/module',
     '@nuxt/vite-builder': 'vite/client',
     '@nuxt/webpack-builder': 'webpack/module',
     // simpler overrides from `typescript.builder` for better DX
+    'rspack': '@rspack/core/module',
     'vite': 'vite/client',
     'webpack': 'webpack/module',
     // default 'merged' builder environment for module authors

@@ -274,16 +274,18 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
 
-      nuxt.hook('webpack:config', (configs) => {
-        configs.forEach((config) => {
-          const mode = config.name === 'client' ? 'client' : 'server'
-          config.plugins = config.plugins || []
+      for (const key of ['rspack:config', 'webpack:config'] as const) {
+        nuxt.hook(key, (configs) => {
+          configs.forEach((config) => {
+            const mode = config.name === 'client' ? 'client' : 'server'
+            config.plugins = config.plugins || []
 
-          if (mode !== 'server') {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          }
+            if (mode !== 'server') {
+              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            }
+          })
         })
-      })
+      }
     }
   },
 })

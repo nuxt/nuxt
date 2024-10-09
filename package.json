@@ -35,6 +35,7 @@
   },
   "resolutions": {
     "@nuxt/kit": "workspace:*",
+    "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
@@ -63,6 +64,7 @@
     "@eslint/js": "9.12.0",
     "@nuxt/eslint-config": "0.5.7",
     "@nuxt/kit": "workspace:*",
+    "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "3.14.3",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",

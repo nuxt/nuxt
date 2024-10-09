@@ -5,6 +5,7 @@
     "build": "nuxi build"
   },
   "dependencies": {
+    "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "nuxt": "workspace:*"
   },
