@@ -653,7 +653,7 @@ describe('pages:generateRoutesFromFiles', () => {
           }))).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index].meta,
+              meta: test.files![index]!.meta,
             }
           })
 
@@ -667,8 +667,18 @@ describe('pages:generateRoutesFromFiles', () => {
 
       if (result) {
         expect(result).toEqual(test.output)
-        normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
-        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
+
+        normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: false,
+        }).routes
+
+        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: true,
+        }).routes
       }
     })
   }

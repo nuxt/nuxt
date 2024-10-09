@@ -12,8 +12,7 @@
     "verbatimModuleSyntax": true,
     /* Strictness */
     "strict": true,
-    // TODO: enable noUncheckedIndexedAccess
-    // "noUncheckedIndexedAccess": true,
+    "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitOverride": true,
