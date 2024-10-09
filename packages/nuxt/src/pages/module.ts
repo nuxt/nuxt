@@ -52,7 +52,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
