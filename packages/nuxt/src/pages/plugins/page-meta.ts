@@ -10,7 +10,7 @@ import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
 
-export interface PageMetaPluginOptions {
+interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
 }

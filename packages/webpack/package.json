@@ -44,13 +44,13 @@
     "globby": "^14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "hash-sum": "^2.0.0",
-    "jiti": "^2.0.0",
+    "jiti": "^2.3.3",
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.11",
-    "memfs": "^4.12.0",
+    "memfs": "^4.13.0",
     "mini-css-extract-plugin": "^2.9.1",
-    "mlly": "^1.7.1",
+    "mlly": "^1.7.2",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
     "pify": "^6.1.0",
@@ -72,7 +72,6 @@
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-dev-middleware": "^7.4.2",
     "webpack-hot-middleware": "^2.26.1",
-    "webpack-virtual-modules": "^0.6.2",
     "webpackbar": "^6.0.1"
   },
   "devDependencies": {
@@ -83,9 +82,9 @@
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.22.4",
-    "unbuild": "3.0.0-rc.8",
-    "vue": "3.5.8"
+    "rollup": "4.24.0",
+    "unbuild": "3.0.0-rc.11",
+    "vue": "3.5.11"
   },
   "peerDependencies": {
     "vue": "^3.3.4"

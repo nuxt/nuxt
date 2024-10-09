@@ -8,6 +8,7 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
+import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
 
@@ -57,7 +58,7 @@ export const cssTemplate: NuxtTemplate = {
 }
 
 export const clientPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/client.mjs',
+  filename: 'plugins.client.mjs',
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
@@ -77,7 +78,7 @@ export const clientPluginTemplate: NuxtTemplate = {
 }
 
 export const serverPluginTemplate: NuxtTemplate = {
-  filename: 'plugins/server.mjs',
+  filename: 'plugins.server.mjs',
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
@@ -516,6 +517,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
+      `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
     ].join('\n\n')
   },
 }

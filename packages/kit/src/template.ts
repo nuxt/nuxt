@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
@@ -28,6 +28,18 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
+
+  return template
+}
+
+/**
+ * Adds a virtual file that can be used within the Nuxt Nitro server build.
+ */
+export function addServerTemplate (template: NuxtServerTemplate) {
+  const nuxt = useNuxt()
+
+  nuxt.options.nitro.virtual ||= {}
+  nuxt.options.nitro.virtual[template.filename] = template.getContents
 
   return template
 }
@@ -211,13 +223,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude: [...exclude],
   } satisfies TSConfig)
 
-  const aliases: Record<string, string> = {
-    ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir,
-  }
+  const aliases: Record<string, string> = nuxt.options.alias
 
   // Exclude bridge alias types to support Volar
-  const excludedAlias = [/^@vue\/.*$/]
+  const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)

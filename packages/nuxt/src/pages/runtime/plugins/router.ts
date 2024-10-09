@@ -148,16 +148,8 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
         if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
           return
         }
-        if (to.matched.length === 0) {
-          await nuxtApp.runWithContext(() => showError(createError({
-            statusCode: 404,
-            fatal: false,
-            statusMessage: `Page not found: ${to.fullPath}`,
-            data: {
-              path: to.fullPath,
-            },
-          })))
-        } else if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+
+        if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
           await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
         }
       })
@@ -250,6 +242,19 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     router.onError(async () => {
       delete nuxtApp._processingMiddleware
       await nuxtApp.callHook('page:loading:end')
+    })
+
+    router.afterEach(async (to, _from) => {
+      if (to.matched.length === 0) {
+        await nuxtApp.runWithContext(() => showError(createError({
+          statusCode: 404,
+          fatal: false,
+          statusMessage: `Page not found: ${to.fullPath}`,
+          data: {
+            path: to.fullPath,
+          },
+        })))
+      }
     })
 
     nuxtApp.hooks.hookOnce('app:created', async () => {

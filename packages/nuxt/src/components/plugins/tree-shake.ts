@@ -20,7 +20,7 @@ const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
 const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
 
-export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplatePluginOptions) => {
+export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
   return {
     name: 'nuxt:tree-shake-template',
@@ -33,8 +33,9 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       const components = options.getComponents()
 
       if (!regexpMap.has(components)) {
+        const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
         const clientOnlyComponents = components
-          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && other.filePath !== resolve(distDir, 'app/components/server-placeholder')))
+          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && !other.filePath.startsWith(serverPlaceholderPath)))
           .flatMap(c => [c.pascalName, c.kebabName.replaceAll('-', '_')])
           .concat(['ClientOnly', 'client_only'])
 

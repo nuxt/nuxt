@@ -12,7 +12,7 @@ interface LoaderOptions {
 }
 const CLIENT_FALLBACK_RE = /<(?:NuxtClientFallback|nuxt-client-fallback)(?: [^>]*)?>/
 const CLIENT_FALLBACK_GLOBAL_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/g
-export const ClientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions) => {
+export const ClientFallbackAutoIdPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
 

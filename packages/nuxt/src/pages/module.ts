@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -8,6 +8,7 @@ import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
@@ -15,7 +16,6 @@ import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
-import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
@@ -52,7 +52,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options'), optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -278,7 +278,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks) {
+      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -316,7 +316,20 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
+      if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      // Inject page patterns that explicitly match `prerender: true` route rule
+      if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
+        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+        for (const route of prerenderRoutes) {
+          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          if (rules.prerender) {
+            nitro.options.prerender.routes.push(route)
+          }
+        }
+      }
+
+      if (!nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
       // as the rest will be injected at runtime when this is prerendered
@@ -401,8 +414,18 @@ export default defineNuxtModule({
       })
     }
 
+    const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
+    if (nuxt.options.test && nuxt.options.dev) {
+      // add component testing route so 404 won't be triggered
+      nuxt.hook('pages:extend', (routes) => {
+        routes.push({
+          _sync: true,
+          path: '/__nuxt_component_test__/:pathMatch(.*)',
+          file: componentStubPath,
+        })
+      })
+    }
     if (nuxt.options.experimental.appManifest) {
-      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
@@ -464,12 +487,19 @@ export default defineNuxtModule({
       }
     })
 
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
+
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
         if (!app.pages) { return 'export default []' }
-        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          serverComponentRuntime,
+          clientComponentRuntime,
+          overrideMeta: nuxt.options.experimental.scanPageMeta,
+        })
         return [...imports, `export default ${routes}`].join('\n')
       },
     })

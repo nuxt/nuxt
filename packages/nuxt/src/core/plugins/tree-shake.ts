@@ -5,7 +5,7 @@ import { isJS, isVue } from '../utils'
 
 type ImportPath = string
 
-export interface TreeShakeComposablesPluginOptions {
+interface TreeShakeComposablesPluginOptions {
   sourcemap?: boolean
   composables: Record<ImportPath, string[]>
 }
