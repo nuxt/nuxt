@@ -1,7 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
-import type { Configuration as WebpackConfiguration } from 'webpack'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -275,18 +274,18 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
 
-      function hook (configs: WebpackConfiguration[]) {
-        configs.forEach((config) => {
-          const mode = config.name === 'client' ? 'client' : 'server'
-          config.plugins = config.plugins || []
+      for (const key of ['rspack:config', 'webpack:config'] as const) {
+        nuxt.hook(key, (configs) => {
+          configs.forEach((config) => {
+            const mode = config.name === 'client' ? 'client' : 'server'
+            config.plugins = config.plugins || []
 
-          if (mode !== 'server') {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          }
+            if (mode !== 'server') {
+              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            }
+          })
         })
       }
-      nuxt.hook('rspack:config', hook)
-      nuxt.hook('webpack:config', hook)
     }
   },
 })
