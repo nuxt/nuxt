@@ -1,4 +1,5 @@
-import { resolveAlias, useNuxt } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
+import type { Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 
@@ -8,7 +9,7 @@ interface VirtualFSPluginOptions {
   mode: 'client' | 'server'
 }
 
-export const VirtualFSPlugin = (nuxt = useNuxt(), options: VirtualFSPluginOptions) => createUnplugin(() => {
+export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => createUnplugin(() => {
   const extensions = ['', ...nuxt.options.extensions]
 
   const resolveWithExt = (id: string) => {
