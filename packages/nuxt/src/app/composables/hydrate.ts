@@ -23,21 +23,3 @@ export const useHydration = <K extends keyof NuxtPayload, T = NuxtPayload[K]> (k
     })
   }
 }
-
-/**
- * A `requestIdleCallback` options utility, used to determine custom timeout for idle-callback based delayed hydration.
- * @param timeout the max timeout for the idle callback, in milliseconds
- */
-export const createIdleLoader = (timeout: number) => timeout
-
-/**
- * An `IntersectionObserver` options utility, used to determine custom viewport-based delayed hydration behavior.
- * @param opts the options object, containing the wanted viewport options
- */
-export const createVisibleLoader = (opts: Partial<IntersectionObserverInit>) => opts
-
-/**
- * A utility used to determine which event/events should trigger hydration in components with event-based delayed hydration.
- * @param events an event or array of events that will be used to trigger the hydration
- */
-export const createEventLoader = (events: keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>) => events
