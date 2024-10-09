@@ -2,16 +2,16 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
-import { relative, resolve } from 'pathe'
+import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { distDir } from '../../dirs'
 import { isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
   mode: 'server' | 'client'
+  serverComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
@@ -20,7 +20,6 @@ interface LoaderOptions {
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
-  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
   const nuxt = tryUseNuxt()
 
   return {
@@ -62,7 +61,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
-            imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
+            imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)

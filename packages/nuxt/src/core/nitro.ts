@@ -102,7 +102,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
-      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'],
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
@@ -193,11 +193,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
-      // Paths
-      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
-
       // Nuxt aliases
       ...nuxt.options.alias,
+
+      // Paths
+      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,

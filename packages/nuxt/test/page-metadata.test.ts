@@ -171,7 +171,11 @@ describe('normalizeRoutes', () => {
     page.meta.layout = 'test'
     page.meta.foo = 'bar'
 
-    const { routes, imports } = normalizeRoutes([page], new Set(), true)
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
@@ -196,7 +200,11 @@ describe('normalizeRoutes', () => {
     page.meta.layout = 'test'
     page.meta.foo = 'bar'
 
-    const { routes, imports } = normalizeRoutes([page], new Set())
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: false,
+    })
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
