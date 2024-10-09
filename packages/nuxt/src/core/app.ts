@@ -72,7 +72,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     if (template.modified) {
       nuxt.vfs[fullPath] = contents
 
-      const aliasPath = '#build/' + template.filename!.replace(/\.\w+$/, '')
+      const aliasPath = '#build/' + template.filename
       nuxt.vfs[aliasPath] = contents
 
       // In case a non-normalized absolute path is called for on Windows

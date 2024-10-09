@@ -17,7 +17,6 @@ import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
-import { registerVirtualModules } from './virtual-modules'
 import { client, server } from './configs'
 import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
 import { dynamicRequire } from './nitro/plugins/dynamic-require'
@@ -26,8 +25,6 @@ import { dynamicRequire } from './nitro/plugins/dynamic-require'
 // const plugins: string[] = []
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
-  registerVirtualModules()
-
   const webpackConfigs = await Promise.all([client, ...nuxt.options.ssr ? [server] : []].map(async (preset) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)

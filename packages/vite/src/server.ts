@@ -58,10 +58,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     resolve: {
       conditions: ((ctx.nuxt as any)._nitro as Nitro)?.options.exportConditions,
-      alias: {
-        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
-        '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
-      },
     },
     ssr: {
       external: [
