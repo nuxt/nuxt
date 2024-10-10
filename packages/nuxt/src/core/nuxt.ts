@@ -32,7 +32,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
@@ -253,7 +253,7 @@ async function initNuxt (nuxt: Nuxt) {
     cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
     exclude: [join(nuxt.options.srcDir, 'index.html')],
-    patterns: nuxtImportProtections(nuxt),
+    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
   }
   addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
   addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })

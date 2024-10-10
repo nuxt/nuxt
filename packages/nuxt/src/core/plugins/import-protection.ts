@@ -9,12 +9,16 @@ interface ImportProtectionOptions {
   exclude?: Array<RegExp | string>
 }
 
-export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: { isNitro?: boolean } = {}) => {
+interface NuxtImportProtectionOptions {
+  context: 'nuxt-app' | 'nitro-app'
+}
+
+export const createImportProtectionPatterns = (nuxt: { options: NuxtOptions }, options: NuxtImportProtectionOptions) => {
   const patterns: ImportProtectionOptions['patterns'] = []
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
-    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.'),
+    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.context === 'nitro-app' ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.'),
   ])
 
   patterns.push([
@@ -32,16 +36,16 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/(kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nitro(?:pack)?(?:-nightly)?(?:$|\/)(?!(?:dist\/)?runtime|types)/, /(^|node_modules\/)nuxt\/(config|kit|schema)/]) {
-    patterns.push([i, 'This module cannot be imported' + (options.isNitro ? ' in server runtime.' : ' in the Vue part of your app.')])
+    patterns.push([i, 'This module cannot be imported' + (options.context === 'nitro-app' ? ' in server runtime.' : ' in the Vue part of your app.')])
   }
 
-  if (options.isNitro) {
+  if (options.context === 'nitro-app') {
     for (const i of ['#app', /^#build(\/|$)/]) {
       patterns.push([i, 'Vue app aliases are not allowed in server runtime.'])
     }
   }
 
-  if (!options.isNitro) {
+  if (options.context === 'nuxt-app') {
     patterns.push([
       new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
       'Importing from server is not allowed in the Vue part of your app.',

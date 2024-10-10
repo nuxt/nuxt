@@ -1,7 +1,7 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImpoundPlugin } from 'impound'
-import { nuxtImportProtections } from '../src/core/plugins/import-protection'
+import { createImportProtectionPatterns } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
@@ -41,13 +41,13 @@ describe('import protection', () => {
 const transformWithImportProtection = (id: string, importer: string) => {
   const plugin = ImpoundPlugin.rollup({
     cwd: '/root',
-    patterns: nuxtImportProtections({
+    patterns: createImportProtectionPatterns({
       options: {
         modules: ['some-nuxt-module'],
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
-    }),
+    }, { context: 'nuxt-app' }),
   })
 
   return (plugin as any).resolveId.call({ error: () => {} }, id, importer)

@@ -17,7 +17,7 @@ import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -369,7 +369,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   nitroConfig.rollupConfig!.plugins!.push(
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
-      patterns: nuxtImportProtections(nuxt, { isNitro: true }),
+      patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
       exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
     }),
   )
