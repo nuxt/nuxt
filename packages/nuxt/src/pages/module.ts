@@ -174,21 +174,11 @@ export default defineNuxtModule({
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
             // Avoid duplicate keys in the generated RouteNamedMap type
             const absolutePagePath = joinURL(parent.path, page.path)
-            if (addedPagePaths.has(absolutePagePath)) {
-              if (page.meta) {
-                parent.addToMeta(page.meta)
-              }
-              if (page.alias) {
-                parent.addAlias(page.alias)
-              }
-              parent.name = page.name
-              return
-            }
-            addedPagePaths.add(absolutePagePath)
 
             // @ts-expect-error TODO: either fix types upstream or figure out another
             // way to add a route without a file, which must be possible
-            const route = parent.insert(page.path, page.file)
+            const route = addedPagePaths.has(absolutePagePath) ? parent : parent.insert(page.path, page.file)
+            addedPagePaths.add(absolutePagePath)
             if (page.meta) {
               route.addToMeta(page.meta)
             }
