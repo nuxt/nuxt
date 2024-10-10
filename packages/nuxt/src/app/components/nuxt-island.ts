@@ -1,9 +1,9 @@
 import type { Component, PropType, VNode } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { injectHead } from '@unhead/vue'
+import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -90,11 +90,13 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
+    let activeHead: ActiveHeadEntry<Head>
+
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
-
+    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
       if (result.props) { toRevive.props = result.props }
@@ -215,6 +217,14 @@ export default defineComponent({
           }
         }
 
+        if (res?.head) {
+          if (activeHead) {
+            activeHead.patch(res.head)
+          } else {
+            activeHead = head.push(res.head)
+          }
+        }
+
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
           nextTick(() => {
@@ -248,14 +258,6 @@ export default defineComponent({
       await fetchComponent()
     } else if (selectiveClient && canLoadClientComponent.value) {
       await loadComponents(props.source, payloads.components)
-    }
-
-    if (import.meta.server || nuxtApp.isHydrating) {
-      // re-push head into active head instance
-      const responseHead = (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head
-      if (responseHead) {
-        head.push(responseHead)
-      }
     }
 
     return (_ctx: any, _cache: any) => {
