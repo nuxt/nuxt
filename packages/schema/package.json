@@ -45,7 +45,6 @@
     "@vue/compiler-core": "3.5.11",
     "@vue/compiler-sfc": "3.5.11",
     "@vue/language-core": "2.1.6",
-    "c12": "2.0.1",
     "esbuild-loader": "4.2.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "ignore": "6.0.2",
@@ -63,6 +62,7 @@
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {
+    "c12": "^2.0.1",
     "compatx": "^0.1.8",
     "consola": "^3.2.3",
     "defu": "^6.1.4",
