@@ -1582,7 +1582,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1624,7 +1624,7 @@ describe('nested suspense', () => {
 
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1660,7 +1660,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -2841,6 +2841,18 @@ describe('namespace access to useNuxtApp', () => {
     }
 
     expect(error).toBeTruthy()
+
+    await page.close()
+  })
+})
+
+describe('page hook', () => {
+  it('should trigger page:loading:end only once', async () => {
+    const { page, consoleLogs } = await renderPage()
+    await page.goto(url('/page-load-hook'))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
+    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
+    expect(loadingEndLogs.length).toBe(1)
 
     await page.close()
   })
