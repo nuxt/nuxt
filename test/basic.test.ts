@@ -2845,3 +2845,15 @@ describe('namespace access to useNuxtApp', () => {
     await page.close()
   })
 })
+
+describe('page hook', () => {
+  it('should trigger page:loading:end only once', async () => {
+    const { page, consoleLogs } = await renderPage()
+    await page.goto(url('/page-load-hook'))
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
+    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
+    expect(loadingEndLogs.length).toBe(1)
+
+    await page.close()
+  })
+})
