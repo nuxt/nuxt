@@ -366,11 +366,20 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
+
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
   nitroConfig.rollupConfig!.plugins!.push(
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
+      include: sharedPatterns,
+      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+    }),
+    ImpoundPlugin.rollup({
+      cwd: nuxt.options.rootDir,
       patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
-      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
+      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/, ...sharedPatterns],
     }),
   )
 

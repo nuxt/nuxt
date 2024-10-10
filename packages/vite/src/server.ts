@@ -7,6 +7,7 @@ import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import defu from 'defu'
 import type { Nitro } from 'nitro/types'
+import escapeStringRegexp from 'escape-string-regexp'
 import type { ViteBuildContext } from './vite'
 import { createViteLogger } from './utils/logger'
 import { initViteNodeServer } from './vite-node'
@@ -80,7 +81,13 @@ export async function buildServer (ctx: ViteBuildContext) {
       ssr: true,
       rollupOptions: {
         input: { server: entry },
-        external: ['nitro/runtime', '#internal/nuxt/paths', '#internal/nuxt/app-config'],
+        external: [
+          'nitro/runtime',
+          '#internal/nuxt/paths',
+          '#internal/nuxt/app-config',
+          '#shared',
+          new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
+        ],
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
