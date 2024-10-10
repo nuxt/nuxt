@@ -31,7 +31,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
     ].filter(Boolean).join(' ')
-    console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   if (event.handled) { return }
@@ -119,7 +119,7 @@ function normalizeError (error: any) {
   // Hide details of unhandled/fatal errors in production
   const hideDetails = !import.meta.dev && error.unhandled
 
-  const stack = hideDetails
+  const stack = hideDetails && !import.meta.prerender
     ? []
     : ((error.stack as string) || '')
         .split('\n')

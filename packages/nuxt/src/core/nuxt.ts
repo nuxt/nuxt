@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -33,9 +33,7 @@ import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
 import { nuxtImportProtections } from './plugins/import-protection'
-import type { UnctxTransformPluginOptions } from './plugins/unctx'
 import { UnctxTransformPlugin } from './plugins/unctx'
-import type { TreeShakeComposablesPluginOptions } from './plugins/tree-shake'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
 import { LayerAliasingPlugin } from './plugins/layer-aliasing'
@@ -46,6 +44,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -104,7 +103,7 @@ async function initNuxt (nuxt: Nuxt) {
 
     const shouldShowPrompt = nuxt.options.dev && hasTTY && !isCI
     if (!shouldShowPrompt) {
-      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
     async function promptAndUpdate () {
@@ -113,7 +112,7 @@ async function initNuxt (nuxt: Nuxt) {
         default: true,
       })
       if (result !== true) {
-        console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+        logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
         return
       }
 
@@ -147,7 +146,7 @@ async function initNuxt (nuxt: Nuxt) {
         consola.error(`Failed to update config: ${message}`)
       }
 
-      console.log(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
+      logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
     nuxt.hooks.hookOnce('nitro:init', (nitro) => {
@@ -156,7 +155,7 @@ async function initNuxt (nuxt: Nuxt) {
       nitro.hooks.hookOnce('compiled', () => {
         warnedAboutCompatDate = true
         // Print warning
-        console.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
+        logger.info(`Nuxt now supports pinning the behavior of provider and deployment presets with a compatibility date. We recommend you specify a \`compatibilityDate\` in your \`nuxt.config\` file, or set an environment variable, such as \`COMPATIBILITY_DATE=${todaysDate}\`.`)
         if (shouldShowPrompt) { promptAndUpdate() }
       })
     })
@@ -179,13 +178,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
-  const dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
+  nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
     const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
     const subpath = _subpath ? '/' + _subpath : ''
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
-    if (dependencies.has(_pkg) && !(_pkg in nightlies)) { return [] }
+    if (nuxt._dependencies?.has(_pkg) && !(_pkg in nightlies)) { return [] }
 
     // deduplicate types for nightly releases
     if (_pkg in nightlies) {
@@ -242,6 +241,10 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
+  // Support Nuxt VFS
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'client', alias: { 'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs') } }), { server: false })
+
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
@@ -257,65 +260,53 @@ async function initNuxt (nuxt: Nuxt) {
   addWebpackPlugin(() => ImpoundPlugin.webpack(config))
 
   // add resolver for modules used in virtual files
-  addVitePlugin(() => resolveDeepImportsPlugin(nuxt))
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
+  addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
   addBuildPlugin(prehydrateTransformPlugin(nuxt))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
-    addVitePlugin(() => LayerAliasingPlugin.vite({
+    addBuildPlugin(LayerAliasingPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       dev: nuxt.options.dev,
       root: nuxt.options.srcDir,
       // skip top-level layer (user's project) as the aliases will already be correctly resolved
       layers: nuxt.options._layers.slice(1),
-    }))
-    addWebpackPlugin(() => LayerAliasingPlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-      dev: nuxt.options.dev,
-      root: nuxt.options.srcDir,
-      // skip top-level layer (user's project) as the aliases will already be correctly resolved
-      layers: nuxt.options._layers.slice(1),
-      transform: true,
     }))
   }
 
   nuxt.hook('modules:done', async () => {
     // Add unctx transform
-    const options = {
+    addBuildPlugin(UnctxTransformPlugin({
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       transformerOptions: {
         ...nuxt.options.optimization.asyncTransforms,
         helperModule: await tryResolveModule('unctx', nuxt.options.modulesDir) ?? 'unctx',
       },
-    } satisfies UnctxTransformPluginOptions
-    addVitePlugin(() => UnctxTransformPlugin.vite(options))
-    addWebpackPlugin(() => UnctxTransformPlugin.webpack(options))
+    }))
 
     // Add composable tree-shaking optimisations
-    const serverTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: !!nuxt.options.sourcemap.server,
-      composables: nuxt.options.optimization.treeShake.composables.server,
+    if (Object.keys(nuxt.options.optimization.treeShake.composables.server).length) {
+      addBuildPlugin(TreeShakeComposablesPlugin({
+        sourcemap: !!nuxt.options.sourcemap.server,
+        composables: nuxt.options.optimization.treeShake.composables.server,
+      }), { client: false })
     }
-    if (Object.keys(serverTreeShakeOptions.composables).length) {
-      addVitePlugin(() => TreeShakeComposablesPlugin.vite(serverTreeShakeOptions), { client: false })
-      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(serverTreeShakeOptions), { client: false })
-    }
-    const clientTreeShakeOptions: TreeShakeComposablesPluginOptions = {
-      sourcemap: !!nuxt.options.sourcemap.client,
-      composables: nuxt.options.optimization.treeShake.composables.client,
-    }
-    if (Object.keys(clientTreeShakeOptions.composables).length) {
-      addVitePlugin(() => TreeShakeComposablesPlugin.vite(clientTreeShakeOptions), { server: false })
-      addWebpackPlugin(() => TreeShakeComposablesPlugin.webpack(clientTreeShakeOptions), { server: false })
+    if (Object.keys(nuxt.options.optimization.treeShake.composables.client).length) {
+      addBuildPlugin(TreeShakeComposablesPlugin({
+        sourcemap: !!nuxt.options.sourcemap.client,
+        composables: nuxt.options.optimization.treeShake.composables.client,
+      }), { server: false })
     }
   })
 
   if (!nuxt.options.dev) {
     // DevOnly component tree-shaking - build time only
-    addVitePlugin(() => DevOnlyPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
-    addWebpackPlugin(() => DevOnlyPlugin.webpack({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    addBuildPlugin(DevOnlyPlugin({
+      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    }))
   }
 
   if (nuxt.options.dev) {
@@ -344,10 +335,10 @@ async function initNuxt (nuxt: Nuxt) {
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
   if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
-      for (const file in manifest) {
-        if (manifest[file].resourceType === 'script') {
-          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), manifest[file].file), { force: true })
-          manifest[file].file = ''
+      for (const chunk of Object.values(manifest)) {
+        if (chunk.resourceType === 'script') {
+          await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
+          chunk.file = ''
         }
       }
     })
@@ -506,9 +497,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   const envMap = {
     // defaults from `builder` based on package name
+    '@nuxt/rspack-builder': '@rspack/core/module',
     '@nuxt/vite-builder': 'vite/client',
     '@nuxt/webpack-builder': 'webpack/module',
     // simpler overrides from `typescript.builder` for better DX
+    'rspack': '@rspack/core/module',
     'vite': 'vite/client',
     'webpack': 'webpack/module',
     // default 'merged' builder environment for module authors
@@ -605,6 +598,21 @@ async function initNuxt (nuxt: Nuxt) {
     })
   }
 
+  if (nuxt.options.vue.config && Object.values(nuxt.options.vue.config).some(v => v !== null && v !== undefined)) {
+    addPluginTemplate({
+      filename: 'vue-app-config.mjs',
+      getContents: () => `
+import { defineNuxtPlugin } from '#app/nuxt'
+export default defineNuxtPlugin({
+  name: 'nuxt:vue-app-config',
+  enforce: 'pre',
+  setup (nuxtApp) {
+    ${Object.keys(nuxt.options.vue.config!).map(k => `    nuxtApp.vueApp.config[${JSON.stringify(k)}] = ${JSON.stringify(nuxt.options.vue.config![k as 'idPrefix'])}`).join('\n')}
+  }
+})`,
+    })
+  }
+
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
@@ -665,7 +673,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Show compatibility version banner when Nuxt is running with a compatibility version
   // that is different from the current major version
   if (!(satisfies(nuxt._version, nuxt.options.future.compatibilityVersion + '.x'))) {
-    console.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
+    logger.info(`Running with compatibility version \`${nuxt.options.future.compatibilityVersion}\``)
   }
 
   await nuxt.callHook('ready', nuxt)

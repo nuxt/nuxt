@@ -31,11 +31,17 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Vue Experimental: Enable reactive destructure for `defineProps`
-     * @see [Vue RFC#502](https://github.com/vuejs/rfcs/discussions/502)
+     * Enable reactive destructure for `defineProps`
      * @type {boolean}
      */
-    propsDestructure: false,
+    propsDestructure: true,
+
+    /**
+     * It is possible to pass configure the Vue app globally. Only serializable options
+     * may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
+     * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
+     */
+    config: undefined,
   },
 
   /**

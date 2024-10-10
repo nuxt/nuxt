@@ -23,12 +23,10 @@ describe('plugin-metadata', () => {
         '})',
       ].join('\n'), 'tsx')
 
-      expect(meta).toMatchInlineSnapshot(`
-        {
-          "name": "test",
-          "order": 1,
-        }
-      `)
+      expect(meta).toEqual({
+        'name': 'test',
+        'order': 1,
+      })
     }
   })
 
@@ -40,7 +38,6 @@ describe('plugin-metadata', () => {
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
       'export const plugin = {}',
-      'export default function (ctx, inject) {}',
     ]
     for (const plugin of invalidPlugins) {
       expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')

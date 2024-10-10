@@ -4,7 +4,6 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
-import { mount } from '@vue/test-utils'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { hasProtocol } from 'ufo'
@@ -13,11 +12,10 @@ import * as composables from '#app/composables'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
-import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
+import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
-import { useId } from '#app/composables/id'
 import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
@@ -31,23 +29,33 @@ registerEndpoint('/api/test', defineEventHandler(event => ({
 describe('app config', () => {
   it('can be updated', () => {
     const appConfig = useAppConfig()
-    expect(appConfig).toMatchInlineSnapshot(`
-      {
-        "nuxt": {},
-      }
-    `)
-    updateAppConfig({
+    expect(appConfig).toStrictEqual({ nuxt: {} })
+
+    type UpdateAppConfig = Parameters<typeof updateAppConfig>[0]
+
+    const initConfig: UpdateAppConfig = {
       new: 'value',
       nuxt: { nested: 42 },
+      regExp: /foo/g,
+      date: new Date(1111, 11, 11),
+      arr: [1, 2, 3],
+    }
+    updateAppConfig(initConfig)
+    expect(appConfig).toStrictEqual(initConfig)
+
+    const newConfig: UpdateAppConfig = {
+      nuxt: { anotherNested: 24 },
+      regExp: /bar/g,
+      date: new Date(2222, 12, 12),
+      arr: [4, 5],
+    }
+    updateAppConfig(newConfig)
+    expect(appConfig).toStrictEqual({
+      ...initConfig,
+      ...newConfig,
+      nuxt: { ...initConfig.nuxt, ...newConfig.nuxt },
+      arr: [4, 5, 3],
     })
-    expect(appConfig).toMatchInlineSnapshot(`
-      {
-        "new": "value",
-        "nuxt": {
-          "nested": 42,
-        },
-      }
-    `)
   })
 })
 
@@ -75,11 +83,11 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useResponseHeader',
       'useCookie',
       'clearNuxtState',
       'useState',
       'useRequestURL',
-      'useId',
       'useRoute',
       'navigateTo',
       'abortNavigation',
@@ -101,6 +109,7 @@ describe('composables', () => {
       'reloadNuxtApp',
       'refreshCookie',
       'onPrehydrate',
+      'useId',
       'useFetch',
       'useHead',
       'useLazyFetch',
@@ -386,6 +395,7 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+    expect(useResponseHeader('x-test').value).toBeUndefined()
   })
 })
 
@@ -456,33 +466,6 @@ describe('clearNuxtState', () => {
     clearNuxtState()
     expect(state1.value).toBeUndefined()
     expect(state2.value).toBeUndefined()
-  })
-})
-
-describe('useId', () => {
-  it('default', () => {
-    const vals = new Set<string>()
-    for (let index = 0; index < 100; index++) {
-      mount(defineComponent({
-        setup () {
-          const id = useId()
-          vals.add(id)
-          return () => h('div', id)
-        },
-      }))
-    }
-    expect(vals.size).toBe(100)
-  })
-
-  it('generates unique ids per-component', () => {
-    const component = defineComponent({
-      setup () {
-        const id = useId()
-        return () => h('div', id)
-      },
-    })
-
-    expect(mount(component).html()).not.toBe(mount(component).html())
   })
 })
 

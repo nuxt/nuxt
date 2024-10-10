@@ -100,7 +100,7 @@ export function vforToArray (source: any): any[] {
       const keys = Object.keys(source)
       const array = new Array(keys.length)
       for (let i = 0, l = keys.length; i < l; i++) {
-        const key = keys[i]
+        const key = keys[i]!
         array[i] = source[key]
       }
       return array

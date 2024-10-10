@@ -11,6 +11,15 @@ type DeepPartial<T> = T extends Function ? T : T extends Record<string, any> ? {
 // Workaround for vite HMR with virtual modules
 export const _getAppConfig = () => __appConfig as AppConfig
 
+function isPojoOrArray (val: unknown): val is object {
+  return (
+    Array.isArray(val) ||
+    (!!val &&
+      typeof val === 'object' &&
+      val.constructor?.name === 'Object')
+  )
+}
+
 function deepDelete (obj: any, newObj: any) {
   for (const key in obj) {
     const val = newObj[key]
@@ -18,7 +27,7 @@ function deepDelete (obj: any, newObj: any) {
       delete (obj as any)[key]
     }
 
-    if (val !== null && typeof val === 'object') {
+    if (isPojoOrArray(val)) {
       deepDelete(obj[key], newObj[key])
     }
   }
@@ -27,7 +36,7 @@ function deepDelete (obj: any, newObj: any) {
 function deepAssign (obj: any, newObj: any) {
   for (const key in newObj) {
     const val = newObj[key]
-    if (val !== null && typeof val === 'object') {
+    if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
       obj[key] = obj[key] || defaultVal
       deepAssign(obj[key], val)

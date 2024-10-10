@@ -2,6 +2,7 @@ import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
 // This file must be imported first as we set globalThis.$fetch via this import
+// @ts-expect-error virtual file
 import '#build/fetch.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
@@ -9,6 +10,7 @@ import type { CreateOptions } from './nuxt'
 
 import { createError } from './composables/error'
 
+// @ts-expect-error virtual file
 import '#build/css'
 // @ts-expect-error virtual file
 import plugins from '#build/plugins'
@@ -65,6 +67,10 @@ if (import.meta.client) {
     }
 
     vueApp.config.errorHandler = handleVueError
+    // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
+    nuxt.hook('app:suspense:resolve', () => {
+      if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
+    })
 
     try {
       await applyPlugins(nuxt, plugins)
@@ -81,9 +87,6 @@ if (import.meta.client) {
     } catch (err) {
       handleVueError(err)
     }
-
-    // If the errorHandler is not overridden by the user, we unset it
-    if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
 
     return vueApp
   }

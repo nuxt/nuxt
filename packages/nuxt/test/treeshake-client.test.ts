@@ -6,7 +6,7 @@ import type { Plugin } from 'vite'
 import { Parser } from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
-import { TreeShakeTemplatePlugin } from '../src/components/tree-shake'
+import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
 import { fixtureDir, normalizeLineEndings } from './utils'
 
 // mock due to differences of results between windows and linux
@@ -27,7 +27,7 @@ function vuePlugin (options: Options) {
 
 const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
-const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
+const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   sourcemap: false,
   getComponents () {
     return [{
@@ -52,7 +52,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin.raw({
       mode: 'client',
     }]
   },
-}, { framework: 'rollup' }) as Plugin
+}).raw({}, { framework: 'rollup' }) as Plugin
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -127,10 +127,10 @@ describe('treeshake client only in ssr', () => {
     const ssrResult = await SFCCompile(`SomeComponent${state.index}.vue`, WithClientOnly, state.options, true)
 
     const treeshaken = await treeshake(ssrResult)
-    const [_, scopeId] = clientResult.match(/_pushScopeId\("(.*)"\)/)!
+    const [_, scopeId] = clientResult.match(/['"]__scopeId['"],\s*['"](data-v-[^'"]+)['"]/)!
 
     // ensure the id is correctly passed between server and client
-    expect(clientResult).toContain(`pushScopeId("${scopeId}")`)
+    expect(clientResult).toContain(`'__scopeId',"${scopeId}"`)
     expect(treeshaken).toContain(`<div ${scopeId}>`)
 
     expect(clientResult).toContain('should-be-treeshaken')

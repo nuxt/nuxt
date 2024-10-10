@@ -18,10 +18,9 @@ import type { AsyncDataRequestStatus } from '../app/composables/asyncData'
 import type { NuxtAppManifestMeta } from '../app/composables/manifest'
 import type { LoadingIndicator } from '../app/composables/loading-indicator'
 import type { RouteAnnouncer } from '../app/composables/route-announcer'
-import type { ViewTransition } from './plugins/view-transitions.client'
 
 // @ts-expect-error virtual file
-import { appId, multiApp } from '#build/nuxt.config.mjs'
+import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
 import type { NuxtAppLiterals } from '#app'
 
@@ -267,6 +266,7 @@ export function createNuxtApp (options: CreateOptions) {
       get vue () { return nuxtApp.vueApp.version },
     },
     payload: shallowReactive({
+      ...options.ssrContext?.payload || {},
       data: shallowReactive({}),
       state: reactive({}),
       once: new Set<string>(),
@@ -275,7 +275,7 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext (fn: any) {
+    runWithContext <T>(fn: () => T) {
       if (nuxtApp._scope.active && !getCurrentScope()) {
         return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
       }
@@ -308,6 +308,20 @@ export function createNuxtApp (options: CreateOptions) {
 
   if (import.meta.server) {
     nuxtApp.payload.serverRendered = true
+  }
+
+  if (import.meta.server && nuxtApp.ssrContext) {
+    nuxtApp.payload.path = nuxtApp.ssrContext.url
+
+    // Expose nuxt to the renderContext
+    nuxtApp.ssrContext.nuxt = nuxtApp
+    nuxtApp.ssrContext.payload = nuxtApp.payload
+
+    // Expose client runtime-config to the payload
+    nuxtApp.ssrContext.config = {
+      public: nuxtApp.ssrContext.runtimeConfig.public,
+      app: nuxtApp.ssrContext.runtimeConfig.app,
+    }
   }
 
   if (import.meta.client) {
@@ -356,35 +370,16 @@ export function createNuxtApp (options: CreateOptions) {
   defineGetter(nuxtApp.vueApp, '$nuxt', nuxtApp)
   defineGetter(nuxtApp.vueApp.config.globalProperties, '$nuxt', nuxtApp)
 
-  if (import.meta.server) {
-    if (nuxtApp.ssrContext) {
-      // Expose nuxt to the renderContext
-      nuxtApp.ssrContext.nuxt = nuxtApp
-      // Expose payload types
-      nuxtApp.ssrContext._payloadReducers = {}
-      // Expose current path
-      nuxtApp.payload.path = nuxtApp.ssrContext.url
-    }
-    // Expose to server renderer to create payload
-    nuxtApp.ssrContext = nuxtApp.ssrContext || {} as any
-    if (nuxtApp.ssrContext!.payload) {
-      Object.assign(nuxtApp.payload, nuxtApp.ssrContext!.payload)
-    }
-    nuxtApp.ssrContext!.payload = nuxtApp.payload
-
-    // Expose client runtime-config to the payload
-    nuxtApp.ssrContext!.config = {
-      public: options.ssrContext!.runtimeConfig.public,
-      app: options.ssrContext!.runtimeConfig.app,
-    }
-  }
-
-  // Listen to chunk load errors
   if (import.meta.client) {
-    window.addEventListener('nuxt.preloadError', (event) => {
-      nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
-    })
-
+    // Listen to chunk load errors
+    if (chunkErrorEvent) {
+      window.addEventListener(chunkErrorEvent, (event) => {
+        nuxtApp.callHook('app:chunkError', { error: (event as Event & { payload: Error }).payload })
+        if (nuxtApp.isHydrating || event.payload.message.includes('Unable to preload CSS')) {
+          event.preventDefault()
+        }
+      })
+    }
     window.useNuxtApp = window.useNuxtApp || useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks

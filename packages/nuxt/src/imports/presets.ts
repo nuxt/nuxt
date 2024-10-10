@@ -66,7 +66,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie',
   },
   {
-    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useResponseHeader', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr',
   },
   {
@@ -104,10 +104,6 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['usePreviewMode'],
     from: '#app/composables/preview',
-  },
-  {
-    imports: ['useId'],
-    from: '#app/composables/id',
   },
   {
     imports: ['useRouteAnnouncer'],
@@ -231,6 +227,10 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 
