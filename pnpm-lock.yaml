@@ -666,6 +666,9 @@ importers:
 
   packages/schema:
     dependencies:
+      c12:
+        specifier: ^2.0.1
+        version: 2.0.1(magicast@0.3.5)
       compatx:
         specifier: ^0.1.8
         version: 0.1.8
@@ -736,9 +739,6 @@ importers:
       '@vue/language-core':
         specifier: 2.1.6
         version: 2.1.6(typescript@5.6.3)
-      c12:
-        specifier: 2.0.1
-        version: 2.0.1(magicast@0.3.5)
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.95.0)
