@@ -5,6 +5,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitro/types'
 import type { SnakeCase } from 'scule'
+import type { ConfigLayer } from 'c12'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
@@ -62,12 +63,6 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vue' | 'vite
   $schema?: SchemaDefinition
 }
 
-// TODO: Expose ConfigLayer<T> from c12
-interface ConfigLayer<T> {
-  config: T
-  cwd: string
-  configFile: string
-}
 export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
   srcDir: ConfigSchema['srcDir']
   rootDir: ConfigSchema['rootDir']
