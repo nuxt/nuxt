@@ -92,7 +92,11 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       },
     },
   } as Nuxt
-  const plugin = TransformPlugin(stubNuxt, () => components, mode).vite()
+  const plugin = TransformPlugin(stubNuxt, {
+    mode,
+    getComponents: () => components,
+    serverComponentRuntime: '<repo>/nuxt/src/components/runtime/server-component',
+  }).vite()
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)

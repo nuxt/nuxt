@@ -81,7 +81,7 @@ export interface NuxtBuilder {
 export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'builder' | 'postcss' | 'webpack'> {
   vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']

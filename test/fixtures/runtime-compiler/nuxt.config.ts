@@ -7,5 +7,5 @@ export default defineNuxtConfig({
   vue: {
     runtimeCompiler: true,
   },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'vite' ?? 'vite',
+  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
 })

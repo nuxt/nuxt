@@ -5,15 +5,19 @@ import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseURL } from 'ufo'
 import { parseQuery } from 'vue-router'
-import { normalize, resolve } from 'pathe'
+import { normalize } from 'pathe'
 import { genImport } from 'knitwork'
-import { distDir } from '../../dirs'
 import type { getComponentsT } from '../module'
 
 const COMPONENT_QUERY_RE = /[?&]nuxt_component=/
 
-export function TransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode: 'client' | 'server' | 'all') {
-  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
+interface TransformPluginOptions {
+  getComponents: getComponentsT
+  mode: 'client' | 'server' | 'all'
+  serverComponentRuntime: string
+}
+
+export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
   const componentUnimport = createUnimport({
     imports: [
       {
@@ -26,7 +30,7 @@ export function TransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode
   })
 
   function getComponentsImports (): Import[] {
-    const components = getComponents(mode)
+    const components = options.getComponents(options.mode)
     return components.flatMap((c): Import[] => {
       const withMode = (mode: string | undefined) => mode
         ? `${c.filePath}${c.filePath.includes('?') ? '&' : '?'}nuxt_component=${mode}&nuxt_component_name=${c.pascalName}&nuxt_component_export=${c.export || 'default'}`
@@ -95,7 +99,7 @@ export function TransformPlugin (nuxt: Nuxt, getComponents: getComponentsT, mode
           const name = query.nuxt_component_name
           return {
             code: [
-              `import { createServerComponent } from ${JSON.stringify(serverComponentRuntime)}`,
+              `import { createServerComponent } from ${JSON.stringify(options.serverComponentRuntime)}`,
               `${exportWording} createServerComponent(${JSON.stringify(name)})`,
             ].join('\n'),
             map: null,

@@ -8,6 +8,7 @@ export function normalizeSemanticVersion (version: string) {
 }
 
 const builderMap = {
+  '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',
 }

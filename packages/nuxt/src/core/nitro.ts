@@ -101,8 +101,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     devHandlers: [],
     baseURL: nuxt.options.app.baseURL,
     virtual: {
-      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config'],
-      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
+      '#internal/nuxt.config.mjs': () => nuxt.vfs['#build/nuxt.config.mjs'],
+      '#internal/nuxt/app-config': () => nuxt.vfs['#build/app.config.mjs']?.replace(/\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//, ''),
       '#spa-template': async () => `export const template = ${JSON.stringify(await spaLoadingTemplate(nuxt))}`,
     },
     routeRules: {
@@ -189,11 +189,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           },
       '@vue/devtools-api': 'vue-devtools-stub',
 
-      // Paths
-      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
-
       // Nuxt aliases
       ...nuxt.options.alias,
+
+      // Paths
+      '#internal/nuxt/paths': resolve(distDir, 'core/runtime/nitro/paths'),
     },
     replace: {
       'process.env.NUXT_NO_SSR': nuxt.options.ssr === false,
@@ -347,7 +347,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
   }
 
-  if (nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.dev) {
+  if (nuxt.options.dev || nuxt.options.builder === '@nuxt/webpack-builder' || nuxt.options.builder === '@nuxt/rspack-builder') {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
@@ -448,18 +448,20 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         }
       }
     })
-    nuxt.hook('webpack:config', (configuration) => {
-      const clientConfig = configuration.find(config => config.name === 'client')
-      if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
-      if (Array.isArray(clientConfig!.resolve!.alias)) {
-        clientConfig!.resolve!.alias.push({
-          name: 'vue',
-          alias: 'vue/dist/vue.esm-bundler',
-        })
-      } else {
-        clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
-      }
-    })
+    for (const hook of ['webpack:config', 'rspack:config'] as const) {
+      nuxt.hook(hook, (configuration) => {
+        const clientConfig = configuration.find(config => config.name === 'client')
+        if (!clientConfig!.resolve) { clientConfig!.resolve!.alias = {} }
+        if (Array.isArray(clientConfig!.resolve!.alias)) {
+          clientConfig!.resolve!.alias.push({
+            name: 'vue',
+            alias: 'vue/dist/vue.esm-bundler',
+          })
+        } else {
+          clientConfig!.resolve!.alias!.vue = 'vue/dist/vue.esm-bundler'
+        }
+      })
+    }
   }
 
   // Setup handlers
@@ -545,13 +547,15 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // nuxt dev
   if (nuxt.options.dev) {
-    nuxt.hook('webpack:compile', ({ name, compiler }) => {
-      if (name === 'server') {
-        const memfs = compiler.outputFileSystem as typeof import('node:fs')
-        nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
-      }
-    })
-    nuxt.hook('webpack:compiled', () => { nuxt.server.reload() })
+    for (const builder of ['webpack', 'rspack'] as const) {
+      nuxt.hook(`${builder}:compile`, ({ name, compiler }) => {
+        if (name === 'server') {
+          const memfs = compiler.outputFileSystem as typeof import('node:fs')
+          nitro.options.virtual['#build/dist/server/server.mjs'] = () => memfs.readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
+        }
+      })
+      nuxt.hook(`${builder}:compiled`, () => { nuxt.server.reload() })
+    }
     nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
 
     nuxt.hook('server:devHandler', (h) => { devMiddlewareHandler.set(h) })

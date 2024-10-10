@@ -7,7 +7,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 
 import { normalizeWebpackManifest } from 'vue-bundle-renderer'
 import { dirname } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 
 import type { Nuxt } from '@nuxt/schema'
 import type { Compilation, Compiler } from 'webpack'

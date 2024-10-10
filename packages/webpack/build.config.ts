@@ -8,7 +8,6 @@ export default defineBuildConfig({
   dependencies: [
     '@nuxt/kit',
     'unplugin',
-    'webpack-virtual-modules',
     'postcss',
     'postcss-loader',
     'vue-loader',
@@ -18,6 +17,7 @@ export default defineBuildConfig({
     'vue',
   ],
   externals: [
+    '#builder',
     '@nuxt/schema',
   ],
 })

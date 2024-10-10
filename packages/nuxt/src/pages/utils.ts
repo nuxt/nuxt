@@ -15,7 +15,6 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
-import { distDir } from '../dirs'
 
 enum SegmentParserState {
   initial,
@@ -476,7 +475,12 @@ function serializeRouteValue (value: any, skipSerialisation = false) {
 
 type NormalizedRoute = Partial<Record<Exclude<keyof NuxtPage, 'file'>, string>> & { component?: string }
 type NormalizedRouteKeys = (keyof NormalizedRoute)[]
-export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), overrideMeta = false): { imports: Set<string>, routes: string } {
+interface NormalizeRoutesOptions {
+  overrideMeta?: boolean
+  serverComponentRuntime: string
+  clientComponentRuntime: string
+}
+export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = new Set(), options: NormalizeRoutesOptions): { imports: Set<string>, routes: string } {
   return {
     imports: metaImports,
     routes: genArrayFromRaw(routes.map((page) => {
@@ -506,7 +510,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       }
 
       if (page.children?.length) {
-        route.children = normalizeRoutes(page.children, metaImports, overrideMeta).routes
+        route.children = normalizeRoutes(page.children, metaImports, options).routes
       }
 
       // Without a file, we can't use `definePageMeta` to extract route-level meta from the file
@@ -542,14 +546,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
         metaImports.add(`
 let _createIslandPage
 async function createIslandPage (name) {
-  _createIslandPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/server-component'))}).then(r => r.createIslandPage)
+  _createIslandPage ||= await import(${JSON.stringify(options?.serverComponentRuntime)}).then(r => r.createIslandPage)
   return _createIslandPage(name)
 };`)
       } else if (page.mode === 'client') {
         metaImports.add(`
 let _createClientPage
 async function createClientPage(loader) {
-  _createClientPage ||= await import(${JSON.stringify(resolve(distDir, 'components/runtime/client-component'))}).then(r => r.createClientPage)
+  _createClientPage ||= await import(${JSON.stringify(options?.clientComponentRuntime)}).then(r => r.createClientPage)
   return _createClientPage(loader);
 }`)
       }
@@ -562,7 +566,7 @@ async function createClientPage(loader) {
         metaRoute.meta = `{ ...(${metaImportName} || {}), ...${route.meta} }`
       }
 
-      if (overrideMeta) {
+      if (options?.overrideMeta) {
         // skip and retain fallback if marked dynamic
         // set to extracted value or fallback if none extracted
         for (const key of ['name', 'path'] satisfies NormalizedRouteKeys) {
