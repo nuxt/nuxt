@@ -39,6 +39,9 @@ export interface PageMeta {
   path?: string
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
+
+  /** Set to `true` to render this page without inheriting from `app.vue` */
+  isolate?: boolean
 }
 
 declare module 'vue-router' {
