@@ -162,6 +162,10 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     router.push({ name: 'param-id', params: { bob: 23 } })
     router.push({ name: 'param-id', params: { id: 4 } })
+    // @ts-expect-error this is an invalid route
+    router.push({ name: 'param' })
+    // @ts-expect-error this is an invalid route
+    router.push({ name: '/param' })
   })
 
   it('correctly reads custom names typed in `definePageMeta`', () => {
