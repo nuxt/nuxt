@@ -1582,7 +1582,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1624,7 +1624,7 @@ describe('nested suspense', () => {
 
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, nav)
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
@@ -1660,7 +1660,7 @@ describe('nested suspense', () => {
     const first = start.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\//)!.groups!
     const last = nav.match(/\/suspense\/(?<parentType>a?sync)-(?<parentNum>\d)\/(?<childType>a?sync)-(?<childNum>\d)\//)!.groups!
 
-    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('page:loading:end') && !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
+    expect(consoleLogs.map(l => l.text).filter(i => !i.includes('[vite]') && !i.includes('<Suspense> is an experimental feature')).sort()).toEqual([
       // [first load] from parent
       `[${first.parentType}]`,
       ...first.parentType === 'async' ? ['[async] running async data'] : [],
