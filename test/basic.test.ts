@@ -625,6 +625,17 @@ describe('pages', () => {
     const html = await $fetch('/prerender/test')
     expect(html).toContain('should be prerendered: true')
   })
+
+  it('should trigger page:loading:end only once', async () => {
+    const { page, consoleLogs } = await renderPage('/')
+
+    await page.getByText('to page load hook').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
+    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
+    expect(loadingEndLogs.length).toBe(1)
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
@@ -2850,18 +2861,6 @@ describe('namespace access to useNuxtApp', () => {
     }
 
     expect(error).toBeTruthy()
-
-    await page.close()
-  })
-})
-
-describe('page hook', () => {
-  it('should trigger page:loading:end only once', async () => {
-    const { page, consoleLogs } = await renderPage()
-    await page.goto(url('/page-load-hook'))
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
-    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
-    expect(loadingEndLogs.length).toBe(1)
 
     await page.close()
   })
