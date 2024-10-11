@@ -44,7 +44,7 @@
     "@vue/compiler-core": "3.5.11",
     "@vue/compiler-dom": "3.5.11",
     "@vue/shared": "3.5.11",
-    "magic-string": "^0.30.11",
+    "magic-string": "^0.30.12",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.47",
