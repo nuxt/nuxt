@@ -41,9 +41,9 @@
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "@types/node": "20.16.11",
-    "@vue/compiler-core": "3.5.11",
-    "@vue/compiler-dom": "3.5.11",
-    "@vue/shared": "3.5.11",
+    "@vue/compiler-core": "3.5.12",
+    "@vue/compiler-dom": "3.5.12",
+    "@vue/shared": "3.5.12",
     "c12": "2.0.1",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "2.3.3",
@@ -58,7 +58,7 @@
     "ufo": "1.5.4",
     "unbuild": "3.0.0-rc.11",
     "vite": "5.4.8",
-    "vue": "3.5.11"
+    "vue": "3.5.12"
   },
   "devDependencies": {
     "@eslint/js": "9.12.0",
@@ -108,7 +108,7 @@
     "ufo": "1.5.4",
     "vitest": "2.1.2",
     "vitest-environment-nuxt": "1.0.1",
-    "vue": "3.5.11",
+    "vue": "3.5.12",
     "vue-router": "4.4.5",
     "vue-tsc": "2.1.6"
   },
