@@ -13,7 +13,7 @@
       :is="SingleRenderer"
       v-else-if="SingleRenderer"
     />
-    <NuxtPage v-else-if="route?.meta?.isolate" />
+    <LazyNuxtPage v-else-if="route.meta?.isolate" />
     <AppComponent v-else />
   </Suspense>
 </template>
