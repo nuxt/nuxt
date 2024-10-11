@@ -790,8 +790,8 @@ importers:
         specifier: 0.63.4
         version: 0.63.4
       critters:
-        specifier: 0.0.24
-        version: 0.0.24
+        specifier: 0.0.25
+        version: 0.0.25
       html-validate:
         specifier: 8.24.1
         version: 8.24.1(vitest@2.1.2(@types/node@20.16.11)(happy-dom@15.7.4)(sass@1.78.0)(terser@5.32.0))
@@ -2526,14 +2526,49 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@rspack/binding-darwin-arm64@1.0.9':
+    resolution: {integrity: sha512-9CROBttbjfFcw78KGQHKGO6Im5uBLo0he2M8I+N4IOcTOCIqgtHSy0rjbpKxdpGlugokFafW/T5GBke+LW+J6A==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@rspack/binding-darwin-x64@1.0.9':
+    resolution: {integrity: sha512-o0WmrkVYxEO8LKeZvflERRv8z/VKBM/JyvhHOGSQF1kV5989Eob9Dqd3JbXiHpgXZb8syh0xq9J/C/KL2djClw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@rspack/binding-linux-arm64-gnu@1.0.9':
+    resolution: {integrity: sha512-8lXgxL19HZSSzvlG7EsomACRYjdJKiSVsh5fMGO7nIF/elRsG0edMqtM/Vbm1srMN5o15/houvftb/kpK6giZg==}
+    cpu: [arm64]
+    os: [linux]
+
   '@rspack/binding-linux-arm64-musl@1.0.9':
     resolution: {integrity: sha512-nZus0toIKvHJcJCPGKPRnQYM1FXpagyVs53tr+AA/uxFA5mnHIrQ+RAP/PrdRT9+B6VOI+2Cs6nqwkrXtKg7qQ==}
     cpu: [arm64]
     os: [linux]
 
+  '@rspack/binding-linux-x64-gnu@1.0.9':
+    resolution: {integrity: sha512-3B54wWAhH4k3gJHYR4CUU8e82NWwZFIiBiCQzOOk0uh+rDkFtBt2xiOOZERQGLVvZmoz1K5JvNNPBBETVFKORg==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rspack/binding-linux-x64-musl@1.0.9':
+    resolution: {integrity: sha512-EF8T9VGQmCu+snhd6meexUWB7qQSdyqmGEMZNGTt2Qa+NC0x2W2owg6QzyyyTP1tTlTkIC5fWKKtN/4xP7dttA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@rspack/binding-win32-arm64-msvc@1.0.9':
+    resolution: {integrity: sha512-TTXsOrpBgxcArTlOywFrThYZ4lNFQaowKaNf59QJhWm02fYb7ZezEbVzbJXhsqr4flLOaZcCuLPVaxhGaqZHYA==}
+    cpu: [arm64]
+    os: [win32]
+
   '@rspack/binding-win32-ia32-msvc@1.0.9':
     resolution: {integrity: sha512-/CJsa3D0+0/BkCTXpK8y7aYQRnrOlu8rboIx24LfCOK5wJB5WxvrvmXHT9XFUiUQt9zLYRQj6l5PdAj66Aoozg==}
     cpu: [ia32]
+    os: [win32]
+
+  '@rspack/binding-win32-x64-msvc@1.0.9':
+    resolution: {integrity: sha512-euDrnVN2iFClu/7TpBErx99/4flhZCsvNcLBganbaCrM+NxWuCEa889Tmm6SosLoqvundk6pdsvPb9ubMqOEjg==}
+    cpu: [x64]
     os: [win32]
 
   '@rspack/binding@1.0.9':
@@ -3857,8 +3892,8 @@ packages:
   create-require@1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
 
-  critters@0.0.24:
-    resolution: {integrity: sha512-Oyqew0FGM0wYUSNqR0L6AteO5MpMoUU0rhKRieXeiKs+PmRTxiJMyaunYB2KF6fQ3dzChXKCpbFOEJx3OQ1v/Q==}
+  critters@0.0.25:
+    resolution: {integrity: sha512-ROF/tjJyyRdM8/6W0VqoN5Ql05xAGnkf5b7f3sTEl1bI5jTQQf8O918RD/V9tEb9pRY/TKcvJekDbJtniHyPtQ==}
 
   croner@8.1.1:
     resolution: {integrity: sha512-1VdUuRnQP4drdFkS8NKvDR1NBgevm8TOuflcaZEKsxw42CxonjW/2vkj1AKlinJb4ZLwBcuWF9GiPr7FQc6AQA==}
@@ -9123,16 +9158,44 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.24.0':
     optional: true
 
+  '@rspack/binding-darwin-arm64@1.0.9':
+    optional: true
+
+  '@rspack/binding-darwin-x64@1.0.9':
+    optional: true
+
+  '@rspack/binding-linux-arm64-gnu@1.0.9':
+    optional: true
+
   '@rspack/binding-linux-arm64-musl@1.0.9':
+    optional: true
+
+  '@rspack/binding-linux-x64-gnu@1.0.9':
+    optional: true
+
+  '@rspack/binding-linux-x64-musl@1.0.9':
+    optional: true
+
+  '@rspack/binding-win32-arm64-msvc@1.0.9':
     optional: true
 
   '@rspack/binding-win32-ia32-msvc@1.0.9':
     optional: true
 
+  '@rspack/binding-win32-x64-msvc@1.0.9':
+    optional: true
+
   '@rspack/binding@1.0.9':
     optionalDependencies:
+      '@rspack/binding-darwin-arm64': 1.0.9
+      '@rspack/binding-darwin-x64': 1.0.9
+      '@rspack/binding-linux-arm64-gnu': 1.0.9
       '@rspack/binding-linux-arm64-musl': 1.0.9
+      '@rspack/binding-linux-x64-gnu': 1.0.9
+      '@rspack/binding-linux-x64-musl': 1.0.9
+      '@rspack/binding-win32-arm64-msvc': 1.0.9
       '@rspack/binding-win32-ia32-msvc': 1.0.9
+      '@rspack/binding-win32-x64-msvc': 1.0.9
 
   '@rspack/core@1.0.9':
     dependencies:
@@ -10896,7 +10959,7 @@ snapshots:
 
   create-require@1.1.1: {}
 
-  critters@0.0.24:
+  critters@0.0.25:
     dependencies:
       chalk: 4.1.2
       css-select: 5.1.0
