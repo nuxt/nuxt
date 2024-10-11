@@ -1,5 +1,6 @@
 import type * as vite from 'vite'
 import { logger } from '@nuxt/kit'
+import { colorize } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import clear from 'clear'
 import type { NuxtOptions } from '@nuxt/schema'
@@ -61,8 +62,7 @@ export function createViteLogger (config: vite.InlineConfig): vite.Logger {
 
     const prevLevel = logger.level
     logger.level = logLevelMapReverse[config.logLevel || 'info']
-    // TODO: colorize counter after https://github.com/unjs/consola/pull/166
-    logger[type](msg + (sameAsLast ? ` (x${duplicateCount + 1})` : ''))
+    logger[type](msg + (sameAsLast ? colorize('dim', ` (x${duplicateCount + 1})`) : ''))
     logger.level = prevLevel
   }
 
