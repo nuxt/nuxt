@@ -280,8 +280,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@nuxt/devtools':
-        specifier: ^1.5.2
-        version: 1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+        specifier: ^1.6.0
+        version: 1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -474,7 +474,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.9.4
-        version: 0.9.4(@nuxt/devtools@1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(typescript@5.6.3)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)(webpack@5.95.0(esbuild@0.24.0))
+        version: 0.9.4(@nuxt/devtools@1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(typescript@5.6.3)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)(webpack@5.95.0(esbuild@0.24.0))
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
@@ -2155,17 +2155,22 @@ packages:
     peerDependencies:
       vite: 5.4.8
 
+  '@nuxt/devtools-kit@1.6.0':
+    resolution: {integrity: sha512-kJ8mVKwTSN3tdEVNy7mxKCiQk9wsG5t3oOrRMWk6IEbTSov+5sOULqQSM/+OWxWsEDmDfA7QlS5sM3Ti9uMRqQ==}
+    peerDependencies:
+      vite: 5.4.8
+
   '@nuxt/devtools-ui-kit@1.5.1':
     resolution: {integrity: sha512-/1B2AYXuuPePWVuoHd/UGIKR3z3vO2bW73UAEszpHVLc/OwLA19K9f5o91sgyamAi2Qb5NymAMc/UZL0ijN8uA==}
     peerDependencies:
       '@nuxt/devtools': 1.5.1
 
-  '@nuxt/devtools-wizard@1.5.2':
-    resolution: {integrity: sha512-wZhouI3drb7HL7KYezYb9ksK0EeSVbHDPPKdLQePVrr+7SphThqiHoWmovBB3e/D4jtO3VC07+ILZcXUnat6HQ==}
+  '@nuxt/devtools-wizard@1.6.0':
+    resolution: {integrity: sha512-n+mzz5NwnKZim0tq1oBi+x1nNXb21fp7QeBl7bYKyDT1eJ0XCxFkVTr/kB/ddkkLYZ+o8TykpeNPa74cN+xAyQ==}
     hasBin: true
 
-  '@nuxt/devtools@1.5.2':
-    resolution: {integrity: sha512-E0bqGjAEpzVu7K8soiiDOqjAQ1FaRZPqSSU0OidmRL0HNM9kIaBNr78R494OLSop0Hh0d2Uha7Yt9IEADHtgyw==}
+  '@nuxt/devtools@1.6.0':
+    resolution: {integrity: sha512-xNorMapzpM8HaW7NnAsEEO38OrmrYBzGvkkqfBU5nNh5XEymmIfCbQc7IA/GIOH9pXOV4gRutCjHCWXHYbOl3A==}
     hasBin: true
     peerDependencies:
       vite: 5.4.8
@@ -8599,13 +8604,20 @@ snapshots:
       execa: 7.2.0
       vite: 5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0)
 
-  '@nuxt/devtools-ui-kit@1.5.1(@nuxt/devtools@1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack@5.95.0(esbuild@0.24.0))':
+  '@nuxt/devtools-kit@1.6.0(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))':
+    dependencies:
+      '@nuxt/kit': link:packages/kit
+      '@nuxt/schema': link:packages/schema
+      execa: 7.2.0
+      vite: 5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0)
+
+  '@nuxt/devtools-ui-kit@1.5.1(@nuxt/devtools@1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack@5.95.0(esbuild@0.24.0))':
     dependencies:
       '@iconify-json/carbon': 1.2.1
       '@iconify-json/logos': 1.2.0
       '@iconify-json/ri': 1.2.0
       '@iconify-json/tabler': 1.2.3
-      '@nuxt/devtools': 1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
+      '@nuxt/devtools': 1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)
       '@nuxt/devtools-kit': 1.5.1(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))
       '@nuxt/kit': link:packages/kit
       '@unocss/core': 0.62.4
@@ -8645,7 +8657,7 @@ snapshots:
       - vue
       - webpack
 
-  '@nuxt/devtools-wizard@1.5.2':
+  '@nuxt/devtools-wizard@1.6.0':
     dependencies:
       consola: 3.2.3
       diff: 7.0.0
@@ -8658,11 +8670,11 @@ snapshots:
       rc9: 2.1.2
       semver: 7.6.3
 
-  '@nuxt/devtools@1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
+  '@nuxt/devtools@1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)':
     dependencies:
       '@antfu/utils': 0.7.10
-      '@nuxt/devtools-kit': 1.5.2(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))
-      '@nuxt/devtools-wizard': 1.5.2
+      '@nuxt/devtools-kit': 1.6.0(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))
+      '@nuxt/devtools-wizard': 1.6.0
       '@nuxt/kit': link:packages/kit
       '@vue/devtools-core': 7.4.4(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))
       '@vue/devtools-kit': 7.4.4
@@ -8746,10 +8758,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.95.0
 
-  '@nuxt/scripts@0.9.4(@nuxt/devtools@1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(typescript@5.6.3)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)(webpack@5.95.0(esbuild@0.24.0))':
+  '@nuxt/scripts@0.9.4(@nuxt/devtools@1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(typescript@5.6.3)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3)(webpack@5.95.0(esbuild@0.24.0))':
     dependencies:
       '@nuxt/devtools-kit': 1.5.2(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))
-      '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.5.2(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack@5.95.0(esbuild@0.24.0))
+      '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.6.0(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack-sources@3.2.3))(@unocss/webpack@0.62.4(rollup@4.24.0)(webpack@5.95.0(esbuild@0.24.0)))(@vue/compiler-core@3.5.12)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.47)(rollup@4.24.0)(vite@5.4.8(@types/node@20.16.11)(sass@1.78.0)(terser@5.32.0))(vue@3.5.12(typescript@5.6.3))(webpack@5.95.0(esbuild@0.24.0))
       '@nuxt/kit': link:packages/kit
       '@types/google.maps': 3.58.1
       '@types/stripe-v3': 3.1.33
