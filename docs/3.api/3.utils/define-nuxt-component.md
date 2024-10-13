@@ -37,7 +37,7 @@ export default defineNuxtComponent({
 ```
 
 ::warning
-Data from `useAsyncData` is only set once in the `setup` hook of your component. This means `refreshNuxtData` will not work with `asyncData`. If you need to re-run `useAsyncData`, you can change it with a `method` of the Option API.
+Data from `useAsyncData` is only set once in the `setup` hook of your component. This means `refreshNuxtData` will not work with `asyncData`. If you need to re-run `useAsyncData`, you can change it with a `method` of the Options API.
 ::
 
 ## `head()`

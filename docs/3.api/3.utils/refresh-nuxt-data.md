@@ -13,7 +13,7 @@ links:
 ::
 
 ::warning
-`refreshNuxtData` only works with composition API. `asyncData` hook from the Options API does not work with `refreshNuxtData`.
+`refreshNuxtData` only works with Composition API. `asyncData` hook from the Options API does not work with `refreshNuxtData`.
 ::
 
 ## Type
