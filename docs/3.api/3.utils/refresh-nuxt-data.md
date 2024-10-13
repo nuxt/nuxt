@@ -12,6 +12,10 @@ links:
 `refreshNuxtData` re-fetches all data from the server and updates the page as well as invalidates the cache of [`useAsyncData`](/docs/api/composables/use-async-data) , `useLazyAsyncData`, [`useFetch`](/docs/api/composables/use-fetch) and `useLazyFetch`.
 ::
 
+::warning
+`refreshNuxtData` only works with composition API. `asyncData` hook from the Options API does not work with `refreshNuxtData`.
+::
+
 ## Type
 
 ```ts
