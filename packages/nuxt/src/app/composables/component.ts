@@ -56,7 +56,6 @@ export const defineNuxtComponent: typeof defineComponent =
         }
 
         if (options.head) {
-          const nuxtApp = useNuxtApp()
           useHead(typeof options.head === 'function' ? () => options.head(nuxtApp) : options.head)
         }
 
