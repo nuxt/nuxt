@@ -3,8 +3,6 @@
 import { addPluginTemplate, addRouteMiddleware } from 'nuxt/kit'
 
 export default defineNuxtConfig({
-  typescript: { shim: process.env.DOCS_TYPECHECK === 'true' },
-  pages: process.env.DOCS_TYPECHECK === 'true',
   modules: [
     function () {
       if (!process.env.DOCS_TYPECHECK) { return }
@@ -18,4 +16,6 @@ export default defineNuxtConfig({
       })
     },
   ],
+  pages: process.env.DOCS_TYPECHECK === 'true',
+  typescript: { shim: process.env.DOCS_TYPECHECK === 'true' },
 })

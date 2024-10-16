@@ -48,14 +48,14 @@
     "untyped": "^1.5.1"
   },
   "devDependencies": {
-    "@rspack/core": "1.0.10",
+    "@rspack/core": "1.0.13",
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
     "@types/semver": "7.5.8",
     "lodash-es": "4.17.21",
     "nitropack": "2.9.7",
     "unbuild": "latest",
-    "vite": "5.4.8",
+    "vite": "5.4.9",
     "vitest": "2.1.2",
     "webpack": "5.95.0"
   },
