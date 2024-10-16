@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -306,6 +306,62 @@ describe('useAsyncData', () => {
     fetchData.value = 'another value'
     expect(nuxtData.value).toMatchInlineSnapshot('"another value"')
   })
+
+  describe('pollEvery option', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('should poll at the specified interval', async () => {
+      const mockFn = vi.fn().mockResolvedValue('test')
+      const { data } = await useAsyncData('poll-test', mockFn, { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFn).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFn).toHaveBeenCalledTimes(2)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFn).toHaveBeenCalledTimes(3)
+    })
+
+    it('should stop polling when component is unmounted', async () => {
+      const mockFn = vi.fn().mockResolvedValue('test')
+      const { data } = await useAsyncData('poll-unmount-test', mockFn, { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFn).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFn).toHaveBeenCalledTimes(2)
+
+      // Simulate component unmount
+      useNuxtApp().vueApp.unmount()
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFn).toHaveBeenCalledTimes(2) // Should not increase
+    })
+
+    it('should restart polling after manual refresh', async () => {
+      const mockFn = vi.fn().mockResolvedValue('test')
+      const { data, refresh } = await useAsyncData('poll-refresh-test', mockFn, { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFn).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(500)
+      await refresh()
+      expect(mockFn).toHaveBeenCalledTimes(2)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFn).toHaveBeenCalledTimes(3)
+    })
+  })
 })
 
 describe('useFetch', () => {
@@ -343,6 +399,68 @@ describe('useFetch', () => {
     await new Promise(resolve => setTimeout(resolve, 2))
     expect(status.value).toBe('error')
     expect(error.value).toMatchInlineSnapshot('[Error: [GET] "[object Promise]": <no response> The operation was aborted.]')
+  })
+
+  describe('pollEvery option', () => {
+    beforeEach(() => {
+      vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('should poll at the specified interval', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ data: 'test' })
+      vi.spyOn(globalThis, '$fetch').mockImplementation(mockFetch)
+
+      const { data } = await useFetch('/api/test', { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFetch).toHaveBeenCalledTimes(3)
+    })
+
+    it('should stop polling when component is unmounted', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ data: 'test' })
+      vi.spyOn(globalThis, '$fetch').mockImplementation(mockFetch)
+
+      const { data } = await useFetch('/api/test', { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+
+      // Simulate component unmount
+      useNuxtApp().vueApp.unmount()
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFetch).toHaveBeenCalledTimes(2) // Should not increase
+    })
+
+    it('should restart polling after manual refresh', async () => {
+      const mockFetch = vi.fn().mockResolvedValue({ data: 'test' })
+      vi.spyOn(globalThis, '$fetch').mockImplementation(mockFetch)
+
+      const { data, refresh } = await useFetch('/api/test', { pollEvery: 1000 })
+
+      expect(data.value).toBe('test')
+      expect(mockFetch).toHaveBeenCalledTimes(1)
+
+      await vi.advanceTimersByTimeAsync(500)
+      await refresh()
+      expect(mockFetch).toHaveBeenCalledTimes(2)
+
+      await vi.advanceTimersByTimeAsync(1000)
+      expect(mockFetch).toHaveBeenCalledTimes(3)
+    })
   })
 })
 
