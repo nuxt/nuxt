@@ -97,6 +97,7 @@ Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
   - `timeout`: Milliseconds to automatically abort request
   - `cache`: Handles cache control according to [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache)
     - You can pass boolean to disable the cache or you can pass one of the following values: `default`, `no-store`, `reload`, `no-cache`, `force-cache`, and `only-if-cached`.
+  - `pollEvery`: a number in milliseconds that defines the interval for polling the data. When set, the data will be automatically refreshed at the specified interval.
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
