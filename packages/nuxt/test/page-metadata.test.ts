@@ -182,10 +182,10 @@ describe('normalizeRoutes', () => {
         {
           name: "some-custom-name",
           path: indexN6pT4Un8hYMeta?.path ?? "/",
+          props: indexN6pT4Un8hYMeta?.props ?? false,
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           redirect: "/",
-          component: () => import("/app/pages/index.vue"),
-          props: indexN6pT4Un8hYMeta?.props ?? false
+          component: () => import("/app/pages/index.vue")
         }
       ]",
       }
@@ -212,11 +212,11 @@ describe('normalizeRoutes', () => {
         {
           name: indexN6pT4Un8hYMeta?.name ?? undefined,
           path: indexN6pT4Un8hYMeta?.path ?? "/",
+          props: indexN6pT4Un8hYMeta?.props ?? false,
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           alias: indexN6pT4Un8hYMeta?.alias || [],
           redirect: indexN6pT4Un8hYMeta?.redirect,
-          component: () => import("/app/pages/index.vue"),
-          props: indexN6pT4Un8hYMeta?.props ?? false
+          component: () => import("/app/pages/index.vue")
         }
       ]",
       }
