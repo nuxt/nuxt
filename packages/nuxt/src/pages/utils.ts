@@ -183,7 +183,7 @@ export function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
+const extractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
@@ -532,6 +532,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
+        props: `${metaImportName}?.props ?? false`,
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,

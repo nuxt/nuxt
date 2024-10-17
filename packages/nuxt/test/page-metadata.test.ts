@@ -184,7 +184,8 @@ describe('normalizeRoutes', () => {
           path: indexN6pT4Un8hYMeta?.path ?? "/",
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           redirect: "/",
-          component: () => import("/app/pages/index.vue")
+          component: () => import("/app/pages/index.vue"),
+          props: indexN6pT4Un8hYMeta?.props ?? false
         }
       ]",
       }
@@ -214,7 +215,8 @@ describe('normalizeRoutes', () => {
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           alias: indexN6pT4Un8hYMeta?.alias || [],
           redirect: indexN6pT4Un8hYMeta?.redirect,
-          component: () => import("/app/pages/index.vue")
+          component: () => import("/app/pages/index.vue"),
+          props: indexN6pT4Un8hYMeta?.props ?? false
         }
       ]",
       }
