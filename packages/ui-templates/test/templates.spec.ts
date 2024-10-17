@@ -5,7 +5,6 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { format } from 'prettier'
 import { createJiti } from 'jiti'
-// @ts-expect-error types not valid for bundler resolution
 import { HtmlValidate } from 'html-validate'
 
 const distDir = fileURLToPath(new URL('../node_modules/.temp/dist/templates', import.meta.url))
