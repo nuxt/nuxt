@@ -8,7 +8,7 @@ import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
 import type { Nitro, NitroConfig } from 'nitro/types'
 import type { Schema, SchemaDefinition } from 'untyped'
-import type { RouteLocationRaw } from 'vue-router'
+import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { VueCompilerOptions } from '@vue/language-core'
 import type { NuxtCompatibility, NuxtCompatibilityIssues, ViteConfig } from '..'
 import type { Component, ComponentsOptions } from './components'
@@ -28,6 +28,7 @@ export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig
 export type NuxtPage = {
   name?: string
   path: string
+  props?: RouteRecordRaw['props']
   file?: string
   meta?: Record<string, any>
   alias?: string[] | string
