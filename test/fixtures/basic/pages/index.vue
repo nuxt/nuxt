@@ -94,6 +94,9 @@
     <NuxtLink to="/server-page">
       to server page
     </NuxtLink>
+    <NuxtLink to="/page-load-hook">
+      to page load hook
+    </NuxtLink>
   </div>
 </template>
 
