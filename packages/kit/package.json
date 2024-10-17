@@ -48,7 +48,7 @@
     "untyped": "^1.5.1"
   },
   "devDependencies": {
-    "@rspack/core": "1.0.12",
+    "@rspack/core": "1.0.13",
     "@types/hash-sum": "1.0.2",
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
