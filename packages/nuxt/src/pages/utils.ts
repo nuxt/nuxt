@@ -64,17 +64,24 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   })
 
   const pages = uniqueBy(allRoutes, 'path')
-
   const shouldAugment = nuxt.options.experimental.scanPageMeta || nuxt.options.experimental.typedPages
 
-  if (shouldAugment) {
+  if (shouldAugment === false) {
+    await nuxt.callHook('pages:extend', pages)
+    return pages
+  }
+
+  if (shouldAugment === 'after-resolve') {
+    await nuxt.callHook('pages:extend', pages)
+    await augmentPages(pages, nuxt.vfs)
+  } else {
     const augmentedPages = await augmentPages(pages, nuxt.vfs)
     await nuxt.callHook('pages:extend', pages)
     await augmentPages(pages, nuxt.vfs, augmentedPages)
     augmentedPages.clear()
-  } else {
-    await nuxt.callHook('pages:extend', pages)
   }
+
+  await nuxt.callHook('pages:resolved', pages)
 
   return pages
 }
