@@ -62,7 +62,7 @@ describe('template', () => {
     expect(await formatCss(scopedStyle?.[1] || '')).toMatchSnapshot()
     expect(await formatCss(globalStyle?.[1] || '')).toMatchSnapshot()
 
-    const { template } = await jiti(`file://${distDir}/${file}.ts`) as { template: () => string }
+    const { template } = await jiti.import(`file://${distDir}/${file}.ts`) as { template: () => string }
     const html = template()
     const { valid, results } = await (validator as any).validateString(html)
     expect.soft(valid).toBe(true)
