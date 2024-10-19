@@ -125,6 +125,21 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 
 `to` can be a plain string or a route object to redirect to. When passed as `undefined` or `null`, it will default to `'/'`.
 
+#### Example
+
+```vue
+<script setup lang="ts">
+// Passing the URL directly will redirect to the '/blog' page
+await navigateTo('/blog')
+
+// Using the route object, will redirect to the route with the name 'Blog'
+await navigateTo({name: Blog});
+
+// Redirects to the 'Product' route while passing a parameter (id = 1) using the route object.
+await navigateTo({ name: 'Product', params: { id: 1 } });
+</script>
+```
+
 ### `options` (optional)
 
 **Type**: `NavigateToOptions`
