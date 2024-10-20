@@ -3,8 +3,8 @@ import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
+import { MODE_RE } from './utils'
 
-const PLUGIN_MODE_RE = /\.(server|client)(\.\w+)*$/
 /**
  * Normalize a nuxt plugin object
  */
@@ -28,7 +28,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     plugin.mode = 'server'
   }
   if (!plugin.mode) {
-    const [, mode = 'all'] = plugin.src.match(PLUGIN_MODE_RE) || []
+    const [, mode = 'all'] = plugin.src.match(MODE_RE) || []
     plugin.mode = mode as 'all' | 'client' | 'server'
   }
 
