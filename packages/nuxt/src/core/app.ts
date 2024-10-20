@@ -251,14 +251,14 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
 const IS_TSX = /\.[jt]sx$/
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
-  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
-  for (const plugin of plugins) {
+  const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = new Array(plugins.length)
+  for (let i = 0; i < plugins.length; i++) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src]! : await fsp.readFile(plugin.src!, 'utf-8')
-      _plugins.push({
+      _plugins[i] = {
         ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
         ...plugin,
-      })
+      }
     } catch (e) {
       const relativePluginSrc = relative(nuxt.options.rootDir, plugin.src)
       if ((e as Error).message === 'Invalid plugin metadata') {
@@ -266,7 +266,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
-      _plugins.push(plugin)
+      _plugins[i] = plugins[i]
     }
   }
 
