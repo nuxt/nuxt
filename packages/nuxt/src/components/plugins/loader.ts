@@ -6,7 +6,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { isVue, QUOTE_RE } from '../../core/utils'
+import { SX_RE, QUOTE_RE, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -18,7 +18,6 @@ interface LoaderOptions {
 }
 
 const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g
-const NOT_SX_RE = /\.[tj]sx$/
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -34,7 +33,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(IS_VUE_RE)
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
     transform (code, id) {
       const components = options.getComponents()

@@ -1,13 +1,12 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Component } from 'nuxt/schema'
-import { isVue } from '../../core/utils'
+import { SX_RE, isVue } from '../../core/utils'
 
 interface NameDevPluginOptions {
   sourcemap: boolean
   getComponents: () => Component[]
 }
-const NOT_SX_RE = /\.[tj]sx$/
 const FILENAME_RE = /([^/\\]+)\.\w+$/
 /**
  * Set the default name of components to their PascalCase name
@@ -17,7 +16,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
     name: 'nuxt:component-name-plugin',
     enforce: 'post',
     transformInclude (id) {
-      return isVue(id) || !!id.match(NOT_SX_RE)
+      return isVue(id) || !!id.match(SX_RE)
     },
     transform (code, id) {
       const filename = id.match(FILENAME_RE)?.[1]
