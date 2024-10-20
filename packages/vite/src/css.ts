@@ -9,7 +9,7 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 }
 
 export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']> {
-  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> } = {
+  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> & {plugins: Plugin[] } } = {
     postcss: {
       plugins: [],
     },
@@ -27,7 +27,7 @@ export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']>
     for (const parentURL of nuxt.options.modulesDir) {
       pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true, default: true }) as (opts: Record<string, any>) => Plugin
       if (typeof pluginFn === 'function') {
-        css.postcss.plugins.push(pluginFn(pluginOptions))
+        css.postcss.plugins!.push(pluginFn(pluginOptions))
         break
       }
     }
