@@ -6,7 +6,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { SX_RE, QUOTE_RE, isVue } from '../../core/utils'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
