@@ -126,11 +126,11 @@ export default defineComponent({
       }
     }
 
-    const ssrHTML = ref<string>('')
+    const key = `${props.name}_${hashId.value}`
+    const ssrHTML = ref<string>(nuxtApp.payload.data[key]?.html || '')
 
-    if (import.meta.client && instance.vnode?.el) {
+    if (import.meta.client && instance.vnode?.el && !ssrHTML.value) {
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
-      const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
       nuxtApp.payload.data[key].html = ssrHTML.value
     }
