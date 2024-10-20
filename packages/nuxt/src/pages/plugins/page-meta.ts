@@ -177,8 +177,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
 const QUERY_START_RE = /^\?/
+const MACRO_RE = /&macro=true/
 function rewriteQuery (id: string) {
-  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(/&macro=true/, ''))
+  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
 }
 
 function parseMacroQuery (id: string) {

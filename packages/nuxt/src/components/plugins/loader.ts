@@ -6,7 +6,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { isVue } from '../../core/utils'
+import { isVue, QUOTE_RE } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -112,7 +112,6 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   }
 })
 
-const QUOTE_RE = /["']/g
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
   const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match

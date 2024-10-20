@@ -6,13 +6,12 @@ import { isIgnored, logger, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentNameSegments } from '../core/utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
 const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
 const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
-const QUOTE_RE = /["']/g
 /**
  * Scan the components inside different components folders
  * and return a unique list of components

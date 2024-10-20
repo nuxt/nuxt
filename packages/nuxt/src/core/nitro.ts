@@ -18,6 +18,7 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { nuxtImportProtections } from './plugins/import-protection'
+import { EXTENSION_RE } from './utils'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -374,7 +375,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // TODO: extract to shared utility?
   const excludedAlias = [/^@vue\/.*$/, '#imports', 'vue-demi', /^#app/]
-  const EXTENSION_RE = /\b\.\w+$/g
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!

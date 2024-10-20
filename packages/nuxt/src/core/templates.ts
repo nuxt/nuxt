@@ -11,6 +11,7 @@ import type { NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
+import { EXTENSION_RE } from './utils'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -378,12 +379,11 @@ export const clientConfigTemplate: NuxtTemplate = {
   },
 }
 
-const FILENAME_EXTENSION_RE = /\b\.\w+$/g
 export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
     const typesDir = join(nuxt.options.buildDir, 'types')
-    const configPaths = app.configs.map(path => relative(typesDir, path).replace(FILENAME_EXTENSION_RE, ''))
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
