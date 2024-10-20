@@ -9,7 +9,7 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 }
 
 export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']> {
-  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> & {plugins: Plugin[] } } = {
+  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> & { plugins: Plugin[] } } = {
     postcss: {
       plugins: [],
     },
