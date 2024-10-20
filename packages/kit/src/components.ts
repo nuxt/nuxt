@@ -19,6 +19,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 'shortPath' | 'async' | 'level' | 'import' | 'asyncImport'
 >>
 
+const COMPONENT_MODE_RE = /\.(server|client)(\.\w+)*$/
 /**
  * Register a component by its name and filePath.
  */
@@ -28,7 +29,7 @@ export async function addComponent (opts: AddComponentOptions) {
   nuxt.options.components = nuxt.options.components || []
 
   if (!opts.mode) {
-    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+    const [, mode = 'all'] = opts.filePath.match(COMPONENT_MODE_RE) || []
     opts.mode = mode as 'all' | 'client' | 'server'
   }
 

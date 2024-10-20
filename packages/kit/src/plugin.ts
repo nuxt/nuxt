@@ -4,6 +4,7 @@ import { useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
 
+const PLUGIN_MODE_RE = /\.(server|client)(\.\w+)*$/
 /**
  * Normalize a nuxt plugin object
  */
@@ -27,7 +28,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     plugin.mode = 'server'
   }
   if (!plugin.mode) {
-    const [, mode = 'all'] = plugin.src.match(/\.(server|client)(\.\w+)*$/) || []
+    const [, mode = 'all'] = plugin.src.match(PLUGIN_MODE_RE) || []
     plugin.mode = mode as 'all' | 'client' | 'server'
   }
 

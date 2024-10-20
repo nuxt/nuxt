@@ -7,6 +7,8 @@ interface NameDevPluginOptions {
   sourcemap: boolean
   getComponents: () => Component[]
 }
+const NOT_SX_RE = /\.[tj]sx$/
+const FILENAME_RE = /([^/\\]+)\.\w+$/
 /**
  * Set the default name of components to their PascalCase name
  */
@@ -15,10 +17,10 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
     name: 'nuxt:component-name-plugin',
     enforce: 'post',
     transformInclude (id) {
-      return isVue(id) || !!id.match(/\.[tj]sx$/)
+      return isVue(id) || !!id.match(NOT_SX_RE)
     },
     transform (code, id) {
-      const filename = id.match(/([^/\\]+)\.\w+$/)?.[1]
+      const filename = id.match(FILENAME_RE)?.[1]
       if (!filename) {
         return
       }

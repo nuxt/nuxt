@@ -10,6 +10,7 @@ interface VirtualFSPluginOptions {
   alias?: Record<string, string>
 }
 
+const RELATIVE_ID_RE = /^\.{1,2}[\\/]/
 export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => createUnplugin(() => {
   const extensions = ['', ...nuxt.options.extensions]
   const alias = { ...nuxt.options.alias, ...options.alias }
@@ -40,7 +41,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
         return PREFIX + resolvedId
       }
 
-      if (importer && /^\.{1,2}[\\/]/.test(id)) {
+      if (importer && RELATIVE_ID_RE.test(id)) {
         const path = resolve(dirname(withoutPrefix(importer)), id)
         const resolved = resolveWithExt(path)
         if (resolved) {

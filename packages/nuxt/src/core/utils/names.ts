@@ -2,6 +2,7 @@ import { basename, dirname, extname, normalize } from 'pathe'
 import { kebabCase, splitByCase } from 'scule'
 import { withTrailingSlash } from 'ufo'
 
+const QUOTE_RE = /["']/g
 export function getNameFromPath (path: string, relativeTo?: string) {
   const relativePath = relativeTo
     ? normalize(path).replace(withTrailingSlash(normalize(relativeTo)), '')
@@ -9,7 +10,7 @@ export function getNameFromPath (path: string, relativeTo?: string) {
   const prefixParts = splitByCase(dirname(relativePath))
   const fileName = basename(relativePath, extname(relativePath))
   const segments = resolveComponentNameSegments(fileName.toLowerCase() === 'index' ? '' : fileName, prefixParts).filter(Boolean)
-  return kebabCase(segments).replace(/["']/g, '')
+  return kebabCase(segments).replace(QUOTE_RE, '')
 }
 
 export function hasSuffix (path: string, suffix: string) {
