@@ -127,17 +127,15 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 
 #### Example
 
-```vue
-<script setup lang="ts">
+```ts
 // Passing the URL directly will redirect to the '/blog' page
 await navigateTo('/blog')
 
-// Using the route object, will redirect to the route with the name 'Blog'
-await navigateTo({name: Blog});
+// Using the route object, will redirect to the route with the name 'blog'
+await navigateTo({ name: 'blog' })
 
-// Redirects to the 'Product' route while passing a parameter (id = 1) using the route object.
-await navigateTo({ name: 'Product', params: { id: 1 } });
-</script>
+// Redirects to the 'product' route while passing a parameter (id = 1) using the route object.
+await navigateTo({ name: 'product', params: { id: 1 } })
 ```
 
 ### `options` (optional)
