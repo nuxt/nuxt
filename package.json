@@ -65,7 +65,7 @@
     "@nuxt/eslint-config": "0.6.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
-    "@nuxt/test-utils": "3.14.3",
+    "@nuxt/test-utils": "3.14.4",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
