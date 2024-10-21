@@ -521,11 +521,12 @@ function useObserver (): { observe: ObserveFn } | undefined {
   return _observer
 }
 
+const IS_2G_RE = /2g/
 function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
-  if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
+  if (cn && (cn.saveData || IS_2G_RE.test(cn.effectiveType))) { return true }
   return false
 }

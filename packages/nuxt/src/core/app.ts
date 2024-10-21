@@ -57,7 +57,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   const writes: Array<() => void> = []
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
-
+  const FORWARD_SLASH_RE = /\//g
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
@@ -77,7 +77,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
       // In case a non-normalized absolute path is called for on Windows
       if (process.platform === 'win32') {
-        nuxt.vfs[fullPath.replace(/\//g, '\\')] = contents
+        nuxt.vfs[fullPath.replace(FORWARD_SLASH_RE, '\\')] = contents
       }
 
       changedTemplates.push(template)

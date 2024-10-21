@@ -7,6 +7,7 @@ import { importModule } from '@nuxt/kit'
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
 const DYNAMIC_REQUIRE_RE = /import\("\.\/" ?\+(.*)\).then/g
+const BACKWARD_SLASH_RE = /\\/g
 
 interface Options {
   dir: string
@@ -75,7 +76,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
         await Promise.all(
           files.map(async id => ({
             id,
-            src: resolve(dir, id).replace(/\\/g, '/'),
+            src: resolve(dir, id).replace(BACKWARD_SLASH_RE, '/'),
             name: genSafeVariableName(id),
             meta: await getWebpackChunkMeta(resolve(dir, id)),
           })),

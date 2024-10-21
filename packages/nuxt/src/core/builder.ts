@@ -10,6 +10,7 @@ import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
 
+const IS_RESTART_PATH_RE = /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
   nuxt.apps.default = app
@@ -23,7 +24,7 @@ export async function build (nuxt: Nuxt) {
       if (event === 'change') { return }
       const path = resolve(nuxt.options.srcDir, relativePath)
       const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
-      const restartPath = relativePaths.find(relativePath => /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(relativePath))
+      const restartPath = relativePaths.find(relativePath => IS_RESTART_PATH_RE.test(relativePath))
       if (restartPath) {
         if (restartPath.startsWith('app')) {
           app.mainComponent = undefined

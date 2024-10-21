@@ -6,7 +6,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { isVue } from '../../core/utils'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
@@ -17,6 +17,7 @@ interface LoaderOptions {
   experimentalComponentIslands?: boolean
 }
 
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
@@ -32,7 +33,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
     transform (code, id) {
       const components = options.getComponents()
@@ -43,7 +44,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const s = new MagicString(code)
 
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
+      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
           // TODO: refactor to nuxi
@@ -111,7 +112,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 })
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
-  const id = pascalCase(name).replace(/["']/g, '')
+  const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match
   const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
   if (component) { return component }

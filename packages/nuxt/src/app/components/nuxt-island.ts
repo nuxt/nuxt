@@ -22,6 +22,7 @@ const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
+const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -142,7 +143,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (props.scopeId) {
-        html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
+        html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
       }
 
       if (import.meta.client && !canLoadClientComponent.value) {
