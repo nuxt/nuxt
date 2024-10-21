@@ -253,6 +253,7 @@ const IS_TSX = /\.[jt]sx$/
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = new Array(plugins.length)
   for (let i = 0; i < plugins.length; i++) {
+    const plugin = plugins[i]
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src]! : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins[i] = {
@@ -266,7 +267,7 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
       } else {
         logger.warn(`Failed to parse static properties from plugin \`${relativePluginSrc}\`.`, e)
       }
-      _plugins[i] = plugins[i]
+      _plugins[i] = plugin
     }
   }
 
