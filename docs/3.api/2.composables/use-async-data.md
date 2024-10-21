@@ -76,6 +76,7 @@ const { data: posts } = await useAsyncData(
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
+  - `pollEvery`: a number in milliseconds that defines the interval for polling the data. When set, the data will be automatically refreshed at the specified interval.
 
 ::note
 Under the hood, `lazy: false` uses `<Suspense>` to block the loading of the route before the data has been fetched. Consider using `lazy: true` and implementing a loading state instead for a snappier user experience.
@@ -127,6 +128,7 @@ type AsyncDataOptions<DataT> = {
   pick?: string[]
   watch?: WatchSource[]
   getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
+  pollEvery?: number
 }
 
 type AsyncData<DataT, ErrorT> = {
