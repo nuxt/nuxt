@@ -17,7 +17,7 @@ import { version as nuxtVersion } from '../../package.json'
 import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -46,6 +46,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       .map(m => m.entryPath!),
   )
 
+  const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
     debug: nuxt.options.debug,
     rootDir: nuxt.options.rootDir,
@@ -63,6 +65,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
+      dirs: isNuxtV4
+        ? [
+            resolve(nuxt.options.rootDir, 'shared', 'utils'),
+            resolve(nuxt.options.rootDir, 'shared', 'types'),
+          ]
+        : [],
       imports: [
         {
           as: '__buildAssetsURL',
@@ -358,11 +366,20 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Register nuxt protection patterns
   nitroConfig.rollupConfig!.plugins = await nitroConfig.rollupConfig!.plugins || []
   nitroConfig.rollupConfig!.plugins = toArray(nitroConfig.rollupConfig!.plugins)
+
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
   nitroConfig.rollupConfig!.plugins!.push(
     ImpoundPlugin.rollup({
       cwd: nuxt.options.rootDir,
-      patterns: nuxtImportProtections(nuxt, { isNitro: true }),
-      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/],
+      include: sharedPatterns,
+      patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+    }),
+    ImpoundPlugin.rollup({
+      cwd: nuxt.options.rootDir,
+      patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' }),
+      exclude: [/core[\\/]runtime[\\/]nitro[\\/]renderer/, ...sharedPatterns],
     }),
   )
 
