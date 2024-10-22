@@ -621,6 +621,7 @@ describe('pages:generateRoutesFromFiles', () => {
           name: 'page-with-props',
           path: '/page-with-props',
           file: `${pagesDir}/page-with-props.vue`,
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
           children: [],
           props: true,
         },
