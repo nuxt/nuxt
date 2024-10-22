@@ -156,9 +156,12 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin
     vite: {
       handleHotUpdate: {
         order: 'pre',
-        handler: ({ server }) => {
-          server.ws.send({ type: 'full-reload' })
-          return []
+        handler: ({ modules }) => {
+          // Remove macro file from modules list to prevent HMR overrides
+          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
+          if (index !== -1) {
+            modules.splice(index, 1)
+          }
         },
       },
     },
