@@ -48,7 +48,7 @@
     "untyped": "^1.5.1"
   },
   "devDependencies": {
-    "@rspack/core": "1.0.13",
+    "@rspack/core": "1.0.14",
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
     "@types/semver": "7.5.8",

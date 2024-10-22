@@ -1551,7 +1551,7 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-gradient-to: transparent var(--un-gradient-to-position);
 }
 .bg-gradient-to-l {
-  --un-gradient-shape: to left;
+  --un-gradient-shape: to left in oklch;
   --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
 }
 .bg-gradient-to-l,
@@ -1559,7 +1559,7 @@ exports[`template > produces correct output for welcome template 1`] = `
   background-image: linear-gradient(var(--un-gradient));
 }
 .bg-gradient-to-r {
-  --un-gradient-shape: to right;
+  --un-gradient-shape: to right in oklch;
   --un-gradient: var(--un-gradient-shape), var(--un-gradient-stops);
 }
 .p-1 {
