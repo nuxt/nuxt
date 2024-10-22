@@ -75,7 +75,7 @@ export default defineNuxtConfig({
           _layout: page.meta?.layout,
         },
       })
-      nuxt.hook('pages:extend', (pages) => {
+      nuxt.hook('pages:resolved', (pages) => {
         const newPages = []
         for (const page of pages) {
           if (routesToDuplicate.includes(page.path)) {
@@ -88,7 +88,7 @@ export default defineNuxtConfig({
     },
     function (_options, nuxt) {
       // to check that page metadata is preserved
-      nuxt.hook('pages:extend', (pages) => {
+      nuxt.hook('pages:resolved', (pages) => {
         const customName = pages.find(page => page.name === 'some-custom-name')
         if (!customName) { throw new Error('Page with custom name not found') }
         if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
