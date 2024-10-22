@@ -576,7 +576,7 @@ async function createClientPage(loader) {
         }
 
         // set to extracted value or delete if none extracted
-        for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+        for (const key of ['meta', 'alias', 'redirect', 'props'] satisfies NormalizedRouteKeys) {
           if (markedDynamic.has(key)) { continue }
 
           if (route[key] == null) {
