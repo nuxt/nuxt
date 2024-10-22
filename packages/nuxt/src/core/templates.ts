@@ -62,13 +62,14 @@ export const clientPluginTemplate: NuxtTemplate = {
   async getContents (ctx) {
     const clientPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'server'))
     checkForCircularDependencies(clientPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
-    for (const plugin of clientPlugins) {
+    const exports: string[] = new Array(clientPlugins.length)
+    const imports: string[] = new Array(clientPlugins.length)
+    for (let i = 0; i < clientPlugins.length; i++) {
+      const plugin = clientPlugins[i]!
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      exports[i] = variable
+      imports[i] = genImport(plugin.src, variable)
     }
     return [
       ...imports,
@@ -82,13 +83,14 @@ export const serverPluginTemplate: NuxtTemplate = {
   async getContents (ctx) {
     const serverPlugins = await annotatePlugins(ctx.nuxt, ctx.app.plugins.filter(p => !p.mode || p.mode !== 'client'))
     checkForCircularDependencies(serverPlugins)
-    const exports: string[] = []
-    const imports: string[] = []
-    for (const plugin of serverPlugins) {
+    const exports: string[] = new Array(serverPlugins.length)
+    const imports: string[] = new Array(serverPlugins.length)
+    for (let i = 0; i < serverPlugins.length; i++) {
+      const plugin = serverPlugins[i]!
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
-      exports.push(variable)
-      imports.push(genImport(plugin.src, variable))
+      exports[i] = variable
+      imports[i] = genImport(plugin.src, variable)
     }
     return [
       ...imports,
