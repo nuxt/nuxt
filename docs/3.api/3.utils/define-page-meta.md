@@ -63,11 +63,11 @@ interface PageMeta {
   - **Type**: `string`
 
     You may define a [custom regular expression](#using-a-custom-regular-expression) if you have a more complex pattern than can be expressed with the file name.
-    
+
   **`props`**
   
   - **Type**: [`RouteRecordRaw['props']`](https://router.vuejs.org/guide/essentials/passing-props)
-    
+
     You could set `props: true` to passing params as a prop.
 
   **`alias`**
