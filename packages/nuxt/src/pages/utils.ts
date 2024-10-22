@@ -90,6 +90,7 @@ type GenerateRoutesFromFilesOptions = {
   shouldUseServerComponents?: boolean
 }
 
+const INDEX_PAGE_RE = /\/index$/
 export function generateRoutesFromFiles (files: ScannedFile[], options: GenerateRoutesFromFilesOptions = {}): NuxtPage[] {
   const routes: NuxtPage[] = []
 
@@ -135,7 +136,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
       route.name += (route.name && '/') + segmentName
 
       // ex: parent.vue + parent/child.vue
-      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(/\/index$/, '/')))
+      const path = withLeadingSlash(joinURL(route.path, getRoutePath(tokens).replace(INDEX_PAGE_RE, '/')))
       const child = parent.find(parentRoute => parentRoute.name === route.name && parentRoute.path === path)
 
       if (child && child.children) {
@@ -307,6 +308,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
   return extractedMeta
 }
 
+const COLON_RE = /:/g
 function getRoutePath (tokens: SegmentToken[]): string {
   return tokens.reduce((path, token) => {
     return (
@@ -319,7 +321,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
             ? `:${token.value}(.*)*`
             : token.type === SegmentTokenType.group
               ? ''
-              : encodePath(token.value).replace(/:/g, '\\:'))
+              : encodePath(token.value).replace(COLON_RE, '\\:'))
     )
   }, '/')
 }
@@ -439,13 +441,14 @@ function findRouteByName (name: string, routes: NuxtPage[]): NuxtPage | undefine
   return findRouteByName(name, routes)
 }
 
+const NESTED_PAGE_RE = /\//g
 function prepareRoutes (routes: NuxtPage[], parent?: NuxtPage, names = new Set<string>()) {
   for (const route of routes) {
     // Remove -index
     if (route.name) {
       route.name = route.name
-        .replace(/\/index$/, '')
-        .replace(/\//g, '-')
+        .replace(INDEX_PAGE_RE, '')
+        .replace(NESTED_PAGE_RE, '-')
 
       if (names.has(route.name)) {
         const existingRoute = findRouteByName(route.name, routes)
@@ -608,6 +611,7 @@ async function createClientPage(loader) {
   }
 }
 
+const PATH_TO_NITRO_GLOB_RE = /\/[^:/]*:\w.*$/
 export function pathToNitroGlob (path: string) {
   if (!path) {
     return null
@@ -617,7 +621,7 @@ export function pathToNitroGlob (path: string) {
     return null
   }
 
-  return path.replace(/\/[^:/]*:\w.*$/, '/**')
+  return path.replace(PATH_TO_NITRO_GLOB_RE, '/**')
 }
 
 export function resolveRoutePaths (page: NuxtPage, parent = '/'): string[] {
