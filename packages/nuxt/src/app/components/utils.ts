@@ -89,7 +89,7 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
-    const array: number[] = []
+    const array: number[] = new Array(source)
     for (let i = 0; i < source; i++) {
       array[i] = i
     }
