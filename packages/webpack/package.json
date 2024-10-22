@@ -76,7 +76,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.0.13",
+    "@rspack/core": "1.0.14",
     "@types/hash-sum": "1.0.2",
     "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
