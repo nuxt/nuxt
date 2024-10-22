@@ -18,6 +18,7 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { nuxtImportProtections } from './plugins/import-protection'
+import { EXTENSION_RE } from './utils'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -25,12 +26,14 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
+const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
+const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   // Resolve config
   const excludePaths = nuxt.options._layers
     .flatMap(l => [
-      l.cwd.match(/(?<=\/)node_modules\/(.+)$/)?.[1],
-      l.cwd.match(/\.pnpm\/.+\/node_modules\/(.+)$/)?.[1],
+      l.cwd.match(NODE_MODULES_RE)?.[1],
+      l.cwd.match(PNPM_NODE_MODULES_RE)?.[1],
     ])
     .filter((dir): dir is string => Boolean(dir))
     .map(dir => escapeRE(dir))
@@ -330,11 +333,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 
   // Add fallback server for `ssr: false`
+  const FORWARD_SLASH_RE = /\//g
   if (!nuxt.options.ssr) {
     nitroConfig.virtual!['#build/dist/server/server.mjs'] = 'export default () => {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
-      nitroConfig.virtual!['#build/dist/server/server.mjs'.replace(/\//g, '\\')] = 'export default () => {}'
+      nitroConfig.virtual!['#build/dist/server/server.mjs'.replace(FORWARD_SLASH_RE, '\\')] = 'export default () => {}'
     }
   }
 
@@ -342,7 +346,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     nitroConfig.virtual!['#build/dist/server/styles.mjs'] = 'export default {}'
     // In case a non-normalized absolute path is called for on Windows
     if (process.platform === 'win32') {
-      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(/\//g, '\\')] = 'export default {}'
+      nitroConfig.virtual!['#build/dist/server/styles.mjs'.replace(FORWARD_SLASH_RE, '\\')] = 'export default {}'
     }
   }
 
@@ -389,7 +393,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig.compilerOptions.paths[alias] = [absolutePath]
       tsConfig.compilerOptions.paths[`${alias}/*`] = [`${absolutePath}/*`]
     } else {
-      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(/\b\.\w+$/g, '')] /* remove extension */
+      tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(EXTENSION_RE, '')] /* remove extension */
     }
   }
 
@@ -566,8 +570,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   }
 }
 
+const RELATIVE_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
-  return relative(from, to).replace(/^([^.])/, './$1') || '.'
+  return relative(from, to).replace(RELATIVE_RE, './$1') || '.'
 }
 
 async function spaLoadingTemplatePath (nuxt: Nuxt) {

@@ -11,6 +11,7 @@ import type { NuxtTemplate, NuxtTypeTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitropack'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
+import { EXTENSION_RE } from './utils'
 
 export const vueShim: NuxtTemplate = {
   filename: 'types/vue-shim.d.ts',
@@ -57,6 +58,7 @@ export const cssTemplate: NuxtTemplate = {
   getContents: ctx => ctx.nuxt.options.css.map(i => genImport(i)).join('\n'),
 }
 
+const PLUGIN_TEMPLATE_RE = /_(45|46|47)/g
 export const clientPluginTemplate: NuxtTemplate = {
   filename: 'plugins.client.mjs',
   async getContents (ctx) {
@@ -66,7 +68,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -86,7 +88,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(path)).replace(/_(45|46|47)/g, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(path)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -112,7 +114,9 @@ declare module '#app/defaults' {
 }
 
 const TS_RE = /\.[cm]?tsx?$/
-
+const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
+const JS_RE = /\.[cm]jsx?$/
+const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
@@ -134,18 +138,18 @@ export const pluginsDeclaration: NuxtTemplate = {
       const pluginPath = resolve(typesDir, plugin.src)
       const relativePath = relative(typesDir, pluginPath)
 
-      const correspondingDeclaration = pluginPath.replace(/\.(?<letter>[cm])?jsx?$/, '.d.$<letter>ts')
+      const correspondingDeclaration = pluginPath.replace(JS_LETTER_RE, '.d.$<letter>ts')
       // if `.d.ts` file exists alongside a `.js` plugin, or if `.d.mts` file exists alongside a `.mjs` plugin, we can use the entire path
       if (correspondingDeclaration !== pluginPath && exists(correspondingDeclaration)) {
         tsImports.push(relativePath)
         continue
       }
 
-      const incorrectDeclaration = pluginPath.replace(/\.[cm]jsx?$/, '.d.ts')
+      const incorrectDeclaration = pluginPath.replace(JS_RE, '.d.ts')
       // if `.d.ts` file exists, but plugin is `.mjs`, add `.js` extension to the import
       // to hotfix issue until ecosystem updates to `@nuxt/module-builder@>=0.8.0`
       if (incorrectDeclaration !== pluginPath && exists(incorrectDeclaration)) {
-        tsImports.push(relativePath.replace(/\.[cm](jsx?)$/, '.$1'))
+        tsImports.push(relativePath.replace(JS_CAPTURE_RE, '.$1'))
         continue
       }
 
@@ -188,11 +192,13 @@ export { }
 }
 
 const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
+const IMPORT_NAME_RE = /\.\w+$/
+const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
-    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(/\.\w+$/, '')
+    const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
     const modules = nuxt.options._installedModules
       .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
@@ -224,7 +230,7 @@ export const schemaTemplate: NuxtTemplate = {
           }
           if (link) {
             if (link.startsWith('git+')) {
-              link = link.replace(/^git\+/, '')
+              link = link.replace(GIT_RE, '')
             }
             if (!link.startsWith('http')) {
               link = 'https://github.com/' + link
@@ -370,7 +376,7 @@ export const appConfigDeclarationTemplate: NuxtTemplate = {
   filename: 'types/app.config.d.ts',
   getContents ({ app, nuxt }) {
     const typesDir = join(nuxt.options.buildDir, 'types')
-    const configPaths = app.configs.map(path => relative(typesDir, path).replace(/\b\.\w+$/g, ''))
+    const configPaths = app.configs.map(path => relative(typesDir, path).replace(EXTENSION_RE, ''))
 
     return `
 import type { CustomAppConfig } from 'nuxt/schema'
