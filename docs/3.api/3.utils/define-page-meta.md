@@ -68,7 +68,7 @@ interface PageMeta {
   
   - **Type**: [`RouteRecordRaw['props']`](https://router.vuejs.org/guide/essentials/passing-props)
 
-    You could set `props: true` to passing params as a prop.
+    Allows accessing the route `params` as props passed to the page component.
 
   **`alias`**
 

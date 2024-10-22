@@ -38,9 +38,8 @@ export interface PageMeta {
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
   /**
-   * You could set props: true to passing params as a prop
-   * and you could see more details in
-   * [vue-router passing-props](https://router.vuejs.org/guide/essentials/passing-props)
+   * Allows accessing the route `params` as props passed to the page component.
+   * @see https://router.vuejs.org/guide/essentials/passing-props
    */
   props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
