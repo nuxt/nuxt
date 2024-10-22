@@ -122,15 +122,15 @@ export const componentsTypeTemplate = {
     const componentExports: string[] = new Array(componentTypes.length)
     for (let i = 0; i < componentTypes.length; i++) {
       const [pascalName, type] = componentTypes[i]!
-      components[i] = `'${pascalName}': ${type}`
+      components[i] = `${pascalName}': ${type}`
       componentExports[i] = `${pascalName}: ${type}`
     }
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
-    ${components.join('\n    ')}
-    Lazy${components.join('\n    Lazy')}
+    '${components.join('\n    \'')}
+    'Lazy${components.join('\n    \'Lazy')}
 }
 
 declare module 'vue' {
