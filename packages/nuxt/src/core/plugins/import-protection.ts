@@ -38,7 +38,6 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 
   if (options.isNitro) {
     patterns[count++] = ['#app', 'Vue app aliases are not allowed in server runtime.']
-    // This is pushed because it surpasses the max known length of the array
     patterns.push([/^#build(\/|$)/, 'Vue app aliases are not allowed in server runtime.'])
   }
 
