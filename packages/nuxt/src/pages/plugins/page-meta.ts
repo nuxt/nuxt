@@ -23,12 +23,6 @@ export default __nuxt_page_meta
 `
 
 const CODE_HMR = `
-// Vite
-if (import.meta.hot) {
-  import.meta.hot.accept(mod => {
-    Object.assign(__nuxt_page_meta, mod)
-  })
-}
 // webpack
 if (import.meta.webpackHot) {
   import.meta.webpackHot.accept((err) => {
@@ -162,12 +156,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin
     vite: {
       handleHotUpdate: {
         order: 'pre',
-        handler: ({ modules }) => {
-          // Remove macro file from modules list to prevent HMR overrides
-          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
-          if (index !== -1) {
-            modules.splice(index, 1)
-          }
+        handler: ({ server }) => {
+          server.ws.send({ type: 'full-reload' })
+          return []
         },
       },
     },
