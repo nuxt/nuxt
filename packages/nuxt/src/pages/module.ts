@@ -503,7 +503,7 @@ export default defineNuxtModule({
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,
-          overrideMeta: nuxt.options.experimental.scanPageMeta,
+          overrideMeta: !!nuxt.options.experimental.scanPageMeta,
         })
         return [...imports, `export default ${routes}`].join('\n')
       },

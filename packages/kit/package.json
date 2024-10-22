@@ -48,13 +48,13 @@
     "untyped": "^1.5.1"
   },
   "devDependencies": {
-    "@rspack/core": "1.0.10",
+    "@rspack/core": "1.0.14",
     "@types/hash-sum": "1.0.2",
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28665895.e727afda",
     "unbuild": "3.0.0-rc.11",
-    "vite": "5.4.8",
-    "vitest": "2.1.2",
+    "vite": "5.4.9",
+    "vitest": "2.1.3",
     "webpack": "5.95.0"
   },
   "engines": {
