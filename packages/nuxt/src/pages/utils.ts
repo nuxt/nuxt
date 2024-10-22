@@ -190,7 +190,7 @@ export function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const extractionKeys = ['name', 'path', 'alias', 'redirect'] as const
+const extractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
@@ -272,7 +272,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
             continue
           }
 
-          if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
+          if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
             console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
@@ -539,6 +539,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
+        props: `${metaImportName}?.props ?? false`,
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
@@ -582,7 +583,7 @@ async function createClientPage(loader) {
         }
 
         // set to extracted value or delete if none extracted
-        for (const key of ['meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+        for (const key of ['meta', 'alias', 'redirect', 'props'] satisfies NormalizedRouteKeys) {
           if (markedDynamic.has(key)) { continue }
 
           if (route[key] == null) {

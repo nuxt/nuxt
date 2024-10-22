@@ -24,6 +24,13 @@
       "path": ""/page-with-meta"",
     },
   ],
+  "route.meta props generate by file": [
+    {
+      "component": "() => import("pages/page-with-props.vue")",
+      "name": ""page-with-props"",
+      "path": ""/page-with-props"",
+    },
+  ],
   "should allow pages with `:` in their path": [
     {
       "component": "() => import("pages/test:name.vue")",
