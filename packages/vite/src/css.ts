@@ -9,13 +9,12 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 }
 
 export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']> {
-  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> } = {
+  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> & { plugins: Plugin[] } } = {
     postcss: {
       plugins: [],
     },
   }
 
-  css.postcss.plugins = []
   const postcssOptions = nuxt.options.postcss
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })

@@ -602,6 +602,30 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
     },
     {
+      description: 'route.meta props generate by file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-props.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              props: true
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-props',
+          path: '/page-with-props',
+          file: `${pagesDir}/page-with-props.vue`,
+          children: [],
+          props: true,
+        },
+      ],
+    },
+    {
       description: 'should handle route groups',
       files: [
         { path: `${pagesDir}/(foo)/index.vue` },
