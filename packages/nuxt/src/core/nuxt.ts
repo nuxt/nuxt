@@ -336,7 +336,8 @@ async function initNuxt (nuxt: Nuxt) {
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
   if (nuxt.options.features.noScripts && !nuxt.options.dev) {
     nuxt.hook('build:manifest', async (manifest) => {
-      for (const chunk of Object.values(manifest)) {
+      for (const chunkId in manifest) {
+        const chunk = manifest[chunkId]!
         if (chunk.resourceType === 'script') {
           await rm(resolve(nuxt.options.buildDir, 'dist/client', withoutLeadingSlash(nuxt.options.app.buildAssetsDir), chunk.file), { force: true })
           chunk.file = ''

@@ -33,7 +33,8 @@ export default class VueSSRClientPlugin {
       const stats = compilation.getStats().toJson()
 
       const initialFiles = new Set<string>()
-      for (const { assets } of Object.values(stats.entrypoints!)) {
+      for (const assetId in stats.entrypoints!) {
+        const { assets } = stats.entrypoints[assetId]!
         if (!assets) { continue }
 
         for (const asset of assets) {

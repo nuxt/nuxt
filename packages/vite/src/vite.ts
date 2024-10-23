@@ -201,7 +201,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // Remove CSS entries for files that will have inlined styles
     ctx.nuxt.hook('build:manifest', (manifest) => {
-      for (const [key, entry] of Object.entries(manifest)) {
+      for (const key in manifest) {
+        const entry = manifest[key]!
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
         if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
           // @ts-expect-error internal key
