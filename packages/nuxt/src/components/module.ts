@@ -145,7 +145,7 @@ export default defineNuxtModule<ComponentsOptions>({
       const sourceFiles = getComponents().filter(c => c.global).map(c => relative(nuxt.options.srcDir, c.filePath))
 
       for (const chunkId in manifest) {
-        const chunk = manifest[chunkId]
+        const chunk = manifest[chunkId]!
         if (chunk.isEntry) {
           chunk.dynamicImports =
             chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
