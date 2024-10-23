@@ -40,7 +40,7 @@
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@types/node": "20.16.14",
+    "@types/node": "20.16.15",
     "@vue/compiler-core": "3.5.12",
     "@vue/compiler-dom": "3.5.12",
     "@vue/shared": "3.5.12",
@@ -57,7 +57,7 @@
     "typescript": "5.6.3",
     "ufo": "1.5.4",
     "unbuild": "3.0.0-rc.11",
-    "vite": "5.4.9",
+    "vite": "5.4.10",
     "vue": "3.5.12"
   },
   "devDependencies": {
@@ -69,7 +69,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
-    "@types/node": "20.16.14",
+    "@types/node": "20.16.15",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.11.10",
     "@unhead/vue": "1.11.10",
