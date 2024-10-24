@@ -15,192 +15,12 @@ interface TreeShakeTemplatePluginOptions {
 
 type AcornNode<N extends Node> = N & { start: number, end: number }
 
+const SSR_RENDER_RE = /ssrRenderComponent/
+const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
+const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
+const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
+
 export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
-  const SSR_RENDER_RE = /ssrRenderComponent/
-  const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
-  const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
-  const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
-
-  /**
-   * find and remove all property with the name parameter from the setup return statement and the __returned__ object
-   */
-  function removeFromSetupReturn (codeAst: Program, name: string, magicString: MagicString) {
-    let walkedInSetup = false
-    walk(codeAst, {
-      enter (node) {
-        if (walkedInSetup) {
-          this.skip()
-        } else if (node.type === 'Property' && node.key.type === 'Identifier' && node.key.name === 'setup' && (node.value.type === 'FunctionExpression' || node.value.type === 'ArrowFunctionExpression')) {
-        // walk into the setup function
-          walkedInSetup = true
-          if (node.value.body.type === 'BlockStatement') {
-            const returnStatement = node.value.body.body.find(statement => statement.type === 'ReturnStatement') as ReturnStatement
-            if (returnStatement && returnStatement.argument?.type === 'ObjectExpression') {
-            // remove from return statement
-              removePropertyFromObject(returnStatement.argument, name, magicString)
-            }
-
-            // remove from __returned__
-            const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
-            const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
-            if (returnedVariableDeclaration) {
-              const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression | undefined
-              if (init) {
-                removePropertyFromObject(init, name, magicString)
-              }
-            }
-          }
-        }
-      },
-    })
-  }
-
-  /**
-   * remove a property from an object expression
-   */
-  function removePropertyFromObject (node: ObjectExpression, name: string, magicString: MagicString) {
-    for (const property of node.properties) {
-      if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
-        magicString.remove((property as AcornNode<Property>).start, (property as AcornNode<Property>).end + 1)
-        return true
-      }
-    }
-    return false
-  }
-
-  /**
-   * is the node a call expression ssrRenderComponent()
-   */
-  function isSsrRender (node: Node): node is AcornNode<CallExpression> {
-    return node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)
-  }
-
-  function removeImportDeclaration (ast: Program, importName: string, magicString: MagicString): boolean {
-    for (const node of ast.body) {
-      if (node.type === 'ImportDeclaration') {
-        const specifier = node.specifiers.find(s => s.local.name === importName)
-        if (specifier) {
-          if (node.specifiers.length > 1) {
-            const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
-            if (specifierIndex > -1) {
-              magicString.remove((node.specifiers[specifierIndex] as AcornNode<Node>).start, (node.specifiers[specifierIndex] as AcornNode<Node>).end + 1)
-              node.specifiers.splice(specifierIndex, 1)
-            }
-          } else {
-            magicString.remove((node as AcornNode<Node>).start, (node as AcornNode<Node>).end)
-          }
-          return true
-        }
-      }
-    }
-    return false
-  }
-
-  /**
-   * detect if the component is called else where
-   * ImportDeclarations and VariableDeclarations are ignored
-   * return the name of the component if is not called
-   */
-  function isComponentNotCalledInSetup (codeAst: Node, name: string): string | void {
-    if (name) {
-      let found = false
-      walk(codeAst, {
-        enter (node) {
-          if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
-          // walk through the setup function node or the ssrRender function
-            walk(node, {
-              enter (node) {
-                if (found || node.type === 'VariableDeclaration') {
-                  this.skip()
-                } else if (node.type === 'Identifier' && node.name === name) {
-                  found = true
-                } else if (node.type === 'MemberExpression') {
-                // dev only with $setup or _ctx
-                  found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
-                }
-              },
-            })
-          }
-        },
-      })
-      if (!found) { return name }
-    }
-  }
-
-  /**
-   * retrieve the component identifier being used on ssrRender callExpression
-   * @param ssrRenderNode - ssrRender callExpression
-   */
-  function getComponentName (ssrRenderNode: AcornNode<CallExpression>): string {
-    const componentCall = ssrRenderNode.arguments[0] as Identifier | MemberExpression | CallExpression
-
-    if (componentCall.type === 'Identifier') {
-      return componentCall.name
-    } else if (componentCall.type === 'MemberExpression') {
-      return (componentCall.property as Literal).value as string
-    }
-    return (componentCall.arguments[0] as Identifier).name
-  }
-
-  /**
-   * remove a variable declaration within the code
-   */
-  function removeVariableDeclarator (codeAst: Node, name: string, magicString: MagicString, removedNodes: WeakSet<Node>): AcornNode<Node> | void {
-  // remove variables
-    walk(codeAst, {
-      enter (node) {
-        if (node.type === 'VariableDeclaration') {
-          for (const declarator of node.declarations) {
-            const toRemove = findMatchingPatternToRemove(declarator.id as AcornNode<Pattern>, node as AcornNode<VariableDeclaration>, name, removedNodes)
-            if (toRemove) {
-              magicString.remove(toRemove.start, toRemove.end + 1)
-              removedNodes.add(toRemove)
-              return toRemove
-            }
-          }
-        }
-      },
-    })
-  }
-
-  /**
-   * find the Pattern to remove which the identifier is equal to the name parameter.
-   */
-  function findMatchingPatternToRemove (node: AcornNode<Pattern>, toRemoveIfMatched: AcornNode<Node>, name: string, removedNodeSet: WeakSet<Node>): AcornNode<Node> | undefined {
-    if (node.type === 'Identifier') {
-      if (node.name === name) {
-        return toRemoveIfMatched
-      }
-    } else if (node.type === 'ArrayPattern') {
-      const elements = node.elements.filter((e): e is AcornNode<Pattern> => e !== null && !removedNodeSet.has(e))
-
-      for (const element of elements) {
-        const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, name, removedNodeSet)
-        if (matched) { return matched }
-      }
-    } else if (node.type === 'ObjectPattern') {
-      const properties = node.properties.filter((e): e is AssignmentProperty => e.type === 'Property' && !removedNodeSet.has(e))
-
-      for (const [index, property] of properties.entries()) {
-        let nodeToRemove = property as AcornNode<Node>
-        if (properties.length < 2) {
-          nodeToRemove = toRemoveIfMatched
-        }
-
-        const matched = findMatchingPatternToRemove(property.value as AcornNode<Pattern>, nodeToRemove as AcornNode<Node>, name, removedNodeSet)
-        if (matched) {
-          if (matched === property) {
-            properties.splice(index, 1)
-          }
-          return matched
-        }
-      }
-    } else if (node.type === 'AssignmentPattern') {
-      const matched = findMatchingPatternToRemove(node.left as AcornNode<Pattern>, toRemoveIfMatched, name, removedNodeSet)
-      if (matched) { return matched }
-    }
-  }
-
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
   return {
     name: 'nuxt:tree-shake-template',
@@ -296,3 +116,183 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
     },
   }
 })
+
+/**
+ * find and remove all property with the name parameter from the setup return statement and the __returned__ object
+ */
+function removeFromSetupReturn (codeAst: Program, name: string, magicString: MagicString) {
+  let walkedInSetup = false
+  walk(codeAst, {
+    enter (node) {
+      if (walkedInSetup) {
+        this.skip()
+      } else if (node.type === 'Property' && node.key.type === 'Identifier' && node.key.name === 'setup' && (node.value.type === 'FunctionExpression' || node.value.type === 'ArrowFunctionExpression')) {
+        // walk into the setup function
+        walkedInSetup = true
+        if (node.value.body.type === 'BlockStatement') {
+          const returnStatement = node.value.body.body.find(statement => statement.type === 'ReturnStatement') as ReturnStatement
+          if (returnStatement && returnStatement.argument?.type === 'ObjectExpression') {
+            // remove from return statement
+            removePropertyFromObject(returnStatement.argument, name, magicString)
+          }
+
+          // remove from __returned__
+          const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
+          const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
+          if (returnedVariableDeclaration) {
+            const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression | undefined
+            if (init) {
+              removePropertyFromObject(init, name, magicString)
+            }
+          }
+        }
+      }
+    },
+  })
+}
+
+/**
+ * remove a property from an object expression
+ */
+function removePropertyFromObject (node: ObjectExpression, name: string, magicString: MagicString) {
+  for (const property of node.properties) {
+    if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
+      magicString.remove((property as AcornNode<Property>).start, (property as AcornNode<Property>).end + 1)
+      return true
+    }
+  }
+  return false
+}
+
+/**
+ * is the node a call expression ssrRenderComponent()
+ */
+function isSsrRender (node: Node): node is AcornNode<CallExpression> {
+  return node.type === 'CallExpression' && node.callee.type === 'Identifier' && SSR_RENDER_RE.test(node.callee.name)
+}
+
+function removeImportDeclaration (ast: Program, importName: string, magicString: MagicString): boolean {
+  for (const node of ast.body) {
+    if (node.type === 'ImportDeclaration') {
+      const specifier = node.specifiers.find(s => s.local.name === importName)
+      if (specifier) {
+        if (node.specifiers.length > 1) {
+          const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
+          if (specifierIndex > -1) {
+            magicString.remove((node.specifiers[specifierIndex] as AcornNode<Node>).start, (node.specifiers[specifierIndex] as AcornNode<Node>).end + 1)
+            node.specifiers.splice(specifierIndex, 1)
+          }
+        } else {
+          magicString.remove((node as AcornNode<Node>).start, (node as AcornNode<Node>).end)
+        }
+        return true
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * detect if the component is called else where
+ * ImportDeclarations and VariableDeclarations are ignored
+ * return the name of the component if is not called
+ */
+function isComponentNotCalledInSetup (codeAst: Node, name: string): string | void {
+  if (name) {
+    let found = false
+    walk(codeAst, {
+      enter (node) {
+        if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
+          // walk through the setup function node or the ssrRender function
+          walk(node, {
+            enter (node) {
+              if (found || node.type === 'VariableDeclaration') {
+                this.skip()
+              } else if (node.type === 'Identifier' && node.name === name) {
+                found = true
+              } else if (node.type === 'MemberExpression') {
+                // dev only with $setup or _ctx
+                found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
+              }
+            },
+          })
+        }
+      },
+    })
+    if (!found) { return name }
+  }
+}
+
+/**
+ * retrieve the component identifier being used on ssrRender callExpression
+ * @param ssrRenderNode - ssrRender callExpression
+ */
+function getComponentName (ssrRenderNode: AcornNode<CallExpression>): string {
+  const componentCall = ssrRenderNode.arguments[0] as Identifier | MemberExpression | CallExpression
+
+  if (componentCall.type === 'Identifier') {
+    return componentCall.name
+  } else if (componentCall.type === 'MemberExpression') {
+    return (componentCall.property as Literal).value as string
+  }
+  return (componentCall.arguments[0] as Identifier).name
+}
+
+/**
+ * remove a variable declaration within the code
+ */
+function removeVariableDeclarator (codeAst: Node, name: string, magicString: MagicString, removedNodes: WeakSet<Node>): AcornNode<Node> | void {
+  // remove variables
+  walk(codeAst, {
+    enter (node) {
+      if (node.type === 'VariableDeclaration') {
+        for (const declarator of node.declarations) {
+          const toRemove = findMatchingPatternToRemove(declarator.id as AcornNode<Pattern>, node as AcornNode<VariableDeclaration>, name, removedNodes)
+          if (toRemove) {
+            magicString.remove(toRemove.start, toRemove.end + 1)
+            removedNodes.add(toRemove)
+            return toRemove
+          }
+        }
+      }
+    },
+  })
+}
+
+/**
+ * find the Pattern to remove which the identifier is equal to the name parameter.
+ */
+function findMatchingPatternToRemove (node: AcornNode<Pattern>, toRemoveIfMatched: AcornNode<Node>, name: string, removedNodeSet: WeakSet<Node>): AcornNode<Node> | undefined {
+  if (node.type === 'Identifier') {
+    if (node.name === name) {
+      return toRemoveIfMatched
+    }
+  } else if (node.type === 'ArrayPattern') {
+    const elements = node.elements.filter((e): e is AcornNode<Pattern> => e !== null && !removedNodeSet.has(e))
+
+    for (const element of elements) {
+      const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, name, removedNodeSet)
+      if (matched) { return matched }
+    }
+  } else if (node.type === 'ObjectPattern') {
+    const properties = node.properties.filter((e): e is AssignmentProperty => e.type === 'Property' && !removedNodeSet.has(e))
+
+    for (const [index, property] of properties.entries()) {
+      let nodeToRemove = property as AcornNode<Node>
+      if (properties.length < 2) {
+        nodeToRemove = toRemoveIfMatched
+      }
+
+      const matched = findMatchingPatternToRemove(property.value as AcornNode<Pattern>, nodeToRemove as AcornNode<Node>, name, removedNodeSet)
+      if (matched) {
+        if (matched === property) {
+          properties.splice(index, 1)
+        }
+        return matched
+      }
+    }
+  } else if (node.type === 'AssignmentPattern') {
+    const matched = findMatchingPatternToRemove(node.left as AcornNode<Pattern>, toRemoveIfMatched, name, removedNodeSet)
+    if (matched) { return matched }
+  }
+}

@@ -11,6 +11,9 @@ interface LayerAliasingOptions {
   layers: NuxtConfigLayer[]
 }
 
+const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
+const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
+
 export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnplugin((_options, meta) => {
   const aliases: Record<string, Record<string, string>> = {}
   for (const layer of options.layers) {
@@ -24,8 +27,6 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
       '@@': layer.config?.alias?.['@@'] || rootDir,
     }
   }
-  const ALIAS_RE = /(?<=['"])[~@]{1,2}(?=\/)/g
-  const ALIAS_RE_SINGLE = /(?<=['"])[~@]{1,2}(?=\/)/
   const layers = Object.keys(aliases).sort((a, b) => b.length - a.length)
 
   return {

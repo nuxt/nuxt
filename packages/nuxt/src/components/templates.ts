@@ -102,10 +102,10 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   },
 }
 
+const NON_VUE_RE = /\b\.(?!vue)\w+$/g
 export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
-    const NON_VUE_RE = /\b\.(?!vue)\w+$/g
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)

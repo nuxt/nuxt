@@ -7,6 +7,11 @@ import { dirname, relative } from 'pathe'
 import MagicString from 'magic-string'
 import { isCSSRequest } from 'vite'
 
+const PREFIX = 'virtual:public?'
+const CSS_URL_RE = /url\((\/[^)]+)\)/g
+const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
+const RENDER_CHUNK_RE = /(?<= = )['"`]/
+
 interface VitePublicDirsPluginOptions {
   dev?: boolean
   sourcemap?: boolean
@@ -15,11 +20,6 @@ interface VitePublicDirsPluginOptions {
 
 export const VitePublicDirsPlugin = createUnplugin((options: VitePublicDirsPluginOptions) => {
   const { resolveFromPublicAssets } = useResolveFromPublicAssets()
-
-  const PREFIX = 'virtual:public?'
-  const CSS_URL_RE = /url\((\/[^)]+)\)/g
-  const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
-  const RENDER_CHUNK_RE = /(?<= = )['"`]/
 
   const devTransformPlugin: UnpluginOptions = {
     name: 'nuxt:vite-public-dir-resolution-dev',

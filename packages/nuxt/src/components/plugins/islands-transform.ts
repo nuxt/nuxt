@@ -24,20 +24,20 @@ interface ComponentChunkOptions {
   buildDir: string
 }
 
+const SCRIPT_RE = /<script[^>]*>/gi
+const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
+const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
+const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
+const KEY_RE = /:?key="[^"]"/g
+
+function wrapWithVForDiv (code: string, vfor: string): string {
+  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+}
+
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
   const isVite = meta.framework === 'vite'
-  const SCRIPT_RE = /<script[^>]*>/gi
-  const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
-  const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-  const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
-  const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
-  const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
-  const KEY_RE = /:?key="[^"]"/g
-
-  function wrapWithVForDiv (code: string, vfor: string): string {
-    return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
-  }
-
   return {
     name: 'nuxt:server-only-component-transform',
     enforce: 'pre',
