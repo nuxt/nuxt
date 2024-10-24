@@ -59,15 +59,26 @@ const warnRuntimeUsage = (method: string) => {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const definePageMeta = (meta: PageMeta): void => {
   if (import.meta.dev) {
     const component = getCurrentInstance()?.type
     try {
-      const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
-      const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
-      if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
+      const route = useRoute()
+      const isRouteComponent = component && route.matched.some(p => Object.values(p.components || {}).includes(component))
+      // update route metadata with the provided meta (for HMR support)
+      if (isRouteComponent) {
+        for (const key in route.meta) {
+          route.meta[key] = meta[key]
+        }
+        for (const key in meta) {
+          route.meta[key] = meta[key]
+        }
         // don't warn if it's being used in a route component (or server page)
+        return
+      }
+      const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
+      if (isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
+        // don't warn if it's being used in a server or client-only page
         return
       }
     } catch {

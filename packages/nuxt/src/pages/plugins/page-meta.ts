@@ -23,12 +23,6 @@ export default __nuxt_page_meta
 `
 
 const CODE_HMR = `
-// Vite
-if (import.meta.hot) {
-  import.meta.hot.accept(mod => {
-    Object.assign(__nuxt_page_meta, mod)
-  })
-}
 // webpack
 if (import.meta.webpackHot) {
   import.meta.webpackHot.accept((err) => {
