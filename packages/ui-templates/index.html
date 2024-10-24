@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/petite-vue" defer init></script>
+    <script type="module" src="/styles.ts"></script>
+  </head>
+  <body v-scope='{{ data }}'>
+    <div class="container mx-auto pt-10">
+      <h1 class="text-4xl mb-8">Nuxt Templates</h1>
+      <ul>
+        <li v-for="name in templateNames.filter(name => !name.includes('.json'))">
+          <a :href="`/templates/${name}`" class="block border p-4 mb-2 hover:border-black">{{ name }}</a>
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

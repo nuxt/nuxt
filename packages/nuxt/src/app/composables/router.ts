@@ -1,8 +1,8 @@
 import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
 import type { Ref } from 'vue'
-import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationPathRaw, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from '#vue-router'
+import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
-import { hasProtocol, isScriptProtocol, joinURL, parseURL, withQuery } from 'ufo'
+import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
@@ -91,7 +91,7 @@ const isProcessingMiddleware = () => {
 
 // Conditional types, either one or other
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
-type XOR<T, U> = (T | U) extends Object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
+type XOR<T, U> = (T | U) extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
 export type OpenWindowFeatures = {
   popup?: boolean
@@ -114,13 +114,14 @@ export interface NavigateToOptions {
   open?: OpenOptions
 }
 
+const URL_QUOTE_RE = /"/g
 /** @since 3.0.0 */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
   if (!to) {
     to = '/'
   }
 
-  const toPath = typeof to === 'string' ? to : (withQuery((to as RouteLocationPathRaw).path || '/', to.query || {}) + (to.hash || ''))
+  const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
   if (import.meta.client && options?.open) {
@@ -135,12 +136,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     return Promise.resolve()
   }
 
-  const isExternal = options?.external || hasProtocol(toPath, { acceptRelative: true })
+  const isExternalHost = hasProtocol(toPath, { acceptRelative: true })
+  const isExternal = options?.external || isExternalHost
   if (isExternal) {
     if (!options?.external) {
       throw new Error('Navigating to an external URL is not allowed by default. Use `navigateTo(url, { external: true })`.')
     }
-    const protocol = parseURL(toPath).protocol
+    const { protocol } = new URL(toPath, import.meta.client ? window.location.href : 'http://localhost')
     if (protocol && isScriptProtocol(protocol)) {
       throw new Error(`Cannot navigate to a URL with '${protocol}' protocol.`)
     }
@@ -165,11 +167,13 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
       const redirect = async function (response: any) {
         // TODO: consider deprecating in favour of `app:rendered` and removing
         await nuxtApp.callHook('app:redirected')
-        const encodedLoc = location.replace(/"/g, '%22')
+        const encodedLoc = location.replace(URL_QUOTE_RE, '%22')
+        const encodedHeader = encodeURL(location, isExternalHost)
+
         nuxtApp.ssrContext!._renderResponse = {
           statusCode: sanitizeStatusCode(options?.redirectCode || 302, 302),
           body: `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${encodedLoc}"></head></html>`,
-          headers: { location },
+          headers: { location: encodedHeader },
         }
         return response
       }
@@ -251,4 +255,25 @@ export const setPageLayout = (layout: unknown extends PageMeta['layout'] ? strin
   if (!inMiddleware) {
     useRoute().meta.layout = layout as Exclude<PageMeta['layout'], Ref | false>
   }
+}
+
+/**
+ * @internal
+ */
+export function resolveRouteObject (to: Exclude<RouteLocationRaw, string>) {
+  return withQuery(to.path || '', to.query || {}) + (to.hash || '')
+}
+
+/**
+ * @internal
+ */
+export function encodeURL (location: string, isExternalHost = false) {
+  const url = new URL(location, 'http://localhost')
+  if (!isExternalHost) {
+    return url.pathname + url.search + url.hash
+  }
+  if (location.startsWith('//')) {
+    return url.toString().replace(url.protocol, '')
+  }
+  return url.toString()
 }

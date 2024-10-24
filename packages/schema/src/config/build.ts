@@ -7,14 +7,15 @@ import { consola } from 'consola'
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
+    $resolve: async (val: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
       const map: Record<string, string> = {
+        rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
@@ -66,7 +67,7 @@ export default defineUntypedSchema({
      * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
      * @example
      * ```js
-     transpile: [({ isLegacy }) => isLegacy && 'ky']
+     * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
@@ -165,7 +166,7 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  'vue': ['onMounted', 'onUpdated', 'onUnmounted', 'onBeforeMount', 'onBeforeUpdate', 'onBeforeUnmount', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated'],
                   '#app': ['definePayloadReviver', 'definePageMeta'],
                 },
           ),
@@ -175,8 +176,8 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-                  '#app': ['definePayloadReducer', 'definePageMeta'],
+                  'vue': ['onRenderTracked', 'onRenderTriggered', 'onServerPrefetch'],
+                  '#app': ['definePayloadReducer', 'definePageMeta', 'onPrehydrate'],
                 },
           ),
         },

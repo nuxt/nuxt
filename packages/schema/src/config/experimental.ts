@@ -7,6 +7,18 @@ export default defineUntypedSchema({
    */
   future: {
     /**
+     * Enable early access to future features or flags.
+     *
+     * It is currently not configurable but may be in future.
+     * @type {4}
+     */
+    compatibilityVersion: 4,
+    /**
+     * This enables early access to the experimental multi-app support.
+     * @see [Nuxt Issue #21635](https://github.com/nuxt/nuxt/issues/21635)
+     */
+    multiApp: false,
+    /**
      * This enables 'Bundler' module resolution mode for TypeScript, which is the recommended setting
      * for frameworks like Nuxt and Vite.
      *
@@ -14,7 +26,7 @@ export default defineUntypedSchema({
      *
      * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
-     * See https://github.com/microsoft/TypeScript/pull/51669
+     * @see [TypeScript PR implementing `bundler` module resolution](https://github.com/microsoft/TypeScript/pull/51669)
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
@@ -95,11 +107,11 @@ export default defineUntypedSchema({
     externalVue: true,
 
     /**
-     * Tree shakes contents of client-only components from server bundle.
-     * @see [Nuxt PR #5750](https://github.com/nuxt/framework/pull/5750)
+     * Enable accessing `appConfig` from server routes.
+     *
+     * @deprecated This option is not recommended.
      */
-    treeshakeClientOnly: true,
-
+    serverAppConfig: false,
     /**
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
@@ -204,23 +216,6 @@ export default defineUntypedSchema({
       },
     },
 
-    /**
-     * Config schema support
-     * @see [Nuxt Issue #15592](https://github.com/nuxt/nuxt/issues/15592)
-     */
-    configSchema: true,
-
-    /**
-     * Whether or not to add a compatibility layer for modules, plugins or user code relying on the old
-     * `@vueuse/head` API.
-     *
-     * This can be disabled for most Nuxt sites to reduce the client-side bundle by ~0.5kb.
-     */
-    polyfillVueUseHead: false,
-
-    /** Allow disabling Nuxt SSR responses by setting the `x-nuxt-no-ssr` header. */
-    respectNoSSRHeader: false,
-
     /** Resolve `~`, `~~`, `@` and `@@` aliases located within layers with respect to their layer source and root directories. */
     localLayerAliases: true,
 
@@ -233,20 +228,40 @@ export default defineUntypedSchema({
     appManifest: true,
 
     /**
+     * Set the time interval (in ms) to check for new builds. Disabled when `experimental.appManifest` is `false`.
+     *
+     * Set to `false` to disable.
+     * @type {number | false}
+     */
+    checkOutdatedBuildInterval: 1000 * 60 * 60,
+
+    /**
      * Set an alternative watcher that will be used as the watching service for Nuxt.
      *
-     * Nuxt uses 'chokidar-granular' by default, which will ignore top-level directories
-     * (like `node_modules` and `.git`) that are excluded from watching.
+     * Nuxt uses 'chokidar-granular' if your source directory is the same as your root
+     * directory . This will ignore top-level directories (like `node_modules` and `.git`)
+     * that are excluded from watching.
      *
      * You can set this instead to `parcel` to use `@parcel/watcher`, which may improve
      * performance in large projects or on Windows platforms.
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
-     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
+     * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
-    watcher: 'chokidar-granular',
+    watcher: {
+      $resolve: async (val, get) => {
+        if (val) {
+          return val
+        }
+        const [srcDir, rootDir] = await Promise.all([get('srcDir'), get('rootDir')]) as [string, string]
+        if (srcDir === rootDir) {
+          return 'chokidar-granular'
+        }
+        return 'chokidar'
+      },
+    },
 
     /**
      * Enable native async context to be accessible for nested composables
@@ -256,11 +271,13 @@ export default defineUntypedSchema({
 
     /**
      * Use new experimental head optimisations:
+     *
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
-     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
+     *
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
-    headNext: false,
+    headNext: true,
 
     /**
      * Allow defining `routeRules` directly within your `~/pages` directory using `defineRouteRules`.
@@ -279,9 +296,14 @@ export default defineUntypedSchema({
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
-     * https://github.com/nuxt/nuxt/issues/24770
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
+     * @type {boolean | 'after-resolve'}
      */
-    scanPageMeta: false,
+    scanPageMeta: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'after-resolve' : true)
+      },
+    },
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
@@ -306,13 +328,17 @@ export default defineUntypedSchema({
      * })
      * ```
      */
-    sharedPrerenderData: false,
+    sharedPrerenderData: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
 
     /**
      * Enables CookieStore support to listen for cookie updates (if supported by the browser) and refresh `useCookie` ref values.
      * @see [CookieStore](https://developer.mozilla.org/en-US/docs/Web/API/CookieStore)
      */
-    cookieStore: false,
+    cookieStore: true,
 
     /**
      * This allows specifying the default options for core Nuxt components and composables.
@@ -324,12 +350,16 @@ export default defineUntypedSchema({
       /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
+        prefetch: true,
+        prefetchOn: {
+          visibility: true,
+        },
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
        */
       useAsyncData: {
-        deep: true,
+        deep: false,
       },
       /** @type {Pick<typeof import('ofetch')['FetchOptions'], 'timeout' | 'retry' | 'retryDelay' | 'retryStatusCodes'>} */
       useFetch: {},
@@ -337,7 +367,7 @@ export default defineUntypedSchema({
 
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
-     * @see https://github.com/unjs/unenv
+     * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *
@@ -349,5 +379,30 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     clientNodeCompat: false,
+
+    /**
+     * Wait for a single animation frame before navigation, which gives an opportunity
+     * for the browser to repaint, acknowledging user interaction.
+     *
+     * It can reduce INP when navigating on prerendered routes.
+     */
+    navigationRepaint: true,
+
+    /**
+     * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
+     *
+     * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
+     */
+    buildCache: false,
+
+    /**
+     * Ensure that auto-generated Vue component names match the full component name
+     * you would use to auto-import the component.
+     */
+    normalizeComponentNames: {
+      $resolve: async (val, get) => {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
   },
 })

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NuxtPage } from 'nuxt/schema'
-import { generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
+import { augmentPages, generateRoutesFromFiles, normalizeRoutes, pathToNitroGlob } from '../src/pages/utils'
 import { generateRouteKey } from '../src/pages/runtime/utils'
 
 describe('pages:generateRoutesFromFiles', () => {
@@ -20,7 +20,7 @@ describe('pages:generateRoutesFromFiles', () => {
 
   const tests: Array<{
     description: string
-    files?: Array<{ path: string, template?: string }>
+    files?: Array<{ path: string, template?: string, meta?: Record<string, any> }>
     output?: NuxtPage[]
     normalized?: Record<string, any>[]
     error?: string
@@ -554,6 +554,108 @@ describe('pages:generateRoutesFromFiles', () => {
         },
       ],
     },
+    {
+      description: 'route.meta generated from file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-meta.vue`,
+          meta: {
+            test: 1,
+          },
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-meta',
+          path: '/page-with-meta',
+          file: `${pagesDir}/page-with-meta.vue`,
+          children: [],
+          meta: { test: 1 },
+        },
+      ],
+    },
+    {
+      description: 'should merge route.meta with meta from file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-meta.vue`,
+          meta: {
+            test: 1,
+          },
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              hello: 'world'
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-meta',
+          path: '/page-with-meta',
+          file: `${pagesDir}/page-with-meta.vue`,
+          children: [],
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: 1 },
+        },
+      ],
+    },
+    {
+      description: 'route.meta props generate by file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-props.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              props: true
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-props',
+          path: '/page-with-props',
+          file: `${pagesDir}/page-with-props.vue`,
+          children: [],
+          props: true,
+        },
+      ],
+    },
+    {
+      description: 'should handle route groups',
+      files: [
+        { path: `${pagesDir}/(foo)/index.vue` },
+        { path: `${pagesDir}/(foo)/about.vue` },
+        { path: `${pagesDir}/(bar)/about/index.vue` },
+      ],
+      output: [
+        {
+          name: 'index',
+          path: '/',
+          file: `${pagesDir}/(foo)/index.vue`,
+          meta: undefined,
+          children: [],
+        },
+        {
+          path: '/about',
+          file: `${pagesDir}/(foo)/about.vue`,
+          meta: undefined,
+          children: [
+
+            {
+              name: 'about',
+              path: '',
+              file: `${pagesDir}/(bar)/about/index.vue`,
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
   ]
 
   const normalizedResults: Record<string, any> = {}
@@ -568,11 +670,18 @@ describe('pages:generateRoutesFromFiles', () => {
         ) as Record<string, string>
 
         try {
-          result = await generateRoutesFromFiles(test.files.map(file => ({
+          result = generateRoutesFromFiles(test.files.map(file => ({
             shouldUseServerComponents: true,
             absolutePath: file.path,
             relativePath: file.path.replace(/^(pages|layer\/pages)\//, ''),
-          })), { shouldExtractBuildMeta: true, vfs })
+          }))).map((route, index) => {
+            return {
+              ...route,
+              meta: test.files![index]!.meta,
+            }
+          })
+
+          await augmentPages(result, vfs)
         } catch (error: any) {
           expect(error.message).toEqual(test.error)
         }
@@ -582,8 +691,18 @@ describe('pages:generateRoutesFromFiles', () => {
 
       if (result) {
         expect(result).toEqual(test.output)
-        normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
-        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
+
+        normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: false,
+        }).routes
+
+        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: true,
+        }).routes
       }
     })
   }

@@ -1,19 +1,19 @@
 import { isAbsolute } from 'pathe'
-import webpack from 'webpack'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
+import { webpack } from '#builder'
 
-const assetPattern = /\.(css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(\?.*)?$/i
+const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 
-export function server (ctx: WebpackConfigContext) {
+export async function server (ctx: WebpackConfigContext) {
   ctx.name = 'server'
   ctx.isServer = true
 
-  applyPresets(ctx, [
+  await applyPresets(ctx, [
     nuxt,
     node,
     serverStandalone,
@@ -53,9 +53,9 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['#internal/nitro']
+  const external = ['nitro/runtime']
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths')
+    external.push('#internal/nuxt/paths', '#internal/nuxt/app-config')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }

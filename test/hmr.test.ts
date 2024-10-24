@@ -3,11 +3,14 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, fetch, setup } from '@nuxt/test-utils/e2e'
+import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
 import { expectWithPolling, renderPage } from './utils'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+// TODO: update @nuxt/test-utils
+const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
+
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {
@@ -20,8 +23,6 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     setupTimeout: (isWindows ? 360 : 120) * 1000,
     nuxtConfig: {
       builder: isWebpack ? 'webpack' : 'vite',
-      buildDir: process.env.NITRO_BUILD_DIR,
-      nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
     },
   })
 
@@ -71,16 +72,16 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
     it('should detect new routes', async () => {
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
+        () => $fetch<string>('/catchall/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
         true,
       )
 
       // write new page route
       const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
+      await fsp.writeFile(join(fixturePath, 'pages/catchall/some-404.vue'), indexVue)
 
       await expectWithPolling(
-        () => $fetch('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
+        () => $fetch<string>('/catchall/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
         true,
       )
     })
@@ -108,7 +109,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       const resolveHmrId = async () => {
         const node = await page.$('#hmr-id')
         const text = await node?.innerText() || ''
-        return Number(text?.trim().split(':')[1].trim())
+        return Number(text.trim().split(':')[1]?.trim() || '')
       }
       const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
       const triggerHmr = async () => fsp.writeFile(

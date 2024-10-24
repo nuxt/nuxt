@@ -1,5 +1,5 @@
 import { joinRelativeURL } from 'ufo'
-import { useRuntimeConfig } from '#internal/nitro'
+import { useRuntimeConfig } from 'nitro/runtime'
 
 export function baseURL (): string {
   // TODO: support passing event to `useRuntimeConfig`

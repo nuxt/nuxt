@@ -3,7 +3,7 @@ import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
-import { logger } from './logger'
+import { MODE_RE } from './utils'
 
 /**
  * Normalize a nuxt plugin object
@@ -20,12 +20,6 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     throw new Error('Invalid plugin. src option is required: ' + JSON.stringify(plugin))
   }
 
-  // TODO: only scan top-level files #18418
-  const nonTopLevelPlugin = plugin.src.match(/\/plugins\/[^/]+\/index\.[^/]+$/i)
-  if (nonTopLevelPlugin && nonTopLevelPlugin.length > 0 && !useNuxt().options.plugins.find(i => (typeof i === 'string' ? i : i.src).endsWith(nonTopLevelPlugin[0]))) {
-    logger.warn(`[deprecation] You are using a plugin that is within a subfolder of your plugins directory without adding it to your config explicitly. You can move it to the top-level plugins directory, or include the file '~${nonTopLevelPlugin[0]}' in your plugins config (https://nuxt.com/docs/api/nuxt-config#plugins-1) to remove this warning.`)
-  }
-
   // Normalize full path to plugin
   plugin.src = normalize(resolveAlias(plugin.src))
 
@@ -34,7 +28,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     plugin.mode = 'server'
   }
   if (!plugin.mode) {
-    const [, mode = 'all'] = plugin.src.match(/\.(server|client)(\.\w+)*$/) || []
+    const [, mode = 'all'] = plugin.src.match(MODE_RE) || []
     plugin.mode = mode as 'all' | 'client' | 'server'
   }
 
@@ -50,8 +44,11 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
  * Note: By default plugin is prepended to the plugins array. You can use second argument to append (push) instead.
  * @example
  * ```js
+ * import { createResolver } from '@nuxt/kit'
+ * const resolver = createResolver(import.meta.url)
+ *
  * addPlugin({
- *   src: path.resolve(__dirname, 'templates/foo.js'),
+ *   src: resolver.resolve('templates/foo.js'),
  *   filename: 'foo.server.js' // [optional] only include in server bundle
  * })
  * ```

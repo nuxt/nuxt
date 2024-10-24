@@ -23,9 +23,9 @@ By default, [`useAsyncData`](/docs/api/composables/use-async-data) blocks naviga
 ```vue [pages/index.vue]
 <script setup lang="ts">
 /* Navigation will occur before fetching is complete.
-  Handle pending and error states directly within your component's template
+  Handle 'pending' and 'error' states directly within your component's template
 */
-const { pending, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
+const { status, data: count } = await useLazyAsyncData('count', () => $fetch('/api/count'))
 
 watch(count, (newCount) => {
   // Because count might start out null, you won't have access
@@ -35,7 +35,7 @@ watch(count, (newCount) => {
 
 <template>
   <div>
-    {{ pending ? 'Loading' : count }}
+    {{ status === 'pending' ? 'Loading' : count }}
   </div>
 </template>
 ```
@@ -44,4 +44,4 @@ watch(count, (newCount) => {
 `useLazyAsyncData` is a reserved function name transformed by the compiler, so you should not name your own function `useLazyAsyncData`.
 ::
 
-:read-more{to="/docs/getting-started/data-fetching#uselazyasyncdata"}
+:read-more{to="/docs/getting-started/data-fetching"}

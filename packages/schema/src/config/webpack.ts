@@ -96,7 +96,7 @@ export default defineUntypedSchema({
     /**
      * Customize bundle filenames.
      *
-     * To understand a bit more about the use of manifests, take a look at [this webpack documentation](https://webpack.js.org/guides/code-splitting/).
+     * To understand a bit more about the use of manifests, take a look at [webpack documentation](https://webpack.js.org/guides/code-splitting/).
      * @note Be careful when using non-hashed based filenames in production
      * as most browsers will cache the asset and not detect the changes on first load.
      *
@@ -154,13 +154,17 @@ export default defineUntypedSchema({
       },
 
       /**
-       * See https://github.com/esbuild-kit/esbuild-loader
+       * @see [esbuild loader](https://github.com/esbuild-kit/esbuild-loader)
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
-      esbuild: {},
+      esbuild: {
+        jsxFactory: 'h',
+        jsxFragment: 'Fragment',
+        tsconfigRaw: '{}',
+      },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -170,7 +174,7 @@ export default defineUntypedSchema({
       file: { esModule: false },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -180,7 +184,7 @@ export default defineUntypedSchema({
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
-       * See: https://github.com/webpack-contrib/file-loader#options
+       * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
        * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
@@ -190,7 +194,7 @@ export default defineUntypedSchema({
       imgUrl: { esModule: false, limit: 1000 },
 
       /**
-       * See: https://pugjs.org/api/reference.html#options
+       * @see [`pug` options](https://pugjs.org/api/reference.html#options)
        * @type {typeof import('pug')['Options']}
        */
       pugPlain: {},
@@ -231,12 +235,12 @@ export default defineUntypedSchema({
       },
 
       /**
-       * See: https://github.com/webpack-contrib/less-loader#options
+       * @see [`less-loader` Options](https://github.com/webpack-contrib/less-loader#options)
        */
       less: {},
 
       /**
-       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
        * @type {typeof import('sass-loader')['Options']}
        * @default
        * ```ts
@@ -254,13 +258,13 @@ export default defineUntypedSchema({
       },
 
       /**
-       * See: https://github.com/webpack-contrib/sass-loader#options
+       * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
        * @type {typeof import('sass-loader')['Options']}
        */
       scss: {},
 
       /**
-       * See: https://github.com/webpack-contrib/stylus-loader#options
+       * @see [`stylus-loader` Options](https://github.com/webpack-contrib/stylus-loader#options)
        */
       stylus: {},
 
@@ -318,7 +322,7 @@ export default defineUntypedSchema({
 
     /**
      * Customize PostCSS Loader.
-     * Same options as https://github.com/webpack-contrib/postcss-loader#options
+     * same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
      * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {

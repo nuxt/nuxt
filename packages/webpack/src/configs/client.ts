@@ -1,6 +1,5 @@
 import querystring from 'node:querystring'
 import { resolve } from 'pathe'
-import webpack from 'webpack'
 import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import { logger } from '@nuxt/kit'
 import { joinURL } from 'ufo'
@@ -10,12 +9,13 @@ import { env, nodeless } from 'unenv'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
+import { webpack } from '#builder'
 
-export function client (ctx: WebpackConfigContext) {
+export async function client (ctx: WebpackConfigContext) {
   ctx.name = 'client'
   ctx.isClient = true
 
-  applyPresets(ctx, [
+  await applyPresets(ctx, [
     nuxt,
     clientPlugins,
     clientOptimization,

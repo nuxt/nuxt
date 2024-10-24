@@ -18,6 +18,7 @@ export const NuxtTeleportIslandSymbol = Symbol('NuxtTeleportIslandComponent') as
 /* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandComponent',
+  inheritAttrs: false,
   props: {
     to: {
       type: String,
@@ -26,14 +27,6 @@ export default defineComponent({
     nuxtClient: {
       type: Boolean,
       default: false,
-    },
-    /**
-     * ONLY used in dev mode since we use build:manifest result in production
-     * do not pass any value in production
-     */
-    rootDir: {
-      type: String,
-      default: null,
     },
   },
   setup (props, { slots }) {
@@ -46,12 +39,12 @@ export default defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
-      const slot = slots.default!()[0]
+      const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
 
       islandContext.components[props.to] = {
-        chunk: import.meta.dev ? '_nuxt/' + paths[name] : paths[name],
+        chunk: import.meta.dev ? nuxtApp.$config.app.buildAssetsDir + paths[name] : paths[name],
         props: slot.props || {},
       }
 

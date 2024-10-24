@@ -1,8 +1,8 @@
 import { fileURLToPath } from 'node:url'
 import fsp from 'node:fs/promises'
 import { beforeAll, describe, expect, it } from 'vitest'
-import { execaCommand } from 'execa'
-import { globby } from 'globby'
+import { exec } from 'tinyexec'
+import { glob } from 'tinyglobby'
 import { join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
@@ -10,32 +10,37 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   beforeAll(async () => {
     await Promise.all([
-      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'false' } }),
-      execaCommand(`pnpm nuxi build ${rootDir}`, { env: { EXTERNAL_VUE: 'true' } }),
+      exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'false' } } }),
+      exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'true' } } }),
     ])
   }, 120 * 1000)
 
   // Identical behaviour between inline/external vue options as this should only affect the server build
-  for (const outputDir of ['.output', '.output-inline']) {
-    it('default client bundle size', async () => {
-      const clientStats = await analyzeSizes('**/*.js', join(rootDir, outputDir, 'public'))
-      expect.soft(roundToKilobytes(clientStats.totalBytes)).toMatchInlineSnapshot('"105k"')
-      expect(clientStats.files.map(f => f.replace(/\..*\.js/, '.js'))).toMatchInlineSnapshot(`
-        [
-          "_nuxt/entry.js",
-        ]
-      `)
-    })
-  }
+
+  it('default client bundle size', async () => {
+    const [clientStats, clientStatsInlined] = await Promise.all((['.output', '.output-inline'])
+      .map(outputDir => analyzeSizes(['**/*.js'], join(rootDir, outputDir, 'public'))))
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"115k"`)
+    expect.soft(roundToKilobytes(clientStatsInlined!.totalBytes)).toMatchInlineSnapshot(`"115k"`)
+
+    const files = new Set([...clientStats!.files, ...clientStatsInlined!.files].map(f => f.replace(/\..*\.js/, '.js')))
+
+    expect([...files]).toMatchInlineSnapshot(`
+      [
+        "_nuxt/entry.js",
+      ]
+    `)
+  })
 
   it('default server bundle size', async () => {
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot('"209k"')
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"208k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"1335k"')
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1393k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -55,6 +60,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@vue/runtime-dom",
         "@vue/server-renderer",
         "@vue/shared",
+        "db0",
         "devalue",
         "entities",
         "estree-walker",
@@ -72,10 +78,10 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output-inline/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"527k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"557k"`)
 
-    const modules = await analyzeSizes('node_modules/**/*', serverDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot('"75.6k"')
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"94.2k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))
@@ -86,6 +92,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "@unhead/dom",
         "@unhead/shared",
         "@unhead/ssr",
+        "db0",
         "devalue",
         "hookable",
         "unhead",
@@ -94,8 +101,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
-async function analyzeSizes (pattern: string | string[], rootDir: string) {
-  const files: string[] = await globby(pattern, { cwd: rootDir })
+async function analyzeSizes (pattern: string[], rootDir: string) {
+  const files: string[] = await glob(pattern, { cwd: rootDir })
   let totalBytes = 0
   for (const file of files) {
     const path = join(rootDir, file)

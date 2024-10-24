@@ -2,7 +2,7 @@
 // https://containers.dev/implementors/json_reference/
 {
   "name": "nuxt-devcontainer",
-  "dockerFile": "Dockerfile",
+  "build": { "dockerfile": "Dockerfile" },
   "features": {},
   "customizations": {
     "vscode": {

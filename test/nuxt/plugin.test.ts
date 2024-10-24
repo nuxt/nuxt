@@ -11,9 +11,10 @@ vi.mock('#app', async (original) => {
   }
 })
 
-function pluginFactory (name: string, dependsOn?: string[], sequence: string[], parallel = true) {
+function pluginFactory (name: string, dependsOn: string[] | undefined, sequence: string[], parallel = true) {
   return defineNuxtPlugin({
     name,
+    // @ts-expect-error we have a strong type for plugin names
     dependsOn,
     async setup () {
       sequence.push(`start ${name}`)
@@ -71,7 +72,7 @@ describe('plugin dependsOn', () => {
       pluginFactory('A', undefined, sequence),
       pluginFactory('B', ['A'], sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 5))
@@ -99,7 +100,7 @@ describe('plugin dependsOn', () => {
     const plugins = [
       pluginFactory('A', undefined, sequence),
       defineNuxtPlugin({
-        name,
+        name: 'some plugin',
         async setup () {
           sequence.push('start C')
           await new Promise(resolve => setTimeout(resolve, 50))
@@ -121,7 +122,7 @@ describe('plugin dependsOn', () => {
     ])
   })
 
-  it('relying on plugin not registed yet', async () => {
+  it('relying on plugin not registered yet', async () => {
     const nuxtApp = useNuxtApp()
     const sequence: string[] = []
     const plugins = [
@@ -279,6 +280,37 @@ describe('plugin dependsOn', () => {
       'end B',
       'start C',
       'end C',
+    ])
+  })
+})
+
+describe('plugin hooks', () => {
+  it('registers hooks before executing plugins', async () => {
+    const nuxtApp = useNuxtApp()
+
+    const sequence: string[] = []
+    const plugins = [
+      defineNuxtPlugin({
+        name: 'A',
+        setup (nuxt) {
+          sequence.push('start A')
+          nuxt.callHook('a:setup')
+        },
+      }),
+      defineNuxtPlugin({
+        name: 'B',
+        hooks: {
+          'a:setup': () => {
+            sequence.push('listen B')
+          },
+        },
+      }),
+    ]
+
+    await applyPlugins(nuxtApp, plugins)
+    expect(sequence).toMatchObject([
+      'start A',
+      'listen B',
     ])
   })
 })

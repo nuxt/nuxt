@@ -6,8 +6,12 @@ import { isIgnored, logger, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
-import { resolveComponentNameSegments } from '../core/utils'
+import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
 
+const ISLAND_RE = /\.island(?:\.global)?$/
+const GLOBAL_RE = /\.global(?:\.island)?$/
+const COMPONENT_MODE_RE = /(?<=\.)(client|server)(\.global|\.island)*$/
+const MODE_REPLACEMENT_RE = /(\.(client|server))?(\.global|\.island)*$/
 /**
  * Scan the components inside different components folders
  * and return a unique list of components
@@ -26,6 +30,9 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
   const scannedPaths: string[] = []
 
   for (const dir of dirs) {
+    if (dir.enabled === false) {
+      continue
+    }
     // A map from resolved path to component name (used for making duplicate warning message)
     const resolvedNames = new Map<string, string>()
 
@@ -80,18 +87,22 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
        */
       let fileName = basename(filePath, extname(filePath))
 
-      const island = /\.(island)(\.global)?$/.test(fileName) || dir.island
-      const global = /\.(global)(\.island)?$/.test(fileName) || dir.global
-      const mode = island ? 'server' : (fileName.match(/(?<=\.)(client|server)(\.global|\.island)*$/)?.[1] || 'all') as 'client' | 'server' | 'all'
-      fileName = fileName.replace(/(\.(client|server))?(\.global|\.island)*$/, '')
+      const island = ISLAND_RE.test(fileName) || dir.island
+      const global = GLOBAL_RE.test(fileName) || dir.global
+      const mode = island ? 'server' : (fileName.match(COMPONENT_MODE_RE)?.[1] || 'all') as 'client' | 'server' | 'all'
+      fileName = fileName.replace(MODE_REPLACEMENT_RE, '')
 
       if (fileName.toLowerCase() === 'index') {
         fileName = dir.pathPrefix === false ? basename(dirname(filePath)) : '' /* inherits from path */
       }
 
       const suffix = (mode !== 'all' ? `-${mode}` : '')
-      const componentNameSegments = resolveComponentNameSegments(fileName.replace(/["']/g, ''), prefixParts)
+      const componentNameSegments = resolveComponentNameSegments(fileName.replace(QUOTE_RE, ''), prefixParts)
       const pascalName = pascalCase(componentNameSegments)
+
+      if (LAZY_COMPONENT_NAME_REGEX.test(pascalName)) {
+        logger.warn(`The component \`${pascalName}\` (in \`${filePath}\`) is using the reserved "Lazy" prefix used for dynamic imports, which may cause it to break at runtime.`)
+      }
 
       if (resolvedNames.has(pascalName + suffix) || resolvedNames.has(pascalName)) {
         warnAboutDuplicateComponent(pascalName, filePath, resolvedNames.get(pascalName) || resolvedNames.get(pascalName + suffix)!)
@@ -119,6 +130,8 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
         export: 'default',
         // by default, give priority to scanned components
         priority: dir.priority ?? 1,
+        // @ts-expect-error untyped property
+        _scanned: true,
       }
 
       if (typeof dir.extendComponent === 'function') {
@@ -163,3 +176,5 @@ function warnAboutDuplicateComponent (componentName: string, filePath: string, d
     `\n - ${duplicatePath}`,
   )
 }
+
+const LAZY_COMPONENT_NAME_REGEX = /^Lazy(?=[A-Z])/

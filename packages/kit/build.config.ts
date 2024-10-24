@@ -6,11 +6,12 @@ export default defineBuildConfig({
     'src/index',
   ],
   externals: [
+    '@rspack/core',
     '@nuxt/schema',
     'nitropack',
+    'nitro',
     'webpack',
     'vite',
     'h3',
   ],
-  failOnWarn: false,
 })

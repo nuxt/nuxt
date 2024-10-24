@@ -1,10 +1,13 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Nuxt } from '@nuxt/schema'
+import { stripLiteral } from 'strip-literal'
 import { isVue } from '../../core/utils'
 
-const INJECTION_RE = /\b_ctx\.\$route\b/g
-const INJECTION_SINGLE_RE = /\b_ctx\.\$route\b/
+const INJECTION_RE_TEMPLATE = /\b_ctx\.\$route\b/g
+const INJECTION_RE_SCRIPT = /\bthis\.\$route\b/g
+
+const INJECTION_SINGLE_RE = /\bthis\.\$route\b|\b_ctx\.\$route\b/
 
 export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
   return {
@@ -14,14 +17,30 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       return isVue(id, { type: ['template', 'script'] })
     },
     transform (code) {
-      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol')) { return }
+      if (!INJECTION_SINGLE_RE.test(code) || code.includes('_ctx._.provides[__nuxt_route_symbol') || code.includes('this._.provides[__nuxt_route_symbol')) { return }
 
       let replaced = false
       const s = new MagicString(code)
-      s.replace(INJECTION_RE, () => {
-        replaced = true
-        return '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)'
-      })
+      const strippedCode = stripLiteral(code)
+
+      // Local helper function for regex-based replacements using `strippedCode`
+      const replaceMatches = (regExp: RegExp, replacement: string) => {
+        for (const match of strippedCode.matchAll(regExp)) {
+          const start = match.index!
+          const end = start + match[0].length
+          s.overwrite(start, end, replacement)
+          if (!replaced) {
+            replaced = true
+          }
+        }
+      }
+
+      // handles `$route` in template
+      replaceMatches(INJECTION_RE_TEMPLATE, '(_ctx._.provides[__nuxt_route_symbol] || _ctx.$route)')
+
+      // handles `this.$route` in script
+      replaceMatches(INJECTION_RE_SCRIPT, '(this._.provides[__nuxt_route_symbol] || this.$route)')
+
       if (replaced) {
         s.prepend('import { PageRouteSymbol as __nuxt_route_symbol } from \'#app/components/injections\';\n')
       }

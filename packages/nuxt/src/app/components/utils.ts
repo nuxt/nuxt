@@ -2,7 +2,7 @@ import { h } from 'vue'
 import type { Component, RendererNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
-import type { RouteLocationNormalized } from '#vue-router'
+import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -15,13 +15,16 @@ export const _wrapIf = (component: Component, props: any, slots: any) => {
   return { default: () => props ? h(component, props, slots) : slots.default?.() }
 }
 
+const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
+const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
+const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
 // See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {
   const source = route?.meta.key ?? route.path
-    .replace(/(:\w+)\([^)]+\)/g, '$1')
-    .replace(/(:\w+)[?+*]/g, '$1')
-    .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
+    .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
+    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
   return typeof source === 'function' ? source(route) : source
 }
 
@@ -86,7 +89,7 @@ export function vforToArray (source: any): any[] {
     if (import.meta.dev && !Number.isInteger(source)) {
       console.warn(`The v-for range expect an integer value but got ${source}.`)
     }
-    const array = []
+    const array: number[] = []
     for (let i = 0; i < source; i++) {
       array[i] = i
     }
@@ -100,7 +103,7 @@ export function vforToArray (source: any): any[] {
       const keys = Object.keys(source)
       const array = new Array(keys.length)
       for (let i = 0, l = keys.length; i < l; i++) {
-        const key = keys[i]
+        const key = keys[i]!
         array[i] = source[key]
       }
       return array

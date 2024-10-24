@@ -5,7 +5,7 @@
 <p>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/v/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Version"></a>
   <a href="https://www.npmjs.com/package/nuxt"><img src="https://img.shields.io/npm/dm/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="Downloads"></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
+  <a href="https://github.com/nuxt/nuxt/tree/main/LICENSE"><img src="https://img.shields.io/github/license/nuxt/nuxt.svg?style=flat&colorA=18181B&colorB=28CF8D" alt="License"></a>
   <a href="https://nuxt.com"><img src="https://img.shields.io/badge/Nuxt%20Docs-18181B?logo=nuxt.js" alt="Website"></a>
   <a href="https://chat.nuxt.dev"><img src="https://img.shields.io/badge/Nuxt%20Discord-18181B?logo=discord" alt="Discord"></a>
 </p>
@@ -33,7 +33,8 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - ❤️  [Contribute](#contribute)
 - 🏠 [Local Development](#local-development)
 - ⛰️ [Nuxt 2](#nuxt-2)
-- 🔗 [Follow us](#follow-us)
+- 🛟 [Professional Support](#professional-support)
+- 🔗 [Follow Us](#follow-us)
 - ⚖️ [License](#license)
 
 ---
@@ -93,23 +94,24 @@ We invite you to contribute and help improve Nuxt 💚
 
 Here are a few ways you can get involved:
 - **Reporting Bugs:** If you come across any bugs or issues, please check out the [reporting bugs guide](https://nuxt.com/docs/community/reporting-bugs) to learn how to submit a bug report.
-- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/community/contribution#creating-an-issue) to share your suggestions.
+- **Suggestions:** Have ideas to enhance Nuxt? We'd love to hear them! Check out the [contribution guide](https://nuxt.com/docs/community/contribution) to share your suggestions.
 - **Questions:** If you have questions or need assistance, the [getting help guide](https://nuxt.com/docs/community/getting-help) provides resources to help you out.
 
 ## <a name="local-development">🏠 Local Development</a>
 
 Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/docs/community/framework-contribution#setup) to contribute to the framework and documentation.
 
-## <a name="nuxt-2">⛰️ Nuxt 2</a>
+## <a name="professional-support">🛟 Professional Support</a>
 
-You can find the code for Nuxt 2 on the [`2.x` branch](https://github.com/nuxt/nuxt/tree/2.x) and the documentation at [v2.nuxt.com](https://v2.nuxt.com).
+- Technical audit & consulting: [Nuxt Experts](https://nuxt.com/enterprise/support)
+- Custom development & more: [Nuxt Agencies Partners](https://nuxt.com/enterprise/agencies)
 
-## <a name="follow-us">🔗 Follow us</a>
+## <a name="follow-us">🔗 Follow Us</a>
 
 <p valign="center">
-  <a href="https://chat.nuxt.dev"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
+  <a href="https://go.nuxt.com/discord"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/x"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/github"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
 </p>
 
 ## <a name="license">⚖️ License</a>
 
-[MIT](./LICENSE)
+[MIT](https://github.com/nuxt/nuxt/tree/main/LICENSE)

@@ -23,9 +23,10 @@ export type LoadingIndicator = {
   _cleanup: () => void
   progress: Ref<number>
   isLoading: Ref<boolean>
+  error: Ref<boolean>
   start: () => void
   set: (value: number) => void
-  finish: (opts?: { force?: boolean }) => void
+  finish: (opts?: { force?: boolean, error?: boolean }) => void
   clear: () => void
 }
 
@@ -40,6 +41,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
   const isLoading = ref(false)
+  const error = ref(false)
   let done = false
   let rafId: number
 
@@ -47,7 +49,10 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
   let hideTimeout: number | NodeJS.Timeout
   let resetTimeout: number | NodeJS.Timeout
 
-  const start = () => set(0)
+  const start = () => {
+    error.value = false
+    set(0)
+  }
 
   function set (at = 0) {
     if (nuxtApp.isHydrating) {
@@ -76,11 +81,14 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     }
   }
 
-  function finish (opts: { force?: boolean } = {}) {
+  function finish (opts: { force?: boolean, error?: boolean } = {}) {
     progress.value = 100
     done = true
     clear()
     _clearTimeouts()
+    if (opts.error) {
+      error.value = true
+    }
     if (opts.force) {
       progress.value = 0
       isLoading.value = false
@@ -145,6 +153,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     _cleanup,
     progress: computed(() => progress.value),
     isLoading: computed(() => isLoading.value),
+    error: computed(() => error.value),
     start,
     set,
     finish,

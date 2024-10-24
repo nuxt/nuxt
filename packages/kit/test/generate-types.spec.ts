@@ -34,9 +34,6 @@ describe('tsConfig generation', () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
       {
-        "#build": [
-          ".",
-        ],
         "some-custom-alias": [
           "../some-alias",
         ],
@@ -53,12 +50,12 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
+        "../dist",
         "../modules/test/node_modules",
         "../modules/node_modules",
         "../node_modules/@some/module/node_modules",
         "../node_modules",
         "../../node_modules",
-        "../dist",
       ]
     `)
   })

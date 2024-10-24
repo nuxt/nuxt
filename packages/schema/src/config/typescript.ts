@@ -20,7 +20,7 @@ export default defineUntypedSchema({
      * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      *
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
-     * @type {'vite' | 'webpack' | 'shared' | false | undefined}
+     * @type {'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined}
      */
     builder: {
       $resolve: val => val ?? null,
@@ -34,18 +34,20 @@ export default defineUntypedSchema({
       $resolve: (val) => {
         const defaults = [
           // Nitro auto-imported/augmented dependencies
-          'nitropack',
+          'nitro/types',
           'defu',
           'h3',
           'consola',
           'ofetch',
           // Key nuxt dependencies
           '@unhead/vue',
+          '@nuxt/devtools',
           'vue',
           '@vue/runtime-core',
           '@vue/compiler-sfc',
-          '@vue/runtime-dom',
           'vue-router',
+          'vue-router/auto-routes',
+          'unplugin-vue-router/client',
           '@nuxt/schema',
           'nuxt',
         ]
@@ -63,7 +65,7 @@ export default defineUntypedSchema({
      *
      * If set to true, this will type check in development. You can restrict this to build-time type checking by setting it to `build`.
      * Requires to install `typescript` and `vue-tsc` as dev dependencies.
-     * @see https://nuxt.com/docs/guide/concepts/typescript
+     * @see [Nuxt TypeScript docs](https://nuxt.com/docs/guide/concepts/typescript)
      * @type {boolean | 'build'}
      */
     typeCheck: false,

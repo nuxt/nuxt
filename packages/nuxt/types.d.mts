@@ -1,4 +1,5 @@
-/// <reference types="nitropack" />
+/// <reference types="nitro/types" />
+/// <reference path="dist/app/types/augments.d.ts" />
 
 import type { DefineNuxtConfig } from 'nuxt/config'
 import type { RuntimeConfig, SchemaDefinition } from 'nuxt/schema'
@@ -14,11 +15,34 @@ declare global {
 }
 
 // Note: Keep in sync with packages/nuxt/src/core/templates.ts
-declare module 'nitropack' {
+declare module 'nitro/types' {
   interface NitroRuntimeConfigApp {
     buildAssetsDir: string
     cdnURL: string
   }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroRuntimeConfig extends RuntimeConfig {}
+  interface NitroRouteConfig {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+  }
+  interface NitroRouteRules {
+    ssr?: boolean
+    experimentalNoScripts?: boolean
+    appMiddleware?: Record<string, boolean>
+  }
+  interface NitroRuntimeHooks {
+    'dev:ssr-logs': (ctx: { logs: LogObject[], path: string }) => void | Promise<void>
+    'render:html': (htmlContext: NuxtRenderHTMLContext, context: { event: H3Event }) => void | Promise<void>
+    'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+  }
+}
+declare module 'nitropack/types' {
+  interface NitroRuntimeConfigApp {
+    buildAssetsDir: string
+    cdnURL: string
+  }
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroRuntimeConfig extends RuntimeConfig {}
   interface NitroRouteConfig {
     ssr?: boolean

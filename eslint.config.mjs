@@ -3,7 +3,6 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 // @ts-expect-error missing types
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
-// @ts-expect-error missing types
 import perfectionist from 'eslint-plugin-perfectionist'
 
 export default createConfigForNuxt({
@@ -20,6 +19,9 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         'packages/schema/schema/**',
+        'packages/nuxt/src/app/components/welcome.vue',
+        'packages/nuxt/src/app/components/error-*.vue',
+        'packages/nuxt/src/core/runtime/nitro/error-*',
       ],
     },
     {
@@ -145,17 +147,6 @@ export default createConfigForNuxt({
             ],
           },
         ],
-        'import/order': [
-          'error',
-          {
-            pathGroups: [
-              {
-                group: 'external',
-                pattern: '#vue-router',
-              },
-            ],
-          },
-        ],
         'jsdoc/check-tag-names': [
           'error',
           {
@@ -197,6 +188,7 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
+    // @ts-expect-error incorrect types 🤔
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
@@ -205,6 +197,12 @@ export default createConfigForNuxt({
       },
       rules: {
         'perfectionist/sort-objects': 'error',
+      },
+    },
+    {
+      files: ['packages/nuxt/src/app/components/welcome.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off',
       },
     },
   )

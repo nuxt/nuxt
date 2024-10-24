@@ -1,4 +1,4 @@
-name: Label PR
+name: chore
 
 on:
   pull_request_target:
@@ -6,6 +6,9 @@ on:
       - opened
     branches:
       - main
+      - 3.x
+
+permissions: {}
 
 jobs:
   add-pr-labels:

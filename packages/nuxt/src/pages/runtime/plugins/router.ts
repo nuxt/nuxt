@@ -1,15 +1,9 @@
 import { isReadonly, reactive, shallowReactive, shallowRef } from 'vue'
 import type { Ref } from 'vue'
-import type { RouteLocation, Router, RouterScrollBehavior } from '#vue-router'
-import {
-  START_LOCATION,
-  createMemoryHistory,
-  createRouter,
-  createWebHashHistory,
-  createWebHistory,
-} from '#vue-router'
+import type { RouteLocation, RouteLocationNormalizedLoaded, Router, RouterScrollBehavior } from 'vue-router'
+import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory, createWebHistory } from 'vue-router'
 import { createError } from 'h3'
-import { isEqual, isSamePath, withoutBase } from 'ufo'
+import { isEqual, withoutBase } from 'ufo'
 
 import type { PageMeta } from '../composables'
 
@@ -24,7 +18,6 @@ import { navigateTo } from '#app/composables/router'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routes from '#build/routes'
-// @ts-expect-error virtual file
 import routerOptions from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
@@ -67,7 +60,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       : createMemoryHistory(routerBase)
     )
 
-    const routes = routerOptions.routes?.(_routes) ?? _routes
+    const routes = routerOptions.routes ? await routerOptions.routes(_routes) ?? _routes : _routes
 
     let startPosition: Parameters<RouterScrollBehavior>[2] | null
 
@@ -124,11 +117,12 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       }
     })
 
-    // https://github.com/vuejs/router/blob/main/packages/router/src/router.ts#L1225-L1233
-    const route = {} as RouteLocation
+    // https://github.com/vuejs/router/blob/8487c3e18882a0883e464a0f25fb28fa50eeda38/packages/router/src/router.ts#L1283-L1289
+    const route = {} as RouteLocationNormalizedLoaded
     for (const key in _route.value) {
       Object.defineProperty(route, key, {
         get: () => _route.value[key as keyof RouteLocation],
+        enumerable: true,
       })
     }
 
@@ -137,6 +131,28 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     nuxtApp._middleware = nuxtApp._middleware || {
       global: [],
       named: {},
+    }
+
+    const error = useError()
+    if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
+      router.afterEach(async (to, _from, failure) => {
+        delete nuxtApp._processingMiddleware
+
+        if (import.meta.client && !nuxtApp.isHydrating && error.value) {
+          // Clear any existing errors
+          await nuxtApp.runWithContext(clearError)
+        }
+        if (failure) {
+          await nuxtApp.callHook('page:loading:end')
+        }
+        if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
+          return
+        }
+
+        if (import.meta.server && to.redirectedFrom && to.fullPath !== initialURL) {
+          await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
+        }
+      })
     }
 
     try {
@@ -228,20 +244,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       await nuxtApp.callHook('page:loading:end')
     })
 
-    const error = useError()
-    router.afterEach(async (to, _from, failure) => {
-      delete nuxtApp._processingMiddleware
-
-      if (import.meta.client && !nuxtApp.isHydrating && error.value) {
-        // Clear any existing errors
-        await nuxtApp.runWithContext(clearError)
-      }
-      if (failure) {
-        await nuxtApp.callHook('page:loading:end')
-      }
-      if (import.meta.server && failure?.type === 4 /* ErrorTypes.NAVIGATION_ABORTED */) {
-        return
-      }
+    router.afterEach(async (to, _from) => {
       if (to.matched.length === 0) {
         await nuxtApp.runWithContext(() => showError(createError({
           statusCode: 404,
@@ -251,8 +254,6 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
             path: to.fullPath,
           },
         })))
-      } else if (import.meta.server && to.fullPath !== initialURL && (to.redirectedFrom || !isSamePath(to.fullPath, initialURL))) {
-        await nuxtApp.runWithContext(() => navigateTo(to.fullPath || '/'))
       }
     })
 

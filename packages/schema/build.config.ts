@@ -23,6 +23,8 @@ export default defineBuildConfig({
   externals: [
     // Type imports
     '#app/components/nuxt-link',
+    'cssnano',
+    'autoprefixer',
     'ofetch',
     'vue-router',
     '@nuxt/telemetry',
@@ -31,6 +33,7 @@ export default defineBuildConfig({
     'vue',
     'unctx',
     'hookable',
+    'nitro',
     'nitropack',
     'webpack',
     'webpack-bundle-analyzer',

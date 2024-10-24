@@ -1,7 +1,8 @@
 import { ref } from 'vue'
-import { parseURL } from 'ufo'
 import { useHead } from '@unhead/vue'
 import { defineNuxtPlugin } from '../nuxt'
+
+const SUPPORTED_PROTOCOLS = ['http:', 'https:']
 
 export default defineNuxtPlugin({
   name: 'nuxt:cross-origin-prefetch',
@@ -26,8 +27,7 @@ export default defineNuxtPlugin({
       script: [generateRules()],
     })
     nuxtApp.hook('link:prefetch', (url) => {
-      const { protocol } = parseURL(url)
-      if (protocol && ['http:', 'https:'].includes(protocol)) {
+      if (SUPPORTED_PROTOCOLS.some(p => url.startsWith(p)) && SUPPORTED_PROTOCOLS.includes(new URL(url).protocol)) {
         externalURLs.value.add(url)
         head?.patch({
           script: [generateRules()],

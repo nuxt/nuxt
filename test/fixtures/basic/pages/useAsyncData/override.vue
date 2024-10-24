@@ -15,7 +15,7 @@ if (count || data.value !== 1) {
 }
 
 timeout = 100
-const p = refresh({ dedupe: true, _initial: false })
+const p = refresh({ dedupe: 'cancel', _initial: false })
 
 if (import.meta.client && (count !== 0 || data.value !== 1)) {
   throw new Error('count should start at 0')

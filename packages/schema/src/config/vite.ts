@@ -1,4 +1,5 @@
 import { consola } from 'consola'
+import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
@@ -7,7 +8,7 @@ export default defineUntypedSchema({
   /**
    * Configuration that will be passed directly to Vite.
    *
-   * See https://vitejs.dev/config for more information.
+   * @see [Vite configuration docs](https://vitejs.dev/config) for more information.
    * Please note that not all vite options are supported in Nuxt.
    * @type {typeof import('../src/types/config').ViteConfig & { $client?: typeof import('../src/types/config').ViteConfig, $server?: typeof import('../src/types/config').ViteConfig }}
    */
@@ -55,11 +56,19 @@ export default defineUntypedSchema({
         },
       },
       script: {
-        propsDestructure: {
-          $resolve: async (val, get) => val ?? Boolean((await get('vue') as Record<string, any>).propsDestructure),
-        },
         hoistStatic: {
           $resolve: async (val, get) => val ?? (await get('vue') as Record<string, any>).compilerOptions?.hoistStatic,
+        },
+      },
+      features: {
+        propsDestructure: {
+          $resolve: async (val, get) => {
+            if (val !== undefined && val !== null) {
+              return val
+            }
+            const vueOptions = await get('vue') as Record<string, any> || {}
+            return Boolean(vueOptions.script?.propsDestructure ?? vueOptions.propsDestructure)
+          },
         },
       },
     },
@@ -108,6 +117,9 @@ export default defineUntypedSchema({
           },
         },
       },
+    },
+    cacheDir: {
+      $resolve: async (val, get) => val ?? resolve(await get('rootDir') as string, 'node_modules/.cache/vite'),
     },
   },
 })
