@@ -118,20 +118,27 @@ export const componentsTypeTemplate = {
     })
 
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+    const components: string[] = new Array(componentTypes.length)
+    const componentExports: string[] = new Array(componentTypes.length)
+    for (let i = 0; i < componentTypes.length; i++) {
+      const [pascalName, type] = componentTypes[i]!
+      components[i] = `${pascalName}': ${type}`
+      componentExports[i] = `${pascalName}: ${type}`
+    }
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
-  ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
+    '${components.join('\n    \'')}
+    'Lazy${components.join('\n    \'Lazy')}
 }
 
 declare module 'vue' {
   export interface GlobalComponents extends _GlobalComponents { }
 }
 
-${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
+export const ${componentExports.join('\nexport const ')}
+export const Lazy${componentExports.join('\nexport const Lazy')}
 
 export const componentNames: string[]
 `

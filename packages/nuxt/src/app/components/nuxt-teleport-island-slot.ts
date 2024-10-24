@@ -35,23 +35,23 @@ export default defineComponent({
     }
 
     return () => {
-      const vnodes: VNode[] = []
+      const vnodes: VNode[] = new Array(1)
 
       if (nuxtApp.ssrContext?.islandContext && slots.default) {
-        vnodes.push(h('div', {
+        vnodes[0] = h('div', {
           'style': 'display: contents;',
           'data-island-uid': '',
           'data-island-slot': props.name,
         }, {
           // Teleport in slot to not be hydrated client-side with the staticVNode
           default: () => [createVNode(Teleport, { to: `island-slot=${componentName};${props.name}` }, slots.default?.())],
-        }))
+        })
       } else {
-        vnodes.push(h('div', {
+        vnodes[0] = h('div', {
           'style': 'display: contents;',
           'data-island-uid': '',
           'data-island-slot': props.name,
-        }))
+        })
       }
 
       if (slots.fallback) {
