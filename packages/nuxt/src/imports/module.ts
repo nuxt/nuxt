@@ -166,8 +166,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
+    // skip relative import paths for node_modules that are explicitly installed
     await Promise.all(importSource.map(async (from) => {
-      if (resolvedImportPathMap.has(from)) {
+      if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
         return
       }
       let path = resolveAlias(from)
@@ -176,6 +177,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)
+          if (name && nuxt._dependencies?.has(name)) { return from }
+
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
           return join(dir, name, subpath || '')

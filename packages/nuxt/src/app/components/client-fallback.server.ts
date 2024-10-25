@@ -54,8 +54,10 @@ const NuxtClientFallbackServer = defineComponent({
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 
-      for (let i = 0; i < (defaultSlot?.length || 0); i++) {
-        ssrRenderVNode(ssrVNodes.push, defaultSlot![i], vm!)
+      if (defaultSlot) {
+        for (let i = 0; i < defaultSlot.length; i++) {
+          ssrRenderVNode(ssrVNodes.push, defaultSlot[i]!, vm!)
+        }
       }
 
       const buffer = ssrVNodes.getBuffer()

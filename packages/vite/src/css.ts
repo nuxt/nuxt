@@ -1,10 +1,7 @@
-import { fileURLToPath, pathToFileURL } from 'node:url'
-import { requireModule, resolveAlias, tryResolveModule } from '@nuxt/kit'
 import type { Nuxt, NuxtOptions } from '@nuxt/schema'
 import type { InlineConfig as ViteConfig } from 'vite'
-import { interopDefault } from 'mlly'
 import type { Plugin } from 'postcss'
-import { isAbsolute, resolve } from 'pathe'
+import { createJiti } from 'jiti'
 
 function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
   const names = Object.keys(plugins)
@@ -12,43 +9,31 @@ function sortPlugins ({ plugins, order }: NuxtOptions['postcss']): string[] {
 }
 
 export async function resolveCSSOptions (nuxt: Nuxt): Promise<ViteConfig['css']> {
-  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> } = {
+  const css: ViteConfig['css'] & { postcss: NonNullable<Exclude<NonNullable<ViteConfig['css']>['postcss'], string>> & { plugins: Plugin[] } } = {
     postcss: {
       plugins: [],
     },
   }
 
-  css.postcss.plugins = []
-
   const postcssOptions = nuxt.options.postcss
 
-  const cwd = fileURLToPath(new URL('.', import.meta.url))
+  const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
+
   for (const pluginName of sortPlugins(postcssOptions)) {
     const pluginOptions = postcssOptions.plugins[pluginName]
     if (!pluginOptions) { continue }
 
-    let pluginPath: string | undefined = resolveAlias(pluginName, nuxt.options.alias)
-    let pluginFn: (opts: Record<string, any>) => Plugin
-
-    if (pluginPath[0] === '.') {
-      pluginPath = resolve(nuxt.options.rootDir, pluginPath)
-    }
-
-    const path = await tryResolveModule(pluginPath, nuxt.options.modulesDir)
-
-    // TODO: use jiti v2
-    if (path) {
-      pluginFn = await import(pathToFileURL(path).href).then(interopDefault)
-    } else {
-      // warn for libraries, not for local plugins
-      if (!isAbsolute(pluginPath)) {
-        console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\` with ESM. Please report this as a bug.`)
+    let pluginFn: ((opts: Record<string, any>) => Plugin) | undefined
+    for (const parentURL of nuxt.options.modulesDir) {
+      pluginFn = await jiti.import(pluginName, { parentURL: parentURL.replace(/\/node_modules\/?$/, ''), try: true, default: true }) as (opts: Record<string, any>) => Plugin
+      if (typeof pluginFn === 'function') {
+        css.postcss.plugins.push(pluginFn(pluginOptions))
+        break
       }
-      // fall back to cjs
-      pluginFn = requireModule(pluginPath, { paths: [cwd] })
     }
-    if (typeof pluginFn === 'function') {
-      css.postcss.plugins.push(pluginFn(pluginOptions))
+
+    if (typeof pluginFn !== 'function') {
+      console.warn(`[nuxt] could not import postcss plugin \`${pluginName}\`. Please report this as a bug.`)
     }
   }
 

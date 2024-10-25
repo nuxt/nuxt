@@ -171,7 +171,11 @@ describe('normalizeRoutes', () => {
     page.meta.layout = 'test'
     page.meta.foo = 'bar'
 
-    const { routes, imports } = normalizeRoutes([page], new Set(), true)
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: true,
+    })
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
@@ -196,7 +200,11 @@ describe('normalizeRoutes', () => {
     page.meta.layout = 'test'
     page.meta.foo = 'bar'
 
-    const { routes, imports } = normalizeRoutes([page], new Set())
+    const { routes, imports } = normalizeRoutes([page], new Set(), {
+      clientComponentRuntime: '<client-component-runtime>',
+      serverComponentRuntime: '<server-component-runtime>',
+      overrideMeta: false,
+    })
     expect({ routes, imports }).toMatchInlineSnapshot(`
       {
         "imports": Set {
@@ -206,6 +214,7 @@ describe('normalizeRoutes', () => {
         {
           name: indexN6pT4Un8hYMeta?.name ?? undefined,
           path: indexN6pT4Un8hYMeta?.path ?? "/",
+          props: indexN6pT4Un8hYMeta?.props ?? false,
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           alias: indexN6pT4Un8hYMeta?.alias || [],
           redirect: indexN6pT4Un8hYMeta?.redirect,

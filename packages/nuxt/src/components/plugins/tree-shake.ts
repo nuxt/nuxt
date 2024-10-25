@@ -6,7 +6,7 @@ import type { AssignmentProperty, CallExpression, Identifier, Literal, MemberExp
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { distDir } from '../dirs'
+import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
@@ -20,7 +20,7 @@ const PLACEHOLDER_EXACT_RE = /^(?:fallback|placeholder)$/
 const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:client_only|ClientOnly\)?)$/
 const PARSER_OPTIONS = { sourceType: 'module', ecmaVersion: 'latest' }
 
-export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplatePluginOptions) => {
+export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
   return {
     name: 'nuxt:tree-shake-template',
@@ -33,8 +33,9 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
       const components = options.getComponents()
 
       if (!regexpMap.has(components)) {
+        const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
         const clientOnlyComponents = components
-          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && other.filePath !== resolve(distDir, 'app/components/server-placeholder')))
+          .filter(c => c.mode === 'client' && !components.some(other => other.mode !== 'client' && other.pascalName === c.pascalName && !other.filePath.startsWith(serverPlaceholderPath)))
           .flatMap(c => [c.pascalName, c.kebabName.replaceAll('-', '_')])
           .concat(['ClientOnly', 'client_only'])
 
@@ -56,6 +57,8 @@ export const TreeShakeTemplatePlugin = createUnplugin((options: TreeShakeTemplat
           const node = _node as AcornNode<Node>
           if (isSsrRender(node)) {
             const [componentCall, _, children] = node.arguments
+            if (!componentCall) { return }
+
             if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
               const componentName = getComponentName(node)
               const isClientComponent = COMPONENTS_IDENTIFIERS_RE.test(componentName)
@@ -137,8 +140,10 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
           const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
           const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
           if (returnedVariableDeclaration) {
-            const init = returnedVariableDeclaration.declarations[0].init as ObjectExpression
-            removePropertyFromObject(init, name, magicString)
+            const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression | undefined
+            if (init) {
+              removePropertyFromObject(init, name, magicString)
+            }
           }
         }
       }

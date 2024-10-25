@@ -5,6 +5,7 @@ import type { Options as VueJsxPluginOptions } from '@vitejs/plugin-vue-jsx'
 import type { SchemaDefinition } from 'untyped'
 import type { NitroRuntimeConfig, NitroRuntimeConfigApp } from 'nitropack'
 import type { SnakeCase } from 'scule'
+import type { ResolvedConfig } from 'c12'
 import type { ConfigSchema } from '../../schema/config'
 import type { Nuxt } from './nuxt'
 import type { AppHeadMetaObject } from './head'
@@ -61,16 +62,13 @@ export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'vite' | 'run
   $schema?: SchemaDefinition
 }
 
-// TODO: Expose ConfigLayer<T> from c12
-interface ConfigLayer<T> {
-  config: T
+export type NuxtConfigLayer = ResolvedConfig<NuxtConfig & {
+  srcDir: ConfigSchema['srcDir']
+  rootDir: ConfigSchema['rootDir']
+}> & {
   cwd: string
   configFile: string
 }
-export type NuxtConfigLayer = ConfigLayer<NuxtConfig & {
-  srcDir: ConfigSchema['srcDir']
-  rootDir: ConfigSchema['rootDir']
-}>
 
 export interface NuxtBuilder {
   bundle: (nuxt: Nuxt) => Promise<void>
@@ -79,7 +77,7 @@ export interface NuxtBuilder {
 // Normalized Nuxt options available as `nuxt.options.*`
 export interface NuxtOptions extends Omit<ConfigSchema, 'builder' | 'webpack' | 'postcss'> {
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
-  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | NuxtBuilder
+  builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rspack-builder' | NuxtBuilder
   postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
   webpack: ConfigSchema['webpack'] & {
     $client: ConfigSchema['webpack']

@@ -125,6 +125,19 @@ Make sure to always use `await` or `return` on result of `navigateTo` when calli
 
 `to` can be a plain string or a route object to redirect to. When passed as `undefined` or `null`, it will default to `'/'`.
 
+#### Example
+
+```ts
+// Passing the URL directly will redirect to the '/blog' page
+await navigateTo('/blog')
+
+// Using the route object, will redirect to the route with the name 'blog'
+await navigateTo({ name: 'blog' })
+
+// Redirects to the 'product' route while passing a parameter (id = 1) using the route object.
+await navigateTo({ name: 'product', params: { id: 1 } })
+```
+
 ### `options` (optional)
 
 **Type**: `NavigateToOptions`

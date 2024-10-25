@@ -41,7 +41,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     configureServer (server) {
       function invalidateVirtualModules () {
         for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-          if (id.startsWith('virtual:')) {
+          if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
             markInvalidate(mod)
           }
         }

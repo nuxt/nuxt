@@ -23,12 +23,10 @@ describe('plugin-metadata', () => {
         '})',
       ].join('\n'), 'tsx')
 
-      expect(meta).toMatchInlineSnapshot(`
-        {
-          "name": "test",
-          "order": 1,
-        }
-      `)
+      expect(meta).toEqual({
+        'name': 'test',
+        'order': 1,
+      })
     }
   })
 

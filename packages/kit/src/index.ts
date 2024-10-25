@@ -13,9 +13,9 @@ export type { LoadNuxtOptions } from './loader/nuxt'
 // Utils
 export { addImports, addImportsDir, addImportsSources } from './imports'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
-export { addBuildPlugin, addVitePlugin, addWebpackPlugin, extendViteConfig, extendWebpackConfig } from './build'
+export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig } from './build'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build'
-export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
+export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
 export { addComponent, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
 export { nuxtCtx, tryUseNuxt, useNuxt } from './context'
@@ -32,14 +32,6 @@ export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, write
 export { logger, useLogger } from './logger'
 
 // Internal Utils
-// TODO
-export {
-  resolveModule,
-  requireModule,
-  importModule,
-  tryImportModule,
-  tryRequireModule,
-} from './internal/cjs'
-export type { ResolveModuleOptions, RequireModuleOptions } from './internal/cjs'
-export { tryResolveModule } from './internal/esm'
+export { resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm'
+export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm'
 export * from './internal/template'

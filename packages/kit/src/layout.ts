@@ -6,10 +6,11 @@ import { useNuxt } from './context'
 import { logger } from './logger'
 import { addTemplate } from './template'
 
+const LAYOUT_RE = /["']/g
 export function addLayout (this: any, template: NuxtTemplate | string, name?: string) {
   const nuxt = useNuxt()
   const { filename, src } = addTemplate(template)
-  const layoutName = kebabCase(name || parse(filename).name).replace(/["']/g, '')
+  const layoutName = kebabCase(name || parse(filename).name).replace(LAYOUT_RE, '')
 
   if (isNuxt2(nuxt)) {
     // Nuxt 2 adds layouts in options

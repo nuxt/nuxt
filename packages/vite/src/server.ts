@@ -2,9 +2,10 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryResolveModule } from '@nuxt/kit'
+import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
+import type { PackageJson } from 'pkg-types'
 import defu from 'defu'
 import type { Nitro } from 'nitropack'
 import type { ViteBuildContext } from './vite'
@@ -58,10 +59,6 @@ export async function buildServer (ctx: ViteBuildContext) {
     },
     resolve: {
       conditions: ((ctx.nuxt as any)._nitro as Nitro)?.options.exportConditions,
-      alias: {
-        '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
-        '#build/plugins': resolve(ctx.nuxt.options.buildDir, 'plugins/server'),
-      },
     },
     ssr: {
       external: [
@@ -112,8 +109,9 @@ export async function buildServer (ctx: ViteBuildContext) {
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$server || {}))
 
   if (!ctx.nuxt.options.dev) {
-    const nitroDependencies = await tryResolveModule('nitropack/package.json', ctx.nuxt.options.modulesDir)
-      .then(r => import(r!)).then(r => r.dependencies ? Object.keys(r.dependencies) : []).catch(() => [])
+    const runtimeDependencies = await tryImportModule<PackageJson>('nitropack/package.json', {
+      paths: ctx.nuxt.options.modulesDir,
+    })?.then(r => r?.dependencies ? Object.keys(r.dependencies) : []).catch(() => []) || []
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
@@ -121,7 +119,7 @@ export async function buildServer (ctx: ViteBuildContext) {
         // ensure we only have one version of vue if nitro is going to inline anyway
         ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build
-        ...nitroDependencies,
+        ...runtimeDependencies,
       )
     }
   }

@@ -4,7 +4,7 @@ import { $fetch, createPage, setup } from '@nuxt/test-utils/e2e'
 import { isWindows } from 'std-env'
 import { expectNoClientErrors } from './utils'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/runtime-compiler', import.meta.url)),

@@ -37,9 +37,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -57,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: Cache dist
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
         with:
           retention-days: 3
           name: dist
@@ -72,15 +72,10 @@ jobs:
       security-events: write
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
-      - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
-        with:
-          node-version: 20
-          cache: "pnpm"
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
+        uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd # v3.27.0
         with:
           config: |
             paths:
@@ -96,7 +91,7 @@ jobs:
           queries: +security-and-quality
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@4dd16135b69a43b6c8efb853346f8437d92d3c93 # v3.26.6
+        uses: github/codeql-action/analyze@662472033e021d55d94146f66f6058822b0b39fd # v3.27.0
         with:
           category: "/language:javascript-typescript"
 
@@ -112,9 +107,9 @@ jobs:
         module: ["bundler", "node"]
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -143,9 +138,9 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -167,9 +162,9 @@ jobs:
     needs:
       - build
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -196,7 +191,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
         env: ["dev", "built"]
-        builder: ["vite", "webpack"]
+        builder: ["vite", "rspack", "webpack"]
         context: ["async", "default"]
         manifest: ["manifest-on", "manifest-off"]
         version: ["v4", "v3"]
@@ -205,12 +200,18 @@ jobs:
         exclude:
           - builder: "webpack"
             payload: "js"
+          - builder: "rspack"
+            payload: "js"
           - manifest: "manifest-off"
             payload: "js"
           - context: "default"
             payload: "js"
           - os: windows-latest
             payload: "js"
+          - env: "dev"
+            builder: "rspack"
+          - manifest: "manifest-off"
+            builder: "rspack"
           - env: "dev"
             builder: "webpack"
           - manifest: "manifest-off"
@@ -219,9 +220,9 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -249,7 +250,7 @@ jobs:
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || matrix.payload == 'js' || runner.os == 'Windows' }}
 
-      - uses: codecov/codecov-action@e28ff129e5465c2c0dcc6f003fc735cb6ae0c673 # v4.5.0
+      - uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -263,7 +264,6 @@ jobs:
       github.event_name == 'push' &&
       github.repository == 'nuxt/nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
-      !startsWith(github.event.head_commit.message, 'chore') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
       - lint
@@ -273,11 +273,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"
@@ -314,11 +314,11 @@ jobs:
     timeout-minutes: 20
 
     steps:
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@1e60f620b9541d16bece96c5465dc8ee9832be0b # v4.0.3
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
           node-version: 20
           cache: "pnpm"

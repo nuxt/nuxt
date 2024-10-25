@@ -99,9 +99,12 @@
 
 <script setup lang="ts">
 import { setupDevtoolsPlugin } from '@vue/devtools-api'
+import { toDisplayString } from 'vue'
 import { useRuntimeConfig } from '#imports'
 import { importedRE, importedValue } from '~/some-exports'
 import type { NuxtIsland, ServerOnlyComponent } from '#build/components'
+
+toDisplayString(useRoute())
 
 setupDevtoolsPlugin({}, () => {}) as any
 const island = ref<InstanceType<typeof ServerOnlyComponent>>()

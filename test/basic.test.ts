@@ -12,7 +12,7 @@ import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, par
 
 import type { NuxtIslandResponse } from '#app'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 const isTestingAppManifest = process.env.TEST_MANIFEST !== 'manifest-off'
 const isV4 = process.env.TEST_V4 === 'true'
 
@@ -191,15 +191,15 @@ describe('pages', () => {
   })
 
   it('validates routes', async () => {
-    const { status, headers } = await fetch('/forbidden')
+    const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
     expect(headers.get('Set-Cookie')).toBe('set-in-plugin=true; Path=/')
 
     const { page } = await renderPage('/navigate-to-forbidden')
 
     await page.getByText('should throw a 404 error').click()
-    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /forbidden"')
-    expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /forbidden"')
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"Page Not Found: /catchall/forbidden"')
+    expect(await page.getByTestId('path').textContent()).toMatchInlineSnapshot('" Path: /catchall/forbidden"')
 
     await gotoPath(page, '/navigate-to-forbidden')
     await page.getByText('should be caught by catchall').click()
@@ -247,13 +247,13 @@ describe('pages', () => {
     await serverPage.close()
   })
 
-  it('returns 500 when there is an infinite redirect', async () => {
-    const { status } = await fetch('/redirect-infinite', { redirect: 'manual' })
+  it.runIf(isDev())('returns 500 when there is an infinite redirect', async () => {
+    const { status } = await fetch('/catchall/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
   })
 
   it('render catchall page', async () => {
-    const res = await fetch('/not-found')
+    const res = await fetch('/catchall/not-found')
     expect(res.status).toEqual(200)
 
     const html = await res.text()
@@ -267,7 +267,7 @@ describe('pages', () => {
     // Middleware still runs after validation: https://github.com/nuxt/nuxt/issues/15650
     expect(html).toContain('Middleware ran: true')
 
-    await expectNoClientErrors('/not-found')
+    await expectNoClientErrors('/catchall/not-found')
   })
 
   it('should render correctly when loaded on a different path', async () => {
@@ -617,6 +617,11 @@ describe('pages', () => {
 
       expect(status).toBe(200)
     }
+  })
+
+  it.skipIf(isDev() || isWebpack /* TODO: fix bug with import.meta.prerender being undefined in webpack build */)('prerenders pages hinted with a route rule', async () => {
+    const html = await $fetch('/prerender/test')
+    expect(html).toContain('should be prerendered: true')
   })
 })
 
@@ -1168,16 +1173,29 @@ describe('errors', () => {
 
   // TODO: need to create test for webpack
   it.runIf(!isDev())('should handle chunk loading errors', async () => {
-    const { page, consoleLogs } = await renderPage('/')
+    const { page, consoleLogs } = await renderPage()
+    await page.route(/\.css/, route => route.abort('timedout')) // verify CSS link preload failure doesn't break the page
+    await page.goto(url('/'))
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/' && !window.useNuxtApp?.().isHydrating)
+
+    const initialLogs = consoleLogs.map(c => c.text).join('')
+    expect(initialLogs).toContain('caught chunk load error')
+    consoleLogs.length = 0
+
     await page.getByText('Increment state').click()
     await page.getByText('Increment state').click()
     expect(await page.innerText('div')).toContain('Some value: 3')
     await page.route(/.*/, route => route.abort('timedout'), { times: 1 })
     await page.getByText('Chunk error').click()
+
     await page.waitForURL(url('/chunk-error'))
-    expect(consoleLogs.map(c => c.text).join('')).toContain('Failed to load resource')
-    expect(await page.innerText('div')).toContain('Chunk error page')
+
+    const logs = consoleLogs.map(c => c.text).join('')
+    expect(logs).toContain('caught chunk load error')
+    expect(logs).toContain('Failed to load resource')
+
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/chunk-error')
+    expect(await page.innerText('div')).toContain('Chunk error page')
     await page.locator('div').getByText('State: 3').waitFor()
 
     await page.close()
@@ -1258,6 +1276,13 @@ describe('middlewares', () => {
     // expect(html).toMatchInlineSnapshot()
 
     expect(html).toContain('Hello Nuxt 3!')
+  })
+
+  it('should allow redirection from a non-existent route with `ssr: false`', async () => {
+    const page = await createPage('/redirect/catchall')
+
+    expect(await page.getByRole('heading').textContent()).toMatchInlineSnapshot('"[...slug].vue"')
+    await page.close()
   })
 
   it('should allow aborting navigation on server-side', async () => {
@@ -1377,12 +1402,12 @@ describe('ignore list', () => {
     expect(html).toContain('was import ignored: true')
   })
   it('should ignore scanned nitro handlers in .nuxtignore', async () => {
-    const html = await $fetch<string>('/ignore/scanned')
-    expect(html).not.toContain('this should be ignored')
+    const { status } = await fetch('/ignore/scanned')
+    expect(status).toBe(404)
   })
   it.skipIf(isDev())('should ignore public assets in .nuxtignore', async () => {
-    const html = await $fetch<string>('/ignore/public-asset')
-    expect(html).not.toContain('this should be ignored')
+    const { status } = await fetch('/ignore/public-asset')
+    expect(status).toBe(404)
   })
 })
 
@@ -1449,7 +1474,7 @@ describe('extends support', () => {
       expect(html).toContain('Middleware | override: Injected by extended middleware from bar')
     })
     it('global middlewares sorting', async () => {
-      const html = await $fetch<string>('/middleware/ordering')
+      const html = await $fetch<string>('/catchall/middleware/ordering')
       expect(html).toContain('catchall at middleware')
     })
   })
@@ -1472,7 +1497,7 @@ describe('extends support', () => {
     })
 
     it('respects plugin ordering within layers', async () => {
-      const html = await $fetch<string>('/plugins/ordering')
+      const html = await $fetch<string>('/catchall/plugins/ordering')
       expect(html).toContain('catchall at plugins')
     })
   })
@@ -1800,7 +1825,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('should not include inlined CSS in generated CSS file', async () => {
     const html: string = await $fetch<string>('/styles')
-    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)">/g)].map(m => m[1]!))
+    const cssFiles = new Set([...html.matchAll(/<link [^>]*href="([^"]*\.css)"(?: crossorigin)?>/g)].map(m => m[1]!))
     let css = ''
     for (const file of cssFiles || []) {
       css += await $fetch<string>(file)
@@ -1821,9 +1846,11 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
 
   it('does not load stylesheet for page styles', async () => {
     const html: string = await $fetch<string>('/styles')
-    expect(html.match(/<link [^>]*href="[^"]*\.css">/g)?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
+    const cssFiles = html.match(/<link [^>]*href="[^"]*\.css"/g)
+    expect(cssFiles?.length).toBeGreaterThan(0)
+    expect(cssFiles?.filter(m => m.includes('entry'))?.map(m => m.replace(/\.[^.]*\.css/, '.css'))).toMatchInlineSnapshot(`
       [
-        "<link rel="stylesheet" href="/_nuxt/entry.css">",
+        "<link rel="stylesheet" href="/_nuxt/entry.css"",
       ]
     `)
   })
@@ -1958,6 +1985,15 @@ describe('server components/islands', () => {
     const html = await $fetch<string>('/server-page')
     // test island head
     expect(html).toContain('<meta name="author" content="Nuxt">')
+  })
+
+  it('/server-page - client side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.getByText('to server page').click()
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
+    await page.close()
   })
 
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
@@ -2355,6 +2391,7 @@ describe('component islands', () => {
         {
           "link": [
             {
+              "crossorigin": "",
               "href": "/_nuxt/components/islands/PureComponent.vue?vue&type=style&index=0&scoped=c0c0cf89&lang.css",
               "rel": "stylesheet",
             },
@@ -2445,7 +2482,7 @@ describe.runIf(isDev() && !isWebpack)('vite plugins', () => {
     expect(await $fetch<string>('/__nuxt-test')).toBe('vite-plugin with __nuxt prefix')
   })
   it('does not allow direct access to nuxt source folder', async () => {
-    expect(await $fetch<string>('/app.config')).toContain('catchall at')
+    expect(await fetch('/app.config').then(r => r.status)).toBe(404)
   })
 })
 

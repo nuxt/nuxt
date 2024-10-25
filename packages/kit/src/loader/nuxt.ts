@@ -33,19 +33,19 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
-  const majorVersion = pkg.version ? Number.parseInt(pkg.version.split('.')[0]) : ''
+  const majorVersion = pkg.version ? Number.parseInt(pkg.version.split('.')[0]!) : ''
 
   const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
 
   // Nuxt 3
   if (majorVersion && majorVersion >= 3) {
-    const { loadNuxt } = await importModule((pkg as any)._name || pkg.name, rootDir)
+    const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { paths: rootDir })
     const nuxt = await loadNuxt(opts)
     return nuxt
   }
 
   // Nuxt 2
-  const { loadNuxt } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
+  const { loadNuxt } = await tryImportModule<{ loadNuxt: any }>('nuxt-edge', { paths: rootDir }) || await importModule<{ loadNuxt: any }>('nuxt', { paths: rootDir })
   const nuxt = await loadNuxt({
     rootDir: opts.cwd,
     for: opts.dev ? 'dev' : 'build',
@@ -75,11 +75,11 @@ export async function buildNuxt (nuxt: Nuxt): Promise<any> {
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
-    const { build } = await tryImportModule('nuxt-nightly', rootDir) || await tryImportModule('nuxt3', rootDir) || await importModule('nuxt', rootDir)
+    const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { paths: rootDir }) || await tryImportModule<typeof import('nuxt')>('nuxt3', { paths: rootDir }) || await importModule<typeof import('nuxt')>('nuxt', { paths: rootDir })
     return build(nuxt)
   }
 
   // Nuxt 2
-  const { build } = await tryImportModule('nuxt-edge', rootDir) || await importModule('nuxt', rootDir)
+  const { build } = await tryImportModule<{ build: any }>('nuxt-edge', { paths: rootDir }) || await importModule<{ build: any }>('nuxt', { paths: rootDir })
   return build(nuxt)
 }

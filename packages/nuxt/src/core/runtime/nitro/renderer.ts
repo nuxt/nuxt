@@ -326,7 +326,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Render 103 Early Hints
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
-    writeEarlyHints(event, link)
+    if (link) {
+      writeEarlyHints(event, link)
+    }
   }
 
   if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
@@ -384,7 +386,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       link: [
         process.env.NUXT_JSON_PAYLOADS
           ? { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }
-          : { rel: 'modulepreload', href: payloadURL },
+          : { rel: 'modulepreload', crossorigin: '', href: payloadURL },
       ],
     }, headEntryOptions)
   }
@@ -395,8 +397,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
-    for (const style in styles) {
-      const resource = styles[style]
+    for (const resource of Object.values(styles)) {
       // Do not add links to resources that are inlined (vite v5+)
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
         continue
@@ -406,7 +407,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       // - in dev mode when not rendering an island
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
       }
     }
     if (link.length) {
@@ -495,7 +496,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,
       head: islandHead,
-      html: getServerComponentHTML(htmlContext.body),
+      html: getServerComponentHTML(htmlContext.body as [string, ...string[]]),
       components: getClientIslandResponse(ssrContext),
       slots: getSlotIslandResponse(ssrContext),
     }
@@ -567,7 +568,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
-    if (mod in styleMap) {
+    if (mod in styleMap && styleMap[mod]) {
       for (const style of await styleMap[mod]()) {
         inlinedStyles.add(style)
       }
@@ -649,9 +650,9 @@ function splitPayload (ssrContext: NuxtSSRContext) {
 /**
  * remove the root node from the html body
  */
-function getServerComponentHTML (body: string[]): string {
+function getServerComponentHTML (body: [string, ...string[]]): string {
   const match = body[0].match(ROOT_NODE_REGEX)
-  return match ? match[1] : body[0]
+  return match?.[1] || body[0]
 }
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
@@ -661,10 +662,10 @@ const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*;(.*)$/
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
-  for (const slot in ssrContext.islandContext.slots) {
-    response[slot] = {
-      ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
+  for (const [name, slot] of Object.entries(ssrContext.islandContext.slots)) {
+    response[name] = {
+      ...slot,
+      fallback: ssrContext.teleports?.[`island-fallback=${name}`],
     }
   }
   return response
@@ -674,11 +675,11 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
 
-  for (const clientUid in ssrContext.islandContext.components) {
+  for (const [clientUid, component] of Object.entries(ssrContext.islandContext.components)) {
     // remove teleport anchor to avoid hydration issues
-    const html = ssrContext.teleports?.[clientUid].replaceAll('<!--teleport start anchor-->', '') || ''
+    const html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
-      ...ssrContext.islandContext.components[clientUid],
+      ...component,
       html,
       slots: getComponentSlotTeleport(ssrContext.teleports ?? {}),
     }

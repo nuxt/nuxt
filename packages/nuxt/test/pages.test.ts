@@ -603,6 +603,31 @@ describe('pages:generateRoutesFromFiles', () => {
       ],
     },
     {
+      description: 'route.meta props generate by file',
+      files: [
+        {
+          path: `${pagesDir}/page-with-props.vue`,
+          template: `
+            <script setup lang="ts">
+            definePageMeta({
+              props: true
+            })
+            </script>
+          `,
+        },
+      ],
+      output: [
+        {
+          name: 'page-with-props',
+          path: '/page-with-props',
+          file: `${pagesDir}/page-with-props.vue`,
+          meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+          children: [],
+          props: true,
+        },
+      ],
+    },
+    {
       description: 'should handle route groups',
       files: [
         { path: `${pagesDir}/(foo)/index.vue` },
@@ -654,7 +679,7 @@ describe('pages:generateRoutesFromFiles', () => {
           }))).map((route, index) => {
             return {
               ...route,
-              meta: test.files![index].meta,
+              meta: test.files![index]!.meta,
             }
           })
 
@@ -668,8 +693,18 @@ describe('pages:generateRoutesFromFiles', () => {
 
       if (result) {
         expect(result).toEqual(test.output)
-        normalizedResults[test.description] = normalizeRoutes(result, new Set()).routes
-        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), true).routes
+
+        normalizedResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: false,
+        }).routes
+
+        normalizedOverrideMetaResults[test.description] = normalizeRoutes(result, new Set(), {
+          clientComponentRuntime: '<client-component-runtime>',
+          serverComponentRuntime: '<server-component-runtime>',
+          overrideMeta: true,
+        }).routes
       }
     })
   }
