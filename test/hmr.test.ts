@@ -10,7 +10,7 @@ import { expectWithPolling, renderPage } from './utils'
 // TODO: update @nuxt/test-utils
 const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {
@@ -72,16 +72,16 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
     it('should detect new routes', async () => {
       await expectWithPolling(
-        () => $fetch<string>('/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
+        () => $fetch<string>('/catchall/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
         true,
       )
 
       // write new page route
       const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
+      await fsp.writeFile(join(fixturePath, 'pages/catchall/some-404.vue'), indexVue)
 
       await expectWithPolling(
-        () => $fetch<string>('/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
+        () => $fetch<string>('/catchall/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
         true,
       )
     })

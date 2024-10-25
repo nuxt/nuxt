@@ -44,6 +44,7 @@ import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -177,9 +178,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
+  const NESTED_PKG_RE = /^[^@]+\//
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
+    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
     const subpath = _subpath ? '/' + _subpath : ''
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
@@ -239,6 +241,10 @@ async function initNuxt (nuxt: Nuxt) {
       await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
     }
   }
+
+  // Support Nuxt VFS
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'server' }), { client: false })
+  addBuildPlugin(VirtualFSPlugin(nuxt, { mode: 'client', alias: { 'nitro/runtime': join(nuxt.options.buildDir, 'nitro.client.mjs') } }), { server: false })
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
@@ -492,9 +498,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   const envMap = {
     // defaults from `builder` based on package name
+    '@nuxt/rspack-builder': '@rspack/core/module',
     '@nuxt/vite-builder': 'vite/client',
     '@nuxt/webpack-builder': 'webpack/module',
     // simpler overrides from `typescript.builder` for better DX
+    'rspack': '@rspack/core/module',
     'vite': 'vite/client',
     'webpack': 'webpack/module',
     // default 'merged' builder environment for module authors

@@ -1,6 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -16,11 +16,13 @@ import { ComponentNamePlugin } from './plugins/component-names'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
+const SLASH_SEPARATOR_RE = /[\\/]/
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
-  return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
+  return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
 
 const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
+const STARTER_DOT_RE = /^\./g
 
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
@@ -32,7 +34,7 @@ export default defineNuxtModule<ComponentsOptions>({
   defaults: {
     dirs: [],
   },
-  setup (componentOptions, nuxt) {
+  async setup (componentOptions, nuxt) {
     let componentDirs: ComponentsDir[] = []
     const context = {
       components: [] as Component[],
@@ -89,7 +91,7 @@ export default defineNuxtModule<ComponentsOptions>({
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
 
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
@@ -134,8 +136,9 @@ export default defineNuxtModule<ComponentsOptions>({
       addTemplate(componentsMetadataTemplate)
     }
 
-    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'server'), { server: true, client: false })
-    addBuildPlugin(TransformPlugin(nuxt, getComponents, 'client'), { server: false, client: true })
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'server' }), { server: true, client: false })
+    addBuildPlugin(TransformPlugin(nuxt, { getComponents, serverComponentRuntime, mode: 'client' }), { server: false, client: true })
 
     // Do not prefetch global components chunks
     nuxt.hook('build:manifest', (manifest) => {
@@ -162,7 +165,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
     })
 
-    const serverPlaceholderPath = resolve(distDir, 'app/components/server-placeholder')
+    const serverPlaceholderPath = await findPath(join(distDir, 'app/components/server-placeholder')) ?? join(distDir, 'app/components/server-placeholder')
 
     // Scan components and add to plugin
     nuxt.hook('app:templates', async (app) => {
@@ -222,6 +225,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const sharedLoaderOptions = {
       getComponents,
+      serverComponentRuntime,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
@@ -272,16 +276,18 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
 
-      nuxt.hook('webpack:config', (configs) => {
-        configs.forEach((config) => {
-          const mode = config.name === 'client' ? 'client' : 'server'
-          config.plugins = config.plugins || []
+      for (const key of ['rspack:config', 'webpack:config'] as const) {
+        nuxt.hook(key, (configs) => {
+          configs.forEach((config) => {
+            const mode = config.name === 'client' ? 'client' : 'server'
+            config.plugins = config.plugins || []
 
-          if (mode !== 'server') {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          }
+            if (mode !== 'server') {
+              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            }
+          })
         })
-      })
+      }
     }
   },
 })

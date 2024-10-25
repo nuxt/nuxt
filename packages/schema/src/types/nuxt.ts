@@ -42,6 +42,12 @@ export interface NuxtTemplate<Options = TemplateDefaultOptions> {
   write?: boolean
 }
 
+export interface NuxtServerTemplate {
+  /** The target filename once the template is copied into the Nuxt buildDir */
+  filename: string
+  getContents: () => string | Promise<string>
+}
+
 export interface ResolvedNuxtTemplate<Options = TemplateDefaultOptions> extends NuxtTemplate<Options> {
   filename: string
   dst: string

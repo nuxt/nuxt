@@ -2,25 +2,26 @@ import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
 import { pascalCase } from 'scule'
-import { resolve } from 'pathe'
+import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { logger, tryUseNuxt } from '@nuxt/kit'
-import { distDir } from '../../dirs'
-import { isVue } from '../../core/utils'
+import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 
 interface LoaderOptions {
   getComponents (): Component[]
   mode: 'server' | 'client'
+  serverComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
 }
 
+const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
-  const serverComponentRuntime = resolve(distDir, 'components/runtime/server-component')
+  const nuxt = tryUseNuxt()
 
   return {
     name: 'nuxt:components-loader',
@@ -32,9 +33,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       if (include.some(pattern => pattern.test(id))) {
         return true
       }
-      return isVue(id, { type: ['template', 'script'] }) || !!id.match(/\.[tj]sx$/)
+      return isVue(id, { type: ['template', 'script'] }) || !!id.match(SX_RE)
     },
-    transform (code) {
+    transform (code, id) {
       const components = options.getComponents()
 
       let num = 0
@@ -43,13 +44,17 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const s = new MagicString(code)
 
       // replace `_resolveComponent("...")` to direct import
-      s.replace(/(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g, (full: string, lazy: string, name: string) => {
+      s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, lazy: string, name: string) => {
         const component = findComponent(components, name, options.mode)
         if (component) {
-          // @ts-expect-error TODO: refactor to nuxi
-          if (component._internal_install && tryUseNuxt()?.options.test === false) {
-            // @ts-expect-error TODO: refactor to nuxi
-            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(component._internal_install))
+          // TODO: refactor to nuxi
+          const internalInstall = ((component as any)._internal_install) as string
+          if (internalInstall && nuxt?.options.test === false) {
+            if (!nuxt.options.dev) {
+              const relativePath = relative(nuxt.options.rootDir, id)
+              throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
+            }
+            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(internalInstall))
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
@@ -57,7 +62,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           const isServerOnly = !component._raw && component.mode === 'server' &&
             !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')
           if (isServerOnly) {
-            imports.add(genImport(serverComponentRuntime, [{ name: 'createServerComponent' }]))
+            imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
             if (!options.experimentalComponentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
@@ -107,7 +112,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 })
 
 function findComponent (components: Component[], name: string, mode: LoaderOptions['mode']) {
-  const id = pascalCase(name).replace(/["']/g, '')
+  const id = pascalCase(name).replace(QUOTE_RE, '')
   // Prefer exact match
   const component = components.find(component => id === component.pascalName && ['all', mode, undefined].includes(component.mode))
   if (component) { return component }
