@@ -2377,7 +2377,7 @@ describe('component islands', () => {
           "link": [],
           "style": [
             {
-              "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
             },
           ],
         }
@@ -2746,7 +2746,11 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         if (style.innerHTML) {
-          style.innerHTML = (style.innerHTML as string).replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          style.innerHTML =
+            (style.innerHTML as string)
+              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+              // Vite 6 enables CSS minify by default for SSR
+              .replace(/blue/, '#00f')
         }
         if (style.key) {
           style.key = style.key.replace(/-[a-z0-9]+$/i, '')
