@@ -97,7 +97,7 @@
     "nuxt-content-twoslash": "0.1.1",
     "ofetch": "1.4.1",
     "pathe": "1.1.2",
-    "playwright-core": "1.48.1",
+    "playwright-core": "1.48.2",
     "rimraf": "6.0.1",
     "semver": "7.6.3",
     "sherif": "1.0.1",
