@@ -574,7 +574,7 @@ async function createClientPage(loader) {
       }
 
       if (route.props) {
-        metaRoute.props = route.props
+        metaRoute.props = serializeRouteValue(route.props)
       }
 
       if (route.meta) {
