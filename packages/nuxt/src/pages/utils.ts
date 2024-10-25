@@ -273,7 +273,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
             continue
           }
 
-          if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
+          if (property.value.type !== 'Literal' || typeof property.value.value !== 'string') {
             console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
