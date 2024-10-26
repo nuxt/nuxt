@@ -171,14 +171,13 @@ export function createResolver (base: string | URL): Resolver {
 export async function resolveNuxtModule (base: string, paths: string[]): Promise<string[]> {
   const resolved: string[] = new Array(paths.length)
   const resolver = createResolver(base)
-
-  for (let i = 0; i < paths.length; i++) {
-    const path = paths[i]!
+  let index = 0
+  for (const path of paths) {
     if (path.startsWith(base)) {
-      resolved[i] = path.split('/index.ts')[0]!
+      resolved[index++] = path.split('/index.ts')[0]!
     } else {
       const resolvedPath = await resolver.resolvePath(path)
-      resolved[i] = resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length)
+      resolved[index++] = resolvedPath.slice(0, resolvedPath.lastIndexOf(path) + path.length)
     }
   }
 

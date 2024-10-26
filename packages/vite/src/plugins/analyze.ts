@@ -19,9 +19,9 @@ export function analyzePlugin (ctx: ViteBuildContext): Plugin[] {
           if (!bundle || bundle.type !== 'chunk') { continue }
           const allModules = Object.entries(bundle.modules)
           const minifiedModuleEntryPromises: Array<Promise<[string, RenderedModule]>> = new Array(allModules.length)
-          for (let i = 0; i < allModules.length; i++) {
-            const [moduleId, module] = allModules[i]!
-            minifiedModuleEntryPromises[i] = transform(module.code || '', { minify: true }).then(result => [moduleId, { ...module, code: result.code }])
+          let index = 0
+          for (const [moduleId, module] of allModules) {
+            minifiedModuleEntryPromises[index++] = transform(module.code || '', { minify: true }).then(result => [moduleId, { ...module, code: result.code }])
           }
           bundle.modules = Object.fromEntries(await Promise.all(minifiedModuleEntryPromises))
         }

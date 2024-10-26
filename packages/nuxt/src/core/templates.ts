@@ -66,12 +66,12 @@ export const clientPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(clientPlugins)
     const exports: string[] = new Array(clientPlugins.length)
     const imports: string[] = new Array(clientPlugins.length)
-    for (let i = 0; i < clientPlugins.length; i++) {
-      const plugin = clientPlugins[i]!
+    let index = 0
+    for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(plugin.src)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
-      exports[i] = variable
-      imports[i] = genImport(plugin.src, variable)
+      exports[index] = variable
+      imports[index++] = genImport(plugin.src, variable)
     }
     return [
       ...imports,
@@ -87,12 +87,12 @@ export const serverPluginTemplate: NuxtTemplate = {
     checkForCircularDependencies(serverPlugins)
     const exports: string[] = new Array(serverPlugins.length)
     const imports: string[] = new Array(serverPlugins.length)
-    for (let i = 0; i < serverPlugins.length; i++) {
-      const plugin = serverPlugins[i]!
+    let index = 0
+    for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
       const variable = genSafeVariableName(filename(path)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
-      exports[i] = variable
-      imports[i] = genImport(plugin.src, variable)
+      exports[index] = variable
+      imports[index++] = genImport(plugin.src, variable)
     }
     return [
       ...imports,
