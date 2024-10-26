@@ -38,6 +38,40 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
   }
 
+  /**
+   * extract attributes from a node
+   */
+  function extractAttributes (attributes: Record<string, string>, names: string[]) {
+    const extracted: Record<string, string> = {}
+    for (const name of names) {
+      if (name in attributes) {
+        extracted[name] = attributes[name]!
+        delete attributes[name]
+      }
+    }
+    return extracted
+  }
+
+  function attributeToString (attributes: Record<string, string>) {
+    return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+  }
+
+  function isBinding (attr: string): boolean {
+    return attr.startsWith(':')
+  }
+
+  function getPropsToString (bindings: Record<string, string>): string {
+    const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
+    if (Object.keys(bindings).length === 0) { return 'undefined' }
+    const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
+    const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
+    if (!vfor) {
+      return `[${data}]`
+    } else {
+      return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
+    }
+  }
+
   return {
     name: 'nuxt:server-only-component-transform',
     enforce: 'pre',
@@ -144,40 +178,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     },
   }
 })
-
-/**
- * extract attributes from a node
- */
-function extractAttributes (attributes: Record<string, string>, names: string[]) {
-  const extracted: Record<string, string> = {}
-  for (const name of names) {
-    if (name in attributes) {
-      extracted[name] = attributes[name]!
-      delete attributes[name]
-    }
-  }
-  return extracted
-}
-
-function attributeToString (attributes: Record<string, string>) {
-  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
-}
-
-function isBinding (attr: string): boolean {
-  return attr.startsWith(':')
-}
-
-function getPropsToString (bindings: Record<string, string>): string {
-  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
-  if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
-  const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
-  if (!vfor) {
-    return `[${data}]`
-  } else {
-    return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
-  }
-}
 
 export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
   const { buildDir } = options
