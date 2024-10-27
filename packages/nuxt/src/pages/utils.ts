@@ -507,13 +507,14 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
 
       const route: NormalizedRoute = {
         path: serializeRouteValue(page.path),
+        props: serializeRouteValue(page.props),
         name: serializeRouteValue(page.name),
         meta: serializeRouteValue(metaFiltered, skipMeta),
         alias: serializeRouteValue(toArray(page.alias), skipAlias),
         redirect: serializeRouteValue(page.redirect),
       }
 
-      for (const key of ['path', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
+      for (const key of ['path', 'props', 'name', 'meta', 'alias', 'redirect'] satisfies NormalizedRouteKeys) {
         if (route[key] === undefined) {
           delete route[key]
         }
@@ -574,7 +575,7 @@ async function createClientPage(loader) {
       }
 
       if (route.props) {
-        metaRoute.props = serializeRouteValue(route.props)
+        metaRoute.props = route.props
       }
 
       if (route.meta) {
