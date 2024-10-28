@@ -62,7 +62,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.13.0",
-    "@nuxt/eslint-config": "0.6.0",
+    "@nuxt/eslint-config": "0.6.1",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "3.14.4",
@@ -112,7 +112,7 @@
     "vue-router": "4.4.5",
     "vue-tsc": "2.1.8"
   },
-  "packageManager": "pnpm@9.12.2",
+  "packageManager": "pnpm@9.12.3",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
