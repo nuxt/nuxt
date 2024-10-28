@@ -68,6 +68,7 @@ export type NuxtConfigLayer = ResolvedConfig<NuxtConfig & {
   rootDir: ConfigSchema['rootDir']
 }> & {
   cwd: string
+  configFile: string
 }
 
 export interface NuxtBuilder {

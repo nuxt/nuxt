@@ -5,11 +5,14 @@ type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
+const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
+const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
+const ROUTE_KEY_NORMAL_RE = /:\w+/g
 const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocationMatched) => {
   return match.path
-    .replace(/(:\w+)\([^)]+\)/g, '$1')
-    .replace(/(:\w+)[?+*]/g, '$1')
-    .replace(/:\w+/g, r => route.params[r.slice(1)]?.toString() || '')
+    .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
+    .replace(ROUTE_KEY_SYMBOLS_RE, '$1')
+    .replace(ROUTE_KEY_NORMAL_RE, r => route.params[r.slice(1)]?.toString() || '')
 }
 
 export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: string | ((route: RouteLocationNormalizedLoaded) => string)) => {
