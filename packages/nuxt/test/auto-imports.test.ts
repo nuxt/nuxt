@@ -86,7 +86,10 @@ const excludedVueHelpers = [
   // Already globally registered
   'defineEmits',
   'defineExpose',
+  'defineModel',
+  'defineOptions',
   'defineProps',
+  'defineSlots',
   'withDefaults',
   'stop',
   //
