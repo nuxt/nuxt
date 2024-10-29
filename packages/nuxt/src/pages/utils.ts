@@ -543,7 +543,7 @@ export function normalizeRoutes (routes: NuxtPage[], metaImports: Set<string> = 
       const metaRoute: NormalizedRoute = {
         name: `${metaImportName}?.name ?? ${route.name}`,
         path: `${metaImportName}?.path ?? ${route.path}`,
-        props: `${metaImportName}?.props ?? false`,
+        props: `${metaImportName}?.props ?? ${route.props ?? false}`,
         meta: `${metaImportName} || {}`,
         alias: `${metaImportName}?.alias || []`,
         redirect: `${metaImportName}?.redirect`,
@@ -572,10 +572,6 @@ async function createClientPage(loader) {
 
       if (route.children) {
         metaRoute.children = route.children
-      }
-
-      if (route.props) {
-        metaRoute.props = route.props
       }
 
       if (route.meta) {
