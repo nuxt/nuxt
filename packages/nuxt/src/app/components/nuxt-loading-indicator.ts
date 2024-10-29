@@ -50,7 +50,7 @@ export default defineComponent({
         pointerEvents: 'none',
         width: 'auto',
         height: `${props.height}px`,
-        opacity: isLoading.value ? 1 : 0,
+        opacity: 1,
         background: error.value ? props.errorColor : props.color || undefined,
         backgroundSize: `${(100 / progress.value) * 100}% auto`,
         transform: `scaleX(${progress.value}%)`,
