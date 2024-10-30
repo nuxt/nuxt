@@ -16,11 +16,13 @@ import { ComponentNamePlugin } from './plugins/component-names'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
+const SLASH_SEPARATOR_RE = /[\\/]/
 function compareDirByPathLength ({ path: pathA }: { path: string }, { path: pathB }: { path: string }) {
-  return pathB.split(/[\\/]/).filter(Boolean).length - pathA.split(/[\\/]/).filter(Boolean).length
+  return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
 
 const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
+const STARTER_DOT_RE = /^\./g
 
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
@@ -89,7 +91,7 @@ export default defineNuxtModule<ComponentsOptions>({
         const dirOptions: ComponentsDir = typeof dir === 'object' ? dir : { path: dir }
         const dirPath = resolveAlias(dirOptions.path)
         const transpile = typeof dirOptions.transpile === 'boolean' ? dirOptions.transpile : 'auto'
-        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(/^\./g, ''))
+        const extensions = (dirOptions.extensions || nuxt.options.extensions).map(e => e.replace(STARTER_DOT_RE, ''))
 
         const present = isDirectory(dirPath)
         if (!present && !DEFAULT_COMPONENTS_DIRS_RE.test(dirOptions.path)) {
@@ -274,16 +276,18 @@ export default defineNuxtModule<ComponentsOptions>({
         }
       })
 
-      nuxt.hook('webpack:config', (configs) => {
-        configs.forEach((config) => {
-          const mode = config.name === 'client' ? 'client' : 'server'
-          config.plugins = config.plugins || []
+      for (const key of ['rspack:config', 'webpack:config'] as const) {
+        nuxt.hook(key, (configs) => {
+          configs.forEach((config) => {
+            const mode = config.name === 'client' ? 'client' : 'server'
+            config.plugins = config.plugins || []
 
-          if (mode !== 'server') {
-            writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
-          }
+            if (mode !== 'server') {
+              writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
+            }
+          })
         })
-      })
+      }
     }
   },
 })
