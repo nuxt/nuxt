@@ -17,5 +17,3 @@ This composable is available in Nuxt v3.14+.
 ```ts [signature]
 useRuntimeHook<THookName extends keyof RuntimeNuxtHooks>(name: THookName, fn: RuntimeNuxtHooks): void
 ```
-
-
