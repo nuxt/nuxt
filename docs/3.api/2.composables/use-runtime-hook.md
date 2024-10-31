@@ -18,5 +18,3 @@ This composable is available in Nuxt v3.14+.
 useRuntimeHook <T> (key: string, get: () => T, set: (value: T) => void) => {}
 useRuntimeHook<THookName extends keyof RuntimeNuxtHooks>(name: THookName, fn: RuntimeNuxtHooks): void
 ```
-
-
