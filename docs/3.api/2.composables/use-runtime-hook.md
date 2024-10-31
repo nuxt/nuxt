@@ -4,7 +4,7 @@ description: Registers a runtime hook in a Nuxt application and ensures it is pr
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/hook.ts
+    to: https://github.com/nuxt/nuxt/blob/main/packages/nuxt/src/app/composables/runtime-hook.ts
     size: xs
 ---
 
