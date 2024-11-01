@@ -12,86 +12,12 @@ declare module 'nitro/types' {
 }
 
 export default defineNuxtConfig({
-  compatibilityDate: '2024-06-28',
-  app: {
-    pageTransition: true,
-    layoutTransition: true,
-    teleportId: 'nuxt-teleport',
-    teleportTag: 'span',
-    head: {
-      charset: 'utf-8',
-      link: [undefined],
-      meta: [
-        { name: 'viewport', content: 'width=1024, initial-scale=1' },
-        { charset: 'utf-8' },
-        { name: 'description', content: 'Nuxt Fixture' },
-      ],
-    },
-    keepalive: {
-      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
-    },
-  },
-  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
   appId: 'nuxt-app-basic',
-  build: {
-    transpile: [
-      (ctx) => {
-        if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
-        return false
-      },
-    ],
-  },
-  css: ['~/assets/global.css'],
-  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
-  theme: './extends/bar',
   extends: [
     './extends/node_modules/foo',
   ],
-  nitro: {
-    publicAssets: [
-      {
-        dir: '../custom-public',
-        baseURL: '/custom',
-      },
-    ],
-    esbuild: {
-      options: {
-        // in order to test bigint serialization
-        target: 'es2022',
-      },
-    },
-    routeRules: {
-      '/route-rules/spa': { ssr: false },
-      '/redirect/catchall': { ssr: false },
-      '/head-spa': { ssr: false },
-      '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
-      '/hydration/spa-redirection/**': { ssr: false },
-      '/no-scripts': { experimentalNoScripts: true },
-      '/prerender/**': { prerender: true },
-    },
-    prerender: {
-      routes: [
-        '/random/a',
-        '/random/b',
-        '/random/c',
-        '/prefetch/server-components',
-      ],
-    },
-  },
-  optimization: {
-    keyedComposables: [
-      {
-        name: 'useCustomKeyedComposable',
-        source: '~/other-composables-folder/custom-keyed-composable',
-        argumentLength: 1,
-      },
-    ],
-  },
-  runtimeConfig: {
-    public: {
-      needsFallback: undefined,
-    },
-  },
+  // this produces an order of `~` > `~/extends/bar` > `~/extends/node_modules/foo`
+  theme: './extends/bar',
   modules: [
     function (_options, nuxt) {
       // ensure setting `runtimeConfig` also sets `nitro.runtimeConfig`
@@ -149,7 +75,7 @@ export default defineNuxtConfig({
           _layout: page.meta?.layout,
         },
       })
-      nuxt.hook('pages:extend', (pages) => {
+      nuxt.hook('pages:resolved', (pages) => {
         const newPages = []
         for (const page of pages) {
           if (routesToDuplicate.includes(page.path)) {
@@ -162,7 +88,7 @@ export default defineNuxtConfig({
     },
     function (_options, nuxt) {
       // to check that page metadata is preserved
-      nuxt.hook('pages:extend', (pages) => {
+      nuxt.hook('pages:resolved', (pages) => {
         const customName = pages.find(page => page.name === 'some-custom-name')
         if (!customName) { throw new Error('Page with custom name not found') }
         if (customName.path !== '/some-custom-path') { throw new Error('Page path not extracted') }
@@ -174,6 +100,111 @@ export default defineNuxtConfig({
     // To test falsy module values
     undefined,
   ],
+  app: {
+    pageTransition: true,
+    layoutTransition: true,
+    teleportId: 'nuxt-teleport',
+    teleportTag: 'span',
+    head: {
+      charset: 'utf-8',
+      link: [undefined],
+      meta: [
+        { name: 'viewport', content: 'width=1024, initial-scale=1' },
+        { charset: 'utf-8' },
+        { name: 'description', content: 'Nuxt Fixture' },
+      ],
+    },
+    keepalive: {
+      include: ['keepalive-in-config', 'not-keepalive-in-nuxtpage'],
+    },
+  },
+  css: ['~/assets/global.css'],
+  vue: {
+    compilerOptions: {
+      isCustomElement: (tag) => {
+        return tag === 'custom-component'
+      },
+    },
+  },
+  appConfig: {
+    fromNuxtConfig: true,
+    nested: {
+      val: 1,
+    },
+  },
+  runtimeConfig: {
+    public: {
+      needsFallback: undefined,
+    },
+  },
+  builder: process.env.TEST_BUILDER as 'webpack' | 'rspack' | 'vite' ?? 'vite',
+  build: {
+    transpile: [
+      (ctx) => {
+        if (typeof ctx.isDev !== 'boolean') { throw new TypeError('context not passed') }
+        return false
+      },
+    ],
+  },
+  optimization: {
+    keyedComposables: [
+      {
+        name: 'useCustomKeyedComposable',
+        source: '~/other-composables-folder/custom-keyed-composable',
+        argumentLength: 1,
+      },
+    ],
+  },
+  features: {
+    inlineStyles: id => !!id && !id.includes('assets.vue'),
+  },
+  experimental: {
+    serverAppConfig: true,
+    typedPages: true,
+    clientFallback: true,
+    restoreState: true,
+    clientNodeCompat: true,
+    componentIslands: {
+      selectiveClient: 'deep',
+    },
+    asyncContext: process.env.TEST_CONTEXT === 'async',
+    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
+    headNext: true,
+    inlineRouteRules: true,
+  },
+  compatibilityDate: '2024-06-28',
+  nitro: {
+    publicAssets: [
+      {
+        dir: '../custom-public',
+        baseURL: '/custom',
+      },
+    ],
+    esbuild: {
+      options: {
+        // in order to test bigint serialization
+        target: 'es2022',
+      },
+    },
+    routeRules: {
+      '/route-rules/spa': { ssr: false },
+      '/redirect/catchall': { ssr: false },
+      '/head-spa': { ssr: false },
+      '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
+      '/hydration/spa-redirection/**': { ssr: false },
+      '/no-scripts': { experimentalNoScripts: true },
+      '/prerender/**': { prerender: true },
+    },
+    prerender: {
+      routes: [
+        '/random/a',
+        '/random/b',
+        '/random/c',
+        '/prefetch/server-components',
+      ],
+    },
+  },
   vite: {
     logLevel: 'silent',
     build: {
@@ -230,37 +261,6 @@ export default defineNuxtConfig({
           })
         },
       })
-    },
-  },
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => {
-        return tag === 'custom-component'
-      },
-    },
-  },
-  features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
-  },
-  experimental: {
-    serverAppConfig: true,
-    typedPages: true,
-    clientFallback: true,
-    restoreState: true,
-    clientNodeCompat: true,
-    componentIslands: {
-      selectiveClient: 'deep',
-    },
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
-    headNext: true,
-    inlineRouteRules: true,
-  },
-  appConfig: {
-    fromNuxtConfig: true,
-    nested: {
-      val: 1,
     },
   },
 })

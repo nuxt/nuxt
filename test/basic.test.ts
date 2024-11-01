@@ -1984,6 +1984,15 @@ describe('server components/islands', () => {
     expect(html).toContain('<meta name="author" content="Nuxt">')
   })
 
+  it('/server-page - client side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.getByText('to server page').click()
+    await page.waitForLoadState('networkidle')
+
+    expect(await page.innerHTML('head')).toContain('<meta name="author" content="Nuxt">')
+    await page.close()
+  })
+
   it.skipIf(isDev)('should allow server-only components to set prerender hints', async () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
@@ -2365,7 +2374,7 @@ describe('component islands', () => {
           "link": [],
           "style": [
             {
-              "innerHTML": "pre[data-v-xxxxx]{color:blue}",
+              "innerHTML": "pre[data-v-xxxxx]{color:#00f}",
             },
           ],
         }
@@ -2734,7 +2743,11 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
         if (style.innerHTML) {
-          style.innerHTML = (style.innerHTML as string).replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+          style.innerHTML =
+            (style.innerHTML as string)
+              .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
+              // Vite 6 enables CSS minify by default for SSR
+              .replace(/blue/, '#00f')
         }
         if (style.key) {
           style.key = style.key.replace(/-[a-z0-9]+$/i, '')

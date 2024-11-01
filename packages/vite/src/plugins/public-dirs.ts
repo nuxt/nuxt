@@ -10,6 +10,7 @@ import { isCSSRequest } from 'vite'
 const PREFIX = 'virtual:public?'
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
+const RENDER_CHUNK_RE = /(?<= = )['"`]/
 
 interface VitePublicDirsPluginOptions {
   dev?: boolean
@@ -70,7 +71,7 @@ export const VitePublicDirsPlugin = createUnplugin((options: VitePublicDirsPlugi
           if (!chunk.facadeModuleId?.includes('?inline&used')) { return }
 
           const s = new MagicString(code)
-          const q = code.match(/(?<= = )['"`]/)?.[0] || '"'
+          const q = code.match(RENDER_CHUNK_RE)?.[0] || '"'
           for (const [full, url] of code.matchAll(CSS_URL_RE)) {
             if (url && resolveFromPublicAssets(url)) {
               s.replace(full, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
@@ -108,13 +109,14 @@ export const VitePublicDirsPlugin = createUnplugin((options: VitePublicDirsPlugi
   ]
 })
 
+const PUBLIC_ASSETS_RE = /[?#].*$/
 export function useResolveFromPublicAssets () {
   const nitro = useNitro()
 
   function resolveFromPublicAssets (id: string) {
     for (const dir of nitro.options.publicAssets) {
       if (!id.startsWith(withTrailingSlash(dir.baseURL || '/'))) { continue }
-      const path = id.replace(/[?#].*$/, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
+      const path = id.replace(PUBLIC_ASSETS_RE, '').replace(withTrailingSlash(dir.baseURL || '/'), withTrailingSlash(dir.dir))
       if (existsSync(path)) {
         return id
       }

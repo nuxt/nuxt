@@ -34,24 +34,26 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }))
 
   /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
-  const nitro = useNitro()
-  const dynamicRequirePlugin = dynamicRequire({
-    dir: resolve(nuxt.options.buildDir, 'dist/server'),
-    inline:
+  if (!nuxt.options.dev) {
+    const nitro = useNitro()
+    const dynamicRequirePlugin = dynamicRequire({
+      dir: resolve(nuxt.options.buildDir, 'dist/server'),
+      inline:
       nitro.options.node === false || nitro.options.inlineDynamicImports,
-    ignore: [
-      'client.manifest.mjs',
-      'server.js',
-      'server.cjs',
-      'server.mjs',
-      'server.manifest.mjs',
-    ],
-  })
-  const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
-  const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
+      ignore: [
+        'client.manifest.mjs',
+        'server.js',
+        'server.cjs',
+        'server.mjs',
+        'server.manifest.mjs',
+      ],
+    })
+    const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
+    const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
 
-  prerenderRollupPlugins.push(dynamicRequirePlugin)
-  rollupPlugins.push(dynamicRequirePlugin)
+    prerenderRollupPlugins.push(dynamicRequirePlugin)
+    rollupPlugins.push(dynamicRequirePlugin)
+  }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
