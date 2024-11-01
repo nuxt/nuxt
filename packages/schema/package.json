@@ -44,7 +44,7 @@
     "@vitejs/plugin-vue-jsx": "4.0.1",
     "@vue/compiler-core": "3.5.12",
     "@vue/compiler-sfc": "3.5.12",
-    "@vue/language-core": "2.1.8",
+    "@vue/language-core": "2.1.10",
     "esbuild-loader": "4.2.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "ignore": "6.0.2",
@@ -58,7 +58,7 @@
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
     "vue-router": "4.4.5",
-    "webpack": "5.95.0",
+    "webpack": "5.96.0",
     "webpack-dev-middleware": "7.4.2"
   },
   "dependencies": {

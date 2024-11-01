@@ -40,7 +40,7 @@
     "@nuxt/ui-templates": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@types/node": "22.8.2",
+    "@types/node": "22.8.6",
     "@vue/compiler-core": "3.5.12",
     "@vue/compiler-dom": "3.5.12",
     "@vue/shared": "3.5.12",
@@ -52,7 +52,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.47",
-    "rollup": "4.24.2",
+    "rollup": "4.24.3",
     "send": ">=1.1.0",
     "typescript": "5.6.3",
     "ufo": "1.5.4",
@@ -69,7 +69,7 @@
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/eslint__js": "8.42.3",
-    "@types/node": "22.8.2",
+    "@types/node": "22.8.6",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.11.10",
     "@unhead/vue": "1.11.10",
@@ -110,7 +110,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.12",
     "vue-router": "4.4.5",
-    "vue-tsc": "2.1.8"
+    "vue-tsc": "2.1.10"
   },
   "packageManager": "pnpm@9.12.3",
   "engines": {
