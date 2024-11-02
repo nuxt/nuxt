@@ -1,7 +1,7 @@
 import { normalize } from 'pathe'
 import { describe, expect, it } from 'vitest'
 import { ImpoundPlugin } from 'impound'
-import { nuxtImportProtections } from '../src/core/plugins/import-protection'
+import { createImportProtectionPatterns } from '../src/core/plugins/import-protection'
 import type { NuxtOptions } from '../schema'
 
 const testsToTriggerOn = [
@@ -28,7 +28,7 @@ const testsToTriggerOn = [
 
 describe('import protection', () => {
   it.each(testsToTriggerOn)('should protect %s', async (id, importer, isProtected) => {
-    const result = await transformWithImportProtection(id, importer)
+    const result = await transformWithImportProtection(id, importer, 'nuxt-app')
     if (!isProtected) {
       expect(result).toBeNull()
     } else {
@@ -38,16 +38,16 @@ describe('import protection', () => {
   })
 })
 
-const transformWithImportProtection = (id: string, importer: string) => {
+const transformWithImportProtection = (id: string, importer: string, context: 'nitro-app' | 'nuxt-app' | 'shared') => {
   const plugin = ImpoundPlugin.rollup({
     cwd: '/root',
-    patterns: nuxtImportProtections({
+    patterns: createImportProtectionPatterns({
       options: {
         modules: ['some-nuxt-module'],
         srcDir: '/root/src/',
         serverDir: '/root/src/server',
       } satisfies Partial<NuxtOptions> as NuxtOptions,
-    }),
+    }, { context }),
   })
 
   return (plugin as any).resolveId.call({ error: () => {} }, id, importer)

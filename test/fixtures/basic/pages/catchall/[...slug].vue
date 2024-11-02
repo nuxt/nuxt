@@ -9,9 +9,9 @@
 <script setup lang="ts">
 definePageMeta({
   middleware: ['override'],
-  validate: to => to.path !== '/forbidden',
+  validate: to => to.path !== '/catchall/forbidden',
 })
-const route = useRoute('slug')
+const route = useRoute('catchall-slug')
 if (route.path.includes('navigate-some-path')) {
   throw createError('navigate-some-path setup running')
 }

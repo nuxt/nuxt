@@ -23,7 +23,6 @@ export default defineNuxtModule({
 
     // Initialize untyped/jiti loader
     const _resolveSchema = createJiti(fileURLToPath(import.meta.url), {
-      interopDefault: true,
       cache: false,
       transformOptions: {
         babel: {
@@ -97,7 +96,7 @@ export default defineNuxtModule({
           let loadedConfig: SchemaDefinition
           try {
             // TODO: fix type for second argument of `import`
-            loadedConfig = await _resolveSchema.import(filePath, {}) as SchemaDefinition
+            loadedConfig = await _resolveSchema.import(filePath, { default: true }) as SchemaDefinition
           } catch (err) {
             logger.warn(
               'Unable to load schema from',

@@ -12,7 +12,6 @@ import { resolveTSConfig } from 'pkg-types'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
-import virtual from './plugins/virtual'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
 import { composableKeysPlugin } from './plugins/composable-keys'
@@ -65,10 +64,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            // We need this resolution to be present before the following entry, but it
-            // will be filled in client/server configs
-            '#build/plugins': '',
-            '#build': nuxt.options.buildDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
             // Cannot destructure property 'AbortController' of ..
             'abort-controller': 'unenv/runtime/mock/empty',
@@ -110,7 +105,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             composables: nuxt.options.optimization.keyedComposables,
           }),
           replace({ preventAssignment: true, ...globalThisReplacements }),
-          virtual(nuxt.vfs),
         ],
         server: {
           watch: { ignored: isIgnored },
@@ -207,8 +201,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // Remove CSS entries for files that will have inlined styles
     ctx.nuxt.hook('build:manifest', (manifest) => {
-      for (const key in manifest) {
-        const entry = manifest[key]!
+      for (const [key, entry] of Object.entries(manifest)) {
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
         if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
           // @ts-expect-error internal key
@@ -225,7 +218,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Invalidate virtual modules when templates are re-generated
     ctx.nuxt.hook('app:templatesGenerated', () => {
       for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-        if (id.startsWith('virtual:')) {
+        if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
           server.moduleGraph.invalidateModule(mod)
         }
       }

@@ -1,7 +1,7 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
 import hash from 'hash-sum'
-import type { Nuxt, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
@@ -28,6 +28,18 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
+
+  return template
+}
+
+/**
+ * Adds a virtual file that can be used within the Nuxt Nitro server build.
+ */
+export function addServerTemplate (template: NuxtServerTemplate) {
+  const nuxt = useNuxt()
+
+  nuxt.options.nitro.virtual ||= {}
+  nuxt.options.nitro.virtual[template.filename] = template.getContents
 
   return template
 }
@@ -111,6 +123,9 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
+const EXTENSION_RE = /\b\.\w+$/g
+// Exclude bridge alias types to support Volar
+const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
@@ -211,13 +226,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     exclude: [...exclude],
   } satisfies TSConfig)
 
-  const aliases: Record<string, string> = {
-    ...nuxt.options.alias,
-    '#build': nuxt.options.buildDir,
-  }
-
-  // Exclude bridge alias types to support Volar
-  const excludedAlias = [/^@vue\/.*$/]
+  const aliases: Record<string, string> = nuxt.options.alias
 
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
@@ -251,7 +260,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     } else {
       const path = stats?.isFile()
         // remove extension
-        ? relativePath.replace(/\b\.\w+$/g, '')
+        ? relativePath.replace(EXTENSION_RE, '')
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
@@ -280,7 +289,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
       if (!isAbsolute(path)) { return path }
       const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
+      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
     }))
   }
 
@@ -320,11 +329,6 @@ export async function writeTypes (nuxt: Nuxt) {
     await fsp.writeFile(declarationPath, GeneratedBy + '\n' + declaration)
   }
 
-  // This is needed for Nuxt 2 which clears the build directory again before building
-  // https://github.com/nuxt/nuxt/blob/2.x/packages/builder/src/builder.js#L144
-  // @ts-expect-error TODO: Nuxt 2 hook
-  nuxt.hook('builder:prepared', writeFile)
-
   await writeFile()
 }
 
@@ -340,6 +344,7 @@ function renderAttr (key: string, value?: string) {
   return value ? `${key}="${value}"` : ''
 }
 
+const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
-  return relative(from, to).replace(/^([^.])/, './$1') || '.'
+  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
 }

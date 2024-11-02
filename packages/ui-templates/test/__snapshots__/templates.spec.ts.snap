@@ -92,10 +92,10 @@ exports[`template > produces correct output for error-404 template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .tabular-nums {
   --un-numeric-spacing: tabular-nums;
@@ -137,37 +137,37 @@ exports[`template > produces correct output for error-404 template 1`] = `
 
 exports[`template > produces correct output for error-404 template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1,
 h2 {
@@ -184,8 +184,8 @@ p {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -209,15 +209,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -309,10 +309,10 @@ exports[`template > produces correct output for error-500 template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .tabular-nums {
   --un-numeric-spacing: tabular-nums;
@@ -348,37 +348,37 @@ exports[`template > produces correct output for error-500 template 1`] = `
 
 exports[`template > produces correct output for error-500 template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1,
 h2 {
@@ -391,8 +391,8 @@ p {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -416,15 +416,15 @@ p {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -492,7 +492,7 @@ exports[`template > produces correct output for error-dev template 1`] = `
   border-width: 1px;
 }
 .border-b-0 {
-  border-bottom-width: 0px;
+  border-bottom-width: 0;
 }
 .border-black\\/5 {
   border-color: #0000000d;
@@ -559,10 +559,10 @@ exports[`template > produces correct output for error-dev template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .hover\\:underline:hover {
   text-decoration-line: underline;
@@ -608,37 +608,37 @@ exports[`template > produces correct output for error-dev template 1`] = `
 
 exports[`template > produces correct output for error-dev template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1 {
   font-size: inherit;
@@ -659,8 +659,8 @@ pre {
     Courier New,
     monospace;
   font-feature-settings: normal;
-  font-variation-settings: normal;
   font-size: 1em;
+  font-variation-settings: normal;
 }
 h1,
 p,
@@ -668,8 +668,8 @@ pre {
   margin: 0;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -693,15 +693,15 @@ pre {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -727,11 +727,11 @@ pre {
 exports[`template > produces correct output for loading template 1`] = `
 ".nuxt-loader-bar {
   background: #00dc82;
-  position: fixed;
   bottom: 0;
-  left: 0;
-  right: 0;
   height: 3px;
+  left: 0;
+  position: fixed;
+  right: 0;
 }
 .triangle-loading {
   position: absolute;
@@ -806,8 +806,8 @@ exports[`template > produces correct output for loading template 1`] = `
   padding-right: 0.625rem;
 }
 .py-1\\.5 {
-  padding-top: 0.375rem;
   padding-bottom: 0.375rem;
+  padding-top: 0.375rem;
 }
 .text-center {
   text-align: center;
@@ -815,16 +815,16 @@ exports[`template > produces correct output for loading template 1`] = `
 .text-\\[16px\\] {
   font-size: 16px;
 }
-.text-\\[\\#00DC82\\],
-.group:hover .group-hover\\:text-\\[\\#00DC82\\] {
+.group:hover .group-hover\\:text-\\[\\#00DC82\\],
+.text-\\[\\#00DC82\\] {
   --un-text-opacity: 1;
   color: rgb(0 220 130 / var(--un-text-opacity));
 }
 .text-\\[\\#00DC82\\]\\/80 {
   color: #00dc82cc;
 }
-.text-\\[\\#020420\\],
-.group:hover .group-hover\\:text-\\[\\#020420\\] {
+.group:hover .group-hover\\:text-\\[\\#020420\\],
+.text-\\[\\#020420\\] {
   --un-text-opacity: 1;
   color: rgb(2 4 32 / var(--un-text-opacity));
 }
@@ -860,10 +860,10 @@ exports[`template > produces correct output for loading template 1`] = `
     Arial,
     Noto Sans,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
 }
 .antialiased {
   -webkit-font-smoothing: antialiased;
@@ -889,49 +889,49 @@ exports[`template > produces correct output for loading template 1`] = `
 
 exports[`template > produces correct output for loading template 2`] = `
 "@keyframes nuxt-loading-move {
-  100% {
+  to {
     stroke-dashoffset: -128;
   }
 }
 @media (prefers-color-scheme: dark) {
-  html,
-  body {
-    color: white;
+  body,
+  html {
+    color: #fff;
     color-scheme: dark;
   }
 }
 *,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 a {
   color: inherit;
@@ -942,8 +942,8 @@ svg {
   vertical-align: middle;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -967,15 +967,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;
@@ -1000,17 +1000,17 @@ svg {
 
 exports[`template > produces correct output for welcome template 1`] = `
 ".sr-only {
-  position: absolute;
-  width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
   overflow: hidden;
+  padding: 0;
+  width: 1px;
   clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
   border-width: 0;
+  white-space: nowrap;
 }
-.absolute {
+.absolute,
+.sr-only {
   position: absolute;
 }
 .relative {
@@ -1048,17 +1048,17 @@ exports[`template > produces correct output for welcome template 1`] = `
   display: inline-block;
 }
 .size-\\[18px\\] {
-  width: 18px;
   height: 18px;
+  width: 18px;
 }
 .size-4 {
-  width: 1rem;
   height: 1rem;
+  width: 1rem;
 }
-.size-5,
-.group:hover .group-hover\\:size-5 {
-  width: 1.25rem;
+.group:hover .group-hover\\:size-5,
+.size-5 {
   height: 1.25rem;
+  width: 1.25rem;
 }
 .h-\\[32px\\] {
   height: 32px;
@@ -1170,8 +1170,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   padding-right: 1rem;
 }
 .py-1 {
-  padding-top: 0.25rem;
   padding-bottom: 0.25rem;
+  padding-top: 0.25rem;
 }
 .text-\\[12px\\] {
   font-size: 12px;
@@ -1184,8 +1184,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
-.text-\\[\\#00DC82\\],
-.group:hover .group-hover\\:text-\\[\\#00DC82\\] {
+.group:hover .group-hover\\:text-\\[\\#00DC82\\],
+.text-\\[\\#00DC82\\] {
   --un-text-opacity: 1;
   color: rgb(0 220 130 / var(--un-text-opacity));
 }
@@ -1247,9 +1247,9 @@ exports[`template > produces correct output for welcome template 1`] = `
     var(--un-shadow);
 }
 .transition-all {
+  transition-duration: 0.15s;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 0.15s;
 }
 @media (prefers-color-scheme: dark) {
   .dark\\:border-\\[\\#00DC82\\]\\/50 {
@@ -1338,8 +1338,8 @@ exports[`template > produces correct output for welcome template 1`] = `
     padding-right: 1.5rem;
   }
   .sm\\:py-1\\.5 {
-    padding-top: 0.375rem;
     padding-bottom: 0.375rem;
+    padding-top: 0.375rem;
   }
   .sm\\:text-\\[14px\\] {
     font-size: 14px;
@@ -1360,37 +1360,37 @@ exports[`template > produces correct output for welcome template 1`] = `
 
 exports[`template > produces correct output for welcome template 2`] = `
 "*,
-:before,
-:after {
-  box-sizing: border-box;
-  border-width: 0;
-  border-style: solid;
+:after,
+:before {
   border-color: var(--un-default-border-color, #e5e7eb);
+  border-style: solid;
+  border-width: 0;
+  box-sizing: border-box;
 }
-:before,
-:after {
+:after,
+:before {
   --un-content: "";
 }
 html {
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
-  -moz-tab-size: 4;
-  tab-size: 4;
   font-family:
     ui-sans-serif,
     system-ui,
     sans-serif,
-    "Apple Color Emoji",
-    "Segoe UI Emoji",
+    Apple Color Emoji,
+    Segoe UI Emoji,
     Segoe UI Symbol,
-    "Noto Color Emoji";
+    Noto Color Emoji;
   font-feature-settings: normal;
   font-variation-settings: normal;
+  -moz-tab-size: 4;
+  tab-size: 4;
   -webkit-tap-highlight-color: transparent;
 }
 body {
-  margin: 0;
   line-height: inherit;
+  margin: 0;
 }
 h1,
 h2 {
@@ -1403,12 +1403,12 @@ a {
 }
 h1,
 h2,
-p {
+p,
+ul {
   margin: 0;
 }
 ul {
   list-style: none;
-  margin: 0;
   padding: 0;
 }
 svg {
@@ -1416,8 +1416,8 @@ svg {
   vertical-align: middle;
 }
 *,
-:before,
-:after {
+:after,
+:before {
   --un-rotate: 0;
   --un-rotate-x: 0;
   --un-rotate-y: 0;
@@ -1441,15 +1441,15 @@ svg {
   --un-numeric-fraction: ;
   --un-border-spacing-x: 0;
   --un-border-spacing-y: 0;
-  --un-ring-offset-shadow: 0 0 rgb(0 0 0 / 0);
-  --un-ring-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-ring-offset-shadow: 0 0 transparent;
+  --un-ring-shadow: 0 0 transparent;
   --un-shadow-inset: ;
-  --un-shadow: 0 0 rgb(0 0 0 / 0);
+  --un-shadow: 0 0 transparent;
   --un-ring-inset: ;
   --un-ring-offset-width: 0px;
   --un-ring-offset-color: #fff;
   --un-ring-width: 0px;
-  --un-ring-color: rgb(147 197 253 / 0.5);
+  --un-ring-color: rgba(147, 197, 253, 0.5);
   --un-blur: ;
   --un-brightness: ;
   --un-contrast: ;

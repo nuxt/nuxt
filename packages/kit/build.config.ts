@@ -6,6 +6,7 @@ export default defineBuildConfig({
     'src/index',
   ],
   externals: [
+    '@rspack/core',
     '@nuxt/schema',
     'nitropack',
     'nitro',

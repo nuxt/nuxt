@@ -12,7 +12,7 @@ import * as composables from '#app/composables'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
-import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
+import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
@@ -83,6 +83,7 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useResponseHeader',
       'useCookie',
       'clearNuxtState',
       'useState',
@@ -394,6 +395,7 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+    expect(useResponseHeader('x-test').value).toBeUndefined()
   })
 })
 

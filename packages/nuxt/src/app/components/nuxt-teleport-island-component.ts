@@ -18,6 +18,7 @@ export const NuxtTeleportIslandSymbol = Symbol('NuxtTeleportIslandComponent') as
 /* @__PURE__ */
 export default defineComponent({
   name: 'NuxtTeleportIslandComponent',
+  inheritAttrs: false,
   props: {
     to: {
       type: String,
@@ -38,7 +39,7 @@ export default defineComponent({
     const islandContext = nuxtApp.ssrContext!.islandContext!
 
     return () => {
-      const slot = slots.default!()[0]
+      const slot = slots.default!()[0]!
       const slotType = slot.type as ExtendedComponent
       const name = (slotType.__name || slotType.name) as string
 

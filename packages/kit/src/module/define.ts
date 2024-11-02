@@ -79,9 +79,9 @@ function _defineNuxtModule<
   }
 
   // Module format is always a simple function
-  async function normalizedModule (this: any, inlineOptions: Partial<TOptions>, nuxt: Nuxt): Promise<ModuleSetupReturn> {
+  async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      nuxt = tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
+      throw new TypeError('Cannot use module outside of Nuxt context')
     }
 
     // Avoid duplicate installs

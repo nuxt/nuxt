@@ -3,7 +3,7 @@ import type { ComponentsOptions } from '@nuxt/schema'
 import MagicString from 'magic-string'
 import { isAbsolute, relative } from 'pathe'
 import { hash } from 'ohash'
-import { isVue } from '../core/utils'
+import { isVue } from '../../core/utils'
 
 interface LoaderOptions {
   sourcemap?: boolean
@@ -12,7 +12,8 @@ interface LoaderOptions {
 }
 const CLIENT_FALLBACK_RE = /<(?:NuxtClientFallback|nuxt-client-fallback)(?: [^>]*)?>/
 const CLIENT_FALLBACK_GLOBAL_RE = /<(NuxtClientFallback|nuxt-client-fallback)( [^>]*)?>/g
-export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions) => {
+const UID_RE = / :?uid=/
+export const ClientFallbackAutoIdPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
 
@@ -37,7 +38,7 @@ export const clientFallbackAutoIdPlugin = createUnplugin((options: LoaderOptions
 
       s.replace(CLIENT_FALLBACK_GLOBAL_RE, (full, name, attrs) => {
         count++
-        if (/ :?uid=/.test(attrs)) { return full }
+        if (UID_RE.test(attrs)) { return full }
         return `<${name} :uid="'${hash(relativeID)}' + JSON.stringify($props) + '${count}'"  ${attrs ?? ''}>`
       })
 

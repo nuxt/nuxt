@@ -3,11 +3,10 @@ import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
 import { assertNuxtCompatibility } from './compatibility'
 import { logger } from './logger'
+import { MODE_RE } from './utils'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
- *
- * Requires Nuxt 2.13+
  */
 export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
@@ -23,8 +22,6 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 
 /**
  * Register a component by its name and filePath.
- *
- * Requires Nuxt 2.13+
  */
 export async function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
@@ -32,7 +29,7 @@ export async function addComponent (opts: AddComponentOptions) {
   nuxt.options.components = nuxt.options.components || []
 
   if (!opts.mode) {
-    const [, mode = 'all'] = opts.filePath.match(/\.(server|client)(\.\w+)*$/) || []
+    const [, mode = 'all'] = opts.filePath.match(MODE_RE) || []
     opts.mode = mode as 'all' | 'client' | 'server'
   }
 

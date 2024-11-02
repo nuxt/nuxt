@@ -66,7 +66,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie',
   },
   {
-    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useResponseHeader', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr',
   },
   {
@@ -216,9 +216,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'defineModel',
-    'defineOptions',
-    'defineSlots',
     'mergeModels',
     'toValue',
     'useModel',

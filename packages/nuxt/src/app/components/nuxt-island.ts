@@ -1,9 +1,9 @@
 import type { Component, PropType, VNode } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { injectHead } from '@unhead/vue'
+import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
@@ -22,6 +22,7 @@ const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
+const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -29,22 +30,26 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
 async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
+  if (!paths) { return }
+
   const promises: Array<Promise<void>> = []
 
-  for (const component in paths) {
+  for (const [component, item] of Object.entries(paths)) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source, paths[component].chunk)
+        const chunkSource = join(source, item.chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
     }
   }
+
   await Promise.all(promises)
 }
 
 export default defineComponent({
   name: 'NuxtIsland',
+  inheritAttrs: false,
   props: {
     name: {
       type: String,
@@ -86,11 +91,13 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
+    let activeHead: ActiveHeadEntry<Head>
+
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
-
+    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
       if (result.props) { toRevive.props = result.props }
@@ -136,7 +143,7 @@ export default defineComponent({
       let html = ssrHTML.value
 
       if (props.scopeId) {
-        html = html.replace(/^<[^> ]*/, full => full + ' ' + props.scopeId)
+        html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
       }
 
       if (import.meta.client && !canLoadClientComponent.value) {
@@ -211,6 +218,14 @@ export default defineComponent({
           }
         }
 
+        if (res?.head) {
+          if (activeHead) {
+            activeHead.patch(res.head)
+          } else {
+            activeHead = head.push(res.head)
+          }
+        }
+
         if (import.meta.client) {
           // must await next tick for Teleport to work correctly with static node re-rendering
           nextTick(() => {
@@ -246,14 +261,6 @@ export default defineComponent({
       await loadComponents(props.source, payloads.components)
     }
 
-    if (import.meta.server || nuxtApp.isHydrating) {
-      // re-push head into active head instance
-      const responseHead = (nuxtApp.payload.data[`${props.name}_${hashId.value}`] as NuxtIslandResponse)?.head
-      if (responseHead) {
-        head.push(responseHead)
-      }
-    }
-
     return (_ctx: any, _cache: any) => {
       if (!html.value || error.value) {
         return [slots.fallback?.({ error: error.value }) ?? createVNode('div')]
@@ -275,7 +282,7 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
+                  { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
                 )
               }
             }

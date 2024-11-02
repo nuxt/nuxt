@@ -8,7 +8,7 @@ links:
     size: xs
 ---
 
-::read-more{to="/docs/guide/going-further/experimental-features#inlinerouterules" icon="i-ph-star-duotone"}
+::read-more{to="/docs/guide/going-further/experimental-features#inlinerouterules" icon="i-ph-star"}
 This feature is experimental and in order to use it you must enable the `experimental.inlineRouteRules` option in your `nuxt.config`.
 ::
 
@@ -47,6 +47,6 @@ When running [`nuxt build`](/docs/api/commands/build), the home page will be pre
 
 For more control, such as if you are using a custom `path` or `alias` set in the page's [`definePageMeta`](/docs/api/utils/define-page-meta), you should set `routeRules` directly within your `nuxt.config`.
 
-::read-more{to="/docs/guide/concepts/rendering#hybrid-rendering" icon="i-ph-medal-duotone"}
+::read-more{to="/docs/guide/concepts/rendering#hybrid-rendering" icon="i-ph-medal"}
 Read more about the `routeRules`.
 ::

@@ -62,8 +62,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (options.mode === 'client') { return }
 
       const emitted: Record<string, string> = {}
-      for (const file in cssMap) {
-        const { files, inBundle } = cssMap[file]!
+      for (const [file, { files, inBundle }] of Object.entries(cssMap)) {
         // File has been tree-shaken out of build (or there are no styles to inline)
         if (!files.length || !inBundle) { continue }
         const fileName = filename(file)
@@ -72,7 +71,9 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
           : outputOptions.assetFileNames({
             type: 'asset',
             name: `${fileName}-styles.mjs`,
+            names: [`${fileName}-styles.mjs`],
             originalFileName: `${fileName}-styles.mjs`,
+            originalFileNames: [`${fileName}-styles.mjs`],
             source: '',
           })
 

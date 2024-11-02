@@ -14,5 +14,7 @@ exclude = [
   # TODO: remove when their SSL certificate is valid again
   "https://www.conventionalcommits.org",
   # single-quotes are required for regexp
-  '(https?:\/\/github\.com\/)(.*\/)(generate)',
+  '(https?:\/\/github\.com\/)(.*\/)(generate)',  
+  "https://localhost:3000",
+  "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
 ]
