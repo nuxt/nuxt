@@ -399,7 +399,6 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
-    // @ts-expect-error this will be valid in a future version of Nitro
     compatibilityDate: nuxt.options.compatibilityDate,
   })
 
