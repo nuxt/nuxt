@@ -229,7 +229,7 @@ export async function initViteDevBundler (ctx: ViteBuildContext, onBuild: () => 
   const viteServer = ctx.ssrServer!
   const options: TransformOptions = {
     viteServer,
-    isExternal: createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir),
+    isExternal: createIsExternal(viteServer, ctx.nuxt),
   }
 
   // Build and watch
