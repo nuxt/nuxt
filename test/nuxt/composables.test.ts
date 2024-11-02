@@ -583,9 +583,9 @@ describe('useRuntimeHook', () => {
   it('types work', () => {
     // @ts-expect-error should not allow unknown hooks
     useRuntimeHook('test', () => {})
-    useRuntimeHook('app:beforeMount', (app) => {
+    useRuntimeHook('app:beforeMount', (_app) => {
       // @ts-expect-error argument should be typed
-      app = 'test'
+      _app = 'test'
     })
   })
 
