@@ -118,6 +118,7 @@ describe('composables', () => {
       'useSeoMeta',
       'useServerSeoMeta',
       'usePreviewMode',
+      'useRuntimeHook',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
