@@ -92,6 +92,10 @@ export interface AsyncDataOptions<
    * @default 'cancel'
    */
   dedupe?: 'cancel' | 'defer'
+  /**
+   * Polling interval in milliseconds
+   */
+  pollEvery?: number
 }
 
 export interface AsyncDataExecuteOptions {
@@ -238,6 +242,7 @@ export function useAsyncData<
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
   options.dedupe = options.dedupe ?? 'cancel'
+  options.pollEvery = options.pollEvery ?? 0
 
   // Create or use a shared asyncData entity
   const initialCachedData = options.getCachedData!(key, nuxtApp)
@@ -262,6 +267,27 @@ export function useAsyncData<
   // Don't expose default function to end user
   delete asyncData._default
 
+  let pollTimer: number | undefined
+
+  const startPolling = () => {
+    if (import.meta.client && options.pollEvery && !pollTimer) {
+      pollTimer = window.setInterval(() => {
+        asyncData.refresh()
+      }, options.pollEvery)
+    }
+  }
+
+  const stopPolling = () => {
+    if (pollTimer) {
+      clearInterval(pollTimer)
+      pollTimer = undefined
+    }
+  }
+
+  if (options.pollEvery && options.immediate) {
+    startPolling()
+  }
+
   asyncData.refresh = asyncData.execute = (opts = {}) => {
     if (nuxtApp._asyncDataPromises[key]) {
       if ((opts.dedupe ?? options.dedupe) === 'defer') {
@@ -276,6 +302,9 @@ export function useAsyncData<
       if (typeof cachedData !== 'undefined') {
         return Promise.resolve(cachedData)
       }
+    }
+    if (options.pollEvery) {
+      stopPolling()
     }
     asyncData.pending.value = true
     asyncData.status.value = 'pending'
@@ -326,6 +355,11 @@ export function useAsyncData<
 
         delete nuxtApp._asyncDataPromises[key]
       })
+
+    if (options.pollEvery) {
+      startPolling()
+    }
+
     nuxtApp._asyncDataPromises[key] = promise
     return nuxtApp._asyncDataPromises[key]!
   }
@@ -389,7 +423,10 @@ export function useAsyncData<
       }
     })
     if (hasScope) {
-      onScopeDispose(off)
+      onScopeDispose(() => {
+        off()
+        stopPolling()
+      })
     }
   }
 
