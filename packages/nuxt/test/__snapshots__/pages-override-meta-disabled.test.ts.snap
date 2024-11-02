@@ -36,7 +36,7 @@
       "meta": "mockMeta || {}",
       "name": "mockMeta?.name ?? "page-with-props"",
       "path": "mockMeta?.path ?? "/page-with-props"",
-      "props": "mockMeta?.props ?? false",
+      "props": "mockMeta?.props ?? true",
       "redirect": "mockMeta?.redirect",
     },
   ],

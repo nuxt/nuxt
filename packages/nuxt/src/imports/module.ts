@@ -106,6 +106,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     await nuxt.callHook('imports:context', ctx)
 
+    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
     if (options.scan) {
@@ -117,6 +119,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
         composablesDirs.push(resolve(layer.config.srcDir, 'directives'))
+
+        if (isNuxtV4) {
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'utils'))
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'types'))
+        }
+
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue

@@ -18,7 +18,6 @@ import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
-import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
@@ -32,7 +31,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
@@ -249,16 +248,28 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
+  // shared folder import protection
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const sharedProtectionConfig = {
+    cwd: nuxt.options.rootDir,
+    include: sharedPatterns,
+    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+  }
+  addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+
   // Add import protection
-  const config: ImpoundOptions = {
+  const nuxtProtectionConfig = {
     cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
-    exclude: [join(nuxt.options.srcDir, 'index.html')],
-    patterns: nuxtImportProtections(nuxt),
+    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
   }
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
@@ -565,6 +576,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
+  // Add experimental immediate page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+
   // Add experimental session restoration support
   if (nuxt.options.experimental.restoreState) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))

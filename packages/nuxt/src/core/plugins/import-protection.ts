@@ -9,12 +9,17 @@ interface ImportProtectionOptions {
   exclude?: Array<RegExp | string>
 }
 
-export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: { isNitro?: boolean } = {}) => {
+interface NuxtImportProtectionOptions {
+  context: 'nuxt-app' | 'nitro-app' | 'shared'
+}
+
+export const createImportProtectionPatterns = (nuxt: { options: NuxtOptions }, options: NuxtImportProtectionOptions) => {
   const patterns: ImportProtectionOptions['patterns'] = []
+  const context = contextFlags[options.context]
 
   patterns.push([
     /^(nuxt|nuxt3|nuxt-nightly)$/,
-    '`nuxt`, `nuxt3` or `nuxt-nightly` cannot be imported directly.' + (options.isNitro ? '' : ' Instead, import runtime Nuxt composables from `#app` or `#imports`.'),
+    `\`nuxt\`, or \`nuxt-nightly\` cannot be imported directly in ${context}.` + (options.context === 'nuxt-app' ? ' Instead, import runtime Nuxt composables from `#app` or `#imports`.' : ''),
   ])
 
   patterns.push([
@@ -26,27 +31,33 @@ export const nuxtImportProtections = (nuxt: { options: NuxtOptions }, options: {
 
   for (const mod of nuxt.options.modules.filter(m => typeof m === 'string')) {
     patterns.push([
-      new RegExp(`^${escapeRE(mod as string)}$`),
+      new RegExp(`^${escapeRE(mod)}$`),
       'Importing directly from module entry-points is not allowed.',
     ])
   }
 
   for (const i of [/(^|node_modules\/)@nuxt\/(kit|test-utils)/, /(^|node_modules\/)nuxi/, /(^|node_modules\/)nitro(?:pack)?(?:-nightly)?(?:$|\/)(?!(?:dist\/)?runtime|types)/, /(^|node_modules\/)nuxt\/(config|kit|schema)/]) {
-    patterns.push([i, 'This module cannot be imported' + (options.isNitro ? ' in server runtime.' : ' in the Vue part of your app.')])
+    patterns.push([i, `This module cannot be imported in ${context}.`])
   }
 
-  if (options.isNitro) {
+  if (options.context === 'nitro-app' || options.context === 'shared') {
     for (const i of ['#app', /^#build(\/|$)/]) {
-      patterns.push([i, 'Vue app aliases are not allowed in server runtime.'])
+      patterns.push([i, `Vue app aliases are not allowed in ${context}.`])
     }
   }
 
-  if (!options.isNitro) {
+  if (options.context === 'nuxt-app' || options.context === 'shared') {
     patterns.push([
       new RegExp(escapeRE(relative(nuxt.options.srcDir, resolve(nuxt.options.srcDir, nuxt.options.serverDir || 'server'))) + '\\/(api|routes|middleware|plugins)\\/'),
-      'Importing from server is not allowed in the Vue part of your app.',
+      `Importing from server is not allowed in ${context}.`,
     ])
   }
 
   return patterns
 }
+
+const contextFlags = {
+  'nitro-app': 'server runtime',
+  'nuxt-app': 'the Vue part of your app',
+  'shared': 'the #shared directory',
+} as const
