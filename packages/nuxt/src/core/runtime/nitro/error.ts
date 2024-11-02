@@ -9,6 +9,13 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
 
+  const errorStack: string[] = new Array(stack.length)
+  const consoleStack: string[] = new Array(stack.length)
+  let index = 0
+  for (const i of stack) {
+    errorStack[index] = `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`
+    consoleStack[index++] = '  ' + i.text
+  }
   // Create an error object
   const errorObject = {
     url: event.path,
@@ -16,7 +23,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     statusMessage,
     message,
     stack: import.meta.dev && statusCode !== 404
-      ? `<pre>${stack.map(i => `<span class="stack${i.internal ? ' internal' : ''}">${i.text}</span>`).join('\n')}</pre>`
+      ? `<pre>${errorStack.join('\n')}</pre>`
       : '',
     // TODO: check and validate error.data for serialisation into query
     data: error.data as any,
@@ -31,7 +38,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
     ].filter(Boolean).join(' ')
-    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + consoleStack.join('  \n'))
   }
 
   if (event.handled) { return }
