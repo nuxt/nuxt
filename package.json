@@ -82,7 +82,7 @@
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "3.9.1",
     "eslint-typegen": "0.3.2",
-    "h3": "1.12.0",
+    "h3": "1.13.0",
     "happy-dom": "15.8.0",
     "jiti": "2.4.0",
     "markdownlint-cli": "0.42.0",
