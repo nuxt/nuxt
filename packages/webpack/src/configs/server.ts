@@ -1,4 +1,4 @@
-import { isAbsolute } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
@@ -53,7 +53,11 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['#internal/nitro']
+  const external = [
+    '#internal/nitro',
+    '#shared',
+    resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+  ]
   if (!ctx.nuxt.options.dev) {
     external.push('#internal/nuxt/paths')
   }
