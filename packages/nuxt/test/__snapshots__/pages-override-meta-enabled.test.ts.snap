@@ -30,6 +30,7 @@
       "meta": "mockMeta || {}",
       "name": ""page-with-props"",
       "path": ""/page-with-props"",
+      "props": "true",
     },
   ],
   "should allow pages with `:` in their path": [
