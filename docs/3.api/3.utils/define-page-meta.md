@@ -91,7 +91,7 @@ interface PageMeta {
 
   **`isolate`**
   - Type: boolean
-    
+
     Set to `true` when you do not want the page to inherit from your `app.vue`.
   
   **`layout`**
