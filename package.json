@@ -53,9 +53,7 @@
     "typescript": "5.6.3",
     "ufo": "1.5.4",
     "vite": "5.4.10",
-    "vue": "3.5.12",
-    "nitropack": "npm:nitropack-nightly@2.10.2-20241103-103652.f6e1efc9",
-    "h3": "npm:h3-nightly@1.13.1-20241013-011028-3bf8af0"
+    "vue": "3.5.12"
   },
   "devDependencies": {
     "@eslint/js": "9.14.0",
@@ -88,7 +86,7 @@
     "happy-dom": "15.8.0",
     "jiti": "2.4.0",
     "markdownlint-cli": "0.42.0",
-    "nitropack": "2.10.1",
+    "nitropack": "2.10.2",
     "nuxi": "3.15.0",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.1",
