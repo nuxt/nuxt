@@ -48,7 +48,7 @@
     "esbuild-loader": "4.2.2",
     "h3": "1.13.0",
     "ignore": "6.0.2",
-    "nitropack": "2.10.0",
+    "nitropack": "2.10.2",
     "ofetch": "1.4.1",
     "unbuild": "latest",
     "unctx": "2.3.1",
