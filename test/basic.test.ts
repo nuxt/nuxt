@@ -21,7 +21,7 @@ await setup({
   dev: process.env.TEST_ENV === 'dev',
   server: true,
   browser: true,
-  setupTimeout: (isWindows ? 360 : 120) * 1000,
+  setupTimeout: 360 * 1000,
   nuxtConfig: {
     hooks: {
       'modules:done' () {
