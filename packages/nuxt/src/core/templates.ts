@@ -10,6 +10,7 @@ import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
+import { distDir } from '../dirs'
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
 
@@ -551,5 +552,13 @@ export const buildTypeTemplate: NuxtTemplate = {
     }
 
     return declarations
+  },
+}
+
+export const isolatedPageTemplate: NuxtTemplate = {
+  filename: 'isolated-page.mjs',
+  getContents (ctx) {
+    const hasPages = ctx.nuxt.options.dev || ctx.app.pages?.length
+    return hasPages ? genExport(resolve(ctx.nuxt.options.appDir, '../pages/runtime/page'), ['default']) : 'export default null'
   },
 }
