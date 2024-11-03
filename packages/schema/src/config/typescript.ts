@@ -34,6 +34,7 @@ export default defineUntypedSchema({
       $resolve: (val) => {
         const defaults = [
           // Nitro auto-imported/augmented dependencies
+          'nitropack/types',
           'nitropack',
           'defu',
           'h3',
