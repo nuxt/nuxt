@@ -10,7 +10,6 @@ import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
-import { distDir } from '../dirs'
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
 
