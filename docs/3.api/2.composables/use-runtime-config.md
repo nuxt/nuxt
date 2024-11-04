@@ -87,6 +87,10 @@ NUXT_PUBLIC_API_BASE = "https://api.localhost:5555"
 NUXT_API_SECRET = "123"
 ```
 
+::warning
+Remember that all prefix NUXT_ are available in the client. Therefore you should not prefix sensitive ENV data with NUXT_.
+::
+
 ::note
 Any environment variables set within `.env` file are accessed using `process.env` in the Nuxt app during **development** and **build/generate**.
 ::
