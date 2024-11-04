@@ -12,6 +12,11 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.8.7
+  '@unhead/dom': 1.11.11
+  '@unhead/shared': 1.11.11
+  '@unhead/vue': 1.11.11
+  '@unhead/schema': 1.11.11
+  '@unhead/ssr': 1.11.11
   '@vue/compiler-core': 3.5.12
   '@vue/compiler-dom': 3.5.12
   '@vue/shared': 3.5.12
@@ -23,6 +28,7 @@ overrides:
   send: '>=1.1.0'
   typescript: 5.6.3
   ufo: 1.5.4
+  unhead: 1.11.11
   vite: 5.4.10
   vue: 3.5.12
 
@@ -299,16 +305,16 @@ importers:
         specifier: 22.8.7
         version: 22.8.7
       '@unhead/dom':
-        specifier: ^1.11.11
+        specifier: 1.11.11
         version: 1.11.11
       '@unhead/shared':
-        specifier: ^1.11.11
+        specifier: 1.11.11
         version: 1.11.11
       '@unhead/ssr':
-        specifier: ^1.11.11
+        specifier: 1.11.11
         version: 1.11.11
       '@unhead/vue':
-        specifier: ^1.11.11
+        specifier: 1.11.11
         version: 1.11.11(vue@3.5.12(typescript@5.6.3))
       '@vue/shared':
         specifier: 3.5.12
@@ -443,7 +449,7 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       unhead:
-        specifier: ^1.11.11
+        specifier: 1.11.11
         version: 1.11.11
       unimport:
         specifier: ^3.13.1
@@ -2885,31 +2891,17 @@ packages:
   '@unhead/dom@1.11.11':
     resolution: {integrity: sha512-4YwziCH5CmjvUzSGdZ4Klj6BqhLSTNZooA9kt47yDxj4Qw9uHqVnXwWWupYsVdIYPNsw1tR2AkHveg82y1Fn3A==}
 
-  '@unhead/dom@1.11.9':
-    resolution: {integrity: sha512-AOoCt05sLbkmp7ipCAs2JQdV0auLc5lCkLbCZj19kuPmWcFOoHNByQAG/AFKuSvi297OYp8abKGCStIgyz2x4A==}
-
   '@unhead/schema@1.11.11':
     resolution: {integrity: sha512-xSGsWHPBYcMV/ckQeImbrVu6ddeRnrdDCgXUKv3xIjGBY+ob/96V80lGX8FKWh8GwdFSwhblISObKlDAt5K9ZQ==}
 
-  '@unhead/schema@1.11.9':
-    resolution: {integrity: sha512-0V37bxG4sQuiLw3M5DMD+b99ndOOngecMlekQ122TDvBb24W8rWwkHhXvAu5eFg6bQXPdQF1A0U0PuRMcCj/ZA==}
-
   '@unhead/shared@1.11.11':
     resolution: {integrity: sha512-RfdvUskPn90ipO+PmR98jKZ8Lsx1uuzscOenO5xcrMrtWGhlLWaEBIrbvFOvX5PZ/u8/VNMJChTXGDUjEtHmlg==}
-
-  '@unhead/shared@1.11.9':
-    resolution: {integrity: sha512-Df6Td9d87NM5EWf4ylAN98zwf50DwfMg3xoy6ofz3Qg1jSXewEIMD1w1C0/Q6KdpLo01TuoQ0RfpSyVtxt7oEA==}
 
   '@unhead/ssr@1.11.11':
     resolution: {integrity: sha512-NQC8y+4ldwkMr3x8WFwv3+OR6g+Sj7dwL6J/3ST25KnvlwDSub2KGbnm2hF1x8vTpTmXTVxMA3GDRL9MRfLvMg==}
 
   '@unhead/vue@1.11.11':
     resolution: {integrity: sha512-AxsHHauZ+w0m2irwDHqkc3GdNChMLBtolk8CN3IAZM6vTwH0EbPXlFCFcIk4WwkH0opG+R2GlKTThr5H0HLm7g==}
-    peerDependencies:
-      vue: 3.5.12
-
-  '@unhead/vue@1.11.9':
-    resolution: {integrity: sha512-vdl3H1bwJNindhRplMun7zhtNFggP8QqpPwc1e7kd2a0ORp776+QpFXKdYHFSlX+eAMmDVv8LQ+VL0N++pXxNg==}
     peerDependencies:
       vue: 3.5.12
 
@@ -6050,9 +6042,6 @@ packages:
   perfect-debounce@1.0.0:
     resolution: {integrity: sha512-xCy9V055GLEqoFaHoC1SoLIaLmWctgCUaBaWxDZ7/Zx4CTyX7cJQLJOok/orfjZAh9kEYpjJa4d0KcJmCbctZA==}
 
-  picocolors@1.1.0:
-    resolution: {integrity: sha512-TQ92mBOW0l3LeMeyLV6mzy/kWr8lkd/hp3mTg7wYK7zJhuBStmGMBG0BdeDZS/dZx1IukaX6Bk11zcln25o1Aw==}
-
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -7197,9 +7186,6 @@ packages:
   unhead@1.11.11:
     resolution: {integrity: sha512-98tM2R8OWJhvS6uqTewkfIrsPqFU/VwnKpU2tVZ+jPXSWgWSLmM3K2Y2v5AEM4bZjmC/XH8pLVGzbqB7xzFI/Q==}
 
-  unhead@1.11.9:
-    resolution: {integrity: sha512-EwEGMjbXVVn2O5vNfXUHiAjHWFHngPjkAx0yVZZsrTgqzs7+A/YvJ90TLvBna874+HCKZWtufo7QAI7luU2CgA==}
-
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
     engines: {node: '>=4'}
@@ -7839,7 +7825,7 @@ snapshots:
   '@babel/code-frame@7.25.7':
     dependencies:
       '@babel/highlight': 7.25.7
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   '@babel/compat-data@7.25.7': {}
 
@@ -7964,7 +7950,7 @@ snapshots:
       '@babel/helper-validator-identifier': 7.25.7
       chalk: 2.4.2
       js-tokens: 4.0.0
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   '@babel/parser@7.25.7':
     dependencies:
@@ -8739,7 +8725,7 @@ snapshots:
       '@types/google.maps': 3.58.1
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.1.0
-      '@unhead/vue': 1.11.9(vue@3.5.12(typescript@5.6.3))
+      '@unhead/vue': 1.11.11(vue@3.5.12(typescript@5.6.3))
       '@vueuse/core': 11.1.0(vue@3.5.12(typescript@5.6.3))
       consola: 3.2.3
       defu: 6.1.4
@@ -9590,17 +9576,7 @@ snapshots:
       '@unhead/schema': 1.11.11
       '@unhead/shared': 1.11.11
 
-  '@unhead/dom@1.11.9':
-    dependencies:
-      '@unhead/schema': 1.11.9
-      '@unhead/shared': 1.11.9
-
   '@unhead/schema@1.11.11':
-    dependencies:
-      hookable: 5.5.3
-      zhead: 2.2.4
-
-  '@unhead/schema@1.11.9':
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
@@ -9608,10 +9584,6 @@ snapshots:
   '@unhead/shared@1.11.11':
     dependencies:
       '@unhead/schema': 1.11.11
-
-  '@unhead/shared@1.11.9':
-    dependencies:
-      '@unhead/schema': 1.11.9
 
   '@unhead/ssr@1.11.11':
     dependencies:
@@ -9625,15 +9597,6 @@ snapshots:
       defu: 6.1.4
       hookable: 5.5.3
       unhead: 1.11.11
-      vue: 3.5.12(typescript@5.6.3)
-
-  '@unhead/vue@1.11.9(vue@3.5.12(typescript@5.6.3))':
-    dependencies:
-      '@unhead/schema': 1.11.9
-      '@unhead/shared': 1.11.9
-      defu: 6.1.4
-      hookable: 5.5.3
-      unhead: 1.11.9
       vue: 3.5.12(typescript@5.6.3)
 
   '@unocss/astro@0.62.4(rollup@4.24.4)(vite@5.4.10(@types/node@22.8.7)(sass@1.78.0)(terser@5.32.0))':
@@ -10551,7 +10514,7 @@ snapshots:
       caniuse-lite: 1.0.30001667
       fraction.js: 4.3.7
       normalize-range: 0.1.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       postcss: 8.4.47
       postcss-value-parser: 4.2.0
 
@@ -12544,7 +12507,7 @@ snapshots:
 
   launch-editor@2.9.1:
     dependencies:
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       shell-quote: 1.8.1
 
   lazystream@1.0.1:
@@ -13321,7 +13284,7 @@ snapshots:
       chokidar: 3.6.0
       fast-glob: 3.3.2
       pathe: 1.1.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       remark-parse: 11.0.0
       shiki: 1.22.0
       twoslash: 0.2.12(typescript@5.6.3)
@@ -13531,8 +13494,6 @@ snapshots:
   pathval@2.0.0: {}
 
   perfect-debounce@1.0.0: {}
-
-  picocolors@1.1.0: {}
 
   picocolors@1.1.1: {}
 
@@ -13774,7 +13735,7 @@ snapshots:
   postcss@8.4.47:
     dependencies:
       nanoid: 3.3.7
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       source-map-js: 1.2.1
 
   posthtml-parser@0.11.0:
@@ -14529,7 +14490,7 @@ snapshots:
       css-tree: 2.3.1
       css-what: 6.1.0
       csso: 5.0.5
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   synckit@0.9.1:
     dependencies:
@@ -14790,13 +14751,6 @@ snapshots:
       '@unhead/shared': 1.11.11
       hookable: 5.5.3
 
-  unhead@1.11.9:
-    dependencies:
-      '@unhead/dom': 1.11.9
-      '@unhead/schema': 1.11.9
-      '@unhead/shared': 1.11.9
-      hookable: 5.5.3
-
   unicode-emoji-modifier-base@1.0.0: {}
 
   unicorn-magic@0.1.0: {}
@@ -14991,7 +14945,7 @@ snapshots:
     dependencies:
       browserslist: 4.24.0
       escalade: 3.2.0
-      picocolors: 1.1.0
+      picocolors: 1.1.1
 
   uqr@0.1.2: {}
 
@@ -15051,7 +15005,7 @@ snapshots:
       cac: 6.7.14
       debug: 4.3.7(supports-color@9.4.0)
       pathe: 1.1.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       vite: 5.4.10(@types/node@22.8.7)(sass@1.78.0)(terser@5.32.0)
     transitivePeerDependencies:
       - '@types/node'
@@ -15113,7 +15067,7 @@ snapshots:
       fs-extra: 11.2.0
       open: 10.1.0
       perfect-debounce: 1.0.0
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       sirv: 2.0.4
       vite: 5.4.10(@types/node@22.8.7)(sass@1.78.0)(terser@5.32.0)
     optionalDependencies:
@@ -15184,7 +15138,7 @@ snapshots:
       local-pkg: 0.5.0
       magic-string: 0.30.12
       pathe: 1.1.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       std-env: 3.7.0
       strip-literal: 2.1.0
       tinybench: 2.9.0
@@ -15355,7 +15309,7 @@ snapshots:
       gzip-size: 6.0.0
       html-escaper: 2.0.2
       opener: 1.5.2
-      picocolors: 1.1.0
+      picocolors: 1.1.1
       sirv: 2.0.4
       ws: 7.5.10
     transitivePeerDependencies:
