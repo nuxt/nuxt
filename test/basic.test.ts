@@ -625,6 +625,13 @@ describe('pages', () => {
     const html = await $fetch('/prerender/test')
     expect(html).toContain('should be prerendered: true')
   })
+
+  it('should render pages with meta.isolate independently', async () => {
+    expect(await $fetch('/not-isolated')).toContain('Nuxt App')
+    const html = await $fetch('/isolated')
+    expect(html).not.toContain('Nuxt App')
+    expect(html).toContain('isolated')
+  })
 })
 
 describe('nuxt composables', () => {
