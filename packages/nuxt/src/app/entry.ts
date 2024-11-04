@@ -17,7 +17,7 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appId, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, appSpaLoaderAttrs, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -70,6 +70,11 @@ if (import.meta.client) {
     // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
     nuxt.hook('app:suspense:resolve', () => {
       if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
+    })
+
+    // Remove spa loader if present
+    nuxt.hook('app:suspense:resolve', () => {
+      if (!isSSR && appSpaLoaderAttrs.id) { document.getElementById(appSpaLoaderAttrs.id)?.remove() }
     })
 
     try {

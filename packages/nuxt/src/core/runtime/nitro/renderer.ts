@@ -30,7 +30,7 @@ import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
+import { appHead, appId, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -144,7 +144,11 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   // @ts-expect-error virtual file
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
+    .then((r) => {
+      const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
+      const loaderTemplate = r ? APP_SPA_LOADER_OPEN_TAG + r + APP_SPA_LOADER_CLOSE_TAG : ''
+      return appTemplate + loaderTemplate
+    })
 
   const options = {
     manifest,
@@ -221,6 +225,9 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
   return ctx
 }
+
+const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
+const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
