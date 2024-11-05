@@ -77,8 +77,8 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [nuxtModule, join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), join(nuxt.options.rootDir, nuxtModule), join(nuxtModule, 'index')]
-
+    nuxtModule = resolveAlias(nuxtModule)
+    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
     for (const path of paths) {
       for (const parentURL of nuxt.options.modulesDir) {
         try {
@@ -93,7 +93,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
           break
         } catch (error: unknown) {
           const code = (error as Error & { code?: string }).code
-          if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT') {
+          if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
             continue
           }
           logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
