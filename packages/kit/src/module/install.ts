@@ -6,7 +6,7 @@ import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { resolve as resolveModule } from 'mlly'
 import { useNuxt } from '../context'
-import { resolveAlias } from '../resolve'
+import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
@@ -82,7 +82,11 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     for (const path of paths) {
       for (const parentURL of nuxt.options.modulesDir) {
         try {
-          const src = await resolveModule(resolveAlias(path), { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
+          const resolved = resolveAlias(path, nuxt.options.alias)
+          const src = isAbsolute(resolved)
+            ? await resolvePath(resolved, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })
+            : await resolveModule(resolved, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
+
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
 
           // nuxt-module-builder generates a module.json with metadata including the version
