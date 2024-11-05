@@ -3,8 +3,9 @@ import { readPackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtCompatibility, NuxtCompatibilityIssues } from '@nuxt/schema'
 import { useNuxt } from './context'
 
+const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
 export function normalizeSemanticVersion (version: string) {
-  return version.replace(/-\d+\.[0-9a-f]+/, '') // Remove edge prefix
+  return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
 
 const builderMap = {
@@ -104,6 +105,7 @@ export function isNuxt3 (nuxt: Nuxt = useNuxt()) {
   return isNuxtMajorVersion(3, nuxt)
 }
 
+const NUXT_VERSION_RE = /^v/g
 /**
  * Get nuxt version
  */
@@ -112,5 +114,5 @@ export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt
   if (typeof rawVersion !== 'string') {
     throw new TypeError('Cannot determine nuxt version! Is current instance passed?')
   }
-  return rawVersion.replace(/^v/g, '')
+  return rawVersion.replace(NUXT_VERSION_RE, '')
 }

@@ -20,6 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { useRuntimeHook } from '#app/composables/runtime-hook'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -93,6 +94,7 @@ describe('composables', () => {
       'abortNavigation',
       'setPageLayout',
       'defineNuxtComponent',
+      'useRuntimeHook',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -574,6 +576,36 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+})
+
+describe('useRuntimeHook', () => {
+  it('types work', () => {
+    // @ts-expect-error should not allow unknown hooks
+    useRuntimeHook('test', () => {})
+    useRuntimeHook('app:beforeMount', (_app) => {
+      // @ts-expect-error argument should be typed
+      _app = 'test'
+    })
+  })
+
+  it('should call hooks', async () => {
+    const nuxtApp = useNuxtApp()
+    let called = 1
+    const wrapper = await mountSuspended(defineNuxtComponent({
+      setup () {
+        useRuntimeHook('test-hook' as any, () => {
+          called++
+        })
+      },
+      render: () => h('div', 'hi there'),
+    }))
+    expect(called).toBe(1)
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
+    wrapper.unmount()
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
   })
 })
 
