@@ -77,12 +77,11 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    nuxtModule = resolveAlias(nuxtModule)
     const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
     for (const path of paths) {
       for (const parentURL of nuxt.options.modulesDir) {
         try {
-          const src = await resolveModule(path, { url: parentURL.replace(/\/node_modules\/?$/, ''), extensions: nuxt.options.extensions })
+          const src = await resolveModule(resolveAlias(path), { url: parentURL.replace(/\/node_modules\/?$/, ''), extensions: nuxt.options.extensions })
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
 
           // nuxt-module-builder generates a module.json with metadata including the version
