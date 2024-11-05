@@ -263,36 +263,4 @@ export default defineNuxtConfig({
       })
     },
   },
-  vue: {
-    compilerOptions: {
-      isCustomElement: (tag) => {
-        return tag === 'custom-component'
-      },
-    },
-  },
-  features: {
-    inlineStyles: id => !!id && !id.includes('assets.vue'),
-  },
-  experimental: {
-    serverAppConfig: true,
-    typedPages: true,
-    clientFallback: true,
-    restoreState: true,
-    clientNodeCompat: true,
-    componentIslands: {
-      selectiveClient: 'deep',
-    },
-    asyncContext: process.env.TEST_CONTEXT === 'async',
-    appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
-    renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
-    headNext: true,
-    inlineRouteRules: true,
-    delayedHydration: true,
-  },
-  appConfig: {
-    fromNuxtConfig: true,
-    nested: {
-      val: 1,
-    },
-  },
 })
