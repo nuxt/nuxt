@@ -172,6 +172,7 @@ export default defineNuxtConfig({
     renderJsonPayloads: process.env.TEST_PAYLOAD !== 'js',
     headNext: true,
     inlineRouteRules: true,
+    delayedHydration: true,
   },
   compatibilityDate: '2024-06-28',
   nitro: {
