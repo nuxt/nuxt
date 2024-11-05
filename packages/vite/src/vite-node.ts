@@ -41,7 +41,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     configureServer (server) {
       function invalidateVirtualModules () {
         for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-          if (id.startsWith('virtual:')) {
+          if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
             markInvalidate(mod)
           }
         }
@@ -140,7 +140,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       },
     })
 
-    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
+    const isExternal = createIsExternal(viteServer, ctx.nuxt)
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {

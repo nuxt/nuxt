@@ -12,7 +12,7 @@ import * as composables from '#app/composables'
 import { clearNuxtData, refreshNuxtData, useAsyncData, useNuxtData } from '#app/composables/asyncData'
 import { clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
 import { onNuxtReady } from '#app/composables/ready'
-import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders } from '#app/composables/ssr'
+import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
 import { useRequestURL } from '#app/composables/url'
 import { getAppManifest, getRouteRules } from '#app/composables/manifest'
@@ -20,6 +20,7 @@ import { callOnce } from '#app/composables/once'
 import { useLoadingIndicator } from '#app/composables/loading-indicator'
 import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { encodeURL, resolveRouteObject } from '#app/composables/router'
+import { useRuntimeHook } from '#app/composables/runtime-hook'
 
 registerEndpoint('/api/test', defineEventHandler(event => ({
   method: event.method,
@@ -83,6 +84,7 @@ describe('composables', () => {
       'useRequestFetch',
       'isPrerendered',
       'useRequestHeaders',
+      'useResponseHeader',
       'useCookie',
       'clearNuxtState',
       'useState',
@@ -92,6 +94,7 @@ describe('composables', () => {
       'abortNavigation',
       'setPageLayout',
       'defineNuxtComponent',
+      'useRuntimeHook',
     ]
     const skippedComposables: string[] = [
       'addRouteMiddleware',
@@ -394,6 +397,7 @@ describe('ssr composables', () => {
     expect(useRequestFetch()).toEqual($fetch)
     expect(useRequestHeaders()).toEqual({})
     expect(prerenderRoutes('/')).toBeUndefined()
+    expect(useResponseHeader('x-test').value).toBeUndefined()
   })
 })
 
@@ -572,6 +576,36 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     expect(await isPrerendered('/test')).toBeFalsy()
     expect(await isPrerendered('/pre/test')).toBeFalsy()
     expect(await isPrerendered('/pre/thing')).toBeTruthy()
+  })
+})
+
+describe('useRuntimeHook', () => {
+  it('types work', () => {
+    // @ts-expect-error should not allow unknown hooks
+    useRuntimeHook('test', () => {})
+    useRuntimeHook('app:beforeMount', (_app) => {
+      // @ts-expect-error argument should be typed
+      _app = 'test'
+    })
+  })
+
+  it('should call hooks', async () => {
+    const nuxtApp = useNuxtApp()
+    let called = 1
+    const wrapper = await mountSuspended(defineNuxtComponent({
+      setup () {
+        useRuntimeHook('test-hook' as any, () => {
+          called++
+        })
+      },
+      render: () => h('div', 'hi there'),
+    }))
+    expect(called).toBe(1)
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
+    wrapper.unmount()
+    await nuxtApp.callHook('test-hook' as any)
+    expect(called).toBe(2)
   })
 })
 

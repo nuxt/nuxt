@@ -19,17 +19,17 @@ jobs:
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
-        uses: actions/cache@0c45773b623bea8c8e75f6c82b208c3cf94ea4f9 # v4.0.2
+        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
         with:
           path: .lycheecache
           key: cache-lychee-${{ github.sha }}
           restore-keys: cache-lychee-
 
       # check links with Lychee
-      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@c38ba4f281730ee0d64e6963f49b708e01567b86 # for v1.8.0
+        uses: lycheeverse/lychee-action@ae4699150ab670dcfb64cc74e8680e776d9caae2 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-

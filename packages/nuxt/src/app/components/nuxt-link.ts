@@ -328,8 +328,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
         await Promise.all([
-          nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
+          nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
           !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
       }
@@ -518,11 +519,13 @@ function useObserver (): { observe: ObserveFn } | undefined {
 
   return _observer
 }
+
+const IS_2G_RE = /2g/
 function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
-  if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
+  if (cn && (cn.saveData || IS_2G_RE.test(cn.effectiveType))) { return true }
   return false
 }

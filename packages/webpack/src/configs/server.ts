@@ -1,11 +1,11 @@
-import { isAbsolute } from 'pathe'
-import webpack from 'webpack'
+import { isAbsolute, resolve } from 'pathe'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets } from '../utils/config'
 import { nuxt } from '../presets/nuxt'
 import { node } from '../presets/node'
+import { webpack } from '#builder'
 
 const assetPattern = /\.(?:css|s[ca]ss|png|jpe?g|gif|svg|woff2?|eot|ttf|otf|webp|webm|mp4|ogv)(?:\?.*)?$/i
 
@@ -53,7 +53,11 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['nitro/runtime']
+  const external = [
+    'nitro/runtime',
+    '#shared',
+    resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+  ]
   if (!ctx.nuxt.options.dev) {
     external.push('#internal/nuxt/paths', '#internal/nuxt/app-config')
   }

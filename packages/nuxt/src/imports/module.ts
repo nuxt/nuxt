@@ -54,6 +54,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     await nuxt.callHook('imports:context', ctx)
 
+    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
     if (options.scan) {
@@ -64,6 +66,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         }
         composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+
+        if (isNuxtV4) {
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'utils'))
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'types'))
+        }
+
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue
@@ -166,8 +174,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
+    // skip relative import paths for node_modules that are explicitly installed
     await Promise.all(importSource.map(async (from) => {
-      if (resolvedImportPathMap.has(from)) {
+      if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
         return
       }
       let path = resolveAlias(from)
@@ -176,6 +185,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)
+          if (name && nuxt._dependencies?.has(name)) { return from }
+
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
           return join(dir, name, subpath || '')
