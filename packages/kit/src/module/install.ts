@@ -1,4 +1,5 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
@@ -7,7 +8,6 @@ import { resolve as resolveModule } from 'mlly'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
 import { logger } from '../logger'
-import { pathToFileURL } from 'node:url'
 
 const NODE_MODULES_RE = /[/\\]node_modules[/\\]/
 
