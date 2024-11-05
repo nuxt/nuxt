@@ -129,6 +129,8 @@ async function createDevMiddleware (compiler: Compiler) {
     path: joinURL(nuxt.options.app.baseURL, '__webpack_hmr', compiler.options.name!),
     ...hotMiddlewareOptions,
   })
+
+  // Register devMiddleware on server
   const devHandler = wdmToH3Handler(devMiddleware)
   const hotHandler = fromNodeMiddleware(hotMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
@@ -142,6 +144,7 @@ async function createDevMiddleware (compiler: Compiler) {
   return devMiddleware
 }
 
+// TODO: implement upstream in `webpack-dev-middleware`
 function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
   return defineEventHandler(async (event) => {
     event.context.webpack = {
