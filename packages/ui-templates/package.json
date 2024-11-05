@@ -18,7 +18,7 @@
     "test": "pnpm lint && pnpm build"
   },
   "devDependencies": {
-    "@unocss/reset": "0.63.6",
+    "@unocss/reset": "0.64.0",
     "beasties": "0.1.0",
     "html-validate": "8.24.2",
     "htmlnano": "2.1.1",
@@ -29,7 +29,7 @@
     "scule": "1.3.0",
     "tinyexec": "0.3.1",
     "tinyglobby": "0.2.10",
-    "unocss": "0.63.6",
+    "unocss": "0.64.0",
     "vite": "5.4.10"
   }
 }
