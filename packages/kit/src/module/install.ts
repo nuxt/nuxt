@@ -3,6 +3,7 @@ import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
+import { resolve as resolveModule } from 'mlly'
 import { useNuxt } from '../context'
 import { resolveAlias } from '../resolve'
 import { logger } from '../logger'
@@ -76,12 +77,12 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
+    const paths = [nuxtModule, join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), join(nuxt.options.rootDir, nuxtModule), join(nuxtModule, 'index')]
 
-    for (const parentURL of nuxt.options.modulesDir) {
-      for (const path of paths) {
+    for (const path of paths) {
+      for (const parentURL of nuxt.options.modulesDir) {
         try {
-          const src = jiti.esmResolve(path, { parentURL: parentURL.replace(/\/node_modules\/?$/, '') })
+          const src = await resolveModule(path, { url: parentURL.replace(/\/node_modules\/?$/, ''), extensions: nuxt.options.extensions })
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
 
           // nuxt-module-builder generates a module.json with metadata including the version
