@@ -1,7 +1,6 @@
 import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
-import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
@@ -15,7 +14,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
-import { builder, webpack } from '#builder'
+import { WebpackBarPlugin, builder, webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -88,7 +87,7 @@ function basePlugins (ctx: WebpackConfigContext) {
       server: 'orange',
       modern: 'blue',
     }
-    ctx.config.plugins.push(new WebpackBar({
+    ctx.config.plugins.push(new WebpackBarPlugin({
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
@@ -101,18 +100,18 @@ function basePlugins (ctx: WebpackConfigContext) {
               ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
-          done: ({ state }) => {
-            if (state.hasErrors) {
+          done: (_, { stats }) => {
+            if (stats.hasErrors()) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              logger.success(`${state.name} ${state.message}`)
+              logger.success(`Finished building ${stats.compilation.name ?? 'Nuxt app'}`)
             }
           },
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress ({ statesArray }) {
-            ctx.nuxt.callHook(`${builder}:progress`, statesArray)
+          progress: ({ webpackbar }) => {
+            ctx.nuxt.callHook(`${builder}:progress`, webpackbar.statesArray)
           },
         },
       },
