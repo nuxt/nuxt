@@ -72,7 +72,7 @@
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-dev-middleware": "^7.4.2",
     "webpack-hot-middleware": "^2.26.1",
-    "webpackbar": "^6.0.1"
+    "webpackbar": "^7.0.0"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
