@@ -104,8 +104,7 @@ function basePlugins (ctx: WebpackConfigContext) {
             if (stats.hasErrors()) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              // @ts-expect-error TODO
-              logger.success(`${stats.name} ${stats.message}`)
+              logger.success(`Finished building ${stats.compilation.name ?? 'Nuxt app'}`)
             }
           },
           allDone: () => {
