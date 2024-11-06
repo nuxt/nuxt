@@ -1,7 +1,6 @@
 import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
-import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
@@ -15,7 +14,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
-import { builder, webpack, WebpackBarPlugin } from '#builder'
+import { WebpackBarPlugin, builder, webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
