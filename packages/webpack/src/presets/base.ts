@@ -15,7 +15,7 @@ import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
 
-import { builder, webpack } from '#builder'
+import { builder, webpack, WebpackBarPlugin } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -88,11 +88,10 @@ function basePlugins (ctx: WebpackConfigContext) {
       server: 'orange',
       modern: 'blue',
     }
-    ctx.config.plugins.push(new WebpackBar({
+    ctx.config.plugins.push(new WebpackBarPlugin({
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
-      // @ts-expect-error TODO: this is a valid option for Webpack.ProgressPlugin and needs to be declared for WebpackBar
       stats: !ctx.isDev,
       reporter: {
         reporter: {
