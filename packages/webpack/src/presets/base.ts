@@ -111,9 +111,8 @@ function basePlugins (ctx: WebpackConfigContext) {
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          // @ts-expect-error TODO: there is NO statesArray on type ProgressPlugin, this error is correct
-          progress ({ statesArray }) {
-            ctx.nuxt.callHook(`${builder}:progress`, statesArray)
+          progress: ({ webpackbar }) => {
+            ctx.nuxt.callHook(`${builder}:progress`, webpackbar.statesArray)
           },
         },
       },
