@@ -91,25 +91,27 @@ function basePlugins (ctx: WebpackConfigContext) {
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
+      // @ts-expect-error TODO: this is a valid option for Webpack.ProgressPlugin and needs to be declared for WebpackBar
       stats: !ctx.isDev,
       reporter: {
         reporter: {
-          change: (_: any, { shortPath }: any) => {
+          change: (_, { shortPath }) => {
             if (!ctx.isServer) {
               ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
-          done: ({ state }: any) => {
-            if (state.hasErrors) {
+          done: (_, { stats }) => {
+            if (stats.hasErrors()) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              logger.success(`${state.name} ${state.message}`)
+              // @ts-expect-error TODO: this should be valid
+              logger.success(`${stats.name} ${stats.message}`)
             }
           },
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress ({ statesArray }: any) {
+          progress (_, { statesArray }) {
             ctx.nuxt.callHook(`${builder}:progress`, statesArray)
           },
         },
