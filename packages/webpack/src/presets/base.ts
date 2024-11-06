@@ -94,12 +94,12 @@ function basePlugins (ctx: WebpackConfigContext) {
       stats: !ctx.isDev,
       reporter: {
         reporter: {
-          change: (_, { shortPath }) => {
+          change: (_: any, { shortPath }: any) => {
             if (!ctx.isServer) {
               ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
-          done: ({ state }) => {
+          done: ({ state }: any) => {
             if (state.hasErrors) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
@@ -109,7 +109,7 @@ function basePlugins (ctx: WebpackConfigContext) {
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress ({ statesArray }) {
+          progress ({ statesArray }: any) {
             ctx.nuxt.callHook(`${builder}:progress`, statesArray)
           },
         },
