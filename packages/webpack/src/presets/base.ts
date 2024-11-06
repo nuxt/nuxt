@@ -104,14 +104,15 @@ function basePlugins (ctx: WebpackConfigContext) {
             if (stats.hasErrors()) {
               ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              // @ts-expect-error TODO: this should be valid
+              // @ts-expect-error TODO
               logger.success(`${stats.name} ${stats.message}`)
             }
           },
           allDone: () => {
             ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress (_, { statesArray }) {
+          // @ts-expect-error TODO: there is NO statesArray on type ProgressPlugin, this error is correct
+          progress ({ statesArray }) {
             ctx.nuxt.callHook(`${builder}:progress`, statesArray)
           },
         },
