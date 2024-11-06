@@ -90,13 +90,13 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         try {
           const resolved = resolveAlias(path, nuxt.options.alias)
           const src = isAbsolute(resolved)
-            ? await resolvePath(resolved, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })
+            ? pathToFileURL(await resolvePath(resolved, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
             : await resolveModule(resolved, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
 
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
 
           // nuxt-module-builder generates a module.json with metadata including the version
-          const moduleMetadataPath = join(dirname(src), 'module.json')
+          const moduleMetadataPath = new URL('module.json', src)
           if (existsSync(moduleMetadataPath)) {
             buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
           }
