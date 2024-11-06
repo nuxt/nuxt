@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import type { Import, Unimport } from 'unimport'
+import type { AddonsOptions, Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 import escapeRE from 'escape-string-regexp'
@@ -41,14 +41,23 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
+    const { addons: inlineAddons, ...rest } = options
+
+    const addons: AddonsOptions = {
+      addons: inlineAddons && Array.isArray(inlineAddons)
+        ? [...inlineAddons]
+        : [],
+      vueDirectives: inlineAddons && !Array.isArray(inlineAddons)
+        ? inlineAddons.vueDirectives
+        : options.autoImport === false ? undefined : true,
+      vueTemplate: options.autoImport,
+    }
+
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
-      ...options,
-      addons: {
-        vueTemplate: options.autoImport,
-        ...options.addons,
-      },
+      ...rest,
+      addons,
       presets,
     })
 
