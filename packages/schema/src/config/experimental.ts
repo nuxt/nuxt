@@ -407,5 +407,11 @@ export default defineUntypedSchema({
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
       },
     },
+
+    /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/21721)
+     */
+    spaPreloaderOutside: false,
   },
 })
