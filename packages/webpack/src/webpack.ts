@@ -1,8 +1,7 @@
 import pify from 'pify'
-import type { NodeMiddleware } from 'h3'
 import { resolve } from 'pathe'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
-import type { MultiWatching } from 'webpack-dev-middleware'
+import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
@@ -132,14 +131,50 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = fromNodeMiddleware(devMiddleware as NodeMiddleware)
-  const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware)
+  const hotHandler = fromNodeMiddleware(hotMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
-    await devHandler(event)
+    const body = await devHandler(event)
+    if (body !== undefined) {
+      return body
+    }
     await hotHandler(event)
   }))
 
   return devMiddleware
+}
+
+// TODO: implement upstream in `webpack-dev-middleware`
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
+  return defineEventHandler(async (event) => {
+    event.context.webpack = {
+      ...event.context.webpack,
+      devMiddleware: devMiddleware.context,
+    }
+    const { req, res } = event.node
+    const body = await new Promise((resolve, reject) => {
+      // @ts-expect-error handle injected methods
+      res.stream = (stream) => {
+        resolve(stream)
+      }
+      // @ts-expect-error handle injected methods
+      res.send = (data) => {
+        resolve(data)
+      }
+      // @ts-expect-error handle injected methods
+      res.finish = (data) => {
+        resolve(data)
+      }
+      devMiddleware(req, res, (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(undefined)
+        }
+      })
+    })
+    return body
+  })
 }
 
 async function compile (compiler: Compiler) {
