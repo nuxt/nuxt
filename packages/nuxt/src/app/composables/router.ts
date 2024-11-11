@@ -128,7 +128,7 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
     const { target = '_blank', windowFeatures = {} } = options.open
 
     const features = Object.entries(windowFeatures)
-      .filter(([_, value]) => value !== undefined)
+      .filter(([, value]) => value !== undefined)
       .map(([feature, value]) => `${feature.toLowerCase()}=${value}`)
       .join(', ')
 

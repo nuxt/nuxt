@@ -73,7 +73,7 @@ export default createConfigForNuxt({
         {
           argsIgnorePattern: '^_',
           ignoreRestSiblings: true,
-          varsIgnorePattern: '^_',
+          varsIgnorePattern: '',
         },
       ],
       '@typescript-eslint/triple-slash-reference': 'off',
