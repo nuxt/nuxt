@@ -72,6 +72,7 @@ export default createConfigForNuxt({
         'error',
         {
           argsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
           ignoreRestSiblings: true,
           varsIgnorePattern: '',
         },

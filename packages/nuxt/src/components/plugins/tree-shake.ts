@@ -56,7 +56,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
         enter: (_node) => {
           const node = _node as AcornNode<Node>
           if (isSsrRender(node)) {
-            const [componentCall,, children] = node.arguments
+            const [componentCall, _, children] = node.arguments
             if (!componentCall) { return }
 
             if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {

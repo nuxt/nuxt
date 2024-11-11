@@ -49,7 +49,7 @@ export function resolveIgnorePatterns (relativePath?: string): string[] {
   if (relativePath) {
     // Map ignore patterns based on if they start with * or !*
     return ignorePatterns.map((p) => {
-      const [, negation = '', pattern] = p.match(NEGATION_RE) || []
+      const [_, negation = '', pattern] = p.match(NEGATION_RE) || []
       if (pattern && pattern[0] === '*') {
         return p
       }

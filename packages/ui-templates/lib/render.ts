@@ -58,7 +58,7 @@ export const RenderPlugin = () => {
         // Inline SVGs
         const svgSources: string[] = []
 
-        for (const [, src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
+        for (const [_, src] of html.matchAll(/src="([^"]+)"|url([^)]+)/g)) {
           if (src?.match(/\.svg$/)) {
             svgSources.push(src)
           }
@@ -102,7 +102,7 @@ export const RenderPlugin = () => {
         const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let templateString = chunks.shift()
-        for (const [, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+        for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
           if (expression) {
             templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
           }
@@ -144,7 +144,7 @@ export const RenderPlugin = () => {
         }).replace(/@media[^{]*\{\}/g, '')
 
         const inlineScripts: string[] = []
-        for (const [, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+        for (const [_, i] of html.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
           if (i && !i.includes('const t=document.createElement("link")')) {
             inlineScripts.push(i)
           }
