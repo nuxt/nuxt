@@ -31,7 +31,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.1.0",
+    "@rspack/core": "^1.1.1",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -50,7 +50,7 @@
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.12",
     "memfs": "^4.14.0",
-    "mlly": "^1.7.2",
+    "mlly": "^1.7.3",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
     "pify": "^6.1.0",
