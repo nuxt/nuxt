@@ -39,7 +39,7 @@ const title = ref('My title')
 
 useSeoMeta({
   title,
-  description: () => `description: ${title.value}`
+  description: () => title.value
 })
 </script>
 ```
