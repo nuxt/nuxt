@@ -408,4 +408,11 @@ export default defineUntypedSchema({
       },
     },
   },
+
+  /**
+   * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
+   *
+   * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+   */
+  browserDevtoolsTiming: true,
 })
