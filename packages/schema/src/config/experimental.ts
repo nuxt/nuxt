@@ -413,6 +413,8 @@ export default defineUntypedSchema({
      *
      * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
      */
-    browserDevtoolsTiming: true,
+    browserDevtoolsTiming: {
+      $resolve: async (val, get) => val ?? await get('dev'),
+    },
   },
 })
