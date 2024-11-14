@@ -77,10 +77,6 @@ describe('resolveApp', () => {
             "mode": "all",
             "src": "<repoRoot>/packages/nuxt/src/app/plugins/router.ts",
           },
-          {
-            "mode": "client",
-            "src": "<repoRoot>/packages/nuxt/src/app/plugins/browser-devtools-timing.client.ts",
-          },
         ],
         "rootComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-root.vue",
         "templates": [],
