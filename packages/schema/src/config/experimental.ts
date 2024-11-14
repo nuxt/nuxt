@@ -407,12 +407,12 @@ export default defineUntypedSchema({
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
       },
     },
-  },
 
-  /**
-   * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
-   *
-   * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
-   */
-  browserDevtoolsTiming: true,
+    /**
+     * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
+     *
+     * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+     */
+    browserDevtoolsTiming: true,
+  },
 })
