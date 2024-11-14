@@ -5,12 +5,15 @@ export default defineNuxtPlugin({
   enforce: 'pre',
   setup (nuxtApp) {
     nuxtApp.hooks.beforeEach((event) => {
-      performance.mark(event.name + ' start')
+      // @ts-expect-error __startTime is not a public API
+      event.__startTime = performance.now()
     })
 
+    // After each
     nuxtApp.hooks.afterEach((event) => {
       performance.measure(event.name, {
-        start: event.name + ' start',
+        // @ts-expect-error __startTime is not a public API
+        start: event.__startTime,
         detail: {
           devtools: {
             dataType: 'track-entry',
