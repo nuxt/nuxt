@@ -199,7 +199,7 @@ describe('client components', () => {
     expect(fetch).toHaveBeenCalledOnce()
 
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="2">hello<div data-island-uid="2" data-island-component="Client-12345">
+      "<div data-island-uid="5">hello<div data-island-uid="5" data-island-component="Client-12345">
           <div>client component</div>
         </div>
       </div>
@@ -225,7 +225,7 @@ describe('client components', () => {
     await wrapper.vm.$.exposed!.refresh()
     await nextTick()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="2">hello<div>
+      "<div data-island-uid="5">hello<div>
           <div>fallback</div>
         </div>
       </div>"
@@ -318,7 +318,7 @@ describe('client components', () => {
     })
     expect(fetch).toHaveBeenCalledOnce()
     expect(wrapper.html()).toMatchInlineSnapshot(`
-      "<div data-island-uid="4">hello<div data-island-uid="4" data-island-component="ClientWithSlot-12345">
+      "<div data-island-uid="7">hello<div data-island-uid="7" data-island-component="ClientWithSlot-12345">
           <div class="client-component">
             <div style="display: contents" data-island-uid="" data-island-slot="default">
               <div>slot in client component</div>
