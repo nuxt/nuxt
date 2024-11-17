@@ -1,6 +1,6 @@
 {
   "name": "@nuxt/kit",
-  "version": "3.12.2",
+  "version": "4.0.0-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/nuxt/nuxt.git",
@@ -37,24 +37,24 @@
     "ignore": "^6.0.2",
     "jiti": "^2.4.0",
     "klona": "^2.0.6",
-    "mlly": "^1.7.2",
+    "mlly": "^1.7.3",
     "pathe": "^1.1.2",
     "pkg-types": "^1.2.1",
     "scule": "^1.3.0",
     "semver": "^7.6.3",
     "ufo": "^1.5.4",
     "unctx": "^2.3.1",
-    "unimport": "^3.13.1",
+    "unimport": "^3.13.2",
     "untyped": "^1.5.1"
   },
   "devDependencies": {
-    "@rspack/core": "1.0.14",
+    "@rspack/core": "1.1.1",
     "@types/hash-sum": "1.0.2",
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "unbuild": "3.0.0-rc.11",
-    "vite": "5.4.10",
-    "vitest": "2.1.4",
+    "vite": "5.4.11",
+    "vitest": "2.1.5",
     "webpack": "5.96.1"
   },
   "engines": {
