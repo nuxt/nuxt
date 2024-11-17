@@ -130,7 +130,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
 
         return {
           code: 'export default () => {}',
-          map: { mappings: '' },
+          map: null,
         }
       }
 
@@ -140,7 +140,7 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
         logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
         return {
           code: 'export default () => {}',
-          map: { mappings: '' },
+          map: null,
         }
       }
 
