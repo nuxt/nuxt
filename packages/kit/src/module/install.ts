@@ -5,6 +5,7 @@ import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { resolve as resolveModule } from 'mlly'
+import { isRelative } from 'ufo'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
@@ -78,14 +79,23 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
 
   // Import if input is string
   if (typeof nuxtModule === 'string') {
-    const paths = [join(nuxtModule, 'nuxt'), join(nuxtModule, 'module'), nuxtModule, join(nuxt.options.rootDir, nuxtModule)]
+    const paths = new Set<string>()
+    nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
+
+    if (isRelative(nuxtModule)) {
+      nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
+    }
+
+    paths.add(join(nuxtModule, 'nuxt'))
+    paths.add(join(nuxtModule, 'module'))
+    paths.add(nuxtModule)
+
     for (const path of paths) {
       for (const parentURL of nuxt.options.modulesDir) {
         try {
-          const resolved = resolveAlias(path, nuxt.options.alias)
-          const src = isAbsolute(resolved)
-            ? pathToFileURL(await resolvePath(resolved, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-            : await resolveModule(resolved, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
+          const src = isAbsolute(path)
+            ? pathToFileURL(await resolvePath(path, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
+            : await resolveModule(path, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
 
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
 
