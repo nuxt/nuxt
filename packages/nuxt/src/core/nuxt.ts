@@ -409,7 +409,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add <NuxtWelcome>
   const islandsConfig = nuxt.options.experimental.componentIslands
-  if (nuxt.options.dev || !islandsConfig || islandsConfig === true || typeof islandsConfig === 'string' || islandsConfig.selectiveClient !== 'deep') {
+  if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
     addComponent({
       name: 'NuxtWelcome',
       priority: 10, // built-in that we do not expect the user to override
