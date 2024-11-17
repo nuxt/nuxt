@@ -636,7 +636,21 @@ describe('pages', () => {
 
     await page.close()
   })
+
+  it('should hide nuxt page load indicator after navigate back from nested page', async () => {
+    const LOAD_INDICATOR_SELECTOR = '.nuxt-loading-indicator'
+    const { page } = await renderPage('/')
+    await page.getByText('to page nuxt load indicator').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/xyz')
+    await page.goBack()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/')
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    const isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+    await page.close()
+  })
 })
+
 
 describe('nuxt composables', () => {
   it('has useRequestURL()', async () => {
