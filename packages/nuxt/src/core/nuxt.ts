@@ -408,11 +408,13 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add <NuxtWelcome>
-  addComponent({
-    name: 'NuxtWelcome',
-    priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/welcome'),
-  })
+  if (nuxt.options.dev) {
+    addComponent({
+      name: 'NuxtWelcome',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/welcome'),
+    })
+  }
 
   addComponent({
     name: 'NuxtLayout',
