@@ -67,7 +67,7 @@
     "vue": "3.5.13"
   },
   "devDependencies": {
-    "@eslint/js": "9.15.0",
+    "@eslint/js": "9.14.0",
     "@nuxt/eslint-config": "0.7.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -89,7 +89,7 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
-    "eslint": "9.15.0",
+    "eslint": "9.14.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "3.9.1",
     "eslint-typegen": "0.3.2",
