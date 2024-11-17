@@ -107,12 +107,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
+    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
-      return [
-        '/types/imports.d.ts',
-        '/imports.d.ts',
-        '/imports.mjs',
-      ].some(i => template.filename.endsWith(i))
+      return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
     const regenerateImports = async () => {
