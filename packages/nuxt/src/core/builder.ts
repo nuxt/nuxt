@@ -10,7 +10,6 @@ import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
 
-const IS_RESTART_PATH_RE = /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
   nuxt.apps.default = app
@@ -21,19 +20,24 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
-      const restartPath = relativePaths.find(relativePath => IS_RESTART_PATH_RE.test(relativePath))
-      if (restartPath) {
-        if (restartPath.startsWith('app')) {
-          app.mainComponent = undefined
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const layer of nuxt.options._layers) {
+          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
+          if (relativePath.match(/^app\./i)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (relativePath.match(/^error\./i)) {
+            app.errorComponent = undefined
+            break
+          }
         }
-        if (restartPath.startsWith('error')) {
-          app.errorComponent = undefined
-        }
-        await generateApp()
       }
+
+      // Recompile app templates
+      await generateApp()
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
