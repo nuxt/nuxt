@@ -408,6 +408,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add <NuxtWelcome>
+  // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
   const islandsConfig = nuxt.options.experimental.componentIslands
   if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
     addComponent({
