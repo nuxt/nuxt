@@ -651,7 +651,6 @@ describe('pages', () => {
   })
 })
 
-
 describe('nuxt composables', () => {
   it('has useRequestURL()', async () => {
     const html = await $fetch<string>('/url')
