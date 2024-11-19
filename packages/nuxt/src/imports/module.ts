@@ -132,7 +132,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const preset = presetMap.get(i.as)
 
             if (preset) {
-              console.warn(`[imports] "${i.as}" is already defined and auto imported from "${preset}" within nuxt itself. Please don't name your composable the same as a preset, as it will lead to unexpected behavior.`)
+              console.warn(`[imports] "${i.as}" is already defined and auto imported from "${preset}" within nuxt itself. Please consider renaming "${i.as}" at ${i.from}.`)
             }
 
             i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
