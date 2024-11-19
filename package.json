@@ -91,7 +91,7 @@
     "devalue": "5.1.1",
     "eslint": "9.15.0",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "3.9.1",
+    "eslint-plugin-perfectionist": "4.0.2",
     "eslint-typegen": "0.3.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "15.11.6",
