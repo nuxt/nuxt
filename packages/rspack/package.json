@@ -31,7 +31,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.1.1",
+    "@rspack/core": "^1.1.2",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
