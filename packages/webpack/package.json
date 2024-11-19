@@ -45,7 +45,7 @@
     "hash-sum": "^2.0.0",
     "jiti": "^2.4.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.12",
+    "magic-string": "^0.30.13",
     "memfs": "^4.14.0",
     "mini-css-extract-plugin": "^2.9.2",
     "mlly": "^1.7.3",
