@@ -117,7 +117,24 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           const scannedImports = await scanDirExports(composablesDirs, {
             fileFilter: file => !isIgnored(file),
           })
+
+          const presetMap = new Map<string, typeof presets[]>()
+
+          for (const preset of presets) {
+            preset.imports = preset.imports || []
+            for (const i of preset.imports) {
+              presetMap.set(i, preset.from)
+            }
+            presetMap.set(preset.as, preset.from)
+          }
+
           for (const i of scannedImports) {
+            const preset = presetMap.get(i.as)
+
+            if (preset) {
+              console.warn(`[imports] "${i.as}" is already defined and auto imported from "${preset}" within nuxt itself. Please don't name your composable the same as a preset, as it will lead to unexpected behavior.`)
+            }
+
             i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
