@@ -118,7 +118,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             fileFilter: file => !isIgnored(file),
           })
 
-          const presetMap = new Map<string, typeof presets[]>()
+          const presetMap = new Map<string, string>()
 
           for (const preset of presets) {
             preset.imports = preset.imports ?? []
