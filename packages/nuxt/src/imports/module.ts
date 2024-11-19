@@ -121,7 +121,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           const presetMap = new Map<string, typeof presets[]>()
 
           for (const preset of presets) {
-            preset.imports = preset.imports || []
+            preset.imports = preset.imports ?? []
             for (const i of preset.imports) {
               presetMap.set(i, preset.from)
             }
@@ -129,10 +129,11 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           }
 
           for (const i of scannedImports) {
-            const preset = presetMap.get(i.as)
+            const name = i.as ?? i.name
+            const preset = presetMap.get(name)
 
             if (preset) {
-              console.warn(`[imports] "${i.as}" is already defined and auto imported from "${preset}" within nuxt itself. Please consider renaming "${i.as}" at ${i.from}.`)
+              console.warn(`[imports] "${name}" is already defined and auto imported from "${preset ?? 'unknown preset'}" within nuxt itself. Please consider renaming "${name}" at ${i.from}.`)
             }
 
             i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
