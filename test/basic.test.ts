@@ -644,9 +644,15 @@ describe('pages', () => {
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/xyz')
     await page.goBack()
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/')
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
     await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
-    const isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
     expect(isVisible).toBe(false)
+
     await page.close()
   })
 })
