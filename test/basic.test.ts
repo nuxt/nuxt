@@ -642,11 +642,19 @@ describe('pages', () => {
     const { page } = await renderPage('/')
     await page.getByText('to page nuxt load indicator').click()
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/xyz')
-    await page.goBack()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/')
 
     await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
     let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.goBack()
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
     expect(isVisible).toBe(true)
 
     await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
