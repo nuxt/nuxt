@@ -160,6 +160,7 @@ interface AugmentPagesContext {
   augmentedPages?: Set<string>
 }
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
+  ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
@@ -169,7 +170,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       }
 
       Object.assign(route, routeMeta)
-      ctx.augmentedPages?.add(route.file)
+      ctx.augmentedPages.add(route.file)
     }
 
     if (route.children && route.children.length > 0) {
