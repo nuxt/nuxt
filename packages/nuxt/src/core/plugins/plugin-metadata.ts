@@ -125,18 +125,26 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const plugin = nuxt.apps.default?.plugins.find(p => p.src === id)
       if (!plugin) { return }
 
-      const s = new MagicString(code)
+      if (!code.trim()) {
+        logger.warn(`Plugin \`${plugin.src}\` has no content.`)
+
+        return {
+          code: 'export default () => {}',
+          map: null,
+        }
+      }
+
       const exports = findExports(code)
       const defaultExport = exports.find(e => e.type === 'default' || e.name === 'default')
       if (!defaultExport) {
         logger.warn(`Plugin \`${plugin.src}\` has no default export and will be ignored at build time. Add \`export default defineNuxtPlugin(() => {})\` to your plugin.`)
-        s.overwrite(0, code.length, 'export default () => {}')
         return {
-          code: s.toString(),
-          map: nuxt.options.sourcemap.client || nuxt.options.sourcemap.server ? s.generateMap({ hires: true }) : null,
+          code: 'export default () => {}',
+          map: null,
         }
       }
 
+      const s = new MagicString(code)
       let wrapped = false
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
