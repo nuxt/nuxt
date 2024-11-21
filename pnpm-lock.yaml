@@ -256,8 +256,8 @@ importers:
         version: 1.5.1
     devDependencies:
       '@rspack/core':
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 1.1.3
+        version: 1.1.3
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
@@ -286,8 +286,8 @@ importers:
         specifier: ^2.0.2
         version: 2.0.2
       '@nuxt/devtools':
-        specifier: ^1.6.0
-        version: 1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
+        specifier: ^1.6.1
+        version: 1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
       '@nuxt/kit':
         specifier: workspace:*
         version: link:../kit
@@ -480,7 +480,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.9.5
-        version: 0.9.5(@nuxt/devtools@1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))
+        version: 0.9.5(@nuxt/devtools@1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
@@ -515,14 +515,14 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@rspack/core':
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^1.1.3
+        version: 1.1.3
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.1.2)(webpack@5.96.1)
+        version: 7.1.2(@rspack/core@1.1.3)(webpack@5.96.1)
       css-minimizer-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.96.1)
@@ -594,7 +594,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.1.1
-        version: 8.1.1(@rspack/core@1.1.2)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1)
+        version: 8.1.1(@rspack/core@1.1.3)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.4.49)
@@ -639,7 +639,7 @@ importers:
         version: 0.6.2
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.1.2)(webpack@5.96.1)
+        version: 7.0.0(@rspack/core@1.1.3)(webpack@5.96.1)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -969,7 +969,7 @@ importers:
         version: 10.4.20(postcss@8.4.49)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.1.2)(webpack@5.96.1)
+        version: 7.1.2(@rspack/core@1.1.3)(webpack@5.96.1)
       css-minimizer-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.96.1)
@@ -1044,7 +1044,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.1.1
-        version: 8.1.1(@rspack/core@1.1.2)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1)
+        version: 8.1.1(@rspack/core@1.1.3)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.4.49)
@@ -1089,14 +1089,14 @@ importers:
         version: 2.26.1
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.1.2)(webpack@5.96.1)
+        version: 7.0.0(@rspack/core@1.1.3)(webpack@5.96.1)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@rspack/core':
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 1.1.3
+        version: 1.1.3
       '@types/hash-sum':
         specifier: 1.0.2
         version: 1.0.2
@@ -2165,17 +2165,22 @@ packages:
     peerDependencies:
       vite: 5.4.11
 
+  '@nuxt/devtools-kit@1.6.1':
+    resolution: {integrity: sha512-6pvK5ih4XONVMSABlDbq6q7/TrZ++hyXGn5zdROVU780aYX3EjU8F0sq+1Lmc6ieiJg4tNe/EA+zV1onKRPsrQ==}
+    peerDependencies:
+      vite: 5.4.11
+
   '@nuxt/devtools-ui-kit@1.5.1':
     resolution: {integrity: sha512-/1B2AYXuuPePWVuoHd/UGIKR3z3vO2bW73UAEszpHVLc/OwLA19K9f5o91sgyamAi2Qb5NymAMc/UZL0ijN8uA==}
     peerDependencies:
       '@nuxt/devtools': 1.5.1
 
-  '@nuxt/devtools-wizard@1.6.0':
-    resolution: {integrity: sha512-n+mzz5NwnKZim0tq1oBi+x1nNXb21fp7QeBl7bYKyDT1eJ0XCxFkVTr/kB/ddkkLYZ+o8TykpeNPa74cN+xAyQ==}
+  '@nuxt/devtools-wizard@1.6.1':
+    resolution: {integrity: sha512-MpcKHgXJd4JyhJEvcIMTZqojyDFHLt9Wx2oWbV7YSEnubtHYxUM6p2M+Nb9/3mT+qoOiZQ+0db3xVcMW92oE8Q==}
     hasBin: true
 
-  '@nuxt/devtools@1.6.0':
-    resolution: {integrity: sha512-xNorMapzpM8HaW7NnAsEEO38OrmrYBzGvkkqfBU5nNh5XEymmIfCbQc7IA/GIOH9pXOV4gRutCjHCWXHYbOl3A==}
+  '@nuxt/devtools@1.6.1':
+    resolution: {integrity: sha512-s+4msaf8/REaXVbBDzjMgdUmEwR68hpoiQWx4QkH0JHSNQXWCWgNngqlZOM3DSRmPrelS57PJCag+L7gnT1wLw==}
     hasBin: true
     peerDependencies:
       vite: 5.4.11
@@ -2556,56 +2561,56 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rspack/binding-darwin-arm64@1.1.2':
-    resolution: {integrity: sha512-Ay4Srve6U3pDFCsmwVJ1PHHKyeURO/iNU1pjiH986Q30bHDozfHWxCjcy0BJnK4CI4HcSaMQi5YF6BMps3ayuQ==}
+  '@rspack/binding-darwin-arm64@1.1.3':
+    resolution: {integrity: sha512-gpLUBMDAS/uEcnE+ODy1ILTeyp1oM4QCq8rRhKHuOfsIe1AZ9Mct59v2omIE/r+R4dnbJ0ikIpto9qJZ6P2u1A==}
     cpu: [arm64]
     os: [darwin]
 
-  '@rspack/binding-darwin-x64@1.1.2':
-    resolution: {integrity: sha512-s/Mepgi8SHs75QNCtnHo/ua4fAsAz3JdJ6EfdkTmODCE2GwExXy43xl0qWhlzN1FDHnRFIZ0k6tWE0K+uCbKpQ==}
+  '@rspack/binding-darwin-x64@1.1.3':
+    resolution: {integrity: sha512-m1G7SzkRfr1oLgghbAxUwj1J7hSKhtskQZiVeqe5tewKimFr6xLpKSTLTnEtlW0gdGNf1+dRMX/4kLMwhOdY7g==}
     cpu: [x64]
     os: [darwin]
 
-  '@rspack/binding-linux-arm64-gnu@1.1.2':
-    resolution: {integrity: sha512-x2JgHIAKY9CaCt5Q0EwlomyfhLYUOJ7PRUy85axROvMAPRnyRmcDr2OYQPa4KSQ+nDvF7m5SVmchHhepaORwaw==}
+  '@rspack/binding-linux-arm64-gnu@1.1.3':
+    resolution: {integrity: sha512-MpOrO1oppxAm8J1ztNz6G5DG/oL9ZLHmIz9vYNV6PKnk+MPhCXqfhFmQ2hZm5VIVKuOobfYEJiDUqKg2MLg8gA==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-arm64-musl@1.1.2':
-    resolution: {integrity: sha512-kvikjjzErfJEGldJnBTRPSkXcoICaW1PUkicVZJGYcpS6AmXz9OdbHsBKhBvJFCP+BoAHRpK10L0DAydF9kSfg==}
+  '@rspack/binding-linux-arm64-musl@1.1.3':
+    resolution: {integrity: sha512-PnUDC1JxT6a5hJW0hhJ9ubWk3R+nk7eLXyNaORHyQH4k8o89Zm5GYoKnDgO4eRy41NB9/aBJQJRGSRn0iAsZgw==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-gnu@1.1.2':
-    resolution: {integrity: sha512-wg5n7qTl0NRGL+7dzrZcKObM18GKMQDL5Ke7cEWmdHooH0rlyYK6ExIqzE5u/3GJ7KYBlDj/IgAMu5KLd8Ygjw==}
+  '@rspack/binding-linux-x64-gnu@1.1.3':
+    resolution: {integrity: sha512-+6JgyKXOp2QrHzlru95mge70tDkYlaY4NNE9xyrdj6PgTnM9cVPx4sLVhHC9+tWXaTFnccfEe9Tt6LjKnjHGaA==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-musl@1.1.2':
-    resolution: {integrity: sha512-1705atWiL6mo0KVRUoRcn5SFirUAJhREENzsQSucIYyHOX5bKjPDrd+7SAOSLOGc/yGJSmWZv6NzEH/WvY8TeA==}
+  '@rspack/binding-linux-x64-musl@1.1.3':
+    resolution: {integrity: sha512-X0TJTVL1Roqq/tvN26QO4u62x2xp5tE0dlhwhbeCHrBdgBzc+PHvcv/8lclRcq6lDPzceAgcnNX/+RbWg0DzKg==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-win32-arm64-msvc@1.1.2':
-    resolution: {integrity: sha512-DL9v6PAlC0dZnAjwNpdv5JyebidIctLTRCXO6q3bVL03i0jSyX5gRnd6YM5A9176M5HLBnSJjgujqhCffeFA3g==}
+  '@rspack/binding-win32-arm64-msvc@1.1.3':
+    resolution: {integrity: sha512-Lvpp5Q30YiPNkuOFPawp2al2CTWElPeG3X0E9LFIfPdVkLc/e2nkf5a6zSYtnbD2oaskzQIYN/k27fWqWWcVHA==}
     cpu: [arm64]
     os: [win32]
 
-  '@rspack/binding-win32-ia32-msvc@1.1.2':
-    resolution: {integrity: sha512-RluX7GENVpophR5BB4v0XxqffpGpBLTJDwoQBY0LjfOTGpLv8A0zrGIOMUsJGKE10MOlNfTUQOyB+p6sxLJzcQ==}
+  '@rspack/binding-win32-ia32-msvc@1.1.3':
+    resolution: {integrity: sha512-tC+xXcbTRX7l+NFnlGK8UhDIJrKma7S/MA1KDol23/I3Vw67EcaHDwG+q2v7uiJsxn9XooIOSCJhPKmUUfZNXg==}
     cpu: [ia32]
     os: [win32]
 
-  '@rspack/binding-win32-x64-msvc@1.1.2':
-    resolution: {integrity: sha512-fXg6y/IajuYyBy3oOsat20U+CLrDK/l4FLdg8ETfDPb5isD7jcmhyWXBeJVZVcwHT+Sj1LnLLUuhc+FGFk4aeA==}
+  '@rspack/binding-win32-x64-msvc@1.1.3':
+    resolution: {integrity: sha512-jeRaPJtsD/+m1QINgoDMA6D3kOcTwSHVmGSxR6fznLA5BKa76m8lewuALYxHHq9/qcgwJ4e6UtiwrO2JL3vxVQ==}
     cpu: [x64]
     os: [win32]
 
-  '@rspack/binding@1.1.2':
-    resolution: {integrity: sha512-HUE7EPvrgbabbhW635wSrthidZY1Kijk6+rvmTFuxzmxsBtZNcrhUFVw7Z1fwa2fykiOhbot61EDV9X1qoIa4g==}
+  '@rspack/binding@1.1.3':
+    resolution: {integrity: sha512-fB1ziJ1UXO2P4ZDO+dviSNuxknUqrz6QQ6QGfpC+S1ClUy1HOhHXss/Yn78B/R9py6dlqZzmhmhz2d+XzFVApA==}
 
-  '@rspack/core@1.1.2':
-    resolution: {integrity: sha512-cXYPImNpHl2nZmWcMv7WHsorkOaIZP9csPc2J8WxEJhOEotcgP33TKmRTAfJYszV4cqUuKbVjLMv0WgX1OeftQ==}
+  '@rspack/core@1.1.3':
+    resolution: {integrity: sha512-LdM1mAlBtEh9ozbpyWVW5uuL+aJMjYqd531pH5/i/EPDKNrOLrQWVNMa2dh07qLwJZXoTFMf7LWA7QNsmBUPJg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@swc/helpers': '>=0.5.1'
@@ -3238,13 +3243,10 @@ packages:
   '@vue/devtools-api@7.6.4':
     resolution: {integrity: sha512-5AaJ5ELBIuevmFMZYYLuOO9HUuY/6OlkOELHE7oeDhy4XD/hSODIzktlsvBOsn+bto3aD0psj36LGzwVu5Ip8w==}
 
-  '@vue/devtools-core@7.4.4':
-    resolution: {integrity: sha512-DLxgA3DfeADkRzhAfm3G2Rw/cWxub64SdP5b+s5dwL30+whOGj+QNhmyFpwZ8ZTrHDFRIPj0RqNzJ8IRR1pz7w==}
+  '@vue/devtools-core@7.6.4':
+    resolution: {integrity: sha512-blSwGVYpb7b5TALMjjoBiAl5imuBF7WEOAtaJaBMNikR8SQkm6mkUt4YlIKh9874/qoimwmpDOm+GHBZ4Y5m+g==}
     peerDependencies:
       vue: 3.5.13
-
-  '@vue/devtools-kit@7.4.4':
-    resolution: {integrity: sha512-awK/4NfsUG0nQ7qnTM37m7ZkEUMREyPh8taFCX+uQYps/MTFEum0AD05VeGDRMXwWvMmGIcWX9xp8ZiBddY0jw==}
 
   '@vue/devtools-kit@7.6.4':
     resolution: {integrity: sha512-Zs86qIXXM9icU0PiGY09PQCle4TI750IPLmAJzW5Kf9n9t5HzSYf6Rz6fyzSwmfMPiR51SUKJh9sXVZu78h2QA==}
@@ -8618,13 +8620,20 @@ snapshots:
       execa: 7.2.0
       vite: 5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0)
 
-  '@nuxt/devtools-ui-kit@1.5.1(@nuxt/devtools@1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))':
+  '@nuxt/devtools-kit@1.6.1(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))':
+    dependencies:
+      '@nuxt/kit': link:packages/kit
+      '@nuxt/schema': link:packages/schema
+      execa: 7.2.0
+      vite: 5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0)
+
+  '@nuxt/devtools-ui-kit@1.5.1(@nuxt/devtools@1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))':
     dependencies:
       '@iconify-json/carbon': 1.2.1
       '@iconify-json/logos': 1.2.0
       '@iconify-json/ri': 1.2.0
       '@iconify-json/tabler': 1.2.3
-      '@nuxt/devtools': 1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
+      '@nuxt/devtools': 1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
       '@nuxt/devtools-kit': 1.5.1(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))
       '@nuxt/kit': link:packages/kit
       '@unocss/core': 0.62.4
@@ -8664,7 +8673,7 @@ snapshots:
       - vue
       - webpack
 
-  '@nuxt/devtools-wizard@1.6.0':
+  '@nuxt/devtools-wizard@1.6.1':
     dependencies:
       consola: 3.2.3
       diff: 7.0.0
@@ -8677,14 +8686,14 @@ snapshots:
       rc9: 2.1.2
       semver: 7.6.3
 
-  '@nuxt/devtools@1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))':
+  '@nuxt/devtools@1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))':
     dependencies:
       '@antfu/utils': 0.7.10
-      '@nuxt/devtools-kit': 1.6.0(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))
-      '@nuxt/devtools-wizard': 1.6.0
+      '@nuxt/devtools-kit': 1.6.1(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))
+      '@nuxt/devtools-wizard': 1.6.1
       '@nuxt/kit': link:packages/kit
-      '@vue/devtools-core': 7.4.4(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
-      '@vue/devtools-kit': 7.4.4
+      '@vue/devtools-core': 7.6.4(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))
+      '@vue/devtools-kit': 7.6.4
       birpc: 0.2.19
       consola: 3.2.3
       cronstrue: 2.50.0
@@ -8769,10 +8778,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.96.1
 
-  '@nuxt/scripts@0.9.5(@nuxt/devtools@1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))':
+  '@nuxt/scripts@0.9.5(@nuxt/devtools@1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(typescript@5.6.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))':
     dependencies:
       '@nuxt/devtools-kit': 1.6.0(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))
-      '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.6.0(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))
+      '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.6.1(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.27.3)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.27.3)(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))
       '@nuxt/kit': link:packages/kit
       '@stripe/stripe-js': 4.8.0
       '@types/google.maps': 3.58.1
@@ -9188,49 +9197,49 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.27.3':
     optional: true
 
-  '@rspack/binding-darwin-arm64@1.1.2':
+  '@rspack/binding-darwin-arm64@1.1.3':
     optional: true
 
-  '@rspack/binding-darwin-x64@1.1.2':
+  '@rspack/binding-darwin-x64@1.1.3':
     optional: true
 
-  '@rspack/binding-linux-arm64-gnu@1.1.2':
+  '@rspack/binding-linux-arm64-gnu@1.1.3':
     optional: true
 
-  '@rspack/binding-linux-arm64-musl@1.1.2':
+  '@rspack/binding-linux-arm64-musl@1.1.3':
     optional: true
 
-  '@rspack/binding-linux-x64-gnu@1.1.2':
+  '@rspack/binding-linux-x64-gnu@1.1.3':
     optional: true
 
-  '@rspack/binding-linux-x64-musl@1.1.2':
+  '@rspack/binding-linux-x64-musl@1.1.3':
     optional: true
 
-  '@rspack/binding-win32-arm64-msvc@1.1.2':
+  '@rspack/binding-win32-arm64-msvc@1.1.3':
     optional: true
 
-  '@rspack/binding-win32-ia32-msvc@1.1.2':
+  '@rspack/binding-win32-ia32-msvc@1.1.3':
     optional: true
 
-  '@rspack/binding-win32-x64-msvc@1.1.2':
+  '@rspack/binding-win32-x64-msvc@1.1.3':
     optional: true
 
-  '@rspack/binding@1.1.2':
+  '@rspack/binding@1.1.3':
     optionalDependencies:
-      '@rspack/binding-darwin-arm64': 1.1.2
-      '@rspack/binding-darwin-x64': 1.1.2
-      '@rspack/binding-linux-arm64-gnu': 1.1.2
-      '@rspack/binding-linux-arm64-musl': 1.1.2
-      '@rspack/binding-linux-x64-gnu': 1.1.2
-      '@rspack/binding-linux-x64-musl': 1.1.2
-      '@rspack/binding-win32-arm64-msvc': 1.1.2
-      '@rspack/binding-win32-ia32-msvc': 1.1.2
-      '@rspack/binding-win32-x64-msvc': 1.1.2
+      '@rspack/binding-darwin-arm64': 1.1.3
+      '@rspack/binding-darwin-x64': 1.1.3
+      '@rspack/binding-linux-arm64-gnu': 1.1.3
+      '@rspack/binding-linux-arm64-musl': 1.1.3
+      '@rspack/binding-linux-x64-gnu': 1.1.3
+      '@rspack/binding-linux-x64-musl': 1.1.3
+      '@rspack/binding-win32-arm64-msvc': 1.1.3
+      '@rspack/binding-win32-ia32-msvc': 1.1.3
+      '@rspack/binding-win32-x64-msvc': 1.1.3
 
-  '@rspack/core@1.1.2':
+  '@rspack/core@1.1.3':
     dependencies:
       '@module-federation/runtime-tools': 0.5.1
-      '@rspack/binding': 1.1.2
+      '@rspack/binding': 1.1.3
       '@rspack/lite-tapable': 1.0.1
       caniuse-lite: 1.0.30001667
 
@@ -10257,7 +10266,7 @@ snapshots:
     dependencies:
       '@vue/devtools-kit': 7.6.4
 
-  '@vue/devtools-core@7.4.4(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))':
+  '@vue/devtools-core@7.6.4(vite@5.4.11(@types/node@22.9.1)(sass@1.78.0)(terser@5.32.0))(vue@3.5.13(typescript@5.6.3))':
     dependencies:
       '@vue/devtools-kit': 7.6.4
       '@vue/devtools-shared': 7.6.4
@@ -10268,16 +10277,6 @@ snapshots:
       vue: 3.5.13(typescript@5.6.3)
     transitivePeerDependencies:
       - vite
-
-  '@vue/devtools-kit@7.4.4':
-    dependencies:
-      '@vue/devtools-shared': 7.6.4
-      birpc: 0.2.19
-      hookable: 5.5.3
-      mitt: 3.0.1
-      perfect-debounce: 1.0.0
-      speakingurl: 14.0.1
-      superjson: 2.2.1
 
   '@vue/devtools-kit@7.6.4':
     dependencies:
@@ -10993,7 +10992,7 @@ snapshots:
     dependencies:
       postcss: 8.4.49
 
-  css-loader@7.1.2(@rspack/core@1.1.2)(webpack@5.96.1):
+  css-loader@7.1.2(@rspack/core@1.1.3)(webpack@5.96.1):
     dependencies:
       icss-utils: 5.1.0(postcss@8.4.49)
       postcss: 8.4.49
@@ -11004,7 +11003,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.6.3
     optionalDependencies:
-      '@rspack/core': 1.1.2
+      '@rspack/core': 1.1.3
       webpack: 5.96.1
 
   css-minimizer-webpack-plugin@7.0.0(webpack@5.96.1):
@@ -13755,14 +13754,14 @@ snapshots:
       read-cache: 1.0.0
       resolve: 1.22.8
 
-  postcss-loader@8.1.1(@rspack/core@1.1.2)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1):
+  postcss-loader@8.1.1(@rspack/core@1.1.3)(postcss@8.4.49)(typescript@5.6.3)(webpack@5.96.1):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.6.3)
       jiti: 2.4.0
       postcss: 8.4.49
       semver: 7.6.3
     optionalDependencies:
-      '@rspack/core': 1.1.2
+      '@rspack/core': 1.1.3
       webpack: 5.96.1
     transitivePeerDependencies:
       - typescript
@@ -15606,14 +15605,14 @@ snapshots:
       - esbuild
       - uglify-js
 
-  webpackbar@7.0.0(@rspack/core@1.1.2)(webpack@5.96.1):
+  webpackbar@7.0.0(@rspack/core@1.1.3)(webpack@5.96.1):
     dependencies:
       ansis: 3.3.2
       consola: 3.2.3
       pretty-time: 1.1.0
       std-env: 3.8.0
     optionalDependencies:
-      '@rspack/core': 1.1.2
+      '@rspack/core': 1.1.3
       webpack: 5.96.1
 
   whatwg-mimetype@3.0.0: {}
