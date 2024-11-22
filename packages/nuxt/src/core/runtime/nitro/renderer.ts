@@ -389,7 +389,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       ],
     }, headEntryOptions)
   }
-  if (isAppManifestEnabled && ssrContext.nuxt.ssrContext?._usingManifest) {
+  if (isAppManifestEnabled && ssrContext.nuxt.ssrContext?._preloadManifest) {
     head.push({
       link: [
         { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },

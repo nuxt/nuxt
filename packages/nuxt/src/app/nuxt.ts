@@ -82,7 +82,7 @@ export interface NuxtSSRContext extends SSRContext {
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
   /** @internal */
-  _usingManifest?: boolean
+  _preloadManifest?: boolean
 }
 
 export interface NuxtPayload {
