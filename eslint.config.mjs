@@ -189,7 +189,6 @@ export default createConfigForNuxt({
       },
     },
     // Sort rule keys in eslint config
-    // @ts-expect-error incorrect types 🤔
     {
       files: ['**/eslint.config.mjs'],
       name: 'local/sort-eslint-config',
