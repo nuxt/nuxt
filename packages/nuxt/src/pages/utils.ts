@@ -8,10 +8,11 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
 import { walk } from 'estree-walker'
 import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
+import * as acorn from 'acorn'
+import tsPlugin from 'acorn-typescript'
 
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
@@ -227,9 +228,10 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     }
 
     const js = await transform(script.code, { loader: script.loader })
-    const ast = parse(js.code, {
+    const ast = acorn.Parser.extend(tsPlugin()).parse(js.code, {
       sourceType: 'module',
       ecmaVersion: 'latest',
+      locations: true,
       ranges: true,
     }) as unknown as Program
 
@@ -241,10 +243,18 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
       enter (node) {
         if (foundMeta) { return }
 
-        if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
+        const class = node.type !== "ArrowFunctionExpression" || node.body.type !== "CallExpression" || node.body.callee.type !== "Identifier" || node.body.callee.name !== "definePageMeta"
+        const other = node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta'
+
+        if (class || other) { return }
 
         foundMeta = true
-        const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+
+        if (class) {
+          const pageMetaArgument = (node as ExpressionStatement).body.arguments[0] as ObjectExpression
+        } else {
+          const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+        }
 
         for (const key of extractionKeys) {
           const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
