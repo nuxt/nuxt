@@ -22,9 +22,10 @@ export function prehydrateTransformPlugin (nuxt: Nuxt) {
       const s = new MagicString(code)
       const promises: Array<Promise<any>> = []
 
-      walk(parse(code, {
+      walk(acorn.Parser.extend(tsPlugin()).parse(code, {
         sourceType: 'module',
         ecmaVersion: 'latest',
+        locations: true,
         ranges: true,
       }) as Node, {
         enter (_node) {
