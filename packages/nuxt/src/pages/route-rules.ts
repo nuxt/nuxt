@@ -3,12 +3,12 @@ import type { Node } from 'estree-walker'
 import type { CallExpression } from 'estree'
 import { walk } from 'estree-walker'
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 import { normalize } from 'pathe'
 import { extractScriptContent, pathToNitroGlob } from './utils'
-
+import * as acorn from 'acorn'
+import tsPlugin from 'acorn-typescript'
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
@@ -26,9 +26,10 @@ export async function extractRouteRules (code: string): Promise<NitroRouteConfig
     code = script?.code || code
 
     const js = await transform(code, { loader: script?.loader || 'ts' })
-    walk(parse(js.code, {
+    walk(acorn.Parser.extend(tsPlugin()).parse(js.code, {
       sourceType: 'module',
       ecmaVersion: 'latest',
+      locations: true,
     }) as Node, {
       enter (_node) {
         if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
