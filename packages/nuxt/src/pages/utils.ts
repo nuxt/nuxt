@@ -244,7 +244,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
         if (foundMeta) { return }
 
         if ((node.type !== "ArrowFunctionExpression" || node.body.type !== "CallExpression" || node.body.callee.type !== "Identifier" || node.body.callee.name !== "definePageMeta") 
-            || (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta')) { return }
+            && (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta')) { return }
 
         foundMeta = true
         const pageMetaArgument = node.type !== "ArrowFunctionExpression" ? ((node as ExpressionStatement).body as any).arguments[0] as ObjectExpression ? ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
