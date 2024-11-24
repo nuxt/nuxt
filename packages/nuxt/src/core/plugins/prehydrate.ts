@@ -1,12 +1,12 @@
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
 import { walk } from 'estree-walker'
 import type { Node } from 'estree-walker'
 import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import type { SimpleCallExpression } from 'estree'
 import MagicString from 'magic-string'
-
+import * as acorn from 'acorn'
+import { tsPlugin } from 'acorn-typescript'
 import { hash } from 'ohash'
 import { isJS, isVue } from '../utils'
 
@@ -22,9 +22,10 @@ export function prehydrateTransformPlugin (nuxt: Nuxt) {
       const s = new MagicString(code)
       const promises: Array<Promise<any>> = []
 
-      walk(parse(code, {
+      walk(acorn.Parser.extend(tsPlugin()).parse(code, {
         sourceType: 'module',
         ecmaVersion: 'latest',
+        locations: true,
         ranges: true,
       }) as Node, {
         enter (_node) {
