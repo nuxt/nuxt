@@ -242,16 +242,15 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
       enter (node) {
         if (foundMeta) { return }
 
-        if ((node.type !== "ArrowFunctionExpression" && node.type !== 'ExpressionStatement')
-             || (node.body.type !== "CallExpression" && node.expression.type !== 'CallExpression')
-             || (node.body.callee.type !== "Identifier" && node.expression.callee.type !== 'Identifier')
-             || (node.body.callee.name !== "definePageMeta" && node.expression.callee.name !== 'definePageMeta')) { return }
+        if ((node.type !== 'ArrowFunctionExpression' && node.type !== 'ExpressionStatement')
+             || (node.body.type !== 'CallExpression' && node.expression.type !== 'CallExpression')
+             || (node.body.callee.type !== 'Identifier' && node.expression.callee.type !== 'Identifier')
+             || (node.body.callee.name !== 'definePageMeta' && node.expression.callee.name !== 'definePageMeta')) { return }
 
         foundMeta = true
-        const pageMetaArgument = node.type !== "ArrowFunctionExpression"
+        const pageMetaArgument = node.type !== 'ArrowFunctionExpression'
           ? ((node as ExpressionStatement).body as any).arguments[0] as ObjectExpression
           : ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
-
 
         for (const key of extractionKeys) {
           const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
