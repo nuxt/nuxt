@@ -242,13 +242,13 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
       enter (node) {
         if (foundMeta) { return }
 
-        if ((node.type !== 'ArrowFunctionExpression' && node.type !== 'ExpressionStatement')
-             || (node.body.type !== 'CallExpression' && node.expression.type !== 'CallExpression')
-             || (node.body.callee.type !== 'Identifier' && node.expression.callee.type !== 'Identifier')
-             || (node.body.callee.name !== 'definePageMeta' && node.expression.callee.name !== 'definePageMeta')) { return }
+        const notExpressionStatement = node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta'
+        const notArrowFunctionExpression = node.type !== 'ArrowFunctionExpression' || node.body.type !== 'CallExpression' || node.body.callee.type !== 'Identifier' || node.body.callee.name !== 'definePageMeta'
+
+        if (notExpressionStatement && notArrowFunctionExpression) { return }
 
         foundMeta = true
-        const pageMetaArgument = node.type !== 'ArrowFunctionExpression'
+        const pageMetaArgument = notExpressionStatement
           ? ((node as ExpressionStatement).body as any).arguments[0] as ObjectExpression
           : ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
 
