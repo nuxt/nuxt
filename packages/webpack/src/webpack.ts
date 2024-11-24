@@ -11,7 +11,7 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
+import { composableKeysPlugin } from '../../nuxt/src/core/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'

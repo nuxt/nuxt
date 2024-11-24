@@ -9,7 +9,7 @@ import type { CallExpression, Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { matchWithStringOrRegex } from '../utils'
+import { matchWithStringOrRegex } from '../../../../vite/src/utils'
 
 interface ComposableKeysOptions {
   sourcemap: boolean
