@@ -6,9 +6,10 @@ import { transform } from 'esbuild'
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 import { normalize } from 'pathe'
-import { extractScriptContent, pathToNitroGlob } from './utils'
 import * as acorn from 'acorn'
 import tsPlugin from 'acorn-typescript'
+import { extractScriptContent, pathToNitroGlob } from './utils'
+
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
