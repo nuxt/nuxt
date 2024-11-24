@@ -71,6 +71,7 @@
     "@unhead/vue": "^1.11.11",
     "@vue/shared": "^3.5.13",
     "acorn": "8.14.0",
+    "acorn-typescript": "^1.4.13",
     "c12": "^2.0.1",
     "chokidar": "^4.0.1",
     "compatx": "^0.1.8",
