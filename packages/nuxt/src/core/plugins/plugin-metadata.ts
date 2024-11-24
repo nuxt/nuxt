@@ -10,6 +10,8 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
 import { logger } from '@nuxt/kit'
+import * as acorn from 'acorn'
+import tsPlugin from 'acorn-typescript'
 
 import type { ObjectPlugin, PluginMeta } from '#app'
 
@@ -47,9 +49,10 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
     return metaCache[code]
   }
   const js = await transform(code, { loader })
-  walk(parse(js.code, {
-    sourceType: 'module',
-    ecmaVersion: 'latest',
+  walk(acorn.Parser.extend(tsPlugin()).parse(js.code, {
+    sourceType: "module",
+    ecmaVersion: "latest",
+    locations: true,
   }) as Node, {
     enter (_node) {
       if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
