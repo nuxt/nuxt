@@ -49,8 +49,8 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
   }
   const js = await transform(code, { loader })
   walk(acorn.Parser.extend(tsPlugin()).parse(js.code, {
-    sourceType: "module",
-    ecmaVersion: "latest",
+    sourceType: 'module',
+    ecmaVersion: 'latest',
     locations: true,
   }) as Node, {
     enter (_node) {
