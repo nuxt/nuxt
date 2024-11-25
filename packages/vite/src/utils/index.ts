@@ -17,16 +17,6 @@ export function hashId (id: string) {
   return '$id_' + hash(id)
 }
 
-export function matchWithStringOrRegex (value: string, matcher: string | RegExp) {
-  if (typeof matcher === 'string') {
-    return value === matcher
-  } else if (matcher instanceof RegExp) {
-    return matcher.test(value)
-  }
-
-  return false
-}
-
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]

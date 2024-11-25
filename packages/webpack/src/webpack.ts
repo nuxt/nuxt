@@ -9,7 +9,6 @@ import type { NuxtBuilder } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import { logger, useNuxt } from '@nuxt/kit'
 
-import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
@@ -42,11 +41,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
-    config.plugins!.push(composableKeysPlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-      rootDir: nuxt.options.rootDir,
-      composables: nuxt.options.optimization.keyedComposables,
-    }))
   }
 
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)

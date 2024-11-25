@@ -40,6 +40,7 @@ import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
+import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
@@ -246,6 +247,13 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
+
+  // Add keys for useFetch, useAsyncData, etc.
+  addBuildPlugin(ComposableKeysPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    rootDir: nuxt.options.rootDir,
+    composables: nuxt.options.optimization.keyedComposables,
+  }))
 
   // shared folder import protection
   const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
