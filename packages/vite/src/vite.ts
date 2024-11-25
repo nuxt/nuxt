@@ -10,7 +10,6 @@ import { withoutLeadingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveTSConfig } from 'pkg-types'
 
-import { composableKeysPlugin } from '../../nuxt/src/core/plugins/composable-keys'
 import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
@@ -98,11 +97,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             dev: nuxt.options.dev,
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
-          }),
-          composableKeysPlugin.vite({
-            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-            rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables,
           }),
           replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
