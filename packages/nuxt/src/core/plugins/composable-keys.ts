@@ -9,7 +9,7 @@ import type { CallExpression, Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { matchWithStringOrRegex } from '../utils'
+import { matchWithStringOrRegex } from '../utils/plugins'
 
 interface ComposableKeysOptions {
   sourcemap: boolean
@@ -22,7 +22,7 @@ const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 
-export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
+export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUnplugin(() => {
   const composableMeta: Record<string, any> = {}
   const composableLengths = new Set<number>()
   const keyedFunctions = new Set<string>()
