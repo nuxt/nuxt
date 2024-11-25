@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { detectImportNames } from '../../nuxt/src/core/plugins/composable-keys'
+import { detectImportNames } from '../src/core/plugins/composable-keys'
 
 describe('detectImportNames', () => {
   const keyedComposables = {
