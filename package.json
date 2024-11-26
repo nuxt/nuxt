@@ -76,7 +76,7 @@
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.11.11",
     "@unhead/vue": "1.11.11",
-    "@vitest/coverage-v8": "2.1.5",
+    "@vitest/coverage-v8": "2.1.6",
     "@vue/test-utils": "2.4.6",
     "autoprefixer": "10.4.20",
     "case-police": "0.7.0",
@@ -109,7 +109,7 @@
     "tinyglobby": "0.2.10",
     "typescript": "5.6.3",
     "ufo": "1.5.4",
-    "vitest": "2.1.5",
+    "vitest": "2.1.6",
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.1.10"
