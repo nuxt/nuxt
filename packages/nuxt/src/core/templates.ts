@@ -10,6 +10,7 @@ import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
+import { NUXT_PREFIX } from '../utils'
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
 
@@ -177,7 +178,6 @@ export { }
   },
 }
 
-const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
 const IMPORT_NAME_RE = /\.\w+$/
 const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
@@ -187,7 +187,7 @@ export const schemaTemplate: NuxtTemplate = {
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
     const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith(NUXT_PREFIX))
       .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
 
     const privateRuntimeConfig = Object.create(null)
