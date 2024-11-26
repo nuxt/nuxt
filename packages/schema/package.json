@@ -50,7 +50,7 @@
     "ofetch": "1.4.1",
     "unbuild": "3.0.0-rc.11",
     "unctx": "2.3.1",
-    "vite": "5.4.11",
+    "vite": "6.0.0",
     "vue": "3.5.13",
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
