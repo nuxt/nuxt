@@ -780,7 +780,7 @@ importers:
         specifier: 1.3.0
         version: 1.3.0
       svgo:
-        specifier: ^3.3.2
+        specifier: 3.3.2
         version: 3.3.2
       tinyexec:
         specifier: 0.3.1
