@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
@@ -22,9 +22,9 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
-  // Remove any existing template with the same filename
+  // Remove any existing template with the same destination path
   nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+    .filter(p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)

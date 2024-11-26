@@ -77,8 +77,8 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
   } else {
     const augmentedPages = await augmentPages(pages, nuxt.vfs)
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs, augmentedPages)
-    augmentedPages.clear()
+    await augmentPages(pages, nuxt.vfs, { pagesToSkip: augmentedPages })
+    augmentedPages?.clear()
   }
 
   await nuxt.callHook('pages:resolved', pages)
@@ -155,9 +155,14 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
   return prepareRoutes(routes)
 }
 
-export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, augmentedPages = new Set<string>()) {
+interface AugmentPagesContext {
+  pagesToSkip?: Set<string>
+  augmentedPages?: Set<string>
+}
+export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
+  ctx.augmentedPages ??= new Set()
   for (const route of routes) {
-    if (route.file && !augmentedPages.has(route.file)) {
+    if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
       const routeMeta = await getRouteMeta(fileContent, route.file)
       if (route.meta) {
@@ -165,14 +170,14 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
       }
 
       Object.assign(route, routeMeta)
-      augmentedPages.add(route.file)
+      ctx.augmentedPages.add(route.file)
     }
 
     if (route.children && route.children.length > 0) {
-      await augmentPages(route.children, vfs, augmentedPages)
+      await augmentPages(route.children, vfs, ctx)
     }
   }
-  return augmentedPages
+  return ctx.augmentedPages
 }
 
 const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/gi

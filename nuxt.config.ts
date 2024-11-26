@@ -17,5 +17,8 @@ export default defineNuxtConfig({
     },
   ],
   pages: process.env.DOCS_TYPECHECK === 'true',
-  typescript: { shim: process.env.DOCS_TYPECHECK === 'true' },
+  typescript: {
+    shim: process.env.DOCS_TYPECHECK === 'true',
+    hoist: ['@vitejs/plugin-vue', 'vue-router'],
+  },
 })
