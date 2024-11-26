@@ -296,6 +296,9 @@ importers:
       '@unhead/dom':
         specifier: 1.11.11
         version: 1.11.11
+      '@unhead/shared':
+        specifier: 1.11.11
+        version: 1.11.11
       '@unhead/ssr':
         specifier: 1.11.11
         version: 1.11.11
@@ -434,6 +437,9 @@ importers:
       unenv:
         specifier: ^1.10.0
         version: 1.10.0
+      unhead:
+        specifier: 1.11.11
+        version: 1.11.11
       unimport:
         specifier: ^3.13.2
         version: 3.13.2(rollup@4.27.3)
