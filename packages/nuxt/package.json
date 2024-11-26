@@ -126,7 +126,6 @@
   },
   "devDependencies": {
     "@nuxt/scripts": "0.9.5",
-    "@nuxt/ui-templates": "1.3.4",
     "@parcel/watcher": "2.5.0",
     "@types/estree": "1.0.6",
     "@vitejs/plugin-vue": "5.2.0",
