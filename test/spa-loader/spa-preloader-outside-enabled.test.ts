@@ -15,12 +15,12 @@ await setup({
     builder: isWebpack ? 'webpack' : 'vite',
     spaLoadingTemplate: true,
     experimental: {
-      spaPreloaderOutside: true,
+      spaLoadingTemplateLocation: 'body',
     },
   },
 })
 
-describe('spaPreloaderOutside flag is enabled', () => {
+describe('spaLoadingTemplateLocation flag is set to `body`', () => {
   it('should render spa-loader', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})

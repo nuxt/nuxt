@@ -17,12 +17,12 @@ await setup({
     builder: isWebpack ? 'webpack' : 'vite',
     spaLoadingTemplate: true,
     experimental: {
-      spaPreloaderOutside: false,
+      spaLoadingTemplateLocation: 'within',
     },
   },
 })
 
-describe('spaPreloaderOutside flag is disabled', () => {
+describe('spaLoadingTemplateLocation flag is set to `within`', () => {
   it('shoul be render loader inside appTag', async () => {
     const html = await $fetch('/spa')
     expect(html).toContain(`<div id="__nuxt"><div data-testid="loader">loading...</div>\n</div>`)

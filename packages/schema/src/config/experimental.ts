@@ -411,10 +411,11 @@ export default defineUntypedSchema({
     /**
      * Keep showing the spa-loading-template until suspense:resolve
      * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
      */
-    spaPreloaderOutside: {
+    spaLoadingTemplateLocation: {
       $resolve: async (val, get) => {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        return val ?? (((await get('future') as Record<string, unknown>).compatibilityVersion === 4) ? 'body' : 'within')
       },
     },
   },

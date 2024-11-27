@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     '/ssr': { ssr: true },
   },
   experimental: {
-    spaPreloaderOutside: false,
+    spaLoadingTemplateLocation: 'within',
   },
   compatibilityDate: '2024-06-28',
 })
