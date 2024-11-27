@@ -71,13 +71,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     return pages
   }
 
+  const augmentCtx = { extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs)
+    await augmentPages(pages, nuxt.vfs, augmentCtx)
   } else {
-    const augmentedPages = await augmentPages(pages, nuxt.vfs)
+    const augmentedPages = await augmentPages(pages, nuxt.vfs, augmentCtx)
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs, { pagesToSkip: augmentedPages })
+    await augmentPages(pages, nuxt.vfs, { pagesToSkip: augmentedPages, ...augmentCtx })
     augmentedPages?.clear()
   }
 
@@ -158,13 +159,15 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
+  extraExtractionKeys?: string[]
 }
+
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file)
+      const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -196,12 +199,12 @@ export function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const extractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
+const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -220,6 +223,8 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
   }
 
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
+
+  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Array<keyof NuxtPage>])
 
   for (const script of scriptBlocks) {
     if (!PAGE_META_RE.test(script.code)) {
@@ -295,7 +300,7 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
             continue
           }
           const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          if (!(extractionKeys as unknown as string[]).includes(name)) {
+          if (!extractionKeys.has(name as keyof NuxtPage)) {
             dynamicProperties.add('meta')
             break
           }
