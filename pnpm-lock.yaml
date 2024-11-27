@@ -858,9 +858,15 @@ importers:
       mlly:
         specifier: ^1.7.3
         version: 1.7.3
+      ohash:
+        specifier: 1.1.4
+        version: 1.1.4
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
+      perfect-debounce:
+        specifier: ^1.0.0
+        version: 1.0.0
       pkg-types:
         specifier: ^1.2.1
         version: 1.2.1
