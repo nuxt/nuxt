@@ -31,7 +31,7 @@ export interface UseFetchOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
+  DefaultT = DataT | undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
@@ -55,7 +55,7 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
+  DefaultT = DataT | undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
@@ -87,7 +87,7 @@ export function useFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
+  DefaultT = DataT | undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
@@ -193,7 +193,7 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
+  DefaultT = DataT | undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
@@ -219,7 +219,7 @@ export function useLazyFetch<
   _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
   DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = undefined,
+  DefaultT = DataT | undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
   arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
