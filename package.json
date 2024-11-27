@@ -95,7 +95,7 @@
     "nitropack": "2.10.4",
     "nuxi": "3.15.0",
     "nuxt": "workspace:*",
-    "nuxt-content-twoslash": "0.1.1",
+    "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
     "pathe": "1.1.2",
     "playwright-core": "1.49.0",
