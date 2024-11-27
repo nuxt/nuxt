@@ -33,7 +33,7 @@ describe('spaLoadingTemplateLocation flag is set to `within`', () => {
     const page = await browser.newPage({})
     await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
 
-    const loader = page.getByTestId('__nuxt-spa-loader')
+    const loader = page.getByTestId('loader')
     expect(await loader.isHidden()).toBeTruthy()
 
     await page.close()

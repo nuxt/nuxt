@@ -40,7 +40,7 @@ describe('spaLoadingTemplateLocation flag is set to `body`', () => {
     const page = await browser.newPage({})
     await page.goto(url('/ssr'), { waitUntil: 'domcontentloaded' })
 
-    const loader = page.getByTestId('__nuxt-spa-loader')
+    const loader = page.getByTestId('loader')
     expect(await loader.isHidden()).toBeTruthy()
 
     const content = page.getByTestId('content')
