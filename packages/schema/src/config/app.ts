@@ -274,14 +274,7 @@ export default defineUntypedSchema({
      * Customize Nuxt Nuxt SpaLoader element attributes.
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
-    spaLoaderAttrs: {
-      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
-        const spaLoaderId = await get('app.spaLoaderId')
-        return defu(val, {
-          id: spaLoaderId === false ? undefined : (spaLoaderId || '__nuxt-spa-loader'),
-        })
-      },
-    },
+    spaLoaderAttrs: {},
   },
 
   /**
