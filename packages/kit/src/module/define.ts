@@ -65,7 +65,7 @@ function _defineNuxtModule<
 
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
-        ? module.defaults(nuxt)
+        ? await module.defaults(nuxt)
         : module.defaults ?? <TOptionsDefaults> {}
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
