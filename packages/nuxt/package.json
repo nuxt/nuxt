@@ -96,7 +96,7 @@
     "nanotar": "^0.1.1",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "nuxi": "^3.15.0",
-    "nypm": "^0.3.12",
+    "nypm": "^0.4.0",
     "ofetch": "^1.4.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -131,7 +131,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.0.0-rc.11",
-    "vite": "6.0.0",
+    "vite": "6.0.1",
     "vitest": "2.1.6"
   },
   "peerDependencies": {
