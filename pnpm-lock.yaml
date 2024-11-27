@@ -244,8 +244,8 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       unimport:
-        specifier: ^3.13.3
-        version: 3.13.3(rollup@4.27.4)
+        specifier: ^3.13.4
+        version: 3.13.4(rollup@4.27.4)
       untyped:
         specifier: ^1.5.1
         version: 1.5.1
@@ -452,8 +452,8 @@ importers:
         specifier: 1.11.13
         version: 1.11.13
       unimport:
-        specifier: ^3.13.3
-        version: 3.13.3(rollup@4.27.4)
+        specifier: ^3.13.4
+        version: 3.13.4(rollup@4.27.4)
       unplugin:
         specifier: ^1.16.0
         version: 1.16.0
@@ -706,8 +706,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       unimport:
-        specifier: ^3.13.3
-        version: 3.13.3(rollup@4.27.4)
+        specifier: ^3.13.4
+        version: 3.13.4(rollup@4.27.4)
       untyped:
         specifier: ^1.5.1
         version: 1.5.1
@@ -3882,6 +3882,14 @@ packages:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
 
+  crossws@0.2.4:
+    resolution: {integrity: sha512-DAxroI2uSOgUKLz00NX6A8U/8EE3SZHmIND+10jkVSaypvyt57J5JEOxAQOL6lQxyzi/wZbTIwssU1uy69h5Vg==}
+    peerDependencies:
+      uWebSockets.js: '*'
+    peerDependenciesMeta:
+      uWebSockets.js:
+        optional: true
+
   crossws@0.3.1:
     resolution: {integrity: sha512-HsZgeVYaG+b5zA+9PbIPGq4+J/CJynJuearykPsXx4V/eMhyQ5EDVg3Ak2FBZtVXCiOLu/U7IiwDHTr9MA+IKw==}
 
@@ -4729,6 +4737,9 @@ packages:
   gzip-size@7.0.0:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    resolution: {integrity: sha512-LQ8hHOIzk+agD1p0K7UosByKuzDAKGLTnYsP0syV/XMr9E7pWmoaDSWkGdWjtLR9O3hinNqrXU1NW0kTmhiSag==}
 
   h3@1.13.0:
     resolution: {integrity: sha512-vFEAu/yf8UMUcB4s43OaDaigcqpQd14yanmOsn+NcRX3/guSKncyE2rOYhq8RIchgJrPSs/QiIddnTTR1ddiAg==}
@@ -7181,8 +7192,8 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@3.13.3:
-    resolution: {integrity: sha512-dr7sjOoRFCSDlnARFPAMB8OmjIMc6j14qd749VmB1yiqFEYFbi+1jWPTuc22JoFs/t1kHJXT3vQNiwCy3ZvsTA==}
+  unimport@3.13.4:
+    resolution: {integrity: sha512-pRr4JO51pCQGjwDPToehYHaJLwZQbMQNBI3eGbZB1TzMHnWbQldApWe+bot7CgA03SFovF1bn03/WYFNi58rCw==}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -8650,7 +8661,7 @@ snapshots:
       simple-git: 3.27.0
       sirv: 2.0.4
       tinyglobby: 0.2.10
-      unimport: 3.13.3(rollup@4.27.4)
+      unimport: 3.13.4(rollup@4.27.4)
       vite: 6.0.1(@types/node@22.10.0)(jiti@2.4.0)(sass@1.81.0)(terser@5.36.0)(tsx@4.19.2)(yaml@2.6.1)
       vite-plugin-inspect: 0.8.8(@nuxt/kit@packages+kit)(rollup@4.27.4)(vite@6.0.1(@types/node@22.10.0)(jiti@2.4.0)(sass@1.81.0)(terser@5.36.0)(tsx@4.19.2)(yaml@2.6.1))
       vite-plugin-vue-inspector: 5.1.3(vite@6.0.1(@types/node@22.10.0)(jiti@2.4.0)(sass@1.81.0)(terser@5.36.0)(tsx@4.19.2)(yaml@2.6.1))
@@ -8721,7 +8732,7 @@ snapshots:
       '@vueuse/core': 11.3.0(vue@3.5.13(typescript@5.6.2))
       consola: 3.2.3
       defu: 6.1.4
-      h3: 1.13.0
+      h3: h3-nightly@2.0.0-1718872656.6765a6e
       magic-string: 0.30.14
       mlly: 1.7.3
       ofetch: 1.4.1
@@ -8734,7 +8745,7 @@ snapshots:
       std-env: 3.8.0
       third-party-capital: 2.3.0
       ufo: 1.5.4
-      unimport: 3.13.3(rollup@4.27.4)
+      unimport: 3.13.4(rollup@4.27.4)
       unplugin: 1.16.0
       unstorage: 1.13.1(ioredis@5.4.1)
       valibot: 0.42.1(typescript@5.6.2)
@@ -8770,6 +8781,7 @@ snapshots:
       - sortablejs
       - supports-color
       - typescript
+      - uWebSockets.js
       - universal-cookie
       - vite
       - vue
@@ -10854,6 +10866,8 @@ snapshots:
       shebang-command: 2.0.0
       which: 2.0.2
 
+  crossws@0.2.4: {}
+
   crossws@0.3.1:
     dependencies:
       uncrypto: 0.1.3
@@ -11876,6 +11890,21 @@ snapshots:
   gzip-size@7.0.0:
     dependencies:
       duplexer: 0.1.2
+
+  h3-nightly@2.0.0-1718872656.6765a6e:
+    dependencies:
+      cookie-es: 1.2.2
+      crossws: 0.2.4
+      defu: 6.1.4
+      destr: 2.0.3
+      iron-webcrypto: 1.2.1
+      ohash: 1.1.4
+      radix3: 1.1.2
+      ufo: 1.5.4
+      uncrypto: 0.1.3
+      unenv: 1.10.0
+    transitivePeerDependencies:
+      - uWebSockets.js
 
   h3@1.13.0:
     dependencies:
@@ -13135,7 +13164,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.10.0
-      unimport: 3.13.3(rollup@4.27.4)
+      unimport: 3.13.4(rollup@4.27.4)
       unstorage: 1.13.1(ioredis@5.4.1)
       untyped: 1.5.1
       unwasm: 0.3.9
@@ -14727,7 +14756,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@3.13.3(rollup@4.27.4):
+  unimport@3.13.4(rollup@4.27.4):
     dependencies:
       '@rollup/pluginutils': 5.1.3(rollup@4.27.4)
       acorn: 8.14.0
