@@ -204,7 +204,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys?: string[]): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -224,6 +224,8 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
 
   const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
 
+  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Array<keyof NuxtPage>])
+
   for (const script of scriptBlocks) {
     if (!PAGE_META_RE.test(script.code)) {
       continue
@@ -237,8 +239,6 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
     }) as unknown as Program
 
     const dynamicProperties = new Set<keyof NuxtPage>()
-
-    const extractionKeys = [...new Set<string>([...defaultExtractionKeys, ...(extraExtractionKeys || [])])] as any as (keyof NuxtPage)[]
 
     let foundMeta = false
 
@@ -300,7 +300,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
             continue
           }
           const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          if (!(extractionKeys as unknown as string[]).includes(name)) {
+          if (!extractionKeys.has(name as keyof NuxtPage)) {
             dynamicProperties.add('meta')
             break
           }
