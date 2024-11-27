@@ -146,6 +146,8 @@ const getSPARenderer = lazyCachedFunction(async () => {
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
     .then((r) => {
       if (spaPreloaderOutside) {
+        const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
+        const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
         const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
         const loaderTemplate = r ? APP_SPA_LOADER_OPEN_TAG + r + APP_SPA_LOADER_CLOSE_TAG : ''
         return appTemplate + loaderTemplate
@@ -229,9 +231,6 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
 
   return ctx
 }
-
-const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
-const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
 
 const HAS_APP_TELEPORTS = !!(appTeleportTag && appTeleportAttrs.id)
 const APP_TELEPORT_OPEN_TAG = HAS_APP_TELEPORTS ? `<${appTeleportTag}${propsToString(appTeleportAttrs)}>` : ''
