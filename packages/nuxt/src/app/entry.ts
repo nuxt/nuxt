@@ -17,7 +17,7 @@ import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { appId, appSpaLoaderAttrs, multiApp, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, appSpaLoaderAttrs, multiApp, spaPreloaderOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -72,10 +72,12 @@ if (import.meta.client) {
       if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
     })
 
-    // Remove spa loader if present
-    nuxt.hook('app:suspense:resolve', () => {
-      if (!isSSR && appSpaLoaderAttrs.id) { document.getElementById(appSpaLoaderAttrs.id)?.remove() }
-    })
+    if (spaPreloaderOutside && !isSSR && appSpaLoaderAttrs.id) {
+      // Remove spa loader if present
+      nuxt.hook('app:suspense:resolve', () => {
+        document.getElementById(appSpaLoaderAttrs.id)?.remove()
+      })
+    }
 
     try {
       await applyPlugins(nuxt, plugins)
