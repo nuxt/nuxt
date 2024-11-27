@@ -142,6 +142,24 @@ describe('page metadata', () => {
       }
     `)
   })
+
+  it('should extract configured extra meta', async () => {
+    const meta = await getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      foo: 'bar',
+      bar: true,
+    })
+    </script>
+    `, filePath, ['bar', 'foo'])
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "bar": true,
+        "foo": "bar",
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {
