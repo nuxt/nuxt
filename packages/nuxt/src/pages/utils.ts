@@ -300,7 +300,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
             continue
           }
           const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          if (name) {
+          if (name && !extraExtractionKeys.includes(name)) {
             dynamicProperties.add('meta')
             break
           }
