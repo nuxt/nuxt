@@ -8,3 +8,7 @@ export function toArray<T> (value: T | T[]): T[] {
 export async function isDirectory (path: string) {
   return (await fsp.lstat(path)).isDirectory()
 }
+
+export const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
+export const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
+export const ROUTE_KEY_NORMAL_RE = /:\w+/g

@@ -1,13 +1,11 @@
 import { KeepAlive, h } from 'vue'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
+import { ROUTE_KEY_NORMAL_RE, ROUTE_KEY_PARENTHESES_RE, ROUTE_KEY_SYMBOLS_RE } from '../../utils'
 
 type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
 type RouterViewSlot = Exclude<InstanceOf<typeof RouterView>['$slots']['default'], undefined>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
 
-const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
-const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
-const ROUTE_KEY_NORMAL_RE = /:\w+/g
 const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocationMatched) => {
   return match.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
