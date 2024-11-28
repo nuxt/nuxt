@@ -1,12 +1,9 @@
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
-import { walk } from 'estree-walker'
-import type { Node } from 'estree-walker'
 import { createUnplugin } from 'unplugin'
-import type { SimpleCallExpression } from 'estree'
 import MagicString from 'magic-string'
-
 import { hash } from 'ohash'
+
+import { parseAndWalk, withLocations } from '../../core/utils/parse'
 import { isJS, isVue } from '../utils'
 
 export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
@@ -21,33 +18,27 @@ export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}
       const s = new MagicString(code)
       const promises: Array<Promise<any>> = []
 
-      walk(parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-        ranges: true,
-      }) as Node, {
-        enter (_node) {
-          if (_node.type !== 'CallExpression' || _node.callee.type !== 'Identifier') { return }
-          const node = _node as SimpleCallExpression & { start: number, end: number }
-          const name = 'name' in node.callee && node.callee.name
-          if (name === 'onPrehydrate') {
-            if (!node.arguments[0]) { return }
-            if (node.arguments[0].type !== 'ArrowFunctionExpression' && node.arguments[0].type !== 'FunctionExpression') { return }
+      parseAndWalk(code, id, (node) => {
+        if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') {
+          return
+        }
+        if (node.callee.name === 'onPrehydrate') {
+          const callback = withLocations(node.arguments[0])
+          if (!callback) { return }
+          if (callback.type !== 'ArrowFunctionExpression' && callback.type !== 'FunctionExpression') { return }
 
-            const needsAttr = node.arguments[0].params.length > 0
-            const { start, end } = node.arguments[0] as Node & { start: number, end: number }
+          const needsAttr = callback.params.length > 0
 
-            const p = transform(`forEach(${code.slice(start, end)})`, { loader: 'ts', minify: true })
-            promises.push(p.then(({ code: result }) => {
-              const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
-              const args = [JSON.stringify(cleaned)]
-              if (needsAttr) {
-                args.push(JSON.stringify(hash(result)))
-              }
-              s.overwrite(start, end, args.join(', '))
-            }))
-          }
-        },
+          const p = transform(`forEach(${code.slice(callback.start, callback.end)})`, { loader: 'ts', minify: true })
+          promises.push(p.then(({ code: result }) => {
+            const cleaned = result.slice('forEach'.length).replace(/;\s+$/, '')
+            const args = [JSON.stringify(cleaned)]
+            if (needsAttr) {
+              args.push(JSON.stringify(hash(result)))
+            }
+            s.overwrite(callback.start, callback.end, args.join(', '))
+          }))
+        }
       })
 
       await Promise.all(promises).catch((e) => {
