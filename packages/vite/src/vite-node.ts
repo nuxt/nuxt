@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
-import { addDevServerHandler } from '@nuxt/kit'
+// import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
@@ -16,7 +16,7 @@ import { createIsExternal } from './utils/external'
 import { transpile } from './utils/transpile'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
-// after Nitropack or h3 fixed for adding middlewares after setup
+// after Nitropack or h3 allows adding middleware after setup
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
@@ -45,11 +45,11 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
             markInvalidate(mod)
           }
         }
-        for (const plugin of ctx.nuxt.options.plugins) {
-          markInvalidates(server.moduleGraph.getModulesByFile(typeof plugin === 'string' ? plugin : plugin.src))
-        }
-        for (const template of ctx.nuxt.options.build.templates) {
-          markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
+
+        if (ctx.nuxt.apps.default) {
+          for (const template of ctx.nuxt.apps.default.templates) {
+            markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
+          }
         }
       }
 
@@ -71,12 +71,13 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   }
 }
 
-export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
-  addDevServerHandler({
-    route: '/__nuxt_vite_node__/',
-    handler: createViteNodeApp(ctx).handler,
-  })
-}
+// TODO: Use this when Nitropack or h3 allows adding middleware after setup
+// export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
+//   addDevServerHandler({
+//     route: '/__nuxt_vite_node__/',
+//     handler: createViteNodeApp(ctx).handler,
+//   })
+// }
 
 function getManifest (ctx: ViteBuildContext) {
   const css = new Set<string>()
@@ -140,7 +141,7 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
       },
     })
 
-    const isExternal = createIsExternal(viteServer, ctx.nuxt.options.rootDir, ctx.nuxt.options.modulesDir)
+    const isExternal = createIsExternal(viteServer, ctx.nuxt)
     node.shouldExternalize = async (id: string) => {
       const result = await isExternal(id)
       if (result?.external) {

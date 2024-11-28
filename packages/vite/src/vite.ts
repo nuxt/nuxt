@@ -14,7 +14,6 @@ import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
-import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
@@ -98,11 +97,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             dev: nuxt.options.dev,
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
-          }),
-          composableKeysPlugin.vite({
-            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-            rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables,
           }),
           replace({ preventAssignment: true, ...globalThisReplacements }),
         ],

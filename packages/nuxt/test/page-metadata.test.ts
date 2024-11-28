@@ -142,6 +142,24 @@ describe('page metadata', () => {
       }
     `)
   })
+
+  it('should extract configured extra meta', async () => {
+    const meta = await getRouteMeta(`
+    <script setup>
+    definePageMeta({
+      foo: 'bar',
+      bar: true,
+    })
+    </script>
+    `, filePath, ['bar', 'foo'])
+
+    expect(meta).toMatchInlineSnapshot(`
+      {
+        "bar": true,
+        "foo": "bar",
+      }
+    `)
+  })
 })
 
 describe('normalizeRoutes', () => {
@@ -211,6 +229,7 @@ describe('normalizeRoutes', () => {
         {
           name: indexN6pT4Un8hYMeta?.name ?? undefined,
           path: indexN6pT4Un8hYMeta?.path ?? "/",
+          props: indexN6pT4Un8hYMeta?.props ?? false,
           meta: { ...(indexN6pT4Un8hYMeta || {}), ...{"layout":"test","foo":"bar"} },
           alias: indexN6pT4Un8hYMeta?.alias || [],
           redirect: indexN6pT4Un8hYMeta?.redirect,

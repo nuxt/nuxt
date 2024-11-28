@@ -1,8 +1,7 @@
 import pify from 'pify'
-import type { NodeMiddleware } from 'h3'
 import { resolve } from 'pathe'
 import { defineEventHandler, fromNodeMiddleware } from 'h3'
-import type { MultiWatching } from 'webpack-dev-middleware'
+import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
@@ -12,7 +11,6 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
@@ -34,24 +32,26 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   }))
 
   /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
-  const nitro = useNitro()
-  const dynamicRequirePlugin = dynamicRequire({
-    dir: resolve(nuxt.options.buildDir, 'dist/server'),
-    inline:
+  if (!nuxt.options.dev) {
+    const nitro = useNitro()
+    const dynamicRequirePlugin = dynamicRequire({
+      dir: resolve(nuxt.options.buildDir, 'dist/server'),
+      inline:
       nitro.options.node === false || nitro.options.inlineDynamicImports,
-    ignore: [
-      'client.manifest.mjs',
-      'server.js',
-      'server.cjs',
-      'server.mjs',
-      'server.manifest.mjs',
-    ],
-  })
-  const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
-  const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
+      ignore: [
+        'client.manifest.mjs',
+        'server.js',
+        'server.cjs',
+        'server.mjs',
+        'server.manifest.mjs',
+      ],
+    })
+    const prerenderRollupPlugins = nitro.options._config.rollupConfig!.plugins as InputPluginOption[]
+    const rollupPlugins = nitro.options.rollupConfig!.plugins as InputPluginOption[]
 
-  prerenderRollupPlugins.push(dynamicRequirePlugin)
-  rollupPlugins.push(dynamicRequirePlugin)
+    prerenderRollupPlugins.push(dynamicRequirePlugin)
+    rollupPlugins.push(dynamicRequirePlugin)
+  }
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)
 
@@ -66,11 +66,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
-    config.plugins!.push(composableKeysPlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-      rootDir: nuxt.options.rootDir,
-      composables: nuxt.options.optimization.keyedComposables,
-    }))
   }
 
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
@@ -130,14 +125,50 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = fromNodeMiddleware(devMiddleware as NodeMiddleware)
-  const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware)
+  const hotHandler = fromNodeMiddleware(hotMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
-    await devHandler(event)
+    const body = await devHandler(event)
+    if (body !== undefined) {
+      return body
+    }
     await hotHandler(event)
   }))
 
   return devMiddleware
+}
+
+// TODO: implement upstream in `webpack-dev-middleware`
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
+  return defineEventHandler(async (event) => {
+    event.context.webpack = {
+      ...event.context.webpack,
+      devMiddleware: devMiddleware.context,
+    }
+    const { req, res } = event.node
+    const body = await new Promise((resolve, reject) => {
+      // @ts-expect-error handle injected methods
+      res.stream = (stream) => {
+        resolve(stream)
+      }
+      // @ts-expect-error handle injected methods
+      res.send = (data) => {
+        resolve(data)
+      }
+      // @ts-expect-error handle injected methods
+      res.finish = (data) => {
+        resolve(data)
+      }
+      devMiddleware(req, res, (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(undefined)
+        }
+      })
+    })
+    return body
+  })
 }
 
 async function compile (compiler: Compiler) {

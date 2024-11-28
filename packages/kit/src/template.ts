@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
@@ -22,9 +22,9 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
-  // Remove any existing template with the same filename
+  // Remove any existing template with the same destination path
   nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+    .filter(p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -123,6 +123,9 @@ export async function updateTemplates (options?: { filter?: (template: ResolvedN
   return await tryUseNuxt()?.hooks.callHook('builder:generateApp', options)
 }
 
+const EXTENSION_RE = /\b\.\w+$/g
+// Exclude bridge alias types to support Volar
+const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
 export async function _generateTypes (nuxt: Nuxt) {
   const rootDirWithSlash = withTrailingSlash(nuxt.options.rootDir)
   const relativeRootDir = relativeWithDot(nuxt.options.buildDir, nuxt.options.rootDir)
@@ -225,9 +228,6 @@ export async function _generateTypes (nuxt: Nuxt) {
 
   const aliases: Record<string, string> = nuxt.options.alias
 
-  // Exclude bridge alias types to support Volar
-  const excludedAlias = [/^@vue\/.*$/, /^#internal\/nuxt/]
-
   const basePath = tsConfig.compilerOptions!.baseUrl
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
@@ -260,7 +260,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     } else {
       const path = stats?.isFile()
         // remove extension
-        ? relativePath.replace(/\b\.\w+$/g, '')
+        ? relativePath.replace(EXTENSION_RE, '')
         // non-existent file probably shouldn't be resolved
         : aliases[alias]!
 
@@ -289,7 +289,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     tsConfig.compilerOptions!.paths[alias] = await Promise.all(paths.map(async (path: string) => {
       if (!isAbsolute(path)) { return path }
       const stats = await fsp.stat(path).catch(() => null /* file does not exist */)
-      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(/\b\.\w+$/g, '') /* remove extension */ : path)
+      return relativeWithDot(nuxt.options.buildDir, stats?.isFile() ? path.replace(EXTENSION_RE, '') /* remove extension */ : path)
     }))
   }
 
@@ -344,6 +344,7 @@ function renderAttr (key: string, value?: string) {
   return value ? `${key}="${value}"` : ''
 }
 
+const RELATIVE_WITH_DOT_RE = /^([^.])/
 function relativeWithDot (from: string, to: string) {
-  return relative(from, to).replace(/^([^.])/, './$1') || '.'
+  return relative(from, to).replace(RELATIVE_WITH_DOT_RE, './$1') || '.'
 }

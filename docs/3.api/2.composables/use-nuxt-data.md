@@ -54,7 +54,7 @@ const { data } = await useAsyncData('todos', () => $fetch('/api/todos'))
 const newTodo = ref('')
 const previousTodos = ref([])
 
-// Access to the cached value of useFetch in todos.vue
+// Access to the cached value of useAsyncData in todos.vue
 const { data: todos } = useNuxtData('todos')
 
 const { data } = await useFetch('/api/addTodo', {

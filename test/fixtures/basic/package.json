@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@vue/devtools-api": "latest",
+    "defu": "latest",
     "ufo": "latest",
     "unplugin": "latest",
     "vue": "latest"

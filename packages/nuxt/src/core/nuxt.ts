@@ -5,7 +5,6 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
-import { resolvePath as _resolvePath } from 'mlly'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -18,7 +17,6 @@ import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
-import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
@@ -32,7 +30,7 @@ import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
 import { resolveTypePath } from './utils/types'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
@@ -42,6 +40,7 @@ import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
+import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { prehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
@@ -178,9 +177,10 @@ async function initNuxt (nuxt: Nuxt) {
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
+  const NESTED_PKG_RE = /^[^@]+\//
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
   const paths = Object.fromEntries(await Promise.all(coreTypePackages.map(async (pkg) => {
-    const [_pkg = pkg, _subpath] = /^[^@]+\//.test(pkg) ? pkg.split('/') : [pkg]
+    const [_pkg = pkg, _subpath] = NESTED_PKG_RE.test(pkg) ? pkg.split('/') : [pkg]
     const subpath = _subpath ? '/' + _subpath : ''
 
     // ignore packages that exist in `package.json` as these can be resolved by TypeScript
@@ -248,16 +248,35 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
+  // Add keys for useFetch, useAsyncData, etc.
+  addBuildPlugin(ComposableKeysPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    rootDir: nuxt.options.rootDir,
+    composables: nuxt.options.optimization.keyedComposables,
+  }))
+
+  // shared folder import protection
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const sharedProtectionConfig = {
+    cwd: nuxt.options.rootDir,
+    include: sharedPatterns,
+    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+  }
+  addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+
   // Add import protection
-  const config: ImpoundOptions = {
+  const nuxtProtectionConfig = {
     cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
-    exclude: [join(nuxt.options.srcDir, 'index.html')],
-    patterns: nuxtImportProtections(nuxt),
+    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
   }
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
@@ -397,11 +416,15 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add <NuxtWelcome>
-  addComponent({
-    name: 'NuxtWelcome',
-    priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/welcome'),
-  })
+  // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
+  const islandsConfig = nuxt.options.experimental.componentIslands
+  if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
+    addComponent({
+      name: 'NuxtWelcome',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/welcome'),
+    })
+  }
 
   addComponent({
     name: 'NuxtLayout',
@@ -564,6 +587,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
+  // Add experimental immediate page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+
   // Add experimental session restoration support
   if (nuxt.options.experimental.restoreState) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))

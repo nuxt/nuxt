@@ -54,6 +54,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     await nuxt.callHook('imports:context', ctx)
 
+    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
     if (options.scan) {
@@ -64,6 +66,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         }
         composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+
+        if (isNuxtV4) {
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'utils'))
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'types'))
+        }
+
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue
@@ -99,12 +107,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
+    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
-      return [
-        '/types/imports.d.ts',
-        '/imports.d.ts',
-        '/imports.mjs',
-      ].some(i => template.filename.endsWith(i))
+      return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
     const regenerateImports = async () => {
