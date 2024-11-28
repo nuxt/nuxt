@@ -28,6 +28,7 @@
       "ignoreDeps": [
         "nitro",
         "h3",
+        "typescript",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"

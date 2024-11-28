@@ -34,14 +34,12 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@nuxt/telemetry": "2.6.0",
-    "@nuxt/ui-templates": "1.3.4",
     "@types/file-loader": "5.0.4",
     "@types/pug": "2.0.10",
     "@types/sass-loader": "8.0.9",
-    "@unhead/schema": "1.11.11",
-    "@vitejs/plugin-vue": "5.2.0",
-    "@vitejs/plugin-vue-jsx": "4.1.0",
+    "@unhead/schema": "1.11.13",
+    "@vitejs/plugin-vue": "5.2.1",
+    "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-core": "3.5.13",
     "@vue/compiler-sfc": "3.5.13",
     "@vue/language-core": "2.1.10",
@@ -52,12 +50,11 @@
     "ofetch": "1.4.1",
     "unbuild": "3.0.0-rc.11",
     "unctx": "2.3.1",
-    "unenv": "1.10.0",
-    "vite": "5.4.11",
+    "vite": "6.0.1",
     "vue": "3.5.13",
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
-    "vue-router": "4.4.5",
+    "vue-router": "4.5.0",
     "webpack": "5.96.1",
     "webpack-dev-middleware": "7.4.2"
   },
@@ -73,7 +70,7 @@
     "std-env": "^3.8.0",
     "ufo": "^1.5.4",
     "uncrypto": "^0.1.3",
-    "unimport": "^3.13.2",
+    "unimport": "^3.13.4",
     "untyped": "^1.5.1"
   },
   "engines": {

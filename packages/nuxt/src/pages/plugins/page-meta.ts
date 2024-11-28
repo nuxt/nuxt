@@ -3,12 +3,12 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import type { CallExpression, Expression, Identifier } from 'estree'
-import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
+
+import { parseAndWalk, withLocations } from '../../core/utils/parse'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -36,7 +36,7 @@ if (import.meta.webpackHot) {
   })
 }`
 
-export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin(() => {
+export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -112,45 +112,38 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin
         }
       }
 
-      walk(this.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-      }) as Node, {
-        enter (_node) {
-          if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-          const node = _node as CallExpression & { start: number, end: number }
-          const name = 'name' in node.callee && node.callee.name
-          if (name !== 'definePageMeta') { return }
+      parseAndWalk(code, id, (node) => {
+        if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+        if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
-          const meta = node.arguments[0] as Expression & { start: number, end: number }
+        const meta = withLocations(node.arguments[0])
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+        if (!meta) { return }
 
-          function addImport (name: string | false) {
-            if (name && importMap.has(name)) {
-              const importValue = importMap.get(name)!.code
-              if (!addedImports.has(importValue)) {
-                contents = importMap.get(name)!.code + '\n' + contents
-                addedImports.add(importValue)
-              }
+        let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+
+        function addImport (name: string | false) {
+          if (name && importMap.has(name)) {
+            const importValue = importMap.get(name)!.code
+            if (!addedImports.has(importValue)) {
+              contents = importMap.get(name)!.code + '\n' + contents
+              addedImports.add(importValue)
             }
           }
+        }
 
-          walk(meta, {
-            enter (_node) {
-              if (_node.type === 'CallExpression') {
-                const node = _node as CallExpression & { start: number, end: number }
-                addImport('name' in node.callee && node.callee.name)
-              }
-              if (_node.type === 'Identifier') {
-                const node = _node as Identifier & { start: number, end: number }
-                addImport(node.name)
-              }
-            },
-          })
+        walk(meta, {
+          enter (node) {
+            if (node.type === 'CallExpression' && 'name' in node.callee) {
+              addImport(node.callee.name)
+            }
+            if (node.type === 'Identifier') {
+              addImport(node.name)
+            }
+          },
+        })
 
-          s.overwrite(0, code.length, contents)
-        },
+        s.overwrite(0, code.length, contents)
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
