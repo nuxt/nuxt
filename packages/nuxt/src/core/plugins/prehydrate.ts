@@ -2,7 +2,6 @@ import { transform } from 'esbuild'
 import { parse } from 'acorn'
 import { walk } from 'estree-walker'
 import type { Node } from 'estree-walker'
-import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import type { SimpleCallExpression } from 'estree'
 import MagicString from 'magic-string'
@@ -10,7 +9,7 @@ import MagicString from 'magic-string'
 import { hash } from 'ohash'
 import { isJS, isVue } from '../utils'
 
-export function prehydrateTransformPlugin (nuxt: Nuxt) {
+export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {
   return createUnplugin(() => ({
     name: 'nuxt:prehydrate-transform',
     transformInclude (id) {
@@ -58,7 +57,7 @@ export function prehydrateTransformPlugin (nuxt: Nuxt) {
       if (s.hasChanged()) {
         return {
           code: s.toString(),
-          map: nuxt.options.sourcemap.server || nuxt.options.sourcemap.client
+          map: options.sourcemap
             ? s.generateMap({ hires: true })
             : undefined,
         }

@@ -12,7 +12,7 @@ import { extractScriptContent, pathToNitroGlob } from './utils'
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
 const ruleCache: Record<string, NitroRouteConfig | null> = {}
 
-export async function extractRouteRules (code: string): Promise<NitroRouteConfig | null> {
+export async function extractRouteRules (code: string, _path: string): Promise<NitroRouteConfig | null> {
   if (code in ruleCache) {
     return ruleCache[code] || null
   }

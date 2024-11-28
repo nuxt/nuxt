@@ -36,7 +36,7 @@ if (import.meta.webpackHot) {
   })
 }`
 
-export const PageMetaPlugin = (options: PageMetaPluginOptions) => createUnplugin(() => {
+export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',

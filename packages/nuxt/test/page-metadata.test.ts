@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest'
+import { compileScript, parse } from '@vue/compiler-sfc'
+import * as Parser from 'acorn'
+
+import { PageMetaPlugin } from '../src/pages/plugins/page-meta'
 import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
 import type { NuxtPage } from '../schema'
 
@@ -18,6 +22,43 @@ describe('page metadata', () => {
         name: 'bar',
       })
     }
+  })
+
+  it('should parse JSX files', async () => {
+    const fileContents = `
+export default {
+  setup () {
+    definePageMeta({ name: 'bar' })
+    return () => <div></div>
+  }
+}
+    `
+    const meta = await getRouteMeta(fileContents, `/app/pages/index.jsx`)
+    expect(meta).toStrictEqual({
+      name: 'bar',
+    })
+  })
+
+  // TODO: https://github.com/nuxt/nuxt/pull/30066
+  it.todo('should handle experimental decorators', async () => {
+    const fileContents = `
+<script setup lang="ts">
+function something (_method: () => unknown) {
+  return () => 'decorated'
+}
+class SomeClass {
+  @something
+  public someMethod () {
+    return 'initial'
+  }
+}
+definePageMeta({ name: 'bar' })
+</script>
+    `
+    const meta = await getRouteMeta(fileContents, `/app/pages/index.vue`)
+    expect(meta).toStrictEqual({
+      name: 'bar',
+    })
   })
 
   it('should use and invalidate cache', async () => {
@@ -237,6 +278,36 @@ describe('normalizeRoutes', () => {
         }
       ]",
       }
+    `)
+  })
+})
+
+describe('rewrite page meta', () => {
+  const transformPlugin = PageMetaPlugin().raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+
+  it('should extract metadata from vue components', () => {
+    const sfc = `
+<script setup lang="ts">
+definePageMeta({
+  name: 'hi',
+  other: 'value'
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        name: 'hi',
+        other: 'value'
+      }
+      export default __nuxt_page_meta"
     `)
   })
 })
