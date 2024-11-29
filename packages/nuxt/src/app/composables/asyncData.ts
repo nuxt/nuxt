@@ -127,7 +127,7 @@ export type AsyncData<Data, Error> = _AsyncData<Data, Error> & Promise<_AsyncDat
  */
 export function useAsyncData<
   ResT,
-  NuxtErrorDataT = unknown,
+  NuxtErrorDataT = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
@@ -143,7 +143,7 @@ export function useAsyncData<
  */
 export function useAsyncData<
   ResT,
-  NuxtErrorDataT = unknown,
+  NuxtErrorDataT = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
@@ -160,7 +160,7 @@ export function useAsyncData<
  */
 export function useAsyncData<
   ResT,
-  NuxtErrorDataT = unknown,
+  NuxtErrorDataT = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
@@ -178,7 +178,7 @@ export function useAsyncData<
  */
 export function useAsyncData<
   ResT,
-  NuxtErrorDataT = unknown,
+  NuxtErrorDataT = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = DataT,
@@ -189,7 +189,7 @@ export function useAsyncData<
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, NuxtErrorDataT | undefined>
 export function useAsyncData<
   ResT,
-  NuxtErrorDataT = unknown,
+  NuxtErrorDataT = Error,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
