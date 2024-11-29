@@ -62,12 +62,12 @@ export interface AsyncDataOptions<
    * An `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
    */
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DefaultT> | undefined
+  getCachedData?: (key: string, nuxtApp: NuxtApp) => NoInfer<DataT> | undefined
   /**
    * A function that can be used to alter handler function result after resolving.
    * Do not use it along with the `pick` option.
    */
-  transform?: _Transform<ResT, DataT>
+  transform?: _Transform<ResT extends void ? any : ResT, DataT>
   /**
    * Only pick specified keys in this array from the handler function result.
    * Do not use it along with the `transform` option.
@@ -293,7 +293,7 @@ export function useAsyncData<
 
         let result = _result as unknown as DataT
         if (options.transform) {
-          result = await options.transform(_result)
+          result = await options.transform(_result as any)
         }
         if (options.pick) {
           result = pick(result as any, options.pick) as DataT
