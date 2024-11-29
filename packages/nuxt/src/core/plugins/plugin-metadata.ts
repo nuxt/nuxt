@@ -1,8 +1,5 @@
-import type { CallExpression, Literal, Property, SpreadElement } from 'estree'
-import type { Node } from 'estree-walker'
-import { walk } from 'estree-walker'
+import type { Literal, Property, SpreadElement } from 'estree'
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
@@ -10,6 +7,8 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
 import { logger } from '@nuxt/kit'
+
+import { parseAndWalk, withLocations } from '../../core/utils/parse'
 
 import type { ObjectPlugin, PluginMeta } from '#app'
 
@@ -47,36 +46,31 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
     return metaCache[code]
   }
   const js = await transform(code, { loader })
-  walk(parse(js.code, {
-    sourceType: 'module',
-    ecmaVersion: 'latest',
-  }) as Node, {
-    enter (_node) {
-      if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-      const node = _node as CallExpression & { start: number, end: number }
-      const name = 'name' in node.callee && node.callee.name
-      if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+  parseAndWalk(js.code, `file.${loader}`, (node) => {
+    if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
 
-      if (name === 'definePayloadPlugin') {
-        meta.order = internalOrderMap['user-revivers']
+    const name = 'name' in node.callee && node.callee.name
+    if (name !== 'defineNuxtPlugin' && name !== 'definePayloadPlugin') { return }
+
+    if (name === 'definePayloadPlugin') {
+      meta.order = internalOrderMap['user-revivers']
+    }
+
+    const metaArg = node.arguments[1]
+    if (metaArg) {
+      if (metaArg.type !== 'ObjectExpression') {
+        throw new Error('Invalid plugin metadata')
       }
+      meta = extractMetaFromObject(metaArg.properties)
+    }
 
-      const metaArg = node.arguments[1]
-      if (metaArg) {
-        if (metaArg.type !== 'ObjectExpression') {
-          throw new Error('Invalid plugin metadata')
-        }
-        meta = extractMetaFromObject(metaArg.properties)
-      }
+    const plugin = node.arguments[0]
+    if (plugin?.type === 'ObjectExpression') {
+      meta = defu(extractMetaFromObject(plugin.properties), meta)
+    }
 
-      const plugin = node.arguments[0]
-      if (plugin?.type === 'ObjectExpression') {
-        meta = defu(extractMetaFromObject(plugin.properties), meta)
-      }
-
-      meta.order = meta.order || orderMap[meta.enforce || 'default'] || orderMap.default
-      delete meta.enforce
-    },
+    meta.order = meta.order || orderMap[meta.enforce || 'default'] || orderMap.default
+    delete meta.enforce
   })
   metaCache[code] = meta
   return meta as Omit<PluginMeta, 'enforce'>
@@ -149,41 +143,33 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt) => createUnplugin(() => {
       const wrapperNames = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
 
       try {
-        walk(this.parse(code, {
-          sourceType: 'module',
-          ecmaVersion: 'latest',
-        }) as Node, {
-          enter (_node) {
-            if (_node.type === 'ImportSpecifier' && _node.imported.type === 'Identifier' && (_node.imported.name === 'defineNuxtPlugin' || _node.imported.name === 'definePayloadPlugin')) {
-              wrapperNames.add(_node.local.name)
-            }
-            if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-            const node = _node as CallExpression & { start: number, end: number }
-            const name = 'name' in node.callee && node.callee.name
-            if (!name || !wrapperNames.has(name)) { return }
-            wrapped = true
+        parseAndWalk(code, id, (node) => {
+          if (node.type === 'ImportSpecifier' && node.imported.type === 'Identifier' && (node.imported.name === 'defineNuxtPlugin' || node.imported.name === 'definePayloadPlugin')) {
+            wrapperNames.add(node.local.name)
+          }
+          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
 
-            // Remove metadata that already has been extracted
-            if (!('order' in plugin) && !('name' in plugin)) { return }
-            for (const [argIndex, _arg] of node.arguments.entries()) {
-              if (_arg.type !== 'ObjectExpression') { continue }
+          const name = 'name' in node.callee && node.callee.name
+          if (!name || !wrapperNames.has(name)) { return }
+          wrapped = true
 
-              const arg = _arg as typeof _arg & { start: number, end: number }
-              for (const [propertyIndex, _property] of arg.properties.entries()) {
-                if (_property.type === 'SpreadElement' || !('name' in _property.key)) { continue }
+          // Remove metadata that already has been extracted
+          if (!('order' in plugin) && !('name' in plugin)) { return }
+          for (const [argIndex, arg] of node.arguments.entries()) {
+            if (arg.type !== 'ObjectExpression') { continue }
 
-                const property = _property as typeof _property & { start: number, end: number }
-                const propertyKey = _property.key.name
-                if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
-                  const _nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
-                  const nextNode = _nextNode as typeof _nextNode & { start: number, end: number }
-                  const nextIndex = nextNode?.start || (arg.end - 1)
+            for (const [propertyIndex, property] of arg.properties.entries()) {
+              if (property.type === 'SpreadElement' || !('name' in property.key)) { continue }
 
-                  s.remove(property.start, nextIndex)
-                }
+              const propertyKey = property.key.name
+              if (propertyKey === 'order' || propertyKey === 'enforce' || propertyKey === 'name') {
+                const nextNode = arg.properties[propertyIndex + 1] || node.arguments[argIndex + 1]
+                const nextIndex = withLocations(nextNode)?.start || (withLocations(arg).end - 1)
+
+                s.remove(withLocations(property).start, nextIndex)
               }
             }
-          },
+          }
         })
       } catch (e) {
         logger.error(e)
