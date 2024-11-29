@@ -43,8 +43,8 @@ describe('API routes', () => {
     expectTypeOf(useAsyncData('api-other', () => $fetch('/api/other')).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useAsyncData<TestResponse>('api-generics', () => $fetch('/test')).data).toEqualTypeOf<Ref<TestResponse | DefaultAsyncDataValue>>()
 
-    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<unknown> | DefaultAsyncDataErrorValue>>()
-    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<unknown | DefaultAsyncDataErrorValue>>()
+    expectTypeOf(useAsyncData<any, string>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
     // backwards compatibility
     expectTypeOf(useAsyncData<any, Error>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<Error | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useAsyncData<any, NuxtError<string>>('api-error-generics', () => $fetch('/error')).error).toEqualTypeOf<Ref<NuxtError<string> | DefaultAsyncDataErrorValue>>()
@@ -467,6 +467,17 @@ describe('composables', () => {
     expectTypeOf(useLazyFetch<string>('/test', { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
     expectTypeOf(useLazyAsyncData<string>(() => $fetch('/test'), { default: () => 'test', transform: () => 'transformed' }).data).toEqualTypeOf<Ref<string>>()
+  })
+
+  it('correct types when using custom error type', () => {
+    interface CustomError {
+      message: string
+      code: number
+    }
+    expectTypeOf(useFetch<string, CustomError>('/test').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyFetch<string, CustomError>('/test').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncData<string, CustomError>('custom-error-type', () => $fetch('/error')).error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData<string, CustomError>('custom-error-type', () => $fetch('/error')).error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
   })
 
   it('supports asynchronous transform', () => {

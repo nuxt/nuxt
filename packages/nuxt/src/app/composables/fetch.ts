@@ -29,12 +29,13 @@ type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouter
 
 export interface UseFetchOptions<
   ResT,
-  DataT = ResT,
+  ReqT extends NitroFetchRequest = NitroFetchRequest,
+  Method extends AvailableRouterMethod<ReqT> = ResT extends void ? 'get' extends AvailableRouterMethod<ReqT> ? 'get' : AvailableRouterMethod<ReqT> : AvailableRouterMethod<ReqT>,
+  _ResT = ResT extends void ? FetchResult<ReqT, Method> : ResT,
+  DataT = _ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
-  DefaultT = DataT | undefined,
-  R extends NitroFetchRequest = string & {},
-  M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
+  DefaultT = DataT,
+> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<ReqT, Method> {
   key?: string
   $fetch?: typeof globalThis.$fetch
   watch?: MultiWatchSources | false
@@ -58,7 +59,7 @@ export function useFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
@@ -77,7 +78,7 @@ export function useFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>
+  opts?: UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useFetch<
   ResT = void,
@@ -90,7 +91,7 @@ export function useFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>,
+  arg1?: string | UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>,
   arg2?: string,
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
@@ -196,7 +197,7 @@ export function useLazyFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
@@ -209,7 +210,7 @@ export function useLazyFetch<
   DefaultT = DataT,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  opts?: Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>
+  opts?: Omit<UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>, 'lazy'>
 ): AsyncData<PickFrom<DataT, PickKeys> | DefaultT, ErrorT | undefined>
 export function useLazyFetch<
   ResT = void,
@@ -222,7 +223,7 @@ export function useLazyFetch<
   DefaultT = undefined,
 > (
   request: Ref<ReqT> | ReqT | (() => ReqT),
-  arg1?: string | Omit<UseFetchOptions<_ResT, DataT, PickKeys, DefaultT, ReqT, Method>, 'lazy'>,
+  arg1?: string | Omit<UseFetchOptions<_ResT, ReqT, Method, _ResT, DataT, PickKeys, DefaultT>, 'lazy'>,
   arg2?: string,
 ) {
   const [opts = {}, autoKey] = typeof arg1 === 'string' ? [{}, arg1] : [arg1, arg2]
@@ -240,7 +241,7 @@ export function useLazyFetch<
   autoKey)
 }
 
-function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, DataT, any, DefaultT, any, any>) {
+function generateOptionSegments<_ResT, DataT, DefaultT> (opts: UseFetchOptions<_ResT, any, any, _ResT, DataT, any, DefaultT>) {
   const segments: Array<string | undefined | Record<string, string>> = [
     toValue(opts.method as MaybeRef<string | undefined> | undefined)?.toUpperCase() || 'GET',
     toValue(opts.baseURL),
