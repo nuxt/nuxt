@@ -3,7 +3,6 @@
     <Head>
       <Title>Basic fixture</Title>
     </Head>
-    <NuxtLoadingIndicator :throttle="0" />
     <h1>Hello Nuxt 3!</h1>
     <div>RuntimeConfig | testConfig: {{ config.public.testConfig }}</div>
     <div>Composable | foo: {{ foo }}</div>

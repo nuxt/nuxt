@@ -639,9 +639,9 @@ describe('pages', () => {
 
   it('should hide nuxt page load indicator after navigate back from nested page', async () => {
     const LOAD_INDICATOR_SELECTOR = '.nuxt-loading-indicator'
-    const { page } = await renderPage('/')
-    await page.getByText('to page nuxt load indicator').click()
-    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/nested/xyz')
+    const { page } = await renderPage('/page-load-hook')
+    await page.getByText('To sub page').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook/subpage')
 
     await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
     let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
