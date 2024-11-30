@@ -274,7 +274,9 @@ export default defineUntypedSchema({
      * Customize Nuxt Nuxt SpaLoader element attributes.
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
-    spaLoaderAttrs: {},
+    spaLoaderAttrs: {
+      id: '__nuxt-loader',
+    },
   },
 
   /**
