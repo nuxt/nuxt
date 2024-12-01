@@ -38,7 +38,7 @@ Read more on `unhead` documentation.
 useHeadSafe(input: MaybeComputedRef<HeadSafe>): void
 ```
 
-The safelist of values is:
+The list of allowed values is:
 
 ```ts
 export default {
