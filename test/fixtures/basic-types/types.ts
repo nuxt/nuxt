@@ -6,6 +6,7 @@ import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Rout
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
 import { defineNuxtConfig } from 'nuxt/config'
+import { useAsyncFetchCustom, useFetchCustom } from './composables/useFetchCustom'
 import { callWithNuxt, isVue3 } from '#app'
 import type { NuxtError } from '#app'
 import type { NavigateToOptions } from '#app/composables/router'
@@ -470,14 +471,45 @@ describe('composables', () => {
   })
 
   it('correct types when using custom error type', () => {
+    interface ResT {
+      foo: string
+      baz: string
+    }
     interface CustomError {
+      message: string
+      code: string
+    }
+
+    interface OtherCustomError {
       message: string
       code: number
     }
+
     expectTypeOf(useFetch<string, CustomError>('/test').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
     expectTypeOf(useLazyFetch<string, CustomError>('/test').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
     expectTypeOf(useAsyncData<string, CustomError>('custom-error-type', () => $fetch('/error')).error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
     expectTypeOf(useLazyAsyncData<string, CustomError>('custom-error-type', () => $fetch('/error')).error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useLazyAsyncData<string, OtherCustomError>('custom-error-type', () => $fetch('/error')).error).toEqualTypeOf<Ref<OtherCustomError | DefaultAsyncDataValue>>()
+
+    expectTypeOf(useFetchCustom<ResT>('/api/hey').data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useFetchCustom('/api/hey', { default: () => ({ foo: 'bar', baz: 'baz' }) }).data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useFetchCustom('/api/hey', { transform: () => ({ foo: 'bar', baz: 'baz' }) }).data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useFetchCustom('/api/hello').data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useFetchCustom('/api/hello', { default: () => 'default' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetchCustom('/api/hello', { default: () => 'default', transform: () => 'transform' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetchCustom<string>('/api/hello', { transform: () => 'transform' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useFetchCustom('/api/hello').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useFetchCustom<string, OtherCustomError>('/api/hello').error).toEqualTypeOf<Ref<OtherCustomError | DefaultAsyncDataValue>>()
+
+    expectTypeOf(useAsyncFetchCustom<ResT>('/api/hey').data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hey', { default: () => ({ foo: 'bar', baz: 'baz' }) }).data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hey', { transform: () => ({ foo: 'bar', baz: 'baz' }) }).data).toEqualTypeOf<Ref<ResT>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hello').data).toEqualTypeOf<Ref<unknown>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hello', { default: () => 'default' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hello', { default: () => 'default', transform: () => 'transform' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncFetchCustom<string>('/api/hello', { transform: () => 'transform' }).data).toEqualTypeOf<Ref<string>>()
+    expectTypeOf(useAsyncFetchCustom('/api/hello').error).toEqualTypeOf<Ref<CustomError | DefaultAsyncDataValue>>()
+    expectTypeOf(useAsyncFetchCustom<string, OtherCustomError>('/api/hello').error).toEqualTypeOf<Ref<OtherCustomError | DefaultAsyncDataValue>>()
   })
 
   it('supports asynchronous transform', () => {
