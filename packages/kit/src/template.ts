@@ -20,7 +20,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
 
   // Normalize template
-  const template = normalizeTemplate(_template)
+  const template = normalizeTemplate(_template, nuxt)
 
   // Remove any existing template with the same destination path
   nuxt.options.build.templates = nuxt.options.build.templates
@@ -68,7 +68,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
+export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, nuxt = tryUseNuxt()): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -106,8 +106,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): Resol
   }
 
   // Resolve dst
-  if (!template.dst) {
-    const nuxt = useNuxt()
+  if (!template.dst && nuxt) {
     template.dst = resolve(nuxt.options.buildDir, template.filename)
   }
 
