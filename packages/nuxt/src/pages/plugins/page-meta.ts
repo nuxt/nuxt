@@ -24,6 +24,11 @@ const __nuxt_page_meta = null
 export default __nuxt_page_meta
 `
 
+const CODE_DEV_EMPTY = `
+const __nuxt_page_meta = {}
+export default __nuxt_page_meta
+`
+
 const CODE_HMR = `
 // Vite
 if (import.meta.hot) {
@@ -91,11 +96,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
-          s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
           logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
         } else {
-          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
         }
 
         return result()
@@ -149,7 +154,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
       }
 
       return result()
