@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "fixture-minimal",
+  "name": "fixture-hmr",
   "scripts": {
     "build": "nuxi build"
   },
