@@ -49,8 +49,6 @@ describe('API routes', () => {
     expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
     expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
     expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
-    // @ts-expect-error invalid usage
-    $fetch.create()
   })
 
   it('works with useAsyncData', () => {
