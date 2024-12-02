@@ -13,6 +13,8 @@ import { parseAndWalk, withLocations } from '../../core/utils/parse'
 interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
+  isPage?: (file: string) => boolean
+  routesPath?: string
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
@@ -154,12 +156,16 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
     },
     vite: {
       handleHotUpdate: {
-        order: 'pre',
-        handler: ({ modules }) => {
-          // Remove macro file from modules list to prevent HMR overrides
-          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
-          if (index !== -1) {
-            modules.splice(index, 1)
+        order: 'post',
+        handler: ({ file, modules, server }) => {
+          if (options.isPage?.(file)) {
+            const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            return [
+              ...modules,
+              ...macroModule ? [macroModule] : [],
+              ...routesModule ? [routesModule] : [],
+            ]
           }
         },
       },

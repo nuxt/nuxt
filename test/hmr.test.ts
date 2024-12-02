@@ -106,6 +106,63 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
 
       await page.close()
     })
+
+    it.skipIf(isWebpack)('should HMR page meta', async () => {
+      const { page, pageErrors, consoleLogs } = await renderPage('/page-meta')
+
+      const pagePath = join(fixturePath, 'pages/page-meta.vue')
+      const pageContents = await fsp.readFile(pagePath, 'utf8')
+
+      expect(JSON.parse(await page.getByTestId('meta').textContent() || '{}')).toStrictEqual({ some: 'stuff' })
+      const initialConsoleLogs = structuredClone(consoleLogs)
+
+      await fsp.writeFile(pagePath, pageContents.replace(`some: 'stuff'`, `some: 'other stuff'`))
+
+      await expectWithPolling(async () => await page.getByTestId('meta').textContent() || '{}', JSON.stringify({ some: 'other stuff' }, null, 2))
+      expect(consoleLogs).toStrictEqual([
+        ...initialConsoleLogs,
+        {
+          'text': '[vite] hot updated: /pages/page-meta.vue',
+          'type': 'debug',
+        },
+        {
+          'text': '[vite] hot updated: /pages/page-meta.vue?macro=true',
+          'type': 'debug',
+        },
+        {
+          'text': `[vite] hot updated: /@id/virtual:nuxt:${fixturePath}/.nuxt/routes.mjs`,
+          'type': 'debug',
+        },
+      ])
+
+      // ensure no errors
+      expectNoErrorsOrWarnings(consoleLogs)
+      expect(pageErrors).toEqual([])
+
+      await page.close()
+    })
+
+    it.skipIf(isWebpack)('should HMR routes', async () => {
+      const { page, pageErrors, consoleLogs } = await renderPage('/routes')
+
+      await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
+
+      await page.getByRole('link').click()
+      await expectWithPolling(() => page.getByTestId('contents').textContent(), 'A new route!')
+
+      for (const log of consoleLogs) {
+        if (log.text.includes('No match found for location with path "/routes/non-existent"')) {
+          // we expect this warning before the routes are updated
+          log.type = 'debug'
+        }
+      }
+
+      // ensure no errors
+      expectNoErrorsOrWarnings(consoleLogs)
+      expect(pageErrors).toEqual([])
+
+      await page.close()
+    })
   })
 } else {
   describe.skip('hmr', () => {})
