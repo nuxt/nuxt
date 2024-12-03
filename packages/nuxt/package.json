@@ -136,7 +136,7 @@
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
-    "@types/node": "^14.18.0 || >=16.10.0"
+    "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -147,6 +147,6 @@
     }
   },
   "engines": {
-    "node": "^14.18.0 || >=16.10.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }
