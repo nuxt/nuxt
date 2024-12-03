@@ -52,12 +52,12 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.49",
-    "rollup": "4.27.4",
+    "rollup": "4.28.0",
     "send": ">=1.1.0",
     "typescript": "5.6.2",
     "ufo": "1.5.4",
     "unhead": "1.11.13",
-    "vite": "6.0.1",
+    "vite": "6.0.2",
     "vue": "3.5.13"
   },
   "devDependencies": {
@@ -80,14 +80,14 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
-    "eslint": "9.15.0",
+    "eslint": "9.16.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "4.1.2",
     "eslint-typegen": "0.3.2",
     "h3": "1.13.0",
     "happy-dom": "15.11.7",
-    "jiti": "2.4.0",
-    "knip": "5.38.2",
+    "jiti": "2.4.1",
+    "knip": "5.39.1",
     "markdownlint-cli": "0.43.0",
     "nitropack": "2.10.4",
     "nuxi": "3.16.0",
@@ -109,7 +109,7 @@
     "vue": "3.5.13",
     "vue-tsc": "2.1.10"
   },
-  "packageManager": "pnpm@9.14.2",
+  "packageManager": "pnpm@9.14.4",
   "engines": {
     "node": "^16.10.0 || >=18.0.0"
   },
