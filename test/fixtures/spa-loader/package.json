@@ -1,0 +1,12 @@
+{
+  "name": "nuxt-playground",
+  "private": true,
+  "scripts": {
+    "dev": "nuxi dev",
+    "build": "nuxi build",
+    "start": "nuxi preview"
+  },
+  "dependencies": {
+    "nuxt": "workspace:*"
+  }
+}
