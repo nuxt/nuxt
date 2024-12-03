@@ -91,6 +91,7 @@
     "eslint-typegen": "0.3.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "15.11.7",
+    "installed-check": "9.3.0",
     "jiti": "2.4.1",
     "knip": "5.39.1",
     "markdownlint-cli": "0.43.0",
@@ -116,7 +117,7 @@
   },
   "packageManager": "pnpm@9.14.4",
   "engines": {
-    "node": "^16.10.0 || >=18.0.0"
+    "node": "^20.9.0 || >=22.0.0"
   },
   "version": ""
 }
