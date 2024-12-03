@@ -67,7 +67,7 @@ const globalProps = {
     type: Boolean,
     default: undefined,
   },
-  style: String,
+  style: [String, Object, Array],
   tabindex: String,
   title: String,
   translate: String,

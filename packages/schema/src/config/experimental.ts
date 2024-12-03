@@ -309,6 +309,16 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Configure additional keys to extract from the page metadata when using `scanPageMeta`.
+     *
+     * This allows modules to access additional metadata from the page metadata. It's recommended
+     * to augment the NuxtPage types with your keys.
+     *
+     * @type {string[]}
+     */
+    extraPageMetaExtractionKeys: [],
+
+    /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
      * performance improvement when prerendering sites that use `useAsyncData` or `useFetch` and fetch the same
      * data in different pages.
@@ -406,6 +416,15 @@ export default defineUntypedSchema({
       $resolve: async (val, get) => {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
       },
+    },
+
+    /**
+     * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
+     *
+     * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+     */
+    browserDevtoolsTiming: {
+      $resolve: async (val, get) => val ?? await get('dev'),
     },
   },
 })

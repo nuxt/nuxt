@@ -1,6 +1,8 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Component } from 'nuxt/schema'
+import { parseAndWalk, withLocations } from '../../core/utils/parse'
+
 import { SX_RE, isVue } from '../../core/utils'
 
 interface NameDevPluginOptions {
@@ -33,6 +35,19 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
       const NAME_RE = new RegExp(`__name:\\s*['"]${filename}['"]`)
       const s = new MagicString(code)
       s.replace(NAME_RE, `__name: ${JSON.stringify(component.pascalName)}`)
+
+      // Without setup function, vue compiler does not generate __name
+      if (!s.hasChanged()) {
+        parseAndWalk(code, id, function (node) {
+          if (node.type !== 'ExportDefaultDeclaration') {
+            return
+          }
+
+          const { start, end } = withLocations(node.declaration)
+          s.overwrite(start, end, `Object.assign(${code.slice(start, end)}, { __name: ${JSON.stringify(component.pascalName)} })`)
+          this.skip()
+        })
+      }
 
       if (s.hasChanged()) {
         return {
