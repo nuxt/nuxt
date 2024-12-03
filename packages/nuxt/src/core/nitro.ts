@@ -282,6 +282,9 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     }
 
     nuxt.hook('nitro:config', (config) => {
+      config.alias ||= {}
+      config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+
       const rules = config.routeRules
       for (const rule in rules) {
         if (!(rules[rule] as any).appMiddleware) { continue }
