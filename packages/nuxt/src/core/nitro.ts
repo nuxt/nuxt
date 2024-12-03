@@ -360,6 +360,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     })
   }
 
+  // add stub alias to allow vite to resolve import
+  if (!nuxt.options.experimental.appManifest) {
+    nuxt.options.alias['#app-manifest'] = 'unenv/runtime/mock/proxy'
+  }
+
   // Add fallback server for `ssr: false`
   const FORWARD_SLASH_RE = /\//g
   if (!nuxt.options.ssr) {
