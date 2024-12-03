@@ -3,7 +3,7 @@ import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
-import { Parser } from 'acorn'
+import * as Parser from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
@@ -81,16 +81,7 @@ async function SFCCompile (name: string, source: string, options: Options, ssr =
     define: {},
   })
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (plugin.transform! as Function).call({
-    parse: (code: string, opts: any = {}) => Parser.parse(code, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-      locations: true,
-      ...opts,
-    }),
-  }, source, name, {
-    ssr,
-  })
+  const result = await (plugin.transform! as Function)(source, name, { ssr })
 
   return typeof result === 'string' ? result : result?.code
 }

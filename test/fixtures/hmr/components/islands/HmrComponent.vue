@@ -3,7 +3,8 @@ const hmrId = ref(0)
 </script>
 
 <template>
-  <pre id="hmr-id">
-    HMR ID: {{ hmrId }}
-  </pre>
+  <div>
+    HMR ID:
+    <span data-testid="hmr-id">{{ hmrId }}</span>
+  </div>
 </template>

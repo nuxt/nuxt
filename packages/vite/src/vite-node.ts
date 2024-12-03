@@ -3,7 +3,7 @@ import { pathToFileURL } from 'node:url'
 import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import { isAbsolute, join, normalize, resolve } from 'pathe'
-import { addDevServerHandler } from '@nuxt/kit'
+// import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
@@ -16,7 +16,7 @@ import { createIsExternal } from './utils/external'
 import { transpile } from './utils/transpile'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
-// after Nitropack or h3 fixed for adding middlewares after setup
+// after Nitropack or h3 allows adding middleware after setup
 export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
   // Store the invalidates for the next rendering
   const invalidates = new Set<string>()
@@ -39,44 +39,33 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
-      function invalidateVirtualModules () {
-        for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-          if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
+      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+
+      // invalidate changed virtual modules when templates are regenerated
+      ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+        for (const template of changedTemplates) {
+          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${template.dst}`)
+
+          for (const mod of mods || []) {
             markInvalidate(mod)
           }
         }
-
-        if (ctx.nuxt.apps.default) {
-          for (const template of ctx.nuxt.apps.default.templates) {
-            markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
-          }
-        }
-      }
-
-      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
-
-      // Invalidate all virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', () => {
-        invalidateVirtualModules()
       })
 
       server.watcher.on('all', (event, file) => {
         markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
-        // Invalidate all virtual modules when a file is added or removed
-        if (event === 'add' || event === 'unlink') {
-          invalidateVirtualModules()
-        }
       })
     },
   }
 }
 
-export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
-  addDevServerHandler({
-    route: '/__nuxt_vite_node__/',
-    handler: createViteNodeApp(ctx).handler,
-  })
-}
+// TODO: Use this when Nitropack or h3 allows adding middleware after setup
+// export function registerViteNodeMiddleware (ctx: ViteBuildContext) {
+//   addDevServerHandler({
+//     route: '/__nuxt_vite_node__/',
+//     handler: createViteNodeApp(ctx).handler,
+//   })
+// }
 
 function getManifest (ctx: ViteBuildContext) {
   const css = new Set<string>()

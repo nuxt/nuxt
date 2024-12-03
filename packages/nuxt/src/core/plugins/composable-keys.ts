@@ -1,15 +1,15 @@
 import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { isAbsolute, relative } from 'pathe'
-import type { Node } from 'estree-walker'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import type { CallExpression, Pattern } from 'estree'
+import type { Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { matchWithStringOrRegex } from '../utils'
+import { parseAndWalk, walk } from '../../core/utils/parse'
+
+import { matchWithStringOrRegex } from '../utils/plugins'
 
 interface ComposableKeysOptions {
   sourcemap: boolean
@@ -22,7 +22,7 @@ const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
 const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
 const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
 
-export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptions) => {
+export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUnplugin(() => {
   const composableMeta: Record<string, any> = {}
   const composableLengths = new Set<number>()
   const keyedFunctions = new Set<string>()
@@ -52,23 +52,18 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
       const relativeID = isAbsolute(id) ? relative(options.rootDir, id) : id
       const { pathname: relativePathname } = parseURL(relativeID)
 
-      const ast = this.parse(script, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-      }) as Node
-
       // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
       let scopeTracker = new ScopeTracker()
       const varCollector = new ScopedVarsCollector()
-      walk(ast, {
-        enter (_node) {
-          if (_node.type === 'BlockStatement') {
+      const ast = parseAndWalk(script, id, {
+        enter (node) {
+          if (node.type === 'BlockStatement') {
             scopeTracker.enterScope()
             varCollector.refresh(scopeTracker.curScopeKey)
-          } else if (_node.type === 'FunctionDeclaration' && _node.id) {
-            varCollector.addVar(_node.id.name)
-          } else if (_node.type === 'VariableDeclarator') {
-            varCollector.collect(_node.id)
+          } else if (node.type === 'FunctionDeclaration' && node.id) {
+            varCollector.addVar(node.id.name)
+          } else if (node.type === 'VariableDeclarator') {
+            varCollector.collect(node.id)
           }
         },
         leave (_node) {
@@ -81,13 +76,12 @@ export const composableKeysPlugin = createUnplugin((options: ComposableKeysOptio
 
       scopeTracker = new ScopeTracker()
       walk(ast, {
-        enter (_node) {
-          if (_node.type === 'BlockStatement') {
+        enter (node) {
+          if (node.type === 'BlockStatement') {
             scopeTracker.enterScope()
           }
-          if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-          const node: CallExpression = _node as CallExpression
-          const name = 'name' in node.callee && node.callee.name
+          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+          const name = node.callee.name
           if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
 
           imports = imports || detectImportNames(script, composableMeta)
@@ -219,24 +213,23 @@ class ScopedVarsCollector {
     return false
   }
 
-  collect (n: Pattern) {
-    const t = n.type
-    if (t === 'Identifier') {
-      this.addVar(n.name)
-    } else if (t === 'RestElement') {
-      this.collect(n.argument)
-    } else if (t === 'AssignmentPattern') {
-      this.collect(n.left)
-    } else if (t === 'ArrayPattern') {
-      n.elements.forEach(e => e && this.collect(e))
-    } else if (t === 'ObjectPattern') {
-      n.properties.forEach((p) => {
-        if (p.type === 'RestElement') {
-          this.collect(p)
-        } else {
-          this.collect(p.value)
+  collect (pattern: Pattern) {
+    if (pattern.type === 'Identifier') {
+      this.addVar(pattern.name)
+    } else if (pattern.type === 'RestElement') {
+      this.collect(pattern.argument)
+    } else if (pattern.type === 'AssignmentPattern') {
+      this.collect(pattern.left)
+    } else if (pattern.type === 'ArrayPattern') {
+      for (const element of pattern.elements) {
+        if (element) {
+          this.collect(element.type === 'RestElement' ? element.argument : element)
         }
-      })
+      }
+    } else if (pattern.type === 'ObjectPattern') {
+      for (const property of pattern.properties) {
+        this.collect(property.type === 'RestElement' ? property.argument : property.value)
+      }
     }
   }
 }

@@ -8,11 +8,10 @@ import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
 import { transform } from 'esbuild'
-import { parse } from 'acorn'
-import { walk } from 'estree-walker'
-import type { CallExpression, ExpressionStatement, ObjectExpression, Program, Property } from 'estree'
+import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
+import { parseAndWalk } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
 
@@ -71,13 +70,14 @@ export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
     return pages
   }
 
+  const augmentCtx = { extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs)
+    await augmentPages(pages, nuxt.vfs, augmentCtx)
   } else {
-    const augmentedPages = await augmentPages(pages, nuxt.vfs)
+    const augmentedPages = await augmentPages(pages, nuxt.vfs, augmentCtx)
     await nuxt.callHook('pages:extend', pages)
-    await augmentPages(pages, nuxt.vfs, { pagesToSkip: augmentedPages })
+    await augmentPages(pages, nuxt.vfs, { pagesToSkip: augmentedPages, ...augmentCtx })
     augmentedPages?.clear()
   }
 
@@ -158,13 +158,15 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 interface AugmentPagesContext {
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
+  extraExtractionKeys?: string[]
 }
+
 export async function augmentPages (routes: NuxtPage[], vfs: Record<string, string>, ctx: AugmentPagesContext = {}) {
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file)
+      const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -181,9 +183,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
 }
 
 const SFC_SCRIPT_RE = /<script(?<attrs>[^>]*)>(?<content>[\s\S]*?)<\/script[^>]*>/gi
-export function extractScriptContent (html: string) {
+export function extractScriptContent (sfc: string) {
   const contents: Array<{ loader: 'tsx' | 'ts', code: string }> = []
-  for (const match of html.matchAll(SFC_SCRIPT_RE)) {
+  for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
       contents.push({
         loader: match.groups.attrs?.includes('tsx') ? 'tsx' : 'ts',
@@ -196,12 +198,12 @@ export function extractScriptContent (html: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const extractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
+const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -219,7 +221,9 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     return {}
   }
 
-  const extractedMeta = {} as Partial<Record<keyof NuxtPage, any>>
+  const extractedMeta: Partial<Record<keyof NuxtPage, any>> = {}
+
+  const extractionKeys = new Set<keyof NuxtPage>([...defaultExtractionKeys, ...extraExtractionKeys as Array<keyof NuxtPage>])
 
   for (const script of scriptBlocks) {
     if (!PAGE_META_RE.test(script.code)) {
@@ -227,85 +231,79 @@ export async function getRouteMeta (contents: string, absolutePath: string): Pro
     }
 
     const js = await transform(script.code, { loader: script.loader })
-    const ast = parse(js.code, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-      ranges: true,
-    }) as unknown as Program
 
     const dynamicProperties = new Set<keyof NuxtPage>()
 
     let foundMeta = false
 
-    walk(ast, {
-      enter (node) {
-        if (foundMeta) { return }
+    parseAndWalk(js.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+      if (foundMeta) { return }
 
-        if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
+      if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
 
-        foundMeta = true
-        const pageMetaArgument = ((node as ExpressionStatement).expression as CallExpression).arguments[0] as ObjectExpression
+      foundMeta = true
+      const pageMetaArgument = node.expression.arguments[0]
+      if (pageMetaArgument?.type !== 'ObjectExpression') { return }
 
-        for (const key of extractionKeys) {
-          const property = pageMetaArgument.properties.find(property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key) as Property
-          if (!property) { continue }
+      for (const key of extractionKeys) {
+        const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+        if (!property) { continue }
 
-          if (property.value.type === 'ObjectExpression') {
-            const valueString = js.code.slice(property.value.range![0], property.value.range![1])
-            try {
-              extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
-            } catch {
-              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
-              dynamicProperties.add(key)
-              continue
-            }
-          }
-
-          if (property.value.type === 'ArrayExpression') {
-            const values: string[] = []
-            for (const element of property.value.elements) {
-              if (!element) {
-                continue
-              }
-              if (element.type !== 'Literal' || typeof element.value !== 'string') {
-                console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
-                dynamicProperties.add(key)
-                continue
-              }
-              values.push(element.value)
-            }
-            extractedMeta[key] = values
-            continue
-          }
-
-          if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
-            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+        if (property.value.type === 'ObjectExpression') {
+          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+          try {
+            extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
+          } catch {
+            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
           }
-          extractedMeta[key] = property.value.value
         }
 
-        for (const property of pageMetaArgument.properties) {
-          if (property.type !== 'Property') {
-            continue
+        if (property.value.type === 'ArrayExpression') {
+          const values: string[] = []
+          for (const element of property.value.elements) {
+            if (!element) {
+              continue
+            }
+            if (element.type !== 'Literal' || typeof element.value !== 'string') {
+              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+              dynamicProperties.add(key)
+              continue
+            }
+            values.push(element.value)
           }
-          const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
-          if (!isIdentifierOrLiteral) {
-            continue
-          }
-          const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
-          if (!(extractionKeys as unknown as string[]).includes(name)) {
-            dynamicProperties.add('meta')
-            break
-          }
+          extractedMeta[key] = values
+          continue
         }
 
-        if (dynamicProperties.size) {
-          extractedMeta.meta ??= {}
-          extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
+        if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
+          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+          dynamicProperties.add(key)
+          continue
         }
-      },
+        extractedMeta[key] = property.value.value
+      }
+
+      for (const property of pageMetaArgument.properties) {
+        if (property.type !== 'Property') {
+          continue
+        }
+        const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
+        if (!isIdentifierOrLiteral) {
+          continue
+        }
+        const name = property.key.type === 'Identifier' ? property.key.name : String(property.value)
+        if (!extractionKeys.has(name as keyof NuxtPage)) {
+          dynamicProperties.add('meta')
+          break
+        }
+      }
+
+      if (dynamicProperties.size) {
+        extractedMeta.meta ??= {}
+        extractedMeta.meta[DYNAMIC_META_KEY] = dynamicProperties
+      }
     })
   }
 
