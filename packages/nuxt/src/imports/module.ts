@@ -43,21 +43,18 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const { addons: inlineAddons, ...rest } = options
 
-    const addons: AddonsOptions = {
-      addons: inlineAddons && Array.isArray(inlineAddons)
-        ? [...inlineAddons]
-        : [],
-      vueDirectives: inlineAddons && !Array.isArray(inlineAddons)
-        ? inlineAddons.vueDirectives
-        : options.autoImport === false ? undefined : true,
-      vueTemplate: options.autoImport,
-    }
+    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
 
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
       ...rest,
-      addons,
+      addons: {
+        addons,
+        vueTemplate: options.autoImport,
+        vueDirectives: options.autoImport === false ? undefined : true,
+        ...addonsOptions,
+      },
       presets,
     })
 
