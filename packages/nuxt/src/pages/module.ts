@@ -455,6 +455,8 @@ export default defineNuxtModule({
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+        isPage,
+        routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
       }))
     })
 
@@ -499,13 +501,13 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        if (!app.pages) { return 'export default []' }
+        if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,
         })
-        return [...imports, `export default ${routes}`].join('\n')
+        return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')
       },
     })
 
@@ -610,3 +612,26 @@ export default defineNuxtModule({
     })
   },
 })
+
+const ROUTES_HMR_CODE = /* js */`
+if (import.meta.hot) {
+  import.meta.hot.accept((mod) => {
+    const router = import.meta.hot.data.router
+    if (!router) {
+      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
+      return
+    }
+    router.clearRoutes()
+    for (const route of mod.default || mod) {
+      router.addRoute(route)
+    }
+    router.replace('')
+  })
+}
+
+export function handleHotUpdate(_router) {
+  if (import.meta.hot) {
+    import.meta.hot.data.router = _router
+  }
+}
+`

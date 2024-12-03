@@ -57,14 +57,18 @@ export async function expectNoClientErrors (path: string) {
 
   const { page, pageErrors, consoleLogs } = (await renderPage(path))!
 
+  expect(pageErrors).toEqual([])
+  expectNoErrorsOrWarnings(consoleLogs)
+
+  await page.close()
+}
+
+export function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: string }>) {
   const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
   const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warning')
 
-  expect(pageErrors).toEqual([])
   expect(consoleLogErrors).toEqual([])
   expect(consoleLogWarnings).toEqual([])
-
-  await page.close()
 }
 
 export async function gotoPath (page: Page, path: string) {
