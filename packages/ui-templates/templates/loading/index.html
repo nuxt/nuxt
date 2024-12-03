@@ -189,9 +189,9 @@
       if ([0, 10, 11].includes(new Date().getMonth())) {
         // Create canvas
         const $canvas = document.createElement('canvas')
-        $canvas.classList.add('fixed', 'inset-0', '-z-10', 'pointer-events-none', 'opacity-0', 'transition-opacity', 'duration-[2s]', 'ease-in', 'blur-[4px]')
+        $canvas.style = 'position: fixed; inset: 0; z-index: -10; pointer-events: none; opacity: 0; transition: opacity 2s ease-in; filter: blur(4px);'
         document.body.appendChild($canvas)
-        $canvas.classList.remove('opacity-0')
+        $canvas.style.opacity = 1
 
         // Animation options
         const density = 0.00025
