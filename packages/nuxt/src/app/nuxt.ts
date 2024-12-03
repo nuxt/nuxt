@@ -83,6 +83,8 @@ export interface NuxtSSRContext extends SSRContext {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
+  /** @internal */
+  _preloadManifest?: boolean
 }
 
 export interface NuxtPayload {

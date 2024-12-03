@@ -59,7 +59,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
     resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
   ]
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths')
+    external.push('#internal/nuxt/paths', '#app-manifest')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
