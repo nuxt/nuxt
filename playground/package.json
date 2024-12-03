@@ -8,5 +8,8 @@
   },
   "dependencies": {
     "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }
