@@ -548,6 +548,12 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
   }
 
+  // Add experimental Chrome devtools timings support
+  // https://developer.chrome.com/docs/devtools/performance/extension
+  if (nuxt.options.experimental.browserDevtoolsTiming) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
+  }
+
   for (const [key, options] of modulesToInstall) {
     await installModule(key, options)
   }
