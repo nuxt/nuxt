@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.6.1",
+    "@nuxt/devtools": "^1.6.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.0",
@@ -88,7 +88,7 @@
     "hookable": "^5.5.3",
     "ignore": "^6.0.2",
     "impound": "^0.2.0",
-    "jiti": "^2.4.0",
+    "jiti": "^2.4.1",
     "klona": "^2.0.6",
     "knitwork": "^1.1.0",
     "magic-string": "^0.30.14",
@@ -96,7 +96,7 @@
     "nanotar": "^0.1.1",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "nuxi": "^3.16.0",
-    "nypm": "^0.4.0",
+    "nypm": "^0.4.1",
     "ofetch": "^1.4.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -131,7 +131,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.0.0-rc.11",
-    "vite": "6.0.1",
+    "vite": "6.0.2",
     "vitest": "2.1.8"
   },
   "peerDependencies": {
