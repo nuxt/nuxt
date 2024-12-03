@@ -1,10 +1,10 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
-import { resolve as resolveModule } from 'mlly'
+import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
 import { isRelative } from 'ufo'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
@@ -17,7 +17,7 @@ export async function installModule<
   T extends string | NuxtModule,
   Config extends Extract<NonNullable<NuxtConfig['modules']>[number], [T, any]>,
 > (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
-  const { nuxtModule, buildTimeModuleMeta } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
+  const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
   const localLayerModuleDirs = new Set<string>()
   for (const l of nuxt.options._layers) {
@@ -33,9 +33,12 @@ export async function installModule<
     return
   }
 
-  if (typeof moduleToInstall === 'string') {
-    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleToInstall))
-    const directory = getDirectory(moduleToInstall)
+  const modulePath = resolvedModulePath || moduleToInstall
+  if (typeof modulePath === 'string') {
+    const parsed = parseNodeModulePath(modulePath)
+    const moduleRoot = parsed.dir ? parsed.dir + parsed.name : modulePath
+    nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
+    const directory = parsed.dir ? moduleRoot : getDirectory(modulePath)
     if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
       nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
@@ -74,6 +77,7 @@ export const normalizeModuleTranspilePath = (p: string) => {
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
+  let resolvedModulePath: string | undefined
 
   const jiti = createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias })
 
@@ -98,6 +102,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
             : await resolveModule(path, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
 
           nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
+          resolvedModulePath = fileURLToPath(new URL(src))
 
           // nuxt-module-builder generates a module.json with metadata including the version
           const moduleMetadataPath = new URL('module.json', src)
@@ -128,5 +133,5 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     throw new TypeError('Nuxt module should be a function: ' + nuxtModule)
   }
 
-  return { nuxtModule, buildTimeModuleMeta } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta }
+  return { nuxtModule, buildTimeModuleMeta, resolvedModulePath } as { nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }
 }
