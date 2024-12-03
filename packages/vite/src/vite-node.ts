@@ -39,33 +39,21 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
     name: 'nuxt:vite-node-server',
     enforce: 'post',
     configureServer (server) {
-      function invalidateVirtualModules () {
-        for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-          if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
+      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
+
+      // invalidate changed virtual modules when templates are regenerated
+      ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
+        for (const template of changedTemplates) {
+          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${template.dst}`)
+
+          for (const mod of mods || []) {
             markInvalidate(mod)
           }
         }
-
-        if (ctx.nuxt.apps.default) {
-          for (const template of ctx.nuxt.apps.default.templates) {
-            markInvalidates(server.moduleGraph.getModulesByFile(template.dst!))
-          }
-        }
-      }
-
-      server.middlewares.use('/__nuxt_vite_node__', toNodeListener(createViteNodeApp(ctx, invalidates)))
-
-      // Invalidate all virtual modules when templates are regenerated
-      ctx.nuxt.hook('app:templatesGenerated', () => {
-        invalidateVirtualModules()
       })
 
       server.watcher.on('all', (event, file) => {
         markInvalidates(server.moduleGraph.getModulesByFile(normalize(file)))
-        // Invalidate all virtual modules when a file is added or removed
-        if (event === 'add' || event === 'unlink') {
-          invalidateVirtualModules()
-        }
       })
     },
   }

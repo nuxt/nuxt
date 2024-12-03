@@ -37,7 +37,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templates', app)
 
   // Normalize templates
-  app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
+  app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
 
   // compile plugins first as they are needed within the nuxt.vfs
   // in order to annotate templated plugins
