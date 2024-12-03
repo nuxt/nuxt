@@ -273,6 +273,14 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
     nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
 
+    // write stub manifest before build so external import of #app-manifest can be resolved
+    if (!nuxt.options.dev) {
+      nuxt.hook('build:before', async () => {
+        await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
+        await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({}))
+      })
+    }
+
     nuxt.hook('nitro:config', (config) => {
       const rules = config.routeRules
       for (const rule in rules) {
