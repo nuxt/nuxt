@@ -26,7 +26,7 @@ await setup({
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     hooks: {
-      'modules:done'() {
+      'modules:done' () {
         // TODO: investigate whether to upstream a fix to vite-plugin-vue or nuxt/test-utils
         // Vite reads its `isProduction` value from NODE_ENV and passes this to some plugins
         // like vite-plugin-vue
@@ -655,7 +655,7 @@ describe('nuxt composables', () => {
   })
   it('updates cookies when they are changed', async () => {
     const { page } = await renderPage('/cookies')
-    async function extractCookie() {
+    async function extractCookie () {
       const cookie = await page.evaluate(() => document.cookie)
       const raw = cookie.match(/browser-object-default=([^;]*)/)![1] ?? 'null'
       return JSON.parse(decodeURIComponent(raw))
@@ -2744,7 +2744,7 @@ describe('Node.js compatibility for client-side', () => {
   }, 40_000)
 })
 
-function normaliseIslandResult(result: NuxtIslandResponse) {
+function normaliseIslandResult (result: NuxtIslandResponse) {
   if (result.head.style) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {

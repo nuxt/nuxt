@@ -32,11 +32,17 @@ const serverRendered = useState(() => import.meta.server)
     </NuxtLink>
 
     client only page
-    <p >
-      <span v-if="data" id="async-data"> {{ data }}</span>
+    <p>
+      <span
+        v-if="data"
+        id="async-data"
+      > {{ data }}</span>
 
-      <span  v-else id="async-data-placeholder">placeholder</span>
-     </p>
+      <span
+        v-else
+        id="async-data-placeholder"
+      >placeholder</span>
+    </p>
 
     <p id="state">
       {{ state }}
