@@ -5,6 +5,8 @@ definePageMeta({
   layoutTransition: false,
 })
 
+const { data } = await useAsyncData(() => new Promise(resolve => setTimeout(() => resolve('async data'), 40)))
+
 const state = useState('test', () => {
   let hasAccessToWindow = null as null | boolean
 
@@ -28,6 +30,13 @@ const serverRendered = useState(() => import.meta.server)
     <NuxtLink to="/client-only-page/normal">
       normal
     </NuxtLink>
+
+    client only page
+    <p >
+      <span v-if="data" id="async-data"> {{ data }}</span>
+
+      <span  v-else id="async-data-placeholder">placeholder</span>
+     </p>
 
     <p id="state">
       {{ state }}
