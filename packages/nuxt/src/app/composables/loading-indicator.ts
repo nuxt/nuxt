@@ -11,6 +11,8 @@ export type LoadingIndicatorOpts = {
   hideDelay: number
   /** @default 400 */
   resetDelay: number
+  /** @default false */
+  immediate: boolean
   /**
    * You can provide a custom function to customize the progress estimation,
    * which is a function that receives the duration of the loading bar (above)
@@ -36,7 +38,7 @@ function defaultEstimatedProgress (duration: number, elapsed: number): number {
 }
 
 function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
-  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400 } = opts
+  const { duration = 2000, throttle = 200, hideDelay = 500, resetDelay = 400, immediate = false } = opts
   const getProgress = opts.estimatedProgress || defaultEstimatedProgress
   const nuxtApp = useNuxtApp()
   const progress = ref(0)
@@ -61,7 +63,7 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     if (at >= 100) { return finish() }
     clear()
     progress.value = at < 0 ? 0 : at
-    if (throttle && import.meta.client) {
+    if (throttle && import.meta.client && !immediate) {
       throttleTimeout = setTimeout(() => {
         isLoading.value = true
         _startProgress()

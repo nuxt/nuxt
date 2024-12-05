@@ -18,6 +18,7 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 - `duration`: Duration of the loading bar, in milliseconds (default `2000`).
 - `throttle`: Throttle the appearing and hiding, in milliseconds (default `200`).
 - `estimatedProgress`: By default Nuxt will back off as it approaches 100%. You can provide a custom function to customize the progress estimation, which is a function that receives the duration of the loading bar (above) and the elapsed time. It should return a value between 0 and 100.
+- `immediate`: If set to true, the loading bar will start immediately and ignore throttle (default `false`).
 
 ## Properties
 
