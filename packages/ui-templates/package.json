@@ -17,20 +17,20 @@
     "prerender": "pnpm build && jiti ./lib/prerender"
   },
   "devDependencies": {
-    "@unocss/reset": "0.65.0",
-    "beasties": "0.1.0",
+    "@unocss/reset": "0.65.1",
+    "beasties": "0.2.0",
     "html-validate": "8.27.0",
     "htmlnano": "2.1.1",
     "jiti": "2.4.1",
     "knitwork": "1.1.0",
     "pathe": "1.1.2",
-    "prettier": "3.4.1",
+    "prettier": "3.4.2",
     "scule": "1.3.0",
     "svgo": "3.3.2",
     "tinyexec": "0.3.1",
     "tinyglobby": "0.2.10",
-    "unocss": "0.65.0",
-    "vite": "6.0.2"
+    "unocss": "0.65.1",
+    "vite": "6.0.3"
   },
   "engines": {
     "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
