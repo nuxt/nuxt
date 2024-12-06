@@ -81,6 +81,8 @@ export interface NuxtSSRContext extends SSRContext {
     get<T = unknown> (key: string): Promise<T> | undefined
     set<T> (key: string, value: Promise<T>): Promise<void>
   }
+  /** @internal */
+  _preloadManifest?: boolean
 }
 
 export interface NuxtPayload {
@@ -114,11 +116,6 @@ interface _NuxtApp {
    * The id of the Nuxt application.
    * @internal */
   _id: string
-  /**
-   * The next id that can be used for generating unique ids via `useId`.
-   * @internal
-   */
-  _genId?: number
   /** @internal */
   _scope: EffectScope
   /** @internal */

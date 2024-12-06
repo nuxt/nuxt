@@ -119,10 +119,10 @@ export interface ImportGlobEagerFunction {
 }
 
 export interface ViteImportMeta {
-  /** Vite client HMR API - see https://vitejs.dev/guide/api-hmr.html */
+  /** Vite client HMR API - see https://vite.dev/guide/api-hmr.html */
   readonly hot?: ViteHot
 
-  /** vite glob import utility - https://vitejs.dev/guide/features.html#glob-import */
+  /** vite glob import utility - https://vite.dev/guide/features.html#glob-import */
   glob: ImportGlobFunction
 
   /**

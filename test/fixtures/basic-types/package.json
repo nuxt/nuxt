@@ -14,5 +14,8 @@
     "vitest": "1.6.0",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "engines": {
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }

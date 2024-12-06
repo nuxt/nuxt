@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.6.1",
+    "@nuxt/devtools": "^1.6.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.0",
@@ -88,15 +88,15 @@
     "hookable": "^5.5.3",
     "ignore": "^6.0.2",
     "impound": "^0.2.0",
-    "jiti": "^2.4.0",
+    "jiti": "^2.4.1",
     "klona": "^2.0.6",
     "knitwork": "^1.1.0",
     "magic-string": "^0.30.14",
     "mlly": "^1.7.3",
     "nanotar": "^0.1.1",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
-    "nuxi": "^3.15.0",
-    "nypm": "^0.3.12",
+    "nuxi": "^3.16.0",
+    "nypm": "^0.4.1",
     "ofetch": "^1.4.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -114,8 +114,8 @@
     "unctx": "^2.3.1",
     "unenv": "^1.10.0",
     "unhead": "^1.11.13",
-    "unimport": "^3.13.3",
-    "unplugin": "^1.16.0",
+    "unimport": "^3.13.4",
+    "unplugin": "^2.0.0",
     "unplugin-vue-router": "^0.10.8",
     "unstorage": "^1.13.1",
     "untyped": "^1.5.1",
@@ -131,12 +131,12 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.0.0-rc.11",
-    "vite": "6.0.0",
-    "vitest": "2.1.6"
+    "vite": "6.0.2",
+    "vitest": "2.1.8"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
-    "@types/node": "^14.18.0 || >=16.10.0"
+    "@types/node": "^18.0.0 || ^20.0.0 || >=22.0.0"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -147,6 +147,6 @@
     }
   },
   "engines": {
-    "node": "^14.18.0 || >=16.10.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }
