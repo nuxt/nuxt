@@ -8,5 +8,3 @@ export function toArray<T> (value: T | T[]): T[] {
 export async function isDirectory (path: string) {
   return (await fsp.lstat(path)).isDirectory()
 }
-
-export const NUXT_PREFIX = 'nuxt:'

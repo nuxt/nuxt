@@ -10,7 +10,6 @@ import { filename } from 'pathe/utils'
 import type { NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
-import { NUXT_PREFIX } from '../utils'
 import { annotatePlugins, checkForCircularDependencies } from './app'
 import { EXTENSION_RE } from './utils'
 
@@ -187,7 +186,7 @@ export const schemaTemplate: NuxtTemplate = {
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
     const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith(NUXT_PREFIX))
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:'))
       .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
 
     const privateRuntimeConfig = Object.create(null)
