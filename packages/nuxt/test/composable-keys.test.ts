@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
+import * as Parser from 'acorn'
 
-import { detectImportNames } from '../src/core/plugins/composable-keys'
+import { ComposableKeysPlugin, detectImportNames } from '../src/core/plugins/composable-keys'
 
 describe('detectImportNames', () => {
   const keyedComposables = {
@@ -23,5 +24,59 @@ describe('detectImportNames', () => {
         "someThingRenamed",
       ]
     `)
+  })
+})
+
+describe('composable keys plugin', () => {
+  const composables = [{
+    name: 'useAsyncData',
+    source: '#app',
+    argumentLength: 2,
+  }]
+  const transformPlugin = ComposableKeysPlugin({ sourcemap: false, rootDir: '/', composables }).raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+
+  it('should add keyed hash when there is none already provided', () => {
+    const code = `
+import { useAsyncData } from '#app'
+useAsyncData(() => {})
+    `
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`
+      "import { useAsyncData } from '#app'
+      useAsyncData(() => {}, '$yXewDLZblH')"
+    `)
+  })
+
+  it('should not add hash when one exists', () => {
+    const code = `useAsyncData(() => {}, 'foo')`
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
+  })
+
+  it('should not add hash composables is imported from somewhere else', () => {
+    const code = `
+const useAsyncData = () => {}
+useAsyncData(() => {})
+    `
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, code, 'plugin.ts')?.code.trim()).toMatchInlineSnapshot(`undefined`)
   })
 })

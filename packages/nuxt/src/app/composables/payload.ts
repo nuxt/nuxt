@@ -85,15 +85,18 @@ async function _importPayload (payloadURL: string) {
 }
 /** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
+  const nuxtApp = useNuxtApp()
   // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
   url = withoutTrailingSlash(url)
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
   }
-  const rules = await getRouteRules(url)
-  return !!rules.prerender && !rules.redirect
+  return nuxtApp.runWithContext(async () => {
+    const rules = await getRouteRules(url)
+    return !!rules.prerender && !rules.redirect
+  })
 }
 
 let payloadCache: NuxtPayload | null = null

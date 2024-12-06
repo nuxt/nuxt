@@ -5,7 +5,7 @@ import { isWindows } from 'std-env'
 import { join } from 'pathe'
 import { $fetch as _$fetch, fetch, setup } from '@nuxt/test-utils/e2e'
 
-import { expectWithPolling, renderPage } from './utils'
+import { expectNoErrorsOrWarnings, expectWithPolling, renderPage } from './utils'
 
 // TODO: update @nuxt/test-utils
 const $fetch = _$fetch as import('nitro/types').$Fetch<unknown, import('nitro/types').NitroFetchRequest>
@@ -14,7 +14,7 @@ const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUI
 
 // TODO: fix HMR on Windows
 if (process.env.TEST_ENV !== 'built' && !isWindows) {
-  const fixturePath = fileURLToPath(new URL('./fixtures-temp/basic', import.meta.url))
+  const fixturePath = fileURLToPath(new URL('./fixtures-temp/hmr', import.meta.url))
   await setup({
     rootDir: fixturePath,
     dev: true,
@@ -26,127 +26,143 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
     },
   })
 
+  const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
+
   describe('hmr', () => {
     it('should work', async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/')
 
-      expect(await page.title()).toBe('Basic fixture')
-      expect((await page.$('.sugar-counter').then(r => r!.textContent()))!.trim())
-        .toEqual('Sugar Counter 12 x 2 = 24  Inc')
+      expect(await page.title()).toBe('HMR fixture')
+      expect(await page.getByTestId('count').textContent()).toBe('1')
 
       // reactive
-      await page.$('.sugar-counter button').then(r => r!.click())
-      expect((await page.$('.sugar-counter').then(r => r!.textContent()))!.trim())
-        .toEqual('Sugar Counter 13 x 2 = 26  Inc')
+      await page.getByRole('button').click()
+      expect(await page.getByTestId('count').textContent()).toBe('2')
 
       // modify file
-      let indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      indexVue = indexVue
-        .replace('<Title>Basic fixture</Title>', '<Title>Basic fixture HMR</Title>')
-        .replace('<h1>Hello Nuxt 3!</h1>', '<h1>Hello Nuxt 3! HMR</h1>')
-      indexVue += '<style scoped>\nh1 { color: red }\n</style>'
-      await fsp.writeFile(join(fixturePath, 'pages/index.vue'), indexVue)
+      let newContents = indexVue
+        .replace('<Title>HMR fixture</Title>', '<Title>HMR fixture HMR</Title>')
+        .replace('<h1>Home page</h1>', '<h1>Home page - but not as you knew it</h1>')
+      newContents += '<style scoped>\nh1 { color: red }\n</style>'
+      await fsp.writeFile(join(fixturePath, 'pages/index.vue'), newContents)
 
-      await expectWithPolling(
-        () => page.title(),
-        'Basic fixture HMR',
-      )
+      await expectWithPolling(() => page.title(), 'HMR fixture HMR')
 
       // content HMR
-      const h1 = await page.$('h1')
-      expect(await h1!.textContent()).toBe('Hello Nuxt 3! HMR')
+      const h1 = page.getByRole('heading')
+      expect(await h1!.textContent()).toBe('Home page - but not as you knew it')
 
       // style HMR
-      const h1Color = await h1!.evaluate(el => window.getComputedStyle(el).getPropertyValue('color'))
+      const h1Color = await h1.evaluate(el => window.getComputedStyle(el).getPropertyValue('color'))
       expect(h1Color).toMatchInlineSnapshot('"rgb(255, 0, 0)"')
 
       // ensure no errors
-      const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-      const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warn')
+      expectNoErrorsOrWarnings(consoleLogs)
       expect(pageErrors).toEqual([])
-      expect(consoleLogErrors).toEqual([])
-      expect(consoleLogWarnings).toEqual([])
 
       await page.close()
-    }, 60_000)
+    })
 
     it('should detect new routes', async () => {
-      await expectWithPolling(
-        () => $fetch<string>('/catchall/some-404').then(r => r.includes('catchall at some-404')).catch(() => null),
-        true,
-      )
+      const res = await fetch('/some-404')
+      expect(res.status).toBe(404)
 
       // write new page route
-      const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
-      await fsp.writeFile(join(fixturePath, 'pages/catchall/some-404.vue'), indexVue)
-
-      await expectWithPolling(
-        () => $fetch<string>('/catchall/some-404').then(r => r.includes('Hello Nuxt 3')).catch(() => null),
-        true,
-      )
+      await fsp.writeFile(join(fixturePath, 'pages/some-404.vue'), indexVue)
+      await expectWithPolling(() => $fetch<string>('/some-404').then(r => r.includes('Home page')).catch(() => null), true)
     })
 
     it('should hot reload route rules', async () => {
-      await expectWithPolling(
-        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'added in routeRules').catch(() => null),
-        true,
-      )
+      await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'added in routeRules')
 
       // write new page route
-      const file = await fsp.readFile(join(fixturePath, 'pages/route-rules/inline.vue'), 'utf8')
-      await fsp.writeFile(join(fixturePath, 'pages/route-rules/inline.vue'), file.replace('added in routeRules', 'edited in dev'))
+      const file = await fsp.readFile(join(fixturePath, 'pages/route-rules.vue'), 'utf8')
+      await fsp.writeFile(join(fixturePath, 'pages/route-rules.vue'), file.replace('added in routeRules', 'edited in dev'))
 
-      await expectWithPolling(
-        () => fetch('/route-rules/inline').then(r => r.headers.get('x-extend') === 'edited in dev').catch(() => null),
-        true,
-      )
+      await expectWithPolling(() => fetch('/route-rules').then(r => r.headers.get('x-extend')).catch(() => null), 'edited in dev')
     })
 
     it('should HMR islands', async () => {
-      const { page, pageErrors, consoleLogs } = await renderPage('/server-component-hmr')
+      const { page, pageErrors, consoleLogs } = await renderPage('/server-component')
 
-      let hmrId = 0
-      const resolveHmrId = async () => {
-        const node = await page.$('#hmr-id')
-        const text = await node?.innerText() || ''
-        return Number(text.trim().split(':')[1]?.trim() || '')
-      }
       const componentPath = join(fixturePath, 'components/islands/HmrComponent.vue')
-      const triggerHmr = async () => fsp.writeFile(
-        componentPath,
-        (await fsp.readFile(componentPath, 'utf8'))
-          .replace(`ref(${hmrId++})`, `ref(${hmrId})`),
-      )
+      const componentContents = await fsp.readFile(componentPath, 'utf8')
+      const triggerHmr = (number: string) => fsp.writeFile(componentPath, componentContents.replace('ref(0)', `ref(${number})`))
 
       // initial state
-      await expectWithPolling(
-        resolveHmrId,
-        0,
-      )
+      await expectWithPolling(async () => await page.getByTestId('hmr-id').innerText(), '0')
 
       // first edit
-      await triggerHmr()
-      await expectWithPolling(
-        resolveHmrId,
-        1,
-      )
+      await triggerHmr('1')
+      await expectWithPolling(async () => await page.getByTestId('hmr-id').innerText(), '1')
 
       // just in-case
-      await triggerHmr()
-      await expectWithPolling(
-        resolveHmrId,
-        2,
-      )
+      await triggerHmr('2')
+      await expectWithPolling(async () => await page.getByTestId('hmr-id').innerText(), '2')
 
       // ensure no errors
-      const consoleLogErrors = consoleLogs.filter(i => i.type === 'error')
-      const consoleLogWarnings = consoleLogs.filter(i => i.type === 'warn')
+      expectNoErrorsOrWarnings(consoleLogs)
       expect(pageErrors).toEqual([])
-      expect(consoleLogErrors).toEqual([])
-      expect(consoleLogWarnings).toEqual([])
 
       await page.close()
-    }, 60_000)
+    })
+
+    it.skipIf(isWebpack)('should HMR page meta', async () => {
+      const { page, pageErrors, consoleLogs } = await renderPage('/page-meta')
+
+      const pagePath = join(fixturePath, 'pages/page-meta.vue')
+      const pageContents = await fsp.readFile(pagePath, 'utf8')
+
+      expect(JSON.parse(await page.getByTestId('meta').textContent() || '{}')).toStrictEqual({ some: 'stuff' })
+      const initialConsoleLogs = structuredClone(consoleLogs)
+
+      await fsp.writeFile(pagePath, pageContents.replace(`some: 'stuff'`, `some: 'other stuff'`))
+
+      await expectWithPolling(async () => await page.getByTestId('meta').textContent() || '{}', JSON.stringify({ some: 'other stuff' }, null, 2))
+      expect(consoleLogs).toStrictEqual([
+        ...initialConsoleLogs,
+        {
+          'text': '[vite] hot updated: /pages/page-meta.vue',
+          'type': 'debug',
+        },
+        {
+          'text': '[vite] hot updated: /pages/page-meta.vue?macro=true',
+          'type': 'debug',
+        },
+        {
+          'text': `[vite] hot updated: /@id/virtual:nuxt:${fixturePath}/.nuxt/routes.mjs`,
+          'type': 'debug',
+        },
+      ])
+
+      // ensure no errors
+      expectNoErrorsOrWarnings(consoleLogs)
+      expect(pageErrors).toEqual([])
+
+      await page.close()
+    })
+
+    it.skipIf(isWebpack)('should HMR routes', async () => {
+      const { page, pageErrors, consoleLogs } = await renderPage('/routes')
+
+      await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
+
+      await page.getByRole('link').click()
+      await expectWithPolling(() => page.getByTestId('contents').textContent(), 'A new route!')
+
+      for (const log of consoleLogs) {
+        if (log.text.includes('No match found for location with path "/routes/non-existent"')) {
+          // we expect this warning before the routes are updated
+          log.type = 'debug'
+        }
+      }
+
+      // ensure no errors
+      expectNoErrorsOrWarnings(consoleLogs)
+      expect(pageErrors).toEqual([])
+
+      await page.close()
+    })
   })
 } else {
   describe.skip('hmr', () => {})
