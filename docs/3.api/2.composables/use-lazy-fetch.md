@@ -17,7 +17,7 @@ By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation unti
 ::
 
 ::note
-Awaiting `useLazyFetch` in this mode only ensures the call is initialized; data will be fetched client-side after navigation and may not be immediately available.
+Awaiting `useLazyFetch` in this mode only ensures the call is initialized. On client-side navigation, data may not be immediately available, and you should make sure to handle the pending state in your app.
 ::
 
 :read-more{to="/docs/api/composables/use-fetch"}
