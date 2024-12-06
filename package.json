@@ -87,6 +87,7 @@
     "eslint-typegen": "0.3.2",
     "h3": "1.13.0",
     "happy-dom": "15.11.7",
+    "installed-check": "^9.3.0",
     "jiti": "2.4.1",
     "knip": "5.39.1",
     "markdownlint-cli": "0.43.0",
