@@ -112,7 +112,7 @@ importers:
         specifier: 15.11.7
         version: 15.11.7
       installed-check:
-        specifier: ^9.3.0
+        specifier: 9.3.0
         version: 9.3.0
       jiti:
         specifier: 2.4.1
