@@ -38,6 +38,12 @@
       "matchPackageNames": [
         "typescript"
       ]
+    },
+    {
+      "groupName": "unimport",
+      "matchPackageNames": [
+        "unimport"
+      ]
     }
   ]
 }
