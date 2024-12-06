@@ -16,6 +16,10 @@ By default, [`useFetch`](/docs/api/composables/use-fetch) blocks navigation unti
 `useLazyFetch` has the same signature as [`useFetch`](/docs/api/composables/use-fetch).
 ::
 
+::note
+Awaiting `useLazyFetch` in this mode only ensures the call is initialized; data will be fetched client-side after navigation and may not be immediately available.
+::
+
 :read-more{to="/docs/api/composables/use-fetch"}
 
 ## Example
