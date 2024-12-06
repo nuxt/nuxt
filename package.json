@@ -70,7 +70,7 @@
     "@nuxt/eslint-config": "0.7.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
-    "@nuxt/test-utils": "3.14.4",
+    "@nuxt/test-utils": "3.15.1",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
     "@types/node": "22.10.1",
@@ -118,7 +118,7 @@
   },
   "packageManager": "pnpm@9.14.4",
   "engines": {
-    "node": "^20.9.0 || >=22.0.0"
+    "node": "^20.9.0 || ^22.0.0 || >=23.0.0"
   },
   "version": ""
 }
