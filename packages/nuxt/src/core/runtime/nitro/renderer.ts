@@ -496,7 +496,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       statusCode: getResponseStatus(event),
       statusMessage: getResponseStatusText(event),
       headers: {
-        'content-type': 'application/json;charset=utf-8',
+        'content-type': 'application/json; charset=utf-8',
         'x-powered-by': 'Nuxt',
       },
     } satisfies RenderResponse
@@ -530,7 +530,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     statusCode: getResponseStatus(event),
     statusMessage: getResponseStatusText(event),
     headers: {
-      'content-type': 'text/html;charset=utf-8',
+      'content-type': 'text/html; charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
   } satisfies RenderResponse
@@ -590,7 +590,7 @@ function renderPayloadResponse (ssrContext: NuxtSSRContext) {
     statusCode: getResponseStatus(ssrContext.event),
     statusMessage: getResponseStatusText(ssrContext.event),
     headers: {
-      'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json;charset=utf-8' : 'text/javascript;charset=utf-8',
+      'content-type': process.env.NUXT_JSON_PAYLOADS ? 'application/json; charset=utf-8' : 'text/javascript; charset=utf-8',
       'x-powered-by': 'Nuxt',
     },
   } satisfies RenderResponse
