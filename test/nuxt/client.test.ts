@@ -57,9 +57,11 @@ describe('client page', () => {
 
     await flushPromises()
     expect(wrapper.find('#fallback').exists()).toBe(true)
+    expect(wrapper.find('#async').exists()).toBe(false)
 
     resolve!()
     await flushPromises()
     expect(wrapper.find('#async').exists()).toBe(true)
+    expect(wrapper.find('#fallback').exists()).toBe(false)
   })
 })
