@@ -33,7 +33,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   }),
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
-    const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+    const presets = structuredClone(options.presets as ImportPresetWithDeprecation[]) 
 
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', presets)
