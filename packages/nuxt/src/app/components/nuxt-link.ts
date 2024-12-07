@@ -182,7 +182,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if ((!to.value || isAbsoluteUrl.value) || isHashLinkWithoutHashMode(to.value as string, hashMode)) {
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value as string, hashMode)) {
         return to.value as string
       }
 
