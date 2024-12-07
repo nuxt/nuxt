@@ -248,15 +248,13 @@ function resolvePaths<Item extends Record<string, any>> (items: Item[], key: { [
   }))
 }
 
-const IS_TSX = /\.[jt]sx$/
-
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]) {
   const _plugins: Array<NuxtPlugin & Omit<PluginMeta, 'enforce'>> = []
   for (const plugin of plugins) {
     try {
       const code = plugin.src in nuxt.vfs ? nuxt.vfs[plugin.src]! : await fsp.readFile(plugin.src!, 'utf-8')
       _plugins.push({
-        ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
+        ...await extractMetadata(code, plugin.src),
         ...plugin,
       })
     } catch (e) {

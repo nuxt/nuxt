@@ -309,9 +309,6 @@ importers:
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
-      acorn:
-        specifier: 8.14.0
-        version: 8.14.0
       c12:
         specifier: 2.0.1
         version: 2.0.1(magicast@0.3.5)
@@ -345,9 +342,6 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
-      estree-walker:
-        specifier: ^3.0.3
-        version: 3.0.3
       globby:
         specifier: ^14.0.2
         version: 14.0.2
@@ -396,6 +390,12 @@ importers:
       ohash:
         specifier: 1.1.4
         version: 1.1.4
+      oxc-parser:
+        specifier: ^0.38.0
+        version: 0.38.0
+      oxc-walker:
+        specifier: ^0.0.1
+        version: 0.0.1
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
@@ -475,9 +475,6 @@ importers:
       '@parcel/watcher':
         specifier: 2.5.0
         version: 2.5.0
-      '@types/estree':
-        specifier: 1.0.6
-        version: 1.0.6
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.0.2(@types/node@22.10.1)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.5.1))(vue@3.5.13(typescript@5.6.3))
@@ -2071,6 +2068,49 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
+  '@oxc-parser/binding-darwin-arm64@0.38.0':
+    resolution: {integrity: sha512-yMDY/KrF2gEEpVIzaVWuO1savy303onvhg96a+1mUfLhgH9lvfZZyus4/LVokRHYCCy+6ey/1ytyilVnSeTDYA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxc-parser/binding-darwin-x64@0.38.0':
+    resolution: {integrity: sha512-OD8PQT5nAdNCbmzMVfafIQi9/yxSvfEH5fpLXPKVTCtAEc/d5aX6JpipjW231/3TF8mjXO1y3xZM1xKGXJEk/A==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxc-parser/binding-linux-arm64-gnu@0.38.0':
+    resolution: {integrity: sha512-REfFdTk+cdIC8etE8v0CoZtVObKIiymFsPkQTYca2V2ZwJ9/SgUr6NNNjLJdkGOipwjBk8d2cyOZzNDIMfzmqw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-arm64-musl@0.38.0':
+    resolution: {integrity: sha512-tSDRTahOoT4KDS0dicDEFgBH2nEDqNmqFG+N6PS2LrExYEDS01noRIxMFpx2Sz22a+6ZnvkfVmStp6VK+9fpBQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-x64-gnu@0.38.0':
+    resolution: {integrity: sha512-qc6NdCzcCAxCK5KVde2ULq+7cyiJwrMV/1yozSUqvu26yme56Es3rWHFuPToxrhw+2olvc93AX+PVYMy3DqrGw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-x64-musl@0.38.0':
+    resolution: {integrity: sha512-x/9XyivlMjnQ7gofNK6u+L+BMdwKf/GuLJ0vrmrWolKGR9CBSzZRwZfTw+cG0T7U6Y6CN36tSqijA0eTo3U8zw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-parser/binding-win32-arm64-msvc@0.38.0':
+    resolution: {integrity: sha512-SUlt+MUid0VUL5cLbbZzVGA9xNoqLl29xF1ueTeDt/BdQyrLELjTxoGtgisF6blAD6Rj2JqPtnfk+CT7GBwL2w==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxc-parser/binding-win32-x64-msvc@0.38.0':
+    resolution: {integrity: sha512-l/nFJutJ+zZTGj7ayL22r+og8g6dOC/47fSlsyl+KQXsmAFDStaARioHP9g+von/0bS23LX/9Eo8YeK5kFc7KA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@oxc-project/types@0.38.0':
+    resolution: {integrity: sha512-WjRra3cmQt/VPRTwiVuYITm6RNr4SjwYeVZkT0oPn1M0Li2caILj1mlRELhHXad4nLAlnfliH5daHFKjQ9d3jQ==}
+
   '@parcel/watcher-android-arm64@2.5.0':
     resolution: {integrity: sha512-qlX4eS28bUcQCdribHkg/herLe+0A9RyYC+mm2PXpncit8z5b3nSqGVzMNR3CmtAOgRutiZ02eIJJgP/b1iEFQ==}
     engines: {node: '>= 10.0.0'}
@@ -2507,8 +2547,8 @@ packages:
     engines: {node: '>=8.10'}
     hasBin: true
 
-  '@stripe/stripe-js@4.8.0':
-    resolution: {integrity: sha512-+4Cb0bVHlV4BJXxkJ3cCLSLuWxm3pXKtgcRacox146EuugjCzRRII5T5gUMgL4HpzrBLVwVxjKaZqntNWAXawQ==}
+  '@stripe/stripe-js@4.9.0':
+    resolution: {integrity: sha512-tMPZQZZXGWyNX7hbgenq+1xEj2oigJ54XddbtSX36VedoKsPBq7dxwRXu4Xd5FdpT3JDyyDtnmvYkaSnH1yHTQ==}
     engines: {node: '>=12.16'}
 
   '@stylistic/eslint-plugin@2.11.0':
@@ -5814,6 +5854,12 @@ packages:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
 
+  oxc-parser@0.38.0:
+    resolution: {integrity: sha512-w/cUL64wDb72gaBoOnvodKgHhNF9pDjb2b8gPkDKJDTvIvlbcE9XGDT3cnXOP4N3XCMrRT4MC23bCHGb3gCFSQ==}
+
+  oxc-walker@0.0.1:
+    resolution: {integrity: sha512-lb1iCUTl2qy/ZYk1+lC8nxUBzCpcsupofSFqwHlP3GtbE/2uLq2A0Q448fDs9LDIuh+syC6sebonI0qpjh2Opw==}
+
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
     engines: {node: '>=6'}
@@ -8639,7 +8685,7 @@ snapshots:
       '@nuxt/devtools-kit': 1.6.1(vite@6.0.2(@types/node@22.10.1)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.5.1))
       '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.6.2(rollup@4.28.0)(vite@6.0.2(@types/node@22.10.1)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.5.1))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.28.0)(webpack@5.96.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.28.0)(vite@6.0.2(@types/node@22.10.1)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.5.1))(vue@3.5.13(typescript@5.6.3))(webpack@5.96.1(esbuild@0.24.0))
       '@nuxt/kit': link:packages/kit
-      '@stripe/stripe-js': 4.8.0
+      '@stripe/stripe-js': 4.9.0
       '@types/google.maps': 3.58.1
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.1.0
@@ -8814,6 +8860,32 @@ snapshots:
       - supports-color
 
   '@one-ini/wasm@0.1.1': {}
+
+  '@oxc-parser/binding-darwin-arm64@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-darwin-x64@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-arm64-gnu@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-arm64-musl@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-x64-gnu@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-x64-musl@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-win32-arm64-msvc@0.38.0':
+    optional: true
+
+  '@oxc-parser/binding-win32-x64-msvc@0.38.0':
+    optional: true
+
+  '@oxc-project/types@0.38.0': {}
 
   '@parcel/watcher-android-arm64@2.5.0':
     optional: true
@@ -9236,7 +9308,7 @@ snapshots:
       ignore: 5.3.2
       p-map: 4.0.0
 
-  '@stripe/stripe-js@4.8.0': {}
+  '@stripe/stripe-js@4.9.0': {}
 
   '@stylistic/eslint-plugin@2.11.0(eslint@9.16.0(jiti@2.4.1))(typescript@5.6.3)':
     dependencies:
@@ -13370,6 +13442,25 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
       word-wrap: 1.2.5
+
+  oxc-parser@0.38.0:
+    dependencies:
+      '@oxc-project/types': 0.38.0
+    optionalDependencies:
+      '@oxc-parser/binding-darwin-arm64': 0.38.0
+      '@oxc-parser/binding-darwin-x64': 0.38.0
+      '@oxc-parser/binding-linux-arm64-gnu': 0.38.0
+      '@oxc-parser/binding-linux-arm64-musl': 0.38.0
+      '@oxc-parser/binding-linux-x64-gnu': 0.38.0
+      '@oxc-parser/binding-linux-x64-musl': 0.38.0
+      '@oxc-parser/binding-win32-arm64-msvc': 0.38.0
+      '@oxc-parser/binding-win32-x64-msvc': 0.38.0
+
+  oxc-walker@0.0.1:
+    dependencies:
+      '@types/estree': 1.0.6
+      estree-walker: 3.0.3
+      oxc-parser: 0.38.0
 
   p-limit@2.3.0:
     dependencies:
