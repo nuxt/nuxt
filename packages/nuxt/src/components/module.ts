@@ -13,6 +13,7 @@ import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands
 import { TransformPlugin } from './plugins/transform'
 import { TreeShakeTemplatePlugin } from './plugins/tree-shake'
 import { ComponentNamePlugin } from './plugins/component-names'
+import { DelayedHydrationPlugin } from './plugins/delayed-hydration'
 
 const isPureObjectOrString = (val: any) => (!Array.isArray(val) && typeof val === 'object') || typeof val === 'string'
 const isDirectory = (p: string) => { try { return statSync(p).isDirectory() } catch { return false } }
@@ -223,13 +224,17 @@ export default defineNuxtModule<ComponentsOptions>({
       addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.server, rootDir: nuxt.options.rootDir }), { client: false })
     }
 
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/client-delayed-component')) ?? join(distDir, 'components/runtime/client-delayed-component')
     const sharedLoaderOptions = {
       getComponents,
       serverComponentRuntime,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
+      clientDelayedComponentRuntime,
     }
-
+    if (nuxt.options.experimental.delayedHydration) {
+      addBuildPlugin(DelayedHydrationPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
+    }
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
 

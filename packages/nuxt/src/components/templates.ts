@@ -116,14 +116,15 @@ export const componentsTypeTemplate = {
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
       ]
     })
-
     const islandType = 'type IslandComponent<T extends DefineComponent> = T & DefineComponent<{}, {refresh: () => Promise<void>}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, SlotsType<{ fallback: { error: unknown } }>>'
+    const delayedType = `type TypeWithDefault<T> = boolean | T\ntype HydrationStrategy = "idle" | "event" | "promise" | "if" | "visible" | "time" | "never"\ntype HydrationMap = { idle: number, event: string | string[], promise: Promise<unknown>, if: boolean | unknown, visible: IntersectionObserverInit, time: number, never: boolean }\ntype DelayedComponent<T extends DefineComponent> = T & DefineComponent<{[K in keyof HydrationMap as \`hydrate:$\{K}\`]?: TypeWithDefault<HydrationMap[K]>},{},{},{},{},{},{hydrated: void},{},{},{},{},{},{},{},{hydrate:{}}>`
     return `
 import type { DefineComponent, SlotsType } from 'vue'
 ${nuxt.options.experimental.componentIslands ? islandType : ''}
+${nuxt.options.experimental.delayedHydration ? delayedType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
-  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
+  ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': DelayedComponent<${type}>`).join('\n')}
 }
 
 declare module 'vue' {
@@ -131,7 +132,7 @@ declare module 'vue' {
 }
 
 ${componentTypes.map(([pascalName, type]) => `export const ${pascalName}: ${type}`).join('\n')}
-${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: ${type}`).join('\n')}
+${componentTypes.map(([pascalName, type]) => `export const Lazy${pascalName}: DelayedComponent<${type}>`).join('\n')}
 
 export const componentNames: string[]
 `
