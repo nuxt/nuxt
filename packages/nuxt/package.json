@@ -43,6 +43,14 @@
     "#app": {
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
+    },
+    "#app/defaults": {
+      "types": "./dist/app/defaults.d.ts",
+      "import": "./dist/app/defaults.js"
+    },
+    "#app/nuxt": {
+      "types": "./dist/app/nuxt.d.ts",
+      "import": "./dist/app/nuxt.js"
     }
   },
   "files": [
