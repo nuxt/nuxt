@@ -16,7 +16,7 @@ import { createJiti } from 'jiti'
 
 export default defineNuxtModule({
   meta: {
-    name: 'nuxt-config-schema',
+    name: 'nuxt:nuxt-config-schema',
   },
   async setup (_, nuxt) {
     const resolver = createResolver(import.meta.url)

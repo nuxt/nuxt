@@ -13,7 +13,7 @@ import { defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
-    name: 'imports',
+    name: 'nuxt:imports',
     configKey: 'imports',
   },
   defaults: nuxt => ({

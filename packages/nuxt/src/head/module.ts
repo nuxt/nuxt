@@ -7,7 +7,7 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
-    name: 'meta',
+    name: 'nuxt:meta',
     configKey: 'unhead',
   },
   async setup (options, nuxt) {
