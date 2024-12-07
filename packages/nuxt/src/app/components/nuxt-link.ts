@@ -110,6 +110,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
+  function isHashLinkWithoutHashMode (link: string, hashMode: boolean): boolean {
+    return link.startsWith('#') && !hashMode
+  }
+
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
@@ -134,6 +138,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
   function useNuxtLink (props: NuxtLinkProps) {
     const router = useRouter()
+    // @ts-expect-error untyped, nuxt-injected option
+    const { hashMode = false } = router.options.hashMode
     const config = useRuntimeConfig()
 
     const hasTarget = computed(() => !!props.target && props.target !== '_self')
@@ -176,7 +182,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+      if ((!to.value || isAbsoluteUrl.value) || isHashLinkWithoutHashMode(to.value as string, hashMode)) {
+        return to.value as string
+      }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
@@ -308,6 +316,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     useLink: useNuxtLink,
     setup (props, { slots }) {
       const router = useRouter()
+      // @ts-expect-error untyped, nuxt-injected option
+      const { hashMode = false } = router.options.hashMode
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
 
@@ -373,7 +383,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value as string, hashMode)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
