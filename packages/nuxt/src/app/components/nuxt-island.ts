@@ -127,13 +127,13 @@ export default defineComponent({
       }
     }
 
-    const ssrHTML = ref<string>('')
+    const cmpKey = `${props.name}_${hashId.value}`
+    const ssrHTML = ref<string>(nuxtApp.payload.data[cmpKey]?.html || '')
 
-    if (import.meta.client && instance.vnode?.el) {
+    if (import.meta.client && instance.vnode?.el && !ssrHTML.value) {
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
-      const key = `${props.name}_${hashId.value}`
-      nuxtApp.payload.data[key] ||= {}
-      nuxtApp.payload.data[key].html = ssrHTML.value
+      nuxtApp.payload.data[cmpKey] ||= {}
+      nuxtApp.payload.data[cmpKey].html = ssrHTML.value
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
