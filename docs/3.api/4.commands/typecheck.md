@@ -8,24 +8,30 @@ links:
     size: xs
 ---
 
+<!--typecheck-cmd-->
 ```bash [Terminal]
-npx nuxi typecheck [OPTIONS] [ROOTDIR]
+npx nuxi typecheck [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>]
 ```
+<!--/typecheck-cmd-->
 
 The `typecheck` command runs [`vue-tsc`](https://github.com/vuejs/language-tools/tree/master/packages/tsc) to check types throughout your app.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--typecheck-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/typecheck-args-->
 
 ## Options
 
+<!--typecheck-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+<!--/typecheck-opts-->
 
 ::note
 This command sets `process.env.NODE_ENV` to `production`. To override, define `NODE_ENV` in a [`.env`](/docs/guide/directory-structure/env) file or as a command-line argument.

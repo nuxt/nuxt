@@ -1,6 +1,6 @@
 ---
-title: 'nuxi build-module'
-description: 'Nuxt command to build your Nuxt module before publishing.'
+title: "nuxi build-module"
+description: "Nuxt command to build your Nuxt module before publishing."
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -8,29 +8,35 @@ links:
     size: xs
 ---
 
+<!--build-module-cmd-->
 ```bash [Terminal]
-npx nuxi build-module [OPTIONS] [ROOTDIR]
+npx nuxi build-module [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--build] [--stub] [--sourcemap] [--prepare]
 ```
+<!--/build-module-cmd-->
 
 The `build-module` command runs `@nuxt/module-builder` to generate `dist` directory within your `rootDir` that contains the full build for your **nuxt-module**.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--build-module-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/build-module-args-->
 
 ## Options
 
+<!--build-module-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--no-build` |  | Build module for distribution
+`--build` | `false` | Build module for distribution
 `--stub` | `false` | Stub dist instead of actually building it for development
 `--sourcemap` | `false` | Generate sourcemaps
 `--prepare` | `false` | Prepare module for local development
+<!--/build-module-opts-->
 
-::read-more{to="https://github.com/nuxt/module-builder" icon="i-simple-icons-github" color="gray" target="_blank"}
+::read-more{to="https://github.com/nuxt/module-builder" icon="i-simple-icons-github" color="gray" target="\_blank"}
 Read more about `@nuxt/module-builder`.
 ::

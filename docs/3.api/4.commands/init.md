@@ -8,24 +8,28 @@ links:
     size: xs
 ---
 
+<!--init-cmd-->
 ```bash [Terminal]
-npx nuxi init [OPTIONS] [DIR]
+npx nuxi init [DIR] [--cwd=<directory>] [-t, --template] [-f, --force] [--offline] [--preferOffline] [--no-install] [--gitInit] [--shell] [--packageManager]
 ```
+<!--/init-cmd-->
 
 The `init` command initializes a fresh Nuxt project using [unjs/giget](https://github.com/unjs/giget).
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`DIR=""` |  | Project directory
+<!--init-args-->
+Argument | Description
+--- | ---
+`DIR=""` | Project directory
+<!--/init-args-->
 
 ## Options
 
+<!--init-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` | `.` | Specify the working directory, defaults to current directory (".")
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--cwd=<directory>` | `.` | Specify the working directory
 `-t, --template` |  | Template name
 `-f, --force` |  | Override existing directory
 `--offline` |  | Force offline mode
@@ -34,6 +38,7 @@ Option | Default | Description
 `--gitInit` |  | Initialize git repository
 `--shell` |  | Start shell after installation in project directory
 `--packageManager` |  | Package manager choice (npm, pnpm, yarn, bun)
+<!--/init-opts-->
 
 ## Environment variables
 

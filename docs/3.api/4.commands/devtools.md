@@ -1,6 +1,8 @@
 ---
 title: "nuxi devtools"
 description: The devtools command allows you to enable or disable Nuxt DevTools on a per-project basis.
+toc:
+  - depth: 5
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -8,26 +10,31 @@ links:
     size: xs
 ---
 
+<!--devtools-cmd-->
 ```bash [Terminal]
-npx nuxi devtools [OPTIONS] <COMMAND> [ROOTDIR]
+npx nuxi devtools <COMMAND> [ROOTDIR] [--cwd=<directory>]
 ```
+<!--/devtools-cmd-->
 
 Running `nuxi devtools enable` will install the Nuxt DevTools globally, and also enable it within the particular project you are using. It is saved as a preference in your user-level `.nuxtrc`. If you want to remove devtools support for a particular project, you can run `nuxi devtools disable`.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`COMMAND` |  | Command to run (options: <enable\|disable>)
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--devtools-args-->
+Argument | Description
+--- | ---
+`COMMAND` | Command to run (options: <enable\|disable>)
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/devtools-args-->
 
 ## Options
 
+<!--devtools-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+<!--/devtools-opts-->
 
-::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="_blank"}
+::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="\_blank"}
 Read more about the **Nuxt DevTools**.
 ::

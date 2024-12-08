@@ -8,21 +8,26 @@ links:
     size: xs
 ---
 
+<!--info-cmd-->
 ```bash [Terminal]
-npx nuxi info [OPTIONS] [ROOTDIR]
+npx nuxi info [ROOTDIR] [--cwd=<directory>]
 ```
+<!--/info-cmd-->
 
 The `info` command logs information about the current or specified Nuxt project.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--info-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/info-args-->
 
 ## Options
 
+<!--info-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+<!--/info-opts-->

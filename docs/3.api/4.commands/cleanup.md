@@ -1,5 +1,5 @@
 ---
-title: 'nuxi cleanup'
+title: "nuxi cleanup"
 description: "Remove common generated Nuxt files and caches."
 links:
   - label: Source
@@ -8,11 +8,14 @@ links:
     size: xs
 ---
 
+<!--cleanup-cmd-->
 ```bash [Terminal]
-npx nuxi cleanup [OPTIONS] [ROOTDIR]
+npx nuxi cleanup [ROOTDIR] [--cwd=<directory>]
 ```
+<!--/cleanup-cmd-->
 
 The `cleanup` command removes common generated Nuxt files and caches, including:
+
 - `.nuxt`
 - `.output`
 - `node_modules/.vite`
@@ -20,13 +23,16 @@ The `cleanup` command removes common generated Nuxt files and caches, including:
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--cleanup-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/cleanup-args-->
 
 ## Options
 
+<!--cleanup-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
-`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+<!--/cleanup-opts-->
