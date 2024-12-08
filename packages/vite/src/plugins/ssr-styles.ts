@@ -62,7 +62,8 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
       if (options.mode === 'client') { return }
 
       const emitted: Record<string, string> = {}
-      for (const [file, { files, inBundle }] of Object.entries(cssMap)) {
+      for (const file in cssMap) {
+        const { files, inBundle } = cssMap[file]!
         // File has been tree-shaken out of build (or there are no styles to inline)
         if (!files.length || !inBundle) { continue }
         const fileName = filename(file)
