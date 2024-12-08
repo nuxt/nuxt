@@ -271,7 +271,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -305,7 +305,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           "<template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-eo0XycWCUV" :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="nuxtClient"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -376,7 +376,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
                     <HelloWorld />
-                    <NuxtTeleportIslandComponent to="HelloWorld-CyH3UXLuYA" :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
+                    <NuxtTeleportIslandComponent :nuxt-client="true"><HelloWorld /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
 
@@ -402,9 +402,9 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
-                  <NuxtTeleportIslandComponent v-if="false" to="HelloWorld-D9uaHyzL7X" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else-if="true" to="HelloWorld-o4RZMtArnE" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
-                  <NuxtTeleportIslandComponent v-else to="HelloWorld-m1IbXHdd8O" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-if="false" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else-if="true" :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
+                  <NuxtTeleportIslandComponent v-else :nuxt-client="true"><HelloWorld  /></NuxtTeleportIslandComponent>
                   </div>
                 </template>
                 "
