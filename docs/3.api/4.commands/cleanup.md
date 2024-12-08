@@ -9,7 +9,7 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi cleanup [rootDir]
+npx nuxi cleanup [OPTIONS] [ROOTDIR]
 ```
 
 The `cleanup` command removes common generated Nuxt files and caches, including:
@@ -18,6 +18,15 @@ The `cleanup` command removes common generated Nuxt files and caches, including:
 - `node_modules/.vite`
 - `node_modules/.cache`
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`rootDir` | `.` | The root directory of the project.
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+
+## Options
+
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level

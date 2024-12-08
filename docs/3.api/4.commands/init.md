@@ -9,26 +9,31 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi init [--verbose|-v] [--template,-t] [dir]
+npx nuxi init [OPTIONS] [DIR]
 ```
 
 The `init` command initializes a fresh Nuxt project using [unjs/giget](https://github.com/unjs/giget).
 
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`DIR=""` |  | Project directory
+
 ## Options
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`--cwd` | | Current working directory
-`--log-level` | | Log level
-`--template, -t` | `v3` | Specify template name or git repository to use as a template. Format is `gh:org/name` to use a custom github template.
-`--force, -f` | `false` | Force clone to any existing directory.
-`--offline` | `false` | Force offline mode (do not attempt to download template from GitHub and only use local cache).
-`--prefer-offline` | `false` | Prefer offline mode (try local cache first to download templates).
-`--no-install` | `false` | Skip installing dependencies.
-`--git-init` | `false` | Initialize git repository.
-`--shell` | `false` | Start shell after installation in project directory (experimental).
-`--package-manager` | `npm` | Package manager choice (npm, pnpm, yarn, bun).
-`--dir` | | Project directory.
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory, defaults to current directory (".")
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`-t, --template` |  | Template name
+`-f, --force` |  | Override existing directory
+`--offline` |  | Force offline mode
+`--preferOffline` |  | Prefer offline mode
+`--no-install` |  | Skip installing dependencies
+`--gitInit` |  | Initialize git repository
+`--shell` |  | Start shell after installation in project directory
+`--packageManager` |  | Package manager choice (npm, pnpm, yarn, bun)
 
 ## Environment variables
 

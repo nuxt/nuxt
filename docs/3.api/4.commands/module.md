@@ -13,12 +13,23 @@ Nuxi provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
 ## nuxi module add
 
 ```bash [Terminal]
-npx nuxi module add <NAME>
+npx nuxi module add [OPTIONS] <MODULENAME>
 ```
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`NAME` | - | The name of the module to install.
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`MODULENAME` |  | Module name
+
+## Options
+
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory, defaults to current directory (".")
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--skipInstall` |  | Skip npm install
+`--skipConfig` |  | Skip nuxt.config.ts update
 
 The command lets you install [Nuxt modules](/modules) in your application with no manual work.
 
@@ -37,12 +48,22 @@ npx nuxi module add pinia
 ## nuxi module search
 
 ```bash [Terminal]
-npx nuxi module search <QUERY>
+npx nuxi module search [OPTIONS] <QUERY>
 ```
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`QUERY` | - | The name of the module to search for.
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`QUERY` |  | keywords to search for
+
+## Options
+
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `.` | Specify the working directory, defaults to current directory (".")
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--nuxtVersion=<2\|3>` |  | Filter by Nuxt version and list compatible modules only (auto detected by default)
 
 The command searches for Nuxt modules matching your query that are compatible with your Nuxt version.
 

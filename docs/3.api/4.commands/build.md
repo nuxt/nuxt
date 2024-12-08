@@ -9,18 +9,27 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi build [--prerender] [--preset] [--dotenv] [--log-level] [rootDir]
+npx nuxi build [OPTIONS] [ROOTDIR]
 ```
 
 The `build` command creates a `.output` directory with all your application, server and dependencies ready for production.
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`rootDir` | `.` | The root directory of the application to bundle.
-`--prerender` | `false` | Pre-render every route of your application. (**note:** This is an experimental flag. The behavior might be changed.)
-`--preset` | - | Set a [Nitro preset](https://nitro.unjs.io/deploy#changing-the-deployment-preset)
-`--dotenv` | `.` | Point to another `.env` file to load, **relative** to the root directory.
-`--log-level` | `info` | Specify build-time logging level, allowing `silent` \| `info` \| `verbose`.
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+
+## Options
+
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--prerender` |  | Build Nuxt and prerender static routes
+`--preset` |  | Nitro server preset
+`--dotenv` |  | Path to `.env` file to load, relative to the root directory
+`--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
 
 ::note
 This command sets `process.env.NODE_ENV` to `production`.
