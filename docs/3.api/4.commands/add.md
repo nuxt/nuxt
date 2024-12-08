@@ -9,15 +9,24 @@ links:
 ---
 
 ```bash [Terminal]
-npx nuxi add [--cwd] [--force] <TEMPLATE> <NAME>
+npx nuxi add [OPTIONS] <TEMPLATE> <NAME>
 ```
 
-Option        | Default          | Description
--------------------------|-----------------|------------------
-`TEMPLATE` | - | Specify a template of the file to be generated.
-`NAME` | - | Specify a name of the file that will be created.
-`--cwd` | `.` | The directory of the target application.
-`--force` | `false` | Force override file if it already exists.
+## Arguments
+
+Argument | Default | Description
+--- | --- | ---
+`TEMPLATE` |  | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page>)
+`NAME` |  | Specify name of the generated file
+
+## Options
+
+Option | Default | Description
+--- | --- | ---
+`--cwd=<directory>` | `"."` | Specify the working directory, defaults to current directory (".")
+`--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
+`--force` |  | Force override file if it already exists
+
 
 **Modifiers:**
 
