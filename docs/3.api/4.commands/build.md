@@ -8,28 +8,34 @@ links:
     size: xs
 ---
 
+<!--build-cmd-->
 ```bash [Terminal]
-npx nuxi build [OPTIONS] [ROOTDIR]
+npx nuxi build [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--prerender] [--preset] [--dotenv] [--envName]
 ```
+<!--/build-cmd-->
 
 The `build` command creates a `.output` directory with all your application, server and dependencies ready for production.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--build-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/build-args-->
 
 ## Options
 
+<!--build-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--prerender` |  | Build Nuxt and prerender static routes
 `--preset` |  | Nitro server preset
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
+<!--/build-opts-->
 
 ::note
 This command sets `process.env.NODE_ENV` to `production`.

@@ -8,23 +8,29 @@ links:
     size: xs
 ---
 
+<!--upgrade-cmd-->
 ```bash [Terminal]
-npx nuxi upgrade [OPTIONS] [ROOTDIR]
+npx nuxi upgrade [ROOTDIR] [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [-f, --force] [-ch, --channel=<stable|nightly>]
 ```
+<!--/upgrade-cmd-->
 
 The `upgrade` command upgrades Nuxt to the latest version.
 
 ## Arguments
 
-Argument | Default | Description
---- | --- | ---
-`ROOTDIR="."` | `.` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory, defaults to current directory (".")
+<!--upgrade-args-->
+Argument | Description
+--- | ---
+`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+<!--/upgrade-args-->
 
 ## Options
 
+<!--upgrade-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory, falls back to ROOTDIR if unset (defaults to current directory (".") after ROOTDIR argument removal)
+`--cwd=<directory>` |  | Specify the working directory (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `-f, --force` |  | Force upgrade to recreate lockfile and node_modules
 `-ch, --channel=<stable\|nightly>` | `stable` | Specify a channel to install from (default: stable)
+<!--/upgrade-opts-->

@@ -8,25 +8,30 @@ links:
     size: xs
 ---
 
+<!--add-cmd-->
 ```bash [Terminal]
-npx nuxi add [OPTIONS] <TEMPLATE> <NAME>
+npx nuxi add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--force]
 ```
+<!--/add-cmd-->
 
-## Arguments
+### Arguments
 
-Argument | Default | Description
---- | --- | ---
-`TEMPLATE` |  | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page>)
-`NAME` |  | Specify name of the generated file
+<!--add-args-->
+Argument | Description
+--- | ---
+`TEMPLATE` | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page>)
+`NAME` | Specify name of the generated file
+<!--/add-args-->
 
-## Options
+### Options
 
+<!--add-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` | `"."` | Specify the working directory, defaults to current directory (".")
+`--cwd=<directory>` | `.` | Specify the working directory
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
-`--force` |  | Force override file if it already exists
-
+`--force` | `false` | Force override file if it already exists
+<!--/add-opts-->
 
 **Modifiers:**
 
@@ -39,7 +44,7 @@ npx nuxi add plugin sockets --client
 
 ## `nuxi add component`
 
-* Modifier flags: `--mode client|server` or `--client` or `--server`
+- Modifier flags: `--mode client|server` or `--client` or `--server`
 
 ```bash [Terminal]
 # Generates `components/TheHeader.vue`
@@ -62,7 +67,7 @@ npx nuxi add layout custom
 
 ## `nuxi add plugin`
 
-* Modifier flags: `--mode client|server` or `--client`or `--server`
+- Modifier flags: `--mode client|server` or `--client`or `--server`
 
 ```bash [Terminal]
 # Generates `plugins/analytics.ts`
@@ -83,7 +88,7 @@ npx nuxi add page "category/[id]"
 
 ## `nuxi add middleware`
 
-* Modifier flags: `--global`
+- Modifier flags: `--global`
 
 ```bash [Terminal]
 # Generates `middleware/auth.ts`
@@ -92,7 +97,7 @@ npx nuxi add middleware auth
 
 ## `nuxi add api`
 
-* Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or alternatively you can directly use `--get`, `--post`, etc.
+- Modifier flags: `--method` (can accept `connect`, `delete`, `get`, `head`, `options`, `patch`, `post`, `put` or `trace`) or alternatively you can directly use `--get`, `--post`, etc.
 
 ```bash [Terminal]
 # Generates `server/api/hello.ts`
