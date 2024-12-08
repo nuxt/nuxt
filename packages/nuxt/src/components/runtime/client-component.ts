@@ -1,7 +1,7 @@
 import { defineAsyncComponent, defineComponent, h } from 'vue'
 import type { AsyncComponentLoader } from 'vue'
 import ClientOnly from '#app/components/client-only'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 
 /* @__NO_SIDE_EFFECTS__ */
 export const createClientPage = (loader: AsyncComponentLoader) => {
