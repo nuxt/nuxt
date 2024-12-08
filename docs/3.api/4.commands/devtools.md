@@ -1,8 +1,6 @@
 ---
 title: "nuxi devtools"
 description: The devtools command allows you to enable or disable Nuxt DevTools on a per-project basis.
-toc:
-  - depth: 5
 links:
   - label: Source
     icon: i-simple-icons-github

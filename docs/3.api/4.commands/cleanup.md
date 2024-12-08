@@ -1,6 +1,6 @@
 ---
-title: "nuxi cleanup"
-description: "Remove common generated Nuxt files and caches."
+title: 'nuxi cleanup'
+description: 'Remove common generated Nuxt files and caches.'
 links:
   - label: Source
     icon: i-simple-icons-github
