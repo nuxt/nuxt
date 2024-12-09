@@ -625,7 +625,7 @@ async function spaLoadingTemplate (nuxt: Nuxt) {
 
   try {
     if (existsSync(spaLoadingTemplate)) {
-      return readFileSync(spaLoadingTemplate, 'utf-8')
+      return readFileSync(spaLoadingTemplate, 'utf-8').trim()
     }
   } catch {
     // fall through if we have issues reading the file
