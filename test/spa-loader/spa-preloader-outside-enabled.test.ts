@@ -24,7 +24,7 @@ describe('spaLoadingTemplateLocation flag is set to `body`', () => {
   it('should render spa-loader', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})
-    await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
+    await page.goto(url('/spa'))
     const loader = page.getByTestId('loader')
     expect(await loader.isVisible()).toBeTruthy()
 
@@ -38,7 +38,7 @@ describe('spaLoadingTemplateLocation flag is set to `body`', () => {
   it('should render content without spa-loader', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})
-    await page.goto(url('/ssr'), { waitUntil: 'domcontentloaded' })
+    await page.goto(url('/ssr'))
 
     const loader = page.getByTestId('loader')
     expect(await loader.isHidden()).toBeTruthy()
