@@ -419,6 +419,17 @@ export default defineUntypedSchema({
     },
 
     /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
+     */
+    spaLoadingTemplateLocation: {
+      $resolve: async (val, get) => {
+        return val ?? (((await get('future') as Record<string, unknown>).compatibilityVersion === 4) ? 'body' : 'within')
+      },
+    },
+
+    /**
      * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
      *
      * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
