@@ -44,6 +44,13 @@
       "matchPackageNames": [
         "unimport"
       ]
+    },
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack",
+        "memfs"
+      ]
     }
   ]
 }
