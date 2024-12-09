@@ -12,8 +12,8 @@ export default defineNuxtPlugin({
     const head = import.meta.server
       ? nuxtApp.ssrContext!.head
       : createClientHead({
-        plugins: unheadPlugins,
-      })
+          plugins: unheadPlugins,
+        })
     // allow useHead to be used outside a Vue context but within a Nuxt context
     setHeadInjectionHandler(
       // need a fresh instance of the nuxt app to avoid parallel requests interfering with each other
