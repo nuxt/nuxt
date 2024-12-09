@@ -27,7 +27,7 @@ await setup({
 describe('spaLoadingTemplateLocation flag is set to `within`', () => {
   it('shoul be render loader inside appTag', async () => {
     const html = await $fetch<string>('/spa')
-    expect(html.replace(/\n+/, '')).toContain(
+    expect(html.replace(/\n+/g, '')).toContain(
       `<div id="__nuxt"><div data-testid="loader">loading...</div></div>`,
     )
   })
