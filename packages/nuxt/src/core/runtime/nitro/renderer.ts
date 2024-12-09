@@ -22,13 +22,13 @@ import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
+import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
-import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
 import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled, multiApp } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file

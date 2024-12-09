@@ -22,7 +22,7 @@ export default defineBuildConfig({
   ],
   externals: [
     // Type imports
-    '#app/components/nuxt-link',
+    'nuxt/app/components/nuxt-link',
     'cssnano',
     'autoprefixer',
     'ofetch',
