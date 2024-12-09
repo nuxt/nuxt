@@ -4,12 +4,12 @@ import type { MaybeRef, Ref } from 'vue'
 import { computed, reactive, toValue } from 'vue'
 import { hash } from 'ohash'
 
+// TODO: temporary module for backwards compatibility
+import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app/defaults'
+
 import { useRequestFetch } from './ssr'
 import type { AsyncData, AsyncDataOptions, KeysOf, MultiWatchSources, PickFrom } from './asyncData'
 import { useAsyncData } from './asyncData'
-
-// TODO: temporary module for backwards compatibility
-import type { DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 // @ts-expect-error virtual file
 import { fetchDefaults } from '#build/nuxt.config.mjs'

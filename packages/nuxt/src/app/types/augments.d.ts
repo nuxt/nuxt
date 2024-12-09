@@ -1,5 +1,5 @@
 import type { UseHeadInput } from '@unhead/vue'
-import type { NuxtApp, useNuxtApp } from '../nuxt'
+import type { NuxtApp, useNuxtApp } from '../nuxt.js'
 
 declare global {
   namespace NodeJS {

@@ -2,10 +2,12 @@ import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitropack'
 import type { H3Error } from 'h3'
 import { getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
+
+import type { NuxtPayload } from 'nuxt/app'
+
 import { useRuntimeConfig } from '#internal/nitro'
 import { useNitroApp } from '#internal/nitro/app'
 import { isJsonRequest, normalizeError } from '#internal/nitro/utils'
-import type { NuxtPayload } from '#app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error

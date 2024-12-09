@@ -6,7 +6,6 @@ import { parseURL } from 'ufo'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { ELEMENT_NODE, parse, walk } from 'ultrahtml'
-import { hash } from 'ohash'
 import { resolvePath } from '@nuxt/kit'
 import defu from 'defu'
 import { isVue } from '../../core/utils'
@@ -113,8 +112,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
 
         const { loc, attributes } = node
         const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-
-        const uid = hash(id + node.loc[0].start + node.loc[0].end)
         const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
 
         let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
@@ -122,7 +119,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
         }
 
-        s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} to="${node.name}-${uid}" :nuxt-client="${attributeValue}">`)
+        s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
         s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
         s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
       })

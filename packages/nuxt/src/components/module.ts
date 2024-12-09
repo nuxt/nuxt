@@ -28,7 +28,7 @@ export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
 export default defineNuxtModule<ComponentsOptions>({
   meta: {
-    name: 'components',
+    name: 'nuxt:components',
     configKey: 'components',
   },
   defaults: {

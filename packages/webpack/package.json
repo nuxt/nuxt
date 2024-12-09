@@ -26,7 +26,8 @@
     "builder.mjs"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",

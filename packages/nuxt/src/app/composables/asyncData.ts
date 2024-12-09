@@ -1,5 +1,9 @@
 import { computed, getCurrentInstance, getCurrentScope, onBeforeMount, onScopeDispose, onServerPrefetch, onUnmounted, ref, shallowRef, toRef, unref, watch } from 'vue'
 import type { MultiWatchSources, Ref } from 'vue'
+
+// TODO: temporary module for backwards compatibility
+import type { DedupeOption, DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from 'nuxt/app/defaults'
+
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -9,9 +13,6 @@ import { onNuxtReady } from './ready'
 
 // @ts-expect-error virtual file
 import { asyncDataDefaults, resetAsyncDataToUndefined } from '#build/nuxt.config.mjs'
-
-// TODO: temporary module for backwards compatibility
-import type { DedupeOption, DefaultAsyncDataErrorValue, DefaultAsyncDataValue } from '#app/defaults'
 
 export type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
 
