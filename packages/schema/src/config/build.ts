@@ -24,7 +24,16 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Whether to generate sourcemaps.
+   * Configures whether and how sourcemaps are generated for server and/or client bundles.
+   *
+   * If set to a single boolean, that value applies to both server and client.
+   * Additionally, the `'hidden'` option is also available for both server and client.
+   *
+   * Available options for both client and server:
+   * - `true`: Generates sourcemaps and includes source references in the final bundle.
+   * - `false`: Does not generate any sourcemaps.
+   * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   *
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
