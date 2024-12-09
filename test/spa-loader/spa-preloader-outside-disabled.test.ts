@@ -25,19 +25,21 @@ await setup({
 })
 
 describe('spaLoadingTemplateLocation flag is set to `within`', () => {
-  it('shoul be render loader inside appTag', async () => {
+  it('should render loader inside appTag', async () => {
     const html = await $fetch<string>('/spa')
-    expect(html.replace(/[\n\r]+/g, '')).toContain(
+    expect(html).toContain(
       `<div id="__nuxt"><div data-testid="loader">loading...</div></div>`,
     )
   })
 
-  it.skipIf(isDev)('spa-loader does not appear while the app is mounting', async () => {
+  it('spa-loader does not appear while the app is mounting', async () => {
     const browser = await getBrowser()
     const page = await browser.newPage({})
-    await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
+    await page.goto(url('/spa'))
 
     const loader = page.getByTestId('loader')
+
+    await page.waitForFunction(() => window.useNuxtApp?.() && window.useNuxtApp?.().isHydrating)
     expect(await loader.isHidden()).toBeTruthy()
 
     await page.close()
