@@ -3,7 +3,6 @@ import path from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import * as VueCompilerSFC from 'vue/compiler-sfc'
 import type { Plugin } from 'vite'
-import * as Parser from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
@@ -56,14 +55,7 @@ const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
 
 const treeshake = async (source: string): Promise<string> => {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-  const result = await (treeshakeTemplatePlugin.transform! as Function).call({
-    parse: (code: string, opts: any = {}) => Parser.parse(code, {
-      sourceType: 'module',
-      ecmaVersion: 'latest',
-      locations: true,
-      ...opts,
-    }),
-  }, source)
+  const result = await (treeshakeTemplatePlugin.transform! as Function)(source, 'test.ts')
   return typeof result === 'string' ? result : result?.code
 }
 

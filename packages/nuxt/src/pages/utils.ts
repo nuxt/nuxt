@@ -7,11 +7,10 @@ import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } fro
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
 import { hash } from 'ohash'
-import { transform } from 'esbuild'
-import type { Property } from 'estree'
+import type { ObjectProperty } from 'oxc-parser'
 import type { NuxtPage } from 'nuxt/schema'
+import { parseAndWalk } from 'oxc-walker'
 
-import { parseAndWalk } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
 
@@ -166,7 +165,7 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
       const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
-      const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
+      const routeMeta = getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
       }
@@ -203,7 +202,7 @@ const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}
 const metaCache: Record<string, Partial<Record<keyof NuxtPage, any>>> = {}
-export async function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Promise<Partial<Record<keyof NuxtPage, any>>> {
+export function getRouteMeta (contents: string, absolutePath: string, extraExtractionKeys: string[] = []): Partial<Record<keyof NuxtPage, any>> {
   // set/update pageContentsCache, invalidate metaCache on cache mismatch
   if (!(absolutePath in pageContentsCache) || pageContentsCache[absolutePath] !== contents) {
     pageContentsCache[absolutePath] = contents
@@ -230,13 +229,11 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
       continue
     }
 
-    const js = await transform(script.code, { loader: script.loader })
-
     const dynamicProperties = new Set<keyof NuxtPage>()
 
     let foundMeta = false
 
-    parseAndWalk(js.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
+    parseAndWalk(script.code, absolutePath.replace(/\.\w+$/, '.' + script.loader), (node) => {
       if (foundMeta) { return }
 
       if (node.type !== 'ExpressionStatement' || node.expression.type !== 'CallExpression' || node.expression.callee.type !== 'Identifier' || node.expression.callee.name !== 'definePageMeta') { return }
@@ -246,11 +243,11 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
       if (pageMetaArgument?.type !== 'ObjectExpression') { return }
 
       for (const key of extractionKeys) {
-        const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
+        const property = pageMetaArgument.properties.find((property): property is ObjectProperty => property.type === 'ObjectProperty' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
         if (property.value.type === 'ObjectExpression') {
-          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+          const valueString = script.code.slice(property.value.start, property.value.end)
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
@@ -286,7 +283,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
       }
 
       for (const property of pageMetaArgument.properties) {
-        if (property.type !== 'Property') {
+        if (property.type !== 'ObjectProperty') {
           continue
         }
         const isIdentifierOrLiteral = property.key.type === 'Literal' || property.key.type === 'Identifier'
