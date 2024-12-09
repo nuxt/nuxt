@@ -186,7 +186,7 @@ export const schemaTemplate: NuxtTemplate = {
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
     const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:'))
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:') && m.meta.name !== 'nuxt-config-schema')
       .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
 
     const privateRuntimeConfig = Object.create(null)
