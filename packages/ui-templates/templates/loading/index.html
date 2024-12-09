@@ -185,8 +185,24 @@
       }
     </script>
     <script>
-      // Only run in November, December, and January
-      if ([0, 10, 11].includes(new Date().getMonth())) {
+      function whatHemisphere () {
+        let y = new Date()
+        if (y.getTimezoneOffset == undefined) return null
+        y = y.getFullYear()
+        let jan = -(new Date(y, 0, 1, 0, 0, 0, 0).getTimezoneOffset())
+        let jul = -(new Date(y, 6, 1, 0, 0, 0, 0).getTimezoneOffset())
+        let diff = jan - jul
+        if (diff < 0) return 'N'
+        if (diff > 0) return 'S'
+        return null
+      }
+      // Only run in November, December, and January (N hemisphere) or May, June, and July (S hemisphere)
+      const months = {
+        N: [10, 11, 0],
+        S: [4, 5, 6]
+      }
+      const hemisphere = whatHemisphere()
+      if (hemisphere && months[hemisphere].includes(new Date().getMonth())) {
         // Create canvas
         const $canvas = document.createElement('canvas')
         $canvas.style = 'position: fixed; inset: 0; z-index: -10; pointer-events: none; opacity: 0; transition: opacity 2s ease-in; filter: blur(4px);'
