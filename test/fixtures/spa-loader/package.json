@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-playground",
+  "name": "fixture-spa-loader",
   "private": true,
   "scripts": {
     "dev": "nuxi dev",
