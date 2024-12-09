@@ -360,7 +360,7 @@ export default defineUntypedSchema({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
         prefetch: true,
@@ -415,6 +415,17 @@ export default defineUntypedSchema({
     normalizeComponentNames: {
       $resolve: async (val, get) => {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
+     */
+    spaLoadingTemplateLocation: {
+      $resolve: async (val, get) => {
+        return val ?? (((await get('future') as Record<string, unknown>).compatibilityVersion === 4) ? 'body' : 'within')
       },
     },
 

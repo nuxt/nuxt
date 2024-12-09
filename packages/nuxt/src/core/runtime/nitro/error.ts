@@ -3,7 +3,7 @@ import type { NitroErrorHandler } from 'nitro/types'
 import type { H3Error, H3Event } from 'h3'
 import { getRequestHeader, getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
-import type { NuxtPayload } from '#app'
+import type { NuxtPayload } from 'nuxt/app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error

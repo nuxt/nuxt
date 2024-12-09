@@ -21,7 +21,8 @@
     "dist"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",

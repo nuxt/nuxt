@@ -11,6 +11,8 @@ import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
 import type { MergeHead, VueHeadClient } from '@unhead/vue'
 
+import type { NuxtAppLiterals } from 'nuxt/app'
+
 import type { NuxtIslandContext } from '../app/types'
 import type { RouteMiddleware } from '../app/composables/router'
 import type { NuxtError } from '../app/composables/error'
@@ -21,8 +23,6 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
-
-import type { NuxtAppLiterals } from '#app'
 
 function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
