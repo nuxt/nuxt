@@ -718,7 +718,7 @@ importers:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.96.1)
       file-loader:
-        specifier: ^6.2.0
+        specifier: 6.2.0
         version: 6.2.0(webpack@5.96.1)
       h3:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
@@ -733,7 +733,7 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       sass-loader:
-        specifier: ^16.0.4
+        specifier: 16.0.4
         version: 16.0.4(@rspack/core@1.1.5)(sass@1.78.0)(webpack@5.96.1)
       unbuild:
         specifier: 3.0.0-rc.11
