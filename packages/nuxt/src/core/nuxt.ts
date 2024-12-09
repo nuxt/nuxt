@@ -24,6 +24,7 @@ import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 import { resolveModulePath } from 'exsolve'
 
+import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -256,7 +257,7 @@ async function initNuxt (nuxt: Nuxt) {
   // @ts-expect-error scripts types are not present as the module is not installed
   if (nuxt.options.scripts) {
     if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
-      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+      installNuxtModule('@nuxt/scripts')
     }
   }
 

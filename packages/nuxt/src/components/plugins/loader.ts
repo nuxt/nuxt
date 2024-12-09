@@ -6,6 +6,7 @@ import { relative } from 'pathe'
 
 import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
+import { installNuxtModule } from '../../core/features'
 import { logger } from '../../utils'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
@@ -61,7 +62,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               const relativePath = relative(nuxt.options.rootDir, id)
               throw new Error(`[nuxt] \`~/${relativePath}\` is using \`${component.pascalName}\` which requires \`${internalInstall}\``)
             }
-            import('../../core/features').then(({ installNuxtModule }) => installNuxtModule(internalInstall))
+            installNuxtModule(internalInstall)
           }
           let identifier = map.get(component) || `__nuxt_component_${num++}`
           map.set(component, identifier)
