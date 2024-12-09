@@ -5,10 +5,11 @@ import { START_LOCATION, createMemoryHistory, createRouter, createWebHashHistory
 import { createError } from 'h3'
 import { isEqual, withoutBase } from 'ufo'
 
+import type { Plugin, RouteMiddleware } from 'nuxt/app'
 import type { PageMeta } from '../composables'
 
 import { toArray } from '../utils'
-import type { Plugin, RouteMiddleware } from '#app'
+
 import { getRouteRules } from '#app/composables/manifest'
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { clearError, showError, useError } from '#app/composables/error'
