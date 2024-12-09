@@ -64,7 +64,8 @@
     "schema.*"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",

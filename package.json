@@ -30,6 +30,7 @@
     "test:runtime": "vitest -c vitest.nuxt.config.ts",
     "test:types": "pnpm --filter './test/fixtures/**' test:types",
     "test:unit": "vitest run packages/",
+    "test:attw": "pnpm --filter './packages/**' test:attw",
     "typecheck": "tsc --noEmit",
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
@@ -67,6 +68,7 @@
     "vue": "3.5.13"
   },
   "devDependencies": {
+    "@arethetypeswrong/cli": "0.17.1",
     "@nuxt/eslint-config": "0.7.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
