@@ -37,6 +37,10 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
+    "./app/defaults": {
+      "types": "./dist/app/defaults.d.ts",
+      "import": "./dist/app/defaults.js"
+    },
     "./package.json": "./package.json"
   },
   "imports": {
@@ -44,16 +48,13 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
-    "#app/defaults": {
-      "types": "./dist/app/defaults.d.ts",
-      "import": "./dist/app/defaults.js"
-    },
     "#app/nuxt": {
       "types": "./dist/app/nuxt.d.ts",
       "import": "./dist/app/nuxt.js"
     }
   },
   "files": [
+    "app/defaults.d.ts",
     "app.d.ts",
     "bin",
     "types.d.ts",
@@ -64,7 +65,8 @@
     "schema.*"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",

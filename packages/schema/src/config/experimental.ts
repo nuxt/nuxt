@@ -452,7 +452,7 @@ export default defineUntypedSchema({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
         prefetch: true,

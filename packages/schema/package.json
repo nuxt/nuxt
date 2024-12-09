@@ -28,10 +28,12 @@
   "files": [
     "dist",
     "schema",
+    "builder-env.d.ts",
     "env.d.ts"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "devDependencies": {
     "@types/file-loader": "5.0.4",
