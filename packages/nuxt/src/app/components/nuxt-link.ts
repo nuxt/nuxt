@@ -110,8 +110,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function isHashLinkWithoutHashMode (link: string, hashMode: boolean): boolean {
-    return link.startsWith('#') && !hashMode
+  function isHashLinkWithoutHashMode (link: unknown, hashMode: boolean): boolean {
+    return typeof link === 'string' && link.startsWith('#') && !hashMode
   }
 
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
@@ -139,7 +139,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
   function useNuxtLink (props: NuxtLinkProps) {
     const router = useRouter()
     // @ts-expect-error untyped, nuxt-injected option
-    const { hashMode = false } = router.options.hashMode
+    const hashMode = router.options?.hashMode ?? false
     const config = useRuntimeConfig()
 
     const hasTarget = computed(() => !!props.target && props.target !== '_self')
@@ -182,7 +182,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value as string, hashMode)) {
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value, hashMode)) {
         return to.value as string
       }
 
@@ -317,7 +317,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     setup (props, { slots }) {
       const router = useRouter()
       // @ts-expect-error untyped, nuxt-injected option
-      const { hashMode = false } = router.options.hashMode
+      const hashMode = router.options?.hashMode ?? false
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
 
@@ -383,7 +383,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value as string, hashMode)) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value, hashMode)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
