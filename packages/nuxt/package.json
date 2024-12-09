@@ -37,7 +37,6 @@
       "types": "./dist/app/index.d.ts",
       "import": "./dist/app/index.js"
     },
-    "./app/*": "./dist/app/*.js",
     "./package.json": "./package.json"
   },
   "imports": {
