@@ -11,7 +11,6 @@ import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
 
-
 const internalOrderMap = {
   // -50: pre-all (nuxt)
   'nuxt-pre-all': -50,
