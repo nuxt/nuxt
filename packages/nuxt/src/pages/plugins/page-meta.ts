@@ -13,12 +13,19 @@ import { parseAndWalk, withLocations } from '../../core/utils/parse'
 interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
+  isPage?: (file: string) => boolean
+  routesPath?: string
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
 
 const CODE_EMPTY = `
 const __nuxt_page_meta = null
+export default __nuxt_page_meta
+`
+
+const CODE_DEV_EMPTY = `
+const __nuxt_page_meta = {}
 export default __nuxt_page_meta
 `
 
@@ -89,11 +96,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
-          s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
           logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
         } else {
-          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
         }
 
         return result()
@@ -147,19 +154,23 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
       }
 
       return result()
     },
     vite: {
       handleHotUpdate: {
-        order: 'pre',
-        handler: ({ modules }) => {
-          // Remove macro file from modules list to prevent HMR overrides
-          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
-          if (index !== -1) {
-            modules.splice(index, 1)
+        order: 'post',
+        handler: ({ file, modules, server }) => {
+          if (options.isPage?.(file)) {
+            const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            return [
+              ...modules,
+              ...macroModule ? [macroModule] : [],
+              ...routesModule ? [routesModule] : [],
+            ]
           }
         },
       },
