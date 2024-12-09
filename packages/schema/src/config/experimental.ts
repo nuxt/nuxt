@@ -420,7 +420,7 @@ export default defineUntypedSchema({
 
     /**
      * Keep showing the spa-loading-template until suspense:resolve
-     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/21721)
+     * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
      * @type {'body' | 'within'}
      */
     spaLoadingTemplateLocation: {
