@@ -7,9 +7,11 @@ const isWebpack =
   process.env.TEST_BUILDER === 'webpack' ||
   process.env.TEST_BUILDER === 'rspack'
 
+const isDev = process.env.TEST_ENV === 'dev'
+
 await setup({
   rootDir: fileURLToPath(new URL('../fixtures/spa-loader', import.meta.url)),
-  dev: process.env.TEST_ENV === 'dev',
+  dev: isDev,
   server: true,
   browser: true,
   setupTimeout: (isWindows ? 360 : 120) * 1000,
@@ -30,34 +32,14 @@ describe('spaLoadingTemplateLocation flag is set to `within`', () => {
     )
   })
 
-  /**
-   * This test is skipped in dev mode because it not working
-   * possible fix is set timeout to 1000
-   * ```
-   *     const browser = await getBrowser()
-   * const page = await browser.newPage({})
-   * await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
-   *
-   * const loader = page.getByTestId('loader')
-   * if (process.env.TEST_ENV === 'dev') {
-   *   await page.waitForTimeout(1000)
-   * }
-   * expect(await loader.isHidden()).toBeTruthy()
-   *
-   * await page.close()
-   *}, 60_000)
-   *```
-   */
-  it.skipIf(process.env.TEST_ENV === 'dev')(
-    'spa-loader does not appear while the app is mounting',
-    async () => {
-      const browser = await getBrowser()
-      const page = await browser.newPage({})
-      await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
+  it.skipIf(isDev)('spa-loader does not appear while the app is mounting', async () => {
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    await page.goto(url('/spa'), { waitUntil: 'domcontentloaded' })
 
-      const loader = page.getByTestId('loader')
-      expect(await loader.isHidden()).toBeTruthy()
+    const loader = page.getByTestId('loader')
+    expect(await loader.isHidden()).toBeTruthy()
 
-      await page.close()
-    }, 60_000)
+    await page.close()
+  }, 60_000)
 })
