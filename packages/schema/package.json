@@ -34,9 +34,7 @@
     "prepack": "unbuild"
   },
   "devDependencies": {
-    "@types/file-loader": "5.0.4",
     "@types/pug": "2.0.10",
-    "@types/sass-loader": "8.0.9",
     "@unhead/schema": "1.11.13",
     "@vitejs/plugin-vue": "5.2.1",
     "@vitejs/plugin-vue-jsx": "4.1.1",
@@ -44,10 +42,12 @@
     "@vue/compiler-sfc": "3.5.13",
     "@vue/language-core": "2.1.10",
     "esbuild-loader": "4.2.2",
+    "file-loader": "6.2.0",
     "h3": "1.13.0",
     "ignore": "6.0.2",
     "nitropack": "2.10.4",
     "ofetch": "1.4.1",
+    "sass-loader": "16.0.4",
     "unbuild": "latest",
     "unctx": "2.3.1",
     "vite": "6.0.3",
