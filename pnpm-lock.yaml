@@ -693,15 +693,9 @@ importers:
         specifier: ^1.5.1
         version: 1.5.1
     devDependencies:
-      '@types/file-loader':
-        specifier: 5.0.4
-        version: 5.0.4
       '@types/pug':
         specifier: 2.0.10
         version: 2.0.10
-      '@types/sass-loader':
-        specifier: 8.0.9
-        version: 8.0.9
       '@unhead/schema':
         specifier: 1.11.13
         version: 1.11.13
@@ -723,6 +717,9 @@ importers:
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.96.1)
+      file-loader:
+        specifier: ^6.2.0
+        version: 6.2.0(webpack@5.96.1)
       h3:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
@@ -735,6 +732,9 @@ importers:
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
+      sass-loader:
+        specifier: ^16.0.4
+        version: 16.0.4(@rspack/core@1.1.5)(sass@1.78.0)(webpack@5.96.1)
       unbuild:
         specifier: 3.0.0-rc.11
         version: 3.0.0-rc.11(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))
@@ -2595,9 +2595,6 @@ packages:
   '@types/estree@1.0.6':
     resolution: {integrity: sha512-AYnb1nQyY49te+VRAVgmzfcgjYS91mY5P0TKUDCLEM+gNnA+3T6rWITXRLYCpahpqSQbN5cE+gHpnPyXjHWxcw==}
 
-  '@types/file-loader@5.0.4':
-    resolution: {integrity: sha512-aB4X92oi5D2nIGI8/kolnJ47btRM2MQjQS4eJgA/VnCD12x0+kP5v7b5beVQWKHLOcquwUXvv6aMt8PmMy9uug==}
-
   '@types/google.maps@3.58.1':
     resolution: {integrity: sha512-X9QTSvGJ0nCfMzYOnaVs/k6/4L+7F5uCS+4iUmkLEls6J9S/Phv+m/i3mDeyc49ZBgwab3EFO1HEoBY7k98EGQ==}
 
@@ -2631,9 +2628,6 @@ packages:
   '@types/ms@0.7.34':
     resolution: {integrity: sha512-nG96G3Wp6acyAgJqGasjODb+acrI7KltPiRxzHPXnP3NgI28bpQDRv53olbqGXbfcgF5aiiHmO3xpwEpS5Ld9g==}
 
-  '@types/node-sass@4.11.7':
-    resolution: {integrity: sha512-QY0sXZGPRzJ2obo66f9zB6S0Uo9PRdcoPKPbyftSoKXub90s4ut/JK3fYHOqmhYhRRVEB3P5o5rEnq2/bWBdeg==}
-
   '@types/node@22.10.1':
     resolution: {integrity: sha512-qKgsUwfHZV2WCWLAnVP1JqnpE6Im6h3Y0+fYgMTasNQ7V++CBX5OT1as0g0f+OyubbFqhf6XVNIsmN4IIhEgGQ==}
 
@@ -2649,20 +2643,8 @@ packages:
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  '@types/sass-loader@8.0.9':
-    resolution: {integrity: sha512-OAzsrLMYVMprsR5Je2eIGqwsJ6FulUG5fHkzPemv5ejhyX05lpqNw5tbvdJqZi31RFELVeoR9yij17Xu6Qk1xA==}
-
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
-
-  '@types/source-list-map@0.1.6':
-    resolution: {integrity: sha512-5JcVt1u5HDmlXkwOD2nslZVllBBc7HDuOICfiZah2Z0is8M8g+ddAEawbmd3VjedfDHBzxCaXLs07QEmb7y54g==}
-
-  '@types/tapable@1.0.12':
-    resolution: {integrity: sha512-bTHG8fcxEqv1M9+TD14P8ok8hjxoOCkfKc8XXLaaD05kI7ohpeI956jtDOD3XHKBQrlyPughUtzm1jtVhHpA5Q==}
-
-  '@types/uglify-js@3.17.5':
-    resolution: {integrity: sha512-TU+fZFBTBcXj/GpDpDaBmgWk/gn96kMZ+uocaFUlV2f8a6WdMzzI44QBCmGcCiYR0Y6ZlNRiyUyKKt5nl/lbzQ==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -2681,12 +2663,6 @@ packages:
 
   '@types/webpack-hot-middleware@2.25.9':
     resolution: {integrity: sha512-fad4T9VfocBjS2fZxlqkGoXoVUAjVp0EEnKBRqPwnhEEDN/FqJoFkSP5t9O1gPH75qsyG2kkT/GSUqSNTn1ZPg==}
-
-  '@types/webpack-sources@3.2.3':
-    resolution: {integrity: sha512-4nZOdMwSPHZ4pTEZzSp0AsTM4K7Qmu40UKW4tJDiOVs20UzYF9l+qUe4s0ftfN0pin06n+5cWWDJXH+sbhAiDw==}
-
-  '@types/webpack@4.41.39':
-    resolution: {integrity: sha512-otxUJvoi6FbBq/64gGH34eblpKLgdi+gf08GaAh8Bx6So0ZZic028Ev/SUxD22gbthMKCkeeiXEat1kHLDJfYg==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -6543,9 +6519,6 @@ packages:
   regenerator-runtime@0.14.1:
     resolution: {integrity: sha512-dYnhHh0nJoMfnkZs6GmmhFknAGRrLznOu5nc9ML+EJxGvrx6H7teuevqVqCuPcPK//3eDrrjQhehXVx9cnkGdw==}
 
-  regex-recursion@4.2.1:
-    resolution: {integrity: sha512-QHNZyZAeKdndD1G3bKAbBEKOSSK4KOHQrAJ01N1LJeb0SoH4DJIeFhp0uUpETgONifS4+P3sOgoA1dhzgrQvhA==}
-
   regex-recursion@4.3.0:
     resolution: {integrity: sha512-5LcLnizwjcQ2ALfOj95MjcatxyqF5RPySx9yT+PaXu3Gox2vyAtLDjHB8NTJLtMGkvyau6nI3CfpwFCjPUIs/A==}
 
@@ -6690,6 +6663,27 @@ packages:
 
   safe-buffer@5.2.1:
     resolution: {integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==}
+
+  sass-loader@16.0.4:
+    resolution: {integrity: sha512-LavLbgbBGUt3wCiYzhuLLu65+fWXaXLmq7YxivLhEqmiupCFZ5sKUAipK3do6V80YSU0jvSxNhEdT13IXNr3rg==}
+    engines: {node: '>= 18.12.0'}
+    peerDependencies:
+      '@rspack/core': 0.x || 1.x
+      node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+      sass: ^1.3.0
+      sass-embedded: '*'
+      webpack: ^5.0.0
+    peerDependenciesMeta:
+      '@rspack/core':
+        optional: true
+      node-sass:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      webpack:
+        optional: true
 
   sass@1.78.0:
     resolution: {integrity: sha512-AaIqGSrjo5lA2Yg7RvFZrlXDBCp3nV4XP73GrLGvdRWWwk+8H3l0SDvq/5bA4eF+0RFPLuWUk3E+P1U/YqnpsQ==}
@@ -9503,10 +9497,6 @@ snapshots:
 
   '@types/estree@1.0.6': {}
 
-  '@types/file-loader@5.0.4':
-    dependencies:
-      '@types/webpack': 4.41.39
-
   '@types/google.maps@3.58.1': {}
 
   '@types/hast@3.0.4':
@@ -9541,10 +9531,6 @@ snapshots:
 
   '@types/ms@0.7.34': {}
 
-  '@types/node-sass@4.11.7':
-    dependencies:
-      '@types/node': 22.10.1
-
   '@types/node@22.10.1':
     dependencies:
       undici-types: 6.20.0
@@ -9557,22 +9543,7 @@ snapshots:
 
   '@types/resolve@1.20.2': {}
 
-  '@types/sass-loader@8.0.9':
-    dependencies:
-      '@types/node': 22.10.1
-      '@types/node-sass': 4.11.7
-      '@types/webpack': 4.41.39
-      sass: 1.78.0
-
   '@types/semver@7.5.8': {}
-
-  '@types/source-list-map@0.1.6': {}
-
-  '@types/tapable@1.0.12': {}
-
-  '@types/uglify-js@3.17.5':
-    dependencies:
-      source-map: 0.6.1
 
   '@types/unist@2.0.11': {}
 
@@ -9603,21 +9574,6 @@ snapshots:
       - esbuild
       - uglify-js
       - webpack-cli
-
-  '@types/webpack-sources@3.2.3':
-    dependencies:
-      '@types/node': 22.10.1
-      '@types/source-list-map': 0.1.6
-      source-map: 0.7.4
-
-  '@types/webpack@4.41.39':
-    dependencies:
-      '@types/node': 22.10.1
-      '@types/tapable': 1.0.12
-      '@types/uglify-js': 3.17.5
-      '@types/webpack-sources': 3.2.3
-      anymatch: 3.1.3
-      source-map: 0.6.1
 
   '@types/yargs-parser@21.0.3': {}
 
@@ -12398,7 +12354,8 @@ snapshots:
 
   image-meta@0.2.1: {}
 
-  immutable@4.3.7: {}
+  immutable@4.3.7:
+    optional: true
 
   import-fresh@3.3.0:
     dependencies:
@@ -13682,7 +13639,7 @@ snapshots:
     dependencies:
       emoji-regex-xs: 1.0.0
       regex: 5.0.2
-      regex-recursion: 4.2.1
+      regex-recursion: 4.3.0
 
   oniguruma-to-es@0.7.0:
     dependencies:
@@ -14355,10 +14312,6 @@ snapshots:
 
   regenerator-runtime@0.14.1: {}
 
-  regex-recursion@4.2.1:
-    dependencies:
-      regex-utilities: 2.3.0
-
   regex-recursion@4.3.0:
     dependencies:
       regex-utilities: 2.3.0
@@ -14579,11 +14532,20 @@ snapshots:
 
   safe-buffer@5.2.1: {}
 
+  sass-loader@16.0.4(@rspack/core@1.1.5)(sass@1.78.0)(webpack@5.96.1):
+    dependencies:
+      neo-async: 2.6.2
+    optionalDependencies:
+      '@rspack/core': 1.1.5
+      sass: 1.78.0
+      webpack: 5.96.1
+
   sass@1.78.0:
     dependencies:
       chokidar: 3.6.0
       immutable: 4.3.7
       source-map-js: 1.2.1
+    optional: true
 
   schema-utils@3.3.0:
     dependencies:
