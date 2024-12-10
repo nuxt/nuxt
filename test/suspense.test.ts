@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { setup } from '@nuxt/test-utils'
+import { setup } from '@nuxt/test-utils/e2e'
 import { renderPage } from './utils'
 
 const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'

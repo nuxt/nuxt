@@ -1,8 +1,7 @@
 <script setup lang="ts">
-await useAsyncData(async () => {
-  await new Promise((r) => { setTimeout(r, 50) })
-  return 42
-})
+if (import.meta.client) {
+  await new Promise(resolve => setTimeout(resolve, 50))
+}
 </script>
 
 <template>
