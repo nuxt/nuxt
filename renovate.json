@@ -43,6 +43,13 @@
         "webpack",
         "memfs"
       ]
+    },
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack",
+        "memfs"
+      ]
     }
   ]
 }
