@@ -70,7 +70,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       (errorObject as any).description = errorObject.message
     }
     if (event.handled) { return }
-    setResponseHeader(event, 'Content-Type', 'text/html;charset=UTF-8')
+    setResponseHeader(event, 'Content-Type', 'text/html; charset=UTF-8')
     return send(event, template(errorObject))
   }
 
