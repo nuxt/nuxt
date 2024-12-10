@@ -48,7 +48,7 @@
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "^2.4.1",
     "knitwork": "^1.1.0",
-    "magic-string": "^0.30.14",
+    "magic-string": "^0.30.15",
     "mlly": "^1.7.3",
     "pathe": "^1.1.2",
     "pkg-types": "^1.2.1",
