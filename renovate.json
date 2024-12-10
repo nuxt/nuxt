@@ -40,9 +40,10 @@
       ]
     },
     {
-      "groupName": "unimport",
+      "groupName": "webpack",
       "matchPackageNames": [
-        "unimport"
+        "webpack",
+        "memfs"
       ]
     }
   ]
