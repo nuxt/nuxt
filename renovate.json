@@ -40,12 +40,6 @@
       ]
     },
     {
-      "groupName": "unimport",
-      "matchPackageNames": [
-        "unimport"
-      ]
-    },
-    {
       "groupName": "webpack",
       "matchPackageNames": [
         "webpack",
