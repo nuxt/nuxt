@@ -20,6 +20,8 @@ exclude = [
   "https://twitter.nuxt.dev/",
   "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
+  "https://gsap.com/",
+  # dummy example URLs
   "https://myawesome-lib.js/",
   "https://awesome-lib.js/",
   "https://myawesome-lib.css/",
