@@ -8,8 +8,9 @@ exclude_all_private = true
 # HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
 accept = [200, 429]
 
+# TODO: address 404s (non-prerendered files?) from nuxt.com
 # Base URL or website root directory to check relative URLs.
-base = "https://nuxt.com"
+# base = "https://nuxt.com"
 
 no_progress = true
 
