@@ -3,11 +3,11 @@ import { createUnplugin } from 'unplugin'
 import { isAbsolute, relative } from 'pathe'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import type { Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { parseAndWalk, walk } from '../../core/utils/parse'
+import type { BindingPattern } from 'oxc-parser'
+import { parseAndWalk, walk } from 'oxc-walker'
 
 import { matchWithStringOrRegex } from '../utils/plugins'
 
@@ -62,8 +62,10 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
             varCollector.refresh(scopeTracker.curScopeKey)
           } else if (node.type === 'FunctionDeclaration' && node.id) {
             varCollector.addVar(node.id.name)
-          } else if (node.type === 'VariableDeclarator') {
-            varCollector.collect(node.id)
+          } else if (node.type === 'VariableDeclaration') {
+            for (const declaration of node.declarations) {
+              varCollector.collect(declaration.id)
+            }
           }
         },
         leave (_node) {
@@ -213,11 +215,9 @@ class ScopedVarsCollector {
     return false
   }
 
-  collect (pattern: Pattern) {
+  collect (pattern: BindingPattern) {
     if (pattern.type === 'Identifier') {
       this.addVar(pattern.name)
-    } else if (pattern.type === 'RestElement') {
-      this.collect(pattern.argument)
     } else if (pattern.type === 'AssignmentPattern') {
       this.collect(pattern.left)
     } else if (pattern.type === 'ArrayPattern') {

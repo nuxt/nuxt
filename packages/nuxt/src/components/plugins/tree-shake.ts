@@ -1,14 +1,13 @@
 import { pathToFileURL } from 'node:url'
 import { parseURL } from 'ufo'
 import MagicString from 'magic-string'
-import type { AssignmentProperty, CallExpression, ObjectExpression, Pattern, Property, ReturnStatement, VariableDeclaration } from 'estree'
-import type { Program } from 'acorn'
+import type { BindingPattern, BindingProperty, BindingRestElement, CallExpression, Expression, ObjectExpression, ObjectProperty, Program, ReturnStatement, VariableDeclaration } from 'oxc-parser'
 import { createUnplugin } from 'unplugin'
 import type { Component } from '@nuxt/schema'
 import { resolve } from 'pathe'
+import { parseAndWalk, walk } from 'oxc-walker'
+import type { Node } from 'oxc-walker'
 
-import { parseAndWalk, walk, withLocations } from '../../core/utils/parse'
-import type { Node } from '../../core/utils/parse'
 import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {
@@ -58,15 +57,14 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
         const [componentCall, _, children] = node.arguments
         if (!componentCall) { return }
 
-        if (componentCall.type === 'Identifier' || componentCall.type === 'MemberExpression' || componentCall.type === 'CallExpression') {
+        if (componentCall.type === 'Identifier' || componentCall.type === 'ComputedMemberExpression' || componentCall.type === 'StaticMemberExpression' || componentCall.type === 'CallExpression') {
           const componentName = getComponentName(node)
           if (!componentName || !COMPONENTS_IDENTIFIERS_RE.test(componentName) || children?.type !== 'ObjectExpression') { return }
 
           const isClientOnlyComponent = CLIENT_ONLY_NAME_RE.test(componentName)
-          const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'Property' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) as Property[] : children.properties as Property[]
+          const slotsToRemove = isClientOnlyComponent ? children.properties.filter(prop => prop.type === 'ObjectProperty' && prop.key.type === 'Identifier' && !PLACEHOLDER_EXACT_RE.test(prop.key.name)) as ObjectProperty[] : children.properties as ObjectProperty[]
 
-          for (const _slot of slotsToRemove) {
-            const slot = withLocations(_slot)
+          for (const slot of slotsToRemove) {
             s.remove(slot.start, slot.end + 1)
             const removedCode = `({${code.slice(slot.start, slot.end + 1)}})`
             const currentState = s.toString()
@@ -87,7 +85,7 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
       })
 
       const componentsToRemove = [...componentsToRemoveSet]
-      const removedNodes = new WeakSet<Node>()
+      const removedNodes = new WeakSet<PropertyPattern>()
 
       for (const componentName of componentsToRemove) {
         // remove import declaration if it exists
@@ -119,18 +117,18 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
     enter (node) {
       if (walkedInSetup) {
         this.skip()
-      } else if (node.type === 'Property' && node.key.type === 'Identifier' && node.key.name === 'setup' && (node.value.type === 'FunctionExpression' || node.value.type === 'ArrowFunctionExpression')) {
+      } else if (node.type === 'ObjectProperty' && node.key.type === 'Identifier' && node.key.name === 'setup' && (node.value.type === 'FunctionExpression' || node.value.type === 'ArrowFunctionExpression')) {
         // walk into the setup function
         walkedInSetup = true
-        if (node.value.body?.type === 'BlockStatement') {
-          const returnStatement = node.value.body.body.find(statement => statement.type === 'ReturnStatement') as ReturnStatement
+        if (node.value.body?.type === 'FunctionBody') {
+          const returnStatement = node.value.body.statements.find(statement => statement.type === 'ReturnStatement') as ReturnStatement
           if (returnStatement && returnStatement.argument?.type === 'ObjectExpression') {
             // remove from return statement
             removePropertyFromObject(returnStatement.argument, name, magicString)
           }
 
           // remove from __returned__
-          const variableList = node.value.body.body.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
+          const variableList = node.value.body.statements.filter((statement): statement is VariableDeclaration => statement.type === 'VariableDeclaration')
           const returnedVariableDeclaration = variableList.find(declaration => declaration.declarations[0]?.id.type === 'Identifier' && declaration.declarations[0]?.id.name === '__returned__' && declaration.declarations[0]?.init?.type === 'ObjectExpression')
           if (returnedVariableDeclaration) {
             const init = returnedVariableDeclaration.declarations[0]?.init as ObjectExpression | undefined
@@ -149,9 +147,8 @@ function removeFromSetupReturn (codeAst: Program, name: string, magicString: Mag
  */
 function removePropertyFromObject (node: ObjectExpression, name: string, magicString: MagicString) {
   for (const property of node.properties) {
-    if (property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === name) {
-      const _property = withLocations(property)
-      magicString.remove(_property.start, _property.end + 1)
+    if (property.type === 'ObjectProperty' && property.key.type === 'Identifier' && property.key.name === name) {
+      magicString.remove(property.start, property.end + 1)
       return true
     }
   }
@@ -173,12 +170,10 @@ function removeImportDeclaration (ast: Program, importName: string, magicString:
     const specifierIndex = node.specifiers.findIndex(s => s.local.name === importName)
     if (specifierIndex > -1) {
       if (node.specifiers!.length > 1) {
-        const specifier = withLocations(node.specifiers![specifierIndex])
-        magicString.remove(specifier.start, specifier.end + 1)
+        magicString.remove((node.specifiers![specifierIndex])!.start, (node.specifiers![specifierIndex])!.end + 1)
         node.specifiers!.splice(specifierIndex, 1)
       } else {
-        const specifier = withLocations(node)
-        magicString.remove(specifier.start, specifier.end)
+        magicString.remove(node.start, node.end)
       }
       return true
     }
@@ -195,7 +190,7 @@ function isComponentNotCalledInSetup (code: string, id: string, name: string): s
   if (!name) { return }
   let found = false
   parseAndWalk(code, id, function (node) {
-    if ((node.type === 'Property' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
+    if ((node.type === 'ObjectProperty' && node.key.type === 'Identifier' && node.value.type === 'FunctionExpression' && node.key.name === 'setup') || (node.type === 'FunctionDeclaration' && (node.id?.name === '_sfc_ssrRender' || node.id?.name === 'ssrRender'))) {
       // walk through the setup function node or the ssrRender function
       walk(node, {
         enter (node) {
@@ -203,9 +198,11 @@ function isComponentNotCalledInSetup (code: string, id: string, name: string): s
             this.skip()
           } else if (node.type === 'Identifier' && node.name === name) {
             found = true
-          } else if (node.type === 'MemberExpression') {
+          } else if (node.type === 'StaticMemberExpression') {
             // dev only with $setup or _ctx
-            found = (node.property.type === 'Literal' && node.property.value === name) || (node.property.type === 'Identifier' && node.property.name === name)
+            found = (node.property.type === 'Identifier' && node.property.name === name)
+          } else if (node.type === 'ComputedMemberExpression') {
+            found = (node.expression.type === 'Literal' && node.expression.value === name)
           }
         },
       })
@@ -224,10 +221,10 @@ function getComponentName (ssrRenderNode: CallExpression): string | undefined {
 
   if (componentCall.type === 'Identifier') {
     return componentCall.name
-  } else if (componentCall.type === 'MemberExpression') {
-    if (componentCall.property.type === 'Literal') {
-      return componentCall.property.value as string
-    }
+  } else if (componentCall.type === 'StaticMemberExpression') {
+    return componentCall.property.name
+  } else if (componentCall.type === 'ComputedMemberExpression' && componentCall.expression.type === 'Literal') {
+    return componentCall.expression.value as string
   } else if (componentCall.type === 'CallExpression') {
     return getComponentName(componentCall)
   }
@@ -236,14 +233,14 @@ function getComponentName (ssrRenderNode: CallExpression): string | undefined {
 /**
  * remove a variable declaration within the code
  */
-function removeVariableDeclarator (codeAst: Program, name: string, magicString: MagicString, removedNodes: WeakSet<Node>): Node | void {
+function removeVariableDeclarator (codeAst: Program, name: string, magicString: MagicString, removedNodes: WeakSet<PropertyPattern>): Expression | void {
   // remove variables
   walk(codeAst, {
     enter (node) {
       if (node.type !== 'VariableDeclaration') { return }
       for (const declarator of node.declarations) {
-        const toRemove = withLocations(findMatchingPatternToRemove(declarator.id, node, name, removedNodes))
-        if (toRemove) {
+        const toRemove = findMatchingPatternToRemove(declarator.id, node, name, removedNodes)
+        if (toRemove && 'start' in toRemove) {
           magicString.remove(toRemove.start, toRemove.end + 1)
           removedNodes.add(toRemove)
         }
@@ -255,23 +252,24 @@ function removeVariableDeclarator (codeAst: Program, name: string, magicString: 
 /**
  * find the Pattern to remove which the identifier is equal to the name parameter.
  */
-function findMatchingPatternToRemove (node: Pattern, toRemoveIfMatched: Node, name: string, removedNodeSet: WeakSet<Node>): Node | undefined {
+type PropertyPattern = BindingPattern | BindingRestElement | BindingProperty | Node
+function findMatchingPatternToRemove (node: PropertyPattern, toRemoveIfMatched: PropertyPattern, name: string, removedNodeSet: WeakSet<PropertyPattern>): PropertyPattern | undefined {
   if (node.type === 'Identifier') {
     if (node.name === name) {
       return toRemoveIfMatched
     }
   } else if (node.type === 'ArrayPattern') {
-    const elements = node.elements.filter((e): e is Pattern => e !== null && !removedNodeSet.has(e))
+    const elements = node.elements.filter((e): e is BindingPattern | BindingRestElement => e !== null && !removedNodeSet.has(e))
 
     for (const element of elements) {
       const matched = findMatchingPatternToRemove(element, elements.length > 1 ? element : toRemoveIfMatched, name, removedNodeSet)
       if (matched) { return matched }
     }
   } else if (node.type === 'ObjectPattern') {
-    const properties = node.properties.filter((e): e is AssignmentProperty => e.type === 'Property' && !removedNodeSet.has(e))
+    const properties = node.properties.filter((e): e is BindingProperty => e.type === 'BindingProperty' && !removedNodeSet.has(e))
 
     for (const [index, property] of properties.entries()) {
-      let nodeToRemove: Node = property
+      let nodeToRemove: PropertyPattern = property
       if (properties.length < 2) {
         nodeToRemove = toRemoveIfMatched
       }
