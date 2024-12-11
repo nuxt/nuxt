@@ -86,7 +86,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 }
 
 /**
- * Nitro internal functions extracted from https://github.com/unjs/nitro/blob/main/src/runtime/internal/utils.ts
+ * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.ts
  */
 
 function isJsonRequest (event: H3Event) {
@@ -112,7 +112,7 @@ function hasReqHeader (event: H3Event, name: string, includes: string) {
 }
 
 function normalizeError (error: any) {
-  // temp fix for https://github.com/unjs/nitro/issues/759
+  // temp fix for https://github.com/nitrojs/nitro/issues/759
   // TODO: investigate vercel-edge not using unenv pollyfill
   const cwd = typeof process.cwd === 'function' ? process.cwd() : '/'
 

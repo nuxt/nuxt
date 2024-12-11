@@ -99,7 +99,7 @@ export default defineUntypedSchema({
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/unjs/nitro/issues/1118
+    // https://github.com/nitrojs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)

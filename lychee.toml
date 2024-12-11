@@ -1,9 +1,18 @@
 # Cache the results of Lychee if ran locally in order to minimise the chance of rate limiting
 cache = true
+
+# Discard all cached requests older than this duration.
+max_cache_age = "1d"
 # Ignore all private link (such as localhost) to avoid errors
 exclude_all_private = true
 # HTTP status code: 429 (Too Many Requests) will also be treated as a valid link if Lychee gets rate limited
 accept = [200, 429]
+
+# Base URL or website root directory to check relative URLs.
+base = "https://nuxt.com"
+
+no_progress = true
+
 # retry
 max_retries = 6
 # Explicitly exclude some URLs
@@ -11,10 +20,17 @@ exclude = [
   "https://twitter.nuxt.dev/",
   "https://github.com/nuxt/translations/discussions/4",
   "https://stackoverflow.com/help/minimal-reproducible-example",
-  # TODO: remove when their SSL certificate is valid again
-  "https://www.conventionalcommits.org",
+  "https://gsap.com/",
+  # dummy example URLs
+  "https://myawesome-lib.js/",
+  "https://awesome-lib.js/",
+  "https://myawesome-lib.css/",
+  "https://awesome-lib.css/",
+  'https://www.npmjs.com/package/(.*)importName(.*)',
+  # TODO: address 404s (non-prerendered files?) from nuxt.com
+  "https://nuxt.com/docs/guide/going-further/modules",
+  "https://nuxt.com/docs/guide/directory-structure/pages",
   # single-quotes are required for regexp
-  '(https?:\/\/github\.com\/)(.*\/)(generate)',  
-  "https://localhost:3000",
+  '(https?:\/\/github\.com\/)(.*\/)(generate)',
   "https://github.com/nuxt-contrib/vue3-ssr-starter/generate",
 ]
