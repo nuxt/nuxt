@@ -33,7 +33,7 @@ jobs:
         with:
           # arguments with file types to check
           args: >-
-            '-c lychee.toml'
+            '-c=lychee.toml'
             './docs/**/*.md'
             './docs/**/*.html'
             './packages/*/src/**/*.ts'
