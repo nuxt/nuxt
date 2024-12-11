@@ -86,7 +86,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
           from: resolve(distDir, 'core/runtime/nitro/paths'),
         },
         {
-          // TODO: Remove after https://github.com/unjs/nitro/issues/1049
+          // TODO: Remove after https://github.com/nitrojs/nitro/issues/1049
           as: 'defineAppConfig',
           name: 'defineAppConfig',
           from: resolve(distDir, 'core/runtime/nitro/config'),

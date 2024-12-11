@@ -33,14 +33,14 @@ jobs:
         with:
           # arguments with file types to check
           args: >-
-            --cache
-            --verbose
-            --no-progress
-            --max-cache-age=1d
-            './**/*.md'
-            './**/*.html'
+            '-c=lychee.toml'
+            './docs/**/*.md'
+            './docs/**/*.html'
+            './packages/*/src/**/*.ts'
+            './packages/*/src/**/*.js'
+            './packages/*/src/**/*.md'
           # fail the action on broken links
           fail: true
         env:
           # to be used in case rate limits are surpassed
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
