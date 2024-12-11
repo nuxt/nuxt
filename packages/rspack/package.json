@@ -32,7 +32,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.1.5",
+    "@rspack/core": "^1.1.6",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -47,7 +47,7 @@
     "jiti": "^2.4.1",
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.14",
+    "magic-string": "^0.30.15",
     "memfs": "^4.14.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",

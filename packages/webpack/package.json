@@ -44,7 +44,7 @@
     "h3": "^1.13.0",
     "jiti": "^2.4.1",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.14",
+    "magic-string": "^0.30.15",
     "memfs": "^4.14.1",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^1.1.4",
@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.1.5",
+    "@rspack/core": "1.1.6",
     "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
