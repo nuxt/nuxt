@@ -32,18 +32,53 @@ export function withLocations<T> (node: T): WithLocations<T> {
   return node as WithLocations<T>
 }
 
-export function createScopeTracker<T> () {
-  const scopes: Map<string, T | undefined>[] = []
+interface ScopeTrackerNode {
+  type: string
+  node: Node
+}
+
+interface ScopeTrackerFunctionParamNode extends ScopeTrackerNode {
+  type: 'FunctionParam'
+  fnNode: Node
+}
+
+interface ScopeTrackerFunctionNode extends ScopeTrackerNode {
+  type: 'Function'
+}
+
+interface ScopeTrackerVariableNode extends ScopeTrackerNode {
+  type: 'VariableIdentifier'
+  variableNode: Node
+}
+
+interface ScopeTrackerIdentifierNode extends ScopeTrackerNode {
+  type: 'Identifier'
+}
+
+interface ScopeTrackerImportNode extends ScopeTrackerNode {
+  type: 'Import'
+  importNode: Node
+}
+
+type ScopeTrackerNodes =
+  | ScopeTrackerFunctionParamNode
+  | ScopeTrackerFunctionNode
+  | ScopeTrackerVariableNode
+  | ScopeTrackerIdentifierNode
+  | ScopeTrackerImportNode
+
+export function createScopeTracker () {
+  const scopes: Map<string, ScopeTrackerNodes>[] = []
 
   function pushScope () {
-    scopes.push(new Map<string, T | undefined>())
+    scopes.push(new Map<string, ScopeTrackerNodes>())
   }
 
   function popScope () {
     scopes.pop()
   }
 
-  function declareIdentifier (name: string, data?: T) {
+  function declareIdentifier (name: string, data: ScopeTrackerNodes) {
     scopes[scopes.length - 1]?.set(name, data)
   }
 
@@ -56,47 +91,74 @@ export function createScopeTracker<T> () {
     return false
   }
 
-  function declareFunctionParameter (param: Node) {
+  function getDeclaration (name: string) {
+    for (let i = scopes.length - 1; i >= 0; i--) {
+      const node = scopes[i]?.get(name)
+      if (node) {
+        return node
+      }
+    }
+    return null
+  }
+
+  function declareFunctionParameter (param: Node, fn: Node) {
     switch (param.type) {
       case 'Identifier':
-        declareIdentifier(param.name)
+        declareIdentifier(param.name, {
+          type: 'FunctionParam',
+          node: param,
+          fnNode: fn,
+        })
         break
       case 'AssignmentPattern':
-        declareFunctionParameter(param.left)
+        declareFunctionParameter(param.left, fn)
         break
       case 'RestElement':
-        declareFunctionParameter(param.argument)
+        declareFunctionParameter(param.argument, fn)
         break
       case 'ArrayPattern':
       case 'ObjectPattern':
-        declarePattern(param)
+        declarePattern(param, {
+          type: 'function',
+          node: fn,
+        })
     }
   }
 
-  function declarePattern (pattern: Node) {
+  function declarePattern (pattern: Node, parent: { type: 'variable' | 'function', node: Node }) {
     switch (pattern.type) {
       case 'Identifier':
-        declareIdentifier(pattern.name)
+        declareIdentifier(pattern.name, parent.type === 'variable'
+          ? {
+              type: 'VariableIdentifier',
+              node: pattern,
+              variableNode: parent.node,
+            }
+          : {
+              type: 'FunctionParam',
+              node: pattern,
+              fnNode: parent.node,
+            })
         break
       case 'ArrayPattern':
         for (const element of pattern.elements) {
-          if (element) { declarePattern(element) }
+          if (element) { declarePattern(element, parent) }
         }
         break
       case 'ObjectPattern':
         for (const prop of pattern.properties) {
           if (prop.type === 'Property') {
-            declarePattern(prop.value)
+            declarePattern(prop.value, parent)
           } else if (prop.type === 'RestElement') {
-            declarePattern(prop.argument)
+            declarePattern(prop.argument, parent)
           }
         }
         break
       case 'RestElement':
-        declarePattern(pattern.argument)
+        declarePattern(pattern.argument, parent)
         break
       case 'AssignmentPattern':
-        declarePattern(pattern.left)
+        declarePattern(pattern.left, parent)
         break
     }
   }
@@ -113,11 +175,14 @@ export function createScopeTracker<T> () {
       case 'FunctionDeclaration':
         // declare function name for named functions, skip for `export default`
         if (node.id?.name) {
-          declareIdentifier(node.id.name)
+          declareIdentifier(node.id.name, {
+            type: 'Function',
+            node,
+          })
         }
         pushScope()
         for (const param of node.params) {
-          declareFunctionParameter(param)
+          declareFunctionParameter(param, node)
         }
         break
 
@@ -125,20 +190,26 @@ export function createScopeTracker<T> () {
       case 'ArrowFunctionExpression':
         pushScope()
         for (const param of node.params) {
-          declareFunctionParameter(param)
+          declareFunctionParameter(param, node)
         }
         break
 
       case 'VariableDeclaration':
         for (const decl of node.declarations) {
-          declarePattern(decl.id)
+          declarePattern(decl.id, {
+            type: 'variable',
+            node,
+          })
         }
         break
 
       case 'ClassDeclaration':
         // declare class name for named classes, skip for `export default`
         if (node.id?.name) {
-          declareIdentifier(node.id.name)
+          declareIdentifier(node.id.name, {
+            type: 'Identifier',
+            node,
+          })
         }
         break
 
@@ -147,13 +218,20 @@ export function createScopeTracker<T> () {
         // e.g. const MyClass = class InternalClassName {
         pushScope()
         if (node.id?.name) {
-          declareIdentifier(node.id.name)
+          declareIdentifier(node.id.name, {
+            type: 'Identifier',
+            node,
+          })
         }
         break
 
       case 'ImportDeclaration':
         for (const specifier of node.specifiers) {
-          declareIdentifier(specifier.local.name)
+          declareIdentifier(specifier.local.name, {
+            type: 'Import',
+            node: specifier,
+            importNode: node,
+          })
         }
         break
 
@@ -166,11 +244,17 @@ export function createScopeTracker<T> () {
 
         if (node.type === 'ForStatement' && node.init?.type === 'VariableDeclaration') {
           for (const decl of node.init.declarations) {
-            declarePattern(decl.id)
+            declarePattern(decl.id, {
+              type: 'variable',
+              node,
+            })
           }
         } else if ((node.type === 'ForOfStatement' || node.type === 'ForInStatement') && node.left.type === 'VariableDeclaration') {
           for (const decl of node.left.declarations) {
-            declarePattern(decl.id)
+            declarePattern(decl.id, {
+              type: 'variable',
+              node,
+            })
           }
         }
         break
@@ -197,6 +281,7 @@ export function createScopeTracker<T> () {
 
   return {
     isDeclared,
+    getDeclaration,
     processNodeEnter,
     processNodeLeave,
   }
