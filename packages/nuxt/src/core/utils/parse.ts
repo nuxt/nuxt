@@ -33,7 +33,7 @@ export function withLocations<T> (node: T): WithLocations<T> {
 }
 
 export function createScopeTracker<T> () {
-  const scopes = [new Map<string, T | undefined>()]
+  const scopes: Map<string, T | undefined>[] = []
 
   function pushScope () {
     scopes.push(new Map<string, T | undefined>())
