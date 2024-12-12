@@ -24,7 +24,7 @@ jobs:
         run: pnpm install
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm installed-check --fix
+        run: pnpm installed-check -d --fix
 
       - name: Build (stub)
         run: pnpm dev:prepare

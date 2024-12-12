@@ -39,4 +39,4 @@ jobs:
         run: pnpm sherif -r multiple-dependency-versions
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm installed-check
+        run: pnpm installed-check -d
