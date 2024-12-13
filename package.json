@@ -10,7 +10,6 @@
   "scripts": {
     "build": "pnpm --filter './packages/**' prepack",
     "build:stub": "pnpm dev:prepare",
-    "cleanup": "rimraf 'packages/**/node_modules' 'playground/node_modules' 'node_modules'",
     "dev": "pnpm play",
     "dev:prepare": "pnpm --filter './packages/**' prepack --stub && pnpm --filter './packages/ui-templates' build",
     "lint": "eslint . --cache",
@@ -106,7 +105,6 @@
     "ofetch": "1.4.1",
     "pathe": "1.1.2",
     "playwright-core": "1.49.1",
-    "rimraf": "6.0.1",
     "semver": "7.6.3",
     "sherif": "1.1.1",
     "std-env": "3.8.0",
