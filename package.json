@@ -60,7 +60,7 @@
     "send": ">=1.1.0",
     "typescript": "5.6.3",
     "ufo": "1.5.4",
-    "unbuild": "3.0.0",
+    "unbuild": "3.0.1",
     "unhead": "1.11.14",
     "unimport": "3.14.5",
     "vite": "6.0.3",
