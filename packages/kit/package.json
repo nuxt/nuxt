@@ -52,7 +52,7 @@
     "@rspack/core": "1.1.6",
     "@types/semver": "7.5.8",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
-    "unbuild": "3.0.0",
+    "unbuild": "3.0.1",
     "vite": "6.0.3",
     "vitest": "2.1.8",
     "webpack": "5.96.1"

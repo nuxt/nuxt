@@ -50,7 +50,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "ofetch": "1.4.1",
     "sass-loader": "16.0.4",
-    "unbuild": "3.0.0",
+    "unbuild": "3.0.1",
     "unctx": "2.4.0",
     "vite": "6.0.3",
     "vue": "3.5.13",

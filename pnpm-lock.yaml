@@ -31,7 +31,7 @@ overrides:
   send: '>=1.1.0'
   typescript: 5.6.3
   ufo: 1.5.4
-  unbuild: 3.0.0
+  unbuild: 3.0.1
   unhead: 1.11.14
   unimport: 3.14.5
   vite: 6.0.3
@@ -265,8 +265,8 @@ importers:
         specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
         version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.6.3)
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       vite:
         specifier: 6.0.3
         version: 6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1)
@@ -491,8 +491,8 @@ importers:
         specifier: 3.5.13
         version: 3.5.13
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       vite:
         specifier: 6.0.3
         version: 6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1)
@@ -642,8 +642,8 @@ importers:
         specifier: 4.28.1
         version: 4.28.1
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.6.3)
@@ -733,8 +733,8 @@ importers:
         specifier: 16.0.4
         version: 16.0.4(@rspack/core@1.1.6)(sass@1.78.0)(webpack@5.96.1)
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       unctx:
         specifier: 2.4.0
         version: 2.4.0
@@ -908,8 +908,8 @@ importers:
         specifier: 4.28.1
         version: 4.28.1
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.6.3)
@@ -1062,8 +1062,8 @@ importers:
         specifier: 4.28.1
         version: 4.28.1
       unbuild:
-        specifier: 3.0.0
-        version: 3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
+        specifier: 3.0.1
+        version: 3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.6.3)
@@ -7215,8 +7215,8 @@ packages:
   ultrahtml@1.5.3:
     resolution: {integrity: sha512-GykOvZwgDWZlTQMtp5jrD4BVL+gNn2NVlVafjcFUJ7taY20tqYdwdoWBFy6GBJsNTZe1GkGPkSl5knQAjtgceg==}
 
-  unbuild@3.0.0:
-    resolution: {integrity: sha512-yl9heYNwhy7GjUZEIiHFQrLJIIfMgoAWEKq+JfVEKHnLOtQjvsUj7T59OANOxkWD81epV3JH4lg4RO+BQ/NGDA==}
+  unbuild@3.0.1:
+    resolution: {integrity: sha512-03Fv1B8hmJzYCdL4TDgmgBg1WMU0CB5P2tBqPCW7XAvZG/l275m6JU/xf2tJ4yuUeHtmSzg1G387Te9nlsufFA==}
     hasBin: true
     peerDependencies:
       typescript: 5.6.3
@@ -15090,7 +15090,7 @@ snapshots:
 
   ultrahtml@1.5.3: {}
 
-  unbuild@3.0.0(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3)):
+  unbuild@3.0.1(sass@1.78.0)(typescript@5.6.3)(vue-tsc@2.1.10(typescript@5.6.3))(vue@3.5.13(typescript@5.6.3)):
     dependencies:
       '@rollup/plugin-alias': 5.1.1(rollup@4.28.1)
       '@rollup/plugin-commonjs': 28.0.1(rollup@4.28.1)
