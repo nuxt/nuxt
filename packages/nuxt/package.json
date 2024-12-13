@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.6.3",
+    "@nuxt/devtools": "^1.6.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.0",
@@ -157,6 +157,6 @@
     }
   },
   "engines": {
-    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }
