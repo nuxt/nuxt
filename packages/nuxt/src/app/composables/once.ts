@@ -1,7 +1,7 @@
 import { useNuxtApp } from '../nuxt'
 
 type CallOnceOptions = {
-  mode?: 'navigation' | 'render'
+  mode: 'navigation' | 'render'
 }
 
 /**
