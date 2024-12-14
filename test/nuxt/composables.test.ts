@@ -794,6 +794,22 @@ describe('callOnce', () => {
     await execute('second')
     expect(fn).toHaveBeenCalledTimes(2)
   })
+
+  it('should be executed multiple times when using mode: navigation with key', async () => {
+    const fn = vi.fn()
+    const execute = () => callOnce('abc', fn, { mode: 'navigation' })
+    await execute()
+    await execute()
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
+
+  it('should work with mode and without key', async () => {
+    const fn = vi.fn()
+    const execute = () => callOnce(fn, { mode: 'navigation' })
+    await execute()
+    await execute()
+    expect(fn).toHaveBeenCalledTimes(2)
+  })
 })
 
 describe('route announcer', () => {
