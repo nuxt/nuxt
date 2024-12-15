@@ -303,7 +303,9 @@ definePageMeta({
         ...opts,
       }),
     }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
-      "const __nuxt_page_meta = {
+      "
+
+      const __nuxt_page_meta = {
         name: 'hi',
         other: 'value'
       }
