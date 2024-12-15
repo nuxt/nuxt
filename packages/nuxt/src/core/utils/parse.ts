@@ -237,7 +237,9 @@ export class ScopeTracker {
 
   protected popScope () {
     this.scopeIndexStack.pop()
-    this.scopeIndexStack[this.scopeIndexStack.length - 1]!++
+    if (this.scopeIndexStack[this.scopeIndexStack.length - 1]) {
+      this.scopeIndexStack[this.scopeIndexStack.length - 1]!++
+    }
 
     if (!this.options.keepExitedScopes) {
       this.scopes.delete(this.scopeIndexKey)
