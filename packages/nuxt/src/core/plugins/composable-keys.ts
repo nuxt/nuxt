@@ -73,7 +73,9 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
           const meta = composableMeta[name]
 
-          if (scopeTracker.isDeclared(name)) {
+          const declaration = scopeTracker.getDeclaration(name)
+
+          if (declaration && declaration.type !== 'Import') {
             let skip = true
             if (meta.source) {
               skip = !matchWithStringOrRegex(relativePathname, meta.source)
