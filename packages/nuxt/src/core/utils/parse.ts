@@ -215,18 +215,19 @@ interface ScopeTrackerOptions {
  * @see walk
  */
 export class ScopeTracker {
-  protected scopeIndexStack: number[] = [0]
+  protected scopeIndexStack: number[] = []
   protected scopeIndexKey = ''
   protected scopes: Map<string, Map<string, WithLocations<ScopeTrackerNode>>> = new Map()
 
   protected options: Partial<ScopeTrackerOptions>
+  protected isFrozen = false
 
   constructor (options: ScopeTrackerOptions = {}) {
     this.options = options
   }
 
   protected updateScopeIndexKey () {
-    this.scopeIndexKey = this.scopeIndexStack.slice(0, -1).join('-')
+    this.scopeIndexKey = (this.scopeIndexStack.length <= 1 ? this.scopeIndexStack : this.scopeIndexStack.slice(0, -1)).join('-')
   }
 
   protected pushScope () {
@@ -246,6 +247,8 @@ export class ScopeTracker {
   }
 
   protected declareIdentifier (name: string, data: ScopeTrackerNode) {
+    if (this.isFrozen) { return }
+
     let scope = this.scopes.get(this.scopeIndexKey)
     if (!scope) {
       scope = new Map()
@@ -255,6 +258,8 @@ export class ScopeTracker {
   }
 
   protected declareFunctionParameter (param: WithLocations<Node>, fn: WithLocations<FunctionDeclaration | FunctionExpression | ArrowFunctionExpression>) {
+    if (this.isFrozen) { return }
+
     const identifiers = getPatternIdentifiers(param)
     for (const identifier of identifiers) {
       this.declareIdentifier(identifier.name, new FunctionParamNode(identifier, fn))
@@ -262,6 +267,8 @@ export class ScopeTracker {
   }
 
   protected declarePattern (pattern: WithLocations<Node>, parent: WithLocations<FunctionDeclaration | FunctionExpression | ArrowFunctionExpression | VariableDeclaration | CatchClause>) {
+    if (this.isFrozen) { return }
+
     const identifiers = getPatternIdentifiers(pattern)
     for (const identifier of identifiers) {
       this.declareIdentifier(
@@ -409,6 +416,18 @@ export class ScopeTracker {
       }
     }
     return null
+  }
+
+  /**
+   * Freezes the scope tracker, preventing further declarations.
+   * It also resets the scope index stack to its initial state, so that the scope tracker can be reused.
+   *
+   * This is useful for second passes through the AST.
+   */
+  freeze () {
+    this.isFrozen = true
+    this.scopeIndexStack = []
+    this.updateScopeIndexKey()
   }
 }
 
