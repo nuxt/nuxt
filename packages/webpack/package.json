@@ -46,7 +46,7 @@
     "jiti": "^2.4.1",
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.15",
+    "magic-string": "^0.30.17",
     "memfs": "^4.14.1",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^1.1.4",

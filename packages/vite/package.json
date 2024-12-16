@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "@rollup/plugin-replace": "^6.0.1",
+    "@rollup/plugin-replace": "^6.0.2",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "autoprefixer": "^10.4.20",
@@ -48,7 +48,7 @@
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "^2.4.1",
     "knitwork": "^1.1.0",
-    "magic-string": "^0.30.15",
+    "magic-string": "^0.30.17",
     "mlly": "^1.7.3",
     "pathe": "^1.1.2",
     "pkg-types": "^1.2.1",
