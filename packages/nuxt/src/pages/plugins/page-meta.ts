@@ -3,12 +3,10 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
-
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk, walk } from 'oxc-walker'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -123,7 +121,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
         if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
 
-        const meta = withLocations(node.arguments[0])
+        const meta = node.arguments[0]
 
         if (!meta) { return }
 

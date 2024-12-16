@@ -315,9 +315,6 @@ importers:
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
-      acorn:
-        specifier: 8.14.0
-        version: 8.14.0
       c12:
         specifier: 2.0.1
         version: 2.0.1(magicast@0.3.5)
@@ -351,9 +348,6 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
-      estree-walker:
-        specifier: ^3.0.3
-        version: 3.0.3
       globby:
         specifier: ^14.0.2
         version: 14.0.2
@@ -402,6 +396,12 @@ importers:
       ohash:
         specifier: 1.1.4
         version: 1.1.4
+      oxc-parser:
+        specifier: ^0.39.0
+        version: 0.39.0
+      oxc-walker:
+        specifier: ^0.1.2
+        version: 0.1.2(oxc-parser@0.39.0)
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
@@ -481,9 +481,6 @@ importers:
       '@parcel/watcher':
         specifier: 2.5.0
         version: 2.5.0
-      '@types/estree':
-        specifier: 1.0.6
-        version: 1.0.6
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1))(vue@3.5.13(typescript@5.6.3))
@@ -2106,6 +2103,49 @@ packages:
   '@one-ini/wasm@0.1.1':
     resolution: {integrity: sha512-XuySG1E38YScSJoMlqovLru4KTUNSjgVTIjyh7qMX6aNN5HY5Ct5LhRJdxO79JtTzKfzV/bnWpz+zquYrISsvw==}
 
+  '@oxc-parser/binding-darwin-arm64@0.39.0':
+    resolution: {integrity: sha512-IP7USw9mHYTyfT/nwQZvdS/Z1TqfzV6j6EtK60t5jfvl1CeSXOUyZzO9WFdW2c0F+DgcSjR9hJkwpCwJzzBjXw==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@oxc-parser/binding-darwin-x64@0.39.0':
+    resolution: {integrity: sha512-0hZvJX5F6HIlLDs1VfVBHVHaY98tGmNpCr1eOcbz5A5rrtE/AF5c6Rf23jE763a+vQKTMyHmohjEsqw+jlXZfw==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@oxc-parser/binding-linux-arm64-gnu@0.39.0':
+    resolution: {integrity: sha512-sECHgo55REvlL+sU1ITG7uXuERd1cZIlQbFf0E0Eqq47a3gMS9CUcsdc3OmRYTA6p7W45agktw/tRrHpJDBhNg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-arm64-musl@0.39.0':
+    resolution: {integrity: sha512-YzLPmO8UYkTKSW7yDZB53S5HfM2SWKaqLSV7KcTdOZgash5Qd38QwyiE4T2aOzEBRiybpXZYapjBqFDvDfR1Lg==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-x64-gnu@0.39.0':
+    resolution: {integrity: sha512-h4F6M9H4gjRIjcMPbP+TItGjIIjbOFI22rOpX/FHM5VpiOrVun6nKlmu8Lub1Qzy6cI/2JAQlV17ETdjMmuDpA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-parser/binding-linux-x64-musl@0.39.0':
+    resolution: {integrity: sha512-7krHX7FfNTAJygFIUJa3xSmSfTpmb+E8rOUeqkE3jeFM2D1As7y5adoWi3vuHY3UMDy6w3Q1Umcyylxqzp4ujA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@oxc-parser/binding-win32-arm64-msvc@0.39.0':
+    resolution: {integrity: sha512-4Puf8gojVwG3nIGyi1B8oVl89dit+kcd3eTH8x9exz+KoihstJbWbyAkezB9W5K86FcZE8dbVcHWDifF6sSu/Q==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@oxc-parser/binding-win32-x64-msvc@0.39.0':
+    resolution: {integrity: sha512-Qy5kvBUtscM2VJ0q/Y7N9546HiL/JrV1MvMf+Q4ORrApO3JfMSyoJdIaFz6SxytiQLRtOFnkjfACCl4qcvYRQg==}
+    cpu: [x64]
+    os: [win32]
+
+  '@oxc-project/types@0.39.0':
+    resolution: {integrity: sha512-S70sRLmlZA3NIQXp3gkBKOkFFpIaNtpLtSFp3Tejre2HsUthJ9dVTTGvJhkZOlIdJs8LGFZ5HTX4jLNcC2RxFg==}
+
   '@parcel/watcher-android-arm64@2.5.0':
     resolution: {integrity: sha512-qlX4eS28bUcQCdribHkg/herLe+0A9RyYC+mm2PXpncit8z5b3nSqGVzMNR3CmtAOgRutiZ02eIJJgP/b1iEFQ==}
     engines: {node: '>= 10.0.0'}
@@ -2568,8 +2608,8 @@ packages:
     engines: {node: '>=8.10'}
     hasBin: true
 
-  '@stripe/stripe-js@4.8.0':
-    resolution: {integrity: sha512-+4Cb0bVHlV4BJXxkJ3cCLSLuWxm3pXKtgcRacox146EuugjCzRRII5T5gUMgL4HpzrBLVwVxjKaZqntNWAXawQ==}
+  '@stripe/stripe-js@4.9.0':
+    resolution: {integrity: sha512-tMPZQZZXGWyNX7hbgenq+1xEj2oigJ54XddbtSX36VedoKsPBq7dxwRXu4Xd5FdpT3JDyyDtnmvYkaSnH1yHTQ==}
     engines: {node: '>=12.16'}
 
   '@stylistic/eslint-plugin@2.12.1':
@@ -5390,6 +5430,9 @@ packages:
     resolution: {integrity: sha512-h5bgJWpxJNswbU7qCrV0tIKQCaS3blPDrqKWx+QxzuzL1zGUzij9XCWLrSLsJPu5t+eWA/ycetzYAO5IOMcWAQ==}
     hasBin: true
 
+  magic-regexp@0.8.0:
+    resolution: {integrity: sha512-lOSLWdE156csDYwCTIGiAymOLN7Epu/TU5e/oAnISZfU6qP+pgjkE+xbVjVn3yLPKN8n1G2yIAYTAM5KRk6/ow==}
+
   magic-string-ast@0.6.2:
     resolution: {integrity: sha512-oN3Bcd7ZVt+0VGEs7402qR/tjgjbM7kPlH/z7ufJnzTLVBzXJITRHOJiwMmmYMgZfdoWQsfQcY+iKlxiBppnMA==}
     engines: {node: '>=16.14.0'}
@@ -5925,6 +5968,14 @@ packages:
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
+
+  oxc-parser@0.39.0:
+    resolution: {integrity: sha512-MnSAlAFyUvUMBEWna6y4wSu5lZzl1wcnvQul54uXaHinUlRjAeBd6wOAQqLKeNXRseVsXO9/2ALi327favfVkw==}
+
+  oxc-walker@0.1.2:
+    resolution: {integrity: sha512-cYF1lEI7uuB2IKCqWjuzyc/JB8/d94pVeNp5aTCSMiGMyY1WVxmeJoDm1CzUzuTY3bJnH/psWxyJXscG9qJ4RQ==}
+    peerDependencies:
+      oxc-parser: ^0.39.0
 
   p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
@@ -7224,6 +7275,9 @@ packages:
   type-fest@4.26.1:
     resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
     engines: {node: '>=16'}
+
+  type-level-regexp@0.1.17:
+    resolution: {integrity: sha512-wTk4DH3cxwk196uGLK/E9pE45aLfeKJacKmcEgEOA/q5dnPGNxXt0cfYdFxb57L+sEpf1oJH4Dnx/pnRcku9jg==}
 
   typescript@5.6.3:
     resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
@@ -8856,7 +8910,7 @@ snapshots:
       '@nuxt/devtools-kit': 1.6.3(vite@6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1))
       '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.6.4(rollup@4.28.1)(vite@6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1))(vue@3.5.13(typescript@5.6.3)))(@unocss/webpack@0.62.4(rollup@4.28.1)(webpack@5.97.1(esbuild@0.24.0)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(nuxt@packages+nuxt)(postcss@8.4.49)(rollup@4.28.1)(vite@6.0.3(@types/node@22.10.2)(jiti@2.4.1)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.1)(yaml@2.6.1))(vue@3.5.13(typescript@5.6.3))(webpack@5.97.1(esbuild@0.24.0))
       '@nuxt/kit': link:packages/kit
-      '@stripe/stripe-js': 4.8.0
+      '@stripe/stripe-js': 4.9.0
       '@types/google.maps': 3.58.1
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.1.0
@@ -9031,6 +9085,32 @@ snapshots:
       - supports-color
 
   '@one-ini/wasm@0.1.1': {}
+
+  '@oxc-parser/binding-darwin-arm64@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-darwin-x64@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-arm64-gnu@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-arm64-musl@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-x64-gnu@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-linux-x64-musl@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-win32-arm64-msvc@0.39.0':
+    optional: true
+
+  '@oxc-parser/binding-win32-x64-msvc@0.39.0':
+    optional: true
+
+  '@oxc-project/types@0.39.0': {}
 
   '@parcel/watcher-android-arm64@2.5.0':
     optional: true
@@ -9488,7 +9568,7 @@ snapshots:
       ignore: 5.3.2
       p-map: 4.0.0
 
-  '@stripe/stripe-js@4.8.0': {}
+  '@stripe/stripe-js@4.9.0': {}
 
   '@stylistic/eslint-plugin@2.12.1(eslint@9.17.0(jiti@2.4.1))(typescript@5.6.3)':
     dependencies:
@@ -12912,6 +12992,16 @@ snapshots:
 
   lz-string@1.5.0: {}
 
+  magic-regexp@0.8.0:
+    dependencies:
+      estree-walker: 3.0.3
+      magic-string: 0.30.14
+      mlly: 1.7.3
+      regexp-tree: 0.1.27
+      type-level-regexp: 0.1.17
+      ufo: 1.5.4
+      unplugin: 1.16.0
+
   magic-string-ast@0.6.2:
     dependencies:
       magic-string: 0.30.17
@@ -13730,6 +13820,25 @@ snapshots:
       prelude-ls: 1.2.1
       type-check: 0.4.0
       word-wrap: 1.2.5
+
+  oxc-parser@0.39.0:
+    dependencies:
+      '@oxc-project/types': 0.39.0
+    optionalDependencies:
+      '@oxc-parser/binding-darwin-arm64': 0.39.0
+      '@oxc-parser/binding-darwin-x64': 0.39.0
+      '@oxc-parser/binding-linux-arm64-gnu': 0.39.0
+      '@oxc-parser/binding-linux-arm64-musl': 0.39.0
+      '@oxc-parser/binding-linux-x64-gnu': 0.39.0
+      '@oxc-parser/binding-linux-x64-musl': 0.39.0
+      '@oxc-parser/binding-win32-arm64-msvc': 0.39.0
+      '@oxc-parser/binding-win32-x64-msvc': 0.39.0
+
+  oxc-walker@0.1.2(oxc-parser@0.39.0):
+    dependencies:
+      estree-walker: 3.0.3
+      magic-regexp: 0.8.0
+      oxc-parser: 0.39.0
 
   p-limit@2.3.0:
     dependencies:
@@ -15127,6 +15236,8 @@ snapshots:
   type-fest@0.8.1: {}
 
   type-fest@4.26.1: {}
+
+  type-level-regexp@0.1.17: {}
 
   typescript@5.6.3: {}
 
