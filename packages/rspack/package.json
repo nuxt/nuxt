@@ -45,7 +45,7 @@
     "globby": "^14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "^2.4.1",
-    "knitwork": "^1.1.0",
+    "knitwork": "^1.2.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.17",
     "memfs": "^4.14.1",

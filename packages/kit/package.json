@@ -46,7 +46,7 @@
     "ufo": "^1.5.4",
     "unctx": "^2.4.0",
     "unimport": "^3.14.5",
-    "untyped": "^1.5.1"
+    "untyped": "^1.5.2"
   },
   "devDependencies": {
     "@rspack/core": "1.1.6",
