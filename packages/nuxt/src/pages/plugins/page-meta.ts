@@ -225,7 +225,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             + declarations + '\n'
             + `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
 
-          s.overwrite(0, code.length, extracted)
+          s.overwrite(0, code.length, extracted.trim())
         },
       })
 
