@@ -36,7 +36,7 @@
     "ignore": "^6.0.2",
     "jiti": "^2.4.1",
     "klona": "^2.0.6",
-    "knitwork": "^1.1.0",
+    "knitwork": "^1.2.0",
     "mlly": "^1.7.3",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -46,7 +46,7 @@
     "ufo": "^1.5.4",
     "unctx": "^2.4.0",
     "unimport": "^3.14.5",
-    "untyped": "^1.5.1"
+    "untyped": "^1.5.2"
   },
   "devDependencies": {
     "@rspack/core": "1.1.6",
