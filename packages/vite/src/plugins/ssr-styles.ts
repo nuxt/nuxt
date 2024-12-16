@@ -69,13 +69,13 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
         const base = typeof outputOptions.assetFileNames === 'string'
           ? outputOptions.assetFileNames
           : outputOptions.assetFileNames({
-            type: 'asset',
-            name: `${fileName}-styles.mjs`,
-            names: [`${fileName}-styles.mjs`],
-            originalFileName: `${fileName}-styles.mjs`,
-            originalFileNames: [`${fileName}-styles.mjs`],
-            source: '',
-          })
+              type: 'asset',
+              name: `${fileName}-styles.mjs`,
+              names: [`${fileName}-styles.mjs`],
+              originalFileName: `${fileName}-styles.mjs`,
+              originalFileNames: [`${fileName}-styles.mjs`],
+              source: '',
+            })
 
         const baseDir = dirname(base)
 

@@ -47,7 +47,7 @@
     "jiti": "^2.4.1",
     "knitwork": "^1.1.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.15",
+    "magic-string": "^0.30.17",
     "memfs": "^4.14.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -78,13 +78,13 @@
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.28.1",
-    "unbuild": "3.0.0-rc.11",
+    "unbuild": "3.0.1",
     "vue": "3.5.13"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }
