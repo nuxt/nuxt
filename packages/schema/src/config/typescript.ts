@@ -35,6 +35,7 @@ export default defineUntypedSchema({
         const defaults = [
           // Nitro auto-imported/augmented dependencies
           'nitro/types',
+          'nitro/runtime',
           'defu',
           'h3',
           'consola',
