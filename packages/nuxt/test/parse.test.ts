@@ -299,8 +299,10 @@ describe('scope tracker', () => {
     const [d, [e]] = [3, [4]]
     const { f: { g } } = { f: { g: 5 } }
 
-    function foo ({ h, i: j } = {}, [k, [l, m]]) {
+    function foo ({ h, i: j } = {}, [k, [l, m], ...rest]) {
     }
+
+    try {} catch ({ message }) {}
     `
 
     const scopeTracker = new TestScopeTracker({
@@ -312,7 +314,7 @@ describe('scope tracker', () => {
     })
 
     const scopes = scopeTracker.getScopes()
-    expect(scopes.size).toBe(2)
+    expect(scopes.size).toBe(3)
 
     const globalScope = scopes.get('')
     expect(globalScope?.size).toBe(6)
@@ -327,7 +329,7 @@ describe('scope tracker', () => {
     expect(globalScope?.get('foo')?.type).toEqual('Function')
 
     const fooScope = scopes.get('0')
-    expect(fooScope?.size).toBe(5)
+    expect(fooScope?.size).toBe(6)
 
     expect(fooScope?.get('h')?.type).toEqual('FunctionParam')
     expect(fooScope?.get('i')?.type).toBeUndefined()
@@ -335,6 +337,11 @@ describe('scope tracker', () => {
     expect(fooScope?.get('k')?.type).toEqual('FunctionParam')
     expect(fooScope?.get('l')?.type).toEqual('FunctionParam')
     expect(fooScope?.get('m')?.type).toEqual('FunctionParam')
+    expect(fooScope?.get('rest')?.type).toEqual('FunctionParam')
+
+    const catchScope = scopes.get('2')
+    expect(catchScope?.size).toBe(1)
+    expect(catchScope?.get('message')?.type).toEqual('CatchParam')
 
     expect(scopeTracker.isDeclaredInScope('a', '')).toBe(true)
     expect(scopeTracker.isDeclaredInScope('b', '')).toBe(false)
@@ -349,6 +356,67 @@ describe('scope tracker', () => {
     expect(scopeTracker.isDeclaredInScope('k', '0')).toBe(true)
     expect(scopeTracker.isDeclaredInScope('l', '0')).toBe(true)
     expect(scopeTracker.isDeclaredInScope('m', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('rest', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('message', '2')).toBe(true)
+  })
+
+  it ('should handle loops', () => {
+    const code = `
+    for (let i = 0, getI = () => i; i < 3; i++) {
+      console.log(getI());
+    }
+
+    let j = 0;
+    for (; j < 3; j++) { }
+
+    const obj = { a: 1, b: 2, c: 3 }
+    for (const property in obj) { }
+
+    const arr = ['a', 'b', 'c']
+    for (const element of arr) { }
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    const scopes = scopeTracker.getScopes()
+    expect(scopes.size).toBe(4)
+
+    const globalScope = scopes.get('')
+    expect(globalScope?.size).toBe(3)
+    expect(globalScope?.get('j')?.type).toEqual('Variable')
+    expect(globalScope?.get('obj')?.type).toEqual('Variable')
+    expect(globalScope?.get('arr')?.type).toEqual('Variable')
+
+    const forScope1 = scopes.get('0')
+    expect(forScope1?.size).toBe(2)
+    expect(forScope1?.get('i')?.type).toEqual('Variable')
+    expect(forScope1?.get('getI')?.type).toEqual('Variable')
+
+    const forScope2 = scopes.get('1')
+    expect(forScope2).toBeUndefined()
+
+    const forScope3 = scopes.get('2')
+    expect(forScope3?.size).toBe(1)
+    expect(forScope3?.get('property')?.type).toEqual('Variable')
+
+    const forScope4 = scopes.get('3')
+    expect(forScope4?.size).toBe(1)
+    expect(forScope4?.get('element')?.type).toEqual('Variable')
+
+    expect(scopeTracker.isDeclaredInScope('i', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('getI', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('i', '0-0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('getI', '0-0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('j', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('j', '1-0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('property', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('element', '')).toBe(false)
   })
 
   it ('should handle imports', () => {
@@ -505,7 +573,7 @@ describe('scope tracker', () => {
 
 describe('parsing', () => {
   it ('should correctly get identifiers not declared in a function', () => {
-    const functionParams = `(param, { param1, temp: param2 } = {}, [param3, [param4]])`
+    const functionParams = `(param, { param1, temp: param2 } = {}, [param3, [param4]], ...rest)`
     const functionBody = `{
       const c = 1, d = 2
       console.log(undeclaredIdentifier1, foo)
@@ -518,7 +586,7 @@ describe('parsing', () => {
       }
       nonExistentFunction()
 
-      console.log(a, b, c, d, param, param1, param2, param3, param4, param['test']['key'])
+      console.log(a, b, c, d, param, param1, param2, param3, param4, param['test']['key'], rest)
       console.log(param3[0].access['someKey'], obj, obj.key1, obj.key2, obj.undeclaredIdentifier2, obj.undeclaredIdentifier3)
 
       try {} catch (error) { console.log(error) }
@@ -553,6 +621,11 @@ describe('parsing', () => {
 
     // "3-0"
     const baz = function foo ${functionParams} ${functionBody}
+
+    // "4"
+    function emptyParams() {
+      console.log(param)
+    }
     `
 
     const scopeTracker = new TestScopeTracker({
@@ -564,28 +637,34 @@ describe('parsing', () => {
     parseAndWalk(code, filename, {
       scopeTracker,
       enter: (node) => {
-        if ((node.type !== 'FunctionDeclaration' && node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression') || !['0', '1', '2-0', '3-0'].includes(scopeTracker.getScopeIndexKey())) { return }
+        const currentScope = scopeTracker.getScopeIndexKey()
+        if ((node.type !== 'FunctionDeclaration' && node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression') || !['0', '1', '2-0', '3-0', '4'].includes(currentScope)) { return }
 
         const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(node)
-        expect(undeclaredIdentifiers).toEqual([
-          'console',
-          'undeclaredIdentifier1',
-          ...(node.type === 'ArrowFunctionExpression' || (node.type === 'FunctionExpression' && !node.id) ? ['foo'] : []),
-          'undeclaredIdentifier2',
-          'undeclaredIdentifier3',
-          'undeclaredIdentifier4',
-          'nonExistentFunction',
-          'a', // import is outside the scope of the function
-          'b', // variable is outside the scope of the function
-          'someValue',
-          'Baz',
-          'nonHoisted',
-        ])
+        expect(undeclaredIdentifiers).toEqual(currentScope === '4'
+          ? [
+              'console',
+              'param',
+            ]
+          : [
+              'console',
+              'undeclaredIdentifier1',
+              ...(node.type === 'ArrowFunctionExpression' || (node.type === 'FunctionExpression' && !node.id) ? ['foo'] : []),
+              'undeclaredIdentifier2',
+              'undeclaredIdentifier3',
+              'undeclaredIdentifier4',
+              'nonExistentFunction',
+              'a', // import is outside the scope of the function
+              'b', // variable is outside the scope of the function
+              'someValue',
+              'Baz',
+              'nonHoisted',
+            ])
 
         processedFunctions++
       },
     })
 
-    expect(processedFunctions).toBe(4)
+    expect(processedFunctions).toBe(5)
   })
 })
