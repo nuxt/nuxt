@@ -401,6 +401,10 @@ export class ScopeTracker {
   }
 
   isDeclared (name: string) {
+    if (!this.scopeIndexKey) {
+      return this.scopes.get('')?.has(name) || false
+    }
+
     const indices = this.scopeIndexKey.split('-').map(Number)
     for (let i = indices.length; i >= 0; i--) {
       if (this.scopes.get(indices.slice(0, i).join('-'))?.has(name)) {
@@ -411,6 +415,10 @@ export class ScopeTracker {
   }
 
   getDeclaration (name: string): ScopeTrackerNode | null {
+    if (!this.scopeIndexKey) {
+      return this.scopes.get('')?.get(name) ?? null
+    }
+
     const indices = this.scopeIndexKey.split('-').map(Number)
     for (let i = indices.length; i >= 0; i--) {
       const node = this.scopes.get(indices.slice(0, i).join('-'))?.get(name)
