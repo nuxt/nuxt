@@ -217,6 +217,7 @@ describe('scope tracker', () => {
   it ('should track variable declarations', () => {
     const code = `
     const a = 1
+    let x, y = 2
 
     {
       let b = 2
@@ -236,10 +237,22 @@ describe('scope tracker', () => {
     const globalScope = scopes.get('')
     expect(globalScope?.get('a')?.type).toEqual('Variable')
     expect(globalScope?.get('b')).toBeUndefined()
+    expect(globalScope?.get('x')?.type).toEqual('Variable')
+    expect(globalScope?.get('y')?.type).toEqual('Variable')
 
     const blockScope = scopes.get('0')
     expect(blockScope?.get('b')?.type).toEqual('Variable')
     expect(blockScope?.get('a')).toBeUndefined()
+    expect(blockScope?.get('x')).toBeUndefined()
+    expect(blockScope?.get('y')).toBeUndefined()
+
+    expect(scopeTracker.isDeclaredInScope('a', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('a', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('y', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('y', '0')).toBe(true)
+
+    expect(scopeTracker.isDeclaredInScope('b', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('b', '0')).toBe(true)
   })
 
   it ('should separate variables in different scopes', () => {
@@ -248,6 +261,11 @@ describe('scope tracker', () => {
 
     {
       let a = 2
+    }
+
+    function foo (a) {
+      // scope "1-0"
+      let b = a
     }
     `
 
@@ -259,20 +277,20 @@ describe('scope tracker', () => {
       scopeTracker,
     })
 
-    const scopes = scopeTracker.getScopes()
-
-    const globalScope = scopes.get('')
-    const globalA = globalScope?.get('a')
+    const globalA = scopeTracker.getDeclarationFromScope('a', '')
     expect(globalA?.type).toEqual('Variable')
     expect(globalA?.type === 'Variable' && globalA.variableNode.type).toEqual('VariableDeclaration')
 
-    const blockScope = scopes.get('0')
-    const blockA = blockScope?.get('a')
+    const blockA = scopeTracker.getDeclarationFromScope('a', '0')
     expect(blockA?.type).toEqual('Variable')
     expect(blockA?.type === 'Variable' && blockA.variableNode.type).toEqual('VariableDeclaration')
 
     // check that the two `a` variables are different
     expect(globalA?.type === 'Variable' && globalA.variableNode).not.toBe(blockA?.type === 'Variable' && blockA.variableNode)
+
+    // check that the `a` in the function scope is a function param and not a variable
+    const fooA = scopeTracker.getDeclarationFromScope('a', '1-0')
+    expect(fooA?.type).toEqual('FunctionParam')
   })
 
   it ('should handle patterns', () => {
@@ -281,7 +299,7 @@ describe('scope tracker', () => {
     const [d, [e]] = [3, [4]]
     const { f: { g } } = { f: { g: 5 } }
 
-    function foo ({ h, i: j }, [k, [l, m]]) {
+    function foo ({ h, i: j } = {}, [k, [l, m]]) {
     }
     `
 
@@ -317,5 +335,69 @@ describe('scope tracker', () => {
     expect(fooScope?.get('k')?.type).toEqual('FunctionParam')
     expect(fooScope?.get('l')?.type).toEqual('FunctionParam')
     expect(fooScope?.get('m')?.type).toEqual('FunctionParam')
+
+    expect(scopeTracker.isDeclaredInScope('a', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('b', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('c', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('d', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('e', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('f', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('g', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('h', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('i', '0')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('j', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('k', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('l', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('m', '0')).toBe(true)
+  })
+
+  it ('should freeze scopes', () => {
+    let code = `
+    const a = 1
+    {
+      const b = 2
+    }
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    expect(scopeTracker.getScopes().size).toBe(2)
+
+    code = code + '\n' + `
+      {
+        const c = 3
+      }
+    `
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    expect(scopeTracker.getScopes().size).toBe(3)
+
+    scopeTracker.freeze()
+
+    code = code + '\n' + `
+      {
+        const d = 4
+      }
+    `
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    expect(scopeTracker.getScopes().size).toBe(3)
+
+    expect(scopeTracker.isDeclaredInScope('a', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('b', '0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('c', '1')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('d', '2')).toBe(false)
   })
 })
