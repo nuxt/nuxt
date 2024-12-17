@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { parseAndWalk } from '../src/core/utils/parse'
+import { getUndeclaredIdentifiersInFunction, parseAndWalk } from '../src/core/utils/parse'
 import { TestScopeTracker } from './fixture/scope-tracker'
 
 const filename = 'test.ts'
@@ -421,5 +421,92 @@ describe('scope tracker', () => {
     expect(scopeTracker.isDeclaredInScope('b', '0')).toBe(true)
     expect(scopeTracker.isDeclaredInScope('c', '1')).toBe(true)
     expect(scopeTracker.isDeclaredInScope('d', '2')).toBe(false)
+  })
+})
+
+describe('parsing', () => {
+  it ('should correctly get identifiers not declared in a function', () => {
+    const functionParams = `(param, { param1, temp: param2 } = {}, [param3, [param4]])`
+    const functionBody = `{
+      const c = 1, d = 2
+      console.log(undeclaredIdentifier1, foo)
+      const obj = {
+        key1: param,
+        key2: undeclaredIdentifier1,
+        undeclaredIdentifier2: undeclaredIdentifier2,
+        undeclaredIdentifier3,
+        undeclaredIdentifier4,
+      }
+      nonExistentFunction()
+
+      console.log(a, b, c, d, param, param1, param2, param3, param4, param['test']['key'])
+      console.log(param3[0].access['someKey'], obj, obj.key1, obj.key2, obj.undeclaredIdentifier2, obj.undeclaredIdentifier3)
+
+      try {} catch (error) { console.log(error) }
+
+      class Foo { constructor() { console.log(Foo) } }
+      const cls = class Bar { constructor() { console.log(Bar, cls) } }
+      const cls2 = class Baz {
+        someProperty = someValue
+        someMethod() { }
+      }
+      console.log(Baz)
+
+      function f() {
+        console.log(hoisted, nonHoisted)
+      }
+      let hoisted = 1
+      f()
+    }`
+
+    const code = `
+    import { a } from 'module-a'
+    const b = 1
+
+    // "0"
+    function foo ${functionParams} ${functionBody}
+
+    // "1"
+    const f = ${functionParams} => ${functionBody}
+
+    // "2-0"
+    const bar = function ${functionParams} ${functionBody}
+
+    // "3-0"
+    const baz = function foo ${functionParams} ${functionBody}
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    let processedFunctions = 0
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+      enter: (node) => {
+        if ((node.type !== 'FunctionDeclaration' && node.type !== 'FunctionExpression' && node.type !== 'ArrowFunctionExpression') || !['0', '1', '2-0', '3-0'].includes(scopeTracker.getScopeIndexKey())) { return }
+
+        const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(node)
+        expect(undeclaredIdentifiers).toEqual([
+          'console',
+          'undeclaredIdentifier1',
+          ...(node.type === 'ArrowFunctionExpression' || (node.type === 'FunctionExpression' && !node.id) ? ['foo'] : []),
+          'undeclaredIdentifier2',
+          'undeclaredIdentifier3',
+          'undeclaredIdentifier4',
+          'nonExistentFunction',
+          'a', // import is outside the scope of the function
+          'b', // variable is outside the scope of the function
+          'someValue',
+          'Baz',
+          'nonHoisted',
+        ])
+
+        processedFunctions++
+      },
+    })
+
+    expect(processedFunctions).toBe(4)
   })
 })
