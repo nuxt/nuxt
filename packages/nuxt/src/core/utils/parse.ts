@@ -198,7 +198,7 @@ interface ScopeTrackerOptions {
  * Scopes are created when entering a block statement, however, they are also created
  * for function parameters, loop variable declarations, etc. (e.g. `i` in `for (let i = 0; i < 10; i++) { ... }`).
  * This means that the behaviour is not 100% equivalent to JavaScript's scoping rules, because internally,
- * one javascript scope can be spread across multiple scopes in this class.
+ * one JavaScript scope can be spread across multiple scopes in this class.
  *
  * @example
  * ```ts
@@ -227,7 +227,7 @@ export class ScopeTracker {
   }
 
   protected updateScopeIndexKey () {
-    this.scopeIndexKey = (this.scopeIndexStack.length <= 1 ? this.scopeIndexStack : this.scopeIndexStack.slice(0, -1)).join('-')
+    this.scopeIndexKey = this.scopeIndexStack.slice(0, -1).join('-')
   }
 
   protected pushScope () {
@@ -237,7 +237,7 @@ export class ScopeTracker {
 
   protected popScope () {
     this.scopeIndexStack.pop()
-    if (this.scopeIndexStack[this.scopeIndexStack.length - 1]) {
+    if (this.scopeIndexStack[this.scopeIndexStack.length - 1] !== undefined) {
       this.scopeIndexStack[this.scopeIndexStack.length - 1]!++
     }
 
@@ -307,6 +307,7 @@ export class ScopeTracker {
         // make the name of the function available only within the function
         // e.g. const foo = function bar() {  // bar is only available within the function body
         this.pushScope()
+        // can be undefined, for example in class method definitions
         if (node.id?.name) {
           this.declareIdentifier(node.id.name, new FunctionNode(node))
         }
