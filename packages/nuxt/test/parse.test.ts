@@ -351,6 +351,28 @@ describe('scope tracker', () => {
     expect(scopeTracker.isDeclaredInScope('m', '0')).toBe(true)
   })
 
+  it ('should handle imports', () => {
+    const code = `
+    import { a, b as c } from 'module-a'
+    import d from 'module-b'
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    expect(scopeTracker.isDeclaredInScope('a', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('b', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('c', '')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('d', '')).toBe(true)
+
+    expect(scopeTracker.getScopes().get('')?.size).toBe(3)
+  })
+
   it ('should freeze scopes', () => {
     let code = `
     const a = 1
