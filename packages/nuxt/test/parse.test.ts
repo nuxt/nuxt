@@ -373,6 +373,85 @@ describe('scope tracker', () => {
     expect(scopeTracker.getScopes().get('')?.size).toBe(3)
   })
 
+  it ('should handle classes', () => {
+    const code = `
+    // ""
+
+    class Foo {
+      someProperty = 1
+
+      // "0" - function expression name
+      // "0-0" - constructor parameters
+      // "0-0-0" - constructor body
+      constructor(param) {
+        let a = 1
+        this.b = 1
+      }
+
+      // "1" - method name
+      // "1-0" - method parameters
+      // "1-0-0" - method body
+      someMethod(param) {
+        let c = 1
+      }
+
+      // "2" - method name
+      // "2-0" - method parameters
+      // "2-0-0" - method body
+      get d() {
+        let e = 1
+        return 1
+      }
+    }
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    const scopes = scopeTracker.getScopes()
+
+    // only the scopes containing identifiers are stored
+    const expectedScopes = [
+      '',
+      '0-0',
+      '0-0-0',
+      '1-0',
+      '1-0-0',
+      '2-0-0',
+    ]
+
+    expect(scopes.size).toBe(expectedScopes.length)
+
+    const scopeKeys = Array.from(scopes.keys())
+    expect(scopeKeys).toEqual(expectedScopes)
+
+    expect(scopeTracker.isDeclaredInScope('Foo', '')).toBe(true)
+
+    // properties should be accessible through the class
+    expect(scopeTracker.isDeclaredInScope('someProperty', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('someProperty', '0')).toBe(false)
+
+    expect(scopeTracker.isDeclaredInScope('a', '0-0-0')).toBe(true)
+    expect(scopeTracker.isDeclaredInScope('b', '0-0-0')).toBe(false)
+
+    // method definitions don't have names in function expressions, so it is not stored
+    // they should be accessed through the class
+    expect(scopeTracker.isDeclaredInScope('someMethod', '1')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('someMethod', '1-0-0')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('someMethod', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('c', '1-0-0')).toBe(true)
+
+    expect(scopeTracker.isDeclaredInScope('d', '2')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('d', '2-0-0')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('d', '')).toBe(false)
+    expect(scopeTracker.isDeclaredInScope('e', '2-0-0')).toBe(true)
+  })
+
   it ('should freeze scopes', () => {
     let code = `
     const a = 1
