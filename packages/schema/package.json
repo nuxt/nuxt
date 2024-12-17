@@ -51,7 +51,7 @@
     "ofetch": "1.4.1",
     "sass-loader": "16.0.4",
     "unbuild": "3.0.1",
-    "unctx": "2.4.0",
+    "unctx": "2.4.1",
     "vite": "6.0.3",
     "vue": "3.5.13",
     "vue-bundle-renderer": "2.1.1",
