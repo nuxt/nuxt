@@ -42,7 +42,7 @@
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "h3": "^1.13.0",
-    "jiti": "^2.4.1",
+    "jiti": "^2.4.2",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.17",
     "memfs": "^4.14.1",
