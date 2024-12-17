@@ -131,7 +131,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       function addImport (name: string | false) {
         if (!isStaticIdentifier(name)) { return }
-        const importValue = importMap.get(name)!.code
+        const importValue = importMap.get(name)!.code.trim()
         if (!addedImports.has(importValue)) {
           addedImports.add(importValue)
         }
@@ -221,9 +221,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             .map(node => code.slice(node.start, node.end))
             .join('\n')
 
-          const extracted = importStatements + '\n'
-            + declarations + '\n'
-            + `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+          const extracted = [
+            importStatements,
+            declarations,
+            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+          ].join('\n')
 
           s.overwrite(0, code.length, extracted.trim())
         },
