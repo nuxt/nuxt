@@ -498,6 +498,14 @@ function isNotReferencePosition (node: WithLocations<Node>, parent: WithLocation
       // class name
       return parent.id === node
 
+    case 'MethodDefinition':
+      // class method name
+      return parent.key === node
+
+    case 'PropertyDefinition':
+      // class property name
+      return parent.key === node
+
     case 'VariableDeclarator':
       // variable name
       return getPatternIdentifiers(withLocations(parent.id)).includes(node)
@@ -520,12 +528,21 @@ function isNotReferencePosition (node: WithLocations<Node>, parent: WithLocation
 }
 
 export function getUndeclaredIdentifiersInFunction (node: FunctionDeclaration | FunctionExpression | ArrowFunctionExpression) {
-  const scopeTracker = new ScopeTracker()
+  const scopeTracker = new ScopeTracker({
+    keepExitedScopes: true,
+  })
   const undeclaredIdentifiers = new Set<string>()
 
   function isIdentifierUndeclared (node: WithLocations<Identifier>, parent: WithLocations<Node> | null) {
     return !isNotReferencePosition(node, parent) && !scopeTracker.isDeclared(node.name)
   }
+
+  // first pass to collect all declarations and hoist them
+  walk(node, {
+    scopeTracker,
+  })
+
+  scopeTracker.freeze()
 
   walk(node, {
     scopeTracker,
