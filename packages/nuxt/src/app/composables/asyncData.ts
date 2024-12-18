@@ -525,7 +525,7 @@ function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   }
 
   if (nuxtApp._asyncData[key]) {
-    nuxtApp._asyncData[key]!.data.value = nuxtApp._asyncData[key]!._default()
+    nuxtApp._asyncData[key]!.data.value = unref(nuxtApp._asyncData[key]!._default())
     nuxtApp._asyncData[key]!.error.value = undefined
     nuxtApp._asyncData[key]!.pending.value = false
     nuxtApp._asyncData[key]!.status.value = 'idle'

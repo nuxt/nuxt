@@ -4,7 +4,7 @@ import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, 
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
+import type { NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
@@ -23,7 +23,8 @@ const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 export default defineNuxtModule({
   meta: {
-    name: 'pages',
+    name: 'nuxt:pages',
+    configKey: 'pages',
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
@@ -379,7 +380,7 @@ export default defineNuxtModule({
         const glob = pageToGlobMap[path]
         const code = path in nuxt.vfs ? nuxt.vfs[path]! : await readFile(path!, 'utf-8')
         try {
-          const extractedRule = await extractRouteRules(code)
+          const extractedRule = await extractRouteRules(code, path)
           if (extractedRule) {
             if (!glob) {
               const relativePath = relative(nuxt.options.srcDir, path)
@@ -455,6 +456,8 @@ export default defineNuxtModule({
       addBuildPlugin(PageMetaPlugin({
         dev: nuxt.options.dev,
         sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+        isPage,
+        routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
       }))
     })
 
@@ -499,13 +502,13 @@ export default defineNuxtModule({
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        if (!app.pages) { return 'export default []' }
+        if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
         const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
           serverComponentRuntime,
           clientComponentRuntime,
           overrideMeta: !!nuxt.options.experimental.scanPageMeta,
         })
-        return [...imports, `export default ${routes}`].join('\n')
+        return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')
       },
     })
 
@@ -569,7 +572,7 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+      getContents: ({ nuxt, app }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
@@ -610,3 +613,26 @@ export default defineNuxtModule({
     })
   },
 })
+
+const ROUTES_HMR_CODE = /* js */`
+if (import.meta.hot) {
+  import.meta.hot.accept((mod) => {
+    const router = import.meta.hot.data.router
+    if (!router) {
+      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
+      return
+    }
+    router.clearRoutes()
+    for (const route of mod.default || mod) {
+      router.addRoute(route)
+    }
+    router.replace('')
+  })
+}
+
+export function handleHotUpdate(_router) {
+  if (import.meta.hot) {
+    import.meta.hot.data.router = _router
+  }
+}
+`

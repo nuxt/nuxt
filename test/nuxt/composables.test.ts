@@ -557,8 +557,8 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     `)
   })
   it('getRouteRules', async () => {
-    expect(await getRouteRules('/')).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules('/pre')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }

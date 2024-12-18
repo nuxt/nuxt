@@ -14,10 +14,8 @@
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
-        "vitest"
-      ],
-      "matchPackagePatterns": [
-        "^@vitest/"
+        "vitest",
+        "/^@vitest//"
       ]
     },
     {
@@ -31,6 +29,19 @@
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
+      ]
+    },
+    {
+      "groupName": "typescript",
+      "matchPackageNames": [
+        "typescript"
+      ]
+    },
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack",
+        "memfs"
       ]
     }
   ]

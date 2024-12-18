@@ -505,9 +505,9 @@ function useObserver (): { observe: ObserveFn } | undefined {
     observer.observe(element)
     return () => {
       callbacks.delete(element)
-      observer!.unobserve(element)
+      observer?.unobserve(element)
       if (callbacks.size === 0) {
-        observer!.disconnect()
+        observer?.disconnect()
         observer = null
       }
     }

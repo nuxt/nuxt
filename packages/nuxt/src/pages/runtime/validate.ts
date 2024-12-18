@@ -29,7 +29,9 @@ export default defineNuxtRouteMiddleware(async (to) => {
         // We pretend to have navigated to the invalid route so
         // that the user can return to the previous page with
         // the back button.
-        window?.history.pushState({}, '', to.fullPath)
+        if (typeof window !== 'undefined') {
+          window.history.pushState({}, '', to.fullPath)
+        }
       })
       // We stop the navigation immediately before it resolves
       // if there is no other route matching it.

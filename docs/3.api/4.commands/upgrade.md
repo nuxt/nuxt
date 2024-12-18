@@ -17,3 +17,4 @@ The `upgrade` command upgrades Nuxt to the latest version.
 Option        | Default          | Description
 -------------------------|-----------------|------------------
 `--force, -f` | `false` | Removes `node_modules` and lock files before upgrade.
+`--channel, -ch` | `"stable"` | Specify a channel to install from ("nightly" or "stable")

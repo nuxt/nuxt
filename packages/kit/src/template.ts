@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
@@ -22,9 +22,8 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
-  // Remove any existing template with the same filename
-  nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+  // Remove any existing template with the same destination path
+  nuxt.options.build.templates = nuxt.options.build.templates.filter(p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -68,7 +67,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
+export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -87,17 +86,16 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): Resol
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName ||
-        `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
     }
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either getContents or src options should be provided: ' + JSON.stringify(template))
+    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. Either filename should be provided: ' + JSON.stringify(template))
+    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
   }
 
   // Always write declaration files
@@ -107,8 +105,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): Resol
 
   // Resolve dst
   if (!template.dst) {
-    const nuxt = useNuxt()
-    template.dst = resolve(nuxt.options.buildDir, template.filename)
+    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
   }
 
   return template as ResolvedNuxtTemplate<T>

@@ -3,7 +3,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 
-const PREFIX = '\0virtual:nuxt:'
+const PREFIX = 'virtual:nuxt:'
 
 interface VirtualFSPluginOptions {
   mode: 'client' | 'server'

@@ -4,12 +4,14 @@ on:
   push:
     paths:
       - "**/package.json"
+      - "pnpm-lock.yaml"
     branches:
       - main
       - 3.x
   pull_request:
     paths:
       - "**/package.json"
+      - "pnpm-lock.yaml"
     branches:
       - main
       - 3.x
@@ -27,10 +29,14 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: 22
           cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
+
       - name: Lint monorepo
         run: pnpm sherif -r multiple-dependency-versions
+
+      - name: Check engine ranges, peer dependency ranges and installed versions
+        run: pnpm installed-check -d
