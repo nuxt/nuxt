@@ -1223,6 +1223,15 @@ describe('composables', () => {
     const { page } = await renderPage('/once')
     expect(await page.getByText('once:').textContent()).toContain('once: 2')
   })
+  it('`callOnce` should run code once with navigation mode during initial render', async () => {
+    const html = await $fetch<string>('/once-nav-initial')
+
+    expect(html).toContain('once.vue')
+    expect(html).toContain('once: 2')
+
+    const { page } = await renderPage('/once-nav-initial')
+    expect(await page.getByText('once:').textContent()).toContain('once: 2')
+  })
   it('`useId` should generate unique ids', async () => {
     // TODO: work around interesting Vue bug where async components are loaded in a different order on first import
     await $fetch<string>('/use-id')
