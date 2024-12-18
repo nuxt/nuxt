@@ -21,7 +21,7 @@ The `build` command creates a `.output` directory with all your application, ser
 <!--build-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/build-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--build-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--prerender` |  | Build Nuxt and prerender static routes
 `--preset` |  | Nitro server preset

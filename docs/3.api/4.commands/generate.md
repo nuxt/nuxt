@@ -21,7 +21,7 @@ The `generate` command pre-renders every route of your application and stores th
 <!--generate-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/generate-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--generate-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--preset` |  | Nitro server preset
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory

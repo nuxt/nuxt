@@ -21,7 +21,7 @@ The `build-module` command runs `@nuxt/module-builder` to generate `dist` direct
 <!--build-module-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/build-module-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--build-module-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--build` | `false` | Build module for distribution
 `--stub` | `false` | Stub dist instead of actually building it for development

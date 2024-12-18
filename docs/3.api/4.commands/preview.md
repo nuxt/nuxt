@@ -21,7 +21,7 @@ The `preview` command starts a server to preview your Nuxt application after run
 <!--preview-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/preview-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--preview-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory

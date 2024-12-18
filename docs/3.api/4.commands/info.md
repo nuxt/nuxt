@@ -21,7 +21,7 @@ The `info` command logs information about the current or specified Nuxt project.
 <!--info-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/info-args-->
 
 ## Options
@@ -29,5 +29,5 @@ Argument | Description
 <!--info-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 <!--/info-opts-->

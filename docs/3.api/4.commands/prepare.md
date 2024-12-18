@@ -21,7 +21,7 @@ The `prepare` command creates a [`.nuxt`](/docs/guide/directory-structure/nuxt) 
 <!--prepare-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/prepare-args-->
 
 ## Options
@@ -30,7 +30,7 @@ Argument | Description
 Option | Default | Description
 --- | --- | ---
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--envName` |  | The environment to use when resolving configuration overrides (default is `production` when building, and `development` when running the dev server)
 <!--/prepare-opts-->

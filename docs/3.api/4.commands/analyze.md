@@ -21,7 +21,7 @@ The `analyze` command builds Nuxt and analyzes the production bundle (experiment
 <!--analyze-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/analyze-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--analyze-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--dotenv` |  | Path to `.env` file to load, relative to the root directory
 `--name=<name>` | `default` | Name of the analysis

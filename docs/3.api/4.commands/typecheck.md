@@ -21,7 +21,7 @@ The `typecheck` command runs [`vue-tsc`](https://github.com/vuejs/language-tools
 <!--typecheck-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/typecheck-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--typecheck-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 <!--/typecheck-opts-->
 

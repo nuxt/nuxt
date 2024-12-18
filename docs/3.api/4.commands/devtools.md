@@ -22,7 +22,7 @@ Running `nuxi devtools enable` will install the Nuxt DevTools globally, and also
 Argument | Description
 --- | ---
 `COMMAND` | Command to run (options: <enable\|disable>)
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/devtools-args-->
 
 ## Options
@@ -30,7 +30,7 @@ Argument | Description
 <!--devtools-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 <!--/devtools-opts-->
 
 ::read-more{icon="i-simple-icons-nuxtdotjs" to="https://devtools.nuxt.com" target="\_blank"}

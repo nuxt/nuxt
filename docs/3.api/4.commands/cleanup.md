@@ -26,7 +26,7 @@ The `cleanup` command removes common generated Nuxt files and caches, including:
 <!--cleanup-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/cleanup-args-->
 
 ## Options
@@ -34,5 +34,5 @@ Argument | Description
 <!--cleanup-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 <!--/cleanup-opts-->

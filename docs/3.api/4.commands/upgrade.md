@@ -21,7 +21,7 @@ The `upgrade` command upgrades Nuxt to the latest version.
 <!--upgrade-args-->
 Argument | Description
 --- | ---
-`ROOTDIR="."` | (DEPRECATED) Use `--cwd` instead. Specifies the working directory (default: `.`)
+`ROOTDIR="."` | Specifies the working directory (default: `.`)
 <!--/upgrade-args-->
 
 ## Options
@@ -29,7 +29,7 @@ Argument | Description
 <!--upgrade-opts-->
 Option | Default | Description
 --- | --- | ---
-`--cwd=<directory>` |  | Specify the working directory (default: `.`)
+`--cwd=<directory>` |  | Specify the working directory, this takes precedence over ROOTDIR (default: `.`)
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `-f, --force` |  | Force upgrade to recreate lockfile and node_modules
 `-ch, --channel=<stable\|nightly>` | `stable` | Specify a channel to install from (default: stable)
