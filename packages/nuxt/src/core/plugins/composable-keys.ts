@@ -3,11 +3,10 @@ import { createUnplugin } from 'unplugin'
 import { isAbsolute, relative } from 'pathe'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
-import type { Pattern } from 'estree'
 import { parseQuery, parseURL } from 'ufo'
 import escapeRE from 'escape-string-regexp'
 import { findStaticImports, parseStaticImport } from 'mlly'
-import { parseAndWalk, walk } from '../../core/utils/parse'
+import { ScopeTracker, parseAndWalk, walk } from '../utils/parse'
 
 import { matchWithStringOrRegex } from '../utils/plugins'
 
@@ -53,33 +52,18 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
       const { pathname: relativePathname } = parseURL(relativeID)
 
       // To handle variables hoisting we need a pre-pass to collect variable and function declarations with scope info.
-      let scopeTracker = new ScopeTracker()
-      const varCollector = new ScopedVarsCollector()
+      const scopeTracker = new ScopeTracker({
+        keepExitedScopes: true,
+      })
       const ast = parseAndWalk(script, id, {
-        enter (node) {
-          if (node.type === 'BlockStatement') {
-            scopeTracker.enterScope()
-            varCollector.refresh(scopeTracker.curScopeKey)
-          } else if (node.type === 'FunctionDeclaration' && node.id) {
-            varCollector.addVar(node.id.name)
-          } else if (node.type === 'VariableDeclarator') {
-            varCollector.collect(node.id)
-          }
-        },
-        leave (_node) {
-          if (_node.type === 'BlockStatement') {
-            scopeTracker.leaveScope()
-            varCollector.refresh(scopeTracker.curScopeKey)
-          }
-        },
+        scopeTracker,
       })
 
-      scopeTracker = new ScopeTracker()
+      scopeTracker.freeze()
+
       walk(ast, {
+        scopeTracker,
         enter (node) {
-          if (node.type === 'BlockStatement') {
-            scopeTracker.enterScope()
-          }
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
           const name = node.callee.name
           if (!name || !keyedFunctions.has(name) || node.arguments.length >= maxLength) { return }
@@ -89,7 +73,9 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
 
           const meta = composableMeta[name]
 
-          if (varCollector.hasVar(scopeTracker.curScopeKey, name)) {
+          const declaration = scopeTracker.getDeclaration(name)
+
+          if (declaration && declaration.type !== 'Import') {
             let skip = true
             if (meta.source) {
               skip = !matchWithStringOrRegex(relativePathname, meta.source)
@@ -125,11 +111,6 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
             (node.arguments.length && !endsWithComma ? ', ' : '') + '\'$' + hash(`${relativeID}-${++count}`) + '\'',
           )
         },
-        leave (_node) {
-          if (_node.type === 'BlockStatement') {
-            scopeTracker.leaveScope()
-          }
-        },
       })
       if (s.hasChanged()) {
         return {
@@ -142,97 +123,6 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
     },
   }
 })
-
-/*
-* track scopes with unique keys. for example
-* ```js
-* // root scope, marked as ''
-* function a () { // '0'
-*   function b () {} // '0-0'
-*   function c () {} // '0-1'
-* }
-* function d () {} // '1'
-* // ''
-* ```
-* */
-class ScopeTracker {
-  // the top of the stack is not a part of current key, it is used for next level
-  scopeIndexStack: number[]
-  curScopeKey: string
-
-  constructor () {
-    this.scopeIndexStack = [0]
-    this.curScopeKey = ''
-  }
-
-  getKey () {
-    return this.scopeIndexStack.slice(0, -1).join('-')
-  }
-
-  enterScope () {
-    this.scopeIndexStack.push(0)
-    this.curScopeKey = this.getKey()
-  }
-
-  leaveScope () {
-    this.scopeIndexStack.pop()
-    this.curScopeKey = this.getKey()
-    this.scopeIndexStack[this.scopeIndexStack.length - 1]!++
-  }
-}
-
-class ScopedVarsCollector {
-  curScopeKey: string
-  all: Map<string, Set<string>>
-
-  constructor () {
-    this.all = new Map()
-    this.curScopeKey = ''
-  }
-
-  refresh (scopeKey: string) {
-    this.curScopeKey = scopeKey
-  }
-
-  addVar (name: string) {
-    let vars = this.all.get(this.curScopeKey)
-    if (!vars) {
-      vars = new Set()
-      this.all.set(this.curScopeKey, vars)
-    }
-    vars.add(name)
-  }
-
-  hasVar (scopeKey: string, name: string) {
-    const indices = scopeKey.split('-').map(Number)
-    for (let i = indices.length; i >= 0; i--) {
-      if (this.all.get(indices.slice(0, i).join('-'))?.has(name)) {
-        return true
-      }
-    }
-    return false
-  }
-
-  collect (pattern: Pattern) {
-    if (pattern.type === 'Identifier') {
-      this.addVar(pattern.name)
-    } else if (pattern.type === 'RestElement') {
-      this.collect(pattern.argument)
-    } else if (pattern.type === 'AssignmentPattern') {
-      this.collect(pattern.left)
-    } else if (pattern.type === 'ArrayPattern') {
-      for (const element of pattern.elements) {
-        if (element) {
-          this.collect(element.type === 'RestElement' ? element.argument : element)
-        }
-      }
-    } else if (pattern.type === 'ObjectPattern') {
-      for (const property of pattern.properties) {
-        this.collect(property.type === 'RestElement' ? property.argument : property.value)
-      }
-    }
-  }
-}
 
 const NUXT_IMPORT_RE = /nuxt|#app|#imports/
 
