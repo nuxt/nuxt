@@ -623,6 +623,18 @@ describe('routing utilities: `navigateTo`', () => {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
   })
+  it('navigateTo should replace current navigation state if called within middleware', () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    expect(navigateTo('/')).toMatchInlineSnapshot(`"/"`)
+    expect(navigateTo('/', { replace: true })).toMatchInlineSnapshot(`
+      {
+        "path": "/",
+        "replace": true,
+      }
+    `)
+    nuxtApp._processingMiddleware = false
+  })
 })
 
 describe('routing utilities: `resolveRouteObject`', () => {
