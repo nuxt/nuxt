@@ -19,7 +19,7 @@ import { navigateTo } from '#app/composables/router'
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import _routes, { handleHotUpdate } from '#build/routes'
-import routerOptions from '#build/router.options'
+import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
 import { globalMiddleware, namedMiddleware } from '#build/middleware'
 
@@ -51,13 +51,13 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
   enforce: 'pre',
   async setup (nuxtApp) {
     let routerBase = useRuntimeConfig().app.baseURL
-    if (routerOptions.hashMode && !routerBase.includes('#')) {
+    if (hashMode && !routerBase.includes('#')) {
       // allow the user to provide a `#` in the middle: `/base/#/app`
       routerBase += '#'
     }
 
     const history = routerOptions.history?.(routerBase) ?? (import.meta.client
-      ? (routerOptions.hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
+      ? (hashMode ? createWebHashHistory(routerBase) : createWebHistory(routerBase))
       : createMemoryHistory(routerBase)
     )
 
