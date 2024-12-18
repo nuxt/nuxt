@@ -69,6 +69,9 @@ jobs:
   codeql:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        language: ['javascript-typescript', 'actions']
     permissions:
       actions: read
       contents: read
@@ -90,13 +93,12 @@ jobs:
             - '**/*.spec.ts'
             - '**/*.test.ts'
             - '**/__snapshots__/**'
-          languages: javascript-typescript
-          queries: +security-and-quality
+          languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
         with:
-          category: "/language:javascript-typescript"
+          category: "/language:${{ matrix.language }}"
 
   typecheck:
     runs-on: ${{ matrix.os }}
