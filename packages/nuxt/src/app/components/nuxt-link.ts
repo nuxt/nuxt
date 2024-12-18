@@ -18,6 +18,8 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
+import { hashMode } from '#build/router.options'
+
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
@@ -110,8 +112,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
-  function isHashLinkWithoutHashMode (link: unknown, hashMode: boolean): boolean {
-    return typeof link === 'string' && link.startsWith('#') && !hashMode
+  function isHashLinkWithoutHashMode (link: unknown): boolean {
+    return !hashMode && typeof link === 'string' && link.startsWith('#')
   }
 
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
@@ -138,8 +140,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
   function useNuxtLink (props: NuxtLinkProps) {
     const router = useRouter()
-    // @ts-expect-error untyped, nuxt-injected option
-    const hashMode = router.options?.hashMode ?? false
     const config = useRuntimeConfig()
 
     const hasTarget = computed(() => !!props.target && props.target !== '_self')
@@ -182,7 +182,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value, hashMode)) {
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
         return to.value as string
       }
 
@@ -316,8 +316,6 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     useLink: useNuxtLink,
     setup (props, { slots }) {
       const router = useRouter()
-      // @ts-expect-error untyped, nuxt-injected option
-      const hashMode = router.options?.hashMode ?? false
 
       const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
 
@@ -383,7 +381,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value, hashMode)) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
