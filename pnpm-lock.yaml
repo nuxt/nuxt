@@ -133,8 +133,8 @@ importers:
         specifier: 2.10.4
         version: 2.10.4(typescript@5.6.2)
       nuxi:
-        specifier: 3.16.0
-        version: 3.16.0
+        specifier: 3.17.0
+        version: 3.17.0
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -392,8 +392,8 @@ importers:
         specifier: ^2.10.4
         version: 2.10.4(typescript@5.6.2)
       nuxi:
-        specifier: ^3.16.0
-        version: 3.16.0
+        specifier: ^3.17.0
+        version: 3.17.0
       nypm:
         specifier: ^0.4.1
         version: 0.4.1
@@ -5731,8 +5731,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxi@3.16.0:
-    resolution: {integrity: sha512-t9m4zTq44R0/icuzQXJHEyPRM3YbgTPMpytyb6YW2LOL/3mwZ3Bmte1FIlCoigzDvxBJRbcchZGc689+Syyu8w==}
+  nuxi@3.17.0:
+    resolution: {integrity: sha512-umfGtKSIPGFDzp0qBSNA0wsigIBXqVe/pbZ5xmk5d+DTYaoPptcTxulfOYFWqMlIwyzsLMsBLrd8a6dIxEiw1g==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -13274,7 +13274,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxi@3.16.0: {}
+  nuxi@3.17.0: {}
 
   nuxt-content-twoslash@0.1.2(@nuxtjs/mdc@0.11.1):
     dependencies:
