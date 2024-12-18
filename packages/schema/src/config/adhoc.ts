@@ -28,6 +28,10 @@ export default defineUntypedSchema({
    */
   imports: {
     global: false,
+    /**
+     * Whether to auto-import custom source files or not (framework functions will still be auto-imported)
+     */
+    scan: true,
 
     /**
      * An array of custom directories that will be auto-imported.
