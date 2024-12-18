@@ -12,6 +12,7 @@ interface LoaderOptions {
   getComponents (): Component[]
   mode: 'server' | 'client'
   serverComponentRuntime: string
+  clientDelayedComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
   experimentalComponentIslands?: boolean
@@ -21,7 +22,6 @@ const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*[
 export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
-  const clientDelayedComponentRuntime = resolve(distDir, 'components/runtime/client-delayed-component')
   const nuxt = tryUseNuxt()
 
   return {
@@ -43,7 +43,6 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
       const imports = new Set<string>()
       const map = new Map<Component, string>()
       const s = new MagicString(code)
-      const nuxt = tryUseNuxt()
       // replace `_resolveComponent("...")` to direct import
       s.replace(REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE, (full: string, lazy: string, modifier: string, name: string) => {
         const normalComponent = findComponent(components, name, options.mode)
@@ -85,31 +84,31 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIOComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIOComponent' }]))
                   identifier += '_delayedIO'
                   imports.add(`const ${identifier} = createLazyIOComponent(${dynamicImport})`)
                   break
                 case 'Event':
                 case 'event-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyEventComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyEventComponent' }]))
                   identifier += '_delayedEvent'
                   imports.add(`const ${identifier} = createLazyEventComponent(${dynamicImport})`)
                   break
                 case 'Idle':
                 case 'idle-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyNetworkComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNetworkComponent' }]))
                   identifier += '_delayedNetwork'
                   imports.add(`const ${identifier} = createLazyNetworkComponent(${dynamicImport})`)
                   break
                 case 'Media':
                 case 'media-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyMediaComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyMediaComponent' }]))
                   identifier += '_delayedMedia'
                   imports.add(`const ${identifier} = createLazyMediaComponent(${dynamicImport})`)
                   break
                 case 'If':
                 case 'if-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIfComponent' }]))
                   identifier += '_delayedIf'
                   imports.add(`const ${identifier} = createLazyIfComponent(${dynamicImport})`)
                   break
@@ -121,13 +120,13 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
                   break
                 case 'Time':
                 case 'time-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyTimeComponent' }]))
                   identifier += '_delayedTime'
                   imports.add(`const ${identifier} = createLazyTimeComponent(${dynamicImport})`)
                   break
                 case 'Promise':
                 case 'promise-':
-                  imports.add(genImport(clientDelayedComponentRuntime, [{ name: 'createLazyPromiseComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyPromiseComponent' }]))
                   identifier += '_delayedPromise'
                   imports.add(`const ${identifier} = createLazyPromiseComponent(${dynamicImport})`)
                   break
