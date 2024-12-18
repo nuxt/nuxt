@@ -2,6 +2,9 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { H3Event } from 'h3'
+import { getRouteRules as getNitroRouteRules } from 'nitro/runtime'
+import type { NitroRouteRules } from 'nitro/types'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
@@ -107,6 +110,21 @@ describe('API routes', () => {
 
     expectTypeOf(useLazyFetch('/error').error).toEqualTypeOf<Ref<FetchError | DefaultAsyncDataErrorValue>>()
     expectTypeOf(useLazyFetch<any, string>('/error').error).toEqualTypeOf<Ref<string | DefaultAsyncDataErrorValue>>()
+  })
+})
+
+describe('nitro compatible APIs', () => {
+  it('getRouteRules', async () => {
+    const a = await getRouteRules('/test')
+    const b = await getRouteRules({} as H3Event)
+    const c = getNitroRouteRules({} as H3Event)
+
+    expectTypeOf(b).toEqualTypeOf(c)
+    expectTypeOf(c).toEqualTypeOf<NitroRouteRules>()
+    expectTypeOf(a).toEqualTypeOf<Record<string, any>>()
+  })
+  it('useRuntimeConfig', () => {
+    useRuntimeConfig({} as H3Event)
   })
 })
 

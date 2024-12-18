@@ -557,8 +557,8 @@ describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', (
     `)
   })
   it('getRouteRules', async () => {
-    expect(await getRouteRules('/')).toMatchInlineSnapshot('{}')
-    expect(await getRouteRules('/pre')).toMatchInlineSnapshot(`
+    expect(await getRouteRules({ path: '/' })).toMatchInlineSnapshot('{}')
+    expect(await getRouteRules({ path: '/pre' })).toMatchInlineSnapshot(`
       {
         "prerender": true,
       }
@@ -622,6 +622,18 @@ describe('routing utilities: `navigateTo`', () => {
     for (const [url, protocol] of urls) {
       expect(() => navigateTo(url, { external: true })).toThrowError(`Cannot navigate to a URL with '${protocol}:' protocol.`)
     }
+  })
+  it('navigateTo should replace current navigation state if called within middleware', () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    expect(navigateTo('/')).toMatchInlineSnapshot(`"/"`)
+    expect(navigateTo('/', { replace: true })).toMatchInlineSnapshot(`
+      {
+        "path": "/",
+        "replace": true,
+      }
+    `)
+    nuxtApp._processingMiddleware = false
   })
 })
 

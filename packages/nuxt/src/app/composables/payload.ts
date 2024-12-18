@@ -94,7 +94,7 @@ export async function isPrerendered (url = useRoute().path) {
     return true
   }
   return nuxtApp.runWithContext(async () => {
-    const rules = await getRouteRules(url)
+    const rules = await getRouteRules({ path: url })
     return !!rules.prerender && !rules.redirect
   })
 }
