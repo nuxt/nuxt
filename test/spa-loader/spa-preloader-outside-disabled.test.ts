@@ -1,7 +1,8 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { $fetch, createPage, setup, url } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, setup, url } from '@nuxt/test-utils/e2e'
+import { expectWithPolling } from '../utils'
 
 const isWebpack =
   process.env.TEST_BUILDER === 'webpack' ||
@@ -25,6 +26,9 @@ await setup({
 })
 
 describe('spaLoadingTemplateLocation flag is set to `within`', () => {
+  it.runIf(isDev)('should load dev server', async () => {
+    await expectWithPolling(() => fetch('/').then(r => r.status === 200).catch(() => null), true)
+  })
   it('should render loader inside appTag', async () => {
     const html = await $fetch<string>('/spa')
     expect(html).toContain(`<div id="__nuxt"><div data-testid="loader">loading...</div></div>`)
