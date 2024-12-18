@@ -14,10 +14,8 @@
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
-        "vitest"
-      ],
-      "matchPackagePatterns": [
-        "^@vitest/"
+        "vitest",
+        "/^@vitest//"
       ]
     },
     {
@@ -40,9 +38,10 @@
       ]
     },
     {
-      "groupName": "unimport",
+      "groupName": "webpack",
       "matchPackageNames": [
-        "unimport"
+        "webpack",
+        "memfs"
       ]
     }
   ]

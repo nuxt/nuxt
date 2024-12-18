@@ -36,9 +36,9 @@ export function updateRuntimeConfig (runtimeConfig: Record<string, unknown>) {
 }
 
 /**
- * https://github.com/unjs/nitro/blob/main/src/runtime/utils.env.ts.
+ * https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.env.ts.
 *
- * These utils will be replaced by util exposed from nitropack. See https://github.com/unjs/nitro/pull/2404
+ * These utils will be replaced by util exposed from nitropack. See https://github.com/nitrojs/nitro/pull/2404
  * for more context and future plans.)
  *
  * @internal

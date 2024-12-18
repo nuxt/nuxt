@@ -99,7 +99,7 @@ export default defineUntypedSchema({
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/unjs/nitro/issues/1118
+    // https://github.com/nitrojs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
@@ -360,7 +360,7 @@ export default defineUntypedSchema({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
         prefetch: true,
@@ -415,6 +415,17 @@ export default defineUntypedSchema({
     normalizeComponentNames: {
       $resolve: async (val, get) => {
         return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
+     */
+    spaLoadingTemplateLocation: {
+      $resolve: async (val, get) => {
+        return val ?? (((await get('future') as Record<string, unknown>).compatibilityVersion === 4) ? 'body' : 'within')
       },
     },
 
