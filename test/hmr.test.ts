@@ -28,6 +28,10 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
   const indexVue = await fsp.readFile(join(fixturePath, 'pages/index.vue'), 'utf8')
 
   describe('hmr', () => {
+    it('should load dev server', async () => {
+      await expectWithPolling(() => $fetch<string>('/').then(r => r.includes('Home page')).catch(() => null), true)
+    })
+
     it('should work', async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/')
 
