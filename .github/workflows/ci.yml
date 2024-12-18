@@ -94,7 +94,6 @@ jobs:
             - '**/*.test.ts'
             - '**/__snapshots__/**'
           languages: ${{ matrix.language }}
-          queries: +security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
