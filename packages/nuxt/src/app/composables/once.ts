@@ -1,7 +1,7 @@
 import { useNuxtApp } from '../nuxt'
 
 type CallOnceOptions = {
-  mode: 'navigation' | 'render'
+  mode?: 'navigation' | 'render'
 }
 
 /**
@@ -17,7 +17,7 @@ export function callOnce (fn?: (() => any | Promise<any>), options?: CallOnceOpt
 export async function callOnce (...args: any): Promise<void> {
   const autoKey = typeof args[args.length - 1] === 'string' ? args.pop() : undefined
   if (typeof args[0] !== 'string') { args.unshift(autoKey) }
-  const [_key, fn, options = { mode: 'render' }] = args as [string, (() => any | Promise<any>), CallOnceOptions]
+  const [_key, fn, options] = args as [string, (() => any | Promise<any>), CallOnceOptions | undefined]
   if (!_key || typeof _key !== 'string') {
     throw new TypeError('[nuxt] [callOnce] key must be a string: ' + _key)
   }
@@ -26,14 +26,14 @@ export async function callOnce (...args: any): Promise<void> {
   }
   const nuxtApp = useNuxtApp()
 
-  if (options.mode === 'navigation') {
+  if (options?.mode === 'navigation') {
     nuxtApp.hooks.hookOnce('page:start', () => {
       nuxtApp.payload.once.delete(_key)
     })
   }
 
-  const didRunAlready = nuxtApp.payload.once.has(_key)
-  if (didRunAlready) {
+  // If key already ran
+  if (nuxtApp.payload.once.has(_key)) {
     return
   }
 
