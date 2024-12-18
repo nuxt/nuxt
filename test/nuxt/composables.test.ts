@@ -1,6 +1,6 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { destr } from 'destr'
 
@@ -778,33 +778,55 @@ describe('useCookie', () => {
 })
 
 describe('callOnce', () => {
-  it('should only call composable once', async () => {
-    const fn = vi.fn()
-    const execute = () => callOnce(fn)
-    await execute()
-    await execute()
-    expect(fn).toHaveBeenCalledTimes(1)
-  })
+  describe.each([
+    ['without options', undefined],
+    ['with "render" option', { mode: 'render' as const }],
+    ['with "navigation" option', { mode: 'navigation' as const }],
+  ])('%s', (_name, options) => {
+    const nuxtApp = useNuxtApp()
+    afterEach(() => {
+      nuxtApp.payload.once.clear()
+    })
+    it('should only call composable once', async () => {
+      const fn = vi.fn()
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await execute()
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(1)
+    })
 
-  it('should only call composable once when called in parallel', async () => {
-    const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
-    const execute = () => callOnce(fn)
-    await Promise.all([execute(), execute(), execute()])
-    expect(fn).toHaveBeenCalledTimes(1)
+    it('should only call composable once when called in parallel', async () => {
+      const fn = vi.fn().mockImplementation(() => new Promise(resolve => setTimeout(resolve, 1)))
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await Promise.all([execute(), execute(), execute()])
+      expect(fn).toHaveBeenCalledTimes(1)
 
-    const fnSync = vi.fn().mockImplementation(() => {})
-    const executeSync = () => callOnce(fnSync)
-    await Promise.all([executeSync(), executeSync(), executeSync()])
-    expect(fnSync).toHaveBeenCalledTimes(1)
-  })
+      const fnSync = vi.fn().mockImplementation(() => {})
+      const executeSync = () => options ? callOnce(fnSync, options) : callOnce(fnSync)
+      await Promise.all([executeSync(), executeSync(), executeSync()])
+      expect(fnSync).toHaveBeenCalledTimes(1)
+    })
 
-  it('should use key to dedupe', async () => {
-    const fn = vi.fn()
-    const execute = (key?: string) => callOnce(key, fn)
-    await execute('first')
-    await execute('first')
-    await execute('second')
-    expect(fn).toHaveBeenCalledTimes(2)
+    it('should use key to dedupe', async () => {
+      const fn = vi.fn()
+      const execute = (key?: string) => options ? callOnce(key, fn, options) : callOnce(key, fn)
+      await execute('first')
+      await execute('first')
+      await execute('second')
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should rerun on navigation', async () => {
+      const fn = vi.fn()
+      const execute = () => options ? callOnce(fn, options) : callOnce(fn)
+      await execute()
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      await nuxtApp.callHook('page:start')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
   })
 })
 
