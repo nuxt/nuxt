@@ -93,6 +93,8 @@ jobs:
             - '**/*.spec.ts'
             - '**/*.test.ts'
             - '**/__snapshots__/**'
+            # codeql bug: #L20C9:9: A parse error occurred: `Unexpected token`.
+            - 'packages/vite/src/runtime/vite-node.mjs'
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
