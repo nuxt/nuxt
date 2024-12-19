@@ -73,7 +73,7 @@
     "@nuxt/devtools": "^1.6.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/telemetry": "^2.6.0",
+    "@nuxt/telemetry": "^2.6.1",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/dom": "^1.11.14",
     "@unhead/shared": "^1.11.14",
@@ -127,7 +127,7 @@
     "unimport": "^3.14.5",
     "unplugin": "^2.1.0",
     "unplugin-vue-router": "^0.10.9",
-    "unstorage": "^1.13.0",
+    "unstorage": "^1.14.1",
     "untyped": "^1.5.2",
     "vue": "^3.5.13",
     "vue-bundle-renderer": "^2.1.1",
@@ -141,7 +141,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "latest",
-    "vite": "6.0.3",
+    "vite": "6.0.4",
     "vitest": "2.1.8"
   },
   "peerDependencies": {
