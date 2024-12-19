@@ -28,13 +28,11 @@ export default <RouterConfig> {
     }
 
     // Hash routes on the same page, no page hook is fired so resolve here
-    if (to.path === from.path) {
-      if (from.hash && !to.hash) {
+    if (to.path === from.path && !to.hash) {
+      if (from.hash) {
         return { left: 0, top: 0 }
       }
-      if (to.hash) {
-        return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
-      }
+
       // The route isn't changing so keep current scroll position
       return false
     }
@@ -42,12 +40,15 @@ export default <RouterConfig> {
     // Wait for `page:transition:finish` or `page:finish` depending on if transitions are enabled or not
     const hasTransition = (route: RouteLocationNormalized) => !!(route.meta.pageTransition ?? defaultPageTransition)
     const hookToWait = (hasTransition(from) && hasTransition(to)) ? 'page:transition:finish' : 'page:finish'
+
     return new Promise((resolve) => {
       nuxtApp.hooks.hookOnce(hookToWait, async () => {
         await new Promise(resolve => setTimeout(resolve, 0))
+
         if (to.hash) {
           position = { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior }
         }
+
         resolve(position)
       })
     })
@@ -57,11 +58,13 @@ export default <RouterConfig> {
 function _getHashElementScrollMarginTop (selector: string): number {
   try {
     const elem = document.querySelector(selector)
+
     if (elem) {
       return (Number.parseFloat(getComputedStyle(elem).scrollMarginTop) || 0) + (Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0)
     }
   } catch {
     // ignore any errors parsing scrollMarginTop
   }
+
   return 0
 }
