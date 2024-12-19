@@ -129,6 +129,16 @@ export default defineNuxtModule({
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
+      // used by `<NuxtLink>`
+      addTemplate({
+        filename: 'router.options.mjs',
+        getContents: () => {
+          return [
+            'export const hashMode = false',
+            'export default {}',
+          ].join('\n')
+        },
+      })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [

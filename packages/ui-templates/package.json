@@ -17,9 +17,9 @@
     "prerender": "pnpm build && jiti ./lib/prerender"
   },
   "devDependencies": {
-    "@unocss/reset": "0.65.1",
+    "@unocss/reset": "0.65.2",
     "beasties": "0.2.0",
-    "html-validate": "8.27.0",
+    "html-validate": "8.28.0",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
     "knitwork": "1.2.0",
@@ -29,7 +29,7 @@
     "svgo": "3.3.2",
     "tinyexec": "0.3.1",
     "tinyglobby": "0.2.10",
-    "unocss": "0.65.1",
+    "unocss": "0.65.2",
     "vite": "6.0.3"
   },
   "engines": {

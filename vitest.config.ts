@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
+      '#build/router.options': resolve('./test/mocks/router-options'),
       '#internal/nuxt/paths': resolve('./test/mocks/paths'),
       '#build/app.config.mjs': resolve('./test/mocks/app-config'),
       '#app': resolve('./packages/nuxt/dist/app'),
