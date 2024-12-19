@@ -127,7 +127,7 @@ importers:
         specifier: 0.43.0
         version: 0.43.0
       memfs:
-        specifier: ~4.14.1
+        specifier: 4.14.1
         version: 4.14.1
       nitropack:
         specifier: 2.10.4
