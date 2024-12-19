@@ -26,7 +26,6 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/clear": "0.1.4",
     "rollup": "4.28.1",
     "unbuild": "3.0.1",
     "vue": "3.5.13"
@@ -37,7 +36,6 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitejs/plugin-vue-jsx": "^4.1.1",
     "autoprefixer": "^10.4.20",
-    "clear": "^0.1.0",
     "consola": "^3.2.3",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
