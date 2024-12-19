@@ -7,7 +7,6 @@ import { distDir } from '../dirs'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
-import { ClientFallbackAutoIdPlugin } from './plugins/client-fallback-auto-id'
 import { LoaderPlugin } from './plugins/loader'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform'
 import { TransformPlugin } from './plugins/transform'
@@ -217,11 +216,6 @@ export default defineNuxtModule<ComponentsOptions>({
     })
 
     addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
-
-    if (nuxt.options.experimental.clientFallback) {
-      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.client, rootDir: nuxt.options.rootDir }), { server: false })
-      addBuildPlugin(ClientFallbackAutoIdPlugin({ sourcemap: !!nuxt.options.sourcemap.server, rootDir: nuxt.options.rootDir }), { client: false })
-    }
 
     const sharedLoaderOptions = {
       getComponents,
