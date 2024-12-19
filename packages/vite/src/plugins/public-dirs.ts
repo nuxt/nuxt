@@ -87,7 +87,8 @@ export const VitePublicDirsPlugin = createUnplugin((options: VitePublicDirsPlugi
           }
         },
         generateBundle (_outputOptions, bundle) {
-          for (const [file, chunk] of Object.entries(bundle)) {
+          for (const file in bundle) {
+            const chunk = bundle[file]!
             if (!file.endsWith('.css') || chunk.type !== 'asset') { continue }
 
             let css = chunk.source.toString()
