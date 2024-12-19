@@ -1,8 +1,8 @@
 import type * as vite from 'vite'
+import { createLogger } from 'vite'
 import { logger } from '@nuxt/kit'
 import { colorize } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
-import clear from 'clear'
 import type { NuxtOptions } from '@nuxt/schema'
 import { useResolveFromPublicAssets } from '../plugins/public-dirs'
 
@@ -27,6 +27,13 @@ const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
 export function createViteLogger (config: vite.InlineConfig): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
+  const _logger = createLogger()
+  const clear = () => {
+    _logger.clearScreen(
+      // @ts-expect-error silent is a log level but not a valid option for clearScreens
+      'silent',
+    )
+  }
   const clearScreen = canClearScreen ? clear : () => {}
 
   const { resolveFromPublicAssets } = useResolveFromPublicAssets()
