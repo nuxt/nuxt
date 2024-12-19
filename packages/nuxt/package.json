@@ -122,7 +122,7 @@
     "unimport": "^3.14.5",
     "unplugin": "^2.1.0",
     "unplugin-vue-router": "^0.10.9",
-    "unstorage": "^1.14.0",
+    "unstorage": "^1.13.1",
     "untyped": "^1.5.2",
     "vue": "^3.5.13",
     "vue-bundle-renderer": "^2.1.1",
