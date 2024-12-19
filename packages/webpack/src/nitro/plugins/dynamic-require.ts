@@ -88,9 +88,18 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
   }
 }
 
+type WebpackChunk = {
+  id: string
+  ids: string[]
+  modules: Record<string, unknown>
+  __webpack_id__?: string
+  __webpack_ids__?: string[]
+  __webpack_modules__?: Record<string, unknown>
+}
+
 async function getWebpackChunkMeta (src: string) {
-  const chunk = await importModule<{ id: string, ids: string[], modules: Record<string, unknown> }>(src) || {}
-  const { id, ids, modules } = chunk
+  const chunk = await importModule<WebpackChunk>(src) || {}
+  const { __webpack_id__, __webpack_ids__, __webpack_modules__, id = __webpack_id__, ids = __webpack_ids__, modules = __webpack_modules__ } = chunk
   if (!id && !ids) {
     return null // Not a webpack chunk
   }
