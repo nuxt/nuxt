@@ -103,6 +103,9 @@ export async function buildClient (ctx: ViteBuildContext) {
         'ufo',
         'unctx',
         'unenv',
+
+        // these will never be imported on the client
+        '#app-manifest',
       ],
     },
     resolve: {
