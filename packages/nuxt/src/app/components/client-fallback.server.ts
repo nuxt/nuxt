@@ -33,7 +33,7 @@ const NuxtClientFallbackServer = defineComponent({
       return true
     },
   },
-  async setup (props, ctx) {
+  async setup (_, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
     const error = useState<boolean | undefined>(useId())
