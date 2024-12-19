@@ -77,7 +77,7 @@
     "@vue/shared": "^3.5.13",
     "acorn": "8.14.0",
     "c12": "^2.0.1",
-    "chokidar": "^4.0.2",
+    "chokidar": "^4.0.3",
     "compatx": "^0.1.8",
     "consola": "^3.2.3",
     "cookie-es": "^1.2.2",
