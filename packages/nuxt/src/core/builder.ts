@@ -108,7 +108,7 @@ function createWatcher () {
 
   // TODO: consider moving to emit absolute path in 3.8 or 4.0
   watcher.on('all', (event, path) => {
-    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || path instanceof Error) {
+    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
       return
     }
     nuxt.callHook('builder:watch', event, nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, path)) : normalize(path))
@@ -140,7 +140,7 @@ function createGranularWatcher () {
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
-      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || path instanceof Error) {
+      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
         return
       }
       path = normalize(path)
@@ -156,7 +156,7 @@ function createGranularWatcher () {
         const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         // TODO: consider moving to emit absolute path in 3.8 or 4.0
         pathWatcher.on('all', (event, p) => {
-          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || p instanceof Error) {
+          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
             return
           }
           nuxt.callHook('builder:watch', event, nuxt.options.experimental.relativeWatchPaths ? normalize(relative(nuxt.options.srcDir, p)) : normalize(p))
