@@ -107,7 +107,7 @@ function createWatcher () {
   })
 
   watcher.on('all', (event, path) => {
-    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || path instanceof Error) {
+    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
       return
     }
     nuxt.callHook('builder:watch', event, normalize(path))
@@ -139,7 +139,7 @@ function createGranularWatcher () {
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
-      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || path instanceof Error) {
+      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
         return
       }
       path = normalize(path)
@@ -153,7 +153,7 @@ function createGranularWatcher () {
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
         const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
         pathWatcher.on('all', (event, p) => {
-          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw' || p instanceof Error) {
+          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
             return
           }
           nuxt.callHook('builder:watch', event, normalize(p))
