@@ -230,8 +230,9 @@ export default defineNuxtModule<ComponentsOptions>({
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/client-delayed-component')) ?? join(distDir, 'components/runtime/client-delayed-component')
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client', clientDelayedComponentRuntime }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server', clientDelayedComponentRuntime }), { client: false })
 
     if (nuxt.options.experimental.componentIslands) {
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
