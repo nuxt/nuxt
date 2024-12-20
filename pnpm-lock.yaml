@@ -822,9 +822,6 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
-      clear:
-        specifier: ^0.1.0
-        version: 0.1.0
       consola:
         specifier: ^3.2.3
         version: 3.2.3
@@ -901,9 +898,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@types/clear':
-        specifier: 0.1.4
-        version: 0.1.4
       rollup:
         specifier: 4.28.1
         version: 4.28.1
@@ -2577,9 +2571,6 @@ packages:
   '@types/aria-query@5.0.4':
     resolution: {integrity: sha512-rfT93uj5s0PRL7EzccGMs3brplhcrghnDoV26NqKhCAS1hVo+WdNsPvE/yb6ilfr5hi2MEk6d5EWJTKdxg8jVw==}
 
-  '@types/clear@0.1.4':
-    resolution: {integrity: sha512-4nJjoilJPTbYF7Q4y5+F7JFDK8QdcwOItzwVv3RDEMWALT9Mx9UzfxCiUfpbFK05REhieXTCvhbNkiDW/Wfejw==}
-
   '@types/connect@3.4.38':
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
 
@@ -3596,9 +3587,6 @@ packages:
   clean-stack@2.2.0:
     resolution: {integrity: sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==}
     engines: {node: '>=6'}
-
-  clear@0.1.0:
-    resolution: {integrity: sha512-qMjRnoL+JDPJHeLePZJuao6+8orzHMGP04A8CdwCNsKhRbOnKRjefxONR7bwILT3MHecxKBjHkKL/tkZ8r4Uzw==}
 
   cli-highlight@2.1.11:
     resolution: {integrity: sha512-9KDcoEVwyUXrjcJNvHD0NFc/hiwe/WPVYIleQh2O1N2Zro5gWJZ/K+3DGn8w8P/F6FxOgzyC5bxDyHIgCSPhGg==}
@@ -9426,8 +9414,6 @@ snapshots:
 
   '@types/aria-query@5.0.4': {}
 
-  '@types/clear@0.1.4': {}
-
   '@types/connect@3.4.38':
     dependencies:
       '@types/node': 22.10.2
@@ -10818,8 +10804,6 @@ snapshots:
       escape-string-regexp: 1.0.5
 
   clean-stack@2.2.0: {}
-
-  clear@0.1.0: {}
 
   cli-highlight@2.1.11:
     dependencies:
