@@ -58,12 +58,12 @@
     "ufo": "1.5.4",
     "unhead": "1.11.14",
     "unimport": "3.14.5",
-    "vite": "6.0.3",
+    "vite": "6.0.4",
     "vue": "3.5.13"
   },
   "devDependencies": {
-    "@arethetypeswrong/cli": "0.17.1",
-    "@nuxt/eslint-config": "0.7.3",
+    "@arethetypeswrong/cli": "0.17.2",
+    "@nuxt/eslint-config": "0.7.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "3.15.1",
@@ -78,13 +78,13 @@
     "autoprefixer": "10.4.20",
     "case-police": "0.7.2",
     "changelogen": "0.5.7",
-    "consola": "3.2.3",
+    "consola": "3.3.0",
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
     "eslint": "9.17.0",
     "eslint-plugin-no-only-tests": "3.3.0",
-    "eslint-plugin-perfectionist": "4.3.0",
+    "eslint-plugin-perfectionist": "4.4.0",
     "eslint-typegen": "0.3.2",
     "h3": "1.13.0",
     "happy-dom": "15.11.7",
@@ -92,7 +92,7 @@
     "jiti": "2.4.2",
     "knip": "5.41.1",
     "markdownlint-cli": "0.43.0",
-    "memfs": "4.14.1",
+    "memfs": "4.15.0",
     "nitropack": "2.10.4",
     "nuxi": "3.17.0",
     "nuxt": "workspace:*",
@@ -111,9 +111,9 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.1.10",
-    "webpack": "5.96.1"
+    "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@9.15.1",
   "engines": {
     "node": "^20.9.0 || ^22.0.0 || >=23.0.0"
   },
