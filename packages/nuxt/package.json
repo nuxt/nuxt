@@ -90,7 +90,7 @@
     "destr": "^2.0.3",
     "devalue": "^5.1.1",
     "errx": "^0.1.0",
-    "esbuild": "^0.24.1",
+    "esbuild": "^0.24.0",
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "globby": "^14.0.2",
@@ -141,7 +141,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "latest",
-    "vite": "6.0.4",
+    "vite": "6.0.3",
     "vitest": "2.1.8"
   },
   "peerDependencies": {
