@@ -68,7 +68,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.2",
-    "@nuxt/eslint-config": "0.7.3",
+    "@nuxt/eslint-config": "0.7.4",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/test-utils": "3.15.1",
@@ -83,7 +83,7 @@
     "autoprefixer": "10.4.20",
     "case-police": "0.7.2",
     "changelogen": "0.5.7",
-    "consola": "3.2.3",
+    "consola": "3.3.0",
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
@@ -118,7 +118,7 @@
     "vue-tsc": "2.1.10",
     "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@9.15.0",
+  "packageManager": "pnpm@9.15.1",
   "engines": {
     "node": "^18.20.4 || ^20.9.0 || ^22.0.0 || >=23.0.0"
   },
