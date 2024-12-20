@@ -29,7 +29,7 @@
   "dependencies": {
     "@nuxt/schema": "workspace:*",
     "c12": "^2.0.1",
-    "consola": "^3.2.3",
+    "consola": "^3.3.0",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
     "errx": "^0.1.0",
