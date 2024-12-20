@@ -52,7 +52,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.49",
-    "rollup": "4.28.1",
+    "rollup": "4.29.0",
     "send": ">=1.1.0",
     "typescript": "5.6.2",
     "ufo": "1.5.4",
@@ -92,7 +92,7 @@
     "jiti": "2.4.2",
     "knip": "5.41.1",
     "markdownlint-cli": "0.43.0",
-    "memfs": "4.15.0",
+    "memfs": "4.14.1",
     "nitropack": "2.10.4",
     "nuxi": "3.17.1",
     "nuxt": "workspace:*",
@@ -111,7 +111,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.1.10",
-    "webpack": "5.97.1"
+    "webpack": "5.96.1"
   },
   "packageManager": "pnpm@9.15.1",
   "engines": {
