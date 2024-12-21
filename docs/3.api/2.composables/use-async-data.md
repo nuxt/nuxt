@@ -65,6 +65,7 @@ const { data: posts } = await useAsyncData(
 - `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side
 - `options`:
   - `server`: whether to fetch the data on the server (defaults to `true`)
+  - `private`: when true, `server` will default to `false` on cached pages and `true` on uncached pages (defaults to `false`)
   - `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
