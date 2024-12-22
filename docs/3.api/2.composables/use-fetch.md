@@ -30,7 +30,7 @@ If you're using a custom useFetch wrapper, do not await it in the composable, as
 ::
 
 ::note
-`data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions..
+`data`, `status`, and `error` are Vue refs, and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
@@ -50,8 +50,8 @@ You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interce
 const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
   onRequest({ request, options }) {
     // Set the request headers
-    options.headers = options.headers || {}
-    options.headers.authorization = '...'
+    // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
+    options.headers.set('Authorization', '...')
   },
   onRequestError({ request, options, error }) {
     // Handle the request errors
@@ -74,7 +74,7 @@ const { data, status, error, refresh, clear } = await useFetch('/api/auth/login'
 If you encounter the `data` variable destructured from a `useFetch` returns a string and not a JSON parsed object then make sure your component doesn't include an import statement like `import { useFetch } from '@vueuse/core`.
 ::
 
-::tip{icon="i-ph-video-duotone" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
+::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
 Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
 ::
 

@@ -14,22 +14,25 @@
     "dev": "vite",
     "optimize-assets": "npx svgo public/assets/**/*.svg",
     "postinstall": "pnpm build",
-    "prerender": "pnpm build && jiti ./lib/prerender",
-    "test": "pnpm lint && pnpm build"
+    "prerender": "pnpm build && jiti ./lib/prerender"
   },
   "devDependencies": {
-    "@unocss/reset": "0.62.4",
-    "critters": "0.0.24",
-    "html-validate": "8.22.0",
+    "@unocss/reset": "0.65.2",
+    "beasties": "0.2.0",
+    "html-validate": "8.28.0",
     "htmlnano": "2.1.1",
-    "jiti": "2.0.0-beta.3",
-    "knitwork": "1.1.0",
+    "jiti": "2.4.2",
+    "knitwork": "1.2.0",
     "pathe": "1.1.2",
-    "prettier": "3.3.3",
+    "prettier": "3.4.2",
     "scule": "1.3.0",
-    "tinyexec": "0.3.0",
-    "tinyglobby": "0.2.6",
-    "unocss": "0.62.4",
-    "vite": "5.4.6"
+    "svgo": "3.3.2",
+    "tinyexec": "0.3.1",
+    "tinyglobby": "0.2.10",
+    "unocss": "0.65.2",
+    "vite": "6.0.3"
+  },
+  "engines": {
+    "node": "^18.0.0 || ^20.0.0 || >=22.0.0"
   }
 }

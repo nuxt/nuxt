@@ -119,6 +119,11 @@ describe('nuxt-link:isExternal', () => {
     expect(nuxtLink({ to: '/foo/bar', target: '_blank' }).type).toBe(EXTERNAL)
     expect(nuxtLink({ to: '/foo/bar?baz=qux', target: '_blank' }).type).toBe(EXTERNAL)
   })
+
+  it('returns `true` if link starts with hash', () => {
+    expect(nuxtLink({ href: '#hash' }).type).toBe(EXTERNAL)
+    expect(nuxtLink({ to: '#hash' }).type).toBe(EXTERNAL)
+  })
 })
 
 describe('nuxt-link:propsOrAttributes', () => {

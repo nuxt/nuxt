@@ -3,22 +3,35 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import type { CallExpression, Expression, Identifier } from 'estree'
-import type { Node } from 'estree-walker'
 import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
 
-export interface PageMetaPluginOptions {
+import {
+  ScopeTracker,
+  type ScopeTrackerNode,
+  getUndeclaredIdentifiersInFunction,
+  parseAndWalk,
+  withLocations,
+} from '../../core/utils/parse'
+
+interface PageMetaPluginOptions {
   dev?: boolean
   sourcemap?: boolean
+  isPage?: (file: string) => boolean
+  routesPath?: string
 }
 
 const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
 
 const CODE_EMPTY = `
 const __nuxt_page_meta = null
+export default __nuxt_page_meta
+`
+
+const CODE_DEV_EMPTY = `
+const __nuxt_page_meta = {}
 export default __nuxt_page_meta
 `
 
@@ -36,7 +49,7 @@ if (import.meta.webpackHot) {
   })
 }`
 
-export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) => {
+export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -89,11 +102,11 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
       if (!hasMacro && !code.includes('export { default }') && !code.includes('__nuxt_page_meta')) {
         if (!code) {
-          s.append(CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.append(options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
           const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
           logger.error(`The file \`${pathname}\` is not a valid page as it has no content.`)
         } else {
-          s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+          s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
         }
 
         return result()
@@ -112,61 +125,130 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
         }
       }
 
-      walk(this.parse(code, {
-        sourceType: 'module',
-        ecmaVersion: 'latest',
-      }) as Node, {
-        enter (_node) {
-          if (_node.type !== 'CallExpression' || (_node as CallExpression).callee.type !== 'Identifier') { return }
-          const node = _node as CallExpression & { start: number, end: number }
-          const name = 'name' in node.callee && node.callee.name
-          if (name !== 'definePageMeta') { return }
+      function isStaticIdentifier (name: string | false): name is string {
+        return !!(name && importMap.has(name))
+      }
 
-          const meta = node.arguments[0] as Expression & { start: number, end: number }
+      function addImport (name: string | false) {
+        if (!isStaticIdentifier(name)) { return }
+        const importValue = importMap.get(name)!.code.trim()
+        if (!addedImports.has(importValue)) {
+          addedImports.add(importValue)
+        }
+      }
 
-          let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+      const declarationNodes: ScopeTrackerNode[] = []
+      const addedDeclarations = new Set<string>()
 
-          function addImport (name: string | false) {
-            if (name && importMap.has(name)) {
-              const importValue = importMap.get(name)!.code
-              if (!addedImports.has(importValue)) {
-                contents = importMap.get(name)!.code + '\n' + contents
-                addedImports.add(importValue)
-              }
-            }
+      function addDeclaration (node: ScopeTrackerNode) {
+        const codeSectionKey = `${node.start}-${node.end}`
+        if (addedDeclarations.has(codeSectionKey)) { return }
+        addedDeclarations.add(codeSectionKey)
+        declarationNodes.push(node)
+      }
+
+      function addImportOrDeclaration (name: string) {
+        if (isStaticIdentifier(name)) {
+          addImport(name)
+        } else {
+          const declaration = scopeTracker.getDeclaration(name)
+          if (declaration) {
+            processDeclaration(declaration)
           }
+        }
+      }
+
+      const scopeTracker = new ScopeTracker()
+
+      function processDeclaration (node: ScopeTrackerNode | null) {
+        if (node?.type === 'Variable') {
+          addDeclaration(node)
+
+          for (const decl of node.variableNode.declarations) {
+            if (!decl.init) { continue }
+            walk(decl.init, {
+              enter: (node) => {
+                if (node.type === 'AwaitExpression') {
+                  logger.error(`[nuxt] Await expressions are not supported in definePageMeta. File: '${id}'`)
+                  throw new Error('await in definePageMeta')
+                }
+                if (node.type !== 'Identifier') { return }
+
+                addImportOrDeclaration(node.name)
+              },
+            })
+          }
+        } else if (node?.type === 'Function') {
+          // arrow functions are going to be assigned to a variable
+          if (node.node.type === 'ArrowFunctionExpression') { return }
+          const name = node.node.id?.name
+          if (!name) { return }
+          addDeclaration(node)
+
+          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(node.node)
+          for (const name of undeclaredIdentifiers) {
+            addImportOrDeclaration(name)
+          }
+        }
+      }
+
+      parseAndWalk(code, id, {
+        scopeTracker,
+        enter: (node) => {
+          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+          if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
+
+          const meta = withLocations(node.arguments[0])
+
+          if (!meta) { return }
 
           walk(meta, {
-            enter (_node) {
-              if (_node.type === 'CallExpression') {
-                const node = _node as CallExpression & { start: number, end: number }
-                addImport('name' in node.callee && node.callee.name)
-              }
-              if (_node.type === 'Identifier') {
-                const node = _node as Identifier & { start: number, end: number }
+            enter (node) {
+              if (node.type !== 'Identifier') { return }
+
+              if (isStaticIdentifier(node.name)) {
                 addImport(node.name)
+              } else {
+                processDeclaration(scopeTracker.getDeclaration(node.name))
               }
             },
           })
 
-          s.overwrite(0, code.length, contents)
+          const importStatements = Array.from(addedImports).join('\n')
+
+          const declarations = declarationNodes
+            .sort((a, b) => a.start - b.start)
+            .map(node => code.slice(node.start, node.end))
+            .join('\n')
+
+          const extracted = [
+            importStatements,
+            declarations,
+            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+          ].join('\n')
+
+          s.overwrite(0, code.length, extracted.trim())
         },
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {
-        s.overwrite(0, code.length, CODE_EMPTY + (options.dev ? CODE_HMR : ''))
+        s.overwrite(0, code.length, options.dev ? (CODE_DEV_EMPTY + CODE_HMR) : CODE_EMPTY)
       }
 
       return result()
     },
     vite: {
       handleHotUpdate: {
-        order: 'pre',
-        handler: ({ modules }) => {
-          // Remove macro file from modules list to prevent HMR overrides
-          const index = modules.findIndex(i => i.id?.includes('?macro=true'))
-          if (index !== -1) {
-            modules.splice(index, 1)
+        order: 'post',
+        handler: ({ file, modules, server }) => {
+          if (options.isPage?.(file)) {
+            const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            return [
+              ...modules,
+              ...macroModule ? [macroModule] : [],
+              ...routesModule ? [routesModule] : [],
+            ]
           }
         },
       },
@@ -176,8 +258,10 @@ export const PageMetaPlugin = createUnplugin((options: PageMetaPluginOptions) =>
 
 // https://github.com/vuejs/vue-loader/pull/1911
 // https://github.com/vitejs/vite/issues/8473
+const QUERY_START_RE = /^\?/
+const MACRO_RE = /&macro=true/
 function rewriteQuery (id: string) {
-  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(/^\?/, '').replace(/&macro=true/, ''))
+  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
 }
 
 function parseMacroQuery (id: string) {
@@ -189,6 +273,7 @@ function parseMacroQuery (id: string) {
   return query
 }
 
+const QUOTED_SPECIFIER_RE = /(["']).*\1/
 function getQuotedSpecifier (id: string) {
-  return id.match(/(["']).*\1/)?.[0]
+  return id.match(QUOTED_SPECIFIER_RE)?.[0]
 }

@@ -248,7 +248,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           if (isAppManifestEnabled) {
-            const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+            const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
 
             if (routeRules.appMiddleware) {
               for (const key in routeRules.appMiddleware) {

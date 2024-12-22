@@ -4,13 +4,14 @@ import { normalize } from 'pathe'
 import { useNuxt } from './context'
 import { toArray } from './utils'
 
+const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/
 /**
  * normalize handler object
  *
  */
 function normalizeHandlerMethod (handler: NitroEventHandler) {
   // retrieve method from handler file name
-  const [, method = undefined] = handler.handler.match(/\.(get|head|patch|post|put|delete|connect|options|trace)(\.\w+)*$/) || []
+  const [, method = undefined] = handler.handler.match(HANDLER_METHOD_RE) || []
   return {
     method: method as 'get' | 'head' | 'patch' | 'post' | 'put' | 'delete' | 'connect' | 'options' | 'trace' | undefined,
     ...handler,

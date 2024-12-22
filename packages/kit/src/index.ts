@@ -13,7 +13,7 @@ export type { LoadNuxtOptions } from './loader/nuxt'
 // Utils
 export { addImports, addImportsDir, addImportsSources } from './imports'
 export { updateRuntimeConfig, useRuntimeConfig } from './runtime-config'
-export { addBuildPlugin, addVitePlugin, addWebpackPlugin, extendViteConfig, extendWebpackConfig } from './build'
+export { addBuildPlugin, addVitePlugin, addRspackPlugin, addWebpackPlugin, extendViteConfig, extendRspackConfig, extendWebpackConfig } from './build'
 export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigOptions } from './build'
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
 export { addComponent, addComponentsDir } from './components'
@@ -28,7 +28,7 @@ export type { AddPluginOptions } from './plugin'
 export { createResolver, findPath, resolveAlias, resolveFiles, resolveNuxtModule, resolvePath } from './resolve'
 export type { ResolvePathOptions, Resolver } from './resolve'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro'
-export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template'
+export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template'
 export { logger, useLogger } from './logger'
 
 // Internal Utils

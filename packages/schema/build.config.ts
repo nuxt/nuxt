@@ -22,12 +22,11 @@ export default defineBuildConfig({
   ],
   externals: [
     // Type imports
-    '#app/components/nuxt-link',
+    'nuxt/app',
     'cssnano',
     'autoprefixer',
     'ofetch',
     'vue-router',
-    '@nuxt/telemetry',
     'vue-bundle-renderer',
     '@unhead/schema',
     'vue',
@@ -55,7 +54,6 @@ export default defineBuildConfig({
     'pug',
     'sass-loader',
     'c12',
-    'unenv',
     '@vue/language-core',
     // Implicit
     '@vue/compiler-core',

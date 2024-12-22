@@ -13,7 +13,7 @@ import { defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
-    name: 'imports',
+    name: 'nuxt:imports',
     configKey: 'imports',
   },
   defaults: nuxt => ({
@@ -41,18 +41,26 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
+    const { addons: inlineAddons, ...rest } = options
+
+    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
+
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
-      ...options,
+      ...rest,
       addons: {
+        addons,
         vueTemplate: options.autoImport,
-        ...options.addons,
+        vueDirectives: options.autoImport === false ? undefined : true,
+        ...addonsOptions,
       },
       presets,
     })
 
     await nuxt.callHook('imports:context', ctx)
+
+    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
 
     // composables/ dirs from all layers
     let composablesDirs: string[] = []
@@ -64,6 +72,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         }
         composablesDirs.push(resolve(layer.config.srcDir, 'composables'))
         composablesDirs.push(resolve(layer.config.srcDir, 'utils'))
+
+        if (isNuxtV4) {
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'utils'))
+          composablesDirs.push(resolve(layer.config.rootDir, 'shared', 'types'))
+        }
+
         for (const dir of (layer.config.imports?.dirs ?? [])) {
           if (!dir) {
             continue
@@ -99,12 +113,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     const priorities = nuxt.options._layers.map((layer, i) => [layer.config.srcDir, -i] as const).sort(([a], [b]) => b.length - a.length)
 
+    const IMPORTS_TEMPLATE_RE = /\/imports\.(?:d\.ts|mjs)$/
     function isImportsTemplate (template: ResolvedNuxtTemplate) {
-      return [
-        '/types/imports.d.ts',
-        '/imports.d.ts',
-        '/imports.mjs',
-      ].some(i => template.filename.endsWith(i))
+      return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
     const regenerateImports = async () => {
@@ -166,8 +177,9 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
+    // skip relative import paths for node_modules that are explicitly installed
     await Promise.all(importSource.map(async (from) => {
-      if (resolvedImportPathMap.has(from)) {
+      if (resolvedImportPathMap.has(from) || nuxt._dependencies?.has(from)) {
         return
       }
       let path = resolveAlias(from)
@@ -176,6 +188,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)
+          if (name && nuxt._dependencies?.has(name)) { return from }
+
           if (!dir || !name) { return r }
           const subpath = await lookupNodeModuleSubpath(r)
           return join(dir, name, subpath || '')

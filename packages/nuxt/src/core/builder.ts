@@ -20,19 +20,24 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
-      const restartPath = relativePaths.find(relativePath => /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(relativePath))
-      if (restartPath) {
-        if (restartPath.startsWith('app')) {
-          app.mainComponent = undefined
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const layer of nuxt.options._layers) {
+          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
+          if (relativePath.match(/^app\./i)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (relativePath.match(/^error\./i)) {
+            app.errorComponent = undefined
+            break
+          }
         }
-        if (restartPath.startsWith('error')) {
-          app.errorComponent = undefined
-        }
-        await generateApp()
       }
+
+      // Recompile app templates
+      await generateApp()
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
@@ -101,7 +106,12 @@ function createWatcher () {
     ],
   })
 
-  watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
+  watcher.on('all', (event, path) => {
+    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+      return
+    }
+    nuxt.callHook('builder:watch', event, normalize(path))
+  })
   nuxt.hook('close', () => watcher?.close())
 }
 
@@ -129,6 +139,9 @@ function createGranularWatcher () {
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
+      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+        return
+      }
       path = normalize(path)
       if (!pending) {
         nuxt.callHook('builder:watch', event, path)
@@ -138,9 +151,14 @@ function createGranularWatcher () {
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
-        nuxt.hook('close', () => watchers[path]?.close())
+        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        pathWatcher.on('all', (event, p) => {
+          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+            return
+          }
+          nuxt.callHook('builder:watch', event, normalize(p))
+        })
+        nuxt.hook('close', () => pathWatcher?.close())
       }
     })
     watcher.on('ready', () => {

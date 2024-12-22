@@ -18,6 +18,8 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
+import { hashMode } from '#build/router.options'
+
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
@@ -110,6 +112,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
+  function isHashLinkWithoutHashMode (link: unknown): boolean {
+    return !hashMode && typeof link === 'string' && link.startsWith('#')
+  }
+
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
@@ -176,7 +182,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
+        return to.value as string
+      }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
@@ -328,8 +336,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
+        const normalizedPath = isExternal.value ? new URL(path, window.location.href).href : path
         await Promise.all([
-          nuxtApp.hooks.callHook('link:prefetch', path).catch(() => {}),
+          nuxtApp.hooks.callHook('link:prefetch', normalizedPath).catch(() => {}),
           !isExternal.value && !hasTarget.value && preloadRouteComponents(to.value as string, router).catch(() => {}),
         ])
       }
@@ -372,7 +381,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -505,9 +514,9 @@ function useObserver (): { observe: ObserveFn } | undefined {
     observer.observe(element)
     return () => {
       callbacks.delete(element)
-      observer!.unobserve(element)
+      observer?.unobserve(element)
       if (callbacks.size === 0) {
-        observer!.disconnect()
+        observer?.disconnect()
         observer = null
       }
     }
@@ -520,11 +529,12 @@ function useObserver (): { observe: ObserveFn } | undefined {
   return _observer
 }
 
+const IS_2G_RE = /2g/
 function isSlowConnection () {
   if (import.meta.server) { return }
 
   // https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
   const cn = (navigator as any).connection as { saveData: boolean, effectiveType: string } | null
-  if (cn && (cn.saveData || /2g/.test(cn.effectiveType))) { return true }
+  if (cn && (cn.saveData || IS_2G_RE.test(cn.effectiveType))) { return true }
   return false
 }

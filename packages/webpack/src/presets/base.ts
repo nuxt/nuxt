@@ -1,9 +1,7 @@
 import { normalize, resolve } from 'pathe'
 // @ts-expect-error missing types
 import TimeFixPlugin from 'time-fix-plugin'
-import WebpackBar from 'webpackbar'
 import type { Configuration } from 'webpack'
-import webpack from 'webpack'
 import { logger } from '@nuxt/kit'
 // @ts-expect-error missing types
 import FriendlyErrorsWebpackPlugin from '@nuxt/friendly-errors-webpack-plugin'
@@ -15,6 +13,8 @@ import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
 import { applyPresets, fileName } from '../utils/config'
+
+import { WebpackBarPlugin, builder, webpack } from '#builder'
 
 export async function base (ctx: WebpackConfigContext) {
   await applyPresets(ctx, [
@@ -53,14 +53,18 @@ function basePlugins (ctx: WebpackConfigContext) {
 
   // Add timefix-plugin before other plugins
   if (ctx.options.dev) {
-    ctx.config.plugins.push(new TimeFixPlugin())
+    if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+      ctx.config.plugins.push(new TimeFixPlugin())
+    }
   }
 
   // User plugins
   ctx.config.plugins.push(...(ctx.userConfig.plugins || []))
 
   // Ignore empty warnings
-  ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
+  if (ctx.nuxt.options.builder !== '@nuxt/rspack-builder') {
+    ctx.config.plugins.push(new WarningIgnorePlugin(getWarningIgnoreFilter(ctx)))
+  }
 
   // Provide env via DefinePlugin
   ctx.config.plugins.push(new webpack.DefinePlugin(getEnv(ctx)))
@@ -83,7 +87,7 @@ function basePlugins (ctx: WebpackConfigContext) {
       server: 'orange',
       modern: 'blue',
     }
-    ctx.config.plugins.push(new WebpackBar({
+    ctx.config.plugins.push(new WebpackBarPlugin({
       name: ctx.name,
       color: colors[ctx.name as keyof typeof colors],
       reporters: ['stats'],
@@ -93,21 +97,21 @@ function basePlugins (ctx: WebpackConfigContext) {
         reporter: {
           change: (_, { shortPath }) => {
             if (!ctx.isServer) {
-              ctx.nuxt.callHook('webpack:change', shortPath)
+              ctx.nuxt.callHook(`${builder}:change`, shortPath)
             }
           },
-          done: ({ state }) => {
-            if (state.hasErrors) {
-              ctx.nuxt.callHook('webpack:error')
+          done: (_, { stats }) => {
+            if (stats.hasErrors()) {
+              ctx.nuxt.callHook(`${builder}:error`)
             } else {
-              logger.success(`${state.name} ${state.message}`)
+              logger.success(`Finished building ${stats.compilation.name ?? 'Nuxt app'}`)
             }
           },
           allDone: () => {
-            ctx.nuxt.callHook('webpack:done')
+            ctx.nuxt.callHook(`${builder}:done`)
           },
-          progress ({ statesArray }) {
-            ctx.nuxt.callHook('webpack:progress', statesArray)
+          progress: ({ webpackbar }) => {
+            ctx.nuxt.callHook(`${builder}:progress`, webpackbar.statesArray)
           },
         },
       },
@@ -118,9 +122,6 @@ function basePlugins (ctx: WebpackConfigContext) {
 function baseAlias (ctx: WebpackConfigContext) {
   ctx.alias = {
     '#app': ctx.options.appDir,
-    '#build/plugins': resolve(ctx.options.buildDir, 'plugins', ctx.isClient ? 'client' : 'server'),
-    '#build': ctx.options.buildDir,
-    '#internal/nuxt/paths': resolve(ctx.nuxt.options.buildDir, 'paths.mjs'),
     ...ctx.options.alias,
     ...ctx.alias,
   }
@@ -153,7 +154,7 @@ function baseTranspile (ctx: WebpackConfigContext) {
     /\.vue\.js/i, // include SFCs in node_modules
     /consola\/src/,
     /vue-demi/,
-    /(^|\/)nuxt\/(dist\/)?(app|[^/]+\/runtime)($|\/)/,
+    /(^|\/)nuxt\/(src\/|dist\/)?(app|[^/]+\/runtime)($|\/)/,
   ]
 
   for (let pattern of ctx.options.build.transpile) {

@@ -7,14 +7,15 @@ import { consola } from 'consola'
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
+    $resolve: async (val: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
       const map: Record<string, string> = {
+        rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
@@ -23,7 +24,16 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Whether to generate sourcemaps.
+   * Configures whether and how sourcemaps are generated for server and/or client bundles.
+   *
+   * If set to a single boolean, that value applies to both server and client.
+   * Additionally, the `'hidden'` option is also available for both server and client.
+   *
+   * Available options for both client and server:
+   * - `true`: Generates sourcemaps and includes source references in the final bundle.
+   * - `false`: Does not generate any sourcemaps.
+   * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   *
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
@@ -136,8 +146,7 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
-        { name: 'useId', argumentLength: 1 },
-        { name: 'callOnce', argumentLength: 2 },
+        { name: 'callOnce', argumentLength: 3 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },

@@ -34,9 +34,6 @@ describe('tsConfig generation', () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
       {
-        "#build": [
-          ".",
-        ],
         "some-custom-alias": [
           "../some-alias",
         ],

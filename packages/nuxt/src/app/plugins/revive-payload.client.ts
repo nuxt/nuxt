@@ -7,18 +7,18 @@ import { defineNuxtPlugin, useNuxtApp } from '../nuxt'
 // @ts-expect-error Virtual file.
 import { componentIslands } from '#build/nuxt.config.mjs'
 
-const revivers: Record<string, (data: any) => any> = {
-  NuxtError: data => createError(data),
-  EmptyShallowRef: data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data)),
-  EmptyRef: data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data)),
-  ShallowRef: data => shallowRef(data),
-  ShallowReactive: data => shallowReactive(data),
-  Ref: data => ref(data),
-  Reactive: data => reactive(data),
-}
+const revivers: [string, (data: any) => any][] = [
+  ['NuxtError', data => createError(data)],
+  ['EmptyShallowRef', data => shallowRef(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
+  ['EmptyRef', data => ref(data === '_' ? undefined : data === '0n' ? BigInt(0) : destr(data))],
+  ['ShallowRef', data => shallowRef(data)],
+  ['ShallowReactive', data => shallowReactive(data)],
+  ['Ref', data => ref(data)],
+  ['Reactive', data => reactive(data)],
+]
 
 if (componentIslands) {
-  revivers.Island = ({ key, params, result }: any) => {
+  revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating) {
       nuxtApp.payload.data[key] = nuxtApp.payload.data[key] || $fetch(`/__nuxt_island/${key}.json`, {
@@ -33,15 +33,15 @@ if (componentIslands) {
       html: '',
       ...result,
     }
-  }
+  }])
 }
 
 export default defineNuxtPlugin({
   name: 'nuxt:revive-payload:client',
   order: -30,
   async setup (nuxtApp) {
-    for (const reviver in revivers) {
-      definePayloadReviver(reviver, revivers[reviver as keyof typeof revivers])
+    for (const [reviver, fn] of revivers) {
+      definePayloadReviver(reviver, fn)
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
     delete window.__NUXT__

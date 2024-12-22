@@ -7,6 +7,7 @@ import { importModule } from '@nuxt/kit'
 const PLUGIN_NAME = 'dynamic-require'
 const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
 const DYNAMIC_REQUIRE_RE = /import\("\.\/" ?\+(.*)\).then/g
+const BACKWARD_SLASH_RE = /\\/g
 
 interface Options {
   dir: string
@@ -75,7 +76,7 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
         await Promise.all(
           files.map(async id => ({
             id,
-            src: resolve(dir, id).replace(/\\/g, '/'),
+            src: resolve(dir, id).replace(BACKWARD_SLASH_RE, '/'),
             name: genSafeVariableName(id),
             meta: await getWebpackChunkMeta(resolve(dir, id)),
           })),
@@ -87,9 +88,18 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
   }
 }
 
+type WebpackChunk = {
+  id: string
+  ids: string[]
+  modules: Record<string, unknown>
+  __webpack_id__?: string
+  __webpack_ids__?: string[]
+  __webpack_modules__?: Record<string, unknown>
+}
+
 async function getWebpackChunkMeta (src: string) {
-  const chunk = await importModule<{ id: string, ids: string[], modules: Record<string, unknown> }>(src) || {}
-  const { id, ids, modules } = chunk
+  const chunk = await importModule<WebpackChunk>(src) || {}
+  const { __webpack_id__, __webpack_ids__, __webpack_modules__, id = __webpack_id__, ids = __webpack_ids__, modules = __webpack_modules__ } = chunk
   if (!id && !ids) {
     return null // Not a webpack chunk
   }

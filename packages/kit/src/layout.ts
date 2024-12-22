@@ -5,10 +5,11 @@ import { useNuxt } from './context'
 import { logger } from './logger'
 import { addTemplate } from './template'
 
+const LAYOUT_RE = /["']/g
 export function addLayout (template: NuxtTemplate | string, name?: string) {
   const nuxt = useNuxt()
   const { filename, src } = addTemplate(template)
-  const layoutName = kebabCase(name || parse(filename).name).replace(/["']/g, '')
+  const layoutName = kebabCase(name || parse(filename).name).replace(LAYOUT_RE, '')
 
   // Nuxt 3 adds layouts on app
   nuxt.hook('app:templates', (app) => {

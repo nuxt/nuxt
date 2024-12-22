@@ -1,6 +1,5 @@
 import { findPath, logger } from '@nuxt/kit'
 import { basename } from 'pathe'
-import { generateApp as _generateApp } from './app'
 
 /**
  * Check for those external configuration files that are not compatible with Nuxt,

@@ -14,7 +14,7 @@ links:
 
 By default, it will also save the current `state` of your app (that is, any state you could access with `useState`).
 
-::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-ph-star-duotone"}
+::read-more{to="/docs/guide/going-further/experimental-features#restorestate" icon="i-ph-star"}
 You can enable experimental restoration of this state by enabling the `experimental.restoreState` option in your `nuxt.config` file.
 ::
 

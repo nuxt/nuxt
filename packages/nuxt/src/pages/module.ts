@@ -1,13 +1,14 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, addVitePlugin, addWebpackPlugin, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, logger, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
-import type { Nuxt, NuxtApp, NuxtPage } from 'nuxt/schema'
+import type { NuxtPage } from 'nuxt/schema'
 import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
@@ -15,7 +16,6 @@ import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { normalizeRoutes, resolvePagesRoutes, resolveRoutePaths } from './utils'
 import { extractRouteRules, getMappedPages } from './route-rules'
-import type { PageMetaPluginOptions } from './plugins/page-meta'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
@@ -23,7 +23,8 @@ const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
 
 export default defineNuxtModule({
   meta: {
-    name: 'pages',
+    name: 'nuxt:pages',
+    configKey: 'pages',
   },
   async setup (_options, nuxt) {
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
@@ -41,6 +42,7 @@ export default defineNuxtModule({
       delete tsConfig.compilerOptions.paths['#vue-router/*']
     })
 
+    const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
     async function resolveRouterOptions () {
       const context = {
         files: [] as Array<{ path: string, optional?: boolean }>,
@@ -52,7 +54,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: builtInRouterOptions, optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -127,6 +129,16 @@ export default defineNuxtModule({
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
       })
+      // used by `<NuxtLink>`
+      addTemplate({
+        filename: 'router.options.mjs',
+        getContents: () => {
+          return [
+            'export const hashMode = false',
+            'export default {}',
+          ].join('\n')
+        },
+      })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
         getContents: () => [
@@ -170,10 +182,15 @@ export default defineNuxtModule({
           if (nuxt.apps.default) {
             nuxt.apps.default.pages = pages
           }
+          const addedPagePaths = new Set<string>()
           function addPage (parent: EditableTreeNode, page: NuxtPage) {
+            // Avoid duplicate keys in the generated RouteNamedMap type
+            const absolutePagePath = joinURL(parent.path, page.path)
+
             // @ts-expect-error TODO: either fix types upstream or figure out another
             // way to add a route without a file, which must be possible
-            const route = parent.insert(page.path, page.file)
+            const route = addedPagePaths.has(absolutePagePath) ? parent : parent.insert(page.path, page.file)
+            addedPagePaths.add(absolutePagePath)
             if (page.meta) {
               route.addToMeta(page.meta)
             }
@@ -247,7 +264,7 @@ export default defineNuxtModule({
       ]
     })
 
-    function isPage (file: string, pages = nuxt.apps.default.pages): boolean {
+    function isPage (file: string, pages = nuxt.apps.default?.pages): boolean {
       if (!pages) { return false }
       return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
     }
@@ -278,7 +295,7 @@ export default defineNuxtModule({
 
     nuxt.hook('app:resolve', (app) => {
       const nitro = useNitro()
-      if (nitro.options.prerender.crawlLinks) {
+      if (nitro.options.prerender.crawlLinks || Object.values(nitro.options.routeRules).some(rule => rule.prerender)) {
         app.plugins.push({
           src: resolve(runtimeDir, 'plugins/prerender.server'),
           mode: 'server',
@@ -316,7 +333,20 @@ export default defineNuxtModule({
     })
 
     nuxt.hook('nitro:build:before', (nitro) => {
-      if (nuxt.options.dev || !nitro.options.static || nuxt.options.router.options.hashMode || !nitro.options.prerender.crawlLinks) { return }
+      if (nuxt.options.dev || nuxt.options.router.options.hashMode) { return }
+
+      // Inject page patterns that explicitly match `prerender: true` route rule
+      if (!nitro.options.static && !nitro.options.prerender.crawlLinks) {
+        const routeRulesMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
+        for (const route of prerenderRoutes) {
+          const rules = defu({} as Record<string, any>, ...routeRulesMatcher.matchAll(route).reverse())
+          if (rules.prerender) {
+            nitro.options.prerender.routes.push(route)
+          }
+        }
+      }
+
+      if (!nitro.options.static || !nitro.options.prerender.crawlLinks) { return }
 
       // Only hint the first route when `ssr: true` and no routes are provided
       // as the rest will be injected at runtime when this is prerendered
@@ -359,9 +389,9 @@ export default defineNuxtModule({
 
       const updatePage = async function updatePage (path: string) {
         const glob = pageToGlobMap[path]
-        const code = path in nuxt.vfs ? nuxt.vfs[path] : await readFile(path!, 'utf-8')
+        const code = path in nuxt.vfs ? nuxt.vfs[path]! : await readFile(path!, 'utf-8')
         try {
-          const extractedRule = await extractRouteRules(code)
+          const extractedRule = await extractRouteRules(code, path)
           if (extractedRule) {
             if (!glob) {
               const relativePath = relative(nuxt.options.srcDir, path)
@@ -401,15 +431,24 @@ export default defineNuxtModule({
       })
     }
 
+    const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
+    if (nuxt.options.test && nuxt.options.dev) {
+      // add component testing route so 404 won't be triggered
+      nuxt.hook('pages:extend', (routes) => {
+        routes.push({
+          _sync: true,
+          path: '/__nuxt_component_test__/:pathMatch(.*)',
+          file: componentStubPath,
+        })
+      })
+    }
     if (nuxt.options.experimental.appManifest) {
-      const componentStubPath = await resolvePath(resolve(runtimeDir, 'component-stub'))
       // Add all redirect paths as valid routes to router; we will handle these in a client-side middleware
       // when the app manifest is enabled.
       nuxt.hook('pages:extend', (routes) => {
         const nitro = useNitro()
         let resolvedRoutes: string[]
-        for (const path in nitro.options.routeRules) {
-          const rule = nitro.options.routeRules[path]
+        for (const [path, rule] of Object.entries(nitro.options.routeRules)) {
           if (!rule.redirect) { continue }
           resolvedRoutes ||= routes.flatMap(route => resolveRoutePaths(route))
           // skip if there's already a route matching this path
@@ -424,13 +463,13 @@ export default defineNuxtModule({
     }
 
     // Extract macros from pages
-    const pageMetaOptions: PageMetaPluginOptions = {
-      dev: nuxt.options.dev,
-      sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-    }
     nuxt.hook('modules:done', () => {
-      addVitePlugin(() => PageMetaPlugin.vite(pageMetaOptions))
-      addWebpackPlugin(() => PageMetaPlugin.webpack(pageMetaOptions))
+      addBuildPlugin(PageMetaPlugin({
+        dev: nuxt.options.dev,
+        sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+        isPage,
+        routesPath: resolve(nuxt.options.buildDir, 'routes.mjs'),
+      }))
     })
 
     // Add prefetching support for middleware & layouts
@@ -455,25 +494,32 @@ export default defineNuxtModule({
       if (nuxt.options.dev) { return }
       const sourceFiles = nuxt.apps.default?.pages?.length ? getSources(nuxt.apps.default.pages) : []
 
-      for (const key in manifest) {
-        if (manifest[key].src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, manifest[key].src!)))) {
+      for (const [key, chunk] of Object.entries(manifest)) {
+        if (chunk.src && Object.values(nuxt.apps).some(app => app.pages?.some(page => page.mode === 'server' && page.file === join(nuxt.options.srcDir, chunk.src!)))) {
           delete manifest[key]
           continue
         }
-        if (manifest[key].isEntry) {
-          manifest[key].dynamicImports =
-            manifest[key].dynamicImports?.filter(i => !sourceFiles.includes(i))
+        if (chunk.isEntry) {
+          chunk.dynamicImports =
+            chunk.dynamicImports?.filter(i => !sourceFiles.includes(i))
         }
       }
     })
+
+    const serverComponentRuntime = await findPath(join(distDir, 'components/runtime/server-component')) ?? join(distDir, 'components/runtime/server-component')
+    const clientComponentRuntime = await findPath(join(distDir, 'components/runtime/client-component')) ?? join(distDir, 'components/runtime/client-component')
 
     // Add routes template
     addTemplate({
       filename: 'routes.mjs',
       getContents ({ app }) {
-        if (!app.pages) { return 'export default []' }
-        const { routes, imports } = normalizeRoutes(app.pages, new Set(), nuxt.options.experimental.scanPageMeta)
-        return [...imports, `export default ${routes}`].join('\n')
+        if (!app.pages) { return ROUTES_HMR_CODE + 'export default []' }
+        const { routes, imports } = normalizeRoutes(app.pages, new Set(), {
+          serverComponentRuntime,
+          clientComponentRuntime,
+          overrideMeta: !!nuxt.options.experimental.scanPageMeta,
+        })
+        return ROUTES_HMR_CODE + [...imports, `export default ${routes}`].join('\n')
       },
     })
 
@@ -500,6 +546,7 @@ export default defineNuxtModule({
         return [
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
           `const configRouterOptions = ${configRouterOptions}`,
+          `export const hashMode = ${[...routerOptionsFiles.filter(o => o.path !== builtInRouterOptions).map((_, index) => `routerOptions${index}.hashMode`).reverse(), nuxt.options.router.options.hashMode].join(' ?? ')}`,
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
@@ -537,7 +584,7 @@ export default defineNuxtModule({
 
     addTypeTemplate({
       filename: 'types/layouts.d.ts',
-      getContents: ({ nuxt, app }: { nuxt: Nuxt, app: NuxtApp }) => {
+      getContents: ({ nuxt, app }) => {
         const composablesFile = relative(join(nuxt.options.buildDir, 'types'), resolve(runtimeDir, 'composables'))
         return [
           'import type { ComputedRef, MaybeRef } from \'vue\'',
@@ -578,3 +625,26 @@ export default defineNuxtModule({
     })
   },
 })
+
+const ROUTES_HMR_CODE = /* js */`
+if (import.meta.hot) {
+  import.meta.hot.accept((mod) => {
+    const router = import.meta.hot.data.router
+    if (!router) {
+      import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
+      return
+    }
+    router.clearRoutes()
+    for (const route of mod.default || mod) {
+      router.addRoute(route)
+    }
+    router.replace('')
+  })
+}
+
+export function handleHotUpdate(_router) {
+  if (import.meta.hot) {
+    import.meta.hot.data.router = _router
+  }
+}
+`

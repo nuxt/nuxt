@@ -35,6 +35,13 @@ export default defineUntypedSchema({
      * @type {boolean}
      */
     propsDestructure: true,
+
+    /**
+     * It is possible to pass configure the Vue app globally. Only serializable options
+     * may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
+     * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
+     */
+    config: undefined,
   },
 
   /**
@@ -228,7 +235,7 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Customize Nuxt root element tag.
+     * Customize Nuxt Teleport element tag.
      */
     teleportTag: {
       $resolve: val => val || 'div',
@@ -254,6 +261,21 @@ export default defineUntypedSchema({
           id: teleportId === false ? undefined : (teleportId || 'teleports'),
         })
       },
+    },
+
+    /**
+     * Customize Nuxt SpaLoader element tag.
+     */
+    spaLoaderTag: {
+      $resolve: val => val || 'div',
+    },
+
+    /**
+     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     */
+    spaLoaderAttrs: {
+      id: '__nuxt-loader',
     },
   },
 

@@ -22,15 +22,15 @@ import type { Link, Script, Style } from '@unhead/vue'
 import { createServerHead, resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
+import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
 
 // @ts-expect-error virtual file
 import unheadPlugins from '#internal/unhead-plugins.mjs'
 // @ts-expect-error virtual file
 import { renderSSRHeadOptions } from '#internal/unhead.config.mjs'
 
-import type { NuxtPayload, NuxtSSRContext } from '#app'
 // @ts-expect-error virtual file
-import { appHead, appId, appRootAttrs, appRootTag, appTeleportAttrs, appTeleportTag, componentIslands, multiApp } from '#internal/nuxt.config.mjs'
+import { appHead, appId, appRootAttrs, appRootTag, appSpaLoaderAttrs, appSpaLoaderTag, appTeleportAttrs, appTeleportTag, componentIslands, appManifest as isAppManifestEnabled, multiApp, spaLoadingTemplateOutside } from '#internal/nuxt.config.mjs'
 // @ts-expect-error virtual file
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
@@ -144,7 +144,17 @@ const getSPARenderer = lazyCachedFunction(async () => {
 
   // @ts-expect-error virtual file
   const spaTemplate = await import('#spa-template').then(r => r.template).catch(() => '')
-    .then(r => APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG)
+    .then((r) => {
+      if (spaLoadingTemplateOutside) {
+        const APP_SPA_LOADER_OPEN_TAG = `<${appSpaLoaderTag}${propsToString(appSpaLoaderAttrs)}>`
+        const APP_SPA_LOADER_CLOSE_TAG = `</${appSpaLoaderTag}>`
+        const appTemplate = APP_ROOT_OPEN_TAG + APP_ROOT_CLOSE_TAG
+        const loaderTemplate = r ? APP_SPA_LOADER_OPEN_TAG + r + APP_SPA_LOADER_CLOSE_TAG : ''
+        return appTemplate + loaderTemplate
+      } else {
+        return APP_ROOT_OPEN_TAG + r + APP_ROOT_CLOSE_TAG
+      }
+    })
 
   const options = {
     manifest,
@@ -325,7 +335,9 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Render 103 Early Hints
   if (process.env.NUXT_EARLY_HINTS && !isRenderingPayload && !import.meta.prerender) {
     const { link } = renderResourceHeaders({}, renderer.rendererContext)
-    writeEarlyHints(event, link)
+    if (link) {
+      writeEarlyHints(event, link)
+    }
   }
 
   if (process.env.NUXT_INLINE_STYLES && !isRenderingIsland) {
@@ -377,25 +389,30 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Setup head
   const { styles, scripts } = getRequestDependencies(ssrContext, renderer.rendererContext)
-  // 1.Extracted payload preloading
+  // 1. Preload payloads and app manifest
   if (_PAYLOAD_EXTRACTION && !NO_SCRIPTS && !isRenderingIsland) {
     head.push({
       link: [
         process.env.NUXT_JSON_PAYLOADS
           ? { rel: 'preload', as: 'fetch', crossorigin: 'anonymous', href: payloadURL }
-          : { rel: 'modulepreload', href: payloadURL },
+          : { rel: 'modulepreload', crossorigin: '', href: payloadURL },
       ],
     }, headEntryOptions)
   }
-
+  if (isAppManifestEnabled && ssrContext._preloadManifest) {
+    head.push({
+      link: [
+        { rel: 'preload', as: 'fetch', fetchpriority: 'low', crossorigin: 'anonymous', href: buildAssetsURL(`builds/meta/${ssrContext.runtimeConfig.app.buildId}.json`) },
+      ],
+    }, { ...headEntryOptions, tagPriority: 'low' })
+  }
   // 2. Styles
   if (inlinedStyles.length) {
     head.push({ style: inlinedStyles })
   }
   if (!isRenderingIsland || import.meta.dev) {
     const link: Link[] = []
-    for (const style in styles) {
-      const resource = styles[style]
+    for (const resource of Object.values(styles)) {
       // Do not add links to resources that are inlined (vite v5+)
       if (import.meta.dev && 'inline' in getURLQuery(resource.file)) {
         continue
@@ -405,7 +422,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
       // - in dev mode when not rendering an island
       // - in dev mode when rendering an island and the file has scoped styles and is not a page
       if (!import.meta.dev || !isRenderingIsland || (resource.file.includes('scoped') && !resource.file.includes('pages/'))) {
-        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file) })
+        link.push({ rel: 'stylesheet', href: renderer.rendererContext.buildAssetsURL(resource.file), crossorigin: '' })
       }
     }
     if (link.length) {
@@ -566,7 +583,7 @@ async function renderInlineStyles (usedModules: Set<string> | string[]): Promise
   const styleMap = await getSSRStyles()
   const inlinedStyles = new Set<string>()
   for (const mod of usedModules) {
-    if (mod in styleMap) {
+    if (mod in styleMap && styleMap[mod]) {
       for (const style of await styleMap[mod]()) {
         inlinedStyles.add(style)
       }
@@ -650,7 +667,7 @@ function splitPayload (ssrContext: NuxtSSRContext) {
  */
 function getServerComponentHTML (body: string): string {
   const match = body.match(ROOT_NODE_REGEX)
-  return match ? match[1] : body[0]
+  return match?.[1] || body
 }
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
@@ -660,10 +677,10 @@ const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*;(.*)$/
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
   const response: NuxtIslandResponse['slots'] = {}
-  for (const slot in ssrContext.islandContext.slots) {
-    response[slot] = {
-      ...ssrContext.islandContext.slots[slot],
-      fallback: ssrContext.teleports?.[`island-fallback=${slot}`],
+  for (const [name, slot] of Object.entries(ssrContext.islandContext.slots)) {
+    response[name] = {
+      ...slot,
+      fallback: ssrContext.teleports?.[`island-fallback=${name}`],
     }
   }
   return response
@@ -673,11 +690,11 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
   const response: NuxtIslandResponse['components'] = {}
 
-  for (const clientUid in ssrContext.islandContext.components) {
+  for (const [clientUid, component] of Object.entries(ssrContext.islandContext.components)) {
     // remove teleport anchor to avoid hydration issues
-    const html = ssrContext.teleports?.[clientUid].replaceAll('<!--teleport start anchor-->', '') || ''
+    const html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
     response[clientUid] = {
-      ...ssrContext.islandContext.components[clientUid],
+      ...component,
       html,
       slots: getComponentSlotTeleport(ssrContext.teleports ?? {}),
     }
