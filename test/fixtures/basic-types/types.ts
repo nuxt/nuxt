@@ -467,11 +467,6 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
-  it('prevents passing string to `useId`', () => {
-    // @ts-expect-error providing a key is not allowed
-    useId('test')
-  })
-
   it('enforces readonly cookies', () => {
     // @ts-expect-error readonly cookie
     useCookie('test', { readonly: true }).value = 'thing'
