@@ -9,28 +9,31 @@ import escapeRE from 'escape-string-regexp'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory } from '../utils'
 import { TransformPlugin } from './transform'
-import { defaultPresets } from './presets'
+import { defaultPresets, appCompatPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
     name: 'nuxt:imports',
     configKey: 'imports',
   },
-  defaults: nuxt => ({
-    autoImport: true,
-    scan: true,
-    presets: defaultPresets,
-    global: false,
-    imports: [],
-    dirs: [],
-    transform: {
-      include: [
-        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
-      ],
-      exclude: undefined,
-    },
-    virtualImports: ['#imports'],
-  }),
+  defaults: nuxt => {
+    return {
+      autoImport: true,
+      scan: true,
+      presets: nuxt.options.imports.polyfills ? [...defaultPresets, ...appCompatPresets] : defaultPresets,
+      global: false,
+      imports: [],
+      dirs: [],
+      transform: {
+        include: [
+          new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+        ],
+        exclude: undefined,
+      },
+      virtualImports: ['#imports'],
+      polyfills: true,
+    }
+  },
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
