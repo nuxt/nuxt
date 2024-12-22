@@ -9,14 +9,14 @@ import escapeRE from 'escape-string-regexp'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory } from '../utils'
 import { TransformPlugin } from './transform'
-import { defaultPresets, appCompatPresets } from './presets'
+import { appCompatPresets, defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
     name: 'nuxt:imports',
     configKey: 'imports',
   },
-  defaults: nuxt => {
+  defaults: (nuxt) => {
     return {
       autoImport: true,
       scan: true,
