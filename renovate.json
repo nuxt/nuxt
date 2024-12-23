@@ -30,12 +30,6 @@
         "nuxt3",
         "@nuxt/kit"
       ]
-    },
-    {
-      "groupName": "typescript",
-      "matchPackageNames": [
-        "typescript"
-      ]
     }
   ]
 }
