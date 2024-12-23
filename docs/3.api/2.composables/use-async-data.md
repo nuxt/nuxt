@@ -105,44 +105,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ## Type
 
-```ts [Signature]
-function useAsyncData<DataT, DataE>(
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>
-): AsyncData<DataT, DataE>
-function useAsyncData<DataT, DataE>(
-  key: string,
-  handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
-  options?: AsyncDataOptions<DataT>
-): Promise<AsyncData<DataT, DataE>>
-
-type AsyncDataOptions<DataT> = {
-  server?: boolean
-  lazy?: boolean
-  immediate?: boolean
-  deep?: boolean
-  dedupe?: 'cancel' | 'defer'
-  default?: () => DataT | Ref<DataT> | null
-  transform?: (input: DataT) => DataT | Promise<DataT>
-  pick?: string[]
-  watch?: WatchSource[]
-  getCachedData?: (key: string, nuxtApp: NuxtApp) => DataT
-}
-
-type AsyncData<DataT, ErrorT> = {
-  data: Ref<DataT | null>
-  refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
-  execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
-  clear: () => void
-  error: Ref<ErrorT | null>
-  status: Ref<AsyncDataRequestStatus>
-};
-
-interface AsyncDataExecuteOptions {
-  dedupe?: 'cancel' | 'defer'
-}
-
-type AsyncDataRequestStatus = 'idle' | 'pending' | 'success' | 'error'
-```
+::note
+[view AsyncData types on GitHub](https://github.com/nuxt/nuxt/blob/32d9e2fe740d6d8c41e729db57aa46ebad387710/packages/nuxt/src/app/composables/asyncData.ts)
 
 :read-more{to="/docs/getting-started/data-fetching"}
