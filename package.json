@@ -49,6 +49,7 @@
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
     "magic-string": "^0.30.17",
+    "memfs": "4.14.1",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.49",
@@ -59,7 +60,8 @@
     "unhead": "1.11.14",
     "unimport": "3.14.5",
     "vite": "6.0.5",
-    "vue": "3.5.13"
+    "vue": "3.5.13",
+    "webpack": "5.96.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.2",
