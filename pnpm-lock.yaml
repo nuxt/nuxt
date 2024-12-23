@@ -208,8 +208,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       ignore:
-        specifier: ^6.0.2
-        version: 6.0.2
+        specifier: ^7.0.0
+        version: 7.0.0
       jiti:
         specifier: ^2.4.2
         version: 2.4.2
@@ -365,8 +365,8 @@ importers:
         specifier: ^5.5.3
         version: 5.5.3
       ignore:
-        specifier: ^6.0.2
-        version: 6.0.2
+        specifier: ^7.0.0
+        version: 7.0.0
       impound:
         specifier: ^0.2.0
         version: 0.2.0(rollup@4.29.1)
@@ -722,8 +722,8 @@ importers:
         specifier: 1.13.0
         version: 1.13.0
       ignore:
-        specifier: 6.0.2
-        version: 6.0.2
+        specifier: 7.0.0
+        version: 7.0.0
       nitropack:
         specifier: 2.10.4
         version: 2.10.4(typescript@5.6.2)
@@ -5032,6 +5032,10 @@ packages:
 
   ignore@6.0.2:
     resolution: {integrity: sha512-InwqeHHN2XpumIkMvpl/DCJVrAHgCsG5+cn1XlnLWGwtZBm8QJfSusItfrwx81CTp5agNZqpKU2J/ccC5nGT4A==}
+    engines: {node: '>= 4'}
+
+  ignore@7.0.0:
+    resolution: {integrity: sha512-lcX8PNQygAa22u/0BysEY8VhaFRzlOkvdlKczDPnJvrkJD1EuqzEky5VYYKM2iySIuaVIDv9N190DfSreSLw2A==}
     engines: {node: '>= 4'}
 
   image-meta@0.2.1:
@@ -12684,6 +12688,8 @@ snapshots:
   ignore@5.3.2: {}
 
   ignore@6.0.2: {}
+
+  ignore@7.0.0: {}
 
   image-meta@0.2.1: {}
 
