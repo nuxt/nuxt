@@ -94,7 +94,7 @@
     "markdownlint-cli": "0.43.0",
     "memfs": "4.14.1",
     "nitropack": "2.10.4",
-    "nuxi": "3.17.1",
+    "nuxi": "3.17.2",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
