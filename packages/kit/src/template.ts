@@ -230,6 +230,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     : nuxt.options.buildDir
 
   tsConfig.compilerOptions = tsConfig.compilerOptions || {}
+  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
   tsConfig.include = tsConfig.include || []
 
   for (const alias in aliases) {
