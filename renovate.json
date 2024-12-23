@@ -32,19 +32,6 @@
       ]
     },
     {
-      "groupName": "typescript",
-      "matchPackageNames": [
-        "typescript"
-      ]
-    },
-    {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "webpack",
-        "memfs"
-      ]
-    },
-    {
       "groupName": "webpack",
       "matchPackageNames": [
         "webpack",
