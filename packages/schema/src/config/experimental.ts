@@ -60,7 +60,7 @@ export default defineUntypedSchema({
           return false
         }
         // Enabled by default for vite prod with ssr (for vue components)
-        return val ?? ((id: string) => id && id.includes('.vue'))
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? (id: string) => id && id.includes('.vue') : true)
       },
     },
 
