@@ -7,7 +7,7 @@ import type { Nuxt } from '@nuxt/schema'
 import { pkgDir } from '../../dirs'
 
 export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
-  const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite']
+  const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite', '@vitest/']
   let conditions: string[]
   return {
     name: 'nuxt:resolve-bare-imports',
