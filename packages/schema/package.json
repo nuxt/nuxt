@@ -52,7 +52,7 @@
     "sass-loader": "16.0.4",
     "unbuild": "latest",
     "unctx": "2.4.1",
-    "vite": "6.0.3",
+    "vite": "6.0.5",
     "vue": "3.5.13",
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
@@ -63,7 +63,7 @@
   "dependencies": {
     "c12": "^2.0.1",
     "compatx": "^0.1.8",
-    "consola": "^3.3.0",
+    "consola": "^3.3.1",
     "defu": "^6.1.4",
     "hookable": "^5.5.3",
     "pathe": "^1.1.2",
