@@ -350,8 +350,10 @@ export function useAsyncData<
   if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
-    // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
-    instance.sp = instance.sp || []
+    if (instance && fetchOnServer && options.immediate) {
+      // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
+      instance.sp = instance.sp || []
+    }
     if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
       // @ts-expect-error private property
       console.warn(`[nuxt] [${options._functionName || 'useAsyncData'}] Component is already mounted, please use $fetch instead. See https://nuxt.com/docs/getting-started/data-fetching`)
