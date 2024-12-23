@@ -47,7 +47,7 @@
     "knitwork": "^1.2.0",
     "lodash-es": "4.17.21",
     "magic-string": "^0.30.17",
-    "memfs": "^4.15.0",
+    "memfs": "^4.15.1",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -79,7 +79,7 @@
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.28.1",
+    "rollup": "4.29.1",
     "unbuild": "3.0.1",
     "vue": "3.5.13"
   },
