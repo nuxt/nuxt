@@ -644,6 +644,7 @@ if (import.meta.hot) {
 
 export function handleHotUpdate(_router) {
   if (import.meta.hot) {
+    import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
   }
 }
