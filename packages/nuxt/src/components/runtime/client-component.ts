@@ -18,11 +18,9 @@ export const createClientPage = (loader: AsyncComponentLoader) => {
     setup (_, { attrs }) {
       const nuxtApp = useNuxtApp()
       if (import.meta.server || nuxtApp.isHydrating) {
-        return () => h('div', [
-          h(ClientOnly, undefined, {
-            default: () => h(page, attrs),
-          }),
-        ])
+        return () => h(ClientOnly, undefined, {
+          default: () => h(page, attrs),
+        })
       }
       return () => h(page, attrs)
     },
