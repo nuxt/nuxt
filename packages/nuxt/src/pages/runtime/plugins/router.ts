@@ -111,7 +111,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
     // Allows suspending the route object until page navigation completes
     const _route = shallowRef(router.currentRoute.value)
     const syncCurrentRoute = () => { _route.value = router.currentRoute.value }
-    nuxtApp.hook('page:finish', syncCurrentRoute)
+    nuxtApp.hook('page:start', syncCurrentRoute)
     router.afterEach((to, from) => {
       // We won't trigger suspense if the component is reused between routes
       // so we need to update the route manually
