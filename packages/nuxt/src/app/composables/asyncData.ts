@@ -354,7 +354,7 @@ export function useAsyncData<
     // @ts-expect-error - instance.sp is an internal vue property
     if (instance && fetchOnServer && options.immediate && !instance.sp) {
       // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
-      instance.sp = instance.sp || []
+      instance.sp = []
     }
     if (import.meta.dev && !nuxtApp.isHydrating && !nuxtApp._processingMiddleware /* internal flag */ && (!instance || instance?.isMounted)) {
       // @ts-expect-error private property
