@@ -2628,6 +2628,11 @@ describe.skipIf(isWindows)('useAsyncData', () => {
 
     await page.close()
   })
+  it('works with useId', async () => {
+    const html = await $fetch<string>('/useAsyncData/use-id')
+    expect(html).toContain('<div>v-0-0-0</div> v-0-0</div>')
+    await expectNoClientErrors('/useAsyncData/use-id')
+  })
 })
 
 describe.runIf(isDev())('component testing', () => {
