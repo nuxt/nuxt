@@ -394,7 +394,7 @@ importers:
         specifier: ^2.10.4
         version: 2.10.4(typescript@5.7.2)
       nuxi:
-        specifier: ^3.17.1
+        specifier: ^3.17.2
         version: 3.17.2
       nypm:
         specifier: ^0.4.1
