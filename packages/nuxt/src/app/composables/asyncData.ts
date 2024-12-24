@@ -350,7 +350,9 @@ export function useAsyncData<
   if (import.meta.client) {
     // Setup hook callbacks once per instance
     const instance = getCurrentInstance()
-    if (instance && fetchOnServer && options.immediate) {
+
+    // @ts-expect-error - instance.sp is an internal vue property
+    if (instance && fetchOnServer && options.immediate && !instance.sp) {
       // @ts-expect-error - internal vue property. This force vue to mark the component as async boundary client-side to avoid useId hydration issue since we treeshake onServerPrefetch
       instance.sp = instance.sp || []
     }
