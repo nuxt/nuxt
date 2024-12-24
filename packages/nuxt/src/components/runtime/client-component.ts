@@ -18,6 +18,8 @@ export const createClientPage = (loader: AsyncComponentLoader) => {
     setup (_, { attrs }) {
       const nuxtApp = useNuxtApp()
       if (import.meta.server || nuxtApp.isHydrating) {
+        // wrapped with div to avoid Transition issues
+        // @see https://github.com/nuxt/nuxt/pull/25037#issuecomment-1877423894
         return () => h('div', [
           h(ClientOnly, undefined, {
             default: () => h(page, attrs),
