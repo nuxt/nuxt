@@ -499,12 +499,6 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-
-    // assume that the Nuxt context is available in components
-    // (enables injecting data for components in the callback)
-    if (getCurrentInstance()) {
-      return fn()
-    }
     return nuxt.vueApp.runWithContext(fn)
   }
 }
