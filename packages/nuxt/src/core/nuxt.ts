@@ -379,7 +379,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transform initial composable call within `<script setup>` to preserve context
   if (nuxt.options.experimental.asyncContext) {
-    addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
+    addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
