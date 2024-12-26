@@ -20,7 +20,7 @@
     "@types/lodash-es": "4.17.12",
     "@unocss/reset": "0.65.3",
     "beasties": "0.2.0",
-    "html-validate": "9.0.1",
+    "html-validate": "9.1.0",
     "htmlnano": "2.1.1",
     "jiti": "2.4.2",
     "knitwork": "1.2.0",
@@ -32,7 +32,7 @@
     "tinyexec": "0.3.1",
     "tinyglobby": "0.2.10",
     "unocss": "0.65.3",
-    "vite": "6.0.5"
+    "vite": "6.0.6"
   },
   "engines": {
     "node": "^18.0.0 || ^20.0.0 || >=22.0.0"

@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.6.4",
+    "@nuxt/devtools": "^1.7.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.2",
@@ -84,7 +84,7 @@
     "c12": "^2.0.1",
     "chokidar": "^4.0.3",
     "compatx": "^0.1.8",
-    "consola": "^3.3.1",
+    "consola": "^3.3.3",
     "cookie-es": "^1.2.2",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
@@ -127,7 +127,7 @@
     "unimport": "^3.14.5",
     "unplugin": "^2.1.0",
     "unplugin-vue-router": "^0.10.9",
-    "unstorage": "^1.14.1",
+    "unstorage": "^1.14.3",
     "untyped": "^1.5.2",
     "vue": "^3.5.13",
     "vue-bundle-renderer": "^2.1.1",
@@ -141,7 +141,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "latest",
-    "vite": "6.0.5",
+    "vite": "6.0.6",
     "vitest": "2.1.8"
   },
   "peerDependencies": {
