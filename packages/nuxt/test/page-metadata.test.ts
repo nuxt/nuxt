@@ -472,4 +472,81 @@ definePageMeta({
 
     expect(wasErrorThrown).toBe(true)
   })
+
+  it('should only add definitions for reference identifiers', () => {
+    const sfc = `
+<script setup lang="ts">
+const foo = 'foo'
+const bar = { bar: 'bar' }.bar, baz = { baz: 'baz' }.baz, x = { foo }
+const test = 'test'
+const prop = 'prop'
+const num = 1
+
+const val = 'val'
+
+const useVal = () => ({ val: 'val' })
+
+function recursive () {
+  recursive()
+}
+
+definePageMeta({
+  middleware: [
+    () => {
+      console.log(bar, baz)
+      recursive()
+
+      const val = useVal().val
+      const obj = {
+        num,
+        prop: 'prop',
+      }
+
+      const c = class test {
+        prop = 'prop'
+        test () {}
+      }
+    },
+  ],
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const foo = 'foo'
+      const num = 1
+      const bar = { bar: 'bar' }.bar, baz = { baz: 'baz' }.baz, x = { foo }
+      const useVal = () => ({ val: 'val' })
+      function recursive () {
+        recursive()
+      }
+      const __nuxt_page_meta = {
+        middleware: [
+          () => {
+            console.log(bar, baz)
+            recursive()
+
+            const val = useVal().val
+            const obj = {
+              num,
+              prop: 'prop',
+            }
+
+            const c = class test {
+              prop = 'prop'
+              test () {}
+            }
+          },
+        ],
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
 })

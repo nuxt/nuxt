@@ -476,7 +476,7 @@ function getPatternIdentifiers (pattern: WithLocations<Node>) {
   return identifiers
 }
 
-function isNotReferencePosition (node: WithLocations<Node>, parent: WithLocations<Node> | null) {
+export function isNotReferencePosition (node: WithLocations<Node>, parent: WithLocations<Node> | null) {
   if (!parent || node.type !== 'Identifier') { return false }
 
   switch (parent.type) {
