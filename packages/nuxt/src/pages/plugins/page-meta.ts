@@ -3,7 +3,6 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
@@ -12,7 +11,9 @@ import {
   ScopeTracker,
   type ScopeTrackerNode,
   getUndeclaredIdentifiersInFunction,
+  isNotReferencePosition,
   parseAndWalk,
+  walk,
   withLocations,
 } from '../../core/utils/parse'
 
@@ -147,12 +148,26 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         declarationNodes.push(node)
       }
 
-      function addImportOrDeclaration (name: string) {
+      /**
+       * Adds an import or a declaration to the extracted code.
+       * @param name The name of the import or declaration to add.
+       * @param node The node that is currently being processed. (To detect self-references)
+       */
+      function addImportOrDeclaration (name: string, node?: ScopeTrackerNode) {
         if (isStaticIdentifier(name)) {
           addImport(name)
         } else {
           const declaration = scopeTracker.getDeclaration(name)
-          if (declaration) {
+          /*
+           Without checking for `declaration !== node`, we would end up in an infinite loop
+           when, for example, a variable is declared and then used in its own initializer.
+           (we shouldn't mask the underlying error by throwing a `Maximum call stack size exceeded` error)
+
+           ```ts
+           const a = { b: a }
+           ```
+           */
+          if (declaration && declaration !== node) {
             processDeclaration(declaration)
           }
         }
@@ -160,32 +175,35 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
       const scopeTracker = new ScopeTracker()
 
-      function processDeclaration (node: ScopeTrackerNode | null) {
-        if (node?.type === 'Variable') {
-          addDeclaration(node)
+      function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
+        if (scopeTrackerNode?.type === 'Variable') {
+          addDeclaration(scopeTrackerNode)
 
-          for (const decl of node.variableNode.declarations) {
+          for (const decl of scopeTrackerNode.variableNode.declarations) {
             if (!decl.init) { continue }
             walk(decl.init, {
-              enter: (node) => {
+              enter: (node, parent) => {
                 if (node.type === 'AwaitExpression') {
                   logger.error(`[nuxt] Await expressions are not supported in definePageMeta. File: '${id}'`)
                   throw new Error('await in definePageMeta')
                 }
-                if (node.type !== 'Identifier') { return }
+                if (
+                  isNotReferencePosition(node, parent)
+                  || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+                ) { return }
 
-                addImportOrDeclaration(node.name)
+                addImportOrDeclaration(node.name, scopeTrackerNode)
               },
             })
           }
-        } else if (node?.type === 'Function') {
+        } else if (scopeTrackerNode?.type === 'Function') {
           // arrow functions are going to be assigned to a variable
-          if (node.node.type === 'ArrowFunctionExpression') { return }
-          const name = node.node.id?.name
+          if (scopeTrackerNode.node.type === 'ArrowFunctionExpression') { return }
+          const name = scopeTrackerNode.node.id?.name
           if (!name) { return }
-          addDeclaration(node)
+          addDeclaration(scopeTrackerNode)
 
-          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(node.node)
+          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(scopeTrackerNode.node)
           for (const name of undeclaredIdentifiers) {
             addImportOrDeclaration(name)
           }
@@ -203,8 +221,11 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!meta) { return }
 
           walk(meta, {
-            enter (node) {
-              if (node.type !== 'Identifier') { return }
+            enter (node, parent) {
+              if (
+                isNotReferencePosition(node, parent)
+                || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+              ) { return }
 
               if (isStaticIdentifier(node.name)) {
                 addImport(node.name)
