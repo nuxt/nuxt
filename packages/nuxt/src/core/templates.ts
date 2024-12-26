@@ -104,7 +104,7 @@ export const appDefaults: NuxtTypeTemplate = {
   getContents: (ctx) => {
     const isV4 = ctx.nuxt.options.future.compatibilityVersion === 4
     return `
-declare module '#app/defaults' {
+declare module 'nuxt/app/defaults' {
   type DefaultAsyncDataErrorValue = ${isV4 ? 'undefined' : 'null'}
   type DefaultAsyncDataValue = ${isV4 ? 'undefined' : 'null'}
   type DefaultErrorValue = ${isV4 ? 'undefined' : 'null'}
