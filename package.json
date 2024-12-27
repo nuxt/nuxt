@@ -8,6 +8,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "preinstall": "npx only-allow pnpm",
     "build": "pnpm --filter './packages/**' prepack",
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
