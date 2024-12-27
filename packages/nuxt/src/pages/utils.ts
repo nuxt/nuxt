@@ -419,7 +419,7 @@ function parseSegment (segment: string) {
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
-          // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
+          logger.warn(`[pages]Ignored character "${c}" while building param "${buffer}" from "${segment}"`)
         }
         break
     }
