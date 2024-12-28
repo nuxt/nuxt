@@ -152,9 +152,6 @@ export async function buildClient (ctx: ViteBuildContext) {
     ],
     appType: 'custom',
     server: {
-      warmup: {
-        clientFiles: [ctx.entry],
-      },
       middlewareMode: true,
     },
   } satisfies vite.InlineConfig, ctx.nuxt.options.vite.$client || {}))
