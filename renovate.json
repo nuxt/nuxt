@@ -14,10 +14,8 @@
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
-        "vitest"
-      ],
-      "matchPackagePatterns": [
-        "^@vitest/"
+        "vitest",
+        "/^@vitest//"
       ]
     },
     {
@@ -28,10 +26,16 @@
       "ignoreDeps": [
         "nitro",
         "h3",
-        "typescript",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
+      ]
+    },
+    {
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack",
+        "memfs"
       ]
     }
   ]

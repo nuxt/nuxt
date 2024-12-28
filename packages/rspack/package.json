@@ -26,12 +26,13 @@
     "builder.mjs"
   ],
   "scripts": {
-    "prepack": "unbuild"
+    "prepack": "unbuild",
+    "test:attw": "attw --pack"
   },
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.1.4",
+    "@rspack/core": "^1.1.8",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -43,11 +44,11 @@
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "globby": "^14.0.2",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
-    "jiti": "^2.4.0",
-    "knitwork": "^1.1.0",
+    "jiti": "^2.4.2",
+    "knitwork": "^1.2.0",
     "lodash-es": "4.17.21",
-    "magic-string": "^0.30.14",
-    "memfs": "^4.14.0",
+    "magic-string": "^0.30.17",
+    "memfs": "^4.15.1",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
     "pify": "^6.1.0",
@@ -61,7 +62,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^1.16.0",
+    "unplugin": "^2.1.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.1",
     "vue-loader": "^17.4.2",
@@ -76,14 +77,14 @@
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
-    "rollup": "4.27.4",
-    "unbuild": "3.0.0-rc.11",
+    "rollup": "4.29.1",
+    "unbuild": "3.0.1",
     "vue": "3.5.13"
   },
   "peerDependencies": {
     "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^14.18.0 || >=16.10.0"
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }

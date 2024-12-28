@@ -85,6 +85,7 @@ export async function buildServer (ctx: ViteBuildContext) {
           'nitro/runtime',
           '#internal/nuxt/paths',
           '#internal/nuxt/app-config',
+          '#app-manifest',
           '#shared',
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
         ],

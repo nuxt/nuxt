@@ -13,7 +13,7 @@ import { defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
-    name: 'imports',
+    name: 'nuxt:imports',
     configKey: 'imports',
   },
   defaults: nuxt => ({
@@ -41,13 +41,19 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     // Filter disabled sources
     // options.sources = options.sources.filter(source => source.disabled !== true)
 
+    const { addons: inlineAddons, ...rest } = options
+
+    const [addons, addonsOptions] = Array.isArray(inlineAddons) ? [inlineAddons] : [[], inlineAddons]
+
     // Create a context to share state between module internals
     const ctx = createUnimport({
       injectAtEnd: true,
-      ...options,
+      ...rest,
       addons: {
+        addons,
         vueTemplate: options.autoImport,
-        ...options.addons,
+        vueDirectives: options.autoImport === false ? undefined : true,
+        ...addonsOptions,
       },
       presets,
     })

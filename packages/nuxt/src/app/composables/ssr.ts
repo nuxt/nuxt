@@ -2,6 +2,7 @@ import type { H3Event } from 'h3'
 import { setResponseStatus as _setResponseStatus, appendHeader, getRequestHeader, getRequestHeaders, getResponseHeader, removeResponseHeader, setResponseHeader } from 'h3'
 import { computed, getCurrentInstance, ref } from 'vue'
 import { useServerHead } from '@unhead/vue'
+import type { H3Event$Fetch } from 'nitro/types'
 
 import type { NuxtApp } from '../nuxt'
 import { useNuxtApp } from '../nuxt'
@@ -39,11 +40,11 @@ export function useRequestHeader (header: string) {
 }
 
 /** @since 3.2.0 */
-export function useRequestFetch (): typeof global.$fetch {
+export function useRequestFetch (): H3Event$Fetch | typeof global.$fetch {
   if (import.meta.client) {
     return globalThis.$fetch
   }
-  return useRequestEvent()?.$fetch as typeof globalThis.$fetch || globalThis.$fetch
+  return useRequestEvent()?.$fetch || globalThis.$fetch
 }
 
 /** @since 3.0.0 */

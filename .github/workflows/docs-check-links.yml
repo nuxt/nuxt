@@ -19,7 +19,7 @@ jobs:
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
       - name: Restore lychee cache
-        uses: actions/cache@6849a6489940f00c2f30c0fb92c6274307ccb58a # v4.1.2
+        uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
         with:
           path: .lycheecache
           key: cache-lychee-${{ github.sha }}
@@ -29,18 +29,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Lychee link checker
-        uses: lycheeverse/lychee-action@4aa18b6ccdac05029fab067313a6a04f941e6494 # for v1.8.0
+        uses: lycheeverse/lychee-action@f796c8b7d468feb9b8c0a46da3fac0af6874d374 # for v1.8.0
         with:
           # arguments with file types to check
           args: >-
-            --cache
-            --verbose
-            --no-progress
-            --max-cache-age=1d
-            './**/*.md'
-            './**/*.html'
+            '-c=lychee.toml'
+            './docs/**/*.md'
+            './docs/**/*.html'
+            './packages/*/src/**/*.ts'
+            './packages/*/src/**/*.js'
+            './packages/*/src/**/*.md'
           # fail the action on broken links
           fail: true
         env:
           # to be used in case rate limits are surpassed
-          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
