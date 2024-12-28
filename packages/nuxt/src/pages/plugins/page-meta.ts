@@ -3,12 +3,19 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
 import { logger } from '@nuxt/kit'
 
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import {
+  ScopeTracker,
+  type ScopeTrackerNode,
+  getUndeclaredIdentifiersInFunction,
+  isNotReferencePosition,
+  parseAndWalk,
+  walk,
+  withLocations,
+} from '../../core/utils/parse'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -119,38 +126,130 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      parseAndWalk(code, id, (node) => {
-        if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
-        if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
+      function isStaticIdentifier (name: string | false): name is string {
+        return !!(name && importMap.has(name))
+      }
 
-        const meta = withLocations(node.arguments[0])
+      function addImport (name: string | false) {
+        if (!isStaticIdentifier(name)) { return }
+        const importValue = importMap.get(name)!.code.trim()
+        if (!addedImports.has(importValue)) {
+          addedImports.add(importValue)
+        }
+      }
 
-        if (!meta) { return }
+      const declarationNodes: ScopeTrackerNode[] = []
+      const addedDeclarations = new Set<string>()
 
-        let contents = `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : '')
+      function addDeclaration (node: ScopeTrackerNode) {
+        const codeSectionKey = `${node.start}-${node.end}`
+        if (addedDeclarations.has(codeSectionKey)) { return }
+        addedDeclarations.add(codeSectionKey)
+        declarationNodes.push(node)
+      }
 
-        function addImport (name: string | false) {
-          if (name && importMap.has(name)) {
-            const importValue = importMap.get(name)!.code
-            if (!addedImports.has(importValue)) {
-              contents = importMap.get(name)!.code + '\n' + contents
-              addedImports.add(importValue)
-            }
+      /**
+       * Adds an import or a declaration to the extracted code.
+       * @param name The name of the import or declaration to add.
+       * @param node The node that is currently being processed. (To detect self-references)
+       */
+      function addImportOrDeclaration (name: string, node?: ScopeTrackerNode) {
+        if (isStaticIdentifier(name)) {
+          addImport(name)
+        } else {
+          const declaration = scopeTracker.getDeclaration(name)
+          /*
+           Without checking for `declaration !== node`, we would end up in an infinite loop
+           when, for example, a variable is declared and then used in its own initializer.
+           (we shouldn't mask the underlying error by throwing a `Maximum call stack size exceeded` error)
+
+           ```ts
+           const a = { b: a }
+           ```
+           */
+          if (declaration && declaration !== node) {
+            processDeclaration(declaration)
           }
         }
+      }
 
-        walk(meta, {
-          enter (node) {
-            if (node.type === 'CallExpression' && 'name' in node.callee) {
-              addImport(node.callee.name)
-            }
-            if (node.type === 'Identifier') {
-              addImport(node.name)
-            }
-          },
-        })
+      const scopeTracker = new ScopeTracker()
 
-        s.overwrite(0, code.length, contents)
+      function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
+        if (scopeTrackerNode?.type === 'Variable') {
+          addDeclaration(scopeTrackerNode)
+
+          for (const decl of scopeTrackerNode.variableNode.declarations) {
+            if (!decl.init) { continue }
+            walk(decl.init, {
+              enter: (node, parent) => {
+                if (node.type === 'AwaitExpression') {
+                  logger.error(`[nuxt] Await expressions are not supported in definePageMeta. File: '${id}'`)
+                  throw new Error('await in definePageMeta')
+                }
+                if (
+                  isNotReferencePosition(node, parent)
+                  || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+                ) { return }
+
+                addImportOrDeclaration(node.name, scopeTrackerNode)
+              },
+            })
+          }
+        } else if (scopeTrackerNode?.type === 'Function') {
+          // arrow functions are going to be assigned to a variable
+          if (scopeTrackerNode.node.type === 'ArrowFunctionExpression') { return }
+          const name = scopeTrackerNode.node.id?.name
+          if (!name) { return }
+          addDeclaration(scopeTrackerNode)
+
+          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(scopeTrackerNode.node)
+          for (const name of undeclaredIdentifiers) {
+            addImportOrDeclaration(name)
+          }
+        }
+      }
+
+      parseAndWalk(code, id, {
+        scopeTracker,
+        enter: (node) => {
+          if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
+          if (!('name' in node.callee) || node.callee.name !== 'definePageMeta') { return }
+
+          const meta = withLocations(node.arguments[0])
+
+          if (!meta) { return }
+
+          walk(meta, {
+            enter (node, parent) {
+              if (
+                isNotReferencePosition(node, parent)
+                || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+              ) { return }
+
+              if (isStaticIdentifier(node.name)) {
+                addImport(node.name)
+              } else {
+                processDeclaration(scopeTracker.getDeclaration(node.name))
+              }
+            },
+          })
+
+          const importStatements = Array.from(addedImports).join('\n')
+
+          const declarations = declarationNodes
+            .sort((a, b) => a.start - b.start)
+            .map(node => code.slice(node.start, node.end))
+            .join('\n')
+
+          const extracted = [
+            importStatements,
+            declarations,
+            `const __nuxt_page_meta = ${code!.slice(meta.start, meta.end) || 'null'}\nexport default __nuxt_page_meta` + (options.dev ? CODE_HMR : ''),
+          ].join('\n')
+
+          s.overwrite(0, code.length, extracted.trim())
+        },
       })
 
       if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

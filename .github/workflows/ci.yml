@@ -60,7 +60,7 @@ jobs:
         run: pnpm test:attw
 
       - name: Cache dist
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65892d2ee8f75cf882 # v4.4.3
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
         with:
           retention-days: 3
           name: dist
@@ -69,6 +69,9 @@ jobs:
   codeql:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        language: ['javascript-typescript', 'actions']
     permissions:
       actions: read
       contents: read
@@ -78,7 +81,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/init@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
           config: |
             paths:
@@ -90,13 +93,14 @@ jobs:
             - '**/*.spec.ts'
             - '**/*.test.ts'
             - '**/__snapshots__/**'
-          languages: javascript-typescript
-          queries: +security-and-quality
+            # codeql bug: #L20C9:9: A parse error occurred: `Unexpected token`.
+            - 'packages/vite/src/runtime/vite-node.mjs'
+          languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/analyze@48ab28a6f5dbc2a99bf1e0131198dd8f1df78169 # v3.28.0
         with:
-          category: "/language:javascript-typescript"
+          category: "/language:${{ matrix.language }}"
 
   typecheck:
     runs-on: ${{ matrix.os }}
@@ -251,7 +255,7 @@ jobs:
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || matrix.payload == 'js' || runner.os == 'Windows' }}
 
-      - uses: codecov/codecov-action@7f8b4b4bde536c465e797be725718b88c5d95e0e # v5.1.1
+      - uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

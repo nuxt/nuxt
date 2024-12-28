@@ -42,6 +42,7 @@ export default defineNuxtModule({
       delete tsConfig.compilerOptions.paths['#vue-router/*']
     })
 
+    const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
     async function resolveRouterOptions () {
       const context = {
         files: [] as Array<{ path: string, optional?: boolean }>,
@@ -53,7 +54,7 @@ export default defineNuxtModule({
       }
 
       // Add default options at beginning
-      context.files.unshift({ path: await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options'), optional: true })
+      context.files.unshift({ path: builtInRouterOptions, optional: true })
 
       await nuxt.callHook('pages:routerOptions', context)
       return context.files
@@ -127,6 +128,16 @@ export default defineNuxtModule({
           'export { useRoute } from \'#app/composables/router\'',
           'export const START_LOCATION = Symbol(\'router:start-location\')',
         ].join('\n'),
+      })
+      // used by `<NuxtLink>`
+      addTemplate({
+        filename: 'router.options.mjs',
+        getContents: () => {
+          return [
+            'export const hashMode = false',
+            'export default {}',
+          ].join('\n')
+        },
       })
       addTypeTemplate({
         filename: 'types/middleware.d.ts',
@@ -535,6 +546,7 @@ export default defineNuxtModule({
         return [
           ...routerOptionsFiles.map((file, index) => genImport(file.path, `routerOptions${index}`)),
           `const configRouterOptions = ${configRouterOptions}`,
+          `export const hashMode = ${[...routerOptionsFiles.filter(o => o.path !== builtInRouterOptions).map((_, index) => `routerOptions${index}.hashMode`).reverse(), nuxt.options.router.options.hashMode].join(' ?? ')}`,
           'export default {',
           '...configRouterOptions,',
           ...routerOptionsFiles.map((_, index) => `...routerOptions${index},`),
@@ -632,6 +644,7 @@ if (import.meta.hot) {
 
 export function handleHotUpdate(_router) {
   if (import.meta.hot) {
+    import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
   }
 }

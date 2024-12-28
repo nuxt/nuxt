@@ -28,6 +28,11 @@ export default defineUntypedSchema({
    */
   imports: {
     global: false,
+    /**
+     * Whether to scan your `composables/` and `utils/` directories for composables to auto-import.
+     * Auto-imports registered by Nuxt or other modules, such as imports from `vue` or `nuxt`, will still be enabled.
+     */
+    scan: true,
 
     /**
      * An array of custom directories that will be auto-imported.

@@ -18,6 +18,8 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
+import { hashMode } from '#build/router.options'
+
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
@@ -110,6 +112,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
+  function isHashLinkWithoutHashMode (link: unknown): boolean {
+    return !hashMode && typeof link === 'string' && link.startsWith('#')
+  }
+
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
@@ -176,7 +182,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
+        return to.value as string
+      }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
@@ -373,7 +381,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,

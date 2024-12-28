@@ -59,8 +59,8 @@ export default defineUntypedSchema({
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
+        // Enabled by default for vite prod with ssr (for vue components)
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? (id: string) => id && id.includes('.vue') : true)
       },
     },
 

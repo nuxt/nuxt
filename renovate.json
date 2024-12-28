@@ -32,12 +32,6 @@
       ]
     },
     {
-      "groupName": "typescript",
-      "matchPackageNames": [
-        "typescript"
-      ]
-    },
-    {
       "groupName": "webpack",
       "matchPackageNames": [
         "webpack",
