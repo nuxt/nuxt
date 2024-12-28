@@ -9,7 +9,7 @@
     <LazyNeverDelayedNever />
     <LazyEventDelayedEvent
       id="lazyevent2"
-      :hydrate="createEventLoader(['click'])"
+      :hydrate="['click']"
     />
     <LazyIfDelayedCondition id="lazycondition" />
     <button
