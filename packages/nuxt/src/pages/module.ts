@@ -75,7 +75,7 @@ export default defineNuxtModule({
         return true
       }
 
-      const pages = await resolvePagesRoutes()
+      const pages = await resolvePagesRoutes(nuxt)
       if (pages.length) {
         if (nuxt.apps.default) {
           nuxt.apps.default.pages = pages
@@ -93,7 +93,7 @@ export default defineNuxtModule({
     }
 
     nuxt.hook('app:templates', async (app) => {
-      app.pages = await resolvePagesRoutes()
+      app.pages = await resolvePagesRoutes(nuxt)
 
       if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
         logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
@@ -173,7 +173,7 @@ export default defineNuxtModule({
         logs: nuxt.options.debug,
         async beforeWriteFiles (rootPage) {
           rootPage.children.forEach(child => child.delete())
-          const pages = nuxt.apps.default?.pages || await resolvePagesRoutes()
+          const pages = nuxt.apps.default?.pages || await resolvePagesRoutes(nuxt)
           if (nuxt.apps.default) {
             nuxt.apps.default.pages = pages
           }
