@@ -38,6 +38,7 @@
     "css-minimizer-webpack-plugin": "^7.0.0",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
+    "es-toolkit": "^1.31.0",
     "esbuild-loader": "^4.2.2",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
@@ -46,7 +47,6 @@
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "^2.4.2",
     "knitwork": "^1.2.0",
-    "lodash-es": "4.17.21",
     "magic-string": "^0.30.17",
     "memfs": "^4.15.1",
     "ohash": "^1.1.4",
@@ -73,7 +73,6 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
