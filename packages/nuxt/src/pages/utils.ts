@@ -2,7 +2,7 @@ import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
-import { logger, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -13,7 +13,7 @@ import type { NuxtPage } from 'nuxt/schema'
 
 import { parseAndWalk } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
-import { toArray } from '../utils'
+import { logger, toArray } from '../utils'
 
 enum SegmentParserState {
   initial,
@@ -252,7 +252,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
-            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+            logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
           }
@@ -265,7 +265,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
               continue
             }
             if (element.type !== 'Literal' || typeof element.value !== 'string') {
-              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+              logger.debug(`Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
               dynamicProperties.add(key)
               continue
             }
@@ -276,7 +276,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         }
 
         if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
-          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
           dynamicProperties.add(key)
           continue
         }
