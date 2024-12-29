@@ -5,8 +5,9 @@ import { pascalCase } from 'scule'
 import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
-import { logger, tryUseNuxt } from '@nuxt/kit'
+import { tryUseNuxt } from '@nuxt/kit'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
+import { logger } from '../../utils'
 
 interface LoaderOptions {
   getComponents (): Component[]

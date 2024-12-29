@@ -1,11 +1,12 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { importModule, isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
+import { logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'

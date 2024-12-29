@@ -1,9 +1,10 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, logger, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
+import { logger } from '../utils'
 import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
 import { scanComponents } from './scan'
 
