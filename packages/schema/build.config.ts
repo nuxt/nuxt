@@ -25,7 +25,7 @@ export default defineBuildConfig({
       ctx.options.rollup.dts.respectExternal = false
       const isExternal = options.external! as (id: string, importer?: string, isResolved?: boolean) => boolean
       options.external = (source, importer, isResolved) => {
-        if (source === 'untyped') {
+        if (source === 'untyped' || source === 'knitwork') {
           return false
         }
         return isExternal(source, importer, isResolved)
