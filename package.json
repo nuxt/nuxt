@@ -105,7 +105,7 @@
     "semver": "7.6.3",
     "sherif": "1.1.1",
     "std-env": "3.8.0",
-    "tinyexec": "0.3.1",
+    "tinyexec": "0.3.2",
     "tinyglobby": "0.2.10",
     "typescript": "5.7.2",
     "ufo": "1.5.4",
@@ -115,7 +115,7 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.96.1"
   },
-  "packageManager": "pnpm@9.15.1",
+  "packageManager": "pnpm@9.15.2",
   "engines": {
     "node": "^20.9.0 || ^22.0.0 || >=23.0.0"
   },
