@@ -2,11 +2,12 @@ import { readdir } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'pathe'
 import { globby } from 'globby'
 import { kebabCase, pascalCase, splitByCase } from 'scule'
-import { isIgnored, logger, useNuxt } from '@nuxt/kit'
+import { isIgnored, useNuxt } from '@nuxt/kit'
 import { withTrailingSlash } from 'ufo'
 import type { Component, ComponentsDir } from 'nuxt/schema'
 
 import { QUOTE_RE, resolveComponentNameSegments } from '../core/utils'
+import { logger } from '../utils'
 
 const ISLAND_RE = /\.island(?:\.global)?$/
 const GLOBAL_RE = /\.global(?:\.island)?$/
