@@ -1,7 +1,6 @@
 import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { withoutLeadingSlash } from 'ufo'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
@@ -97,7 +96,7 @@ export default defineUntypedSchema({
     clearScreen: true,
     build: {
       assetsDir: {
-        $resolve: async (val, get) => val ?? withoutLeadingSlash((await get('app') as Record<string, string>).buildAssetsDir),
+        $resolve: async (val, get) => val ?? (await get('app') as Record<string, string>).buildAssetsDir?.replace(/^\/+/, ''),
       },
       emptyOutDir: false,
     },
