@@ -1,11 +1,12 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import type { PluginMeta } from 'nuxt/app'
 
+import { logger } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'

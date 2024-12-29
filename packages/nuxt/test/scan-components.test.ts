@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
+import { consola } from 'consola'
 import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
@@ -10,6 +11,7 @@ const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({
   isIgnored: () => false,
+  useLogger: () => consola.create({}).withTag('nuxt'),
 }))
 
 const dirs: ComponentsDir[] = [
