@@ -686,9 +686,6 @@ importers:
       unimport:
         specifier: 3.14.5
         version: 3.14.5(rollup@4.29.1)
-      untyped:
-        specifier: ^1.5.2
-        version: 1.5.2
     devDependencies:
       '@types/pug':
         specifier: 2.0.10
@@ -738,6 +735,9 @@ importers:
       unctx:
         specifier: 2.4.1
         version: 2.4.1
+      untyped:
+        specifier: 1.5.2
+        version: 1.5.2
       vite:
         specifier: 6.0.6
         version: 6.0.6(@types/node@22.10.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1)

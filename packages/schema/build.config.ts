@@ -20,6 +20,18 @@ export default defineBuildConfig({
     'src/index',
     'src/builder-env',
   ],
+  hooks: {
+    'rollup:options' (ctx, options) {
+      ctx.options.rollup.dts.respectExternal = false
+      const isExternal = options.external! as (id: string, importer?: string, isResolved?: boolean) => boolean
+      options.external = (source, importer, isResolved) => {
+        if (source === 'untyped') {
+          return false
+        }
+        return isExternal(source, importer, isResolved)
+      }
+    },
+  },
   externals: [
     // Type imports
     'nuxt/app',
