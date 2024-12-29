@@ -254,7 +254,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
-            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+            logger.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
           }
@@ -267,7 +267,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
               continue
             }
             if (element.type !== 'Literal' || typeof element.value !== 'string') {
-              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+              logger.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
               dynamicProperties.add(key)
               continue
             }
