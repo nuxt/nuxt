@@ -42,9 +42,7 @@ interface ScannedFile {
   absolutePath: string
 }
 
-export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
-  const nuxt = useNuxt()
-
+export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
     layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
