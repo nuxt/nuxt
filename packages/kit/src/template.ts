@@ -44,7 +44,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 }
 
 /**
- * Renders given types during build  to disk in the project `buildDir`
+ * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
  */
 export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
