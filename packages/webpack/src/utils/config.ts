@@ -62,10 +62,3 @@ export function fileName (ctx: WebpackConfigContext, key: string) {
 
   return fileName
 }
-
-export async function getWebpackConfig (ctx: WebpackConfigContext, preset): Promise<Configuration> {
-  // Clone to avoid leaking config between Client and Server
-  // TODO: rewrite webpack implementation to avoid necessity for this
-  await applyPresets(ctx, preset)
-  return ctx.config
-}
