@@ -1,4 +1,4 @@
-import { isPromise } from 'node:util/types'
+import { isPromise } from '@vue/shared'
 import { type AsyncComponentLoader, type ComponentOptions, h, onMounted, ref } from 'vue'
 import { useNuxtApp } from '#app'
 import ServerPlaceholder from '#app/components/server-placeholder'
