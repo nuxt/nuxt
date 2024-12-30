@@ -14,7 +14,7 @@ import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
 
 /**
- * Renders given template using lodash template during build into the project buildDir
+ * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
 export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
@@ -44,7 +44,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 }
 
 /**
- * Renders given types using lodash template during build into the project buildDir
+ * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
  */
 export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {

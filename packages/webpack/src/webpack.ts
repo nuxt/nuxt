@@ -13,7 +13,7 @@ import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
+import { applyPresets, createWebpackConfigContext } from './utils/config'
 
 import { builder, webpack } from '#builder'
 
@@ -25,7 +25,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
-    return getWebpackConfig(ctx)
+    return ctx.config
   }))
 
   await nuxt.callHook(`${builder}:config`, webpackConfigs)

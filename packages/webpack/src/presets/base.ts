@@ -9,6 +9,7 @@ import escapeRegExp from 'escape-string-regexp'
 import { joinURL } from 'ufo'
 import type { NuxtOptions } from '@nuxt/schema'
 import { isTest } from 'std-env'
+import { defu } from 'defu'
 import type { WarningFilter } from '../plugins/warning-ignore'
 import WarningIgnorePlugin from '../plugins/warning-ignore'
 import type { WebpackConfigContext } from '../utils/config'
@@ -27,7 +28,7 @@ export async function base (ctx: WebpackConfigContext) {
 }
 
 function baseConfig (ctx: WebpackConfigContext) {
-  ctx.config = {
+  ctx.config = defu({}, {
     name: ctx.name,
     entry: { app: [resolve(ctx.options.appDir, ctx.options.experimental.asyncEntry ? 'entry.async' : 'entry')] },
     module: { rules: [] },
@@ -45,7 +46,7 @@ function baseConfig (ctx: WebpackConfigContext) {
     output: getOutput(ctx),
     stats: statsMap[ctx.nuxt.options.logLevel] ?? statsMap.info,
     ...ctx.config,
-  }
+  } satisfies Configuration)
 }
 
 function basePlugins (ctx: WebpackConfigContext) {

@@ -553,9 +553,6 @@ importers:
       knitwork:
         specifier: ^1.2.0
         version: 1.2.0
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
       magic-string:
         specifier: ^0.30.17
         version: 0.30.17
@@ -629,9 +626,6 @@ importers:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
       '@types/pify':
         specifier: 5.0.4
         version: 5.0.4
@@ -958,9 +952,6 @@ importers:
       jiti:
         specifier: ^2.4.2
         version: 2.4.2
-      lodash-es:
-        specifier: 4.17.21
-        version: 4.17.21
       magic-string:
         specifier: ^0.30.17
         version: 0.30.17
@@ -1043,9 +1034,6 @@ importers:
       '@rspack/core':
         specifier: 1.1.8
         version: 1.1.8
-      '@types/lodash-es':
-        specifier: 4.17.12
-        version: 4.17.12
       '@types/pify':
         specifier: 5.0.4
         version: 5.0.4
