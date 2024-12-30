@@ -1,11 +1,12 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { defineUntypedSchema } from 'untyped'
 import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
-import { randomUUID } from 'uncrypto'
+
 import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
