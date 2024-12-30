@@ -526,9 +526,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      es-toolkit:
-        specifier: ^1.31.0
-        version: 1.31.0
       esbuild-loader:
         specifier: ^4.2.2
         version: 4.2.2(webpack@5.97.1)
@@ -928,9 +925,6 @@ importers:
       defu:
         specifier: ^6.1.4
         version: 6.1.4
-      es-toolkit:
-        specifier: ^1.31.0
-        version: 1.31.0
       esbuild-loader:
         specifier: ^4.2.2
         version: 4.2.2(webpack@5.97.1)
@@ -4164,9 +4158,6 @@ packages:
 
   es-module-lexer@1.5.4:
     resolution: {integrity: sha512-MVNK56NiMrOwitFB7cqDwq0CQutbw+0BvLshJSse0MUNU+y1FC3bUS/AQg7oUng+/wKrrki7JfmwtVHkVfPLlw==}
-
-  es-toolkit@1.31.0:
-    resolution: {integrity: sha512-vwS0lv/tzjM2/t4aZZRAgN9I9TP0MSkWuvt6By+hEXfG/uLs8yg2S1/ayRXH/x3pinbLgVJYT+eppueg3cM6tg==}
 
   esbuild-loader@4.2.2:
     resolution: {integrity: sha512-Mdq/A1L8p37hkibp8jGFwuQTDSWhDmlueAefsrCPRwNWThEOlQmIglV7Gd6GE2mO5bt7ksfxKOMwkuY7jjVTXg==}
@@ -11392,8 +11383,6 @@ snapshots:
       stop-iteration-iterator: 1.0.0
 
   es-module-lexer@1.5.4: {}
-
-  es-toolkit@1.31.0: {}
 
   esbuild-loader@4.2.2(webpack@5.97.1):
     dependencies:

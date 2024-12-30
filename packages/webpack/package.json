@@ -37,7 +37,6 @@
     "css-minimizer-webpack-plugin": "^7.0.0",
     "cssnano": "^7.0.6",
     "defu": "^6.1.4",
-    "es-toolkit": "^1.31.0",
     "esbuild-loader": "^4.2.2",
     "escape-string-regexp": "^5.0.0",
     "file-loader": "^6.2.0",
