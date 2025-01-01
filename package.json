@@ -97,7 +97,7 @@
     "jiti": "2.4.2",
     "knip": "5.41.1",
     "markdownlint-cli": "0.43.0",
-    "memfs": "4.15.1",
+    "memfs": "4.15.3",
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "nuxi": "3.17.2",
     "nuxt": "workspace:*",
