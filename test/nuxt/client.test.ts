@@ -44,11 +44,13 @@ describe('client page', () => {
       },
     })
 
+    const ClientPage = defineAsyncComponent(() => createClientPage(() => Promise.resolve(comp)))
+
     const wrapper = mount({
       setup () {
         return () => h('div', {}, [
           h(Suspense, {}, {
-            default: () => h(createClientPage(() => Promise.resolve(comp)), {}),
+            default: () => h(ClientPage, {}),
             fallback: () => h('div', { id: 'fallback' }, 'loading'),
           }),
         ])
