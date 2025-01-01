@@ -1,19 +1,19 @@
+import { h, onMounted, ref } from 'vue'
+import type { AsyncComponentLoader, ComponentOptions } from 'vue'
 import { isPromise } from '@vue/shared'
-import { type AsyncComponentLoader, type ComponentOptions, h, onMounted, ref } from 'vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '#app/nuxt'
 import ServerPlaceholder from '#app/components/server-placeholder'
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createClientPage = (loader: AsyncComponentLoader) => {
-  // Vue-router: Write "() => import('./MyPage.vue')" instead of "defineAsyncComponent(() => import('./MyPage.vue'))".
-  return loader().then((m) => {
-    const c = m.default || m
-    if (import.meta.dev) {
-      // mark component as client-only for `definePageMeta`
-      c.__clientOnlyPage = true
-    }
-    return pageToClientOnly(c)
-  })
+export async function createClientPage (loader: AsyncComponentLoader) {
+  // vue-router: Write "() => import('./MyPage.vue')" instead of "defineAsyncComponent(() => import('./MyPage.vue'))".
+  const m = await loader()
+  const c = m.default || m
+  if (import.meta.dev) {
+    // mark component as client-only for `definePageMeta`
+    c.__clientOnlyPage = true
+  }
+  return pageToClientOnly(c)
 }
 
 const cache = new WeakMap()
