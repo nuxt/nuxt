@@ -211,7 +211,8 @@ export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOpti
       async generateBundle (_opts, bundle) {
         const components = options.getComponents().filter(c => c.mode === 'client' || c.mode === 'all')
         const pathAssociation: Record<string, string> = {}
-        for (const [chunkPath, chunkInfo] of Object.entries(bundle)) {
+        for (const chunkPath in bundle) {
+          const chunkInfo = bundle[chunkPath]!
           if (chunkInfo.type !== 'chunk') { continue }
 
           for (const component of components) {
