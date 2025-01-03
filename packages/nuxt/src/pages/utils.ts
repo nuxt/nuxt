@@ -11,7 +11,7 @@ import { transform } from 'esbuild'
 import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
-import { parseAndWalk } from '../core/utils/parse'
+import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { toArray } from '../utils'
 
@@ -249,8 +249,10 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        if (property.value.type === 'ObjectExpression') {
-          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+        const propertyValue = withLocations(property.value)
+
+        if (propertyValue.type === 'ObjectExpression') {
+          const valueString = js.code.slice(propertyValue.start, propertyValue.end)
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
@@ -260,9 +262,9 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
           }
         }
 
-        if (property.value.type === 'ArrayExpression') {
+        if (propertyValue.type === 'ArrayExpression') {
           const values: string[] = []
-          for (const element of property.value.elements) {
+          for (const element of propertyValue.elements) {
             if (!element) {
               continue
             }
@@ -277,12 +279,12 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
           continue
         }
 
-        if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
+        if (propertyValue.type !== 'Literal' || (typeof propertyValue.value !== 'string' && typeof propertyValue.value !== 'boolean')) {
           console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
           dynamicProperties.add(key)
           continue
         }
-        extractedMeta[key] = property.value.value
+        extractedMeta[key] = propertyValue.value
       }
 
       for (const property of pageMetaArgument.properties) {
