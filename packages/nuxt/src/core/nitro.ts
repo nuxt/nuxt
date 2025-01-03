@@ -249,7 +249,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
     const buildTimestamp = Date.now()
 
-    const baseURL = nuxt.options.runtimeConfig.app.baseURL ||= nuxt.options.app.baseURL
+    const baseURL = nuxt.options.runtimeConfig.app.baseURL
     const manifestPrefix = joinURL(baseURL, nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
 
