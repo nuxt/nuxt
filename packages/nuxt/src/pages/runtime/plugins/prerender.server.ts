@@ -5,7 +5,6 @@ import defu from 'defu'
 
 import { defineNuxtPlugin, useRuntimeConfig } from '#app/nuxt'
 import { prerenderRoutes } from '#app/composables/ssr'
-// @ts-expect-error virtual file
 import _routes from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
