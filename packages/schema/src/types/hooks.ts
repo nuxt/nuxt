@@ -23,7 +23,7 @@ export type WatchEvent = 'add' | 'addDir' | 'change' | 'unlink' | 'unlinkDir'
 
 // If the user does not have `@vue/language-core` installed, VueCompilerOptions will be typed as `any`,
 // thus making the whole `VueTSConfig` type `any`. We only augment TSConfig if VueCompilerOptions is available.
-export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: VueCompilerOptions }
+export type VueTSConfig = 0 extends 1 & VueCompilerOptions ? TSConfig : TSConfig & { vueCompilerOptions?: Omit<VueCompilerOptions, 'plugins'> & { plugins?: string[] } }
 
 export type NuxtPage = {
   name?: string
