@@ -631,22 +631,32 @@ const ROUTES_HMR_CODE = /* js */`
 if (import.meta.hot) {
   import.meta.hot.accept((mod) => {
     const router = import.meta.hot.data.router
-    if (!router) {
+    const generateRoutes = import.meta.hot.data.generateRoutes
+    if (!router || !generateRoutes) {
       import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
       return
     }
     router.clearRoutes()
-    for (const route of mod.default || mod) {
-      router.addRoute(route)
+    const routes = generateRoutes(mod.default || mod)
+    function addRoutes (routes) {
+      for (const route of routes) {
+        router.addRoute(route)
+      }
+      router.replace('')
     }
-    router.replace('')
+    if (routes && 'then' in routes) {
+      routes.then(addRoutes)
+    } else {
+      addRoutes(routes)
+    }
   })
 }
 
-export function handleHotUpdate(_router) {
+export function handleHotUpdate(_router, _generateRoutes) {
   if (import.meta.hot) {
     import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
+    import.meta.hot.data.generateRoutes = _generateRoutes
   }
 }
 `
