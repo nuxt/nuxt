@@ -38,7 +38,7 @@ function shouldPrerender (path: string) {
   return !_routeRulesMatcher || defu({} as Record<string, any>, ..._routeRulesMatcher.matchAll(path).reverse()).prerender
 }
 
-function processRoutes (routes: RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {
+function processRoutes (routes: readonly RouteRecordRaw[], currentPath = '/', routesToPrerender = new Set<string>()) {
   for (const route of routes) {
     // Add root of optional dynamic paths and catchalls
     if (OPTIONAL_PARAM_RE.test(route.path) && !route.children?.length && shouldPrerender(currentPath)) {
