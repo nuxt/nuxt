@@ -249,12 +249,12 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
     const buildTimestamp = Date.now()
 
-    const manifestPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds')
+    const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
     const tempDir = join(nuxt.options.buildDir, 'manifest')
 
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
-    nitroConfig.prerender.ignore.push(manifestPrefix)
+    nitroConfig.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, manifestPrefix))
 
     nitroConfig.publicAssets!.unshift(
       // build manifest
