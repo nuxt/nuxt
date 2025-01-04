@@ -147,8 +147,8 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       pathe:
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 2.0.0
+        version: 2.0.0
       playwright-core:
         specifier: 1.49.1
         version: 1.49.1
@@ -228,8 +228,8 @@ importers:
         specifier: 1.1.4
         version: 1.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       pkg-types:
         specifier: ^1.3.0
         version: 1.3.0
@@ -406,8 +406,8 @@ importers:
         specifier: 1.1.4
         version: 1.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
@@ -566,8 +566,8 @@ importers:
         specifier: 1.1.4
         version: 1.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       pify:
         specifier: ^6.1.0
         version: 6.1.0
@@ -660,8 +660,8 @@ importers:
         specifier: ^6.1.4
         version: 6.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       std-env:
         specifier: ^3.8.0
         version: 3.8.0
@@ -784,8 +784,8 @@ importers:
         specifier: 4.17.21
         version: 4.17.21
       pathe:
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 2.0.0
+        version: 2.0.0
       prettier:
         specifier: 3.4.2
         version: 3.4.2
@@ -865,8 +865,8 @@ importers:
         specifier: 1.1.4
         version: 1.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       perfect-debounce:
         specifier: ^1.0.0
         version: 1.0.0
@@ -974,8 +974,8 @@ importers:
         specifier: 1.1.4
         version: 1.1.4
       pathe:
-        specifier: ^1.1.2
-        version: 1.1.2
+        specifier: ^2.0.0
+        version: 2.0.0
       pify:
         specifier: ^6.1.0
         version: 6.1.0
@@ -6001,6 +6001,9 @@ packages:
 
   pathe@1.1.2:
     resolution: {integrity: sha512-whLdWMYL2TwI08hn8/ZqAbrVemu0LNaNNJZX73O6qaIdCTfXutsLhMkjdENX0qhsQ9uIimo4/aQOmXkoon2nDQ==}
+
+  pathe@2.0.0:
+    resolution: {integrity: sha512-G7n4uhtk9qJt2hlD+UFfsIGY854wpF+zs2bUbQ3CQEUTcn7v25LRsrmurOxTo4bJgjE4qkyshd9ldsEuY9M6xg==}
 
   pathval@1.1.1:
     resolution: {integrity: sha512-Dp6zGqpTdETdR63lehJYPeIOqpiNBNtc7BpWSLrOje7UaIsE5aY92r/AunQA7rsXvet3lrJ3JnZX29UPTKXyKQ==}
@@ -13807,6 +13810,8 @@ snapshots:
   path-type@5.0.0: {}
 
   pathe@1.1.2: {}
+
+  pathe@2.0.0: {}
 
   pathval@1.1.1: {}
 
