@@ -17,7 +17,6 @@ import { navigateTo } from '#app/composables/router'
 
 // @ts-expect-error virtual file
 import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
-// @ts-expect-error virtual file
 import _routes, { handleHotUpdate } from '#build/routes'
 import routerOptions, { hashMode } from '#build/router.options'
 // @ts-expect-error virtual file
@@ -88,7 +87,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       routes,
     })
 
-    handleHotUpdate(router)
+    handleHotUpdate(router, routerOptions.routes ? routerOptions.routes : routes => routes)
 
     if (import.meta.client && 'scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'auto'
