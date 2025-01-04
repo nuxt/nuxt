@@ -59,7 +59,7 @@
     "unctx": "2.4.1",
     "unimport": "3.14.5",
     "untyped": "1.5.2",
-    "vite": "6.0.6",
+    "vite": "6.0.7",
     "vue": "3.5.13",
     "vue-bundle-renderer": "2.1.1",
     "vue-loader": "17.4.2",
@@ -70,7 +70,7 @@
   "dependencies": {
     "consola": "^3.3.3",
     "defu": "^6.1.4",
-    "pathe": "^1.1.2",
+    "pathe": "^2.0.0",
     "std-env": "^3.8.0"
   },
   "engines": {
