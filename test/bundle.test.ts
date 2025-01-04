@@ -7,11 +7,13 @@ import { join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
+  const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
 
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'false' } } }),
       exec('pnpm', ['nuxi', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'true' } } }),
+      exec('pnpm', ['nuxi', 'build', pagesRootDir]),
     ])
   }, 120 * 1000)
 
@@ -29,6 +31,22 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect([...files]).toMatchInlineSnapshot(`
       [
         "_nuxt/entry.js",
+      ]
+    `)
+  })
+
+  it('default client bundle size (pages)', async () => {
+    const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'))
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"156k"`)
+
+    const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
+
+    expect([...files]).toMatchInlineSnapshot(`
+      [
+        "_nuxt/default.js",
+        "_nuxt/entry.js",
+        "_nuxt/index.js",
       ]
     `)
   })
@@ -96,6 +114,47 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
         "devalue",
         "hookable",
         "unhead",
+      ]
+    `)
+  })
+
+  it('default server bundle size (pages)', async () => {
+    const serverDir = join(pagesRootDir, '.output/server')
+
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"279k"`)
+
+    const modules = await analyzeSizes(['node_modules/**/*'], serverDir)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"1396k"`)
+
+    const packages = modules.files
+      .filter(m => m.endsWith('package.json'))
+      .map(m => m.replace('/package.json', '').replace('node_modules/', ''))
+      .sort()
+    expect(packages).toMatchInlineSnapshot(`
+      [
+        "@babel/parser",
+        "@unhead/dom",
+        "@unhead/shared",
+        "@unhead/ssr",
+        "@vue/compiler-core",
+        "@vue/compiler-dom",
+        "@vue/compiler-ssr",
+        "@vue/reactivity",
+        "@vue/runtime-core",
+        "@vue/runtime-dom",
+        "@vue/server-renderer",
+        "@vue/shared",
+        "db0",
+        "devalue",
+        "entities",
+        "estree-walker",
+        "hookable",
+        "source-map-js",
+        "ufo",
+        "unhead",
+        "vue",
+        "vue-bundle-renderer",
       ]
     `)
   })
