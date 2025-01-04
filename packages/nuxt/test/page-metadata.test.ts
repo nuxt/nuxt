@@ -78,7 +78,6 @@ definePageMeta({ name: 'bar' })
     const meta = await getRouteMeta(`
     <script setup>
     definePageMeta({
-      name: 'some-custom-name',
       path: '/some-custom-path',
       validate: () => true,
       middleware: [
@@ -87,19 +86,32 @@ definePageMeta({ name: 'bar' })
       otherValue: {
         foo: 'bar',
       },
+      // 'name', 'props' and 'alias' are part of 'defaultExtractionKeys'; they're extracted from the component, so we should test the AST walking for different value types
+      name: 'some-custom-name',
+      props: {
+        foo: 'bar',
+      },
+      alias: ['/alias'],
     })
     </script>
     `, filePath)
 
     expect(meta).toMatchInlineSnapshot(`
       {
+        "alias": [
+          "/alias",
+        ],
         "meta": {
           "__nuxt_dynamic_meta_key": Set {
+            "props",
             "meta",
           },
         },
         "name": "some-custom-name",
         "path": "/some-custom-path",
+        "props": {
+          "foo": "bar",
+        },
       }
     `)
   })
