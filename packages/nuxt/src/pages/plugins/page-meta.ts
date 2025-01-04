@@ -5,7 +5,6 @@ import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
-import { logger } from '@nuxt/kit'
 
 import {
   ScopeTracker,
@@ -16,6 +15,7 @@ import {
   walk,
   withLocations,
 } from '../../core/utils/parse'
+import { logger } from '../../utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -184,7 +184,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
             walk(decl.init, {
               enter: (node, parent) => {
                 if (node.type === 'AwaitExpression') {
-                  logger.error(`[nuxt] Await expressions are not supported in definePageMeta. File: '${id}'`)
+                  logger.error(`Await expressions are not supported in definePageMeta. File: '${id}'`)
                   throw new Error('await in definePageMeta')
                 }
                 if (

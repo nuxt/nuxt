@@ -45,9 +45,8 @@
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "^2.4.2",
     "knitwork": "^1.2.0",
-    "lodash-es": "4.17.21",
     "magic-string": "^0.30.17",
-    "memfs": "^4.15.1",
+    "memfs": "^4.15.3",
     "mini-css-extract-plugin": "^2.9.2",
     "ohash": "^1.1.4",
     "pathe": "^1.1.2",
@@ -62,7 +61,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^2.1.0",
+    "unplugin": "^2.1.2",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.1",
     "vue-loader": "^17.4.2",
@@ -75,12 +74,11 @@
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
     "@rspack/core": "1.1.8",
-    "@types/lodash-es": "4.17.12",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
     "rollup": "4.29.1",
-    "unbuild": "3.0.1",
+    "unbuild": "3.2.0",
     "vue": "3.5.13"
   },
   "peerDependencies": {
