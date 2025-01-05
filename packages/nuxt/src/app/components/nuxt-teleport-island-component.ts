@@ -3,6 +3,8 @@ import { Teleport, defineComponent, h, inject, provide, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
 // @ts-expect-error virtual file
 import { paths } from '#build/components-chunk'
+// @ts-expect-error virtual file
+import { buildAssetsURL } from '#internal/nuxt/paths'
 
 type ExtendedComponent = Component & {
   __file: string
@@ -41,7 +43,7 @@ export default defineComponent({
       const name = (slotType.__name || slotType.name) as string
 
       islandContext.components[to] = {
-        chunk: import.meta.dev ? nuxtApp.$config.app.buildAssetsDir + paths[name] : paths[name],
+        chunk: import.meta.dev ? buildAssetsURL(paths[name]) : paths[name],
         props: slot.props || {},
       }
 
