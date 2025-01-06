@@ -73,7 +73,7 @@
     "@nuxt/devtools": "^1.7.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/telemetry": "^2.6.2",
+    "@nuxt/telemetry": "^2.6.4",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/dom": "^1.11.14",
     "@unhead/shared": "^1.11.14",
