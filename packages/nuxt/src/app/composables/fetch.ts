@@ -35,7 +35,7 @@ export type UseFetchOptions<
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
 > = Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'> &
-  (M extends 'GET' | 'get'
+  (M extends 'GET' | 'get' | 'HEAD' | 'head'
     ? Omit<ComputedFetchOptions<R, M>, 'body'>
     : ComputedFetchOptions<R, M>
   ) & {
