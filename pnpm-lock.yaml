@@ -135,8 +135,8 @@ importers:
         specifier: 2.10.4
         version: 2.10.4(typescript@5.7.2)
       nuxi:
-        specifier: 3.17.2
-        version: 3.17.2
+        specifier: 3.18.2
+        version: 3.18.2
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -394,8 +394,8 @@ importers:
         specifier: ^2.10.4
         version: 2.10.4(typescript@5.7.2)
       nuxi:
-        specifier: ^3.17.2
-        version: 3.17.2
+        specifier: ^3.18.2
+        version: 3.18.2
       nypm:
         specifier: ^0.4.1
         version: 0.4.1
@@ -5776,8 +5776,8 @@ packages:
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
-  nuxi@3.17.2:
-    resolution: {integrity: sha512-JDVtBBwEe9VjVkhxwR/crtGJnyLHzvl2F1pjtglekjTVeiMThfhQHcvsI/u007gBAfPpmaCIdRGnoeTF4VKS8w==}
+  nuxi@3.18.2:
+    resolution: {integrity: sha512-JKpbXJ5suXSBJxPvosw8eqdJOniNs6RUmi91aaRQG4jmKcDCZgbZIPUBBJNdllCIcrE0jQQO40BfFLxnzx8Ipg==}
     engines: {node: ^16.10.0 || >=18.0.0}
     hasBin: true
 
@@ -6595,6 +6595,7 @@ packages:
   rollup-plugin-visualizer@5.13.1:
     resolution: {integrity: sha512-vMg8i6BprL8aFm9DKvL2c8AwS8324EgymYQo9o6E26wgVvwMhsJxS37aNL6ZsU7X9iAcMYwdME7gItLfG5fwJg==}
     engines: {node: '>=18'}
+    deprecated: Contains unintended breaking changes
     hasBin: true
     peerDependencies:
       rolldown: 1.x
@@ -13549,7 +13550,7 @@ snapshots:
     dependencies:
       boolbase: 1.0.0
 
-  nuxi@3.17.2: {}
+  nuxi@3.18.2: {}
 
   nuxt-content-twoslash@0.1.2(@nuxtjs/mdc@0.8.3):
     dependencies:
