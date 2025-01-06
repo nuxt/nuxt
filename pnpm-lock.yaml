@@ -295,8 +295,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@nuxt/telemetry':
-        specifier: ^2.6.2
-        version: 2.6.2
+        specifier: ^2.6.4
+        version: 2.6.4
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
@@ -2043,9 +2043,9 @@ packages:
   '@nuxt/scripts@0.9.5':
     resolution: {integrity: sha512-E71sk4HP7HjwAFPu2CnCdW8Aed0uBv8zkdADyIe0BRvLNBnfwXluEBRLwh/XFarlGSvD5557jWSQ/3+FGZvbSA==}
 
-  '@nuxt/telemetry@2.6.2':
-    resolution: {integrity: sha512-UReyqp35ZFcsyMuP+DmDj/0W/odANCuObdqYyAIR+/Z/9yDHtBO6Cc/wWbjjhrt41yhhco7/+vILELPHWD+wxg==}
-    engines: {node: ^14.18.0 || >=16.10.0}
+  '@nuxt/telemetry@2.6.4':
+    resolution: {integrity: sha512-2Lgdn07Suraly5dSfVQ4ttBQBMtmjvCTGKGUHpc1UyH87HT9xCm3KLFO0UcVQ8+LNYCgoOaK7lq9qDJOfBfZ5A==}
+    engines: {node: '>=18.20.5'}
     hasBin: true
 
   '@nuxt/test-utils@3.15.1':
@@ -5899,6 +5899,9 @@ packages:
   package-manager-detector@0.2.7:
     resolution: {integrity: sha512-g4+387DXDKlZzHkP+9FLt8yKj8+/3tOkPv7DVTJGGRm00RkEWgqbFstX1mXJ4M0VDYhUqsTOiISqNOJnhAu3PQ==}
 
+  package-manager-detector@0.2.8:
+    resolution: {integrity: sha512-ts9KSdroZisdvKMWVAVCXiKqnqNfXz4+IbrBG8/BWx/TR5le+jfenvoBuIZ6UWM9nz47W7AbD9qYfAwfWMIwzA==}
+
   parent-module@1.0.1:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
@@ -8880,7 +8883,7 @@ snapshots:
       - vue
       - webpack
 
-  '@nuxt/telemetry@2.6.2':
+  '@nuxt/telemetry@2.6.4':
     dependencies:
       '@nuxt/kit': link:packages/kit
       citty: 0.1.6
@@ -8889,11 +8892,10 @@ snapshots:
       dotenv: 16.4.7
       git-url-parse: 16.0.0
       is-docker: 3.0.0
-      jiti: 2.4.2
       ofetch: 1.4.1
-      package-manager-detector: 0.2.7
+      package-manager-detector: 0.2.8
       parse-git-config: 3.0.0
-      pathe: 1.1.2
+      pathe: 2.0.0
       rc9: 2.1.2
       std-env: 3.8.0
 
@@ -13709,6 +13711,8 @@ snapshots:
   package-json-from-dist@1.0.0: {}
 
   package-manager-detector@0.2.7: {}
+
+  package-manager-detector@0.2.8: {}
 
   parent-module@1.0.1:
     dependencies:
