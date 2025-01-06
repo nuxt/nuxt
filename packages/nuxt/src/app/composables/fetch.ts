@@ -27,6 +27,11 @@ interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRout
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
 
+/**
+ * Options for the useFetch composable.
+ * For GET and HEAD requests, the body property is automatically
+ * omitted to align with HTTP/1.1 specifications (RFC 7231).
+ */
 export type UseFetchOptions<
   ResT,
   DataT = ResT,
