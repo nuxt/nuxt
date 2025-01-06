@@ -485,6 +485,8 @@ function recursive () {
   recursive()
 }
 
+const route = useRoute()
+
 definePageMeta({
   middleware: [
     () => {
@@ -501,9 +503,19 @@ definePageMeta({
         prop = 'prop'
         test () {}
       }
+
+      console.log(hoisted.value)
     },
   ],
+  validate: (route) => {
+    return route.params.id === 'test'
+  }
 })
+
+// the order of a ref relative to the 'definePageMeta' call should be preserved (in contrast to a simple const)
+// this tests whether the extraction handles all variables in the upper scope
+const hoisted = ref('hoisted')
+
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
@@ -522,6 +534,7 @@ definePageMeta({
       function recursive () {
         recursive()
       }
+      const hoisted = ref('hoisted')
       const __nuxt_page_meta = {
         middleware: [
           () => {
@@ -538,8 +551,13 @@ definePageMeta({
               prop = 'prop'
               test () {}
             }
+
+            console.log(hoisted.value)
           },
         ],
+        validate: (route) => {
+          return route.params.id === 'test'
+        }
       }
       export default __nuxt_page_meta"
     `)

@@ -173,7 +173,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const scopeTracker = new ScopeTracker()
+      const scopeTracker = new ScopeTracker({
+        keepExitedScopes: true,
+      })
 
       function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
         if (scopeTrackerNode?.type === 'Variable') {
@@ -210,7 +212,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      parseAndWalk(code, id, {
+      const ast = parseAndWalk(code, id, {
+        scopeTracker,
+      })
+
+      scopeTracker.freeze()
+
+      walk(ast, {
         scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -221,6 +229,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
           if (!meta) { return }
 
           walk(meta, {
+            scopeTracker,
             enter (node, parent) {
               if (
                 isNotReferencePosition(node, parent)
