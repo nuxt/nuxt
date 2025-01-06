@@ -27,18 +27,22 @@ interface NitroFetchOptions<R extends NitroFetchRequest, M extends AvailableRout
 
 type ComputedFetchOptions<R extends NitroFetchRequest, M extends AvailableRouterMethod<R>> = ComputedOptions<NitroFetchOptions<R, M>>
 
-export interface UseFetchOptions<
+export type UseFetchOptions<
   ResT,
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
   R extends NitroFetchRequest = string & {},
   M extends AvailableRouterMethod<R> = AvailableRouterMethod<R>,
-> extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, ComputedFetchOptions<R, M> {
-  key?: string
-  $fetch?: typeof globalThis.$fetch
-  watch?: MultiWatchSources | false
-}
+> = Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'> &
+  (M extends 'GET' | 'get'
+    ? Omit<ComputedFetchOptions<R, M>, 'body'>
+    : ComputedFetchOptions<R, M>
+  ) & {
+    key?: string
+    $fetch?: typeof globalThis.$fetch
+    watch?: MultiWatchSources | false
+  }
 
 /**
  * Fetch data from an API endpoint with an SSR-friendly composable.
