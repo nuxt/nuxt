@@ -56,7 +56,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.49",
-    "rollup": "4.29.1",
+    "rollup": "4.30.0",
     "send": ">=1.1.0",
     "typescript": "5.7.2",
     "ufo": "1.5.4",
@@ -118,7 +118,7 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@9.15.2",
+  "packageManager": "pnpm@9.15.3",
   "engines": {
     "node": "^18.20.4 || ^20.9.0 || ^22.0.0 || >=23.0.0"
   },
