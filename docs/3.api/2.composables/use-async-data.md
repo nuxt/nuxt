@@ -63,6 +63,9 @@ const { data: posts } = await useAsyncData(
 
 - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
 - `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side
+::warning
+The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration.
+::
 - `options`:
   - `server`: whether to fetch the data on the server (defaults to `true`)
   - `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
