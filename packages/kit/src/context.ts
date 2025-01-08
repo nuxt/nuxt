@@ -1,8 +1,9 @@
 import { getContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
+import { asyncNameStorage } from './utils'
 
 /** Direct access to the Nuxt context - see https://github.com/unjs/unctx. */
-export const nuxtCtx = getContext<Nuxt>('nuxt')
+export const nuxtCtx = () => getContext<Nuxt>(asyncNameStorage.getStore()!)
 
 // TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
 
@@ -16,7 +17,7 @@ export const nuxtCtx = getContext<Nuxt>('nuxt')
  * ```
  */
 export function useNuxt (): Nuxt {
-  const instance = nuxtCtx.tryUse()
+  const instance = nuxtCtx().tryUse()
   if (!instance) {
     throw new Error('Nuxt instance is unavailable!')
   }
@@ -36,5 +37,5 @@ export function useNuxt (): Nuxt {
  * ```
  */
 export function tryUseNuxt (): Nuxt | null {
-  return nuxtCtx.tryUse()
+  return nuxtCtx().tryUse()
 }

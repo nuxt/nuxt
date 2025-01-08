@@ -429,7 +429,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig.compilerOptions.paths[alias] = [absolutePath.replace(EXTENSION_RE, '')] /* remove extension */
     }
   }
-
+ 
   // Init nitro
   const nitro = await createNitro(nitroConfig, {
     compatibilityDate: nuxt.options.compatibilityDate,
