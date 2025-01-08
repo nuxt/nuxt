@@ -51,7 +51,7 @@ import { randomUUID } from 'node:crypto'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
-  const name = randomUUID()
+  const name = randomUUID() // TODO find project name in package json instead
   const nuxt: Nuxt = {
     _version: version,
     options,
@@ -63,6 +63,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
+    name
   }
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })
