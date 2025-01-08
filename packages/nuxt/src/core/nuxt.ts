@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro, asyncNameStorage } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -46,10 +46,11 @@ import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
+import { randomUUID } from 'node:crypto'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
-
+  const name = randomUUID()
   const nuxt: Nuxt = {
     _version: version,
     options,
@@ -57,7 +58,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,
     hook: hooks.hook,
-    ready: () => initNuxt(nuxt),
+    ready: () => asyncNameStorage.run(name, () => initNuxt(nuxt)) ,
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
@@ -173,8 +174,8 @@ async function initNuxt (nuxt: Nuxt) {
   })
 
   // Set nuxt instance for useNuxt
-  nuxtCtx.set(nuxt)
-  nuxt.hook('close', () => nuxtCtx.unset())
+  nuxtCtx().set(nuxt)
+  nuxt.hook('close', () => nuxtCtx().unset())
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
 
@@ -693,7 +694,7 @@ export default defineNuxtPlugin({
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)
 
   addModuleTranspiles()
-
+  
   // Init nitro
   await initNitro(nuxt)
 

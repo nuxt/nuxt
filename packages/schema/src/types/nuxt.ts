@@ -79,6 +79,11 @@ export interface NuxtApp {
 }
 
 export interface Nuxt {
+  /**
+   * The name of the Nuxt project, this can be useful for build time debugging and mono-repos.
+   * Defaults to a randomUUID
+   */
+  name?: string
   // Private fields.
   _version: string
   _ignore?: Ignore
