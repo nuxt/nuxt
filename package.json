@@ -90,7 +90,7 @@
     "eslint": "9.17.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "4.6.0",
-    "eslint-typegen": "0.3.2",
+    "eslint-typegen": "1.0.0",
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "happy-dom": "16.3.0",
     "installed-check": "9.3.0",
