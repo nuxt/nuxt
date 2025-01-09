@@ -1,0 +1,77 @@
+diff --git a/dist/core/index.mjs b/dist/core/index.mjs
+index ceadc93d661a20bc0a7f25e0bdb838ab76b0f9cd..ebaf29d0eec258431056848493406aceee611228 100644
+--- a/dist/core/index.mjs
++++ b/dist/core/index.mjs
+@@ -623,7 +623,7 @@ async function _loadUserConfig(configOverrides = {}, opts = {}) {
+   globalThis.defineNitroConfig = globalThis.defineNitroConfig || ((c) => c);
+   let compatibilityDate = configOverrides.compatibilityDate || opts.compatibilityDate || (process.env.NITRO_COMPATIBILITY_DATE || process.env.SERVER_COMPATIBILITY_DATE || process.env.COMPATIBILITY_DATE);
+   const { resolvePreset } = await import('nitro/presets');
+-  const loadedConfig = await (opts.watch ? watchConfig : loadConfig)({
++  const loadedConfig =  await (opts.watch ? watchConfig : loadConfig)(klona({
+     name: "nitro",
+     cwd: configOverrides.rootDir,
+     dotenv: configOverrides.dev,
+@@ -657,15 +657,15 @@ async function _loadUserConfig(configOverrides = {}, opts = {}) {
+       });
+       if (preset) {
+         return {
+-          config: preset
++          config: defu(preset)
+         };
+       }
+     },
+     ...opts.c12
+-  });
++  }));
+   const options = klona(loadedConfig.config);
+   options._config = configOverrides;
+-  options._c12 = loadedConfig;
++  options._c12 = loadedConfig ;
+   const _presetName = (loadedConfig.layers || []).find((l) => l.config?._meta?.name)?.config?._meta?.name || presetOverride;
+   options.preset = _presetName;
+   options.compatibilityDate = resolveCompatibilityDates(
+diff --git a/dist/runtime/index.mjs b/dist/runtime/index.mjs
+index f9a2a8f24cd06ab387f4935874192b069c7b8145..02e985497c04a0913f38baed58f6c01dfd390897 100644
+--- a/dist/runtime/index.mjs
++++ b/dist/runtime/index.mjs
+@@ -15,3 +15,4 @@ export {
+   cachedFunction,
+   cachedEventHandler
+ } from "./internal/cache.mjs";
++export { nitroAsyncNameStore } from "./internal/context.mjs";
+\ No newline at end of file
+diff --git a/dist/runtime/internal/app.mjs b/dist/runtime/internal/app.mjs
+index 42f434deff206d061fd5dbaff16fdb8e45531e4e..1294a495125571b75d3d292691b1cb85346b5b59 100644
+--- a/dist/runtime/internal/app.mjs
++++ b/dist/runtime/internal/app.mjs
+@@ -127,7 +127,7 @@ function createNitroApp() {
+     const _handler = h3App.handler;
+     h3App.handler = (event) => {
+       const ctx = { event };
+-      return nitroAsyncContext.callAsync(ctx, () => _handler(event));
++      return nitroAsyncContext().callAsync(ctx, () => _handler(event));
+     };
+   }
+   const app = {
+diff --git a/dist/runtime/internal/context.mjs b/dist/runtime/internal/context.mjs
+index 7446d24ebaeb2828a9d18d22c82cb687a2ebaa43..734994b25fd66ddc7078a625c5d13499ce012a2b 100644
+--- a/dist/runtime/internal/context.mjs
++++ b/dist/runtime/internal/context.mjs
+@@ -1,13 +1,15 @@
+ import { AsyncLocalStorage } from "node:async_hooks";
+ import { createError } from "h3";
+ import { getContext } from "unctx";
+-export const nitroAsyncContext = getContext("nitro-app", {
++import { AsyncLocalStorage } from "node:async_hooks";
++export const nitroAsyncNameStore = new AsyncLocalStorage()
++export const nitroAsyncContext = () => getContext(nitroAsyncNameStore.getStore() ?? "nitro-app", {
+   asyncContext: import.meta._asyncContext,
+   AsyncLocalStorage: import.meta._asyncContext ? AsyncLocalStorage : void 0
+ });
+ export function useEvent() {
+   try {
+-    return nitroAsyncContext.use().event;
++    return nitroAsyncContext().use().event;
+   } catch {
+     const hint = import.meta._asyncContext ? "Note: This is an experimental feature and might be broken on non-Node.js environments." : "Enable the experimental flag using `experimental.asyncContext: true`.";
+     throw createError({
