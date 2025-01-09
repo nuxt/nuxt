@@ -35,7 +35,7 @@ describe('loadNuxt', () => {
       ready: true,
       overrides: {
         hooks: {
-          ready () {
+          ready() {
             hookRan = true
           },
         },
@@ -43,6 +43,16 @@ describe('loadNuxt', () => {
     })
     await nuxt.close()
     expect(hookRan).toBe(true)
+  })
+  it('load multiple nuxt', async () => {
+    await Promise.all([
+      loadNuxt({
+        cwd: repoRoot,
+      }), 
+      loadNuxt({
+        cwd: repoRoot,
+      })
+    ])
   })
 })
 

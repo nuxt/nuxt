@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro, asyncNameStorage } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro, asyncNameStorage, fallbackNuxtCtx } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -48,7 +48,7 @@ import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 import { randomUUID } from 'uncrypto'
 
-export function createNuxt (options: NuxtOptions): Nuxt {
+export function createNuxt(options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
   const name = randomUUID()
   const nuxt: Nuxt = {
@@ -58,7 +58,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,
     hook: hooks.hook,
-    ready: () => asyncNameStorage.run(name, () => initNuxt(nuxt)) ,
+    ready: () => asyncNameStorage.run(name, () => initNuxt(nuxt)),
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
@@ -88,7 +88,7 @@ const keyDependencies = [
 
 let warnedAboutCompatDate = false
 
-async function initNuxt (nuxt: Nuxt) {
+async function initNuxt(nuxt: Nuxt) {
   // Register user hooks
   for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
@@ -108,7 +108,7 @@ async function initNuxt (nuxt: Nuxt) {
       logger.info(`Using \`${fallbackCompatibilityDate}\` as fallback compatibility date.`)
     }
 
-    async function promptAndUpdate () {
+    async function promptAndUpdate() {
       const result = await consola.prompt(`Do you want to update your ${colorize('cyan', 'nuxt.config')} to set ${colorize('cyan', `compatibilityDate: '${todaysDate}'`)}?`, {
         type: 'confirm',
         default: true,
@@ -122,7 +122,7 @@ async function initNuxt (nuxt: Nuxt) {
         const res = await updateConfig({
           configFile: 'nuxt.config',
           cwd: nuxt.options.rootDir,
-          async onCreate ({ configFile }) {
+          async onCreate({ configFile }) {
             const shallCreate = await consola.prompt(`Do you want to create ${colorize('cyan', relative(nuxt.options.rootDir, configFile))}?`, {
               type: 'confirm',
               default: true,
@@ -132,7 +132,7 @@ async function initNuxt (nuxt: Nuxt) {
             }
             return _getDefaultNuxtConfig()
           },
-          onUpdate (config) {
+          onUpdate(config) {
             config.compatibilityDate = todaysDate
           },
         })
@@ -173,10 +173,18 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
-
+  if (!fallbackNuxtCtx.tryUse()) {
+    // backward compatibility with 3.x
+    fallbackNuxtCtx.set(nuxt)
+    nuxt.hook('close', () => {
+      fallbackNuxtCtx.unset()
+    })
+  }
   // Set nuxt instance for useNuxt
   nuxtCtx().set(nuxt)
-  nuxt.hook('close', () => nuxtCtx().unset())
+  nuxt.hook('close', () => {
+    nuxtCtx().unset()
+  })
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
 
@@ -695,7 +703,7 @@ export default defineNuxtPlugin({
   nuxt.options.build.transpile = nuxt.options.build.transpile.map(t => typeof t === 'string' ? normalize(t) : t)
 
   addModuleTranspiles()
-  
+
   // Init nitro
   await initNitro(nuxt)
 
@@ -722,7 +730,7 @@ export default defineNuxtPlugin({
   await nuxt.callHook('ready', nuxt)
 }
 
-export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
+export async function loadNuxt(opts: LoadNuxtOptions): Promise<Nuxt> {
   const options = await loadNuxtConfig(opts)
 
   // Temporary until finding better placement for each
@@ -795,7 +803,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       configurable: false,
       enumerable: true,
       get: () => nitroOptions,
-      set (value) {
+      set(value) {
         Object.assign(nitroOptions, value)
       },
     },
@@ -823,7 +831,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
+async function checkDependencyVersion(name: string, nuxtVersion: string): Promise<void> {
   const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
   if (!path || path === name) { return }
@@ -836,7 +844,7 @@ async function checkDependencyVersion (name: string, nuxtVersion: string): Promi
 
 const RESTART_RE = /^(?:app|error|app\.config)\.(?:js|ts|mjs|jsx|tsx|vue)$/i
 
-function deduplicateArray<T = unknown> (maybeArray: T): T {
+function deduplicateArray<T = unknown>(maybeArray: T): T {
   if (!Array.isArray(maybeArray)) { return maybeArray }
 
   const fresh: any[] = []
@@ -851,7 +859,7 @@ function deduplicateArray<T = unknown> (maybeArray: T): T {
   return fresh as T
 }
 
-function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: string[]) {
+function createPortalProperties(sourceValue: any, options: NuxtOptions, paths: string[]) {
   let sharedValue = sourceValue
 
   for (const path of paths) {
@@ -871,7 +879,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
         configurable: false,
         enumerable: true,
         get: () => sharedValue,
-        set (value) {
+        set(value) {
           sharedValue = value
         },
       },
