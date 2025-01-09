@@ -6,5 +6,8 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 export const MODE_RE = /\.(server|client)(\.\w+)*$/
-
+/**
+ * @internal
+ * async local storage for the name of the current nuxt instance
+ */
 export const asyncNameStorage = new AsyncLocalStorage<string>()
