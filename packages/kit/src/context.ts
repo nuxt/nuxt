@@ -24,8 +24,9 @@ export function useNuxt (): Nuxt {
     const fallbackInstance = fallbackNuxtCtx.tryUse()
     if (fallbackInstance) {
       logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v4.')
-      return fallbackInstance }
-      
+      return fallbackInstance
+    }
+
     throw new Error('Nuxt instance is unavailable!')
   }
   return instance
@@ -45,7 +46,7 @@ export function useNuxt (): Nuxt {
  */
 export function tryUseNuxt (): Nuxt | null {
   const nuxt = nuxtCtx().tryUse()
-  if(!nuxt) {
+  if (!nuxt) {
     logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v4.')
     return fallbackNuxtCtx.tryUse()
   }
