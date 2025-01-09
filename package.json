@@ -52,7 +52,7 @@
     "h3": "npm:h3-nightly@2.0.0-1718872656.6765a6e",
     "jiti": "2.4.2",
     "magic-string": "^0.30.17",
-    "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
+    "nitro": "npm:nitropack-nightly@latest",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.4.49",
@@ -98,7 +98,8 @@
     "knip": "5.41.1",
     "markdownlint-cli": "0.43.0",
     "memfs": "4.15.3",
-    "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
+    "nitro": "npm:nitropack@latest",
+    "nitropack": "npm:nitropack@latest",
     "nuxi": "3.18.2",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
@@ -123,4 +124,5 @@
     "node": "^18.20.4 || ^20.9.0 || ^22.0.0 || >=23.0.0"
   },
   "version": ""
+   
 }
