@@ -3,6 +3,7 @@ import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
 import { importModule, tryImportModule } from '../internal/esm'
 import type { LoadNuxtConfigOptions } from './config'
+import { asyncNameStorage } from '../utils'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   /** Load nuxt with development mode */
@@ -81,5 +82,5 @@ export async function buildNuxt (nuxt: Nuxt): Promise<any> {
 
   // Nuxt 2
   const { build } = await tryImportModule<{ build: any }>('nuxt-edge', { paths: rootDir }) || await importModule<{ build: any }>('nuxt', { paths: rootDir })
-  return build(nuxt)
+  return asyncNameStorage.run(nuxt.__name, () => build(nuxt)) 
 }

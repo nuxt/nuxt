@@ -46,11 +46,11 @@ import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
 import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
-import { randomUUID } from 'node:crypto'
+import { randomUUID } from 'uncrypto'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
-  const name = randomUUID() // TODO find project name in package json instead
+  const name = randomUUID()
   const nuxt: Nuxt = {
     _version: version,
     options,
@@ -62,7 +62,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
-    name
+    __name: name,
   }
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })
