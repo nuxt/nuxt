@@ -65,6 +65,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.3",
+    "@nuxt/cli": "3.20.0",
     "@nuxt/eslint-config": "0.7.5",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
@@ -96,7 +97,6 @@
     "markdownlint-cli": "0.43.0",
     "memfs": "4.14.1",
     "nitropack": "2.10.4",
-    "nuxi": "3.20.0",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
