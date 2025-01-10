@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/pug": "2.0.10",
-    "@unhead/schema": "1.11.14",
+    "@unhead/schema": "1.11.15",
     "@vitejs/plugin-vue": "5.2.1",
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-core": "3.5.13",
@@ -70,7 +70,7 @@
   "dependencies": {
     "consola": "^3.3.3",
     "defu": "^6.1.4",
-    "pathe": "^2.0.0",
+    "pathe": "^2.0.1",
     "std-env": "^3.8.0"
   },
   "engines": {
