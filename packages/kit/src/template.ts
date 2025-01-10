@@ -291,6 +291,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     }))
   }
 
+  // Ensure `#build` is placed at the end of the paths object.
+  // https://github.com/nuxt/nuxt/issues/30325
+  sortTsPaths(tsConfig.compilerOptions.paths)
+
   tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
@@ -333,6 +337,17 @@ export async function writeTypes (nuxt: Nuxt) {
   nuxt.hook('builder:prepared', writeFile)
 
   await writeFile()
+}
+
+function sortTsPaths (paths: Record<string, string[]>) {
+  for (const pathKey in paths) {
+    if (pathKey.startsWith('#build')) {
+      const pathValue = paths[pathKey]!
+      // Delete & Reassign to ensure key is inserted at the end of object.
+      delete paths[pathKey]
+      paths[pathKey] = pathValue
+    }
+  }
 }
 
 function renderAttrs (obj: Record<string, string>) {
