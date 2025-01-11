@@ -72,6 +72,8 @@ describe('loadNuxt', () => {
       expect(asyncNameStorage.getStore()).toBe(nuxt.__name)
     })
 
+    expect(asyncNameStorage.getStore()).toBeUndefined()
+
     // @ts-expect-error - random hook
     await nuxt.callHook('test')
 
