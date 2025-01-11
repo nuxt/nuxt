@@ -53,6 +53,7 @@ describe('loadNuxt', () => {
         cwd: repoRoot,
       }),
     ])
+    expect(console.warn).not.toHaveBeenCalled()
   })
 })
 
