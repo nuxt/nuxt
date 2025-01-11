@@ -1,6 +1,9 @@
+import { existsSync } from 'node:fs'
+import { isAbsolute } from 'node:path'
 import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
-import { useNuxt } from './context'
+import { resolvePathSync } from 'mlly'
+import { tryUseNuxt, useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
 import { MODE_RE } from './utils'
@@ -8,12 +11,17 @@ import { MODE_RE } from './utils'
 /**
  * Normalize a nuxt plugin object
  */
+const pluginSymbol = Symbol.for('nuxt plugin')
 export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   // Normalize src
   if (typeof plugin === 'string') {
     plugin = { src: plugin }
   } else {
     plugin = { ...plugin }
+  }
+
+  if (pluginSymbol in plugin) {
+    return plugin
   }
 
   if (!plugin.src) {
@@ -23,6 +31,14 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
   // Normalize full path to plugin
   plugin.src = normalize(resolveAlias(plugin.src))
 
+  if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
+    try {
+      plugin.src = resolvePathSync(plugin.src, { extensions: tryUseNuxt()?.options.extensions })
+    } catch {
+      // ignore errors as the file
+    }
+  }
+
   // Normalize mode
   if (plugin.ssr) {
     plugin.mode = 'server'
@@ -31,6 +47,9 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     const [, mode = 'all'] = plugin.src.match(MODE_RE) || []
     plugin.mode = mode as 'all' | 'client' | 'server'
   }
+
+  // @ts-expect-error not adding symbol to types to avoid conflicts
+  plugin[pluginSymbol] = true
 
   return plugin
 }
