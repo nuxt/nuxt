@@ -22,7 +22,7 @@ import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
 
-import { randomUUID } from 'uncrypto'
+import { randomUUID } from 'node:crypto'
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
