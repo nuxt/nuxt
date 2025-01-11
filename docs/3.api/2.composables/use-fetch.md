@@ -141,9 +141,9 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
 - `status`: a string indicating the status of the data request:
-  - `idle`: when the request has not started:
-    - set `{ immediate: false }` and `execute` not called
-    - set `{ server: false }` and on the server side
+  - `idle`: when the request has not started, such as:
+    - when `execute` has not yet been called and `{ immediate: false }` is set
+    - when rendering HTML on the server and `{ server: false }` is set
   - `pending`: the request is in progress
   - `success`: the request has completed successfully
   - `error`: the request has failed
