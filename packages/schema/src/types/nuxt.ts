@@ -87,6 +87,10 @@ export interface Nuxt {
   _version: string
   _ignore?: Ignore
   _dependencies?: Set<string>
+  /**
+   * @internal
+   */
+  run: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions

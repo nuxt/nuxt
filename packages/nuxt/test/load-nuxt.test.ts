@@ -4,9 +4,11 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { readPackageJSON } from 'pkg-types'
 import { inc } from 'semver'
+import { asyncNameStorage, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
 import { version } from '../package.json'
-
+import { logger } from '@nuxt/kit'
+import { beforeEach } from 'node:test'
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
 vi.stubGlobal('console', {
@@ -15,6 +17,7 @@ vi.stubGlobal('console', {
   warn: vi.fn(console.warn),
 })
 
+const loggerWarn = vi.spyOn(logger, 'warn')
 vi.mock('pkg-types', async (og) => {
   const originalPkgTypes = (await og<typeof import('pkg-types')>())
   return {
@@ -23,6 +26,9 @@ vi.mock('pkg-types', async (og) => {
   }
 })
 
+beforeEach(() => {
+  loggerWarn.mockClear()
+})
 afterEach(() => {
   vi.clearAllMocks()
 })
@@ -53,7 +59,24 @@ describe('loadNuxt', () => {
         cwd: repoRoot,
       }),
     ])
-    expect(console.warn).not.toHaveBeenCalled()
+    expect(loggerWarn).not.toHaveBeenCalled()
+  })
+
+  it('expect hooks to get the correct context outside of initNuxt', async () => {
+    const nuxt = await loadNuxt({
+      cwd: repoRoot,
+    })
+
+    // @ts-expect-error - random hook
+    await nuxt.hook('test', () => {
+      const nuxt = useNuxt()
+      expect(asyncNameStorage.getStore()).toBe(nuxt.__name)
+    })
+
+    // @ts-expect-error - random hook
+    await nuxt.callHook('test')
+
+    expect(loggerWarn).not.toHaveBeenCalled()
   })
 })
 
