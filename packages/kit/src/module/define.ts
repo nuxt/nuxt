@@ -160,9 +160,9 @@ function nuxt2Shims (nuxt: Nuxt) {
   nuxt.hooks = nuxt
 
   // Allow using useNuxt()
-  if (!nuxtCtx.tryUse()) {
-    nuxtCtx.set(nuxt)
-    nuxt.hook('close', () => nuxtCtx.unset())
+  if (!nuxtCtx().tryUse()) {
+    nuxtCtx().set(nuxt)
+    nuxt.hook('close', () => nuxtCtx().unset())
   }
 
   // Support virtual templates with getContents() by writing them to .nuxt directory
