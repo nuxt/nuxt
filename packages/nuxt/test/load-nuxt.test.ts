@@ -1,14 +1,13 @@
 import { fileURLToPath } from 'node:url'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { readPackageJSON } from 'pkg-types'
 import { inc } from 'semver'
-import { asyncNameStorage, useNuxt } from '@nuxt/kit'
+import { asyncNameStorage, logger, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
 import { version } from '../package.json'
-import { logger } from '@nuxt/kit'
-import { beforeEach } from 'node:test'
+
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
 vi.stubGlobal('console', {
