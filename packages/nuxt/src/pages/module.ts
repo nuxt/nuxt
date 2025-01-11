@@ -642,7 +642,7 @@ if (import.meta.hot) {
       for (const route of routes) {
         router.addRoute(route)
       }
-      router.replace('')
+      router.replace(router.currentRoute.value.fullPath)
     }
     if (routes && 'then' in routes) {
       routes.then(addRoutes)
