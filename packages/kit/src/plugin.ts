@@ -35,7 +35,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
     try {
       plugin.src = resolvePathSync(plugin.src, { extensions: tryUseNuxt()?.options.extensions })
     } catch {
-      // ignore errors as the file
+      // ignore errors as the file may be in the nuxt vfs
     }
   }
 
