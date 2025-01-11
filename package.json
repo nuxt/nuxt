@@ -84,7 +84,7 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
-    "eslint": "9.17.0",
+    "eslint": "9.18.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "4.6.0",
     "eslint-typegen": "1.0.0",
