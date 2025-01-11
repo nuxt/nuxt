@@ -44,9 +44,6 @@ importers:
       '@arethetypeswrong/cli':
         specifier: 0.17.2
         version: 0.17.2
-      '@nuxt/cli':
-        specifier: 3.20.0
-        version: 3.20.0(magicast@0.3.5)
       '@nuxt/eslint-config':
         specifier: 0.7.5
         version: 0.7.5(@vue/compiler-sfc@3.5.13)(eslint@9.18.0(jiti@2.4.2))(typescript@5.7.3)
@@ -140,6 +137,9 @@ importers:
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
         version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3)
+      nuxi:
+        specifier: 3.18.2
+        version: 3.18.2
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -5806,6 +5806,11 @@ packages:
 
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
+
+  nuxi@3.18.2:
+    resolution: {integrity: sha512-JKpbXJ5suXSBJxPvosw8eqdJOniNs6RUmi91aaRQG4jmKcDCZgbZIPUBBJNdllCIcrE0jQQO40BfFLxnzx8Ipg==}
+    engines: {node: ^16.10.0 || >=18.0.0}
+    hasBin: true
 
   nuxt-content-twoslash@0.1.2:
     resolution: {integrity: sha512-7vCO04V0uyCXtjh40HgVIVKRReUlXc4efMNMdgDtx3Y7p9mnChRt9eRRD3c8VlDD27pLlkrTTnE2n15bu/SqbQ==}
@@ -13580,6 +13585,8 @@ snapshots:
   nth-check@2.1.1:
     dependencies:
       boolbase: 1.0.0
+
+  nuxi@3.18.2: {}
 
   nuxt-content-twoslash@0.1.2(@nuxtjs/mdc@0.8.3):
     dependencies:
