@@ -100,13 +100,13 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 - `data`: the result of the asynchronous function that is passed in.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
-- `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
-  - `idle`: when request did not star.
-    - set `{ immediate: false }` and `execute` not called.
-    - set `{ server: false }` and on server side.
-  - `pending`: the request is in progress.
-  - `success`: the request has completed successfully.
-  - `error`: the request has failed.
+- `status`: a string indicating the status of the data request:
+  - `idle`: when the request has not started:
+    - set `{ immediate: false }` and `execute` not called
+    - set `{ server: false }` and on the server side
+  - `pending`: the request is in progress
+  - `success`: the request has completed successfully
+  - `error`: the request has failed
 - `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
