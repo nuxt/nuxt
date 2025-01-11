@@ -4,7 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, asyncNameStorage, globalNuxtCtx, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, asyncNameStorage, nuxtCtx, installModule, loadNuxtConfig, getNuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -175,17 +175,17 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
-  if (!globalNuxtCtx.tryUse()) {
+  if (!nuxtCtx.tryUse()) {
     // backward compatibility with 3.x
-    globalNuxtCtx.set(nuxt)
+    nuxtCtx.set(nuxt)
     nuxt.hook('close', () => {
-      globalNuxtCtx.unset()
+      nuxtCtx.unset()
     })
   }
   // Set nuxt instance for useNuxt
-  nuxtCtx().set(nuxt)
+  getNuxtCtx().set(nuxt)
   nuxt.hook('close', () => {
-    nuxtCtx().unset()
+    getNuxtCtx().unset()
   })
 
   const coreTypePackages = nuxt.options.typescript.hoist || []

@@ -18,7 +18,7 @@ export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigO
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
 export { addComponent, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
-export { getNuxtCtx as nuxtCtx, tryUseNuxt, useNuxt, globalNuxtCtx } from './context'
+export { getNuxtCtx, tryUseNuxt, useNuxt, nuxtCtx } from './context'
 export { isIgnored, resolveIgnorePatterns } from './ignore'
 export { addLayout } from './layout'
 export { addRouteMiddleware, extendPages, extendRouteRules } from './pages'

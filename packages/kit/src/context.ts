@@ -5,7 +5,8 @@ import { logger } from './logger'
 
 /** Direct access to the Nuxt context with asyncLocalStorage - see https://github.com/unjs/unctx. */
 export const getNuxtCtx = () => getContext<Nuxt>(asyncNameStorage.getStore()!)
-export const globalNuxtCtx = getContext<Nuxt>('nuxt-global')
+/** Global nuxt ctx - see https://github.com/unjs/unctx.  */
+export const nuxtCtx = getContext<Nuxt>('nuxt-global')
 
 // TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
 
@@ -21,7 +22,7 @@ export const globalNuxtCtx = getContext<Nuxt>('nuxt-global')
 export function useNuxt (): Nuxt {
   const instance = getNuxtCtx().tryUse()
   if (!instance) {
-    const fallbackInstance = globalNuxtCtx.tryUse()
+    const fallbackInstance = nuxtCtx.tryUse()
     if (fallbackInstance) {
       logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v4.')
       return fallbackInstance
@@ -48,7 +49,7 @@ export function tryUseNuxt (): Nuxt | null {
   const nuxt = getNuxtCtx().tryUse()
   if (!nuxt) {
     logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v4.')
-    return globalNuxtCtx.tryUse()
+    return nuxtCtx.tryUse()
   }
   return nuxt
 }
