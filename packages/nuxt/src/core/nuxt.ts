@@ -1,7 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
-import { AsyncLocalStorage, AsyncResource } from 'node:async_hooks'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
