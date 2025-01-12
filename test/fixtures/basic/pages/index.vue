@@ -97,9 +97,6 @@
     <NuxtLink to="/page-load-hook">
       to page load hook
     </NuxtLink>
-    <NuxtLink to="/nested/xyz">
-      to page nuxt load indicator
-    </NuxtLink>
   </div>
 </template>
 
