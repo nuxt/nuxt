@@ -21,6 +21,7 @@ import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
 import { genImport } from 'knitwork'
+import { resolvePathSync } from 'mlly'
 
 import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
@@ -363,11 +364,11 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     // Add plugin to check if layouts are defined without NuxtLayout being instantiated
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/check-if-layout-used'), { extensions: ['.ts', '.js'] }))
   }
 
   if (nuxt.options.dev && nuxt.options.features.devLogs) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/dev-server-logs'), { extensions: ['.ts', '.js'] }))
     addServerPlugin(resolve(distDir, 'core/runtime/nitro/dev-server-logs'))
     nuxt.options.nitro = defu(nuxt.options.nitro, {
       externals: {
@@ -548,18 +549,18 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Track components used to render for webpack
   if (nuxt.options.builder === '@nuxt/webpack-builder') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/preload.server'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add nuxt app debugger
   if (nuxt.options.debug) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/debug'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental Chrome devtools timings support
   // https://developer.chrome.com/docs/devtools/performance/extension
   if (nuxt.options.experimental.browserDevtoolsTiming) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'), { extensions: ['.ts', '.js'] }))
   }
 
   for (const [key, options] of modulesToInstall) {
@@ -589,37 +590,37 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Add prerender payload support
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/payload.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental cross-origin prefetch support using Speculation Rules API
   if (nuxt.options.experimental.crossOriginPrefetch) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/cross-origin-prefetch.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'), { extensions: ['.ts', '.js'] }))
   }
   // Add experimental immediate page reload support
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental session restoration support
   if (nuxt.options.experimental.restoreState) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/restore-state.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental automatic view transition api support
   if (nuxt.options.experimental.viewTransition) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/view-transitions.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Add experimental support for custom types in JSON payload
   if (nuxt.options.experimental.renderJsonPayloads) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'))
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/revive-payload.client'), { extensions: ['.ts', '.js'] }))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/revive-payload.server'), { extensions: ['.ts', '.js'] }))
   }
 
   if (nuxt.options.experimental.appManifest) {
@@ -630,7 +631,7 @@ async function initNuxt (nuxt: Nuxt) {
     })
 
     if (nuxt.options.experimental.checkOutdatedBuildInterval !== false) {
-      addPlugin(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'))
+      addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/check-outdated-build.client'), { extensions: ['.ts', '.js'] }))
     }
   }
 
@@ -709,7 +710,7 @@ export default defineNuxtPlugin({
   nitro.options._config.replace!['process.env.NUXT_PAYLOAD_EXTRACTION'] = String(!!nuxt.options.experimental.payloadExtraction)
 
   if (!nuxt.options.dev && nuxt.options.experimental.payloadExtraction) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/payload.client'))
+    addPlugin(resolvePathSync(resolve(nuxt.options.appDir, 'plugins/payload.client'), { extensions: ['.ts', '.js'] }))
   }
 
   // Show compatibility version banner when Nuxt is running with a compatibility version
