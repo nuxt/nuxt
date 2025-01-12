@@ -270,7 +270,7 @@ jobs:
       id-token: write
     if: |
       github.event_name == 'push' &&
-      github.repository == 'nuxt/nuxt' &&
+      github.repository_owner == 'nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
@@ -306,9 +306,8 @@ jobs:
   release-pr:
     concurrency:
       group: release
-    if: github.event_name == 'pull_request'
+    if: github.repository_owner == 'nuxt' && github.event_name != 'push'
     needs:
-      - lint
       - build
     runs-on: ubuntu-latest
     timeout-minutes: 20
