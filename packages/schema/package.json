@@ -47,7 +47,7 @@
     "compatx": "0.1.8",
     "esbuild-loader": "4.2.2",
     "file-loader": "6.2.0",
-    "h3": "1.13.0",
+    "h3": "1.13.1",
     "hookable": "5.5.3",
     "ignore": "7.0.0",
     "nitropack": "2.10.4",
