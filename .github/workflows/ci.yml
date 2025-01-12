@@ -328,4 +328,4 @@ jobs:
           name: dist
           path: packages
 
-      - run: pnpm pkg-pr-new publish --compact
+      - run: pnpm pkg-pr-new publish --compact './packages/kit' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
