@@ -2,7 +2,7 @@ import { runInNewContext } from 'node:vm'
 import fs from 'node:fs'
 import { extname, normalize, relative, resolve } from 'pathe'
 import { encodePath, joinURL, withLeadingSlash } from 'ufo'
-import { logger, resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
+import { resolveFiles, resolvePath, useNuxt } from '@nuxt/kit'
 import { genArrayFromRaw, genDynamicImport, genImport, genSafeVariableName } from 'knitwork'
 import escapeRE from 'escape-string-regexp'
 import { filename } from 'pathe/utils'
@@ -11,9 +11,9 @@ import { transform } from 'esbuild'
 import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
-import { parseAndWalk } from '../core/utils/parse'
+import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
-import { toArray } from '../utils'
+import { logger, toArray } from '../utils'
 
 enum SegmentParserState {
   initial,
@@ -42,9 +42,7 @@ interface ScannedFile {
   absolutePath: string
 }
 
-export async function resolvePagesRoutes (): Promise<NuxtPage[]> {
-  const nuxt = useNuxt()
-
+export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]> {
   const pagesDirs = nuxt.options._layers.map(
     layer => resolve(layer.config.srcDir, (layer.config.rootDir === nuxt.options.rootDir ? nuxt.options : layer.config).dir?.pages || 'pages'),
   )
@@ -249,25 +247,27 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         const property = pageMetaArgument.properties.find((property): property is Property => property.type === 'Property' && property.key.type === 'Identifier' && property.key.name === key)
         if (!property) { continue }
 
-        if (property.value.type === 'ObjectExpression') {
-          const valueString = js.code.slice(property.value.range![0], property.value.range![1])
+        const propertyValue = withLocations(property.value)
+
+        if (propertyValue.type === 'ObjectExpression') {
+          const valueString = js.code.slice(propertyValue.start, propertyValue.end)
           try {
             extractedMeta[key] = JSON.parse(runInNewContext(`JSON.stringify(${valueString})`, {}))
           } catch {
-            console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
+            logger.debug(`Skipping extraction of \`${key}\` metadata as it is not JSON-serializable (reading \`${absolutePath}\`).`)
             dynamicProperties.add(key)
             continue
           }
         }
 
-        if (property.value.type === 'ArrayExpression') {
+        if (propertyValue.type === 'ArrayExpression') {
           const values: string[] = []
-          for (const element of property.value.elements) {
+          for (const element of propertyValue.elements) {
             if (!element) {
               continue
             }
             if (element.type !== 'Literal' || typeof element.value !== 'string') {
-              console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
+              logger.debug(`Skipping extraction of \`${key}\` metadata as it is not an array of string literals (reading \`${absolutePath}\`).`)
               dynamicProperties.add(key)
               continue
             }
@@ -277,12 +277,12 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
           continue
         }
 
-        if (property.value.type !== 'Literal' || (typeof property.value.value !== 'string' && typeof property.value.value !== 'boolean')) {
-          console.debug(`[nuxt] Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
+        if (propertyValue.type !== 'Literal' || (typeof propertyValue.value !== 'string' && typeof propertyValue.value !== 'boolean')) {
+          logger.debug(`Skipping extraction of \`${key}\` metadata as it is not a string literal or array of string literals (reading \`${absolutePath}\`).`)
           dynamicProperties.add(key)
           continue
         }
-        extractedMeta[key] = property.value.value
+        extractedMeta[key] = propertyValue.value
       }
 
       for (const property of pageMetaArgument.properties) {

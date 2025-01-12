@@ -254,7 +254,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
     nitroConfig.prerender ||= {}
     nitroConfig.prerender.ignore ||= []
-    nitroConfig.prerender.ignore.push(manifestPrefix)
+    nitroConfig.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, manifestPrefix))
 
     nitroConfig.publicAssets!.unshift(
       // build manifest

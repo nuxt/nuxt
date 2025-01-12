@@ -1,5 +1,5 @@
-import { h } from 'vue'
-import type { Component, RendererNode } from 'vue'
+import { createStaticVNode, h } from 'vue'
+import type { Component, RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
@@ -117,9 +117,9 @@ export function vforToArray (source: any): any[] {
  * Handles `<!--[-->` Fragment elements
  * @param element the element to retrieve the HTML
  * @param withoutSlots purge all slots from the HTML string retrieved
- * @returns {string[]} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
+ * @returns {string[]|undefined} An array of string which represent the content of each element. Use `.join('')` to retrieve a component vnode.el HTML
  */
-export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | null {
+export function getFragmentHTML (element: RendererNode | null, withoutSlots = false): string[] | undefined {
   if (element) {
     if (element.nodeName === '#comment' && element.nodeValue === '[') {
       return getFragmentChildren(element, [], withoutSlots)
@@ -131,7 +131,6 @@ export function getFragmentHTML (element: RendererNode | null, withoutSlots = fa
     }
     return [element.outerHTML]
   }
-  return null
 }
 
 function getFragmentChildren (element: RendererNode | null, blocks: string[] = [], withoutSlots = false) {
@@ -149,6 +148,20 @@ function getFragmentChildren (element: RendererNode | null, blocks: string[] = [
     getFragmentChildren(element.nextSibling, blocks, withoutSlots)
   }
   return blocks
+}
+
+/**
+ * Return a static vnode from an element
+ * Default to a div if the element is not found and if a fallback is not provided
+ * @param el renderer node retrieved from the component internal instance
+ * @param staticNodeFallback fallback string to use if the element is not found. Must be a valid HTML string
+ */
+export function elToStaticVNode (el: RendererNode | null, staticNodeFallback?: string): VNode {
+  const fragment: string[] | undefined = el ? getFragmentHTML(el) : staticNodeFallback ? [staticNodeFallback] : undefined
+  if (fragment) {
+    return createStaticVNode(fragment.join(''), fragment.length)
+  }
+  return h('div')
 }
 
 function isStartFragment (element: RendererNode) {

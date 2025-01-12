@@ -1,10 +1,11 @@
 import { parseNodeModulePath, resolvePath } from 'mlly'
 import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
-import { logger, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 import { pkgDir } from '../../dirs'
+import { logger } from '../../utils'
 
 export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
   const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite', '@vitest/']

@@ -14,7 +14,7 @@ import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
 
 /**
- * Renders given template using lodash template during build into the project buildDir
+ * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
 export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
@@ -44,7 +44,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 }
 
 /**
- * Renders given types using lodash template during build into the project buildDir
+ * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
  */
 export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
@@ -291,6 +291,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     }))
   }
 
+  // Ensure `#build` is placed at the end of the paths object.
+  // https://github.com/nuxt/nuxt/issues/30325
+  sortTsPaths(tsConfig.compilerOptions.paths)
+
   tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
@@ -328,6 +332,17 @@ export async function writeTypes (nuxt: Nuxt) {
   }
 
   await writeFile()
+}
+
+function sortTsPaths (paths: Record<string, string[]>) {
+  for (const pathKey in paths) {
+    if (pathKey.startsWith('#build')) {
+      const pathValue = paths[pathKey]!
+      // Delete & Reassign to ensure key is inserted at the end of object.
+      delete paths[pathKey]
+      paths[pathKey] = pathValue
+    }
+  }
 }
 
 function renderAttrs (obj: Record<string, string>) {
