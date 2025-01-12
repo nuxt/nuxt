@@ -112,7 +112,6 @@ export default defineComponent({
           ].filter(Boolean))
 
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-
           vnode = _wrapIf(Transition, hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
