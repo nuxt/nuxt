@@ -104,7 +104,7 @@
     "nuxt-content-twoslash": "0.1.2",
     "ofetch": "1.4.1",
     "pathe": "2.0.1",
-    "pkg-pr-new": "^0.0.39",
+    "pkg-pr-new": "0.0.39",
     "playwright-core": "1.49.1",
     "semver": "7.6.3",
     "sherif": "1.1.1",
