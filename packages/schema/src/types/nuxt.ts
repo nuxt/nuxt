@@ -80,9 +80,17 @@ export interface NuxtApp {
 
 export interface Nuxt {
   // Private fields.
+  /**
+   * The name of the Nuxt instance, this can be useful for build time debugging and mono-repos.
+   */
+  __name: string
   _version: string
   _ignore?: Ignore
   _dependencies?: Set<string>
+  /**
+   * @internal
+   */
+  run: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions

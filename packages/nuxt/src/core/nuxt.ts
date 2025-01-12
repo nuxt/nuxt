@@ -1,10 +1,11 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, asyncNameStorage, getNuxtCtx, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -50,6 +51,12 @@ import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
+  const name = randomUUID()
+
+  const { callHook, callHookParallel, callHookWith } = hooks
+  hooks.callHook = (...args) => asyncNameStorage.run(name, () => callHook(...args))
+  hooks.callHookParallel = (...args) => asyncNameStorage.run(name, () => callHookParallel(...args))
+  hooks.callHookWith = (...args) => asyncNameStorage.run(name, () => callHookWith(...args))
 
   const nuxt: Nuxt = {
     _version: version,
@@ -58,11 +65,28 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,
     hook: hooks.hook,
-    ready: () => initNuxt(nuxt),
+    ready: () => asyncNameStorage.run(name, () => initNuxt(nuxt)),
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
+    __name: name,
+    run: fn => asyncNameStorage.run(name, fn),
   }
+
+  if (!nuxtCtx.tryUse()) {
+    // backward compatibility with 3.x
+    nuxtCtx.set(nuxt)
+    nuxt.hook('close', () => {
+      nuxtCtx.unset()
+    })
+  }
+  nuxt.run(() => {
+    // Set nuxt instance for useNuxt
+    getNuxtCtx().set(nuxt)
+    nuxt.hook('close', () => {
+      getNuxtCtx().unset()
+    })
+  })
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })
 
@@ -173,11 +197,6 @@ async function initNuxt (nuxt: Nuxt) {
       }
     }
   })
-
-  // Set nuxt instance for useNuxt
-  nuxtCtx.set(nuxt)
-  nuxt.hook('close', () => nuxtCtx.unset())
-
   const coreTypePackages = nuxt.options.typescript.hoist || []
 
   // Disable environment types entirely if `typescript.builder` is false
@@ -802,18 +821,20 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  for (const dep of keyDependencies) {
-    checkDependencyVersion(dep, nuxt._version)
-  }
+  nuxt.run(() => {
+    for (const dep of keyDependencies) {
+      checkDependencyVersion(dep, nuxt._version)
+    }
 
-  // We register hooks layer-by-layer so any overrides need to be registered separately
-  if (opts.overrides?.hooks) {
-    nuxt.hooks.addHooks(opts.overrides.hooks)
-  }
+    // We register hooks layer-by-layer so any overrides need to be registered separately
+    if (opts.overrides?.hooks) {
+      nuxt.hooks.addHooks(opts.overrides.hooks)
+    }
 
-  if (nuxt.options.debug) {
-    createDebugger(nuxt.hooks, { tag: 'nuxt' })
-  }
+    if (nuxt.options.debug) {
+      createDebugger(nuxt.hooks, { tag: 'nuxt' })
+    }
+  })
 
   if (opts.ready !== false) {
     await nuxt.ready()
