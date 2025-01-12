@@ -33,4 +33,4 @@ jobs:
       - name: Lint (docs)
         run: pnpm lint:docs:fix
 
-      - uses: autofix-ci/action@ff86a557419858bb967097bfc916833f5647fa8c
+      - uses: autofix-ci/action@551dded8c6cc8a1054039c8bc0b8b48c51dfc6ef
