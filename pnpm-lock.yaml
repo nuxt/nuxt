@@ -51,8 +51,8 @@ importers:
         specifier: workspace:*
         version: link:packages/rspack
       '@nuxt/test-utils':
-        specifier: 3.15.3
-        version: 3.15.3(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)
+        specifier: 3.15.4
+        version: 3.15.4(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
@@ -2060,8 +2060,8 @@ packages:
     engines: {node: '>=18.20.5'}
     hasBin: true
 
-  '@nuxt/test-utils@3.15.3':
-    resolution: {integrity: sha512-8N4XfZAkeaZaEeL1scXVICoCC6Pw1DggXvMTKueKYyglND08lqr6E+SqC7LklMZP3v8LBFknuiZoaiiOTaHJsA==}
+  '@nuxt/test-utils@3.15.4':
+    resolution: {integrity: sha512-R5eNXILsB5GCTMgoKdW3rN9rNBQCVBqxw4+tcujNplcivbJp7lQrRMHlbR9ijAJ1jEMkDNXdOQGbM1RnWvDuuQ==}
     engines: {node: ^18.20.5 || ^20.9.0 || ^22.0.0 || >=23.0.0}
     peerDependencies:
       '@cucumber/cucumber': ^10.3.1 || ^11.0.0
@@ -8926,7 +8926,7 @@ snapshots:
       rc9: 2.1.2
       std-env: 3.8.0
 
-  '@nuxt/test-utils@3.15.3(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)':
+  '@nuxt/test-utils@3.15.4(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)':
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
@@ -15625,7 +15625,7 @@ snapshots:
 
   vitest-environment-nuxt@1.0.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1):
     dependencies:
-      '@nuxt/test-utils': 3.15.3(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)
+      '@nuxt/test-utils': 3.15.4(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.10.5)(@vue/test-utils@2.4.6)(happy-dom@16.5.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.49.1)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@2.1.8(@types/node@22.10.5)(happy-dom@16.5.3)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.6.1))(yaml@2.6.1)
     transitivePeerDependencies:
       - '@cucumber/cucumber'
       - '@jest/globals'
