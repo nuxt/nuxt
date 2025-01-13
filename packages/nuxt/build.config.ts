@@ -22,7 +22,7 @@ export default defineBuildConfig({
     },
   },
   dependencies: [
-    'nuxi',
+    '@nuxt/cli',
     'vue-router',
     'ofetch',
   ],
