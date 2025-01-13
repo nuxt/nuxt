@@ -9,6 +9,10 @@
     "main",
     "3.x"
   ],
+  "ignoreDeps": [
+    "node",
+    "npm"
+  ],
   "packageRules": [
     {
       "groupName": "vitest",
