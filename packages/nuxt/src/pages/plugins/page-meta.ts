@@ -173,7 +173,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      const scopeTracker = new ScopeTracker()
+      const scopeTracker = new ScopeTracker({
+        keepExitedScopes: true,
+      })
 
       function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
         if (scopeTrackerNode?.type === 'Variable') {
@@ -210,7 +212,13 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         }
       }
 
-      parseAndWalk(code, id, {
+      const ast = parseAndWalk(code, id, {
+        scopeTracker,
+      })
+
+      scopeTracker.freeze()
+
+      walk(ast, {
         scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -220,17 +228,34 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
           if (!meta) { return }
 
+          const definePageMetaScope = scopeTracker.getCurrentScope()
+
           walk(meta, {
+            scopeTracker,
             enter (node, parent) {
               if (
                 isNotReferencePosition(node, parent)
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
               ) { return }
 
+              const declaration = scopeTracker.getDeclaration(node.name)
+              if (declaration) {
+                // check if the declaration was made inside `definePageMeta` and if so, do not process it
+                // (ensures that we don't hoist local variables in inline middleware, for example)
+                if (
+                  declaration.isUnderScope(definePageMetaScope)
+                  // ensures that we compare the correct declaration to the reference
+                  // (when in the same scope, the declaration must come before the reference, otherwise it must be in a parent scope)
+                  && (scopeTracker.isCurrentScopeUnder(declaration.scope) || declaration.start < node.start)
+                ) {
+                  return
+                }
+              }
+
               if (isStaticIdentifier(node.name)) {
                 addImport(node.name)
-              } else {
-                processDeclaration(scopeTracker.getDeclaration(node.name))
+              } else if (declaration) {
+                processDeclaration(declaration)
               }
             },
           })
