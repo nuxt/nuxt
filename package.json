@@ -39,7 +39,7 @@
     "@nuxt/schema": "workspace:*",
     "@nuxt/vite-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
-    "@types/node": "22.10.5",
+    "@types/node": "22.10.6",
     "@unhead/dom": "1.11.16",
     "@unhead/schema": "1.11.16",
     "@unhead/shared": "1.11.16",
@@ -52,7 +52,7 @@
     "memfs": "4.14.1",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
-    "postcss": "8.4.49",
+    "postcss": "8.5.0",
     "rollup": "4.30.1",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
@@ -72,7 +72,7 @@
     "@nuxt/test-utils": "3.15.4",
     "@nuxt/webpack-builder": "workspace:*",
     "@testing-library/vue": "8.1.0",
-    "@types/node": "22.10.5",
+    "@types/node": "22.10.6",
     "@types/semver": "7.5.8",
     "@unhead/schema": "1.11.16",
     "@unhead/vue": "1.11.16",
@@ -81,7 +81,7 @@
     "autoprefixer": "10.4.20",
     "case-police": "0.7.2",
     "changelogen": "0.5.7",
-    "consola": "3.3.3",
+    "consola": "3.4.0",
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
@@ -116,6 +116,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.96.1"
   },
-  "packageManager": "pnpm@9.15.3",
+  "packageManager": "pnpm@9.15.4",
   "version": ""
 }
