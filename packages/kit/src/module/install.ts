@@ -101,31 +101,28 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     paths.add(nuxtModule)
 
     for (const path of paths) {
-      for (const parentURL of nuxt.options.modulesDir) {
-        try {
-          const src = isAbsolute(path)
-            ? pathToFileURL(await resolvePath(path, { cwd: parentURL, fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-            : await resolveModule(path, { url: pathToFileURL(parentURL.replace(/\/node_modules\/?$/, '')), extensions: nuxt.options.extensions })
+      try {
+        const src = isAbsolute(path)
+          ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
+          : await resolveModule(path, { url: nuxt.options.modulesDir.map(m => pathToFileURL(m.replace(/\/node_modules\/?$/, ''))), extensions: nuxt.options.extensions })
 
-          nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
-          resolvedModulePath = fileURLToPath(new URL(src))
+        nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
+        resolvedModulePath = fileURLToPath(new URL(src))
 
-          // nuxt-module-builder generates a module.json with metadata including the version
-          const moduleMetadataPath = new URL('module.json', src)
-          if (existsSync(moduleMetadataPath)) {
-            buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
-          }
-          break
-        } catch (error: unknown) {
-          const code = (error as Error & { code?: string }).code
-          if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
-            continue
-          }
-          logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
-          throw error
+        // nuxt-module-builder generates a module.json with metadata including the version
+        const moduleMetadataPath = new URL('module.json', src)
+        if (existsSync(moduleMetadataPath)) {
+          buildTimeModuleMeta = JSON.parse(await fsp.readFile(moduleMetadataPath, 'utf-8'))
         }
+        break
+      } catch (error: unknown) {
+        const code = (error as Error & { code?: string }).code
+        if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
+          continue
+        }
+        logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
+        throw error
       }
-      if (typeof nuxtModule !== 'string') { break }
     }
   }
 
