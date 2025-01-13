@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import type { ModuleMeta, Nuxt, NuxtConfig, NuxtModule } from '@nuxt/schema'
+import type { ModuleMeta, Nuxt, NuxtConfig, NuxtDebugModuleMutationRecord, NuxtModule } from '@nuxt/schema'
 import { dirname, isAbsolute, join, resolve } from 'pathe'
 import { defu } from 'defu'
 import { createJiti } from 'jiti'
@@ -27,8 +27,44 @@ export async function installModule<
     }
   }
 
+  let _nuxt = nuxt
+  if (nuxt.options.debug) {
+    const onChange = await import('on-change').then(r => r.default)
+    const moduleName = (await nuxtModule.getMeta?.())?.name || buildTimeModuleMeta?.name || resolvedModulePath
+
+    // Unwrap onChange proxy if already wrapped
+    nuxt = onChange.target(nuxt)
+
+    nuxt._debug ||= {}
+    nuxt._debug.moduleMutationRecords ||= []
+
+    _nuxt = onChange(
+      nuxt,
+      (keys, value, _, applyData) => {
+        // We only listen to changes in the `options` object
+        if (keys[0] !== 'options') {
+          return
+        }
+        const record: NuxtDebugModuleMutationRecord = {
+          module: moduleName,
+          keys: keys.slice(1),
+          value,
+          timestamp: Date.now(),
+        }
+        if (applyData?.name) {
+          record.method = applyData.name
+        }
+        nuxt._debug!.moduleMutationRecords!.push(record)
+      }, {
+        ignoreUnderscores: true,
+        ignoreSymbols: true,
+        pathAsArray: true,
+      },
+    )
+  }
+
   // Call module
-  const res = await nuxtModule(inlineOptions || {}, nuxt) ?? {}
+  const res = await nuxtModule(inlineOptions || {}, _nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
