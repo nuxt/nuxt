@@ -64,7 +64,10 @@ export async function build (nuxt: Nuxt) {
   }
 
   if (nuxt.options.dev) {
-    checkForExternalConfigurationFiles()
+    nuxt.hooks.hookOnce('build:done', () => {
+      checkForExternalConfigurationFiles()
+        .catch(e => logger.warn('Problem checking for external configuration files.', e))
+    })
   }
 
   await bundle(nuxt)

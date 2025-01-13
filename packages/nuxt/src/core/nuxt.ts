@@ -802,8 +802,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  for (const dep of keyDependencies) {
-    checkDependencyVersion(dep, nuxt._version)
+  if (nuxt.options.dev) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      for (const dep of keyDependencies) {
+        checkDependencyVersion(dep, nuxt._version)
+          .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
+      }
+    })
   }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
