@@ -85,7 +85,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
 
   // Server polyfills
   if (ctx.userConfig.serverURLPolyfill) {

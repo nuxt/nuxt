@@ -50,7 +50,7 @@ export async function installModule<
     }
   }
 
-  nuxt.options._installedModules = nuxt.options._installedModules || []
+  nuxt.options._installedModules ||= []
   const entryPath = typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
 
   if (typeof moduleToInstall === 'string' && entryPath !== moduleToInstall) {

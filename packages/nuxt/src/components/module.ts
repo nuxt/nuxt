@@ -252,7 +252,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
       // TODO: refactor this
       nuxt.hook('vite:extendConfig', (config, { isClient }) => {
-        config.plugins = config.plugins || []
+        config.plugins ||= []
 
         if (isClient && selectiveClient) {
           writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')
@@ -277,7 +277,7 @@ export default defineNuxtModule<ComponentsOptions>({
         nuxt.hook(key, (configs) => {
           configs.forEach((config) => {
             const mode = config.name === 'client' ? 'client' : 'server'
-            config.plugins = config.plugins || []
+            config.plugins ||= []
 
             if (mode !== 'server') {
               writeFileSync(join(nuxt.options.buildDir, 'components-chunk.mjs'), 'export const paths = {}')

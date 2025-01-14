@@ -507,8 +507,8 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
 
     // TODO: remove for v4
-    islandHead.link = islandHead.link || []
-    islandHead.style = islandHead.style || []
+    islandHead.link ||= []
+    islandHead.style ||= []
 
     const islandResponse: NuxtIslandResponse = {
       id: islandContext.id,

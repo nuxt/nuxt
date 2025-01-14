@@ -13,7 +13,7 @@ import { MODE_RE } from './utils'
 export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
-  nuxt.options.components = nuxt.options.components || []
+  nuxt.options.components ||= []
   dir.priority ||= 0
   nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
 }
@@ -30,7 +30,7 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 export async function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
   await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
-  nuxt.options.components = nuxt.options.components || []
+  nuxt.options.components ||= []
 
   if (!opts.mode) {
     const [, mode = 'all'] = opts.filePath.match(MODE_RE) || []
