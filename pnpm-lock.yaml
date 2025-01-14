@@ -245,6 +245,9 @@ importers:
       semver:
         specifier: ^7.6.3
         version: 7.6.3
+      std-env:
+        specifier: ^3.8.0
+        version: 3.8.0
       ufo:
         specifier: 1.5.4
         version: 1.5.4
