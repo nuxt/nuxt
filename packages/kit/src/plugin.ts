@@ -5,10 +5,10 @@ import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolvePathSync } from 'mlly'
 import { isWindows } from 'std-env'
+import { MODE_RE, filterInPlace } from './utils'
 import { tryUseNuxt, useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
-import { MODE_RE } from './utils'
 
 /**
  * Normalize a nuxt plugin object
@@ -82,7 +82,7 @@ export function addPlugin (_plugin: NuxtPlugin | string, opts: AddPluginOptions 
   const plugin = normalizePlugin(_plugin)
 
   // Remove any existing plugin with the same src
-  nuxt.options.plugins = nuxt.options.plugins.filter(p => normalizePlugin(p).src !== plugin.src)
+  filterInPlace(nuxt.options.plugins, p => normalizePlugin(p).src !== plugin.src)
 
   // Prepend to array by default to be before user provided plugins since is usually used by modules
   nuxt.options.plugins[opts.append ? 'push' : 'unshift'](plugin)

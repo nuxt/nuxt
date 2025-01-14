@@ -50,7 +50,7 @@ function baseConfig (ctx: WebpackConfigContext) {
 }
 
 function basePlugins (ctx: WebpackConfigContext) {
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
 
   // Add timefix-plugin before other plugins
   if (ctx.options.dev) {
