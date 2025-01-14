@@ -4,14 +4,10 @@ export function toArray<T> (value: T | T[]): T[] {
 }
 
 /**
- * Turbo-charged in-place array filtering. This function mutates the array.
- * Optimized for both small and large arrays using different strategies:
- * - For small arrays (<=16 items): Uses splice for better memory efficiency
- * - For large arrays: Uses optimized swap-and-truncate strategy
+ * Filter out items from an array in place. This function mutates the array.
+ * `predicate` get through the array from the end to the start for performance.
  *
- * Processes array from end to start for maximum performance.
- * Benchmarks show this is significantly faster than Array.prototype.filter
- * and standard filterInPlace implementations.
+ * This function should be faster than `Array.prototype.filter` on large arrays.
  */
 export function filterInPlace<T> (array: T[], predicate: (item: T, index: number, arr: T[]) => unknown) {
   for (let i = array.length; i--; i >= 0) {
