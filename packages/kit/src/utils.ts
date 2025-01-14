@@ -14,23 +14,12 @@ export function toArray<T> (value: T | T[]): T[] {
  * and standard filterInPlace implementations.
  */
 export function filterInPlace<T> (array: T[], predicate: (item: T, index: number, arr: T[]) => unknown) {
-  const len = array.length
-
-  if (len <= 16) {
-    for (let i = len; i--; i >= 0) {
-      if (!predicate(array[i]!, i, array)) {
-        array.splice(i, 1)
-      }
-    }
-  } else {
-    for (let i = len; i--; i >= 0) {
-      if (!predicate(array[i]!, i, array)) {
-        const last = --array.length
-        if (i < last) { array[i] = array[last]! }
-      }
+  for (let i = array.length; i--; i >= 0) {
+    if (!predicate(array[i]!, i, array)) {
+      const last = --array.length
+      if (i < last) { array[i] = array[last]! }
     }
   }
-
   return array
 }
 
