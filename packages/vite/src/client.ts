@@ -110,9 +110,11 @@ export async function buildClient (ctx: ViteBuildContext) {
     },
     resolve: {
       alias: {
+        // work around vite optimizer bug
+        '#app-manifest': 'unenv/runtime/mock/empty',
+        // user aliases
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
-        'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
       },
       dedupe: [
         'vue',
