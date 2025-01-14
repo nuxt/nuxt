@@ -55,7 +55,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28796231.359af68d",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
-    "postcss": "8.5.0",
+    "postcss": "8.5.1",
     "rollup": "4.30.1",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
