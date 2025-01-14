@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { isAbsolute } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolvePathSync } from 'mlly'
@@ -33,7 +34,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
 
   if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
     try {
-      plugin.src = resolvePathSync(plugin.src, { extensions: tryUseNuxt()?.options.extensions })
+      plugin.src = resolvePathSync(pathToFileURL(plugin.src).href, { extensions: tryUseNuxt()?.options.extensions })
     } catch {
       // ignore errors as the file may be in the nuxt vfs
     }
