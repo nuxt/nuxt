@@ -77,7 +77,7 @@ let previousTodos = []
 // Access to the cached value of useAsyncData in todos.vue
 const { data: todos } = useNuxtData('todos')
 
-const addTodo = async () => {
+async function addTodo () {
   return $fetch('/api/addTodo', {
     method: 'post',
     body: {
