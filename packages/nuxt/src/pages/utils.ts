@@ -424,7 +424,7 @@ function parseSegment (segment: string, absolutePath: string) {
           state = SegmentParserState.initial
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
-        } else {
+        } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
           logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
         }
         break
