@@ -41,7 +41,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 20
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -55,9 +55,6 @@ jobs:
 
       - name: Build
         run: pnpm build
-
-      - name: Check types
-        run: pnpm test:attw
 
       - name: Cache dist
         uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
@@ -118,7 +115,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -149,7 +146,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -160,6 +157,9 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Check built types
+        run: pnpm test:attw
 
   test-unit:
     # autofix workflow will be triggered instead for PRs
@@ -173,7 +173,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -260,20 +260,18 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  build-release:
+  release-nightly:
     concurrency:
       group: release
     permissions:
       id-token: write
     if: |
       github.event_name == 'push' &&
-      github.repository == 'nuxt/nuxt' &&
+      github.repository_owner == 'nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
-      - lint
       - build
-      - test-fixtures
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -284,7 +282,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -299,22 +297,15 @@ jobs:
       - name: Release Edge
         run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
   release-pr:
     concurrency:
       group: release
-    permissions:
-      id-token: write
-      pull-requests: write
-    if: |
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, '🧷 edge release')
+    if: github.repository_owner == 'nuxt' && github.event_name != 'push'
     needs:
-      - lint
       - build
-      - test-fixtures
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -325,7 +316,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -337,8 +328,4 @@ jobs:
           name: dist
           path: packages
 
-      - name: Release Edge
-        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-          NPM_CONFIG_PROVENANCE: true
+      - run: pnpm pkg-pr-new publish --compact './packages/kit' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'
