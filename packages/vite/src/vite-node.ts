@@ -44,7 +44,7 @@ export function viteNodePlugin (ctx: ViteBuildContext): VitePlugin {
       // invalidate changed virtual modules when templates are regenerated
       ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
         for (const template of changedTemplates) {
-          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${template.dst}`)
+          const mods = server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`)
 
           for (const mod of mods || []) {
             markInvalidate(mod)
