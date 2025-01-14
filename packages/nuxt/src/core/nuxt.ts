@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { rm } from 'node:fs/promises'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
@@ -10,6 +11,7 @@ import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
 import consola from 'consola'
+import onChange from 'on-change'
 import { colorize } from 'consola/utils'
 import { updateConfig } from 'c12/update'
 import { formatDate, resolveCompatibilityDatesFromEnv } from 'compatx'
@@ -51,9 +53,11 @@ import { VirtualFSPlugin } from './plugins/virtual'
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
+  const proxiedOptions = new WeakMap<NuxtModule, NuxtOptions>()
+
   const nuxt: Nuxt = {
     _version: version,
-    options,
+    _asyncLocalStorageModule: new AsyncLocalStorage(),
     hooks,
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,
@@ -62,6 +66,50 @@ export function createNuxt (options: NuxtOptions): Nuxt {
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
+    options,
+  }
+
+  if (options.experimental.debugModuleMutation) {
+    Object.defineProperty(nuxt, 'options', {
+      get () {
+        const currentModule = nuxt._asyncLocalStorageModule.getStore()
+        if (!currentModule) {
+          return options
+        }
+
+        if (proxiedOptions.has(currentModule)) {
+          return proxiedOptions.get(currentModule)!
+        }
+
+        nuxt._debug ||= {}
+        nuxt._debug.moduleMutationRecords ||= []
+
+        const proxied = onChange(
+          options,
+          (keys, value, previousValue, applyData) => {
+            if (value === previousValue && !applyData) {
+              return
+            }
+            nuxt._debug!.moduleMutationRecords!.push({
+              module: currentModule,
+              keys,
+              target: 'nuxt.options',
+              value: applyData?.args ?? value,
+              timestamp: Date.now(),
+              method: applyData?.name,
+            })
+          }, {
+            ignoreUnderscores: true,
+            ignoreSymbols: true,
+            pathAsArray: true,
+          },
+        )
+
+        proxiedOptions.set(currentModule, proxied)
+        return proxied
+      },
+    },
+    )
   }
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })

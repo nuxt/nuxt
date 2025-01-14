@@ -1,5 +1,7 @@
+import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
+import type { NuxtModule } from './module'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
@@ -85,6 +87,8 @@ export interface Nuxt {
   _ignore?: Ignore
   _dependencies?: Set<string>
   _debug?: NuxtDebugContext
+  /** Async local storage for current running Nuxt module instance. */
+  _asyncLocalStorageModule: AsyncLocalStorage<NuxtModule>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions

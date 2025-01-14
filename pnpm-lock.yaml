@@ -230,9 +230,6 @@ importers:
       ohash:
         specifier: 1.1.4
         version: 1.1.4
-      on-change:
-        specifier: ^5.0.1
-        version: 5.0.1
       pathe:
         specifier: ^2.0.1
         version: 2.0.1
@@ -405,6 +402,9 @@ importers:
       ohash:
         specifier: 1.1.4
         version: 1.1.4
+      on-change:
+        specifier: ^5.0.1
+        version: 5.0.1
       pathe:
         specifier: ^2.0.1
         version: 2.0.1
