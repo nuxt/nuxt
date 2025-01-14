@@ -13,7 +13,9 @@ export function filterInPlace<T> (array: T[], predicate: (item: T, index: number
   for (let i = array.length; i--; i >= 0) {
     if (!predicate(array[i]!, i, array)) {
       const last = --array.length
-      if (i < last) { array[i] = array[last]! }
+      if (i < last) {
+        array[i] = array[last]!
+      }
     }
   }
   return array
