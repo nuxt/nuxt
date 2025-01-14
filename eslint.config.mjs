@@ -166,6 +166,55 @@ export default createConfigForNuxt({
         'no-console': 'off',
       },
     },
+    // manually specify dependencies for nuxt browser app
+    {
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
+      name: 'local/client-packages',
+      rules: {
+        '@typescript-eslint/no-restricted-imports': ['error', {
+          'patterns': [
+            {
+              allowTypeImports: true,
+              group: [
+                // disallow everything
+                '[@a-z]*',
+                // except certain dependencies
+                ...[
+                  // vue ecosystem
+                  '@unhead',
+                  '@vue',
+                  '@vue/shared',
+                  'vue/server-renderer',
+                  'vue',
+                  'vue-router',
+                  // other deps
+                  'devalue',
+                  'klona',
+                  // unjs ecosystem
+                  'defu',
+                  'ufo',
+                  'h3',
+                  'destr',
+                  'consola',
+                  'hookable',
+                  'unctx',
+                  'cookie-es',
+                  'perfect-debounce',
+                  'radix3',
+                  'ohash',
+                  'pathe',
+                  'uncrypto',
+                  // internal deps
+                  'nuxt/app',
+                ].map(r => `!${r}`),
+                '!#[a-z]*/**', // aliases
+                '!.*/**', // relative imports
+              ],
+            },
+          ],
+        }],
+      },
+    },
     {
       files: ['**/fixtures/**', '**/fixture/**'],
       name: 'local/disables/fixtures',
