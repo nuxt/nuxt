@@ -9,10 +9,9 @@ import { createRoutesContext } from 'unplugin-vue-router'
 import { resolveOptions } from 'unplugin-vue-router/options'
 import type { EditableTreeNode, Options as TypedRouterOptions } from 'unplugin-vue-router'
 import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+
 import type { NitroRouteConfig } from 'nitro/types'
 import { defu } from 'defu'
-import { resolvePathSync } from 'mlly'
-
 import { distDir } from '../dirs'
 import { resolveTypePath } from '../core/utils/types'
 import { logger } from '../utils'
@@ -91,7 +90,7 @@ export default defineNuxtModule({
 
     if (nuxt.options.dev && nuxt.options.pages) {
       // Add plugin to check if pages are enabled without NuxtPage being instantiated
-      addPlugin(resolvePathSync(resolve(runtimeDir, 'plugins/check-if-page-unused'), { extensions: ['.ts', '.js'] }))
+      addPlugin(resolve(runtimeDir, 'plugins/check-if-page-unused'))
     }
 
     nuxt.hook('app:templates', async (app) => {
@@ -123,7 +122,7 @@ export default defineNuxtModule({
     })
 
     if (!nuxt.options.pages) {
-      addPlugin(resolvePathSync(resolve(distDir, 'app/plugins/router'), { extensions: ['.ts', '.js'] }))
+      addPlugin(resolve(distDir, 'app/plugins/router'))
       addTemplate({
         filename: 'pages.mjs',
         getContents: () => [
@@ -475,7 +474,7 @@ export default defineNuxtModule({
     })
 
     // Add prefetching support for middleware & layouts
-    addPlugin(resolvePathSync(resolve(runtimeDir, 'plugins/prefetch.client'), { extensions: ['.ts', '.js'] }))
+    addPlugin(resolve(runtimeDir, 'plugins/prefetch.client'))
 
     // Add build plugin to ensure template $route is kept in sync with `<NuxtPage>`
     if (nuxt.options.experimental.templateRouteInjection) {
@@ -483,7 +482,7 @@ export default defineNuxtModule({
     }
 
     // Add router plugin
-    addPlugin(resolvePathSync(resolve(runtimeDir, 'plugins/router'), { extensions: ['.ts', '.js'] }))
+    addPlugin(resolve(runtimeDir, 'plugins/router'))
 
     const getSources = (pages: NuxtPage[]): string[] => pages
       .filter(p => Boolean(p.file))
