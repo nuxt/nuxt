@@ -68,7 +68,10 @@ export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]>
     return pages
   }
 
-  const augmentCtx = { extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys }
+  const augmentCtx = {
+    extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys,
+    fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
+  }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
     await augmentPages(pages, nuxt.vfs, augmentCtx)
@@ -154,6 +157,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 }
 
 interface AugmentPagesContext {
+  fullyResolvedPaths?: Set<string>
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: string[]
@@ -163,7 +167,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
+      const fileContent = route.file in vfs
+        ? vfs[route.file]!
+        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
