@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { normalize } from 'pathe'
 import type { NuxtPlugin, NuxtPluginTemplate } from '@nuxt/schema'
 import { resolvePathSync } from 'mlly'
+import { isWindows } from 'std-env'
 import { tryUseNuxt, useNuxt } from './context'
 import { addTemplate } from './template'
 import { resolveAlias } from './resolve'
@@ -34,7 +35,7 @@ export function normalizePlugin (plugin: NuxtPlugin | string): NuxtPlugin {
 
   if (!existsSync(plugin.src) && isAbsolute(plugin.src)) {
     try {
-      plugin.src = resolvePathSync(pathToFileURL(plugin.src).href, { extensions: tryUseNuxt()?.options.extensions })
+      plugin.src = resolvePathSync(isWindows ? pathToFileURL(plugin.src).href : plugin.src, { extensions: tryUseNuxt()?.options.extensions })
     } catch {
       // ignore errors as the file may be in the nuxt vfs
     }
