@@ -56,7 +56,7 @@ function clientNodeCompat (ctx: WebpackConfigContext) {
   }
   ctx.config.plugins!.push(new webpack.DefinePlugin({ global: 'globalThis' }))
 
-  ctx.config.resolve = ctx.config.resolve || {}
+  ctx.config.resolve ||= {}
   ctx.config.resolve.fallback = {
     ...env(nodeless).alias,
     ...ctx.config.resolve.fallback,
@@ -92,7 +92,7 @@ function clientHMR (ctx: WebpackConfigContext) {
     `webpack-hot-middleware/client?${hotMiddlewareClientOptionsStr}`,
   )
 
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
   ctx.config.plugins.push(new webpack.HotModuleReplacementPlugin())
 }
 
