@@ -212,7 +212,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     // Invalidate virtual modules when templates are re-generated
     ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
       for (const template of changedTemplates) {
-        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${template.dst}`) || []) {
+        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
           server.reloadModule(mod)
         }
