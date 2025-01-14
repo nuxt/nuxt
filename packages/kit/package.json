@@ -45,7 +45,7 @@
     "semver": "^7.6.3",
     "ufo": "^1.5.4",
     "unctx": "^2.4.1",
-    "unimport": "^3.14.5",
+    "unimport": "^3.14.6",
     "untyped": "^1.5.2"
   },
   "devDependencies": {
