@@ -86,15 +86,22 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
         const proxied = onChange(
           options,
-          (keys, value, previousValue, applyData) => {
-            if (value === previousValue && !applyData) {
+          (keys, newValue, previousValue, applyData) => {
+            if (newValue === previousValue && !applyData) {
               return
+            }
+            let value = applyData?.args ?? newValue
+            // Make a shallow copy of the value
+            if (Array.isArray(value)) {
+              value = [...value]
+            } else if (typeof value === 'object') {
+              value = { ...(value as any) }
             }
             nuxt._debug!.moduleMutationRecords!.push({
               module: currentModule,
               keys,
               target: 'nuxt.options',
-              value: applyData?.args ?? value,
+              value,
               timestamp: Date.now(),
               method: applyData?.name,
             })
