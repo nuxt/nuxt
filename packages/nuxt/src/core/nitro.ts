@@ -52,7 +52,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
-    debug: nuxt.options.debug && nuxt.options.debug.nitro,
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     srcDir: nuxt.options.serverDir,

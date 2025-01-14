@@ -8,6 +8,7 @@ import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
 import type { RuntimeConfig } from '../types/config'
+import type { NuxtDebugOptions } from '../types/debug'
 
 export default defineUntypedSchema({
   /**
@@ -271,16 +272,27 @@ export default defineUntypedSchema({
    * }
    * ```
    *
-   * @type {boolean | { log?: boolean, hooks?: boolean, nitro?: boolean, browser?: boolean, prod?: boolean }}
+   * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
   debug: {
-    $resolve: (val: boolean | { log?: boolean, hooks?: boolean, nitro?: boolean, browser?: boolean, prod?: boolean } | undefined) => {
+    $resolve: (val: boolean | NuxtDebugOptions | undefined) => {
       val ??= isDebug
       if (val === false) {
         return val
       }
       if (val === true) {
-        return { log: true, hooks: true, nitro: true, browser: true, prod: true }
+        return {
+          templates: true,
+          modules: true,
+          watchers: true,
+          hooks: {
+            client: true,
+            server: true,
+          },
+          nitro: true,
+          router: true,
+          hydration: true,
+        } satisfies Required<NuxtDebugOptions>
       }
       return val
     },

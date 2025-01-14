@@ -87,7 +87,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const perf = performance.now() - start
     const setupTime = Math.round((perf * 100)) / 100
 
-    if ((nuxt.options.debug && nuxt.options.debug.log) || setupTime > 500) {
+    if ((nuxt.options.debug && nuxt.options.debug.templates) || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
     }
 
