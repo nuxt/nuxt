@@ -292,6 +292,8 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   }
   for (const plugin of app.plugins) {
     plugin.src = normaliseToRepo(plugin.src)!
+    // @ts-expect-error untyped symbol
+    delete plugin[Symbol.for('nuxt plugin')]
   }
   for (const mw of app.middleware) {
     mw.path = normaliseToRepo(mw.path)!
