@@ -119,7 +119,7 @@ function createWatcher () {
 function createGranularWatcher () {
   const nuxt = useNuxt()
 
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.log) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
@@ -164,7 +164,7 @@ function createGranularWatcher () {
     })
     watcher.on('ready', () => {
       pending--
-      if (nuxt.options.debug && !pending) {
+      if (nuxt.options.debug && nuxt.options.debug.log && !pending) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
@@ -175,7 +175,7 @@ function createGranularWatcher () {
 
 async function createParcelWatcher () {
   const nuxt = useNuxt()
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.log) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
@@ -201,7 +201,7 @@ async function createParcelWatcher () {
       ],
     })
     watcher.then((subscription) => {
-      if (nuxt.options.debug) {
+      if (nuxt.options.debug && nuxt.options.debug.log) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:parcel:watch')
       }

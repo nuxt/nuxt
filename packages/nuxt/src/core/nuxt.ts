@@ -552,7 +552,7 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add nuxt app debugger
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.browser) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
   }
 
@@ -811,7 +811,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     nuxt.hooks.addHooks(opts.overrides.hooks)
   }
 
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.hooks) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })
   }
 
