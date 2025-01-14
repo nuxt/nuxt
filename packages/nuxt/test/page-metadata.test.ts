@@ -393,6 +393,188 @@ definePageMeta({
     `)
   })
 
+  it('should not import static identifiers when shadowed in the same scope', () => {
+    const sfc = `
+<script setup lang="ts">
+import { useState } from '#app/composables/state'
+
+definePageMeta({
+  middleware: () => {
+    const useState = (key) => ({ value: { isLoggedIn: false } })
+    const auth = useState('auth')
+    if (!auth.value.isLoggedIn) {
+      return navigateTo('/login')
+    }
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        middleware: () => {
+          const useState = (key) => ({ value: { isLoggedIn: false } })
+          const auth = useState('auth')
+          if (!auth.value.isLoggedIn) {
+            return navigateTo('/login')
+          }
+        },
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should not import static identifiers when shadowed in parent scope', () => {
+    const sfc = `
+<script setup lang="ts">
+import { useState } from '#app/composables/state'
+
+definePageMeta({
+  middleware: () => {
+    function isLoggedIn() {
+      const auth = useState('auth')
+      return auth.value.isLoggedIn
+    }
+
+    const useState = (key) => ({ value: { isLoggedIn: false } })
+    if (!isLoggedIn()) {
+      return navigateTo('/login')
+    }
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "const __nuxt_page_meta = {
+        middleware: () => {
+          function isLoggedIn() {
+            const auth = useState('auth')
+            return auth.value.isLoggedIn
+          }
+
+          const useState = (key) => ({ value: { isLoggedIn: false } })
+          if (!isLoggedIn()) {
+            return navigateTo('/login')
+          }
+        },
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should import static identifiers when a shadowed and a non-shadowed one is used', () => {
+    const sfc = `
+<script setup lang="ts">
+import { useState } from '#app/composables/state'
+
+definePageMeta({
+  middleware: [
+    () => {
+      const useState = (key) => ({ value: { isLoggedIn: false } })
+      const auth = useState('auth')
+      if (!auth.value.isLoggedIn) {
+        return navigateTo('/login')
+      }
+    },
+    () => {
+      const auth = useState('auth')
+      if (!auth.value.isLoggedIn) {
+        return navigateTo('/login')
+      }
+    }
+  ]
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "import { useState } from '#app/composables/state'
+
+      const __nuxt_page_meta = {
+        middleware: [
+          () => {
+            const useState = (key) => ({ value: { isLoggedIn: false } })
+            const auth = useState('auth')
+            if (!auth.value.isLoggedIn) {
+              return navigateTo('/login')
+            }
+          },
+          () => {
+            const auth = useState('auth')
+            if (!auth.value.isLoggedIn) {
+              return navigateTo('/login')
+            }
+          }
+        ]
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
+  it('should import static identifiers when a shadowed and a non-shadowed one is used in the same scope', () => {
+    const sfc = `
+<script setup lang="ts">
+import { useState } from '#app/composables/state'
+
+definePageMeta({
+  middleware: () => {
+    const auth1 = useState('auth')
+    const useState = (key) => ({ value: { isLoggedIn: false } })
+    const auth2 = useState('auth')
+    if (!auth1.value.isLoggedIn || !auth2.value.isLoggedIn) {
+      return navigateTo('/login')
+    }
+  },
+})
+</script>
+      `
+    const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, res.content, 'component.vue?macro=true')?.code).toMatchInlineSnapshot(`
+      "import { useState } from '#app/composables/state'
+
+      const __nuxt_page_meta = {
+        middleware: () => {
+          const auth1 = useState('auth')
+          const useState = (key) => ({ value: { isLoggedIn: false } })
+          const auth2 = useState('auth')
+          if (!auth1.value.isLoggedIn || !auth2.value.isLoggedIn) {
+            return navigateTo('/login')
+          }
+        },
+      }
+      export default __nuxt_page_meta"
+    `)
+  })
+
   it('should work with esbuild.keepNames = true', async () => {
     const sfc = `
 <script setup lang="ts">
@@ -497,6 +679,8 @@ function recursive () {
   recursive()
 }
 
+const route = useRoute()
+
 definePageMeta({
   middleware: [
     () => {
@@ -513,9 +697,24 @@ definePageMeta({
         prop = 'prop'
         test () {}
       }
+
+      const someFunction = () => {
+        const someValue = 'someValue'
+        console.log(someValue)
+      }
+
+      console.log(hoisted.value, val)
     },
   ],
+  validate: (route) => {
+    return route.params.id === 'test'
+  }
 })
+
+// the order of a ref relative to the 'definePageMeta' call should be preserved (in contrast to a simple const)
+// this tests whether the extraction handles all variables in the upper scope
+const hoisted = ref('hoisted')
+
 </script>
       `
     const res = compileScript(parse(sfc).descriptor, { id: 'component.vue' })
@@ -534,6 +733,7 @@ definePageMeta({
       function recursive () {
         recursive()
       }
+      const hoisted = ref('hoisted')
       const __nuxt_page_meta = {
         middleware: [
           () => {
@@ -550,8 +750,18 @@ definePageMeta({
               prop = 'prop'
               test () {}
             }
+
+            const someFunction = () => {
+              const someValue = 'someValue'
+              console.log(someValue)
+            }
+
+            console.log(hoisted.value, val)
           },
         ],
+        validate: (route) => {
+          return route.params.id === 'test'
+        }
       }
       export default __nuxt_page_meta"
     `)

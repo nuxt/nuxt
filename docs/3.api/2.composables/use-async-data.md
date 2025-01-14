@@ -72,7 +72,13 @@ The `handler` function should be **side-effect free** to ensure predictable beha
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
-  - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
+  - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
+    ```ts
+    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+      ? nuxtApp.payload.data[key] 
+      : nuxtApp.static.data[key]
+    ```
+    Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
   - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
@@ -97,7 +103,13 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 - `data`: the result of the asynchronous function that is passed in.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
-- `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- `status`: a string indicating the status of the data request:
+  - `idle`: when the request has not started, such as:
+    - when `execute` has not yet been called and `{ immediate: false }` is set
+    - when rendering HTML on the server and `{ server: false }` is set
+  - `pending`: the request is in progress
+  - `success`: the request has completed successfully
+  - `error`: the request has failed
 - `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.

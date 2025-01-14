@@ -53,12 +53,30 @@ export function withLocations<T> (node: T): WithLocations<T> {
   return node as WithLocations<T>
 }
 
+/**
+ * A function to check whether scope A is a child of scope B.
+ * @example
+ * ```ts
+ * isChildScope('0-1-2', '0-1') // true
+ * isChildScope('0-1', '0-1') // false
+ * ```
+ *
+ * @param a the child scope
+ * @param b the parent scope
+ * @returns true if scope A is a child of scope B, false otherwise (also when they are the same)
+ */
+function isChildScope (a: string, b: string) {
+  return a.startsWith(b) && a.length > b.length
+}
+
 abstract class BaseNode<T extends Node = Node> {
   abstract type: string
+  readonly scope: string
   node: WithLocations<T>
 
-  constructor (node: WithLocations<T>) {
+  constructor (node: WithLocations<T>, scope: string) {
     this.node = node
+    this.scope = scope
   }
 
   /**
@@ -72,6 +90,14 @@ abstract class BaseNode<T extends Node = Node> {
    * For instance, for a function parameter, this would be the end of the function declaration.
    */
   abstract get end (): number
+
+  /**
+   * Check if the node is defined under a specific scope.
+   * @param scope
+   */
+  isUnderScope (scope: string) {
+    return isChildScope(this.scope, scope)
+  }
 }
 
 class IdentifierNode extends BaseNode<Identifier> {
@@ -90,8 +116,8 @@ class FunctionParamNode extends BaseNode {
   type = 'FunctionParam' as const
   fnNode: WithLocations<FunctionDeclaration | FunctionExpression | ArrowFunctionExpression>
 
-  constructor (node: WithLocations<Node>, fnNode: WithLocations<FunctionDeclaration | FunctionExpression | ArrowFunctionExpression>) {
-    super(node)
+  constructor (node: WithLocations<Node>, scope: string, fnNode: WithLocations<FunctionDeclaration | FunctionExpression | ArrowFunctionExpression>) {
+    super(node, scope)
     this.fnNode = fnNode
   }
 
@@ -120,8 +146,8 @@ class VariableNode extends BaseNode<Identifier> {
   type = 'Variable' as const
   variableNode: WithLocations<VariableDeclaration>
 
-  constructor (node: WithLocations<Identifier>, variableNode: WithLocations<VariableDeclaration>) {
-    super(node)
+  constructor (node: WithLocations<Identifier>, scope: string, variableNode: WithLocations<VariableDeclaration>) {
+    super(node, scope)
     this.variableNode = variableNode
   }
 
@@ -138,8 +164,8 @@ class ImportNode extends BaseNode<ImportSpecifier | ImportDefaultSpecifier | Imp
   type = 'Import' as const
   importNode: WithLocations<Node>
 
-  constructor (node: WithLocations<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, importNode: WithLocations<Node>) {
-    super(node)
+  constructor (node: WithLocations<ImportSpecifier | ImportDefaultSpecifier | ImportNamespaceSpecifier>, scope: string, importNode: WithLocations<Node>) {
+    super(node, scope)
     this.importNode = importNode
   }
 
@@ -156,8 +182,8 @@ class CatchParamNode extends BaseNode {
   type = 'CatchParam' as const
   catchNode: WithLocations<CatchClause>
 
-  constructor (node: WithLocations<Node>, catchNode: WithLocations<CatchClause>) {
-    super(node)
+  constructor (node: WithLocations<Node>, scope: string, catchNode: WithLocations<CatchClause>) {
+    super(node, scope)
     this.catchNode = catchNode
   }
 
@@ -264,7 +290,7 @@ export class ScopeTracker {
 
     const identifiers = getPatternIdentifiers(param)
     for (const identifier of identifiers) {
-      this.declareIdentifier(identifier.name, new FunctionParamNode(identifier, fn))
+      this.declareIdentifier(identifier.name, new FunctionParamNode(identifier, this.scopeIndexKey, fn))
     }
   }
 
@@ -276,10 +302,10 @@ export class ScopeTracker {
       this.declareIdentifier(
         identifier.name,
         parent.type === 'VariableDeclaration'
-          ? new VariableNode(identifier, parent)
+          ? new VariableNode(identifier, this.scopeIndexKey, parent)
           : parent.type === 'CatchClause'
-            ? new CatchParamNode(identifier, parent)
-            : new FunctionParamNode(identifier, parent),
+            ? new CatchParamNode(identifier, this.scopeIndexKey, parent)
+            : new FunctionParamNode(identifier, this.scopeIndexKey, parent),
       )
     }
   }
@@ -295,7 +321,7 @@ export class ScopeTracker {
       case 'FunctionDeclaration':
         // declare function name for named functions, skip for `export default`
         if (node.id?.name) {
-          this.declareIdentifier(node.id.name, new FunctionNode(node))
+          this.declareIdentifier(node.id.name, new FunctionNode(node, this.scopeIndexKey))
         }
         this.pushScope()
         for (const param of node.params) {
@@ -309,7 +335,7 @@ export class ScopeTracker {
         this.pushScope()
         // can be undefined, for example in class method definitions
         if (node.id?.name) {
-          this.declareIdentifier(node.id.name, new FunctionNode(node))
+          this.declareIdentifier(node.id.name, new FunctionNode(node, this.scopeIndexKey))
         }
 
         this.pushScope()
@@ -333,7 +359,7 @@ export class ScopeTracker {
       case 'ClassDeclaration':
         // declare class name for named classes, skip for `export default`
         if (node.id?.name) {
-          this.declareIdentifier(node.id.name, new IdentifierNode(withLocations(node.id)))
+          this.declareIdentifier(node.id.name, new IdentifierNode(withLocations(node.id), this.scopeIndexKey))
         }
         break
 
@@ -342,13 +368,13 @@ export class ScopeTracker {
         // e.g. const MyClass = class InternalClassName { // InternalClassName is only available within the class body
         this.pushScope()
         if (node.id?.name) {
-          this.declareIdentifier(node.id.name, new IdentifierNode(withLocations(node.id)))
+          this.declareIdentifier(node.id.name, new IdentifierNode(withLocations(node.id), this.scopeIndexKey))
         }
         break
 
       case 'ImportDeclaration':
         for (const specifier of node.specifiers) {
-          this.declareIdentifier(specifier.local.name, new ImportNode(withLocations(specifier), node))
+          this.declareIdentifier(specifier.local.name, new ImportNode(withLocations(specifier), this.scopeIndexKey, node))
         }
         break
 
@@ -427,6 +453,26 @@ export class ScopeTracker {
       }
     }
     return null
+  }
+
+  getCurrentScope () {
+    return this.scopeIndexKey
+  }
+
+  /**
+   * Check if the current scope is a child of a specific scope.
+   * @example
+   * ```ts
+   * // current scope is 0-1
+   * isCurrentScopeUnder('0') // true
+   * isCurrentScopeUnder('0-1') // false
+   * ```
+   *
+   * @param scope the parent scope
+   * @returns `true` if the current scope is a child of the specified scope, `false` otherwise (also when they are the same)
+   */
+  isCurrentScopeUnder (scope: string) {
+    return isChildScope(this.scopeIndexKey, scope)
   }
 
   /**

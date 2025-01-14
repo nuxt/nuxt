@@ -4,7 +4,7 @@ description: 'Nuxt command to build your Nuxt module before publishing.'
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/build-module.ts
+    to: https://github.com/nuxt/module-builder/blob/main/src/cli.ts
     size: xs
 ---
 

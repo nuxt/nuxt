@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { assert, describe, expect, it } from 'vitest'
 import { getUndeclaredIdentifiersInFunction, parseAndWalk } from '../src/core/utils/parse'
 import { TestScopeTracker } from './fixture/scope-tracker'
 
@@ -666,5 +666,88 @@ describe('parsing', () => {
     })
 
     expect(processedFunctions).toBe(5)
+  })
+
+  it ('should correctly compare identifiers defined in different scopes', () => {
+    const code = `
+      // ""
+      const a = 1
+
+      // ""
+      const func = () => {
+        // "0-0"
+        const b = 2
+
+        // "0-0"
+        function foo() {
+          // "0-0-0-0"
+          const c = 3
+        }
+      }
+
+      // ""
+      const func2 = () => {
+        // "1-0"
+        const d = 2
+
+        // "1-0"
+        function bar() {
+          // "1-0-0-0"
+          const e = 3
+        }
+      }
+
+      // ""
+      const f = 4
+    `
+
+    const scopeTracker = new TestScopeTracker({
+      keepExitedScopes: true,
+    })
+
+    parseAndWalk(code, filename, {
+      scopeTracker,
+    })
+
+    const a = scopeTracker.getDeclarationFromScope('a', '')
+    const func = scopeTracker.getDeclarationFromScope('func', '')
+    const foo = scopeTracker.getDeclarationFromScope('foo', '0-0')
+    const b = scopeTracker.getDeclarationFromScope('b', '0-0')
+    const c = scopeTracker.getDeclarationFromScope('c', '0-0-0-0')
+    const func2 = scopeTracker.getDeclarationFromScope('func2', '')
+    const bar = scopeTracker.getDeclarationFromScope('bar', '1-0')
+    const d = scopeTracker.getDeclarationFromScope('d', '1-0')
+    const e = scopeTracker.getDeclarationFromScope('e', '1-0-0-0')
+    const f = scopeTracker.getDeclarationFromScope('f', '')
+
+    assert(a && func && foo && b && c && func2 && bar && d && e && f, 'All declarations should be found')
+
+    // identifiers in the same scope should be equal
+    expect(f.isUnderScope(a.scope)).toBe(false)
+    expect(func.isUnderScope(a.scope)).toBe(false)
+    expect(d.isUnderScope(bar.scope)).toBe(false)
+
+    // identifiers in deeper scopes should be under the scope of the parent scope
+    expect(b.isUnderScope(a.scope)).toBe(true)
+    expect(b.isUnderScope(func.scope)).toBe(true)
+    expect(c.isUnderScope(a.scope)).toBe(true)
+    expect(c.isUnderScope(b.scope)).toBe(true)
+    expect(d.isUnderScope(a.scope)).toBe(true)
+    expect(d.isUnderScope(func2.scope)).toBe(true)
+    expect(e.isUnderScope(a.scope)).toBe(true)
+    expect(e.isUnderScope(d.scope)).toBe(true)
+
+    // identifiers in parent scope should not be under the scope of the children
+    expect(a.isUnderScope(b.scope)).toBe(false)
+    expect(a.isUnderScope(c.scope)).toBe(false)
+    expect(a.isUnderScope(d.scope)).toBe(false)
+    expect(a.isUnderScope(e.scope)).toBe(false)
+    expect(b.isUnderScope(c.scope)).toBe(false)
+
+    // identifiers in parallel scopes should not influence each other
+    expect(d.isUnderScope(b.scope)).toBe(false)
+    expect(e.isUnderScope(b.scope)).toBe(false)
+    expect(b.isUnderScope(d.scope)).toBe(false)
+    expect(c.isUnderScope(e.scope)).toBe(false)
   })
 })
