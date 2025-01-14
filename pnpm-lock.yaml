@@ -237,8 +237,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       pkg-types:
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.3.1
+        version: 1.3.1
       scule:
         specifier: ^1.3.0
         version: 1.3.0
@@ -415,8 +415,8 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
       pkg-types:
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.3.1
+        version: 1.3.1
       radix3:
         specifier: ^1.1.2
         version: 1.1.2
@@ -712,8 +712,8 @@ importers:
         specifier: 1.4.1
         version: 1.4.1
       pkg-types:
-        specifier: 1.3.0
-        version: 1.3.0
+        specifier: 1.3.1
+        version: 1.3.1
       sass-loader:
         specifier: 16.0.4
         version: 16.0.4(@rspack/core@1.1.8)(sass@1.78.0)(webpack@5.97.1)
@@ -856,8 +856,8 @@ importers:
         specifier: ^2.0.1
         version: 2.0.1
       pkg-types:
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.3.1
+        version: 1.3.1
       postcss:
         specifier: 8.5.1
         version: 8.5.1
@@ -6142,8 +6142,8 @@ packages:
     resolution: {integrity: sha512-ItcsHK+4uO0qmjK4RNs6vTWv3xFhbPZd5U6RoYbxRURWNZfH7KvpyqRzaw4GR7de/IjkdHVZHCzQkjnp3VOVdg==}
     hasBin: true
 
-  pkg-types@1.3.0:
-    resolution: {integrity: sha512-kS7yWjVFCkIw9hqdJBoMxDdzEngmkr5FXeWZZfQ6GoYacjVnsW6l2CcYW/0ThD0vF4LPJgVYnrg4d0uuhwYQbg==}
+  pkg-types@1.3.1:
+    resolution: {integrity: sha512-/Jm5M4RvtBFVkKWRu2BLUTNP8/M2a+UwuAX+ae4770q1qVGtfjG+WTCupoZixokjmHiry8uI+dlY8KXYV5HVVQ==}
 
   playwright-core@1.49.1:
     resolution: {integrity: sha512-BzmpVcs4kE2CH15rWfzpjzVGhWERJfmnXmniSyKeRZUs9Ws65m+RGIi7mjJK/euCegfn3i7jvqWeWyHe9y3Vgg==}
@@ -8819,7 +8819,7 @@ snapshots:
       ohash: 1.1.4
       pathe: 2.0.1
       perfect-debounce: 1.0.0
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       scule: 1.3.0
       semver: 7.6.3
       std-env: 3.8.0
@@ -8899,7 +8899,7 @@ snapshots:
       global-directory: 4.0.1
       magicast: 0.3.5
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       prompts: 2.4.2
       rc9: 2.1.2
       semver: 7.6.3
@@ -8931,7 +8931,7 @@ snapshots:
       ohash: 1.1.4
       pathe: 1.1.2
       perfect-debounce: 1.0.0
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       rc9: 2.1.2
       scule: 1.3.0
       semver: 7.6.3
@@ -9015,7 +9015,7 @@ snapshots:
       ofetch: 1.4.1
       ohash: 1.1.4
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       semver: 7.6.3
       shiki: 1.22.0
       sirv: 3.0.0
@@ -11028,7 +11028,7 @@ snapshots:
       ohash: 1.1.4
       pathe: 1.1.2
       perfect-debounce: 1.0.0
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       rc9: 2.1.2
     optionalDependencies:
       magicast: 0.3.5
@@ -11104,7 +11104,7 @@ snapshots:
       ofetch: 1.4.1
       open: 10.1.0
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       scule: 1.3.0
       semver: 7.6.3
       std-env: 3.8.0
@@ -13041,12 +13041,12 @@ snapshots:
   local-pkg@0.5.1:
     dependencies:
       mlly: 1.7.4
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
 
   local-pkg@1.0.0:
     dependencies:
       mlly: 1.7.4
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
 
   locate-path@5.0.0:
     dependencies:
@@ -13569,7 +13569,7 @@ snapshots:
       jiti: 2.4.2
       mlly: 1.7.4
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       postcss: 8.5.1
       postcss-nested: 7.0.2(postcss@8.5.1)
       semver: 7.6.3
@@ -13590,7 +13590,7 @@ snapshots:
       jiti: 2.4.2
       mlly: 1.7.4
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       postcss: 8.5.1
       postcss-nested: 7.0.2(postcss@8.5.1)
       semver: 7.6.3
@@ -13605,7 +13605,7 @@ snapshots:
     dependencies:
       acorn: 8.14.0
       pathe: 2.0.1
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       ufo: 1.5.4
 
   mri@1.2.0: {}
@@ -13688,7 +13688,7 @@ snapshots:
       openapi-typescript: 7.4.0(typescript@5.7.3)
       pathe: 1.1.2
       perfect-debounce: 1.0.0
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       pretty-bytes: 6.1.1
       radix3: 1.1.2
       rollup: 4.30.1
@@ -13827,7 +13827,7 @@ snapshots:
       consola: 3.4.0
       execa: 8.0.1
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       ufo: 1.5.4
 
   nypm@0.4.1:
@@ -13835,7 +13835,7 @@ snapshots:
       citty: 0.1.6
       consola: 3.4.0
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       tinyexec: 0.3.2
       ufo: 1.5.4
 
@@ -14076,15 +14076,15 @@ snapshots:
       '@octokit/action': 6.1.0
       ignore: 5.3.2
       isbinaryfile: 5.0.4
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       query-registry: 3.0.1
       tinyglobby: 0.2.10
 
-  pkg-types@1.3.0:
+  pkg-types@1.3.1:
     dependencies:
       confbox: 0.1.8
       mlly: 1.7.4
-      pathe: 1.1.2
+      pathe: 2.0.1
 
   playwright-core@1.49.1: {}
 
@@ -15366,7 +15366,7 @@ snapshots:
       mkdist: 2.2.0(sass@1.78.0)(typescript@5.7.3)(vue-tsc@2.1.10(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       mlly: 1.7.4
       pathe: 2.0.1
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       pretty-bytes: 6.1.1
       rollup: 4.30.1
       rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
@@ -15399,7 +15399,7 @@ snapshots:
       mkdist: 2.2.0(sass@1.78.0)(typescript@5.7.3)(vue-tsc@2.2.0(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       mlly: 1.7.4
       pathe: 2.0.1
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       pretty-bytes: 6.1.1
       rollup: 4.30.1
       rollup-plugin-dts: 6.1.1(rollup@4.30.1)(typescript@5.7.3)
@@ -15484,7 +15484,7 @@ snapshots:
       mlly: 1.7.4
       pathe: 2.0.1
       picomatch: 4.0.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       scule: 1.3.0
       strip-literal: 2.1.1
       unplugin: 1.16.1
@@ -15654,7 +15654,7 @@ snapshots:
       magic-string: 0.30.17
       mlly: 1.7.4
       pathe: 1.1.2
-      pkg-types: 1.3.0
+      pkg-types: 1.3.1
       unplugin: 1.16.1
 
   update-browserslist-db@1.1.0(browserslist@4.24.0):
