@@ -262,15 +262,6 @@ export default defineUntypedSchema({
    * logs hook arguments as well in the browser.
    *
    * You can also set this to an object to enable specific debug options.
-   * ```js
-   * {
-   *   log: true, // Log additional information on terminal
-   *   hooks: true, // Log hooks calls and timings
-   *   nitro: true, // Set nitro debug mode
-   *   browser: true, // Log additional information in browser console
-   *   prod: true // Log additional information in production mode (hydration mismatch, etc.)
-   * }
-   * ```
    *
    * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
