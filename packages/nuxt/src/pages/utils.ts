@@ -124,7 +124,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
 
-      const tokens = parseSegment(segment!)
+      const tokens = parseSegment(segment!, file.absolutePath)
 
       // Skip group segments
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
@@ -337,7 +337,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
 
 const PARAM_CHAR_RE = /[\w.]/
 
-function parseSegment (segment: string) {
+function parseSegment (segment: string, absolutePath: string) {
   let state: SegmentParserState = SegmentParserState.initial
   let i = 0
 
@@ -425,7 +425,7 @@ function parseSegment (segment: string) {
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else {
-          // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
+          logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
         }
         break
     }
