@@ -133,7 +133,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
           'type': 'debug',
         },
         {
-          'text': `[vite] hot updated: /@id/virtual:nuxt:${fixturePath}/.nuxt/routes.mjs`,
+          'text': `[vite] hot updated: /@id/virtual:nuxt:${encodeURIComponent(join(fixturePath, '.nuxt/routes.mjs'))}`,
           'type': 'debug',
         },
       ])
