@@ -118,7 +118,9 @@ export default defineComponent({
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
               onResolve: () => {
                 nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
-                  if (!pageLoadingEndHookAlreadyCalled) { nuxtApp.callHook('page:loading:end') }
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    return nuxtApp.callHook('page:loading:end')
+                  }
                   pageLoadingEndHookAlreadyCalled = false
                 }).finally(done))
               },
