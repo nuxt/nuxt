@@ -167,7 +167,6 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      console.log(route.file, ctx.fullyResolvedPaths?.has(route.file))
       const fileContent = route.file in vfs
         ? vfs[route.file]!
         : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
