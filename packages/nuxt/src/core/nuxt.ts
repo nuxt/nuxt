@@ -79,7 +79,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-const keyDependencies = [
+export const keyDependencies = [
   '@nuxt/kit',
   '@nuxt/schema',
 ]
@@ -801,8 +801,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  for (const dep of keyDependencies) {
-    checkDependencyVersion(dep, nuxt._version)
+  if (nuxt.options.dev && !nuxt.options.test) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      for (const dep of keyDependencies) {
+        checkDependencyVersion(dep, nuxt._version)
+          .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
+      }
+    })
   }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
@@ -821,7 +826,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
+export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
   const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
   if (!path || path === name) { return }
