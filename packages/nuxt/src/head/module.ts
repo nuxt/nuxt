@@ -12,6 +12,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
+    const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
 
     // Transpile @unhead/vue
     nuxt.options.build.transpile.push('@unhead/vue')
@@ -38,7 +39,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     }
 
     addImportsSources({
-      from: '@unhead/vue',
+      from: resolve(runtimeDir, 'composables', isNuxtV4 ? 'v4' : 'v3'),
       // hard-coded for now we so don't support auto-imports on the deprecated composables
       imports: [
         'injectHead',
@@ -51,17 +52,21 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ],
     })
 
-    // Opt-out feature allowing dependencies using @vueuse/head to work
-    const unheadVue = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+    const unheadVue = await tryResolveModule('unhead/plugins', nuxt.options.modulesDir) || 'unhead/plugins'
 
     addTemplate({
-      filename: 'unhead-plugins.mjs',
+      filename: 'unhead-options.mjs',
       getContents () {
-        if (!nuxt.options.experimental.headNext) {
-          return 'export default []'
+        if (isNuxtV4) {
+          return `export default {}`
         }
-        return `import { CapoPlugin } from ${JSON.stringify(unheadVue)};
-export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
+        // v1 unhead legacy options
+        const disableCapoSorting = !nuxt.options.experimental.headNext
+        return `import { DeprecationsPlugin, PromisesPlugin } from ${JSON.stringify(unheadVue)};
+export default {
+  disableCapoSorting: ${disableCapoSorting}
+  plugins: [DeprecationsPlugin, PromisesPlugin],
+}`
       },
     })
 
@@ -76,7 +81,7 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
 
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
-      config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins.mjs']
+      config.virtual!['#internal/unhead-options.mjs'] = () => nuxt.vfs['#build/unhead-options.mjs']
       config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs']
     })
 
