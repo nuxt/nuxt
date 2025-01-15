@@ -1,5 +1,5 @@
-import { getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
-import type { Ref } from 'vue'
+import { computed, getCurrentInstance, hasInjectionContext, inject, onScopeDispose } from 'vue'
+import type { ComputedRef, Ref } from 'vue'
 import type { NavigationFailure, NavigationGuard, RouteLocationNormalized, RouteLocationRaw, Router, useRoute as _useRoute, useRouter as _useRouter } from 'vue-router'
 import { sanitizeStatusCode } from 'h3'
 import { hasProtocol, isScriptProtocol, joinURL, withQuery } from 'ufo'
@@ -279,4 +279,41 @@ export function encodeURL (location: string, isExternalHost = false) {
     return url.toString().replace(url.protocol, '')
   }
   return url.toString()
+}
+
+interface UseRouteQueryOptions {
+  removeEmpty?: boolean
+  removeDefault?: boolean
+}
+
+export function useRouteQuery (
+  param: string,
+  defaultValue: string | null = null,
+  options: UseRouteQueryOptions = {
+    removeEmpty: true,
+    removeDefault: true,
+  },
+): ComputedRef<string | null> {
+  const route = useRoute()
+  const router = useRouter()
+
+  return computed<string | null>({
+    get () {
+      const value = route.query[param]
+      return (value as string | undefined) ?? defaultValue
+    },
+    set (value: string | null) {
+      const newQuery = { ...route.query, [param]: value }
+
+      if (options.removeEmpty && (value === null || value === undefined || value === '')) {
+        delete newQuery[param]
+      }
+
+      if (options.removeDefault && value === defaultValue) {
+        delete newQuery[param]
+      }
+
+      router.push({ query: newQuery })
+    },
+  })
 }
