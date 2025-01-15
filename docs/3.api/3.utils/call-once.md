@@ -14,6 +14,10 @@ links:
 This utility is available since [Nuxt v3.9](/blog/v3-9).
 ::
 
+::important
+`navigation` mode is available since [Nuxt v3.15](/blog/v3-15).
+::
+
 ## Purpose
 
 The `callOnce` function is designed to execute a given function or block of code only once during:
@@ -24,6 +28,8 @@ This is useful for code that should be executed only once, such as logging an ev
 
 ## Usage
 
+Running code only once. For example, if the code runs on the server it won't run again on the client.
+
 ```vue [app.vue]
 <script setup lang="ts">
 const websiteConfig = useState('config')
@@ -32,6 +38,19 @@ await callOnce(async () => {
   console.log('This will only be logged once')
   websiteConfig.value = await $fetch('https://my-cms.com/api/website-config')
 })
+</script>
+```
+
+Sometimes you do want code to run on every navigation - just avoid the initial server/client double load. For this, there's a new mode: 'navigation' option that will run the code only once per navigation.
+
+```vue [app.vue]
+<script setup lang="ts">
+const websiteConfig = useState('config')
+
+await callOnce(async () => {
+  console.log('This will only be logged once and then on every client side navigation')
+  websiteConfig.value = await $fetch('https://my-cms.com/api/website-config')
+}, { mode: 'navigation' })
 </script>
 ```
 
@@ -52,9 +71,11 @@ Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/d
 ## Type
 
 ```ts
-callOnce(fn?: () => any | Promise<any>): Promise<void>
-callOnce(key: string, fn?: () => any | Promise<any>): Promise<void>
+callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+callOnce(fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 ```
+## Parameters
 
-- `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
-- `fn`: The function to run once. This function can also return a `Promise` and a value.
+* `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
+* `fn`: The function to run once. This function can also return a `Promise` and a value.
+* `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for lifetime of the app (`render`)
