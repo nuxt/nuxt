@@ -74,8 +74,9 @@ Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/d
 callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 callOnce(fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 ```
+
 ## Parameters
 
-* `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
-* `fn`: The function to run once. This function can also return a `Promise` and a value.
-* `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for lifetime of the app (`render`)
+- `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
+- `fn`: The function to run once. This function can also return a `Promise` and a value.
+- `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for lifetime of the app (`render`)
