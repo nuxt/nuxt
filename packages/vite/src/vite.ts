@@ -88,6 +88,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
+            chokidar: nuxt.options.watchers.chokidar,
             exclude: nuxt.options.ignore,
           },
         },
