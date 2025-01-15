@@ -1,13 +1,19 @@
 import { joinURL, withQuery } from 'ufo'
 import type { NitroErrorHandler } from 'nitro/types'
 import type { H3Error, H3Event } from 'h3'
-import { getRequestHeader, getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
+import { getRequestHeader, getRequestHeaders, getRequestURL, send, setResponseHeader, setResponseStatus } from 'h3'
+import { Youch } from "youch";
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
 import type { NuxtPayload } from 'nuxt/app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
   const { stack, statusCode, statusMessage, message } = normalizeError(error)
+
+  const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).toString()
+
+  // Create a Youch instance for HTML output
+  const youch = new Youch()
 
   // Create an error object
   const errorObject = {
@@ -74,7 +80,14 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     return send(event, template(errorObject))
   }
 
-  const html = await res.text()
+  const html = await youch.toHTML(error, {
+    request: {
+      url,
+      method: event.method,
+      headers: getRequestHeaders(event),
+    },
+  })
+
   if (event.handled) { return }
 
   for (const [header, value] of res.headers.entries()) {
@@ -82,7 +95,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
   }
   setResponseStatus(event, res.status && res.status !== 200 ? res.status : undefined, res.statusText)
 
-  return send(event, html)
+  return send(event, html,"text/html")
 }
 
 /**
