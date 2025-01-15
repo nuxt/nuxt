@@ -42,7 +42,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       }
 
       if (importer && RELATIVE_ID_RE.test(id)) {
-        const path = resolve(dirname(withoutPrefix(importer)), id)
+        const path = resolve(dirname(withoutPrefix(decodeURIComponent(importer))), id)
         const resolved = resolveWithExt(path)
         if (resolved) {
           return PREFIX + encodeURIComponent(resolved)
