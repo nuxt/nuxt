@@ -129,8 +129,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       knip:
-        specifier: 5.42.0
-        version: 5.42.0(@types/node@22.10.6)(typescript@5.7.3)
+        specifier: 5.42.1
+        version: 5.42.1(@types/node@22.10.6)(typescript@5.7.3)
       markdownlint-cli:
         specifier: 0.43.0
         version: 0.43.0
@@ -486,7 +486,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.9.5
-        version: 0.9.5(@nuxt/devtools@1.7.0(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3)))(@unocss/webpack@0.62.4(rollup@4.30.1)(webpack@5.97.1(esbuild@0.24.2)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(db0@0.1.4)(fuse.js@7.0.0)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.5.1)(rollup@4.30.1)(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))(webpack@5.97.1(esbuild@0.24.2))
+        version: 0.9.5(@nuxt/devtools@1.7.0(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3)))(@unocss/webpack@0.62.4(rollup@4.30.1)(webpack@5.97.1(esbuild@0.24.2)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(fuse.js@7.0.0)(nuxt@packages+nuxt)(postcss@8.5.1)(rollup@4.30.1)(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))(webpack@5.97.1(esbuild@0.24.2))
       '@parcel/watcher':
         specifier: 2.5.0
         version: 2.5.0
@@ -5336,8 +5336,8 @@ packages:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
 
-  knip@5.42.0:
-    resolution: {integrity: sha512-/+/GV+oIJ0A2l2LBaiHvp4sGj448T1EMQm2S1I6sPh9AIR9riBaYY19ZYq743Ql/GR0lgwwGoQ2UKNp0B93HNA==}
+  knip@5.42.1:
+    resolution: {integrity: sha512-xTnwo0I5TLAEU1BNqi8EwnvxI/5yJUJmBiXJdnS0+2FDE6WQII3upoImuUbx1GxrftHmY+prqfL6XuO6JEtYBw==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -9002,7 +9002,7 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.97.1
 
-  '@nuxt/scripts@0.9.5(@nuxt/devtools@1.7.0(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3)))(@unocss/webpack@0.62.4(rollup@4.30.1)(webpack@5.97.1(esbuild@0.24.2)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(db0@0.1.4)(fuse.js@7.0.0)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.5.1)(rollup@4.30.1)(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))(webpack@5.97.1(esbuild@0.24.2))':
+  '@nuxt/scripts@0.9.5(@nuxt/devtools@1.7.0(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3)))(@unocss/webpack@0.62.4(rollup@4.30.1)(webpack@5.97.1(esbuild@0.24.2)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(fuse.js@7.0.0)(nuxt@packages+nuxt)(postcss@8.5.1)(rollup@4.30.1)(typescript@5.7.3)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))(webpack@5.97.1(esbuild@0.24.2))':
     dependencies:
       '@nuxt/devtools-kit': 1.7.0(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))
       '@nuxt/devtools-ui-kit': 1.5.1(@nuxt/devtools@1.7.0(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3)))(@unocss/webpack@0.62.4(rollup@4.30.1)(webpack@5.97.1(esbuild@0.24.2)))(@vue/compiler-core@3.5.13)(change-case@5.4.4)(fuse.js@7.0.0)(nuxt@packages+nuxt)(postcss@8.5.1)(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.6)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))(webpack@5.97.1(esbuild@0.24.2))
@@ -12951,7 +12951,7 @@ snapshots:
 
   klona@2.0.6: {}
 
-  knip@5.42.0(@types/node@22.10.6)(typescript@5.7.3):
+  knip@5.42.1(@types/node@22.10.6)(typescript@5.7.3):
     dependencies:
       '@nodelib/fs.walk': 3.0.1
       '@snyk/github-codeowners': 1.1.0
