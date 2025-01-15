@@ -523,6 +523,7 @@ export default defineUntypedSchema({
      */
     chokidar: {
       ignoreInitial: true,
+      ignorePermissionErrors: true,
     },
   },
 
