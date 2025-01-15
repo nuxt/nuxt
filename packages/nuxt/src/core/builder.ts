@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
@@ -100,6 +100,7 @@ async function watch (nuxt: Nuxt) {
 
 function createWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
   const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
@@ -118,6 +119,7 @@ function createWatcher () {
 
 function createGranularWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
   if (nuxt.options.debug) {
     // eslint-disable-next-line no-console

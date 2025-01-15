@@ -5,11 +5,8 @@ import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, importModule, isIgnored, tryResolveModule } from '@nuxt/kit'
-import {
-  generateTypes,
-  resolveSchema as resolveUntypedSchema,
-} from 'untyped'
+import { createIsIgnored, createResolver, defineNuxtModule, importModule, tryResolveModule } from '@nuxt/kit'
+import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
@@ -74,6 +71,7 @@ export default defineNuxtModule({
       const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
         resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
       ))
+      const isIgnored = createIsIgnored(nuxt)
       const watcher = watch(filesToWatch, {
         ...nuxt.options.watchers.chokidar,
         ignored: [isIgnored, /[\\/]node_modules[\\/]/],
