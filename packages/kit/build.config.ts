@@ -5,6 +5,9 @@ export default defineBuildConfig({
   entries: [
     'src/index',
   ],
+  rollup: {
+    inlineDependencies: ['lodash-es'],
+  },
   externals: [
     '@rspack/core',
     '@nuxt/schema',
@@ -13,5 +16,4 @@ export default defineBuildConfig({
     'vite',
     'h3',
   ],
-  failOnWarn: false,
 })
