@@ -88,7 +88,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
-            chokidar: nuxt.options.watchers.chokidar,
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
@@ -102,7 +102,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
-          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, '**/node_modules'] },
+          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],
           },

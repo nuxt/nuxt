@@ -5,7 +5,7 @@ import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, importModule, tryResolveModule } from '@nuxt/kit'
+import { createResolver, defineNuxtModule, importModule, isIgnored, tryResolveModule } from '@nuxt/kit'
 import {
   generateTypes,
   resolveSchema as resolveUntypedSchema,
@@ -76,6 +76,7 @@ export default defineNuxtModule({
       ))
       const watcher = watch(filesToWatch, {
         ...nuxt.options.watchers.chokidar,
+        ignored: [isIgnored, /[\\/]node_modules[\\/]/],
         ignoreInitial: true,
       })
       watcher.on('all', onChange)

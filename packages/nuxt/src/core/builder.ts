@@ -104,10 +104,7 @@ function createWatcher () {
   const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
-    ignored: [
-      isIgnored,
-      'node_modules',
-    ],
+    ignored: [isIgnored, /[\\/]node_modules[\\/]/],
   })
 
   watcher.on('all', (event, path) => {
@@ -139,7 +136,7 @@ function createGranularWatcher () {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, '**/node_modules'] })
+    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
