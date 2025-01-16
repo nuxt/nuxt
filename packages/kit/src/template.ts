@@ -8,6 +8,7 @@ import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
+import { filterInPlace } from './utils'
 import { tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
@@ -23,7 +24,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
-  nuxt.options.build.templates = nuxt.options.build.templates.filter(p => normalizeTemplate(p).dst !== template.dst)
+  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -229,9 +230,9 @@ export async function _generateTypes (nuxt: Nuxt) {
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
-  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
-  tsConfig.include = tsConfig.include || []
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  tsConfig.include ||= []
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
@@ -291,6 +292,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     }))
   }
 
+  // Ensure `#build` is placed at the end of the paths object.
+  // https://github.com/nuxt/nuxt/issues/30325
+  sortTsPaths(tsConfig.compilerOptions.paths)
+
   tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
@@ -328,6 +333,17 @@ export async function writeTypes (nuxt: Nuxt) {
   }
 
   await writeFile()
+}
+
+function sortTsPaths (paths: Record<string, string[]>) {
+  for (const pathKey in paths) {
+    if (pathKey.startsWith('#build')) {
+      const pathValue = paths[pathKey]!
+      // Delete & Reassign to ensure key is inserted at the end of object.
+      delete paths[pathKey]
+      paths[pathKey] = pathValue
+    }
+  }
 }
 
 function renderAttrs (obj: Record<string, string>) {

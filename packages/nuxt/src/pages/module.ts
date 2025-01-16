@@ -530,8 +530,8 @@ export default defineNuxtModule({
       getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
     })
 
-    nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
-    nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+    nuxt.options.vite.resolve ||= {}
+    nuxt.options.vite.resolve.dedupe ||= []
     nuxt.options.vite.resolve.dedupe.push('vue-router')
 
     // Add router options template
@@ -642,7 +642,7 @@ if (import.meta.hot) {
       for (const route of routes) {
         router.addRoute(route)
       }
-      router.replace('')
+      router.replace(router.currentRoute.value.fullPath)
     }
     if (routes && 'then' in routes) {
       routes.then(addRoutes)

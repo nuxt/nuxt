@@ -228,6 +228,8 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
           if (!meta) { return }
 
+          const definePageMetaScope = scopeTracker.getCurrentScope()
+
           walk(meta, {
             scopeTracker,
             enter (node, parent) {
@@ -236,10 +238,24 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                 || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
               ) { return }
 
+              const declaration = scopeTracker.getDeclaration(node.name)
+              if (declaration) {
+                // check if the declaration was made inside `definePageMeta` and if so, do not process it
+                // (ensures that we don't hoist local variables in inline middleware, for example)
+                if (
+                  declaration.isUnderScope(definePageMetaScope)
+                  // ensures that we compare the correct declaration to the reference
+                  // (when in the same scope, the declaration must come before the reference, otherwise it must be in a parent scope)
+                  && (scopeTracker.isCurrentScopeUnder(declaration.scope) || declaration.start < node.start)
+                ) {
+                  return
+                }
+              }
+
               if (isStaticIdentifier(node.name)) {
                 addImport(node.name)
-              } else {
-                processDeclaration(scopeTracker.getDeclaration(node.name))
+              } else if (declaration) {
+                processDeclaration(declaration)
               }
             },
           })
@@ -271,9 +287,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       handleHotUpdate: {
         order: 'post',
         handler: ({ file, modules, server }) => {
-          if (options.isPage?.(file)) {
+          if (options.routesPath && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
-            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
             return [
               ...modules,
               ...macroModule ? [macroModule] : [],
