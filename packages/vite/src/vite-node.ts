@@ -123,16 +123,10 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
           // Common
           /^#/,
           /\?/,
-          ...(
-            viteServer.config.ssr.noExternal && viteServer.config.ssr.noExternal !== true
-              ? toArray(viteServer.config.ssr.noExternal)
-              : []
-          ),
         ],
         external: [
           '#shared',
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
-          ...(viteServer.config.ssr.external as string[]) || [],
         ],
       },
       transformMode: {
