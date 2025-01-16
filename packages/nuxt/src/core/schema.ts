@@ -68,13 +68,17 @@ export default defineNuxtModule({
         logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
-      const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
-        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
-      ))
       const isIgnored = createIsIgnored(nuxt)
-      const watcher = watch(filesToWatch, {
+      const dirsToWatch = nuxt.options._layers.map(layer => resolver.resolve(layer.config.rootDir))
+      const SCHEMA_RE = /(?:^|\/)nuxt.schema.\w+$/
+      const watcher = watch(dirsToWatch, {
         ...nuxt.options.watchers.chokidar,
-        ignored: [isIgnored, /[\\/]node_modules[\\/]/],
+        depth: 1,
+        ignored: [
+          (path, stats) => (stats && !stats.isFile()) || !SCHEMA_RE.test(path),
+          isIgnored,
+          /[\\/]node_modules[\\/]/,
+        ],
         ignoreInitial: true,
       })
       watcher.on('all', onChange)
