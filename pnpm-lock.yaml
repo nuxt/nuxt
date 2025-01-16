@@ -693,6 +693,9 @@ importers:
       c12:
         specifier: 2.0.1
         version: 2.0.1(magicast@0.3.5)
+      chokidar:
+        specifier: 4.0.3
+        version: 4.0.3
       compatx:
         specifier: 0.1.8
         version: 0.1.8
