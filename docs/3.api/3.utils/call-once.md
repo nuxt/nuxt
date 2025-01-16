@@ -28,7 +28,7 @@ This is useful for code that should be executed only once, such as logging an ev
 
 ## Usage
 
-Running code only once. For example, if the code runs on the server it won't run again on the client.
+Running code only once. For example, if the code runs on the server it won't run again on the client. this demonstrates the default `render` mode behaviour.
 
 ```vue [app.vue]
 <script setup lang="ts">
@@ -41,7 +41,7 @@ await callOnce(async () => {
 </script>
 ```
 
-Sometimes you do want code to run on every navigation - just avoid the initial server/client double load. For this, there's a new mode: 'navigation' option that will run the code only once per navigation.
+Sometimes you do want code to run on every navigation - just avoid the initial server/client double load. For this, there's a new mode: `navigation` option that will run the code only once per navigation.
 
 ```vue [app.vue]
 <script setup lang="ts">
@@ -73,10 +73,19 @@ Note that `callOnce` doesn't return anything. You should use [`useAsyncData`](/d
 ```ts
 callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
 callOnce(fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
+
+type CallOnceOptions = {
+  /**
+   * Execution mode for the callOnce function
+   * @default 'render'
+   */
+  mode?: 'navigation' | 'render'
+}
 ```
 
 ## Parameters
 
 - `key`: A unique key ensuring that the code is run once. If you do not provide a key, then a key that is unique to the file and line number of the instance of `callOnce` will be generated for you.
-- `fn`: The function to run once. This function can also return a `Promise` and a value.
-- `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for lifetime of the app (`render`)
+- `options`: Setup the mode, either to re-execute on navigation (`navigation`) or just once for the lifetime of the app (`render`). Defaults to `render`.
+  - `render`: Executes once during initial render (either SSR or CSR) - Default mode
+  - `navigation`: Executes once during initial render and once per subsequent client-side navigation
