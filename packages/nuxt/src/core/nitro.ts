@@ -19,7 +19,6 @@ import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { createImportProtectionPatterns } from './plugins/import-protection'
 import { EXTENSION_RE } from './utils'
-import { resolveErrorHandler } from './runtime/nitro/utils'
 
 const logLevelMapReverse = {
   silent: 0,
@@ -235,7 +234,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // add error handler
   if (!nitroConfig.errorHandler && (nuxt.options.dev || !nuxt.options.experimental.noVueServer)) {
-    nitroConfig.errorHandler = resolve(distDir, resolveErrorHandler(nuxt.options.dev))
+    nitroConfig.errorHandler = resolve(distDir, 'core/runtime/nitro/error')
   }
 
   // Resolve user-provided paths
@@ -521,7 +520,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   if (!nuxt.options.dev && nuxt.options.experimental.noVueServer) {
     nitro.hooks.hook('rollup:before', (nitro) => {
       if (nitro.options.preset === 'nitro-prerender') {
-        nitro.options.errorHandler = resolve(distDir, resolveErrorHandler(nuxt.options.dev))
+        nitro.options.errorHandler = resolve(distDir, 'core/runtime/nitro/error')
         return
       }
       const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')

@@ -1,4 +1,3 @@
-import { join } from 'node:path'
 import { type H3Event, setResponseHeaders } from 'h3'
 import type { NitroErrorHandler } from 'nitro/types'
 
@@ -21,8 +20,4 @@ export function setSecurityHeaders (event: H3Event, allowjs = false) {
       ? 'script-src \'self\' \'unsafe-inline\'; object-src \'none\'; base-uri \'self\';'
       : 'script-src \'none\'; frame-ancestors \'none\';',
   })
-}
-
-export function resolveErrorHandler (isDev: boolean) {
-  return join('core/runtime/nitro/', (isDev ? 'dev' : 'prod') + '-error')
 }
