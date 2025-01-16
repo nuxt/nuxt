@@ -4,7 +4,7 @@ description: The init command initializes a fresh Nuxt project.
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/init.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/init.ts
     size: xs
 ---
 
