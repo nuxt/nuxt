@@ -25,16 +25,17 @@ export default defineNitroErrorHandler(
 
     const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).toString()
     // https://github.com/poppinss/youch
-    const youch = new Youch()
+    let youch: Youch | null = null
 
     if (import.meta.dev) {
+      youch = new Youch()
       // Load stack trace with source maps
       await loadStackTrace(error).catch(consola.error)
     }
 
     // Create an error object
     const errorObject = {
-      url: event.path,
+      url,
       statusCode,
       statusMessage,
       message,
@@ -63,7 +64,7 @@ export default defineNitroErrorHandler(
           process.stdout.columns = 90 // Temporary workaround for youch wrapping issue
         }
         const ansiError = (
-          await youch.toANSI(error)
+          await youch!.toANSI(error)
         ).replaceAll(process.cwd(), '.')
         if (!columns) {
           process.stderr.columns = columns
@@ -90,7 +91,7 @@ export default defineNitroErrorHandler(
     if (isHtml && import.meta.dev) {
       return send(
         event,
-        await youch.toHTML(error, {
+        await youch!.toHTML(error, {
           request: {
             url,
             method: event.method,
@@ -105,16 +106,7 @@ export default defineNitroErrorHandler(
     if (isJsonRequest(event)) {
       return send(
         event,
-        JSON.stringify(
-          {
-            error: true,
-            url,
-            statusCode,
-            statusMessage,
-            message: error.message,
-            data: error.data,
-            stack: error.stack?.split('\n').map(line => line.trim()),
-          },
+        JSON.stringify(errorObject,
           null,
           2,
         ),
