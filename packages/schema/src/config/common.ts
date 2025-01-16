@@ -519,9 +519,11 @@ export default defineUntypedSchema({
     /**
      * Options to pass directly to `chokidar`.
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
+     * @type {typeof import('chokidar').ChokidarOptions}
      */
     chokidar: {
       ignoreInitial: true,
+      ignorePermissionErrors: true,
     },
   },
 
