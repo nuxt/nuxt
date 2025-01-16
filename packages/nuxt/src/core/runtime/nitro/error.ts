@@ -4,7 +4,6 @@ import type { H3Event } from 'h3'
 import {
   getRequestHeader,
   getRequestHeaders,
-  getRequestURL,
   getResponseHeader,
   send,
   setResponseHeader,
@@ -23,7 +22,6 @@ export default defineNitroErrorHandler(
   async function defaultNitroErrorHandler (error, event) {
     const { stack, message, isSensitive, statusCode, statusMessage } = normalizeError(error)
 
-    const url = getRequestURL(event, { xForwardedHost: true, xForwardedProto: true }).toString()
     // https://github.com/poppinss/youch
     let youch: Youch | null = null
 
@@ -35,7 +33,7 @@ export default defineNitroErrorHandler(
 
     // Create an error object
     const errorObject = {
-      url,
+      url: event.path,
       statusCode,
       statusMessage,
       message,
@@ -66,6 +64,7 @@ export default defineNitroErrorHandler(
         const ansiError = (
           await youch!.toANSI(error)
         ).replaceAll(process.cwd(), '.')
+
         if (!columns) {
           process.stderr.columns = columns
         }
@@ -75,7 +74,7 @@ export default defineNitroErrorHandler(
         errorToLog = error.message || error.toString() || 'internal server error'
       }
 
-      console.error(`${tags} [${event.method}] ${url}\n\n`, errorToLog)
+      console.error(`${tags} [${event.method}] ${event.path}\n\n`, errorToLog)
     }
 
     if (event.handled) { return }
@@ -93,7 +92,7 @@ export default defineNitroErrorHandler(
         event,
         await youch!.toHTML(error, {
           request: {
-            url,
+            url: event.path,
             method: event.method,
             headers: getRequestHeaders(event),
           },
