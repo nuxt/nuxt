@@ -28,6 +28,7 @@ export default defineBuildConfig({
     // Type imports
     '@unhead/schema',
     '@vitejs/plugin-vue',
+    'chokidar',
     '@vitejs/plugin-vue-jsx',
     '@vue/language-core',
     'autoprefixer',
