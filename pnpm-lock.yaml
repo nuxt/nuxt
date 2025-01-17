@@ -20,10 +20,10 @@ overrides:
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
   c12: 2.0.1
-  h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
+  h3: npm:h3-nightly@1.13.1-20250110-173418-de24917
   jiti: 2.4.2
   magic-string: ^0.30.17
-  nitro: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
+  nitro: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
   nuxt: workspace:*
   ohash: 1.1.4
   postcss: 8.5.1
@@ -117,8 +117,8 @@ importers:
         specifier: 1.0.0
         version: 1.0.0(eslint@9.18.0(jiti@2.4.2))
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       happy-dom:
         specifier: 16.6.0
         version: 16.6.0
@@ -138,8 +138,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
-        version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
+        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -271,8 +271,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
-        version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
+        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
       unbuild:
         specifier: 3.3.1
         version: 3.3.1(sass@1.78.0)(typescript@5.7.3)(vue-tsc@2.2.0(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
@@ -370,8 +370,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -400,8 +400,8 @@ importers:
         specifier: ^0.1.1
         version: 0.1.1
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
-        version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
+        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
       nypm:
         specifier: ^0.4.1
         version: 0.4.1
@@ -551,8 +551,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -703,8 +703,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.97.1)
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -712,8 +712,8 @@ importers:
         specifier: 7.0.3
         version: 7.0.3
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28796231.359af68d
-        version: nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
+        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -844,8 +844,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -947,8 +947,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
-        version: h3-nightly@2.0.0-1718872656.6765a6e
+        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
+        version: h3-nightly@1.13.1-20250110-173418-de24917
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -2561,8 +2561,8 @@ packages:
   '@shikijs/core@1.23.1':
     resolution: {integrity: sha512-NuOVgwcHgVC6jBVH5V7iblziw6iQbWWHrj5IlZI3Fqu2yx9awH7OIQkXIcsHsUmY19ckwSgUMgrqExEyP5A0TA==}
 
-  '@shikijs/core@1.26.1':
-    resolution: {integrity: sha512-yeo7sG+WZQblKPclUOKRPwkv1PyoHYkJ4gP9DzhFJbTdueKR7wYTI1vfF/bFi1NTgc545yG/DzvVhZgueVOXMA==}
+  '@shikijs/core@1.27.2':
+    resolution: {integrity: sha512-ns1dokDr0KE1lQ9mWd4rqaBkhSApk0qGCK1+lOqwnkQSkVZ08UGqXj1Ef8dAcTMZNFkN6PSNjkL5TYNX7pyPbQ==}
 
   '@shikijs/engine-javascript@1.22.0':
     resolution: {integrity: sha512-AeEtF4Gcck2dwBqCFUKYfsCq0s+eEbCEbkUuFou53NZ0sTGnJnJ/05KHQFZxpii5HMXbocV9URYVowOP2wH5kw==}
@@ -2573,8 +2573,8 @@ packages:
   '@shikijs/engine-javascript@1.23.1':
     resolution: {integrity: sha512-i/LdEwT5k3FVu07SiApRFwRcSJs5QM9+tod5vYCPig1Ywi8GR30zcujbxGQFJHwYD7A5BUqagi8o5KS+LEVgBg==}
 
-  '@shikijs/engine-javascript@1.26.1':
-    resolution: {integrity: sha512-CRhA0b8CaSLxS0E9A4Bzcb3LKBNpykfo9F85ozlNyArxjo2NkijtiwrJZ6eHa+NT5I9Kox2IXVdjUsP4dilsmw==}
+  '@shikijs/engine-javascript@1.27.2':
+    resolution: {integrity: sha512-0JB7U5vJc16NShBdxv9hSSJYSKX79+32O7F4oXIxJLdYfomyFvx4B982ackUI9ftO9T3WwagkiiD3nOxOOLiGA==}
 
   '@shikijs/engine-oniguruma@1.22.0':
     resolution: {integrity: sha512-5iBVjhu/DYs1HB0BKsRRFipRrD7rqjxlWTj4F2Pf+nQSPqc3kcyqFFeZXnBMzDf0HdqaFVvhDRAGiYNvyLP+Mw==}
@@ -2585,14 +2585,14 @@ packages:
   '@shikijs/engine-oniguruma@1.23.1':
     resolution: {integrity: sha512-KQ+lgeJJ5m2ISbUZudLR1qHeH3MnSs2mjFg7bnencgs5jDVPeJ2NVDJ3N5ZHbcTsOIh0qIueyAJnwg7lg7kwXQ==}
 
-  '@shikijs/engine-oniguruma@1.26.1':
-    resolution: {integrity: sha512-F5XuxN1HljLuvfXv7d+mlTkV7XukC1cawdtOo+7pKgPD83CAB1Sf8uHqP3PK0u7njFH0ZhoXE1r+0JzEgAQ+kg==}
+  '@shikijs/engine-oniguruma@1.27.2':
+    resolution: {integrity: sha512-FZYKD1KN7srvpkz4lbGLOYWlyDU4Rd+2RtuKfABTkafAPOFr+J6umfIwY/TzOQqfNtWjL7SAwPAO0dcOraRLaQ==}
 
   '@shikijs/transformers@1.22.2':
     resolution: {integrity: sha512-8f78OiBa6pZDoZ53lYTmuvpFPlWtevn23bzG+azpPVvZg7ITax57o/K3TC91eYL3OMJOO0onPbgnQyZjRos8XQ==}
 
-  '@shikijs/twoslash@1.26.1':
-    resolution: {integrity: sha512-jgRt6c6y+rXVfpcLIAY8luCKDiadhozrLS1+xjXA6WcZ/5wCAB2oj+ubue+14UZkg2yLJaH0X7N8N2J7/X1YJQ==}
+  '@shikijs/twoslash@1.27.2':
+    resolution: {integrity: sha512-hi/ysuEzEkHua3qdc/6hOTVdxS1s6SUFs985NB4t5/5qLyF+ST7GwLHPRyRZmT1TJ2IhPX8dg8McVU+oeDJmwA==}
 
   '@shikijs/types@1.22.0':
     resolution: {integrity: sha512-Fw/Nr7FGFhlQqHfxzZY8Cwtwk5E9nKDUgeLjZgt3UuhcM3yJR9xj3ZGNravZZok8XmEZMiYkSMTPlPkULB8nww==}
@@ -2603,8 +2603,8 @@ packages:
   '@shikijs/types@1.23.1':
     resolution: {integrity: sha512-98A5hGyEhzzAgQh2dAeHKrWW4HfCMeoFER2z16p5eJ+vmPeF6lZ/elEne6/UCU551F/WqkopqRsr1l2Yu6+A0g==}
 
-  '@shikijs/types@1.26.1':
-    resolution: {integrity: sha512-d4B00TKKAMaHuFYgRf3L0gwtvqpW4hVdVwKcZYbBfAAQXspgkbWqnFfuFl3MDH6gLbsubOcr+prcnsqah3ny7Q==}
+  '@shikijs/types@1.27.2':
+    resolution: {integrity: sha512-DM9OWUyjmdYdnKDpaGB/GEn9XkToyK1tqxuqbmc5PV+5K8WjjwfygL3+cIvbkSw2v1ySwHDgqATq/+98pJ4Kyg==}
 
   '@shikijs/vitepress-twoslash@1.23.1':
     resolution: {integrity: sha512-L67HkzDkbECjYdWxQA9BuKAIB0c7eaa+7sD6dZUQ6/cdJGiWvaPLYMRwMWZQ4ToRsz1X6MQmOKQp6Xb6FEc3Bg==}
@@ -3913,6 +3913,9 @@ packages:
       uWebSockets.js:
         optional: true
 
+  crossws@0.3.1:
+    resolution: {integrity: sha512-HsZgeVYaG+b5zA+9PbIPGq4+J/CJynJuearykPsXx4V/eMhyQ5EDVg3Ak2FBZtVXCiOLu/U7IiwDHTr9MA+IKw==}
+
   css-declaration-sorter@7.2.0:
     resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
     engines: {node: ^14 || ^16 || >=18}
@@ -4293,9 +4296,6 @@ packages:
 
   es-get-iterator@1.1.3:
     resolution: {integrity: sha512-sPZmqHBe6JIiTfN5q2pEi//TwxmAFHwj/XEuYjTuse78i8KxaqMTTzxPoFKuzRpDpTJ+0NAbpfenkmH2rePtuw==}
-
-  es-module-lexer@1.5.4:
-    resolution: {integrity: sha512-MVNK56NiMrOwitFB7cqDwq0CQutbw+0BvLshJSse0MUNU+y1FC3bUS/AQg7oUng+/wKrrki7JfmwtVHkVfPLlw==}
 
   es-module-lexer@1.6.0:
     resolution: {integrity: sha512-qqnD1yMU6tk/jnaMosogGySTZP8YtUgAffA9nMN+E/rjxcfRQ6IEk7IiozUjgxKoFHBGjTLnrHB/YC45r/59EQ==}
@@ -4765,8 +4765,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3-nightly@2.0.0-1718872656.6765a6e:
-    resolution: {integrity: sha512-LQ8hHOIzk+agD1p0K7UosByKuzDAKGLTnYsP0syV/XMr9E7pWmoaDSWkGdWjtLR9O3hinNqrXU1NW0kTmhiSag==}
+  h3-nightly@1.13.1-20250110-173418-de24917:
+    resolution: {integrity: sha512-ZZcPxG88yXVLmPuZfCJeN/QLPomxwu1RTeHS6jprOpeGWSETpHceJQIlJmUL67uU8IRRGM3lQyVWoMV5TfcWMQ==}
 
   happy-dom@16.6.0:
     resolution: {integrity: sha512-Zz5S9sog8a3p8XYZbO+eI1QMOAvCNnIoyrH8A8MLX+X2mJrzADTy+kdETmc4q+uD9AGAvQYGn96qBAn2RAciKw==}
@@ -5846,8 +5846,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitro-nightly@3.0.0-beta-28796231.359af68d:
-    resolution: {integrity: sha512-/wD/WAhYsH866aRDuJ+dK73HLST2s2BNHaLAoNDhkNpTgHQbr1+5gVDwTnJFUHClUEt1PIir3QLDeb2O9r59xA==}
+  nitro-nightly@3.0.0-beta-28938837.19ec5395:
+    resolution: {integrity: sha512-6vMInOp9BVrhbjLwD3IXlG+WsfMwgazz55O75Jdwmd9SZpyI7JCaMZeTx8MD/A5g3k4x3iBqoXvBg5Xoc/aXTA==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -5986,11 +5986,11 @@ packages:
     resolution: {integrity: sha512-1FlR+gjXK7X+AsAHso35MnyN5KqGwJRi/31ft6x0M194ht7S+rWAvd7PHss9xSKMzE0asv1pyIHaJYq+BbacAQ==}
     engines: {node: '>=12'}
 
-  oniguruma-to-es@0.10.0:
-    resolution: {integrity: sha512-zapyOUOCJxt+xhiNRPPMtfJkHGsZ98HHB9qJEkdT8BGytO/+kpe4m1Ngf0MzbzTmhacn11w9yGeDP6tzDhnCdg==}
-
   oniguruma-to-es@0.4.1:
     resolution: {integrity: sha512-rNcEohFz095QKGRovP/yqPIKc+nP+Sjs4YTHMv33nMePGKrq/r2eu9Yh4646M5XluGJsUnmwoXuiXE69KDs+fQ==}
+
+  oniguruma-to-es@2.1.0:
+    resolution: {integrity: sha512-Iq/949c5IueVC5gQR7OYXs0uHsDIePcgZFlVRIVGfQcWwbKG+nsyWfthswdytShlRdkZADY+bWSi+BRyUL81gA==}
 
   oniguruma-to-js@0.4.3:
     resolution: {integrity: sha512-X0jWUcAlxORhOqqBREgPMgnshB7ZGYszBNspP+tS9hPD3l13CdaXcHbgImoHUHlrvGx/7AvFEkTRhAGYh+jzjQ==}
@@ -8886,7 +8886,7 @@ snapshots:
       defu: 6.1.4
       fuse.js: 7.0.0
       giget: 1.2.3
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       httpxy: 0.1.5
       jiti: 2.4.2
       listhen: 1.9.0
@@ -9085,7 +9085,7 @@ snapshots:
       '@vueuse/core': 11.1.0(vue@3.5.13(typescript@5.7.3))
       consola: 3.4.0
       defu: 6.1.4
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       magic-string: 0.30.17
       mlly: 1.7.4
       ofetch: 1.4.1
@@ -9138,7 +9138,6 @@ snapshots:
       - sortablejs
       - supports-color
       - typescript
-      - uWebSockets.js
       - universal-cookie
       - uploadthing
       - vite
@@ -9172,7 +9171,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.0.0
       get-port-please: 3.1.2
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       local-pkg: 1.0.0
       magic-string: 0.30.17
       node-fetch-native: 1.6.4
@@ -9208,7 +9207,6 @@ snapshots:
       - terser
       - tsx
       - typescript
-      - uWebSockets.js
       - yaml
 
   '@nuxtjs/mdc@0.8.3':
@@ -9663,11 +9661,11 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.4
 
-  '@shikijs/core@1.26.1':
+  '@shikijs/core@1.27.2':
     dependencies:
-      '@shikijs/engine-javascript': 1.26.1
-      '@shikijs/engine-oniguruma': 1.26.1
-      '@shikijs/types': 1.26.1
+      '@shikijs/engine-javascript': 1.27.2
+      '@shikijs/engine-oniguruma': 1.27.2
+      '@shikijs/types': 1.27.2
       '@shikijs/vscode-textmate': 10.0.1
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.4
@@ -9690,11 +9688,11 @@ snapshots:
       '@shikijs/vscode-textmate': 9.3.1
       oniguruma-to-es: 0.4.1
 
-  '@shikijs/engine-javascript@1.26.1':
+  '@shikijs/engine-javascript@1.27.2':
     dependencies:
-      '@shikijs/types': 1.26.1
+      '@shikijs/types': 1.27.2
       '@shikijs/vscode-textmate': 10.0.1
-      oniguruma-to-es: 0.10.0
+      oniguruma-to-es: 2.1.0
 
   '@shikijs/engine-oniguruma@1.22.0':
     dependencies:
@@ -9711,19 +9709,19 @@ snapshots:
       '@shikijs/types': 1.23.1
       '@shikijs/vscode-textmate': 9.3.1
 
-  '@shikijs/engine-oniguruma@1.26.1':
+  '@shikijs/engine-oniguruma@1.27.2':
     dependencies:
-      '@shikijs/types': 1.26.1
+      '@shikijs/types': 1.27.2
       '@shikijs/vscode-textmate': 10.0.1
 
   '@shikijs/transformers@1.22.2':
     dependencies:
       shiki: 1.22.2
 
-  '@shikijs/twoslash@1.26.1(typescript@5.7.3)':
+  '@shikijs/twoslash@1.27.2(typescript@5.7.3)':
     dependencies:
-      '@shikijs/core': 1.26.1
-      '@shikijs/types': 1.26.1
+      '@shikijs/core': 1.27.2
+      '@shikijs/types': 1.27.2
       twoslash: 0.2.12(typescript@5.7.3)
     transitivePeerDependencies:
       - supports-color
@@ -9744,14 +9742,14 @@ snapshots:
       '@shikijs/vscode-textmate': 9.3.1
       '@types/hast': 3.0.4
 
-  '@shikijs/types@1.26.1':
+  '@shikijs/types@1.27.2':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.1
       '@types/hast': 3.0.4
 
   '@shikijs/vitepress-twoslash@1.23.1(@nuxt/kit@packages+kit)(typescript@5.7.3)':
     dependencies:
-      '@shikijs/twoslash': 1.26.1(typescript@5.7.3)
+      '@shikijs/twoslash': 1.27.2(typescript@5.7.3)
       floating-vue: 5.2.2(@nuxt/kit@packages+kit)(vue@3.5.13(typescript@5.7.3))
       mdast-util-from-markdown: 2.0.2
       mdast-util-gfm: 3.0.0
@@ -11448,6 +11446,10 @@ snapshots:
 
   crossws@0.2.4: {}
 
+  crossws@0.3.1:
+    dependencies:
+      uncrypto: 0.1.3
+
   css-declaration-sorter@7.2.0(postcss@8.5.1):
     dependencies:
       postcss: 8.5.1
@@ -11807,8 +11809,6 @@ snapshots:
       is-string: 1.0.7
       isarray: 2.0.5
       stop-iteration-iterator: 1.0.0
-
-  es-module-lexer@1.5.4: {}
 
   es-module-lexer@1.6.0: {}
 
@@ -12448,10 +12448,10 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3-nightly@2.0.0-1718872656.6765a6e:
+  h3-nightly@1.13.1-20250110-173418-de24917:
     dependencies:
       cookie-es: 1.2.2
-      crossws: 0.2.4
+      crossws: 0.3.1
       defu: 6.1.4
       destr: 2.0.3
       iron-webcrypto: 1.2.1
@@ -12460,8 +12460,6 @@ snapshots:
       ufo: 1.5.4
       uncrypto: 0.1.3
       unenv: 1.10.0
-    transitivePeerDependencies:
-      - uWebSockets.js
 
   happy-dom@16.6.0:
     dependencies:
@@ -13134,7 +13132,7 @@ snapshots:
       crossws: 0.2.4
       defu: 6.1.4
       get-port-please: 3.1.2
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       http-shutdown: 1.2.2
       jiti: 2.4.2
       mlly: 1.7.4
@@ -13759,7 +13757,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitro-nightly@3.0.0-beta-28796231.359af68d(typescript@5.7.3):
+  nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@netlify/functions': 2.8.2
@@ -13794,7 +13792,7 @@ snapshots:
       fs-extra: 11.2.0
       globby: 14.0.2
       gzip-size: 7.0.0
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       hookable: 5.5.3
       httpxy: 0.1.5
       ioredis: 5.4.1
@@ -14002,17 +14000,17 @@ snapshots:
     dependencies:
       mimic-fn: 4.0.0
 
-  oniguruma-to-es@0.10.0:
-    dependencies:
-      emoji-regex-xs: 1.0.0
-      regex: 5.1.1
-      regex-recursion: 5.1.1
-
   oniguruma-to-es@0.4.1:
     dependencies:
       emoji-regex-xs: 1.0.0
       regex: 5.1.1
       regex-recursion: 4.3.0
+
+  oniguruma-to-es@2.1.0:
+    dependencies:
+      emoji-regex-xs: 1.0.0
+      regex: 5.1.1
+      regex-recursion: 5.1.1
 
   oniguruma-to-js@0.4.3:
     dependencies:
@@ -14108,7 +14106,7 @@ snapshots:
 
   parse-imports@2.1.1:
     dependencies:
-      es-module-lexer: 1.5.4
+      es-module-lexer: 1.6.0
       slashes: 3.0.12
 
   parse-json@5.2.0:
@@ -15750,7 +15748,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 3.6.0
       destr: 2.0.3
-      h3: h3-nightly@2.0.0-1718872656.6765a6e
+      h3: h3-nightly@1.13.1-20250110-173418-de24917
       lru-cache: 10.4.3
       node-fetch-native: 1.6.4
       ofetch: 1.4.1
@@ -15758,8 +15756,6 @@ snapshots:
     optionalDependencies:
       db0: 0.1.4
       ioredis: 5.4.1
-    transitivePeerDependencies:
-      - uWebSockets.js
 
   untun@0.1.3:
     dependencies:
@@ -16013,7 +16009,6 @@ snapshots:
       - terser
       - tsx
       - typescript
-      - uWebSockets.js
       - vitest
       - yaml
 
@@ -16302,7 +16297,7 @@ snapshots:
       browserslist: 4.24.0
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
-      es-module-lexer: 1.5.4
+      es-module-lexer: 1.6.0
       eslint-scope: 5.1.1
       events: 3.3.0
       glob-to-regexp: 0.4.1
@@ -16332,7 +16327,7 @@ snapshots:
       browserslist: 4.24.0
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.0
-      es-module-lexer: 1.5.4
+      es-module-lexer: 1.6.0
       eslint-scope: 5.1.1
       events: 3.3.0
       glob-to-regexp: 0.4.1
