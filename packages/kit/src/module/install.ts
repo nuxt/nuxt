@@ -19,11 +19,11 @@ export async function installModule<
 > (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
-  const localLayerModuleDirs = new Set<string>()
+  const localLayerModuleDirs: string[] = []
   for (const l of nuxt.options._layers) {
     const srcDir = l.config.srcDir || l.cwd
     if (!NODE_MODULES_RE.test(srcDir)) {
-      localLayerModuleDirs.add(resolve(srcDir, l.config?.dir?.modules || 'modules'))
+      localLayerModuleDirs.push(resolve(srcDir, l.config?.dir?.modules || 'modules').replace(/\/?$/, '/'))
     }
   }
 
@@ -38,8 +38,8 @@ export async function installModule<
     const parsed = parseNodeModulePath(modulePath)
     const moduleRoot = parsed.dir ? parsed.dir + parsed.name : modulePath
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = parsed.dir ? moduleRoot : getDirectory(modulePath)
-    if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
+    const directory = (parsed.dir ? moduleRoot : getDirectory(modulePath)).replace(/\/?$/, '/')
+    if (directory !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
       nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
   }
