@@ -11,7 +11,7 @@ import { normalizeViteManifest } from 'vue-bundle-renderer'
 import escapeStringRegexp from 'escape-string-regexp'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
-import { isCSS, toArray } from './utils'
+import { isCSS } from './utils'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
