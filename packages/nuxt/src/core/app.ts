@@ -93,8 +93,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     }
 
     if (template.modified && template.write) {
+      dirs.add(dirname(fullPath))
       writes.push(() => {
-        dirs.add(dirname(fullPath))
         writeFileSync(fullPath, contents, 'utf8')
       })
     }

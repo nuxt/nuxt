@@ -213,6 +213,9 @@ export default defineNuxtConfig({
   },
   telemetry: false, // for testing telemetry types - it is auto-disabled in tests
   hooks: {
+    'build:done' () {
+      process.exit()
+    },
     'webpack:config' (configs) {
       // in order to test bigint serialization we need to set target to a more modern one
       for (const config of configs) {
