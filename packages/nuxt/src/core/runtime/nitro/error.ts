@@ -80,15 +80,16 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
     return send(event, template(errorObject))
   }
 
+  if (event.handled) { return }
+
   const html = await youch.toHTML(error, {
+    title: `${errorObject.statusCode}`,
     request: {
       url,
       method: event.method,
       headers: getRequestHeaders(event),
     },
   })
-
-  if (event.handled) { return }
 
   for (const [header, value] of res.headers.entries()) {
     setResponseHeader(event, header, value)
