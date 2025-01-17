@@ -47,9 +47,9 @@ function captureStackTrace () {
 
 export const leading = `
 const ___captureStackTrace = ${captureStackTrace.toString()};
-globalThis.___calls = {};
-globalThis.___timings = {};
-globalThis.___callers = {};`
+globalThis.___calls ||= {};
+globalThis.___timings ||= {};
+globalThis.___callers ||= {};`
 
 function onExit () {
   if (globalThis.___logged) { return }
