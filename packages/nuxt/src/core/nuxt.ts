@@ -574,6 +574,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+  console.log(nuxt.options.modulesDir, nuxt.options.modulesDir.length)
 
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {

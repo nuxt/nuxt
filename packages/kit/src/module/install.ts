@@ -38,7 +38,7 @@ export async function installModule<
     const parsed = parseNodeModulePath(modulePath)
     const moduleRoot = parsed.dir ? parsed.dir + parsed.name : modulePath
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = parsed.dir ? moduleRoot : getDirectory(modulePath)
+    const directory = (parsed.dir ? moduleRoot : getDirectory(modulePath)).replace(/\/?$/, '/')
     if (directory !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
       nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
