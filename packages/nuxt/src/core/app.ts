@@ -106,7 +106,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
   for (const dir of dirs) {
-    mkdirSync(dirname(dir), { recursive: true })
+    mkdirSync(dir, { recursive: true })
   }
   for (const write of writes) {
     write()
