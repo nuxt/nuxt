@@ -129,8 +129,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       knip:
-        specifier: 5.42.1
-        version: 5.42.1(@types/node@22.10.7)(typescript@5.7.3)
+        specifier: 5.42.2
+        version: 5.42.2(@types/node@22.10.7)(typescript@5.7.3)
       markdownlint-cli:
         specifier: 0.43.0
         version: 0.43.0
@@ -5372,8 +5372,8 @@ packages:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
 
-  knip@5.42.1:
-    resolution: {integrity: sha512-xTnwo0I5TLAEU1BNqi8EwnvxI/5yJUJmBiXJdnS0+2FDE6WQII3upoImuUbx1GxrftHmY+prqfL6XuO6JEtYBw==}
+  knip@5.42.2:
+    resolution: {integrity: sha512-hVtZ6V59COFz3Y0/BHrWMlPAx82EdX/xFHXbutIRSNfJFPMGmIpxLBWTg35F4XQJGwlu5uWiJf8rBYYkmlYWWQ==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -7252,10 +7252,6 @@ packages:
   tinypool@0.8.4:
     resolution: {integrity: sha512-i11VH5gS6IFeLY3gMBQ00/MmLncVP7JLXOw1vlgkytLmJK7QnEr7NXf0LBdxfmNPAeyetukOk0bOYrJrFGjYJQ==}
     engines: {node: '>=14.0.0'}
-
-  tinypool@1.0.1:
-    resolution: {integrity: sha512-URZYihUbRPcGv95En+sz6MfghfIc2OJ1sv/RmhWZLouPY0/8Vo80viwPvg3dlaS9fuq7fQMEfgRRK7BBZThBEA==}
-    engines: {node: ^18.0.0 || >=20.0.0}
 
   tinypool@1.0.2:
     resolution: {integrity: sha512-al6n+QEANGFOMf/dmUMsuS5/r9B06uwlyNjZZql/zv8J7ybHCgoihBNORZCY2mzUuAnomQa2JdhyHKzZxPCrFA==}
@@ -13074,7 +13070,7 @@ snapshots:
 
   klona@2.0.6: {}
 
-  knip@5.42.1(@types/node@22.10.7)(typescript@5.7.3):
+  knip@5.42.2(@types/node@22.10.7)(typescript@5.7.3):
     dependencies:
       '@nodelib/fs.walk': 3.0.1
       '@snyk/github-codeowners': 1.1.0
@@ -15397,9 +15393,6 @@ snapshots:
 
   tinypool@0.8.4: {}
 
-  tinypool@1.0.1:
-    optional: true
-
   tinypool@1.0.2: {}
 
   tinyrainbow@1.2.0:
@@ -15886,7 +15879,7 @@ snapshots:
     dependencies:
       cac: 6.7.14
       debug: 4.4.0(supports-color@9.4.0)
-      es-module-lexer: 1.5.4
+      es-module-lexer: 1.6.0
       pathe: 1.1.2
       vite: 6.0.7(@types/node@22.10.7)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1)
     transitivePeerDependencies:
@@ -16079,7 +16072,7 @@ snapshots:
       std-env: 3.8.0
       tinybench: 2.9.0
       tinyexec: 0.3.2
-      tinypool: 1.0.1
+      tinypool: 1.0.2
       tinyrainbow: 1.2.0
       vite: 6.0.7(@types/node@22.10.7)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1)
       vite-node: 2.1.8(@types/node@22.10.7)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1)
