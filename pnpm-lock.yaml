@@ -865,9 +865,6 @@ importers:
       escape-string-regexp:
         specifier: ^5.0.0
         version: 5.0.0
-      externality:
-        specifier: ^1.0.2
-        version: 1.0.2
       get-port-please:
         specifier: ^3.1.2
         version: 3.1.2
@@ -4537,9 +4534,6 @@ packages:
 
   extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
-
-  externality@1.0.2:
-    resolution: {integrity: sha512-LyExtJWKxtgVzmgtEHyQtLFpw1KFhQphF9nTG8TpAIVkiI/xQ3FJh75tRFLYl4hkn7BNIIdLJInuDAavX35pMw==}
 
   fake-indexeddb@6.0.0:
     resolution: {integrity: sha512-YEboHE5VfopUclOck7LncgIqskAqnv4q0EWbYCaxKKjAvO93c+TJIaBuGy8CBFdbg9nKdpN3AuPRwVBJ4k7NrQ==}
@@ -12234,13 +12228,6 @@ snapshots:
   expect-type@1.1.0: {}
 
   extend@3.0.2: {}
-
-  externality@1.0.2:
-    dependencies:
-      enhanced-resolve: 5.18.0
-      mlly: 1.7.4
-      pathe: 1.1.2
-      ufo: 1.5.4
 
   fake-indexeddb@6.0.0: {}
 
