@@ -116,10 +116,6 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     const node = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
-          /^virtual:/,
-          /\.ts$/,
-          // Rollup
-          /\0/,
           // Common
           /^#/,
           /\?/,
