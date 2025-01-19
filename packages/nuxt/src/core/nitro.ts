@@ -543,6 +543,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     // Exclude nitro output dir from typescript
     opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
+    opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nuxt.options.serverDir)))
+    opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })
 
   if (nitro.options.static) {
