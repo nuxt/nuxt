@@ -27,7 +27,7 @@ export default defineComponent({
     return (props: any) => {
       if (mounted.value) { return slots.default?.() }
       const slot = slots.fallback || slots.placeholder
-      if (slot) { return slot() }
+      if (slot) { return h(slot()) }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
       return createElementBlock(fallbackTag, attrs, fallbackStr)
