@@ -403,8 +403,11 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
   )
 
-  // Ensure we can resolve dependencies within layers
-  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
+  // Ensure we can resolve dependencies within layers - filtering out local `~/layers` directories
+  const locallyScannedLayersDirs = nuxt.options._layers.map(l => resolve(l.cwd, 'layers').replace(/\/?$/, '/'))
+  nuxt.options.modulesDir.push(...nuxt.options._layers
+    .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
+    .map(l => resolve(l.cwd, 'node_modules')))
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -570,6 +573,7 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt._ignore.add(resolveIgnorePatterns())
 
   await nuxt.callHook('modules:done')
+  console.log(nuxt.options.modulesDir, nuxt.options.modulesDir.length)
 
   // Add <NuxtIsland>
   if (nuxt.options.experimental.componentIslands) {
