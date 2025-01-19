@@ -126,6 +126,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       tsConfig: {
         compilerOptions: {
           lib: ['esnext', 'webworker', 'dom.iterable'],
+          skipLibCheck: true,
         },
         include: [
           join(nuxt.options.buildDir, 'types/nitro-nuxt.d.ts'),
@@ -239,6 +240,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
+  // Set nitro rootDir to srcDir to prevent including full project in tsconfig.server.json
+  nitroConfig.rootDir = nitroConfig.srcDir
   nitroConfig.ignore ||= []
   nitroConfig.ignore.push(
     ...resolveIgnorePatterns(nitroConfig.srcDir),
