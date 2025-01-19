@@ -286,7 +286,11 @@
           requestAnimationFrame(draw)
         }
 
-        draw()
+        
+        const NUXT_DISABLE_SNOW_EFFECT = "{{ NUXT_DISABLE_SNOW_EFFECT }}"
+        const disabledAnimationEnvironment = typeof NUXT_DISABLE_SNOW_EFFECT !== 'undefined' && NUXT_DISABLE_SNOW_EFFECT === 'true';
+        if(!disabledAnimationEnvironment)
+          draw()
       }
     </script>
   </body>

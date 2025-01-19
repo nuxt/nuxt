@@ -1,6 +1,7 @@
 import { join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
+import { env } from 'node:process'
 import type { Plugin } from 'vite'
 import { template } from 'lodash-es'
 import genericMessages from '../templates/messages.json'
@@ -12,7 +13,7 @@ const r = (...path: string[]) => resolve(join(templatesRoot, ...path))
 export const DevRenderingPlugin = () => {
   return <Plugin>{
     name: 'dev-rendering',
-    async transformIndexHtml (html: string, context) {
+    async transformIndexHtml(html: string, context) {
       const page = context.originalUrl || '/'
 
       if (page === '/') {
@@ -29,6 +30,7 @@ export const DevRenderingPlugin = () => {
         interpolate: /\{\{\{?([\s\S]+?)\}?\}\}/g,
       })({
         messages: { ...genericMessages, ...messages },
+        NUXT_DISABLE_SNOW_EFFECT: env.NUXT_DISABLE_SNOW_EFFECT,
       })
     },
   }
