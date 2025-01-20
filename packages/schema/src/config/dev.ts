@@ -38,6 +38,12 @@ export default defineUntypedSchema({
      * Template to show a loading screen
      * @type {(data: { loading?: string }) => string}
      */
-    loadingTemplate,
+    loadingTemplate: {
+      $resolve (data: Parameters<typeof loadingTemplate>[0], get) {
+        const template = loadingTemplate(data)
+        template.replace('{{ env.NUXT_TEMPLATE_DISABLE_SNOW_EFFECT }}', get('NUXT_TEMPLATE_DISABLE_SNOW_EFFECT') || 'false')
+        return template
+      },
+    },
   },
 })

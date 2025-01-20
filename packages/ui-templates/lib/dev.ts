@@ -1,4 +1,5 @@
 import { join, resolve } from 'node:path'
+import { env } from 'node:process' 
 import { fileURLToPath } from 'node:url'
 import { promises as fsp } from 'node:fs'
 import type { Plugin } from 'vite'
@@ -29,6 +30,7 @@ export const DevRenderingPlugin = () => {
         interpolate: /\{\{\{?([\s\S]+?)\}?\}\}/g,
       })({
         messages: { ...genericMessages, ...messages },
+        env: { NUXT_TEMPLATE_DISABLE_SNOW_EFFECT: env.NUXT_TEMPLATE_DISABLE_SNOW_EFFECT || false },
       })
     },
   }

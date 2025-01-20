@@ -96,10 +96,10 @@ export const RenderPlugin = () => {
         const messages = JSON.parse(readFileSync(r(`templates/${templateName}/messages.json`), 'utf-8'))
 
         // Serialize into a js function
-        const chunks = html.split(/\{{2,3}[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
+        const chunks = html.split(/\{{2,3}(?!\s*env\.)[^{}]+\}{2,3}/g).map(chunk => JSON.stringify(chunk))
         const hasMessages = chunks.length > 1
         let templateString = chunks.shift()
-        for (const [_, expression] of html.matchAll(/\{{2,3}([^{}]+)\}{2,3}/g)) {
+        for (const [_, expression] of html.matchAll(/\{{2,3}((?!\s*env\.)[^{}]+)\}{2,3}/g)) {
           if (expression) {
             templateString += ` + (${expression.trim()}) + ${chunks.shift()}`
           }
