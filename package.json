@@ -53,7 +53,7 @@
     "@vue/compiler-dom": "3.5.13",
     "@vue/shared": "3.5.13",
     "magic-string": "^0.30.17",
-    "memfs": "4.14.1",
+    "memfs": "4.17.0",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.5.1",
@@ -65,7 +65,7 @@
     "unimport": "3.14.6",
     "vite": "6.0.11",
     "vue": "3.5.13",
-    "webpack": "5.96.1"
+    "webpack": "5.97.1"
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.3",
@@ -106,7 +106,7 @@
     "knip": "5.42.2",
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.43.0",
-    "memfs": "4.14.1",
+    "memfs": "4.17.0",
     "nitropack": "2.10.4",
     "nuxt": "workspace:*",
     "nuxt-content-twoslash": "0.1.2",
@@ -128,7 +128,7 @@
     "vitest-environment-nuxt": "1.0.1",
     "vue": "3.5.13",
     "vue-tsc": "2.2.0",
-    "webpack": "5.96.1"
+    "webpack": "5.97.1"
   },
   "packageManager": "pnpm@9.15.4",
   "version": ""
