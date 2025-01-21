@@ -120,6 +120,10 @@ describe('composables', () => {
       'useSeoMeta',
       'useServerSeoMeta',
       'usePreviewMode',
+      'injectHead',
+      'useHeadSafe',
+      'useServerHead',
+      'useServerHeadSafe',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })

@@ -1,7 +1,6 @@
-import { resolve } from 'pathe'
-import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { dirname, resolve } from 'pathe'
+import { addComponent, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
-import { unheadVueComposablesImports } from '@unhead/vue'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -14,10 +13,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
     const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
-
-    // Transpile @unhead/vue
-    nuxt.options.build.transpile.push('@unhead/vue')
-
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
     for (const componentName of components) {
@@ -39,8 +34,9 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ]
     }
 
-    const exportPath = resolve(runtimeDir, 'exports', isNuxtV4 ? 'v4' : 'v3')
-    nuxt.options.alias['#unhead/exports'] = exportPath
+    const realUnheadPath = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+    // Transpile @unhead/vue
+    nuxt.options.build.transpile.push(realUnheadPath)
 
     // for Nuxt v3 users we will alias `@unhead/vue` to our custom export path so that
     // import { useHead } from '@unhead/vue'
@@ -48,10 +44,34 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     // for Nuxt v4 user should import from #imports
     if (!isNuxtV4) {
       for (const subpath of ['legacy', 'types']) {
-        const subpathModule = `@unhead/vue/${subpath}`
-        nuxt.options.alias[subpathModule] = await tryResolveModule(subpathModule, nuxt.options.modulesDir) || subpathModule
+        nuxt.options.alias[`@unhead/vue/${subpath}`] = resolve(dirname(realUnheadPath), subpath)
       }
-      nuxt.options.alias['@unhead/vue'] = exportPath
+      addTemplate({
+        filename: 'unhead-exports.mjs',
+        getContents () {
+          return `
+export {
+  injectHead,
+  useHead,
+  useHeadSafe,
+  useSeoMeta,
+  useServerHead,
+  useServerHeadSafe,
+  useServerSeoMeta,
+} from '#app/composables/head'
+
+export {
+  createHeadCore,
+  resolveUnrefHeadInput,
+  unheadVueComposablesImports,
+} from '${JSON.stringify(realUnheadPath)}'
+
+export * from '@unhead/vue/types'
+`
+        },
+      })
+
+      nuxt.options.alias['@unhead/vue'] = '#build/unhead-exports.mjs'
     }
 
     addTemplate({
