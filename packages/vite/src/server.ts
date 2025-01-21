@@ -122,7 +122,7 @@ export async function buildServer (ctx: ViteBuildContext) {
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
         // explicit dependencies we use in our ssr renderer - these can be inlined (if necessary) in the nitro build
-        'unhead', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
+        'unhead', '@unhead/vue', 'unctx', 'h3', 'devalue', '@nuxt/devalue', 'radix3', 'rou3', 'unstorage', 'hookable',
         // ensure we only have one version of vue if nitro is going to inline anyway
         ...((ctx.nuxt as any)._nitro as Nitro).options.inlineDynamicImports ? ['vue', '@vue/server-renderer', '@unhead/vue'] : [],
         // dependencies we might share with nitro - these can be inlined (if necessary) in the nitro build

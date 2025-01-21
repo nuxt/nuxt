@@ -12,6 +12,10 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
+
+    // Transpile @unhead/vue
+    nuxt.options.build.transpile.push('@unhead/vue')
+
     const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
     // Register components
     const componentsPath = resolve(runtimeDir, 'components')
