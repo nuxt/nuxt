@@ -6,14 +6,12 @@ import { isAbsolute, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
-import { getQuery } from 'ufo'
+import { getQuery, withTrailingSlash } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
-import { resolve as resolveModule } from 'mlly'
+import escapeStringRegexp from 'escape-string-regexp'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
-import { createIsExternal } from './utils/external'
-import { transpile } from './utils/transpile'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
@@ -118,9 +116,13 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     const node = new ViteNodeServer(viteServer, {
       deps: {
         inline: [
-          /\/node_modules\/(.*\/)?(nuxt|nuxt3|nuxt-nightly)\//,
+          // Common
           /^#/,
-          ...transpile({ isServer: true, isDev: ctx.nuxt.options.dev }),
+          /\?/,
+        ],
+        external: [
+          '#shared',
+          new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
         ],
       },
       transformMode: {
@@ -128,15 +130,6 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         web: [],
       },
     })
-
-    const isExternal = createIsExternal(viteServer, ctx.nuxt)
-    node.shouldExternalize = async (id: string) => {
-      const result = await isExternal(id)
-      if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir }).catch(() => false)
-      }
-      return false
-    }
 
     return eventHandler(async (event) => {
       const moduleId = decodeURI(event.path).substring(1)
