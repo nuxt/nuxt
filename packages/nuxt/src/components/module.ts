@@ -1,6 +1,6 @@
 import { existsSync, statSync, writeFileSync } from 'node:fs'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
-import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath, updateTemplates } from '@nuxt/kit'
+import { addBuildPlugin, addPluginTemplate, addTemplate, addTypeTemplate, addVitePlugin, defineNuxtModule, findPath, resolveAlias, resolvePath } from '@nuxt/kit'
 import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
@@ -196,24 +196,6 @@ export default defineNuxtModule<ComponentsOptions>({
 
     nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
-    })
-
-    // Watch for changes
-    nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (!['add', 'unlink'].includes(event)) {
-        return
-      }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      if (componentDirs.some(dir => path.startsWith(dir.path + '/'))) {
-        await updateTemplates({
-          filter: template => [
-            'components.plugin.mjs',
-            'components.d.ts',
-            'components.server.mjs',
-            'components.client.mjs',
-          ].includes(template.filename),
-        })
-      }
     })
 
     if (nuxt.options.experimental.treeshakeClientOnly) {
