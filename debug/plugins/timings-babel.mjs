@@ -60,7 +60,7 @@ function onExit () {
 
   const topFunctionsTotalTime = timings
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, 20)
     .map(([name, time]) => ({
       name,
       time: Number(Number(time).toFixed(2)),
@@ -69,7 +69,7 @@ function onExit () {
     }))
 
   // eslint-disable-next-line no-console
-  console.log('Top 10 functions by total time:')
+  console.log('Top 20 functions by total time:')
   // eslint-disable-next-line no-console
   console.table(topFunctionsTotalTime)
 
@@ -79,7 +79,7 @@ function onExit () {
     .map(([name, time]) => [name, time / (globalThis.___calls[name] || 1)])
     // @ts-expect-error
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, 20)
     .map(([name, time]) => ({
       name,
       time: Number(Number(time).toFixed(2)),
@@ -88,7 +88,7 @@ function onExit () {
     }))
 
   // eslint-disable-next-line no-console
-  console.log('Top 10 functions by average time:')
+  console.log('Top 20 functions by average time:')
   // eslint-disable-next-line no-console
   console.table(topFunctionsAverageTime)
 }
@@ -98,20 +98,20 @@ export const trailing = `process.on("exit", ${onExit.toString()})`
 /** @param {string} functionName */
 export function generateInitCode (functionName) {
   return `
-  ___calls.${functionName} = (___calls.${functionName} || 0) + 1;
-  ___timings.${functionName} ||= 0;
+  ___calls[${JSON.stringify(functionName)}] = (___calls[${JSON.stringify(functionName)}] || 0) + 1;
+  ___timings[${JSON.stringify(functionName)}] ||= 0;
   const ___now = Date.now();`
 }
 
 /** @param {string} functionName */
 export function generateFinallyCode (functionName) {
   return `
-    ___timings.${functionName} += Date.now() - ___now;
+    ___timings[${JSON.stringify(functionName)}] += Date.now() - ___now;
     try {
       const ___callee = ___captureStackTrace()[1]?.function;
       if (___callee) {
-        ___callers.${functionName} ||= {};
-        ___callers.${functionName}[' ' + ___callee] = (___callers.${functionName}[' ' + ___callee] || 0) + 1;
+        ___callers[${JSON.stringify(functionName)}] ||= {};
+        ___callers[${JSON.stringify(functionName)}][' ' + ___callee] = (___callers[${JSON.stringify(functionName)}][' ' + ___callee] || 0) + 1;
       }
   } catch {}`
 }
