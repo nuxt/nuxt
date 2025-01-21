@@ -14,10 +14,6 @@ links:
 This utility is available since [Nuxt v3.9](/blog/v3-9).
 ::
 
-::important
-`navigation` mode is available since [Nuxt v3.15](/blog/v3-15).
-::
-
 ## Purpose
 
 The `callOnce` function is designed to execute a given function or block of code only once during:
@@ -53,6 +49,10 @@ await callOnce(async () => {
 }, { mode: 'navigation' })
 </script>
 ```
+
+::important
+`navigation` mode is available since [Nuxt v3.15](/blog/v3-15).
+::
 
 ::tip{to="/docs/getting-started/state-management#usage-with-pinia"}
 `callOnce` is useful in combination with the [Pinia module](/modules/pinia) to call store actions.
