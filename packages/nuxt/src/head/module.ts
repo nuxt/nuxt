@@ -1,6 +1,7 @@
 import { resolve } from 'pathe'
 import { addComponent, addImportsSources, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
+import { unheadVueComposablesImports } from '@unhead/vue'
 import { distDir } from '../dirs'
 
 const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head', 'Html', 'Body']
@@ -38,31 +39,35 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ]
     }
 
+    const exportPath = resolve(runtimeDir, 'exports', isNuxtV4 ? 'v4' : 'v3')
+    nuxt.options.alias['#unhead/exports'] = exportPath
     addImportsSources({
-      from: resolve(runtimeDir, 'composables', isNuxtV4 ? 'v4' : 'v3'),
-      // hard-coded for now we so don't support auto-imports on the deprecated composables
-      imports: [
-        'injectHead',
-        'useHead',
-        'useSeoMeta',
-        'useHeadSafe',
-        'useServerHead',
-        'useServerSeoMeta',
-        'useServerHeadSafe',
-      ],
+      from: exportPath,
+      imports: unheadVueComposablesImports['@unhead/vue'],
     })
 
-    const unheadVue = await tryResolveModule('unhead/plugins', nuxt.options.modulesDir) || 'unhead/plugins'
+    // for Nuxt v3 users we will alias `@unhead/vue` to our custom export path so that
+    // import { useHead } from '@unhead/vue'
+    // will work in a context without the Vue app such as Nuxt plugins and such
+    // for Nuxt v4 user should import from #imports
+    if (!isNuxtV4) {
+      for (const subpath of ['legacy', 'types']) {
+        const subpathModule = `@unhead/vue/${subpath}`
+        nuxt.options.alias[subpathModule] = await tryResolveModule(subpathModule, nuxt.options.modulesDir) || subpathModule
+      }
+      nuxt.options.alias['@unhead/vue'] = exportPath
+    }
 
     addTemplate({
       filename: 'unhead-options.mjs',
-      getContents () {
+      async getContents () {
         if (isNuxtV4) {
           return `export default {}`
         }
+        const unheadPlugins = await tryResolveModule('unhead/plugins', nuxt.options.modulesDir) || 'unhead/plugins'
         // v1 unhead legacy options
         const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { DeprecationsPlugin, PromisesPlugin } from ${JSON.stringify(unheadVue)};
+        return `import { DeprecationsPlugin, PromisesPlugin } from ${JSON.stringify(unheadPlugins)};
 export default {
   disableCapoSorting: ${disableCapoSorting}
   plugins: [DeprecationsPlugin, PromisesPlugin],

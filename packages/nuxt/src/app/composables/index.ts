@@ -1,17 +1,3 @@
-import type { UseHeadInput } from '@unhead/vue'
-import type { HeadAugmentations } from 'nuxt/schema'
-
-/** @deprecated Use `UseHeadInput` from `@unhead/vue` instead. This may be removed in a future minor version. */
-export type MetaObject = UseHeadInput<HeadAugmentations>
-export {
-  /** @deprecated Import `useHead` from `#imports` instead. This may be removed in a future minor version. */
-  useHead,
-  /** @deprecated Import `useSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useSeoMeta,
-  /** @deprecated Import `useServerSeoMeta` from `#imports` instead. This may be removed in a future minor version. */
-  useServerSeoMeta,
-} from '@unhead/vue'
-
 export { defineNuxtComponent } from './component'
 export { useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData } from './asyncData'
 export type { AsyncDataOptions, AsyncData, AsyncDataRequestStatus } from './asyncData'
