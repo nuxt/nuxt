@@ -210,7 +210,7 @@ jobs:
           name: dist
           path: packages
 
-      - name: Test (fixtures)
+      - name: Check bundle size
         run: pnpm vitest run bundle
 
   test-fixtures:
