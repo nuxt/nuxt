@@ -119,8 +119,6 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
           // Common
           /^#/,
           /\?/,
-        ],
-        external: [
           '#shared',
           new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared)))),
         ],
