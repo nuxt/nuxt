@@ -301,8 +301,6 @@ jobs:
           NPM_CONFIG_PROVENANCE: true
 
   release-pr:
-    concurrency:
-      group: release
     if: github.repository_owner == 'nuxt' && github.event_name != 'push'
     needs:
       - build

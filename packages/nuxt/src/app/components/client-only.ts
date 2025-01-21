@@ -14,7 +14,7 @@ export default defineComponent({
   inheritAttrs: false,
 
   props: ['fallback', 'placeholder', 'placeholderTag', 'fallbackTag'],
-  setup (_, { slots, attrs }) {
+  setup (props, { slots, attrs }) {
     const mounted = ref(false)
     onMounted(() => { mounted.value = true })
     // Bail out of checking for pages/layouts as they might be included under `<ClientOnly>` 🤷‍♂️
@@ -24,10 +24,10 @@ export default defineComponent({
       nuxtApp._isNuxtLayoutUsed = true
     }
     provide(clientOnlySymbol, true)
-    return (props: any) => {
+    return () => {
       if (mounted.value) { return slots.default?.() }
       const slot = slots.fallback || slots.placeholder
-      if (slot) { return slot() }
+      if (slot) { return h(slot) }
       const fallbackStr = props.fallback || props.placeholder || ''
       const fallbackTag = props.fallbackTag || props.placeholderTag || 'span'
       return createElementBlock(fallbackTag, attrs, fallbackStr)
@@ -95,7 +95,7 @@ export function createClientOnly<T extends ComponentOptions> (component: T) {
     if (isPromise(setupState)) {
       return Promise.resolve(setupState).then((setupState) => {
         if (typeof setupState !== 'function') {
-          setupState = setupState || {}
+          setupState ||= {}
           setupState.mounted$ = mounted$
           return setupState
         }
