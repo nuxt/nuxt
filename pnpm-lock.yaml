@@ -12,9 +12,9 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.10.7
-  '@unhead/schema': 2.0.0-alpha.5
-  '@unhead/vue': 2.0.0-alpha.5
-  '@unhead/shared': 2.0.0-alpha.5
+  '@unhead/schema': 2.0.0-alpha.6
+  '@unhead/vue': 2.0.0-alpha.6
+  '@unhead/shared': 2.0.0-alpha.6
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -31,7 +31,7 @@ overrides:
   typescript: 5.7.3
   ufo: 1.5.4
   unbuild: 3.3.1
-  unhead: 2.0.0-alpha.5
+  unhead: 2.0.0-alpha.6
   unimport: 3.14.6
   vite: 6.0.9
   vue: 3.5.13
@@ -83,11 +83,11 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/schema':
-        specifier: 2.0.0-alpha.5
-        version: 2.0.0-alpha.5
+        specifier: 2.0.0-alpha.6
+        version: 2.0.0-alpha.6
       '@unhead/vue':
-        specifier: 2.0.0-alpha.5
-        version: 2.0.0-alpha.5(vue@3.5.13(typescript@5.7.3))
+        specifier: 2.0.0-alpha.6
+        version: 2.0.0-alpha.6(vue@3.5.13(typescript@5.7.3))
       '@vitest/coverage-v8':
         specifier: 3.0.2
         version: 3.0.2(vitest@3.0.2(@types/node@22.10.7)(happy-dom@16.6.0)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))
@@ -339,8 +339,8 @@ importers:
         specifier: 22.10.7
         version: 22.10.7
       '@unhead/vue':
-        specifier: 2.0.0-alpha.5
-        version: 2.0.0-alpha.5(vue@3.5.13(typescript@5.7.3))
+        specifier: 2.0.0-alpha.6
+        version: 2.0.0-alpha.6(vue@3.5.13(typescript@5.7.3))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -684,8 +684,8 @@ importers:
         specifier: 2.0.10
         version: 2.0.10
       '@unhead/schema':
-        specifier: 2.0.0-alpha.5
-        version: 2.0.0-alpha.5
+        specifier: 2.0.0-alpha.6
+        version: 2.0.0-alpha.6
       '@vitejs/plugin-vue':
         specifier: 5.2.1
         version: 5.2.1(vite@6.0.9(@types/node@22.10.7)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))(vue@3.5.13(typescript@5.7.3))
@@ -2842,14 +2842,14 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/schema@2.0.0-alpha.5':
-    resolution: {integrity: sha512-m7U5q4Lvpyvk9um/X+Bn9bWxaShCybXdv02My4A7iExj0/ZwW60AlTrgpIj4uZXEulIJbYAx0BdDDNELZQT0+g==}
+  '@unhead/schema@2.0.0-alpha.6':
+    resolution: {integrity: sha512-UjObgqdmWaKYwGk0KzK5snTdETikaU2A2Dqvz1ElS/zFNLsFmBIg4HwidvlA/oxF4/FvbZTlKsTutgiKWAHePA==}
 
-  '@unhead/shared@2.0.0-alpha.5':
-    resolution: {integrity: sha512-qPEMloMqZCpSDWkl5+GiIhdfcZiN1gcT1b3qyDZRcrmrz3toWCH1YtLzfSD2qBMssYnTcQKqMvjjA5avx3YUAg==}
+  '@unhead/shared@2.0.0-alpha.6':
+    resolution: {integrity: sha512-Uvp+Qzb/b8Me+VOqddjOK7aLFuBw/mk3Fx//ipB93FfjtXZ02WErDPTsOv+4aOK86JKG8CrxOkYosGcw8WceLw==}
 
-  '@unhead/vue@2.0.0-alpha.5':
-    resolution: {integrity: sha512-voZ2Ug3kU4oyDDKosVs1iiKZ9Dk4G4gxOc8eMrO89jlrq8fxTu+uG3J6/CkBuYhUzP4trm1yu/H3eO+pChU2fw==}
+  '@unhead/vue@2.0.0-alpha.6':
+    resolution: {integrity: sha512-VfSycV+tLTGpPKlihmQNdHo/cxvyvtUKnPRUFAB1KMHjf9xn5twq2fXetf2LYZtTQunKuqZ08kwlRt+pAvd3dg==}
     peerDependencies:
       vue: 3.5.13
 
@@ -7432,8 +7432,8 @@ packages:
   unenv@1.10.0:
     resolution: {integrity: sha512-wY5bskBQFL9n3Eca5XnhH6KbUo/tfvkwm9OpcdCvLaeA7piBNbavbOKJySEwQ1V0RH6HvNlSAFRTpvTqgKRQXQ==}
 
-  unhead@2.0.0-alpha.5:
-    resolution: {integrity: sha512-lFFpC56PQsEQ2m4IVDXKCOhGsqO8/2kqy3jr1yP5x4ld2JhZ9arG6nGKfJKRwm403qhM19TUh4zI4Ag8u0cvCA==}
+  unhead@2.0.0-alpha.6:
+    resolution: {integrity: sha512-kLQLu+wMbFgdULGyeq6uCXuAPXi6XFlNFPQCsur1dLfNGBxoJptY/uACrLiB1ttc8EFSxYVm0JWn17urm/t1iA==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -9110,7 +9110,7 @@ snapshots:
       '@types/google.maps': 3.58.1
       '@types/vimeo__player': 2.18.3
       '@types/youtube': 0.1.0
-      '@unhead/vue': 2.0.0-alpha.5(vue@3.5.13(typescript@5.7.3))
+      '@unhead/vue': 2.0.0-alpha.6(vue@3.5.13(typescript@5.7.3))
       '@vueuse/core': 11.1.0(vue@3.5.13(typescript@5.7.3))
       consola: 3.4.0
       defu: 6.1.4
@@ -10066,22 +10066,22 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/schema@2.0.0-alpha.5':
+  '@unhead/schema@2.0.0-alpha.6':
     dependencies:
       hookable: 5.5.3
       zhead: 2.2.4
 
-  '@unhead/shared@2.0.0-alpha.5':
+  '@unhead/shared@2.0.0-alpha.6':
     dependencies:
-      '@unhead/schema': 2.0.0-alpha.5
+      '@unhead/schema': 2.0.0-alpha.6
       packrup: 0.1.2
 
-  '@unhead/vue@2.0.0-alpha.5(vue@3.5.13(typescript@5.7.3))':
+  '@unhead/vue@2.0.0-alpha.6(vue@3.5.13(typescript@5.7.3))':
     dependencies:
-      '@unhead/schema': 2.0.0-alpha.5
-      '@unhead/shared': 2.0.0-alpha.5
+      '@unhead/schema': 2.0.0-alpha.6
+      '@unhead/shared': 2.0.0-alpha.6
       hookable: 5.5.3
-      unhead: 2.0.0-alpha.5
+      unhead: 2.0.0-alpha.6
       vue: 3.5.13(typescript@5.7.3)
 
   '@unocss/astro@0.62.4(rollup@4.31.0)(vite@6.0.9(@types/node@22.10.7)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))':
@@ -15630,10 +15630,10 @@ snapshots:
       node-fetch-native: 1.6.4
       pathe: 1.1.2
 
-  unhead@2.0.0-alpha.5:
+  unhead@2.0.0-alpha.6:
     dependencies:
-      '@unhead/schema': 2.0.0-alpha.5
-      '@unhead/shared': 2.0.0-alpha.5
+      '@unhead/schema': 2.0.0-alpha.6
+      '@unhead/shared': 2.0.0-alpha.6
       hookable: 5.5.3
 
   unicode-emoji-modifier-base@1.0.0: {}
