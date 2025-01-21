@@ -59,6 +59,11 @@ export interface AsyncDataOptions<
    */
   default?: () => DefaultT | Ref<DefaultT>
   /**
+   * Always call `getCachedData` first before attempting to perform actual fetch.
+   * @default false
+   */
+  useCache?: boolean
+  /**
    * Provide a function which returns cached data.
    * An `undefined` return value will trigger a fetch.
    * Default is `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]` which only caches data when payloadExtraction is enabled.
@@ -234,6 +239,7 @@ export function useAsyncData<
   options.default = options.default ?? (getDefault as () => DefaultT)
   options.getCachedData = options.getCachedData ?? getDefaultCachedData
 
+  options.useCache = options.useCache ?? false
   options.lazy = options.lazy ?? false
   options.immediate = options.immediate ?? true
   options.deep = options.deep ?? asyncDataDefaults.deep
@@ -271,9 +277,10 @@ export function useAsyncData<
       (nuxtApp._asyncDataPromises[key] as any).cancelled = true
     }
     // Avoid fetching same key that is already fetched
-    if ((opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
+    if ((options.useCache || opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
       const cachedData = opts._initial ? initialCachedData : options.getCachedData!(key, nuxtApp)
       if (typeof cachedData !== 'undefined') {
+        asyncData.data.value = cachedData
         return Promise.resolve(cachedData)
       }
     }
