@@ -1,6 +1,5 @@
-import { defineComponent } from 'vue'
+import { computed, defineComponent } from 'vue'
 import type { PropType, SetupContext } from 'vue'
-import { useHead } from '@unhead/vue'
 import type {
   CrossOrigin,
   FetchPriority,
@@ -10,6 +9,7 @@ import type {
   ReferrerPolicy,
   Target,
 } from './types'
+import { useHead } from '#app/composables/head'
 
 const removeUndefinedProps = (props: Props) => {
   const filteredProps = Object.create(null)
@@ -23,7 +23,7 @@ const removeUndefinedProps = (props: Props) => {
 }
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
-  useHead(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))
+  useHead(computed(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx)))
   return () => renderChild ? ctx.slots.default?.() : null
 }
 

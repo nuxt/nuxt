@@ -9,7 +9,7 @@ import type { EventHandlerRequest, H3Event } from 'h3'
 import type { AppConfig, AppConfigInput, RuntimeConfig } from 'nuxt/schema'
 import type { RenderResponse } from 'nitro/types'
 import type { LogObject } from 'consola'
-import type { MergeHead, VueHeadClient } from '@unhead/vue'
+import type { MergeHead, VueHeadClient } from '@unhead/vue/types'
 
 import type { NuxtAppLiterals } from 'nuxt/app'
 
