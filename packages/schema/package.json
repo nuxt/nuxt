@@ -37,7 +37,7 @@
   },
   "devDependencies": {
     "@types/pug": "2.0.10",
-    "@unhead/schema": "2.0.0-alpha.3",
+    "@unhead/schema": "2.0.0-alpha.4",
     "@vitejs/plugin-vue": "5.2.1",
     "@vitejs/plugin-vue-jsx": "4.1.1",
     "@vue/compiler-core": "3.5.13",

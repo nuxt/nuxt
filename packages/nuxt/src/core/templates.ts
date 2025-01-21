@@ -525,6 +525,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
+      `export const isNuxt4 = ${ctx.nuxt.options.future.compatibilityVersion === 4}`,
     ].join('\n\n')
   },
 }

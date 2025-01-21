@@ -17,8 +17,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead as createServerHead, propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { Head, HeadEntryOptions } from '@unhead/schema'
-import type { Link, Script, Style } from '@unhead/vue'
+import type { Head, HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
@@ -78,7 +77,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: Partial<ResolvedHead>
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>
@@ -474,7 +473,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
+    const islandHead: Partial<ResolvedHead> = {}
     for (const entry of head.headEntries()) {
       for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
         const currentValue = islandHead[key as keyof Head]
