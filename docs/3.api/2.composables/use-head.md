@@ -4,7 +4,7 @@ description: useHead customizes the head properties of individual pages of your 
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/unjs/unhead/blob/main/packages/vue/src/composables/useHead.ts
+    to: https://github.com/unjs/unhead/blob/main/packages/vue/src/composables.ts
     size: xs
 ---
 
