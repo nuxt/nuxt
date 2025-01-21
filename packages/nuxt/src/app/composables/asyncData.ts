@@ -62,7 +62,7 @@ export interface AsyncDataOptions<
    * Always call `getCachedData` first before attempting to perform actual fetch.
    * @default false
    */
-  useCache?: boolean;
+  useCache?: boolean
   /**
    * Provide a function which returns cached data.
    * An `undefined` return value will trigger a fetch.
