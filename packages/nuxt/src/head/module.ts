@@ -34,15 +34,14 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       ]
     }
 
-    const realUnheadPath = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
-    // Transpile @unhead/vue
-    nuxt.options.build.transpile.push(realUnheadPath)
-
     // for Nuxt v3 users we will alias `@unhead/vue` to our custom export path so that
     // import { useHead } from '@unhead/vue'
     // will work in a context without the Vue app such as Nuxt plugins and such
     // for Nuxt v4 user should import from #imports
     if (!isNuxtV4) {
+      const realUnheadPath = await tryResolveModule('@unhead/vue', nuxt.options.modulesDir) || '@unhead/vue'
+      // Transpile @unhead/vue
+      nuxt.options.build.transpile.push(realUnheadPath)
       for (const subpath of ['legacy', 'types']) {
         nuxt.options.alias[`@unhead/vue/${subpath}`] = resolve(dirname(realUnheadPath), subpath)
       }
