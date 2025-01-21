@@ -44,6 +44,9 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
   if (metaCache[code]) {
     return metaCache[code]
   }
+  if (code.match(/defineNuxtPlugin\s*\([\w(]/)) {
+    return {}
+  }
   const js = await transform(code, { loader })
   parseAndWalk(js.code, `file.${loader}`, (node) => {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
