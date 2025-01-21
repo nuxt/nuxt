@@ -49,7 +49,6 @@ function captureStackTrace () {
   return trace
 }
 
-
 export const leading = `
 import { writeFileSync as ____writeFileSync } from 'node:fs'
 const ___captureStackTrace = ${captureStackTrace.toString()};
