@@ -213,12 +213,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
-      for (const template of changedTemplates) {
+    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+      await Promise.all(changedTemplates.map(async (template) => {
         for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-          server.reloadModule(mod)
+          server.moduleGraph.invalidateModule(mod)
+          await server.reloadModule(mod)
         }
-      }
+      }))
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {
