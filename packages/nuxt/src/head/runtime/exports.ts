@@ -6,7 +6,7 @@ export {
   useServerHead,
   useServerHeadSafe,
   useServerSeoMeta,
-} from '#app'
+} from '#app/composables/head'
 
 export {
   createHeadCore,

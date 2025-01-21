@@ -41,10 +41,6 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
 
     const exportPath = resolve(runtimeDir, 'exports', isNuxtV4 ? 'v4' : 'v3')
     nuxt.options.alias['#unhead/exports'] = exportPath
-    addImportsSources({
-      from: '#app',
-      imports: unheadVueComposablesImports['@unhead/vue'],
-    })
 
     // for Nuxt v3 users we will alias `@unhead/vue` to our custom export path so that
     // import { useHead } from '@unhead/vue'
