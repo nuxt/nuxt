@@ -1,7 +1,7 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 import { template as loadingTemplate } from '../../../ui-templates/dist/templates/loading'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   devServer: {
     /**
      * Whether to enable HTTPS.
@@ -21,7 +21,7 @@ export default defineUntypedSchema({
     https: false,
 
     /** Dev server listening port */
-    port: process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000,
+    port: Number(process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000),
 
     /** Dev server listening host */
     host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,

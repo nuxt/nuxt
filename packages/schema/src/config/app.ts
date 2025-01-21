@@ -1,9 +1,9 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
+import { defineResolvers } from '../utils/definition'
 import type { AppHeadMetaObject } from '../types/head'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Vue.js config
    */

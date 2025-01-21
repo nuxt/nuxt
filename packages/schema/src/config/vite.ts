@@ -1,9 +1,9 @@
 import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Configuration that will be passed directly to Vite.
    *

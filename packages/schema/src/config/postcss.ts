@@ -1,4 +1,4 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
 const ensureItemIsLast = (item: string) => (arr: string[]) => {
   const index = arr.indexOf(item)
@@ -17,7 +17,7 @@ const orderPresets = {
   },
 }
 
-export default defineUntypedSchema({
+export default defineResolvers({
   postcss: {
     /**
      * A strategy for ordering PostCSS plugins.

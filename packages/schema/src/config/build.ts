@@ -1,10 +1,10 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { join } from 'pathe'
 import { isTest } from 'std-env'
 import { consola } from 'consola'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * The builder to use for bundling the Vue part of your application.
    * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}

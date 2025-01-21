@@ -1,7 +1,7 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 import type { RuntimeConfig } from '../types/config'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Configuration for Nitro.
    * @see [Nitro configuration docs](https://nitro.unjs.io/config/)
@@ -9,7 +9,7 @@ export default defineUntypedSchema({
    */
   nitro: {
     runtimeConfig: {
-      $resolve: async (val: Record<string, any> | undefined, get) => {
+      $resolve: async (val, get) => {
         const runtimeConfig = await get('runtimeConfig') as RuntimeConfig
         return {
           ...runtimeConfig,
@@ -27,7 +27,7 @@ export default defineUntypedSchema({
       },
     },
     routeRules: {
-      $resolve: async (val: Record<string, any> | undefined, get) => ({
+      $resolve: async (val, get) => ({
         ...await get('routeRules') as Record<string, any>,
         ...val,
       }),
