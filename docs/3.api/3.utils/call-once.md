@@ -28,7 +28,7 @@ This is useful for code that should be executed only once, such as logging an ev
 
 ## Usage
 
-Running code only once. For example, if the code runs on the server it won't run again on the client. This demonstrates the default `render` mode behaviour.
+The default mode of `callOnce` is to run code only once. For example, if the code runs on the server it won't run again on the client. It also won't run again if you `callOnce` more than once on the client, for example by navigating back to this page.
 
 ```vue [app.vue]
 <script setup lang="ts">
@@ -41,7 +41,7 @@ await callOnce(async () => {
 </script>
 ```
 
-To run on every navigation while avoiding the initial server/client double load, use the `navigation` mode:
+It is also possible to run on every navigation while still avoiding the initial server/client double load. For this, it is possible to use the `navigation` mode:
 
 ```vue [app.vue]
 <script setup lang="ts">
