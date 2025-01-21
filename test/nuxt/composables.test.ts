@@ -252,7 +252,7 @@ describe('useAsyncData', () => {
   })
 
   it('should always call getCachedData when `useCache` is true', async () => {
-    let cacheValue = 1;
+    let cacheValue = 1
     const getCachedData = vi.fn(() => ({ val: cacheValue++ }))
     const { data, refresh } = await useAsyncData(() => Promise.resolve({ val: 'fetch' }), { useCache: true, getCachedData })
 
