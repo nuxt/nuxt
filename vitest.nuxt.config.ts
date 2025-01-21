@@ -21,6 +21,9 @@ export default defineVitestConfig({
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
           },
+          imports: {
+            polyfills: false,
+          },
         },
       },
     },

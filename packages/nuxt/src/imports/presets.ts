@@ -22,14 +22,6 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/nuxt',
   },
   {
-    imports: ['requestIdleCallback', 'cancelIdleCallback'],
-    from: '#app/compat/idle-callback',
-  },
-  {
-    imports: ['setInterval'],
-    from: '#app/compat/interval',
-  },
-  {
     imports: ['useAppConfig', 'updateAppConfig'],
     from: '#app/config',
   },
@@ -255,6 +247,17 @@ const vueTypesPreset = defineUnimportPreset({
     'WritableComputedRef',
   ],
 })
+
+export const appCompatPresets: InlinePreset[] = [
+  {
+    imports: ['requestIdleCallback', 'cancelIdleCallback'],
+    from: '#app/compat/idle-callback',
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval',
+  },
+]
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,

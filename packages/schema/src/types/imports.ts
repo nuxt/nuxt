@@ -32,4 +32,10 @@ export interface ImportsOptions extends UnimportOptions {
     exclude?: RegExp[]
     include?: RegExp[]
   }
+
+  /**
+   * Add polyfills for setInterval, requestIdleCallback, and others
+   * @default true
+   */
+  polyfills?: boolean
 }
