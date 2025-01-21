@@ -1,4 +1,4 @@
-import { existsSync, promises as fsp } from 'node:fs'
+import { promises as fsp } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
