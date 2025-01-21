@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "rollup": "4.30.1",
+    "rollup": "4.31.0",
     "unbuild": "latest",
     "vue": "3.5.13"
   },
@@ -58,7 +58,7 @@
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
     "unplugin": "^2.1.2",
-    "vite": "^6.0.7",
+    "vite": "^6.0.10",
     "vite-node": "^3.0.2",
     "vite-plugin-checker": "^0.8.0",
     "vue-bundle-renderer": "^2.1.1"
