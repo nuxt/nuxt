@@ -50,13 +50,13 @@
     "untyped": "^1.5.2"
   },
   "devDependencies": {
-    "@rspack/core": "1.1.8",
+    "@rspack/core": "1.2.0",
     "@types/lodash-es": "4.17.12",
     "@types/semver": "7.5.8",
     "lodash-es": "4.17.21",
     "nitropack": "2.10.4",
     "unbuild": "latest",
-    "vite": "6.0.10",
+    "vite": "6.0.11",
     "vitest": "3.0.2",
     "webpack": "5.96.1"
   },
