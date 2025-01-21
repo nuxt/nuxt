@@ -2,6 +2,7 @@ import { consola } from 'consola'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { defineUntypedSchema } from 'untyped'
+import type { NuxtDebugOptions } from '../types/debug'
 
 export default defineUntypedSchema({
   /**
@@ -20,9 +21,10 @@ export default defineUntypedSchema({
     },
     define: {
       $resolve: async (val: Record<string, any> | undefined, get) => {
-        const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')]) as [boolean, boolean]
+        const [isDev, debug] = await Promise.all([get('dev'), get('debug')]) as [boolean, boolean | NuxtDebugOptions]
+
         return {
-          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': isDebug,
+          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(debug && (debug === true || debug.hydration)),
           'process.dev': isDev,
           'import.meta.dev': isDev,
           'process.test': isTest,
