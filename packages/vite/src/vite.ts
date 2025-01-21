@@ -216,7 +216,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
       for (const template of changedTemplates) {
         for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
-          server.moduleGraph.invalidateModule(mod)
           server.reloadModule(mod)
         }
       }
