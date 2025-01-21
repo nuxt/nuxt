@@ -280,6 +280,7 @@ export function useAsyncData<
     if ((options.useCache || opts._initial || (nuxtApp.isHydrating && opts._initial !== false))) {
       const cachedData = opts._initial ? initialCachedData : options.getCachedData!(key, nuxtApp)
       if (typeof cachedData !== 'undefined') {
+        asyncData.data.value = cachedData
         return Promise.resolve(cachedData)
       }
     }
