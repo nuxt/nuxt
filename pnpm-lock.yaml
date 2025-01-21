@@ -30,7 +30,7 @@ overrides:
   typescript: 5.7.3
   ufo: 1.5.4
   unbuild: 3.3.1
-  unhead: 2.0.0-alpha.2
+  unhead: 2.0.0-alpha.3
   unimport: 3.14.5
   vite: 6.0.7
   vue: 3.5.13
@@ -7334,8 +7334,8 @@ packages:
   unenv@1.10.0:
     resolution: {integrity: sha512-wY5bskBQFL9n3Eca5XnhH6KbUo/tfvkwm9OpcdCvLaeA7piBNbavbOKJySEwQ1V0RH6HvNlSAFRTpvTqgKRQXQ==}
 
-  unhead@2.0.0-alpha.2:
-    resolution: {integrity: sha512-niBkQIczWnFEJdE/3Zj4QlYtiHFCrLKVM/xdz9aOnZ3U+E8kWyCnEwpOLKZuOUjyXRGnvX9XMsbcBBkBe+ei+A==}
+  unhead@2.0.0-alpha.3:
+    resolution: {integrity: sha512-L9KBaikZL/aftapkfKW9jN4PEGv0czhodZvxHFv7JGD85WdWvVW9KJ2c74qvGhz2Y53JMjP83//O6ZwW/LhGoA==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -9930,7 +9930,7 @@ snapshots:
       '@unhead/schema': 2.0.0-alpha.3
       '@unhead/shared': 2.0.0-alpha.3
       hookable: 5.5.3
-      unhead: 2.0.0-alpha.2
+      unhead: 2.0.0-alpha.3
       vue: 3.5.13(typescript@5.7.3)
 
   '@unocss/astro@0.62.4(rollup@4.30.1)(vite@6.0.7(@types/node@22.10.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.6.1))':
@@ -15418,7 +15418,7 @@ snapshots:
       node-fetch-native: 1.6.4
       pathe: 1.1.2
 
-  unhead@2.0.0-alpha.2:
+  unhead@2.0.0-alpha.3:
     dependencies:
       '@unhead/schema': 2.0.0-alpha.3
       '@unhead/shared': 2.0.0-alpha.3

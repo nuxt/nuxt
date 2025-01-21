@@ -88,7 +88,5 @@ export function useServerSeoMeta<T extends MergeHead> (input: UseSeoMetaInput, o
  */
 export function useScript<T extends Record<symbol | string, any> = Record<symbol | string, any>> (input: UseScriptInput, options?: UseScriptOptions<T> & { nuxt?: NuxtApp }): UseScriptReturn<T> | void {
   const unhead = injectHead(options?.nuxt)
-  // TODO not sure
-  // @ts-expect-error untyped
   return script(input, { head: unhead, ...options })
 }
