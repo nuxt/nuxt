@@ -129,7 +129,25 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
           const scannedImports = await scanDirExports(composablesDirs, {
             fileFilter: file => !isIgnored(file),
           })
+
+          const presetMap = new Map<string, string>()
+
+          for (const preset of presets) {
+            preset.imports = preset.imports ?? []
+            for (const i of preset.imports) {
+              presetMap.set(i, preset.from)
+            }
+            presetMap.set(preset.as, preset.from)
+          }
+
           for (const i of scannedImports) {
+            const name = i.as ?? i.name
+            const preset = presetMap.get(name)
+
+            if (preset) {
+              console.warn(`[imports] "${name}" is already defined and auto imported from "${preset ?? 'unknown preset'}" within nuxt itself. Please consider renaming "${name}" at ${i.from}.`)
+            }
+
             i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
