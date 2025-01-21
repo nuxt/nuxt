@@ -15,6 +15,8 @@ declare global {
   var ___calls: Record<string, number>
   // eslint-disable-next-line no-var
   var ___callers: Record<string, number>
+  // eslint-disable-next-line no-var
+  var ____writeFileSync: typeof import('fs').writeFileSync
 }
 
 export function AnnotateFunctionTimingsPlugin () {
@@ -29,7 +31,7 @@ export function AnnotateFunctionTimingsPlugin () {
           walk(ast as Node, {
             enter (node) {
               if (node.type === 'FunctionDeclaration' && node.id && node.id.name) {
-                const functionName = node.id.name
+                const functionName = node.id.name ? `${node.id.name} (${id.match(/[\\/]packages[\\/]([^/]+)[\\/]/)?.[1]})` : ''
                 const start = (node.body as Node & { start: number, end: number }).start
                 const end = (node.body as Node & { start: number, end: number }).end
 

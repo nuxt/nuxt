@@ -121,7 +121,7 @@
     "unhead": "^1.11.18",
     "unimport": "^3.14.6",
     "unplugin": "^2.1.2",
-    "unplugin-vue-router": "^0.10.9",
+    "unplugin-vue-router": "^0.11.0",
     "unstorage": "^1.14.4",
     "untyped": "^1.5.2",
     "vue": "^3.5.13",
@@ -136,7 +136,7 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.3.1",
-    "vite": "6.0.9",
+    "vite": "6.0.11",
     "vitest": "3.0.2"
   },
   "peerDependencies": {
