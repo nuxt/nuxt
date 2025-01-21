@@ -67,7 +67,7 @@
     "unbuild": "3.3.1",
     "unhead": "1.11.18",
     "unimport": "3.14.6",
-    "vite": "6.0.10",
+    "vite": "6.0.11",
     "vue": "3.5.13"
   },
   "devDependencies": {
