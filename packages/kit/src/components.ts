@@ -1,16 +1,18 @@
 import { kebabCase, pascalCase } from 'scule'
 import type { Component, ComponentsDir } from '@nuxt/schema'
 import { useNuxt } from './context'
-import { assertNuxtCompatibility } from './compatibility'
+import { checkNuxtVersion } from './compatibility'
 import { logger } from './logger'
 import { MODE_RE } from './utils'
 
 /**
  * Register a directory to be scanned for components and imported only when used.
  */
-export async function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
+export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
-  await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
+  if (!checkNuxtVersion('>=2.13', nuxt)) {
+    throw new Error(`\`addComponentsDir\` requires Nuxt 2.13 or higher.`)
+  }
   nuxt.options.components ||= []
   dir.priority ||= 0
   nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
@@ -23,9 +25,12 @@ export type AddComponentOptions = { name: string, filePath: string } & Partial<E
 /**
  * Register a component by its name and filePath.
  */
-export async function addComponent (opts: AddComponentOptions) {
+export function addComponent (opts: AddComponentOptions) {
   const nuxt = useNuxt()
-  await assertNuxtCompatibility({ nuxt: '>=2.13' }, nuxt)
+  if (!checkNuxtVersion('>=2.13', nuxt)) {
+    throw new Error(`\`addComponent\` requires Nuxt 2.13 or higher.`)
+  }
+
   nuxt.options.components ||= []
 
   if (!opts.mode) {
