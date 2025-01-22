@@ -90,7 +90,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "globby": "^14.0.2",
-    "h3": "npm:h3-nightly@1.13.1-20250110-173418-de24917",
+    "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
     "hookable": "^5.5.3",
     "ignore": "^7.0.3",
     "impound": "^0.2.0",

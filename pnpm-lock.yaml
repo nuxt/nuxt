@@ -23,7 +23,7 @@ overrides:
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
   c12: 2.0.1
-  h3: npm:h3-nightly@1.13.1-20250110-173418-de24917
+  h3: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
   jiti: 2.4.2
   magic-string: ^0.30.17
   nitro: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
@@ -138,8 +138,8 @@ importers:
         specifier: 3.0.3
         version: 3.0.3
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       happy-dom:
         specifier: 16.7.2
         version: 16.7.2
@@ -400,8 +400,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       hookable:
         specifier: ^5.5.3
         version: 5.5.3
@@ -581,8 +581,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -733,8 +733,8 @@ importers:
         specifier: 6.2.0
         version: 6.2.0(webpack@5.97.1)
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       hookable:
         specifier: 5.5.3
         version: 5.5.3
@@ -871,8 +871,8 @@ importers:
         specifier: ^3.1.2
         version: 3.1.2
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -974,8 +974,8 @@ importers:
         specifier: ^14.0.2
         version: 14.0.2
       h3:
-        specifier: npm:h3-nightly@1.13.1-20250110-173418-de24917
-        version: h3-nightly@1.13.1-20250110-173418-de24917
+        specifier: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+        version: h3-nightly@1.14.0-20250122-114730-3f9e703
       jiti:
         specifier: 2.4.2
         version: 2.4.2
@@ -3989,8 +3989,8 @@ packages:
       uWebSockets.js:
         optional: true
 
-  crossws@0.3.1:
-    resolution: {integrity: sha512-HsZgeVYaG+b5zA+9PbIPGq4+J/CJynJuearykPsXx4V/eMhyQ5EDVg3Ak2FBZtVXCiOLu/U7IiwDHTr9MA+IKw==}
+  crossws@0.3.2:
+    resolution: {integrity: sha512-S2PpQHRcgYABOS2465b34wqTOn5dbLL+iSvyweJYGGFLDsKq88xrjDXUiEhfYkhWZq1HuS6of3okRHILbkrqxw==}
 
   css-declaration-sorter@7.2.0:
     resolution: {integrity: sha512-h70rUM+3PNFuaBDTLe8wF/cdWu+dOZmb7pJt8Z2sedYbAcQVQV/tEchueg3GWxwqS0cxtbxmaHEdkNACqcvsow==}
@@ -4838,8 +4838,8 @@ packages:
     resolution: {integrity: sha512-O1Ld7Dr+nqPnmGpdhzLmMTQ4vAsD+rHwMm1NLUmoUFFymBOMKxCCrtDxqdBRYXdeEPEi3SyoR4TizJLQrnKBNA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  h3-nightly@1.13.1-20250110-173418-de24917:
-    resolution: {integrity: sha512-ZZcPxG88yXVLmPuZfCJeN/QLPomxwu1RTeHS6jprOpeGWSETpHceJQIlJmUL67uU8IRRGM3lQyVWoMV5TfcWMQ==}
+  h3-nightly@1.14.0-20250122-114730-3f9e703:
+    resolution: {integrity: sha512-mAl1YHJq2fwAIVXBaDCQD9uIiAFs+Jl3uNg6vGFfHG8VPHzcEqFbImUE83wCLHYCxC68qSjEnkaDCRzO8SNQAA==}
 
   happy-dom@16.7.2:
     resolution: {integrity: sha512-zOzw0xyYlDaF/ylwbAsduYZZVRTd5u7IwlFkGbEathIeJMLp3vrN3cHm3RS7PZpD9gr/IO16bHEswcgNyWTsqw==}
@@ -8988,7 +8988,7 @@ snapshots:
       defu: 6.1.4
       fuse.js: 7.0.0
       giget: 1.2.3
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       httpxy: 0.1.5
       jiti: 2.4.2
       listhen: 1.9.0
@@ -9186,7 +9186,7 @@ snapshots:
       '@vueuse/core': 11.1.0(vue@3.5.13(typescript@5.7.3))
       consola: 3.4.0
       defu: 6.1.4
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       magic-string: 0.30.17
       mlly: 1.7.4
       ofetch: 1.4.1
@@ -9272,7 +9272,7 @@ snapshots:
       estree-walker: 3.0.3
       fake-indexeddb: 6.0.0
       get-port-please: 3.1.2
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       local-pkg: 1.0.0
       magic-string: 0.30.17
       node-fetch-native: 1.6.4
@@ -11607,7 +11607,7 @@ snapshots:
 
   crossws@0.2.4: {}
 
-  crossws@0.3.1:
+  crossws@0.3.2:
     dependencies:
       uncrypto: 0.1.3
 
@@ -12602,10 +12602,10 @@ snapshots:
     dependencies:
       duplexer: 0.1.2
 
-  h3-nightly@1.13.1-20250110-173418-de24917:
+  h3-nightly@1.14.0-20250122-114730-3f9e703:
     dependencies:
       cookie-es: 1.2.2
-      crossws: 0.3.1
+      crossws: 0.3.2
       defu: 6.1.4
       destr: 2.0.3
       iron-webcrypto: 1.2.1
@@ -13285,10 +13285,10 @@ snapshots:
       citty: 0.1.6
       clipboardy: 4.0.0
       consola: 3.4.0
-      crossws: 0.3.1
+      crossws: 0.3.2
       defu: 6.1.4
       get-port-please: 3.1.2
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       http-shutdown: 1.2.2
       jiti: 2.4.2
       mlly: 1.7.4
@@ -13944,7 +13944,7 @@ snapshots:
       fs-extra: 11.2.0
       globby: 14.0.2
       gzip-size: 7.0.0
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       hookable: 5.5.3
       httpxy: 0.1.5
       ioredis: 5.4.1
@@ -15934,7 +15934,7 @@ snapshots:
       anymatch: 3.1.3
       chokidar: 3.6.0
       destr: 2.0.3
-      h3: h3-nightly@1.13.1-20250110-173418-de24917
+      h3: h3-nightly@1.14.0-20250122-114730-3f9e703
       lru-cache: 10.4.3
       node-fetch-native: 1.6.4
       ofetch: 1.4.1
