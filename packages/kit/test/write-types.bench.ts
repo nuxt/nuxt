@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { afterAll, bench, describe } from 'vitest'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { loadNuxt, writeTypes } from '../src'
+import { loadNuxt, writeTypes } from '@nuxt/kit'
 
 describe('writeTypes', async () => {
   const relativeDir = join('../../..', 'test/fixtures/basic-types')

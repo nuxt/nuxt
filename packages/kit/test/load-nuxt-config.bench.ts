@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { bench, describe } from 'vitest'
 import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { loadNuxtConfig } from '../src'
+import { loadNuxtConfig } from '@nuxt/kit'
 
 const fixtures = {
   'empty directory': 'node_modules/fixture',

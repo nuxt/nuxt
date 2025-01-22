@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { bench, describe } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { loadNuxt } from '../src'
+import { loadNuxt } from 'nuxt'
 
 const emptyDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../node_modules/fixture', import.meta.url))))
 const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
