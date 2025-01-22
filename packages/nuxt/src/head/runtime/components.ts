@@ -1,4 +1,4 @@
-import { computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 import type { PropType, SetupContext } from 'vue'
 import type {
   CrossOrigin,
@@ -23,7 +23,7 @@ const removeUndefinedProps = (props: Props) => {
 }
 
 const setupForUseMeta = (metaFactory: (props: Props, ctx: SetupContext) => Record<string, any>, renderChild?: boolean) => (props: Props, ctx: SetupContext) => {
-  useHead(computed(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx)))
+  useHead(() => metaFactory({ ...removeUndefinedProps(props), ...ctx.attrs }, ctx))
   return () => renderChild ? ctx.slots.default?.() : null
 }
 

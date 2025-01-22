@@ -1,4 +1,4 @@
-import type { UseScriptInput, UseScriptOptions } from '@unhead/vue/legacy'
+import type { UseScriptInput } from '@unhead/vue/legacy'
 import { createError } from './error'
 
 function renderStubMessage (name: string) {
@@ -13,7 +13,7 @@ function renderStubMessage (name: string) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useScript<T extends Record<string | symbol, any>> (input: UseScriptInput, options?: UseScriptOptions) {
+export function useScript<T extends Record<string | symbol, any>> (input: UseScriptInput, options?: Record<string, unknown>) {
   renderStubMessage('useScript')
 }
 

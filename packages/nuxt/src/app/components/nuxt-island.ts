@@ -91,7 +91,7 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
-    let activeHead: ActiveHeadEntry<Partial<ResolvedHead>>
+    let activeHead: ActiveHeadEntry<ResolvedHead>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
