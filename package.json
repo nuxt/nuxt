@@ -37,6 +37,8 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
   "resolutions": {
+    "@babel/core": "7.26.0",
+    "@babel/helper-plugin-utils": "7.26.5",
     "@nuxt/cli": "3.20.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
