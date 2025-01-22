@@ -1,7 +1,11 @@
 // @ts-check
 
+import { fileURLToPath } from 'node:url'
+
 import { declare } from '@babel/helper-plugin-utils'
 import { types as t } from '@babel/core'
+
+const metricsPath = fileURLToPath(new URL('../../debug-timings.json', import.meta.url))
 
 // inlined from https://github.com/danielroe/errx
 function captureStackTrace () {
@@ -46,6 +50,7 @@ function captureStackTrace () {
 }
 
 export const leading = `
+import { writeFileSync as ____writeFileSync } from 'node:fs'
 const ___captureStackTrace = ${captureStackTrace.toString()};
 globalThis.___calls ||= {};
 globalThis.___timings ||= {};
@@ -54,6 +59,16 @@ globalThis.___callers ||= {};`
 function onExit () {
   if (globalThis.___logged) { return }
   globalThis.___logged = true
+
+  // eslint-disable-next-line no-undef
+  ____writeFileSync(metricsPath, JSON.stringify(Object.fromEntries(Object.entries(globalThis.___timings).map(([name, time]) => [
+    name,
+    {
+      time: Number(Number(time).toFixed(2)),
+      calls: globalThis.___calls[name],
+      callers: globalThis.___callers[name] ? Object.fromEntries(Object.entries(globalThis.___callers[name]).map(([name, count]) => [name.trim(), count]).sort((a, b) => typeof b[0] === 'string' && typeof a[0] === 'string' ? a[0].localeCompare(b[0]) : 0)) : undefined,
+    },
+  ]).sort((a, b) => typeof b[0] === 'string' && typeof a[0] === 'string' ? a[0].localeCompare(b[0]) : 0)), null, 2))
 
   // worst by total time
   const timings = Object.entries(globalThis.___timings)
@@ -93,7 +108,7 @@ function onExit () {
   console.table(topFunctionsAverageTime)
 }
 
-export const trailing = `process.on("exit", ${onExit.toString()})`
+export const trailing = `process.on("exit", ${onExit.toString().replace('metricsPath', JSON.stringify(metricsPath))})`
 
 /** @param {string} functionName */
 export function generateInitCode (functionName) {
