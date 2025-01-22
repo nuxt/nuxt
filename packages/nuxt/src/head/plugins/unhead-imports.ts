@@ -2,6 +2,7 @@ import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { ImportSpecifier } from 'estree'
 import { relative } from 'pathe'
+import { unheadVueComposablesImports } from '@unhead/vue'
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
 import { isJS, isVue } from '../../core/utils'
 import { distDir } from '../../dirs'
@@ -20,15 +21,6 @@ function toImports (specifiers: ImportSpecifier[]) {
     return isNamedImport ? `${specifier.imported.name} as ${specifier.local.name}` : specifier.local.name
   })
 }
-
-const UnheadNuxtContextComposables = [
-  'useHead',
-  'useHeadSafe',
-  'useServerHeadSafe',
-  'useSeoMeta',
-  'useServerSeoMeta',
-  'useServerHead',
-]
 
 /**
  * To use composable in an async context we need to pass Nuxt context to the Unhead composables.
@@ -58,8 +50,8 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         }
       })
 
-      const importsFromUnhead = importsToAdd.filter(specifier => UnheadNuxtContextComposables.includes(specifier.imported.name))
-      const importsFromHead = importsToAdd.filter(specifier => !UnheadNuxtContextComposables.includes(specifier.imported.name))
+      const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports['@unhead/vue'].includes(specifier.imported.name))
+      const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports['@unhead/vue'].includes(specifier.imported.name))
       if (importsFromUnhead.length) {
         // warn if user has imported from @unhead/vue themselves
         if (!id.includes('node_modules')) {

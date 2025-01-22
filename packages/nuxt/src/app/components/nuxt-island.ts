@@ -7,7 +7,7 @@ import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
 
-import type { ActiveHeadEntry, ResolvedHead } from '@unhead/vue/types'
+import type { ActiveHeadEntry, Head } from '@unhead/vue/types'
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { prerenderRoutes, useRequestEvent } from '../composables/ssr'
@@ -91,7 +91,7 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
-    let activeHead: ActiveHeadEntry<ResolvedHead>
+    let activeHead: ActiveHeadEntry<Head>
 
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
