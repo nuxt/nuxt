@@ -58,10 +58,10 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         if (!id.includes('node_modules')) {
           logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#app\` instead for full type safety.`)
         }
-        s.prepend(`import { ${toImports(importsFromUnhead).join(', ')} } from '#app/composables/head'\n`)
+        s.prepend(`import { ${toImports(importsFromUnhead).join(', ')} } from "#app/composables/head"\n`)
       }
       if (importsFromHead.length) {
-        s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from ${JSON.stringify(UnheadVue)}'\n`)
+        s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from "${UnheadVue}"\n`)
       }
 
       if (s.hasChanged()) {

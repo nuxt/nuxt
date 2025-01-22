@@ -19,7 +19,12 @@ export function injectHead (nuxtApp?: NuxtApp): VueHeadClient<MergeHead> {
   const nuxt = nuxtApp || useNuxtApp()
   return nuxt.ssrContext?.head || nuxt.runWithContext(() => {
     if (hasInjectionContext()) {
-      return inject<VueHeadClient<MergeHead>>(headSymbol)!
+      const head = inject<VueHeadClient<MergeHead>>(headSymbol)
+      // should not be possible
+      if (!head) {
+        throw new Error('[nuxt] [unhead] Missing Unhead instance.')
+      }
+      return head
     }
   }) as VueHeadClient<MergeHead>
 }
