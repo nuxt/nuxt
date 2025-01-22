@@ -1,6 +1,6 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
-import type { ImportSpecifier } from 'estree'
+import type { Identifier, ImportSpecifier } from 'estree'
 import { relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
@@ -17,10 +17,13 @@ const UNHEAD_LIB_RE = /node_modules\/(?:@unhead\/[^/]+|unhead)\//
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
-    const isNamedImport = specifier.imported && specifier.imported.name !== specifier.local.name
-    return isNamedImport ? `${specifier.imported.name} as ${specifier.local.name}` : specifier.local.name
+    const imported = specifier.imported as Identifier | null
+    const isNamedImport = imported && imported.name !== specifier.local.name
+    return isNamedImport ? `${imported.name} as ${specifier.local.name}` : specifier.local.name
   })
 }
+
+const UnheadVue = '@unhead/vue'
 
 /**
  * To use composable in an async context we need to pass Nuxt context to the Unhead composables.
@@ -35,7 +38,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       return (isJS(id) || isVue(id, { type: ['script'] })) && !id.startsWith(distDir) && !UNHEAD_LIB_RE.test(id)
     },
     transform (code, id) {
-      if (!code.includes('@unhead/vue')) {
+      if (!code.includes(UnheadVue)) {
         return
       }
       const s = new MagicString(code)
@@ -43,25 +46,25 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       // Without setup function, vue compiler does not generate __name
       parseAndWalk(code, id, function (node) {
         // find any imports from @unhead/vue, swap the matchImports for an import from #app/composables/head
-        if (node.type === 'ImportDeclaration' && ['@unhead/vue', '#app/composables/head'].includes(node.source.value)) {
+        if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
           importsToAdd.push(...node.specifiers as ImportSpecifier[])
           const { start, end } = withLocations(node)
           s.remove(start, end)
         }
       })
 
-      const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports['@unhead/vue'].includes(specifier.imported.name))
-      const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports['@unhead/vue'].includes(specifier.imported.name))
+      const importsFromUnhead = importsToAdd.filter(specifier => unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
+      const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
       if (importsFromUnhead.length) {
         // warn if user has imported from @unhead/vue themselves
         if (!id.includes('node_modules')) {
-          logger.warn(`You are importing from \`@unhead/vue\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#app\` instead for full type safety.`)
+          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#app\` instead for full type safety.`)
         }
         s.prepend(`import { ${toImports(importsFromUnhead).join(', ')} } from '#app/composables/head'\n`)
       }
       // if there are imports from #app/composables/head, add an import from @unhead/vue
       if (importsFromHead.length) {
-        s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from '@unhead/vue'\n`)
+        s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from ${JSON.stringify(UnheadVue)}'\n`)
       }
 
       if (s.hasChanged()) {
