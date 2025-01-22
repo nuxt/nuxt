@@ -13,7 +13,7 @@ describe('writeTypes', async () => {
     await nuxt.close()
   })
 
-  bench('write types', async () => {
+  bench('writeTypes in the basic-types fixture', async () => {
     await writeTypes(nuxt)
   })
 })

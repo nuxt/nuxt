@@ -16,7 +16,7 @@ describe('loadNuxtConfig', () => {
   for (const fixture in fixtures) {
     const relativeDir = join('../../..', fixtures[fixture as keyof typeof fixtures])
     const path = withoutTrailingSlash(normalize(fileURLToPath(new URL(relativeDir, import.meta.url))))
-    bench(fixture, async () => {
+    bench(`loadNuxtConfig in the ${fixture}`, async () => {
       await loadNuxtConfig({ cwd: path })
     })
   }
