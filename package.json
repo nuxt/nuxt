@@ -74,7 +74,7 @@
     "@arethetypeswrong/cli": "0.17.3",
     "@babel/core": "7.26.0",
     "@babel/helper-plugin-utils": "7.26.5",
-    "@codspeed/vitest-plugin": "^4.0.0",
+    "@codspeed/vitest-plugin": "4.0.0",
     "@nuxt/cli": "3.20.0",
     "@nuxt/eslint-config": "0.7.5",
     "@nuxt/kit": "workspace:*",
