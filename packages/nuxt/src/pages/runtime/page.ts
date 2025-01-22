@@ -1,8 +1,8 @@
 import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
+import type { AllowedComponentProps, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
@@ -13,6 +13,23 @@ import { _wrapIf } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+
+export interface NuxtPageProps extends RouterViewProps {
+  /**
+   * Define global transitions for all pages rendered with the `NuxtPage` component.
+   */
+  transition?: boolean | TransitionProps
+
+  /**
+   * Control state preservation of pages rendered with the `NuxtPage` component.
+   */
+  keepalive?: boolean | KeepAliveProps
+
+  /**
+   * Control when the `NuxtPage` component is re-rendered.
+   */
+  pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
+}
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -147,7 +164,24 @@ export default defineComponent({
       })
     }
   },
-})
+}) as unknown as {
+  new(): {
+    $props: AllowedComponentProps &
+      ComponentCustomProps &
+      VNodeProps &
+      NuxtPageProps
+
+    $slots: {
+      default?: (routeProps: RouterViewSlotProps) => VNode[]
+    }
+
+    // expose
+    /**
+     * Reference to the page component instance
+     */
+    pageRef: Element | ComponentPublicInstance | null
+  }
+}
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
