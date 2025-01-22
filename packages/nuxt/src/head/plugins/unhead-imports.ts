@@ -43,9 +43,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       }
       const s = new MagicString(code)
       const importsToAdd: ImportSpecifier[] = []
-      // Without setup function, vue compiler does not generate __name
       parseAndWalk(code, id, function (node) {
-        // find any imports from @unhead/vue, swap the matchImports for an import from #app/composables/head
         if (node.type === 'ImportDeclaration' && [UnheadVue, '#app/composables/head'].includes(String(node.source.value))) {
           importsToAdd.push(...node.specifiers as ImportSpecifier[])
           const { start, end } = withLocations(node)
@@ -62,7 +60,6 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         }
         s.prepend(`import { ${toImports(importsFromUnhead).join(', ')} } from '#app/composables/head'\n`)
       }
-      // if there are imports from #app/composables/head, add an import from @unhead/vue
       if (importsFromHead.length) {
         s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from ${JSON.stringify(UnheadVue)}'\n`)
       }

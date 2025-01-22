@@ -17,7 +17,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead as createServerHead, propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { Head, HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
+import type { Head, HeadEntryOptions, Link, Script, Style } from '@unhead/vue/types'
 import { resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
