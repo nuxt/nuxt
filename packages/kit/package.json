@@ -46,7 +46,7 @@
     "std-env": "^3.8.0",
     "ufo": "^1.5.4",
     "unctx": "^2.4.1",
-    "unimport": "^3.14.6",
+    "unimport": "^4.0.0",
     "untyped": "^1.5.2"
   },
   "devDependencies": {
@@ -59,6 +59,6 @@
     "webpack": "5.97.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=18.12.0"
   }
 }
