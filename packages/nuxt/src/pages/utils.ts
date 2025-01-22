@@ -202,7 +202,7 @@ export function extractScriptContent (sfc: string) {
 }
 
 const PAGE_META_RE = /definePageMeta\([\s\S]*?\)/
-const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect'] as const
+const defaultExtractionKeys = ['name', 'path', 'props', 'alias', 'redirect', 'middleware'] as const
 const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
 
 const pageContentsCache: Record<string, string> = {}

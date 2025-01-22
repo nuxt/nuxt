@@ -34,6 +34,7 @@ export type NuxtPage = {
   alias?: string[] | string
   redirect?: RouteLocationRaw
   children?: NuxtPage[]
+  middleware?: string[] | string
   /**
    * Set the render mode.
    *

@@ -295,7 +295,7 @@ export default defineUntypedSchema({
     inlineRouteRules: false,
 
     /**
-     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect).
+     * Allow exposing some route metadata defined in `definePageMeta` at build-time to modules (alias, name, path, redirect, props, middleware).
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
