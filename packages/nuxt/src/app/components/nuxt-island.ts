@@ -222,6 +222,7 @@ export default defineComponent({
           if (activeHead) {
             activeHead.patch(res.head)
           } else {
+            // @ts-expect-error type juggling
             activeHead = head.push(res.head)
           }
         }

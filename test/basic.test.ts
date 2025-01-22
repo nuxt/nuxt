@@ -2801,7 +2801,7 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
               .replace(/blue/, '#00f')
         }
         if (style.key) {
-          style.key = style.key.replace(/-[a-z0-9]+$/i, '')
+          style.key = String(style.key).replace(/-[a-z0-9]+$/i, '')
         }
       }
     }
