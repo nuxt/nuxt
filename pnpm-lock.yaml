@@ -34,7 +34,7 @@ overrides:
   ufo: 1.5.4
   unbuild: 3.3.1
   unhead: 1.11.18
-  unimport: 3.14.6
+  unimport: 4.0.0
   vite: 6.0.11
   vue: 3.5.13
 
@@ -286,8 +286,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 3.14.6
-        version: 3.14.6(rollup@4.31.0)
+        specifier: 4.0.0
+        version: 4.0.0(rollup@4.31.0)
       untyped:
         specifier: ^1.5.2
         version: 1.5.2
@@ -485,8 +485,8 @@ importers:
         specifier: 1.11.18
         version: 1.11.18
       unimport:
-        specifier: 3.14.6
-        version: 3.14.6(rollup@4.31.0)
+        specifier: 4.0.0
+        version: 4.0.0(rollup@4.31.0)
       unplugin:
         specifier: ^2.1.2
         version: 2.1.2
@@ -761,8 +761,8 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
       unimport:
-        specifier: 3.14.6
-        version: 3.14.6(rollup@4.31.0)
+        specifier: 4.0.0
+        version: 4.0.0(rollup@4.31.0)
       untyped:
         specifier: 1.5.2
         version: 1.5.2
@@ -7524,8 +7524,9 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@3.14.6:
-    resolution: {integrity: sha512-CYvbDaTT04Rh8bmD8jz3WPmHYZRG/NnvYVzwD6V1YAlvvKROlAeNDUBhkBGzNav2RKaeuXvlWYaa1V4Lfi/O0g==}
+  unimport@4.0.0:
+    resolution: {integrity: sha512-FH+yZ36YaVlh0ZjHesP20Q4uL+wL0EqTNxDZcUupsIn6WRYXZAbIYEMDLTaLBpkNVzFpqZXS+am51/HR3ANUNw==}
+    engines: {node: '>=18.12.0'}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -9148,7 +9149,7 @@ snapshots:
       simple-git: 3.27.0
       sirv: 3.0.0
       tinyglobby: 0.2.10
-      unimport: 3.14.6(rollup@4.31.0)
+      unimport: 4.0.0(rollup@4.31.0)
       vite: 6.0.11(@types/node@22.10.7)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-inspect: 0.8.9(@nuxt/kit@packages+kit)(rollup@4.31.0)(vite@6.0.11(@types/node@22.10.7)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
       vite-plugin-vue-inspector: 5.3.1(vite@6.0.11(@types/node@22.10.7)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -9232,7 +9233,7 @@ snapshots:
       std-env: 3.8.0
       third-party-capital: 2.3.0
       ufo: 1.5.4
-      unimport: 3.14.6(rollup@4.31.0)
+      unimport: 4.0.0(rollup@4.31.0)
       unplugin: 1.16.1
       unstorage: 1.14.4(db0@0.1.4)(ioredis@5.4.1)
       valibot: 0.42.1(typescript@5.7.3)
@@ -11266,7 +11267,7 @@ snapshots:
 
   babel-walk@3.0.0-canary-5:
     dependencies:
-      '@babel/types': 7.26.3
+      '@babel/types': 7.26.5
 
   bail@2.0.2: {}
 
@@ -11602,8 +11603,8 @@ snapshots:
 
   constantinople@4.0.1:
     dependencies:
-      '@babel/parser': 7.26.2
-      '@babel/types': 7.26.3
+      '@babel/parser': 7.26.5
+      '@babel/types': 7.26.5
 
   convert-gitmoji@0.1.5: {}
 
@@ -14034,7 +14035,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.4.1
       unenv: 1.10.0
-      unimport: 3.14.6(rollup@4.31.0)
+      unimport: 4.0.0(rollup@4.31.0)
       unstorage: 1.14.4(db0@0.1.4)(ioredis@5.4.1)
       untyped: 1.5.2
       unwasm: 0.3.9
@@ -15823,7 +15824,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@3.14.6(rollup@4.31.0):
+  unimport@4.0.0(rollup@4.31.0):
     dependencies:
       '@rollup/pluginutils': 5.1.4(rollup@4.31.0)
       acorn: 8.14.0
@@ -15837,8 +15838,8 @@ snapshots:
       picomatch: 4.0.2
       pkg-types: 1.3.1
       scule: 1.3.0
-      strip-literal: 2.1.1
-      unplugin: 1.16.1
+      strip-literal: 3.0.0
+      unplugin: 2.1.2
     transitivePeerDependencies:
       - rollup
 
@@ -16648,8 +16649,8 @@ snapshots:
 
   with@7.0.2:
     dependencies:
-      '@babel/parser': 7.26.2
-      '@babel/types': 7.26.3
+      '@babel/parser': 7.26.5
+      '@babel/types': 7.26.5
       assert-never: 1.3.0
       babel-walk: 3.0.0-canary-5
 
