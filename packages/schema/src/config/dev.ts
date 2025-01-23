@@ -16,7 +16,7 @@ export default defineUntypedSchema({
      *   }
      * })
      * ```
-     * @type {boolean | { key: string; cert: string }}
+     * @type {boolean | { key: string; cert: string } | { pfx: string; passphrase: string }}
      */
     https: false,
 

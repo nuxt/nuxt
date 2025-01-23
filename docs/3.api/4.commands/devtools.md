@@ -4,7 +4,7 @@ description: The devtools command allows you to enable or disable Nuxt DevTools 
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/devtools.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/devtools.ts
     size: xs
 ---
 

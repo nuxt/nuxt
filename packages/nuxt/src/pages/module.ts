@@ -1,6 +1,6 @@
 import { existsSync, readdirSync } from 'node:fs'
 import { mkdir, readFile } from 'node:fs/promises'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, resolvePath, updateTemplates, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, addTypeTemplate, defineNuxtModule, findPath, resolvePath, useNitro } from '@nuxt/kit'
 import { dirname, join, relative, resolve } from 'pathe'
 import { genImport, genObjectFromRawEntries, genString } from 'knitwork'
 import { joinURL } from 'ufo'
@@ -93,10 +93,8 @@ export default defineNuxtModule({
       addPlugin(resolve(runtimeDir, 'plugins/check-if-page-unused'))
     }
 
-    nuxt.hook('app:templates', async (app) => {
-      app.pages = await resolvePagesRoutes(nuxt)
-
-      if (!nuxt.options.ssr && app.pages.some(p => p.mode === 'server')) {
+    nuxt.hook('app:templates', (app) => {
+      if (!nuxt.options.ssr && app.pages?.some(p => p.mode === 'server')) {
         logger.warn('Using server pages with `ssr: false` is not supported with auto-detected component islands. Set `experimental.componentIslands` to `true`.')
       }
     })
@@ -269,6 +267,13 @@ export default defineNuxtModule({
       if (!pages) { return false }
       return pages.some(page => page.file === file) || pages.some(page => page.children && isPage(file, page.children))
     }
+
+    nuxt.hooks.hookOnce('app:templates', async (app) => {
+      if (!app.pages) {
+        app.pages = await resolvePagesRoutes(nuxt)
+      }
+    })
+
     nuxt.hook('builder:watch', async (event, relativePath) => {
       const path = resolve(nuxt.options.srcDir, relativePath)
       const shouldAlwaysRegenerate = nuxt.options.experimental.scanPageMeta && isPage(path)
@@ -276,9 +281,7 @@ export default defineNuxtModule({
       if (event === 'change' && !shouldAlwaysRegenerate) { return }
 
       if (shouldAlwaysRegenerate || updateTemplatePaths.some(dir => path.startsWith(dir))) {
-        await updateTemplates({
-          filter: template => template.filename === 'routes.mjs',
-        })
+        nuxt.apps.default!.pages = await resolvePagesRoutes(nuxt)
       }
     })
 
@@ -530,8 +533,8 @@ export default defineNuxtModule({
       getContents: () => 'export { START_LOCATION, useRoute } from \'vue-router\'',
     })
 
-    nuxt.options.vite.resolve = nuxt.options.vite.resolve || {}
-    nuxt.options.vite.resolve.dedupe = nuxt.options.vite.resolve.dedupe || []
+    nuxt.options.vite.resolve ||= {}
+    nuxt.options.vite.resolve.dedupe ||= []
     nuxt.options.vite.resolve.dedupe.push('vue-router')
 
     // Add router options template
@@ -631,22 +634,32 @@ const ROUTES_HMR_CODE = /* js */`
 if (import.meta.hot) {
   import.meta.hot.accept((mod) => {
     const router = import.meta.hot.data.router
-    if (!router) {
+    const generateRoutes = import.meta.hot.data.generateRoutes
+    if (!router || !generateRoutes) {
       import.meta.hot.invalidate('[nuxt] Cannot replace routes because there is no active router. Reloading.')
       return
     }
     router.clearRoutes()
-    for (const route of mod.default || mod) {
-      router.addRoute(route)
+    const routes = generateRoutes(mod.default || mod)
+    function addRoutes (routes) {
+      for (const route of routes) {
+        router.addRoute(route)
+      }
+      router.replace(router.currentRoute.value.fullPath)
     }
-    router.replace('')
+    if (routes && 'then' in routes) {
+      routes.then(addRoutes)
+    } else {
+      addRoutes(routes)
+    }
   })
 }
 
-export function handleHotUpdate(_router) {
+export function handleHotUpdate(_router, _generateRoutes) {
   if (import.meta.hot) {
     import.meta.hot.data ||= {}
     import.meta.hot.data.router = _router
+    import.meta.hot.data.generateRoutes = _generateRoutes
   }
 }
 `

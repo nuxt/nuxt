@@ -7,7 +7,6 @@ import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
-import { join } from 'pathe'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -37,7 +36,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
   for (const [component, item] of Object.entries(paths)) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source, item.chunk)
+        const chunkSource = joinURL(source, item.chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())

@@ -81,7 +81,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-const keyDependencies = [
+export const keyDependencies = [
   '@nuxt/kit',
   '@nuxt/schema',
 ]
@@ -404,8 +404,11 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
   )
 
-  // Ensure we can resolve dependencies within layers
-  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
+  // Ensure we can resolve dependencies within layers - filtering out local `~/layers` directories
+  const locallyScannedLayersDirs = nuxt.options._layers.map(l => resolve(l.cwd, 'layers').replace(/\/?$/, '/'))
+  nuxt.options.modulesDir.push(...nuxt.options._layers
+    .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
+    .map(l => resolve(l.cwd, 'node_modules')))
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -802,8 +805,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  for (const dep of keyDependencies) {
-    checkDependencyVersion(dep, nuxt._version)
+  if (nuxt.options.dev && !nuxt.options.test) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      for (const dep of keyDependencies) {
+        checkDependencyVersion(dep, nuxt._version)
+          .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
+      }
+    })
   }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
@@ -822,7 +830,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
+export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
   const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
   if (!path || path === name) { return }
