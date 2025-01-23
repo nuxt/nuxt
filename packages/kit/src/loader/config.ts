@@ -58,7 +58,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const processedLayers = new Set<string>()
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
-    layer.config = layer.config || {}
+    layer.config ||= {}
     layer.config.rootDir = layer.config.rootDir ?? layer.cwd!
 
     // Only process/resolve layers once

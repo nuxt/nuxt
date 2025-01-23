@@ -1,4 +1,4 @@
-name: CI
+name: ci
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - run: corepack enable
       - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -39,4 +39,4 @@ jobs:
         run: pnpm sherif -r multiple-dependency-versions
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: pnpm installed-check -d
+        run: pnpm installed-check --no-include-workspace-root --ignore-dev --workspace-ignore='test/**,playground'

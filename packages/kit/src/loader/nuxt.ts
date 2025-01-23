@@ -17,7 +17,7 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
   opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
-  opts.overrides = opts.overrides || (opts as any).config as NuxtConfig /* backwards compat */ || {}
+  opts.overrides ||= (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev

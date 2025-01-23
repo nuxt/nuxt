@@ -2,7 +2,7 @@ import { mkdir, open, readFile, stat, unlink, writeFile } from 'node:fs/promises
 import type { FileHandle } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { existsSync } from 'node:fs'
-import { isIgnored } from '@nuxt/kit'
+import { createIsIgnored } from '@nuxt/kit'
 import type { Nuxt, NuxtConfig, NuxtConfigLayer } from '@nuxt/schema'
 import { hash, murmurHash, objectHash } from 'ohash'
 import { glob } from 'tinyglobby'
@@ -119,6 +119,7 @@ async function getHashes (nuxt: Nuxt, options: GetHashOptions): Promise<Hashes> 
       data: murmurHash(f.data as any /* ArrayBuffer */),
     }))
 
+    const isIgnored = createIsIgnored(nuxt)
     const sourceFiles = await readFilesRecursive(options.cwd(layer), {
       shouldIgnore: isIgnored, // TODO: Validate if works with absolute paths
       cwd: nuxt.options.rootDir,

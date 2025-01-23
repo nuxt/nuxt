@@ -65,7 +65,7 @@ export default defineComponent({
     if (import.meta.dev) {
       nuxtApp._isNuxtPageUsed = true
     }
-
+    let pageLoadingEndHookAlreadyCalled = false
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -99,6 +99,7 @@ export default defineComponent({
           const key = generateRouteKey(routeProps, props.pageKey)
           if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
             nuxtApp.callHook('page:loading:end')
+            pageLoadingEndHookAlreadyCalled = true
           }
           previousPageKey = key
 
@@ -115,7 +116,14 @@ export default defineComponent({
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) },
+              onResolve: () => {
+                nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    return nuxtApp.callHook('page:loading:end')
+                  }
+                  pageLoadingEndHookAlreadyCalled = false
+                }).finally(done))
+              },
             }, {
               default: () => {
                 const providerVNode = h(RouteProvider, {
