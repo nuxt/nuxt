@@ -137,5 +137,5 @@
     "webpack": "5.97.1"
   },
   "packageManager": "pnpm@9.15.4",
-  "version": ""
+  "version": "3.15.2"
 }
