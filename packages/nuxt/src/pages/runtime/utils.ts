@@ -1,4 +1,4 @@
-import { KeepAlive, h } from 'vue'
+import { KeepAlive, Transition, h } from 'vue'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
 
 type InstanceOf<T> = T extends new (...args: any[]) => infer R ? R : never
@@ -23,6 +23,10 @@ export const generateRouteKey = (routeProps: RouterViewSlotProps, override?: str
 
 export const wrapInKeepAlive = (props: any, children: any) => {
   return { default: () => import.meta.client && props ? h(KeepAlive, props === true ? {} : props, children) : children }
+}
+
+export const wrapInTransition = (props: any, children: any) => {
+  return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
 /** @since 3.9.0 */

@@ -1,19 +1,10 @@
 import { createStaticVNode, h } from 'vue'
-import type { Component, RendererNode, VNode } from 'vue'
+import type { RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
-
-/**
- * Internal utility
- * @private
- */
-export const _wrapIf = (component: Component, props: any, slots: any) => {
-  props = props === true ? {} : props
-  return { default: () => props ? h(component, props, slots) : slots.default?.() }
-}
 
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
