@@ -1,12 +1,15 @@
-import { describe, expect, it } from 'vitest'
+import { type MockedFunction, describe, expect, it, vi } from 'vitest'
 import { compileScript, parse } from '@vue/compiler-sfc'
 import * as Parser from 'acorn'
+import { klona } from 'klona'
 import { transform as esbuildTransform } from 'esbuild'
 import { PageMetaPlugin } from '../src/pages/plugins/page-meta'
 import { getRouteMeta, normalizeRoutes } from '../src/pages/utils'
 import type { NuxtPage } from '../schema'
 
 const filePath = '/app/pages/index.vue'
+
+vi.mock('klona', { spy: true })
 
 describe('page metadata', () => {
   it('should not extract metadata from empty files', async () => {
@@ -67,11 +70,20 @@ definePageMeta({ name: 'bar' })
   })
 
   it('should use and invalidate cache', async () => {
+    const _klona = klona as unknown as MockedFunction<typeof klona>
+    _klona.mockImplementation(obj => obj)
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
     const meta = await getRouteMeta(fileContents, filePath)
     expect(meta === await getRouteMeta(fileContents, filePath)).toBeTruthy()
     expect(meta === await getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
     expect(meta === await getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
+    _klona.mockReset()
+  })
+
+  it('should not share state between page metadata', async () => {
+    const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
+    const meta = await getRouteMeta(fileContents, filePath)
+    expect(meta === await getRouteMeta(fileContents, filePath)).toBeFalsy()
   })
 
   it('should extract serialisable metadata', async () => {

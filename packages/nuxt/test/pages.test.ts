@@ -836,3 +836,41 @@ describe('pages:pathToNitroGlob', () => {
     expect(pathToNitroGlob(path)).to.equal(expected)
   })
 })
+
+describe('page:extends', () => {
+  const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
+  it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
+    const files: NuxtPage[] = [
+      { path: 'home', file: `pages/index.vue` },
+      { path: 'home1', file: `pages/index.vue`, meta: { test: true } },
+      { path: 'home2', file: `pages/index.vue`, meta: { snap: true } },
+    ]
+    const vfs = Object.fromEntries(
+      files.map(file => [file.file, `
+            <script setup lang="ts">
+            definePageMeta({
+              hello: 'world'
+            })
+            </script>
+          `]),
+    ) as Record<string, string>
+    await augmentPages(files, vfs)
+    expect(files).toEqual([
+      {
+        path: 'home',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']) },
+      },
+      {
+        path: 'home1',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), test: true },
+      },
+      {
+        path: 'home2',
+        file: `pages/index.vue`,
+        meta: { [DYNAMIC_META_KEY]: new Set(['meta']), snap: true },
+      },
+    ])
+  })
+})
