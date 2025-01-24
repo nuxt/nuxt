@@ -19,7 +19,7 @@ export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNux
 export { addComponent, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
 export { nuxtCtx, tryUseNuxt, useNuxt } from './context'
-export { isIgnored, resolveIgnorePatterns } from './ignore'
+export { createIsIgnored, isIgnored, resolveIgnorePatterns } from './ignore'
 export { addLayout } from './layout'
 export { addRouteMiddleware, extendPages, extendRouteRules } from './pages'
 export type { AddRouteMiddlewareOptions, ExtendRouteRulesOptions } from './pages'
@@ -28,7 +28,7 @@ export type { AddPluginOptions } from './plugin'
 export { createResolver, findPath, resolveAlias, resolveFiles, resolveNuxtModule, resolvePath } from './resolve'
 export type { ResolvePathOptions, Resolver } from './resolve'
 export { addServerHandler, addDevServerHandler, addServerPlugin, addPrerenderRoutes, useNitro, addServerImports, addServerImportsDir, addServerScanDir } from './nitro'
-export { addTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template'
+export { addTemplate, addServerTemplate, addTypeTemplate, normalizeTemplate, updateTemplates, writeTypes } from './template'
 export { logger, useLogger } from './logger'
 
 // Internal Utils

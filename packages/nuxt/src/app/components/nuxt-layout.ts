@@ -1,12 +1,12 @@
 import type { DefineComponent, MaybeRef, VNode } from 'vue'
-import { Suspense, Transition, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
+import { Suspense, computed, defineComponent, h, inject, mergeProps, nextTick, onMounted, provide, ref, unref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 import type { PageMeta } from '../../pages/runtime/composables'
 
 import { useRoute, useRouter } from '../composables/router'
 import { useNuxtApp } from '../nuxt'
-import { _wrapIf } from './utils'
+import { _wrapInTransition } from './utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from './injections'
 
 // @ts-expect-error virtual file
@@ -16,7 +16,6 @@ import layouts from '#build/layouts'
 // @ts-expect-error virtual file
 import { appLayoutTransition as defaultLayoutTransition } from '#build/nuxt.config.mjs'
 
-// TODO: revert back to defineAsyncComponent when https://github.com/vuejs/core/issues/6638 is resolved
 const LayoutLoader = defineComponent({
   name: 'LayoutLoader',
   inheritAttrs: false,
@@ -24,13 +23,10 @@ const LayoutLoader = defineComponent({
     name: String,
     layoutProps: Object,
   },
-  async setup (props, context) {
+  setup (props, context) {
     // This is a deliberate hack - this component must always be called with an explicit key to ensure
     // that setup reruns when the name changes.
-
-    const LayoutComponent = await layouts[props.name]().then((r: any) => r.default || r)
-
-    return () => h(LayoutComponent, props.layoutProps, context.slots)
+    return () => h(layouts[props.name], props.layoutProps, context.slots)
   },
 })
 
@@ -84,7 +80,7 @@ export default defineComponent({
       const transitionProps = route.meta.layoutTransition ?? defaultLayoutTransition
 
       // We avoid rendering layout transition if there is no layout to render
-      return _wrapIf(Transition, hasLayout && transitionProps, {
+      return _wrapInTransition(hasLayout && transitionProps, {
         default: () => h(Suspense, { suspensible: true, onResolve: () => { nextTick(done) } }, {
           default: () => h(
             LayoutProvider,

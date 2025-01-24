@@ -24,7 +24,16 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Whether to generate sourcemaps.
+   * Configures whether and how sourcemaps are generated for server and/or client bundles.
+   *
+   * If set to a single boolean, that value applies to both server and client.
+   * Additionally, the `'hidden'` option is also available for both server and client.
+   *
+   * Available options for both client and server:
+   * - `true`: Generates sourcemaps and includes source references in the final bundle.
+   * - `false`: Does not generate any sourcemaps.
+   * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   *
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
@@ -76,20 +85,14 @@ export default defineUntypedSchema({
     },
 
     /**
-     * You can provide your own templates which will be rendered based
-     * on Nuxt configuration. This feature is specially useful for using with modules.
+     * It is recommended to use `addTemplate` from `@nuxt/kit` instead of this option.
      *
-     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      * @example
      * ```js
      * templates: [
      *   {
      *     src: '~/modules/support/plugin.js', // `src` can be absolute or relative
      *     dst: 'support.js', // `dst` is relative to project `.nuxt` dir
-     *     options: {
-     *       // Options are provided to template as `options` key
-     *       live_chat: false
-     *     }
      *   }
      * ]
      * ```
@@ -137,8 +140,7 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
-        { name: 'useId', argumentLength: 1 },
-        { name: 'callOnce', argumentLength: 2 },
+        { name: 'callOnce', argumentLength: 3 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },

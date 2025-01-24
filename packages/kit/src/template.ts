@@ -1,6 +1,6 @@
 import { existsSync, promises as fsp } from 'node:fs'
 import { basename, isAbsolute, join, parse, relative, resolve } from 'pathe'
-import hash from 'hash-sum'
+import { hash } from 'ohash'
 import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { withTrailingSlash } from 'ufo'
 import { defu } from 'defu'
@@ -8,13 +8,14 @@ import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
+import { filterInPlace } from './utils'
 import { tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
 
 /**
- * Renders given template using lodash template during build into the project buildDir
+ * Renders given template during build into the virtual file system (and optionally to disk in the project `buildDir`)
  */
 export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const nuxt = useNuxt()
@@ -22,9 +23,8 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   // Normalize template
   const template = normalizeTemplate(_template)
 
-  // Remove any existing template with the same filename
-  nuxt.options.build.templates = nuxt.options.build.templates
-    .filter(p => normalizeTemplate(p).filename !== template.filename)
+  // Remove any existing template with the same destination path
+  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -45,7 +45,7 @@ export function addServerTemplate (template: NuxtServerTemplate) {
 }
 
 /**
- * Renders given types using lodash template during build into the project buildDir
+ * Renders given types during build to disk in the project `buildDir`
  * and register them as types.
  */
 export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
@@ -68,7 +68,7 @@ export function addTypeTemplate<T> (_template: NuxtTypeTemplate<T>) {
 /**
  * Normalize a nuxt template object
  */
-export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): ResolvedNuxtTemplate<T> {
+export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildDir?: string): ResolvedNuxtTemplate<T> {
   if (!template) {
     throw new Error('Invalid template: ' + JSON.stringify(template))
   }
@@ -87,17 +87,16 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): Resol
     }
     if (!template.filename) {
       const srcPath = parse(template.src)
-      template.filename = (template as any).fileName ||
-        `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
+      template.filename = (template as any).fileName || `${basename(srcPath.dir)}.${srcPath.name}.${hash(template.src)}${srcPath.ext}`
     }
   }
 
   if (!template.src && !template.getContents) {
-    throw new Error('Invalid template. Either getContents or src options should be provided: ' + JSON.stringify(template))
+    throw new Error('Invalid template. Either `getContents` or `src` should be provided: ' + JSON.stringify(template))
   }
 
   if (!template.filename) {
-    throw new Error('Invalid template. Either filename should be provided: ' + JSON.stringify(template))
+    throw new Error('Invalid template. `filename` must be provided: ' + JSON.stringify(template))
   }
 
   // Always write declaration files
@@ -107,8 +106,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string): Resol
 
   // Resolve dst
   if (!template.dst) {
-    const nuxt = useNuxt()
-    template.dst = resolve(nuxt.options.buildDir, template.filename)
+    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
   }
 
   return template as ResolvedNuxtTemplate<T>
@@ -232,8 +230,9 @@ export async function _generateTypes (nuxt: Nuxt) {
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
-  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  tsConfig.include = tsConfig.include || []
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  tsConfig.include ||= []
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
@@ -293,6 +292,10 @@ export async function _generateTypes (nuxt: Nuxt) {
     }))
   }
 
+  // Ensure `#build` is placed at the end of the paths object.
+  // https://github.com/nuxt/nuxt/issues/30325
+  sortTsPaths(tsConfig.compilerOptions.paths)
+
   tsConfig.include = [...new Set(tsConfig.include.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
   tsConfig.exclude = [...new Set(tsConfig.exclude!.map(p => isAbsolute(p) ? relativeWithDot(nuxt.options.buildDir, p) : p))]
 
@@ -330,6 +333,17 @@ export async function writeTypes (nuxt: Nuxt) {
   }
 
   await writeFile()
+}
+
+function sortTsPaths (paths: Record<string, string[]>) {
+  for (const pathKey in paths) {
+    if (pathKey.startsWith('#build')) {
+      const pathValue = paths[pathKey]!
+      // Delete & Reassign to ensure key is inserted at the end of object.
+      delete paths[pathKey]
+      paths[pathKey] = pathValue
+    }
+  }
 }
 
 function renderAttrs (obj: Record<string, string>) {

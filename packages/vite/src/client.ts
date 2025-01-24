@@ -9,7 +9,7 @@ import { getPort } from 'get-port-please'
 import { joinURL, withoutLeadingSlash } from 'ufo'
 import { defu } from 'defu'
 import { env, nodeless } from 'unenv'
-import { appendCorsHeaders, appendCorsPreflightHeaders, defineEventHandler } from 'h3'
+import { defineEventHandler, handleCors, setHeader } from 'h3'
 import type { ViteConfig } from '@nuxt/schema'
 import type { ViteBuildContext } from './vite'
 import { devStyleSSRPlugin } from './plugins/dev-ssr-css'
@@ -103,13 +103,19 @@ export async function buildClient (ctx: ViteBuildContext) {
         'ufo',
         'unctx',
         'unenv',
+
+        // these will never be imported on the client
+        '#app-manifest',
       ],
     },
     resolve: {
       alias: {
+        // user aliases
         ...nodeCompat.alias,
         ...ctx.config.resolve?.alias,
         'nitro/runtime': join(ctx.nuxt.options.buildDir, 'nitro.client.mjs'),
+        // work around vite optimizer bug
+        '#app-manifest': 'unenv/runtime/mock/empty',
       },
       dedupe: [
         'vue',
@@ -249,11 +255,11 @@ export async function buildClient (ctx: ViteBuildContext) {
         // @ts-expect-error _skip_transform is a private property
         event.node.req._skip_transform = true
       } else if (!useViteCors) {
-        if (event.method === 'OPTIONS') {
-          appendCorsPreflightHeaders(event, {})
+        const isPreflight = handleCors(event, ctx.nuxt.options.devServer.cors)
+        if (isPreflight) {
           return null
         }
-        appendCorsHeaders(event, {})
+        setHeader(event, 'Vary', 'Origin')
       }
 
       // Workaround: vite devmiddleware modifies req.url

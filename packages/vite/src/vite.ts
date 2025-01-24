@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -14,7 +14,6 @@ import { buildClient } from './client'
 import { buildServer } from './server'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
-import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
@@ -54,6 +53,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -89,6 +89,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             },
           },
           watch: {
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
@@ -99,15 +100,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
             sourcemap: !!nuxt.options.sourcemap.server,
             baseURL: nuxt.options.app.baseURL,
           }),
-          composableKeysPlugin.vite({
-            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-            rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables,
-          }),
           replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
-          watch: { ignored: isIgnored },
+          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],
           },
@@ -217,12 +213,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', () => {
-      for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-        if (id.startsWith('virtual:') || id.startsWith('\0virtual:')) {
+    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+      await Promise.all(changedTemplates.map(async (template) => {
+        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
+          await server.reloadModule(mod)
         }
-      }
+      }))
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {

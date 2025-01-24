@@ -152,6 +152,9 @@ export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: Na
 
   // Early redirect on client-side
   if (import.meta.client && !isExternal && inMiddleware) {
+    if (options?.replace) {
+      return typeof to === 'string' ? { path: to, replace: true } : { ...to, replace: true }
+    }
     return to
   }
 

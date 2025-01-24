@@ -1,4 +1,4 @@
-import { isAbsolute } from 'pathe'
+import { isAbsolute, resolve } from 'pathe'
 import ForkTSCheckerWebpackPlugin from 'fork-ts-checker-webpack-plugin'
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config'
@@ -53,9 +53,13 @@ function serverStandalone (ctx: WebpackConfigContext) {
     '#',
     ...ctx.options.build.transpile,
   ]
-  const external = ['nitro/runtime']
+  const external = [
+    'nitro/runtime',
+    '#shared',
+    resolve(ctx.nuxt.options.rootDir, ctx.nuxt.options.dir.shared),
+  ]
   if (!ctx.nuxt.options.dev) {
-    external.push('#internal/nuxt/paths', '#internal/nuxt/app-config')
+    external.push('#internal/nuxt/paths', '#internal/nuxt/app-config', '#app-manifest')
   }
 
   if (!Array.isArray(ctx.config.externals)) { return }
@@ -81,7 +85,7 @@ function serverStandalone (ctx: WebpackConfigContext) {
 }
 
 function serverPlugins (ctx: WebpackConfigContext) {
-  ctx.config.plugins = ctx.config.plugins || []
+  ctx.config.plugins ||= []
 
   // Server polyfills
   if (ctx.userConfig.serverURLPolyfill) {

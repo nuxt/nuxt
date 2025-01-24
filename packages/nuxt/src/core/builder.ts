@@ -1,16 +1,16 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { importModule, isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
+import { logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
 
-const IS_RESTART_PATH_RE = /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
   nuxt.apps.default = app
@@ -21,19 +21,24 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
-      const restartPath = relativePaths.find(relativePath => IS_RESTART_PATH_RE.test(relativePath))
-      if (restartPath) {
-        if (restartPath.startsWith('app')) {
-          app.mainComponent = undefined
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const layer of nuxt.options._layers) {
+          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
+          if (relativePath.match(/^app\./i)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (relativePath.match(/^error\./i)) {
+            app.errorComponent = undefined
+            break
+          }
         }
-        if (restartPath.startsWith('error')) {
-          app.errorComponent = undefined
-        }
-        await generateApp()
       }
+
+      // Recompile app templates
+      await generateApp()
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
@@ -58,8 +63,11 @@ export async function build (nuxt: Nuxt) {
     return
   }
 
-  if (nuxt.options.dev) {
-    checkForExternalConfigurationFiles()
+  if (nuxt.options.dev && !nuxt.options.test) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      checkForExternalConfigurationFiles()
+        .catch(e => logger.warn('Problem checking for external configuration files.', e))
+    })
   }
 
   await bundle(nuxt)
@@ -92,22 +100,26 @@ async function watch (nuxt: Nuxt) {
 
 function createWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
   const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
-    ignored: [
-      isIgnored,
-      'node_modules',
-    ],
+    ignored: [isIgnored, /[\\/]node_modules[\\/]/],
   })
 
-  watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(path)))
+  watcher.on('all', (event, path) => {
+    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+      return
+    }
+    nuxt.callHook('builder:watch', event, normalize(path))
+  })
   nuxt.hook('close', () => watcher?.close())
 }
 
 function createGranularWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
   if (nuxt.options.debug) {
     // eslint-disable-next-line no-console
@@ -126,10 +138,13 @@ function createGranularWatcher () {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, '**/node_modules'] })
+    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
+      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+        return
+      }
       path = normalize(path)
       if (!pending) {
         nuxt.callHook('builder:watch', event, path)
@@ -140,7 +155,12 @@ function createGranularWatcher () {
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
         const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        pathWatcher.on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(p)))
+        pathWatcher.on('all', (event, p) => {
+          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+            return
+          }
+          nuxt.callHook('builder:watch', event, normalize(p))
+        })
         nuxt.hook('close', () => pathWatcher?.close())
       }
     })

@@ -1,14 +1,15 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
+import type { PluginMeta } from 'nuxt/app'
+
+import { logger } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
-
-import type { PluginMeta } from '#app'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
   return defu(options, {
@@ -37,7 +38,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   await nuxt.callHook('app:templates', app)
 
   // Normalize templates
-  app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl))
+  app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
 
   // compile plugins first as they are needed within the nuxt.vfs
   // in order to annotate templated plugins
@@ -56,6 +57,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
+  const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
   async function processTemplate (template: ResolvedNuxtTemplate) {
@@ -91,10 +93,8 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     }
 
     if (template.modified && template.write) {
-      writes.push(() => {
-        mkdirSync(dirname(fullPath), { recursive: true })
-        writeFileSync(fullPath, contents, 'utf8')
-      })
+      dirs.add(dirname(fullPath))
+      writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
     }
   }
 
@@ -103,7 +103,12 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
-  for (const write of writes) { write() }
+  for (const dir of dirs) {
+    mkdirSync(dir, { recursive: true })
+  }
+  for (const write of writes) {
+    write()
+  }
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)
