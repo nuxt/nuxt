@@ -12,7 +12,6 @@ import { checkForExternalConfigurationFiles } from './external-config-files'
 import { cleanupCaches, getVueHash } from './cache'
 
 export async function build (nuxt: Nuxt) {
-  const IS_RESTART_PATH_RE = /^(?:app\.|error\.|plugins\/|middleware\/|layouts\/)/i
   const app = createApp(nuxt)
   nuxt.apps.default = app
 
