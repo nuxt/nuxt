@@ -837,7 +837,7 @@ describe('pages:pathToNitroGlob', () => {
 
 describe('page:extends', () => {
   const DYNAMIC_META_KEY = '__nuxt_dynamic_meta_key' as const
-  it('should correct route metadata by same file with different metadata', async () => {
+  it('should preserve distinct metadata for multiple routes referencing the same file', async () => {
     const files: NuxtPage[] = [
       { path: 'home', file: `pages/index.vue` },
       { path: 'home1', file: `pages/index.vue`, meta: { test: true } },
