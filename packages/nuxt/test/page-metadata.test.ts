@@ -63,8 +63,9 @@ definePageMeta({ name: 'bar' })
 
   it('should use and invalidate cache', async () => {
     const fileContents = `<script setup>definePageMeta({ foo: 'bar' })</script>`
+    // use klona to deep clone the object
     const meta = await getRouteMeta(fileContents, filePath)
-    expect(meta === await getRouteMeta(fileContents, filePath)).toBeTruthy()
+    expect(meta === await getRouteMeta(fileContents, filePath)).toBeFalsy()
     expect(meta === await getRouteMeta(fileContents, '/app/pages/other.vue')).toBeFalsy()
     expect(meta === await getRouteMeta('<template><div>Hi</div></template>' + fileContents, filePath)).toBeFalsy()
   })
