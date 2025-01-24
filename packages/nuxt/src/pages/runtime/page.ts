@@ -100,7 +100,29 @@ export default defineComponent({
             nuxtApp.callHook('page:loading:end')
             pageLoadingEndHookAlreadyCalled = true
           }
+
           previousPageKey = key
+
+          if (import.meta.server) {
+            vnode = h(Suspense, {
+              suspensible: true,
+            }, {
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  vnodeRef: pageRef,
+                })
+                return providerVNode
+              },
+            })
+
+            return vnode
+          }
+
+          // Client side rendering
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([
@@ -133,7 +155,7 @@ export default defineComponent({
                   trackRootNodes: hasTransition,
                   vnodeRef: pageRef,
                 })
-                if (import.meta.client && keepaliveConfig) {
+                if (keepaliveConfig) {
                   (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
                 return providerVNode
