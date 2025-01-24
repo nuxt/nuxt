@@ -4,8 +4,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, logger, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
-import { resolvePath as _resolvePath } from 'mlly'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -18,11 +17,12 @@ import type { DateString } from 'compatx'
 import escapeRE from 'escape-string-regexp'
 import { withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import { ImpoundPlugin } from 'impound'
-import type { ImpoundOptions } from 'impound'
 import defu from 'defu'
 import { gt, satisfies } from 'semver'
 import { hasTTY, isCI } from 'std-env'
+import { genImport } from 'knitwork'
 
+import { installNuxtModule } from '../core/features'
 import pagesModule from '../pages/module'
 import metaModule from '../head/module'
 import componentsModule from '../components/module'
@@ -31,8 +31,9 @@ import importsModule from '../imports/module'
 import { distDir, pkgDir } from '../dirs'
 import { version } from '../../package.json'
 import { scriptsStubsPreset } from '../imports/presets'
+import { logger } from '../utils'
 import { resolveTypePath } from './utils/types'
-import { nuxtImportProtections } from './plugins/import-protection'
+import { createImportProtectionPatterns } from './plugins/import-protection'
 import { UnctxTransformPlugin } from './plugins/unctx'
 import { TreeShakeComposablesPlugin } from './plugins/tree-shake'
 import { DevOnlyPlugin } from './plugins/dev-only'
@@ -42,8 +43,9 @@ import { initNitro } from './nitro'
 import schemaModule from './schema'
 import { RemovePluginMetadataPlugin } from './plugins/plugin-metadata'
 import { AsyncContextInjectionPlugin } from './plugins/async-context'
+import { ComposableKeysPlugin } from './plugins/composable-keys'
 import { resolveDeepImportsPlugin } from './plugins/resolve-deep-imports'
-import { prehydrateTransformPlugin } from './plugins/prehydrate'
+import { PrehydrateTransformPlugin } from './plugins/prehydrate'
 import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
@@ -79,7 +81,7 @@ const nightlies = {
   '@nuxt/kit': '@nuxt/kit-nightly',
 }
 
-const keyDependencies = [
+export const keyDependencies = [
   '@nuxt/kit',
   '@nuxt/schema',
 ]
@@ -177,6 +179,36 @@ async function initNuxt (nuxt: Nuxt) {
   nuxt.hook('close', () => nuxtCtx.unset())
 
   const coreTypePackages = nuxt.options.typescript.hoist || []
+
+  // Disable environment types entirely if `typescript.builder` is false
+  if (nuxt.options.typescript.builder !== false) {
+    const envMap = {
+      // defaults from `builder` based on package name
+      '@nuxt/rspack-builder': '@rspack/core/module',
+      '@nuxt/vite-builder': 'vite/client',
+      '@nuxt/webpack-builder': 'webpack/module',
+      // simpler overrides from `typescript.builder` for better DX
+      'rspack': '@rspack/core/module',
+      'vite': 'vite/client',
+      'webpack': 'webpack/module',
+      // default 'merged' builder environment for module authors
+      'shared': '@nuxt/schema/builder-env',
+    }
+
+    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
+    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
+    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
+    const environmentTypes = overrideEnv || defaultEnv
+
+    if (environmentTypes) {
+      nuxt.options.typescript.hoist.push(environmentTypes)
+      addTypeTemplate({
+        filename: 'types/builder-env.d.ts',
+        getContents: () => genImport(environmentTypes),
+      })
+    }
+  }
+
   const packageJSON = await readPackageJSON(nuxt.options.rootDir).catch(() => ({}) as PackageJson)
   const NESTED_PKG_RE = /^[^@]+\//
   nuxt._dependencies = new Set([...Object.keys(packageJSON.dependencies || {}), ...Object.keys(packageJSON.devDependencies || {})])
@@ -238,7 +270,7 @@ async function initNuxt (nuxt: Nuxt) {
   // @ts-expect-error scripts types are not present as the module is not installed
   if (nuxt.options.scripts) {
     if (!nuxt.options._modules.some(m => m === '@nuxt/scripts' || m === '@nuxt/scripts-nightly')) {
-      await import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+      installNuxtModule('@nuxt/scripts')
     }
   }
 
@@ -249,23 +281,42 @@ async function initNuxt (nuxt: Nuxt) {
   // Add plugin normalization plugin
   addBuildPlugin(RemovePluginMetadataPlugin(nuxt))
 
+  // Add keys for useFetch, useAsyncData, etc.
+  addBuildPlugin(ComposableKeysPlugin({
+    sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
+    rootDir: nuxt.options.rootDir,
+    composables: nuxt.options.optimization.keyedComposables,
+  }))
+
+  // shared folder import protection
+  const sharedDir = withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))
+  const relativeSharedDir = withTrailingSlash(relative(nuxt.options.rootDir, resolve(nuxt.options.rootDir, nuxt.options.dir.shared)))
+  const sharedPatterns = [/^#shared\//, new RegExp('^' + escapeRE(sharedDir)), new RegExp('^' + escapeRE(relativeSharedDir))]
+  const sharedProtectionConfig = {
+    cwd: nuxt.options.rootDir,
+    include: sharedPatterns,
+    patterns: createImportProtectionPatterns(nuxt, { context: 'shared' }),
+  }
+  addVitePlugin(() => ImpoundPlugin.vite(sharedProtectionConfig), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(sharedProtectionConfig), { server: false })
+
   // Add import protection
-  const config: ImpoundOptions = {
+  const nuxtProtectionConfig = {
     cwd: nuxt.options.rootDir,
     // Exclude top-level resolutions by plugins
-    exclude: [join(nuxt.options.srcDir, 'index.html')],
-    patterns: nuxtImportProtections(nuxt),
+    exclude: [relative(nuxt.options.rootDir, join(nuxt.options.srcDir, 'index.html')), ...sharedPatterns],
+    patterns: createImportProtectionPatterns(nuxt, { context: 'nuxt-app' }),
   }
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: false }), { name: 'nuxt:import-protection' }), { client: false })
-  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...config, error: true }), { name: 'nuxt:import-protection' }), { server: false })
-  addWebpackPlugin(() => ImpoundPlugin.webpack(config))
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: false }), { name: 'nuxt:import-protection' }), { client: false })
+  addVitePlugin(() => Object.assign(ImpoundPlugin.vite({ ...nuxtProtectionConfig, error: true }), { name: 'nuxt:import-protection' }), { server: false })
+  addWebpackPlugin(() => ImpoundPlugin.webpack(nuxtProtectionConfig))
 
   // add resolver for modules used in virtual files
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { client: false })
   addVitePlugin(() => resolveDeepImportsPlugin(nuxt), { server: false })
 
   // Add transform for `onPrehydrate` lifecycle hook
-  addBuildPlugin(prehydrateTransformPlugin(nuxt))
+  addBuildPlugin(PrehydrateTransformPlugin({ sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client }))
 
   if (nuxt.options.experimental.localLayerAliases) {
     // Add layer aliasing support for ~, ~~, @ and @@ aliases
@@ -330,7 +381,7 @@ async function initNuxt (nuxt: Nuxt) {
 
   // Transform initial composable call within `<script setup>` to preserve context
   if (nuxt.options.experimental.asyncContext) {
-    addBuildPlugin(AsyncContextInjectionPlugin(nuxt))
+    addBuildPlugin(AsyncContextInjectionPlugin(nuxt), { client: false })
   }
 
   // TODO: [Experimental] Avoid emitting assets when flag is enabled
@@ -353,8 +404,11 @@ async function initNuxt (nuxt: Nuxt) {
     ...nuxt.options._layers.filter(i => i.cwd.includes('node_modules')).map(i => i.cwd as string),
   )
 
-  // Ensure we can resolve dependencies within layers
-  nuxt.options.modulesDir.push(...nuxt.options._layers.map(l => resolve(l.cwd, 'node_modules')))
+  // Ensure we can resolve dependencies within layers - filtering out local `~/layers` directories
+  const locallyScannedLayersDirs = nuxt.options._layers.map(l => resolve(l.cwd, 'layers').replace(/\/?$/, '/'))
+  nuxt.options.modulesDir.push(...nuxt.options._layers
+    .filter(l => l.cwd !== nuxt.options.rootDir && locallyScannedLayersDirs.every(dir => !l.cwd.startsWith(dir)))
+    .map(l => resolve(l.cwd, 'node_modules')))
 
   // Init user modules
   await nuxt.callHook('modules:before')
@@ -398,11 +452,15 @@ async function initNuxt (nuxt: Nuxt) {
   }
 
   // Add <NuxtWelcome>
-  addComponent({
-    name: 'NuxtWelcome',
-    priority: 10, // built-in that we do not expect the user to override
-    filePath: resolve(nuxt.options.appDir, 'components/welcome'),
-  })
+  // TODO: revert when deep server component config is properly bundle-split: https://github.com/nuxt/nuxt/pull/29956
+  const islandsConfig = nuxt.options.experimental.componentIslands
+  if (nuxt.options.dev || !(typeof islandsConfig === 'object' && islandsConfig.selectiveClient === 'deep')) {
+    addComponent({
+      name: 'NuxtWelcome',
+      priority: 10, // built-in that we do not expect the user to override
+      filePath: resolve(nuxt.options.appDir, 'components/welcome'),
+    })
+  }
 
   addComponent({
     name: 'NuxtLayout',
@@ -496,34 +554,15 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
-  const envMap = {
-    // defaults from `builder` based on package name
-    '@nuxt/rspack-builder': '@rspack/core/module',
-    '@nuxt/vite-builder': 'vite/client',
-    '@nuxt/webpack-builder': 'webpack/module',
-    // simpler overrides from `typescript.builder` for better DX
-    'rspack': '@rspack/core/module',
-    'vite': 'vite/client',
-    'webpack': 'webpack/module',
-    // default 'merged' builder environment for module authors
-    'shared': '@nuxt/schema/builder-env',
-  }
-
-  nuxt.hook('prepare:types', ({ references }) => {
-    // Disable entirely if `typescript.builder` is false
-    if (nuxt.options.typescript.builder === false) { return }
-
-    const overrideEnv = nuxt.options.typescript.builder && envMap[nuxt.options.typescript.builder]
-    // If there's no override, infer based on builder. If a custom builder is provided, we disable shared types
-    const defaultEnv = typeof nuxt.options.builder === 'string' ? envMap[nuxt.options.builder] : false
-    const types = overrideEnv || defaultEnv
-
-    if (types) { references.push({ types }) }
-  })
-
   // Add nuxt app debugger
   if (nuxt.options.debug) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
+  }
+
+  // Add experimental Chrome devtools timings support
+  // https://developer.chrome.com/docs/devtools/performance/extension
+  if (nuxt.options.experimental.browserDevtoolsTiming) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/browser-devtools-timing.client'))
   }
 
   for (const [key, options] of modulesToInstall) {
@@ -565,6 +604,11 @@ async function initNuxt (nuxt: Nuxt) {
   if (nuxt.options.experimental.emitRouteChunkError === 'automatic') {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload.client'))
   }
+  // Add experimental immediate page reload support
+  if (nuxt.options.experimental.emitRouteChunkError === 'automatic-immediate') {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/chunk-reload-immediate.client'))
+  }
+
   // Add experimental session restoration support
   if (nuxt.options.experimental.restoreState) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/restore-state.client'))
@@ -761,8 +805,13 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  for (const dep of keyDependencies) {
-    checkDependencyVersion(dep, nuxt._version)
+  if (nuxt.options.dev && !nuxt.options.test) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      for (const dep of keyDependencies) {
+        checkDependencyVersion(dep, nuxt._version)
+          .catch(e => logger.warn(`Problem checking \`${dep}\` version.`, e))
+      }
+    })
   }
 
   // We register hooks layer-by-layer so any overrides need to be registered separately
@@ -781,7 +830,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   return nuxt
 }
 
-async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
+export async function checkDependencyVersion (name: string, nuxtVersion: string): Promise<void> {
   const path = await resolvePath(name, { fallbackToOriginal: true }).catch(() => null)
 
   if (!path || path === name) { return }

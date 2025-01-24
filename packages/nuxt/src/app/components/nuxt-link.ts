@@ -18,6 +18,8 @@ import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback
 // @ts-expect-error virtual file
 import { nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
+import { hashMode } from '#build/router.options'
+
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
@@ -110,6 +112,10 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     }
   }
 
+  function isHashLinkWithoutHashMode (link: unknown): boolean {
+    return !hashMode && typeof link === 'string' && link.startsWith('#')
+  }
+
   function resolveTrailingSlashBehavior (to: string, resolve: Router['resolve']): string
   function resolveTrailingSlashBehavior (to: RouteLocationRaw, resolve: Router['resolve']): Exclude<RouteLocationRaw, string>
   function resolveTrailingSlashBehavior (to: RouteLocationRaw | undefined, resolve: Router['resolve']): RouteLocationRaw | RouteLocation | undefined {
@@ -176,7 +182,9 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
     // Resolves `to` value if it's a route location object
     const href = computed(() => {
-      if (!to.value || isAbsoluteUrl.value) { return to.value as string }
+      if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
+        return to.value as string
+      }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
@@ -317,10 +325,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
+        if (import.meta.server) { return }
         return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
+        if (import.meta.server) { return }
+
         if (prefetched.value) { return }
 
         prefetched.value = true
@@ -373,7 +384,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       }
 
       return () => {
-        if (!isExternal.value && !hasTarget.value) {
+        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
           const routerLinkProps: RouterLinkProps & VNodeProps & AllowedComponentProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
@@ -387,12 +398,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           // `custom` API cannot support fallthrough attributes as the slot
           // may render fragment or text root nodes (#14897, #19375)
           if (!props.custom) {
-            if (shouldPrefetch('interaction')) {
-              routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
-              routerLinkProps.onFocus = prefetch.bind(null, undefined)
-            }
-            if (prefetched.value) {
-              routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+            if (import.meta.client) {
+              if (shouldPrefetch('interaction')) {
+                routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
+                routerLinkProps.onFocus = prefetch.bind(null, undefined)
+              }
+              if (prefetched.value) {
+                routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+              }
             }
             routerLinkProps.rel = props.rel || undefined
           }
@@ -506,9 +519,9 @@ function useObserver (): { observe: ObserveFn } | undefined {
     observer.observe(element)
     return () => {
       callbacks.delete(element)
-      observer!.unobserve(element)
+      observer?.unobserve(element)
       if (callbacks.size === 0) {
-        observer!.disconnect()
+        observer?.disconnect()
         observer = null
       }
     }

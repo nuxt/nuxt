@@ -11,8 +11,12 @@
   },
   "devDependencies": {
     "@vue/devtools-api": "latest",
+    "defu": "latest",
     "ufo": "latest",
     "unplugin": "latest",
     "vue": "latest"
+  },
+  "engines": {
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }

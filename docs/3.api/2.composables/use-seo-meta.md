@@ -4,7 +4,7 @@ description: The useSeoMeta composable lets you define your site's SEO meta tags
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useSeoMeta.ts
+    to: https://github.com/unjs/unhead/blob/main/packages/vue/src/composables.ts
     size: xs
 ---
 
@@ -39,7 +39,7 @@ const title = ref('My title')
 
 useSeoMeta({
   title,
-  description: () => `description: ${title.value}`
+  description: () => `This is a description for the ${title.value} page`
 })
 </script>
 ```

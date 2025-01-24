@@ -3,8 +3,7 @@ import { readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs'
 import { copyFile } from 'node:fs/promises'
 import { basename, dirname, join } from 'pathe'
 import type { Plugin } from 'vite'
-// @ts-expect-error https://github.com/GoogleChromeLabs/critters/pull/151
-import Critters from 'critters'
+import Beasties from 'beasties'
 import { genObjectFromRawEntries } from 'knitwork'
 import htmlnano from 'htmlnano'
 import { glob } from 'tinyglobby'
@@ -25,7 +24,7 @@ export const RenderPlugin = () => {
     },
     enforce: 'post',
     async writeBundle () {
-      const critters = new Critters({ path: outputDir })
+      const critters = new Beasties({ path: outputDir })
       const htmlFiles = await glob(['templates/**/*.html'], {
         cwd: outputDir,
         absolute: true,

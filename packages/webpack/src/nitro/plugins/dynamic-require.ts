@@ -32,10 +32,9 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
   const HELPER_DYNAMIC = `\0${PLUGIN_NAME}.mjs`
   const DYNAMIC_REQUIRE_RE = /import\("\.\/" ?\+(.*)\).then/g
   const BACKWARD_SLASH_RE = /\\/g
-
   async function getWebpackChunkMeta (src: string) {
-    const chunk = await importModule<{ id: string, ids: string[], modules: Record<string, unknown> }>(src) || {}
-    const { id, ids, modules } = chunk
+    const chunk = await importModule<WebpackChunk>(src) || {}
+    const { __webpack_id__, __webpack_ids__, __webpack_modules__, id = __webpack_id__, ids = __webpack_ids__, modules = __webpack_modules__ } = chunk
     if (!id && !ids) {
       return null // Not a webpack chunk
     }
@@ -50,25 +49,26 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
     return `${chunks
       .map(i => `import * as ${i.name} from '${i.src}'`)
       .join('\n')}
-  const dynamicChunks = {
-    ${chunks.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
-  };
-  
-  export default function dynamicRequire(id) {
-    return Promise.resolve(dynamicChunks[id]);
-  };`
+const dynamicChunks = {
+  ${chunks.map(i => ` ['${i.id}']: ${i.name}`).join(',\n')}
+};
+
+export default function dynamicRequire(id) {
+  return Promise.resolve(dynamicChunks[id]);
+};`
   }
 
   function TMPL_LAZY ({ chunks }: TemplateContext) {
     return `
-  const dynamicChunks = {
-  ${chunks.map(i => ` ['${i.id}']: () => import('${i.src}')`).join(',\n')}
-  };
-  
-  export default function dynamicRequire(id) {
-    return dynamicChunks[id]();
-  };`
+const dynamicChunks = {
+${chunks.map(i => ` ['${i.id}']: () => import('${i.src}')`).join(',\n')}
+};
+
+export default function dynamicRequire(id) {
+  return dynamicChunks[id]();
+};`
   }
+
   return {
     name: PLUGIN_NAME,
     transform (code: string, _id: string) {
@@ -122,4 +122,13 @@ export function dynamicRequire ({ dir, ignore, inline }: Options): Plugin {
       return inline ? TMPL_INLINE({ chunks }) : TMPL_LAZY({ chunks })
     },
   }
+}
+
+type WebpackChunk = {
+  id: string
+  ids: string[]
+  modules: Record<string, unknown>
+  __webpack_id__?: string
+  __webpack_ids__?: string[]
+  __webpack_modules__?: Record<string, unknown>
 }

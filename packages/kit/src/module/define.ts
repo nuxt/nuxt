@@ -65,7 +65,7 @@ function _defineNuxtModule<
 
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
-        ? module.defaults(nuxt)
+        ? await module.defaults(nuxt)
         : module.defaults ?? <TOptionsDefaults> {}
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
@@ -87,7 +87,7 @@ function _defineNuxtModule<
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
-      nuxt.options._requiredModules = nuxt.options._requiredModules || {}
+      nuxt.options._requiredModules ||= {}
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }

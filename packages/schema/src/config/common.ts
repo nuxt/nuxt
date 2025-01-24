@@ -1,11 +1,12 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { defineUntypedSchema } from 'untyped'
 import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
-import { randomUUID } from 'uncrypto'
+
 import type { RuntimeConfig } from '../types/config'
 
 export default defineUntypedSchema({
@@ -246,12 +247,16 @@ export default defineUntypedSchema({
    *
    * Normally, you should not need to set this.
    */
-  dev: Boolean(isDevelopment),
+  dev: {
+    $resolve: val => val ?? Boolean(isDevelopment),
+  },
 
   /**
    * Whether your app is being unit tested.
    */
-  test: Boolean(isTest),
+  test: {
+    $resolve: val => val ?? Boolean(isTest),
+  },
 
   /**
    * Set to `true` to enable debug mode.
@@ -356,6 +361,11 @@ export default defineUntypedSchema({
     plugins: 'plugins',
 
     /**
+     * The shared directory. This directory is shared between the app and the server.
+     */
+    shared: 'shared',
+
+    /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
      * and copied across into your `dist` folder when your app is generated.
      */
@@ -424,12 +434,13 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val: Record<string, string>, get): Promise<Record<string, string>> => {
-      const [srcDir, rootDir, assetsDir, publicDir, buildDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir')]) as [string, string, string, string, string]
+      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')]) as [string, string, string, string, string, string]
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
+        '#shared': resolve(rootDir, sharedDir),
         [basename(assetsDir)]: resolve(srcDir, assetsDir),
         [basename(publicDir)]: resolve(srcDir, publicDir),
         '#build': buildDir,
@@ -512,9 +523,11 @@ export default defineUntypedSchema({
     /**
      * Options to pass directly to `chokidar`.
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
+     * @type {typeof import('chokidar').ChokidarOptions}
      */
     chokidar: {
       ignoreInitial: true,
+      ignorePermissionErrors: true,
     },
   },
 

@@ -68,7 +68,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -88,7 +88,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(path)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -180,14 +180,13 @@ export { }
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
-    const adHocModules = ['router', 'pages', 'imports', 'meta', 'components', 'nuxt-config-schema']
     const IMPORT_NAME_RE = /\.\w+$/
     const GIT_RE = /^git\+/
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
     const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !adHocModules.includes(m.meta.name))
+      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:') && m.meta.name !== 'nuxt-config-schema')
       .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
 
     const privateRuntimeConfig = Object.create(null)
@@ -285,9 +284,10 @@ export const layoutTemplate: NuxtTemplate = {
   filename: 'layouts.mjs',
   getContents ({ app }) {
     const layoutsObject = genObjectFromRawEntries(Object.values(app.layouts).map(({ name, file }) => {
-      return [name, genDynamicImport(file)]
+      return [name, `defineAsyncComponent(${genDynamicImport(file, { interopDefault: true })})`]
     }))
     return [
+      `import { defineAsyncComponent } from 'vue'`,
       `export default ${layoutsObject}`,
     ].join('\n')
   },
@@ -524,6 +524,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!((ctx.nuxt as any)._nitro as Nitro).options.prerender.crawlLinks}`,
+      `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
     ].join('\n\n')
   },
 }

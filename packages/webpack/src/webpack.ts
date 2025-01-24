@@ -1,8 +1,8 @@
 import pify from 'pify'
-import type { NodeMiddleware } from 'h3'
 import { resolve } from 'pathe'
-import { defineEventHandler, fromNodeMiddleware } from 'h3'
-import type { MultiWatching } from 'webpack-dev-middleware'
+import { defineEventHandler, fromNodeMiddleware, handleCors, setHeader } from 'h3'
+import type { H3CorsOptions } from 'h3'
+import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
 import type { Compiler, Stats, Watching } from 'webpack'
@@ -12,12 +12,11 @@ import { joinURL } from 'ufo'
 import { logger, useNitro, useNuxt } from '@nuxt/kit'
 import type { InputPluginOption } from 'rollup'
 
-import { composableKeysPlugin } from '../../vite/src/plugins/composable-keys'
 import { DynamicBasePlugin } from './plugins/dynamic-base'
 import { ChunkErrorPlugin } from './plugins/chunk'
 import { createMFS } from './utils/mfs'
 import { client, server } from './configs'
-import { applyPresets, createWebpackConfigContext, getWebpackConfig } from './utils/config'
+import { applyPresets, createWebpackConfigContext } from './utils/config'
 import { dynamicRequire } from './nitro/plugins/dynamic-require'
 
 import { builder, webpack } from '#builder'
@@ -30,7 +29,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     const ctx = createWebpackConfigContext(nuxt)
     ctx.userConfig = defu(nuxt.options.webpack[`$${preset.name as 'client' | 'server'}`], ctx.userConfig)
     await applyPresets(ctx, preset)
-    return getWebpackConfig(ctx)
+    return ctx.config
   }))
 
   /** Inject rollup plugin for Nitro to handle dynamic imports from webpack chunks */
@@ -68,11 +67,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     if (config.name === 'client' && nuxt.options.experimental.emitRouteChunkError && nuxt.options.builder !== '@nuxt/rspack-builder') {
       config.plugins!.push(new ChunkErrorPlugin())
     }
-    config.plugins!.push(composableKeysPlugin.webpack({
-      sourcemap: !!nuxt.options.sourcemap[config.name as 'client' | 'server'],
-      rootDir: nuxt.options.rootDir,
-      composables: nuxt.options.optimization.keyedComposables,
-    }))
   }
 
   await nuxt.callHook(`${builder}:configResolved`, webpackConfigs)
@@ -132,14 +126,56 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = fromNodeMiddleware(devMiddleware as NodeMiddleware)
-  const hotHandler = fromNodeMiddleware(hotMiddleware as NodeMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware, nuxt.options.devServer.cors)
+  const hotHandler = fromNodeMiddleware(hotMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
-    await devHandler(event)
+    const body = await devHandler(event)
+    if (body !== undefined) {
+      return body
+    }
     await hotHandler(event)
   }))
 
   return devMiddleware
+}
+
+// TODO: implement upstream in `webpack-dev-middleware`
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>, corsOptions: H3CorsOptions) {
+  return defineEventHandler(async (event) => {
+    const isPreflight = handleCors(event, corsOptions)
+    if (isPreflight) {
+      return null
+    }
+    setHeader(event, 'Vary', 'Origin')
+
+    event.context.webpack = {
+      ...event.context.webpack,
+      devMiddleware: devMiddleware.context,
+    }
+    const { req, res } = event.node
+    const body = await new Promise((resolve, reject) => {
+      // @ts-expect-error handle injected methods
+      res.stream = (stream) => {
+        resolve(stream)
+      }
+      // @ts-expect-error handle injected methods
+      res.send = (data) => {
+        resolve(data)
+      }
+      // @ts-expect-error handle injected methods
+      res.finish = (data) => {
+        resolve(data)
+      }
+      devMiddleware(req, res, (err) => {
+        if (err) {
+          reject(err)
+        } else {
+          resolve(undefined)
+        }
+      })
+    })
+    return body
+  })
 }
 
 async function compile (compiler: Compiler) {

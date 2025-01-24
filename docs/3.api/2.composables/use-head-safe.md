@@ -4,7 +4,7 @@ description: The recommended way to provide head data with user input.
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/unjs/unhead/blob/main/packages/unhead/src/composables/useHeadSafe.ts
+    to: https://github.com/unjs/unhead/blob/main/packages/vue/src/composables.ts
     size: xs
 ---
 
@@ -38,7 +38,7 @@ Read more on `unhead` documentation.
 useHeadSafe(input: MaybeComputedRef<HeadSafe>): void
 ```
 
-The whitelist of safe values is:
+The list of allowed values is:
 
 ```ts
 export default {

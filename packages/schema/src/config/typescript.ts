@@ -35,6 +35,7 @@ export default defineUntypedSchema({
         const defaults = [
           // Nitro auto-imported/augmented dependencies
           'nitro/types',
+          'nitro/runtime',
           'defu',
           'h3',
           'consola',
@@ -72,7 +73,7 @@ export default defineUntypedSchema({
 
     /**
      * You can extend generated `.nuxt/tsconfig.json` using this option.
-     * @type {0 extends 1 & VueCompilerOptions ? typeof import('pkg-types')['TSConfig'] : typeof import('pkg-types')['TSConfig'] & { vueCompilerOptions?: typeof import('@vue/language-core')['VueCompilerOptions']}}
+     * @type {0 extends 1 & VueCompilerOptions ? typeof import('pkg-types')['TSConfig'] : typeof import('pkg-types')['TSConfig'] & { vueCompilerOptions?: Omit<typeof import('@vue/language-core')['VueCompilerOptions'], 'plugins'> & { plugins?: string[] } }}
      */
     tsConfig: {},
 

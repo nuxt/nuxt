@@ -235,7 +235,7 @@ export default defineUntypedSchema({
     },
 
     /**
-     * Customize Nuxt root element tag.
+     * Customize Nuxt Teleport element tag.
      */
     teleportTag: {
       $resolve: val => val || 'div',
@@ -261,6 +261,21 @@ export default defineUntypedSchema({
           id: teleportId === false ? undefined : (teleportId || 'teleports'),
         })
       },
+    },
+
+    /**
+     * Customize Nuxt SpaLoader element tag.
+     */
+    spaLoaderTag: {
+      $resolve: val => val || 'div',
+    },
+
+    /**
+     * Customize Nuxt Nuxt SpaLoader element attributes.
+     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     */
+    spaLoaderAttrs: {
+      id: '__nuxt-loader',
     },
   },
 
