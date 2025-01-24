@@ -39,5 +39,13 @@ export default defineUntypedSchema({
      * @type {(data: { loading?: string }) => string}
      */
     loadingTemplate,
+
+    /**
+     * Set CORS options for the dev server
+     * @type {typeof import('h3').H3CorsOptions}
+     */
+    cors: {
+      origin: [/^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/],
+    },
   },
 })
