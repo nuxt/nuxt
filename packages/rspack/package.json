@@ -32,7 +32,7 @@
   "dependencies": {
     "@nuxt/friendly-errors-webpack-plugin": "^2.6.0",
     "@nuxt/kit": "workspace:*",
-    "@rspack/core": "^1.2.0",
+    "@rspack/core": "^1.2.2",
     "autoprefixer": "^10.4.20",
     "css-loader": "^7.1.2",
     "css-minimizer-webpack-plugin": "^7.0.0",
@@ -43,7 +43,7 @@
     "file-loader": "^6.2.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "globby": "^14.0.2",
-    "h3": "npm:h3-nightly@1.13.1-20250110-173418-de24917",
+    "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
     "jiti": "^2.4.2",
     "knitwork": "^1.2.0",
     "magic-string": "^0.30.17",
