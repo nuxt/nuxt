@@ -41,6 +41,7 @@
     "defu": "^6.1.4",
     "esbuild": "^0.24.2",
     "escape-string-regexp": "^5.0.0",
+    "externality": "^1.0.2",
     "get-port-please": "^3.1.2",
     "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
     "jiti": "^2.4.2",
