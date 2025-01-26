@@ -232,6 +232,7 @@ function getEnv (ctx: WebpackConfigContext) {
     'import.meta.browser': ctx.isClient,
     'import.meta.client': ctx.isClient,
     'import.meta.server': ctx.isServer,
+    'import.meta.envName': JSON.stringify(ctx.config.mode),
   }
 
   if (ctx.userConfig.aggressiveCodeRemoval) {

@@ -57,6 +57,7 @@ export async function buildClient (ctx: ViteBuildContext) {
       'import.meta.browser': true,
       'import.meta.nitro': false,
       'import.meta.prerender': false,
+      'import.meta.envName': JSON.stringify(ctx.config.mode),
       'module.hot': false,
       ...nodeCompat.define,
     },
