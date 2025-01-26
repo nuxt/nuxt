@@ -134,7 +134,7 @@ export default defineComponent({
       const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
       // clear all data-island-uid to avoid conflicts when saving into payloads
-      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(SSR_UID_RE_G, `data-island-uid=""`)
+      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] ?? ''}"`, 'g'), `data-island-uid=""`)
     }
 
     const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
@@ -280,7 +280,7 @@ export default defineComponent({
           if (uid.value && html.value && (import.meta.server || props.lazy ? canTeleport : (mounted.value || instance.vnode?.el))) {
             for (const slot in slots) {
               if (availableSlots.value.includes(slot)) {
-                 teleports.push(createVNode(Teleport,
+                teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
                   { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
@@ -305,7 +305,7 @@ export default defineComponent({
                 for (const [id, info] of Object.entries(payloads.components)) {
                   const { props, slots } = info
                   const component = components!.get(id)!
-                   // use different selectors for even and odd teleportKey to force trigger the teleport
+                  // use different selectors for even and odd teleportKey to force trigger the teleport
                   const vnode = createVNode(Teleport, { to: `${isKeyOdd ? 'div' : ''}[data-island-uid='${uid.value}'][data-island-component="${id}"]` }, {
                     default: () => {
                       return [h(component, props, Object.fromEntries(Object.entries(slots || {}).map(([k, v]) => ([k, () => createStaticVNode(`<div style="display: contents" data-island-uid data-island-slot="${k}">${v}</div>`, 1),
