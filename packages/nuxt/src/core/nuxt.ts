@@ -414,7 +414,6 @@ async function initNuxt (nuxt: Nuxt) {
   await nuxt.callHook('modules:before')
   const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
-  const watchedPaths = new Set<string>()
   const specifiedModules = new Set<string>()
 
   for (const _mod of nuxt.options.modules) {
@@ -432,7 +431,7 @@ async function initNuxt (nuxt: Nuxt) {
       `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(mod)
+      nuxt.options.watch.push(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.set(mod, {})
@@ -660,10 +659,6 @@ export default defineNuxtPlugin({
 
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
-    // Local module patterns
-    if (watchedPaths.has(path)) {
-      return nuxt.callHook('restart', { hard: true })
-    }
 
     // User provided patterns
     const layerRelativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
