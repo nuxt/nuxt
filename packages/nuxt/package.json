@@ -121,7 +121,7 @@
     "unhead": "^1.11.18",
     "unimport": "^4.0.0",
     "unplugin": "^2.1.2",
-    "unplugin-vue-router": "^0.11.1",
+    "unplugin-vue-router": "^0.11.2",
     "unstorage": "^1.14.4",
     "untyped": "^1.5.2",
     "vue": "^3.5.13",
@@ -131,13 +131,13 @@
   },
   "devDependencies": {
     "@nuxt/scripts": "0.9.5",
-    "@parcel/watcher": "2.5.0",
+    "@parcel/watcher": "2.5.1",
     "@types/estree": "1.0.6",
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.3.1",
     "vite": "6.0.11",
-    "vitest": "3.0.3"
+    "vitest": "3.0.4"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
