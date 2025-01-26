@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
@@ -7,6 +8,7 @@ import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
 import { join } from 'pathe'
+import { isWindows } from 'std-env'
 import { tryResolveModule } from '../internal/esm'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
@@ -99,5 +101,5 @@ async function loadNuxtSchema (cwd: string) {
     paths.unshift(nuxtPath)
   }
   const schemaPath = await tryResolveModule('@nuxt/schema', paths) ?? '@nuxt/schema'
-  return await import(schemaPath).then(r => r.NuxtConfigSchema)
+  return await import(isWindows ? pathToFileURL(schemaPath).href : schemaPath).then(r => r.NuxtConfigSchema)
 }
