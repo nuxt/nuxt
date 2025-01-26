@@ -4,22 +4,14 @@ import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
-import { NuxtConfigSchema } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
 import { join } from 'pathe'
+import { tryResolveModule } from '../internal/esm'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
-}
-
-const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
-const layerSchema = Object.create(null)
-for (const key of layerSchemaKeys) {
-  if (key in NuxtConfigSchema) {
-    layerSchema[key] = NuxtConfigSchema[key]
-  }
 }
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
@@ -52,6 +44,16 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
+  }
+
+  const NuxtConfigSchema = await loadNuxtSchema(nuxtConfig.rootDir || cwd || process.cwd())
+
+  const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
+  const layerSchema = Object.create(null)
+  for (const key of layerSchemaKeys) {
+    if (key in NuxtConfigSchema) {
+      layerSchema[key] = NuxtConfigSchema[key]
+    }
   }
 
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
@@ -88,4 +90,14 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+async function loadNuxtSchema (cwd: string) {
+  const paths = [cwd]
+  const nuxtPath = await tryResolveModule('nuxt', cwd) ?? await tryResolveModule('nuxt-nightly', cwd)
+  if (nuxtPath) {
+    paths.unshift(nuxtPath)
+  }
+  const schemaPath = await tryResolveModule('@nuxt/schema', paths) ?? '@nuxt/schema'
+  return await import(schemaPath).then(r => r.NuxtConfigSchema)
 }
