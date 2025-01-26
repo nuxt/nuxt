@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url'
-import { bench, describe } from 'vitest'
-import { normalize } from 'pathe'
+import { rm } from 'node:fs/promises'
+import { beforeAll, bench, describe } from 'vitest'
+import { join, normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { build, loadNuxt } from 'nuxt'
 
@@ -8,6 +9,13 @@ const emptyDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../
 const basicTestFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../test/fixtures/basic', import.meta.url))))
 
 describe('build', () => {
+  beforeAll(async () => {
+    await Promise.all([
+      rm(join(emptyDir, '.nuxt'), { recursive: true, force: true }),
+      rm(join(basicTestFixtureDir, '.nuxt'), { recursive: true, force: true }),
+    ])
+  })
+
   bench('initial dev server build in an empty directory', async () => {
     const nuxt = await loadNuxt({
       cwd: emptyDir,
@@ -15,6 +23,9 @@ describe('build', () => {
       overrides: {
         dev: true,
         sourcemap: false,
+        builder: {
+          bundle: () => Promise.resolve(),
+        },
       },
     })
     await new Promise<void>((resolve) => {
@@ -31,6 +42,9 @@ describe('build', () => {
       overrides: {
         dev: true,
         sourcemap: false,
+        builder: {
+          bundle: () => Promise.resolve(),
+        },
       },
     })
     await new Promise<void>((resolve) => {
