@@ -1864,7 +1864,7 @@ describe.skipIf(isDev() || isWebpack)('inlining component styles', () => {
     // @ts-expect-error ssssh! untyped secret property
     const publicDir = useTestContext().nuxt._nitro.options.output.publicDir
     const files = await readdir(join(publicDir, '_nuxt')).catch(() => [])
-    expect(files.map(m => m.replace(/-[\w-]+(\.\w+)$/, '$1'))).toContain('css-only-asset.svg')
+    expect(files.map(m => m.replace(/(-\w+)(\.\w+)$/, '$2'))).toContain('css_only_asset.svg')
   })
 
   it('should not include inlined CSS in generated CSS file', async () => {
@@ -2121,7 +2121,7 @@ describe('public directories', () => {
 
 // TODO: dynamic paths in dev
 describe.skipIf(isDev())('dynamic paths', () => {
-  const publicFiles = ['/public.svg', '/css-only-public-asset.svg']
+  const publicFiles = ['/public.svg', '/css_only_public_asset.svg']
   const isPublicFile = (base = '/', file: string) => {
     if (isWebpack) {
       // TODO: webpack does not yet support dynamic static paths
