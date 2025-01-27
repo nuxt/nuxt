@@ -19,7 +19,7 @@ export const useRouter: typeof _useRouter = () => {
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
   if (import.meta.dev && isProcessingMiddleware()) {
-    console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
+    console.warn('[nuxt] Calling `useRoute` in the process of page changing may lead to misleading results. If it is called within middleware, use the (to, from) arguments to access the new and old routes instead. In SFC components, pass a pre-created route data using props.')
   }
   if (hasInjectionContext()) {
     return inject(PageRouteSymbol, useNuxtApp()._route)
