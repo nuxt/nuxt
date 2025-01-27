@@ -9,12 +9,10 @@ import { appManifest as isAppManifestEnabled } from '#build/nuxt.config.mjs'
 export default defineNuxtPlugin({
   name: 'nuxt:payload',
   setup (nuxtApp) {
-    // TODO: Support dev
-    if (import.meta.dev) { return }
-
     // Load payload after middleware & once final route is resolved
     useRouter().beforeResolve(async (to, from) => {
-      if (to.path === from.path) { return }
+      // Forcefully load payload in dev mode, to support payload extraction at page refresh.
+      if (to.path === from.path && !import.meta.dev) { return }
       const payload = await loadPayload(to.path)
       if (!payload) { return }
       Object.assign(nuxtApp.static.data, payload.data)
