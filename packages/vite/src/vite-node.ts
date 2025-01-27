@@ -120,10 +120,6 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
           /\?/,
         ],
       },
-      transformMode: {
-        ssr: [/.*/],
-        web: [],
-      },
     })
 
     return eventHandler(async (event) => {

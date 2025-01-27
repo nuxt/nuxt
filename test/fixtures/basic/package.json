@@ -7,6 +7,7 @@
   "dependencies": {
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
+    "moment-timezone": "^0.5.46",
     "nuxt": "workspace:*"
   },
   "devDependencies": {

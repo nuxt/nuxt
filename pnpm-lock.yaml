@@ -1100,6 +1100,9 @@ importers:
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:../../../packages/webpack
+      moment-timezone:
+        specifier: ^0.5.46
+        version: 0.5.46
       nuxt:
         specifier: workspace:*
         version: link:../../../packages/nuxt
@@ -5954,6 +5957,12 @@ packages:
 
   mlly@1.7.4:
     resolution: {integrity: sha512-qmdSIPC4bDJXgZTCR7XosJiNKySV7O215tsPtDN9iEO/7q/76b/ijtgRu/+epFXSJhijtTCCGp3DWS549P3xKw==}
+
+  moment-timezone@0.5.46:
+    resolution: {integrity: sha512-ZXm9b36esbe7OmdABqIWJuBBiLLwAjrN7CE+7sYdCCx82Nabt1wHDj8TVseS59QIlfFPbOoiBPm6ca9BioG4hw==}
+
+  moment@2.30.1:
+    resolution: {integrity: sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==}
 
   mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
@@ -14119,6 +14128,12 @@ snapshots:
       pathe: 2.0.2
       pkg-types: 1.3.1
       ufo: 1.5.4
+
+  moment-timezone@0.5.46:
+    dependencies:
+      moment: 2.30.1
+
+  moment@2.30.1: {}
 
   mri@1.2.0: {}
 
