@@ -18,8 +18,7 @@ export const useRouter: typeof _useRouter = () => {
 
 /** @since 3.0.0 */
 export const useRoute: typeof _useRoute = () => {
-  const notInsideSFC = !getCurrentInstance()
-  if (import.meta.dev && isProcessingMiddleware() && notInsideSFC) {
+  if (import.meta.dev && !getCurrentInstance() && isProcessingMiddleware()) {
     console.warn('[nuxt] Calling `useRoute` within middleware may lead to misleading results. Instead, use the (to, from) arguments passed to the middleware to access the new and old routes.')
   }
   if (hasInjectionContext()) {
