@@ -233,9 +233,6 @@ importers:
 
   packages/kit:
     dependencies:
-      '@nuxt/schema':
-        specifier: workspace:*
-        version: link:../schema
       c12:
         specifier: 2.0.1
         version: 2.0.1(magicast@0.3.5)
@@ -297,6 +294,9 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
     devDependencies:
+      '@nuxt/schema':
+        specifier: workspace:*
+        version: link:../schema
       '@rspack/core':
         specifier: 1.2.2
         version: 1.2.2
