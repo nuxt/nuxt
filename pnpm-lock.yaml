@@ -26,7 +26,7 @@ overrides:
   h3: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
   jiti: 2.4.2
   magic-string: ^0.30.17
-  nitro: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
+  nitro: npm:nitro-nightly@3.0.0-beta-28968142.ce23e942
   nuxt: workspace:*
   ohash: 1.1.4
   postcss: 8.5.1
@@ -165,8 +165,8 @@ importers:
         specifier: 4.17.0
         version: 4.17.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
-        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28968142.ce23e942
+        version: nitro-nightly@3.0.0-beta-28968142.ce23e942(typescript@5.7.3)
       nuxt:
         specifier: workspace:*
         version: link:packages/nuxt
@@ -304,8 +304,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
-        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28968142.ce23e942
+        version: nitro-nightly@3.0.0-beta-28968142.ce23e942(typescript@5.7.3)
       unbuild:
         specifier: 3.3.1
         version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.0(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
@@ -433,8 +433,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
-        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28968142.ce23e942
+        version: nitro-nightly@3.0.0-beta-28968142.ce23e942(typescript@5.7.3)
       nypm:
         specifier: ^0.5.2
         version: 0.5.2
@@ -745,8 +745,8 @@ importers:
         specifier: 7.0.3
         version: 7.0.3
       nitro:
-        specifier: npm:nitro-nightly@3.0.0-beta-28938837.19ec5395
-        version: nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3)
+        specifier: npm:nitro-nightly@3.0.0-beta-28968142.ce23e942
+        version: nitro-nightly@3.0.0-beta-28968142.ce23e942(typescript@5.7.3)
       ofetch:
         specifier: 1.4.1
         version: 1.4.1
@@ -5995,8 +5995,8 @@ packages:
   neo-async@2.6.2:
     resolution: {integrity: sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==}
 
-  nitro-nightly@3.0.0-beta-28938837.19ec5395:
-    resolution: {integrity: sha512-6vMInOp9BVrhbjLwD3IXlG+WsfMwgazz55O75Jdwmd9SZpyI7JCaMZeTx8MD/A5g3k4x3iBqoXvBg5Xoc/aXTA==}
+  nitro-nightly@3.0.0-beta-28968142.ce23e942:
+    resolution: {integrity: sha512-+7XWTqkscqZeIJYF4MOo7c2sShDM1YCdj2kmTqBL615vJNxxhzYo1KiuVWbMUFCGM/Lp1QBDJh/T5UhQfHCeJw==}
     engines: {node: ^16.11.0 || >=17.0.0}
     hasBin: true
     peerDependencies:
@@ -13544,8 +13544,8 @@ snapshots:
 
   magicast@0.3.5:
     dependencies:
-      '@babel/parser': 7.26.5
-      '@babel/types': 7.26.5
+      '@babel/parser': 7.26.7
+      '@babel/types': 7.26.7
       source-map-js: 1.2.1
 
   make-dir@3.1.0:
@@ -14146,7 +14146,7 @@ snapshots:
 
   neo-async@2.6.2: {}
 
-  nitro-nightly@3.0.0-beta-28938837.19ec5395(typescript@5.7.3):
+  nitro-nightly@3.0.0-beta-28968142.ce23e942(typescript@5.7.3):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.3.4
       '@netlify/functions': 2.8.2
