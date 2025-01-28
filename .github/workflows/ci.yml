@@ -39,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@ee117c905ab18f32fa0f66c2fe40ecc8013f3e04 # v3.28.4
+        uses: github/codeql-action/init@17a820bf2e43b47be2c72b39cc905417bc1ab6d0 # v3.28.6
         with:
           config: |
             paths:
@@ -95,7 +95,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@ee117c905ab18f32fa0f66c2fe40ecc8013f3e04 # v3.28.4
+        uses: github/codeql-action/analyze@17a820bf2e43b47be2c72b39cc905417bc1ab6d0 # v3.28.6
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -113,7 +113,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -144,7 +144,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -171,7 +171,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -196,7 +196,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -221,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -281,7 +281,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -308,7 +308,7 @@ jobs:
           TEST_PAYLOAD: ${{ matrix.payload }}
           SKIP_BUNDLE_SIZE: true
 
-      - uses: codecov/codecov-action@0da7aa657d958d32c117fc47e1f977e7524753c7 # v5.3.0
+      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -333,7 +333,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
@@ -365,7 +365,7 @@ jobs:
         with:
           fetch-depth: 0
       - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: lts/*
           cache: "pnpm"
