@@ -81,7 +81,6 @@ const nightlies = {
 
 export const keyDependencies = [
   '@nuxt/kit',
-  '@nuxt/schema',
 ]
 
 let warnedAboutCompatDate = false
