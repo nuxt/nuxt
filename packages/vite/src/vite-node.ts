@@ -8,9 +8,11 @@ import { isFileServingAllowed } from 'vite'
 import type { ModuleNode, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
+import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
+import { createIsExternal } from './utils/external'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
@@ -125,6 +127,15 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
         web: [],
       },
     })
+
+    const isExternal = createIsExternal(viteServer, ctx.nuxt)
+    node.shouldExternalize = async (id: string) => {
+      const result = await isExternal(id)
+      if (result?.external) {
+        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir }).catch(() => false)
+      }
+      return false
+    }
 
     return eventHandler(async (event) => {
       const moduleId = decodeURI(event.path).substring(1)
