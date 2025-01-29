@@ -69,7 +69,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "@nuxt/cli": "^3.20.0",
+    "@nuxt/cli": "^3.21.1",
     "@nuxt/devalue": "^2.0.2",
     "@nuxt/devtools": "^1.7.0",
     "@nuxt/kit": "workspace:*",
