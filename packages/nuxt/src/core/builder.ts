@@ -108,6 +108,18 @@ function createWatcher () {
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
   })
 
+  const restartPaths = new Set<string>()
+  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
+  for (const pattern of nuxt.options.watch) {
+    if (typeof pattern !== 'string') { continue }
+    const path = resolve(nuxt.options.srcDir, pattern)
+    if (!path.startsWith(srcDir)) {
+      restartPaths.add(path)
+    }
+  }
+
+  watcher.add([...restartPaths])
+
   watcher.on('all', (event, path) => {
     if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
       return
