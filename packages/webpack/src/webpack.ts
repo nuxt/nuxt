@@ -1,6 +1,6 @@
 import pify from 'pify'
 import { resolve } from 'pathe'
-import { defineEventHandler, fromNodeMiddleware, handleCors, setHeader } from 'h3'
+import { createError, defineEventHandler, fromNodeMiddleware, getRequestHeader, handleCors, setHeader } from 'h3'
 import type { H3CorsOptions } from 'h3'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
@@ -146,6 +146,12 @@ function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage
     if (isPreflight) {
       return null
     }
+
+    // disallow cross-site requests in no-cors mode
+    if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
+      throw createError({ statusCode: 403 })
+    }
+
     setHeader(event, 'Vary', 'Origin')
 
     event.context.webpack = {
