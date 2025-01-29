@@ -69,6 +69,33 @@ export default defineComponent({
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
+          const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
+          const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
+
+          if (!routeProps.Component) {
+            // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
+            // we'll render the old vnode until the new route finishes resolving
+            if (import.meta.client && vnode && !hasSameChildren) {
+              return vnode
+            }
+            done()
+            return
+          }
+
+          // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
+          if (import.meta.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
+            return vnode
+          }
+
+          if (import.meta.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
+            // if leaving a route with an existing child route, render the old vnode
+            if (hasSameChildren) {
+              return vnode
+            }
+            // If _leaving_ null child route, return null vnode
+            return null
+          }
+
           const key = generateRouteKey(routeProps, props.pageKey)
           if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
             nuxtApp.callHook('page:loading:end')
@@ -87,33 +114,6 @@ export default defineComponent({
             renderKey: key || undefined,
           }, {
             default: () => {
-              const isRenderingNewRouteInOldFork = import.meta.client && haveParentRoutesRendered(forkRoute, routeProps.route, routeProps.Component)
-              const hasSameChildren = import.meta.client && forkRoute && forkRoute.matched.length === routeProps.route.matched.length
-
-              if (!routeProps.Component) {
-                // If we're rendering a `<NuxtPage>` child route on navigation to a route which lacks a child page
-                // we'll render the old vnode until the new route finishes resolving
-                if (import.meta.client && vnode && !hasSameChildren) {
-                  return vnode
-                }
-                done()
-                return
-              }
-
-              // Return old vnode if we are rendering _new_ page suspense fork in _old_ layout suspense fork
-              if (import.meta.client && vnode && _layoutMeta && !_layoutMeta.isCurrent(routeProps.route)) {
-                return vnode
-              }
-
-              if (import.meta.client && isRenderingNewRouteInOldFork && forkRoute && (!_layoutMeta || _layoutMeta?.isCurrent(forkRoute))) {
-                // if leaving a route with an existing child route, render the old vnode
-                if (hasSameChildren) {
-                  return vnode
-                }
-                // If _leaving_ null child route, return null vnode
-                return null
-              }
-
               if (import.meta.server) {
                 vnode = h(Suspense, { suspensible: true }, {
                   default: () => pageVnode,
