@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { afterAll, beforeAll, bench, describe } from 'vitest'
-import { join, normalize } from 'pathe'
+import { join, normalize, resolve } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { loadNuxt, writeTypes } from '@nuxt/kit'
 import type { Nuxt } from 'nuxt/schema'
@@ -14,9 +14,7 @@ describe('writeTypes', () => {
 
   beforeAll(async () => {
     nuxt = await loadNuxt({ cwd: path })
-    await Promise.all([
-      rm(join(path, '.nuxt'), { recursive: true, force: true }),
-    ])
+    await rm(resolve(path, '.nuxt'), { recursive: true, force: true })
   })
 
   afterAll(async () => {
