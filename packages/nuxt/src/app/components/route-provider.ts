@@ -1,9 +1,10 @@
-import { defineComponent, h, nextTick, onMounted, provide, shallowReactive } from 'vue'
-import type { Ref, VNode } from 'vue'
+import { defineComponent, nextTick, onMounted, provide, shallowReactive } from 'vue'
+import type { VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
 export const RouteProvider = defineComponent({
+  name: 'RouteProvider',
   props: {
     vnode: {
       type: Object as () => VNode,
@@ -13,11 +14,9 @@ export const RouteProvider = defineComponent({
       type: Object as () => RouteLocationNormalizedLoaded,
       required: true,
     },
-    vnodeRef: Object as () => Ref<any>,
     renderKey: String,
-    trackRootNodes: Boolean,
   },
-  setup (props) {
+  setup (props, context) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     const previousKey = props.renderKey
     const previousRoute = props.route
@@ -33,25 +32,19 @@ export const RouteProvider = defineComponent({
 
     provide(PageRouteSymbol, shallowReactive(route))
 
-    let vnode: VNode
-    if (import.meta.dev && import.meta.client && props.trackRootNodes) {
+    if (import.meta.dev && import.meta.client) {
       onMounted(() => {
-        nextTick(() => {
-          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
-            const filename = (vnode?.type as any).__file
-            console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
-          }
-        })
+        if (props.vnode.transition) {
+          nextTick(() => {
+            if (['#comment', '#text'].includes(props.vnode?.el?.nodeName)) {
+              const filename = (props.vnode?.type as any).__file
+              console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
+            }
+          })
+        }
       })
     }
 
-    return () => {
-      if (import.meta.dev && import.meta.client) {
-        vnode = h(props.vnode, { ref: props.vnodeRef })
-        return vnode
-      }
-
-      return h(props.vnode, { ref: props.vnodeRef })
-    }
+    return () => context.slots.default?.()
   },
 })
