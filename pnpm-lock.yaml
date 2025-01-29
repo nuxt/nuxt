@@ -4,6 +4,333 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@eslint/js':
+      specifier: 9.6.0
+      version: 9.6.0
+    '@nuxt/devalue':
+      specifier: ^2.0.2
+      version: 2.0.2
+    '@nuxt/devtools':
+      specifier: ^1.3.9
+      version: 1.3.9
+    '@nuxt/eslint-config':
+      specifier: 0.3.13
+      version: 0.3.13
+    '@nuxt/friendly-errors-webpack-plugin':
+      specifier: ^2.6.0
+      version: 2.6.0
+    '@nuxt/scripts':
+      specifier: 0.6.3
+      version: 0.6.3
+    '@nuxt/test-utils':
+      specifier: 3.13.1
+      version: 3.13.1
+    '@parcel/watcher':
+      specifier: 2.4.1
+      version: 2.4.1
+    '@rollup/plugin-replace':
+      specifier: ^5.0.7
+      version: 5.0.7
+    '@testing-library/vue':
+      specifier: 8.1.0
+      version: 8.1.0
+    '@types/clear':
+      specifier: 0.1.4
+      version: 0.1.4
+    '@types/eslint__js':
+      specifier: 8.42.3
+      version: 8.42.3
+    '@types/estree':
+      specifier: 1.0.5
+      version: 1.0.5
+    '@types/file-loader':
+      specifier: 5.0.4
+      version: 5.0.4
+    '@types/hash-sum':
+      specifier: 1.0.2
+      version: 1.0.2
+    '@types/html-minifier':
+      specifier: 4.0.5
+      version: 4.0.5
+    '@types/lodash-es':
+      specifier: 4.17.12
+      version: 4.17.12
+    '@types/node':
+      specifier: 20.14.10
+      version: 20.14.10
+    '@types/pify':
+      specifier: 5.0.4
+      version: 5.0.4
+    '@types/pug':
+      specifier: 2.0.10
+      version: 2.0.10
+    '@types/sass-loader':
+      specifier: 8.0.8
+      version: 8.0.8
+    '@types/semver':
+      specifier: 7.5.8
+      version: 7.5.8
+    '@types/webpack-bundle-analyzer':
+      specifier: 4.7.0
+      version: 4.7.0
+    '@types/webpack-hot-middleware':
+      specifier: 2.25.9
+      version: 2.25.9
+    '@unhead/dom':
+      specifier: ^1.9.15
+      version: 1.9.15
+    '@unhead/schema':
+      specifier: 1.9.15
+      version: 1.9.15
+    '@unhead/ssr':
+      specifier: ^1.9.15
+      version: 1.9.15
+    '@unhead/vue':
+      specifier: ^1.9.15
+      version: 1.9.15
+    '@unocss/reset':
+      specifier: 0.61.3
+      version: 0.61.3
+    '@vitest/coverage-v8':
+      specifier: 1.6.0
+      version: 1.6.0
+    '@vue/compiler-core':
+      specifier: 3.4.31
+      version: 3.4.31
+    '@vue/compiler-sfc':
+      specifier: 3.4.31
+      version: 3.4.31
+    '@vue/language-core':
+      specifier: 2.0.26
+      version: 2.0.26
+    '@vue/shared':
+      specifier: ^3.4.31
+      version: 3.4.31
+    '@vue/test-utils':
+      specifier: 2.4.6
+      version: 2.4.6
+    acorn:
+      specifier: 8.12.1
+      version: 8.12.1
+    case-police:
+      specifier: 0.6.1
+      version: 0.6.1
+    changelogen:
+      specifier: 0.5.5
+      version: 0.5.5
+    chokidar:
+      specifier: ^3.6.0
+      version: 3.6.0
+    clear:
+      specifier: ^0.1.0
+      version: 0.1.0
+    compatx:
+      specifier: ^0.1.8
+      version: 0.1.8
+    cookie-es:
+      specifier: ^1.1.0
+      version: 1.1.0
+    critters:
+      specifier: 0.0.24
+      version: 0.0.24
+    css-loader:
+      specifier: ^7.1.2
+      version: 7.1.2
+    css-minimizer-webpack-plugin:
+      specifier: ^7.0.0
+      version: 7.0.0
+    defu:
+      specifier: ^6.1.4
+      version: 6.1.4
+    destr:
+      specifier: ^2.0.3
+      version: 2.0.3
+    esbuild:
+      specifier: ^0.23.0
+      version: 0.23.0
+    escape-string-regexp:
+      specifier: ^5.0.0
+      version: 5.0.0
+    eslint:
+      specifier: 9.6.0
+      version: 9.6.0
+    eslint-plugin-no-only-tests:
+      specifier: 3.1.0
+      version: 3.1.0
+    eslint-plugin-perfectionist:
+      specifier: 2.11.0
+      version: 2.11.0
+    eslint-typegen:
+      specifier: 0.2.4
+      version: 0.2.4
+    estree-walker:
+      specifier: ^3.0.3
+      version: 3.0.3
+    execa:
+      specifier: 9.3.0
+      version: 9.3.0
+    externality:
+      specifier: ^1.0.2
+      version: 1.0.2
+    file-loader:
+      specifier: ^6.2.0
+      version: 6.2.0
+    fork-ts-checker-webpack-plugin:
+      specifier: ^9.0.2
+      version: 9.0.2
+    get-port-please:
+      specifier: ^3.1.2
+      version: 3.1.2
+    happy-dom:
+      specifier: 14.12.3
+      version: 14.12.3
+    hash-sum:
+      specifier: ^2.0.0
+      version: 2.0.0
+    hookable:
+      specifier: ^5.5.3
+      version: 5.5.3
+    html-minifier:
+      specifier: 4.0.0
+      version: 4.0.0
+    html-validate:
+      specifier: 8.20.1
+      version: 8.20.1
+    klona:
+      specifier: ^2.0.6
+      version: 2.0.6
+    lodash-es:
+      specifier: 4.17.21
+      version: 4.17.21
+    markdownlint-cli:
+      specifier: 0.41.0
+      version: 0.41.0
+    memfs:
+      specifier: ^4.9.3
+      version: 4.9.3
+    mini-css-extract-plugin:
+      specifier: ^2.9.0
+      version: 2.9.0
+    mlly:
+      specifier: ^1.7.1
+      version: 1.7.1
+    nuxt-content-twoslash:
+      specifier: 0.1.0
+      version: 0.1.0
+    nypm:
+      specifier: ^0.3.9
+      version: 0.3.9
+    ohash:
+      specifier: ^1.1.3
+      version: 1.1.3
+    perfect-debounce:
+      specifier: ^1.0.0
+      version: 1.0.0
+    pify:
+      specifier: ^6.1.0
+      version: 6.1.0
+    pkg-types:
+      specifier: ^1.1.3
+      version: 1.1.3
+    playwright-core:
+      specifier: 1.45.1
+      version: 1.45.1
+    postcss:
+      specifier: ^8.4.39
+      version: 8.4.39
+    postcss-import:
+      specifier: ^16.1.0
+      version: 16.1.0
+    postcss-import-resolver:
+      specifier: ^2.0.0
+      version: 2.0.0
+    postcss-loader:
+      specifier: ^8.1.1
+      version: 8.1.1
+    postcss-url:
+      specifier: ^10.1.3
+      version: 10.1.3
+    prettier:
+      specifier: 3.3.2
+      version: 3.3.2
+    pug-plain-loader:
+      specifier: ^1.1.0
+      version: 1.1.0
+    radix3:
+      specifier: ^1.1.2
+      version: 1.1.2
+    rimraf:
+      specifier: 6.0.1
+      version: 6.0.1
+    rollup-plugin-visualizer:
+      specifier: ^5.12.0
+      version: 5.12.0
+    strip-literal:
+      specifier: ^2.1.0
+      version: 2.1.0
+    time-fix-plugin:
+      specifier: ^2.0.7
+      version: 2.0.7
+    ultrahtml:
+      specifier: ^1.5.3
+      version: 1.5.3
+    uncrypto:
+      specifier: ^0.1.3
+      version: 0.1.3
+    unimport:
+      specifier: ^3.7.2
+      version: 3.7.2
+    unocss:
+      specifier: 0.61.3
+      version: 0.61.3
+    unplugin:
+      specifier: ^1.11.0
+      version: 1.11.0
+    unplugin-vue-router:
+      specifier: ^0.10.0
+      version: 0.10.0
+    unstorage:
+      specifier: ^1.10.2
+      version: 1.10.2
+    untyped:
+      specifier: ^1.4.2
+      version: 1.4.2
+    url-loader:
+      specifier: ^4.1.1
+      version: 4.1.1
+    vite-node:
+      specifier: ^1.6.0
+      version: 1.6.0
+    vite-plugin-checker:
+      specifier: 0.7.0
+      version: 0.7.0
+    vitest:
+      specifier: 1.6.0
+      version: 1.6.0
+    vitest-environment-nuxt:
+      specifier: 1.0.0
+      version: 1.0.0
+    vue-devtools-stub:
+      specifier: ^0.1.0
+      version: 0.1.0
+    vue-tsc:
+      specifier: 2.0.26
+      version: 2.0.26
+    webpack-bundle-analyzer:
+      specifier: ^4.10.2
+      version: 4.10.2
+    webpack-hot-middleware:
+      specifier: ^2.26.1
+      version: 2.26.1
+    webpack-virtual-modules:
+      specifier: ^0.6.2
+      version: 0.6.2
+    webpackbar:
+      specifier: ^6.0.1
+      version: 6.0.1
+
 overrides:
   '@nuxt/kit': workspace:*
   '@nuxt/schema': workspace:*
@@ -32,52 +359,52 @@ importers:
   .:
     devDependencies:
       '@eslint/js':
-        specifier: 9.6.0
+        specifier: 'catalog:'
         version: 9.6.0
       '@nuxt/eslint-config':
-        specifier: 0.3.13
+        specifier: 'catalog:'
         version: 0.3.13(eslint@9.6.0)(typescript@5.5.3)
       '@nuxt/kit':
         specifier: workspace:*
         version: link:packages/kit
       '@nuxt/test-utils':
-        specifier: 3.13.1
+        specifier: 'catalog:'
         version: 3.13.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.31)(vue@3.4.31(typescript@5.5.3)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.0(vue@3.4.31(typescript@5.5.3)))(vue@3.4.31(typescript@5.5.3))
       '@nuxt/webpack-builder':
         specifier: workspace:*
         version: link:packages/webpack
       '@testing-library/vue':
-        specifier: 8.1.0
+        specifier: 'catalog:'
         version: 8.1.0(@vue/compiler-sfc@3.4.31)(vue@3.4.31(typescript@5.5.3))
       '@types/eslint__js':
-        specifier: 8.42.3
+        specifier: 'catalog:'
         version: 8.42.3
       '@types/node':
-        specifier: 20.14.10
+        specifier: 'catalog:'
         version: 20.14.10
       '@types/semver':
-        specifier: 7.5.8
+        specifier: 'catalog:'
         version: 7.5.8
       '@unhead/schema':
-        specifier: 1.9.15
+        specifier: 'catalog:'
         version: 1.9.15
       '@vitejs/plugin-vue':
         specifier: 5.0.5
         version: 5.0.5(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))
       '@vitest/coverage-v8':
-        specifier: 1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(vitest@1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))
       '@vue/test-utils':
-        specifier: 2.4.6
+        specifier: 'catalog:'
         version: 2.4.6
       autoprefixer:
         specifier: 10.4.19
         version: 10.4.19(postcss@8.4.39)
       case-police:
-        specifier: 0.6.1
+        specifier: 'catalog:'
         version: 0.6.1
       changelogen:
-        specifier: 0.5.5
+        specifier: 'catalog:'
         version: 0.5.5(magicast@0.3.4)
       consola:
         specifier: 3.2.3
@@ -89,19 +416,19 @@ importers:
         specifier: 5.0.0
         version: 5.0.0
       eslint:
-        specifier: 9.6.0
+        specifier: 'catalog:'
         version: 9.6.0
       eslint-plugin-no-only-tests:
-        specifier: 3.1.0
+        specifier: 'catalog:'
         version: 3.1.0
       eslint-plugin-perfectionist:
-        specifier: 2.11.0
+        specifier: 'catalog:'
         version: 2.11.0(eslint@9.6.0)(typescript@5.5.3)(vue-eslint-parser@9.4.2(eslint@9.6.0))
       eslint-typegen:
-        specifier: 0.2.4
+        specifier: 'catalog:'
         version: 0.2.4(eslint@9.6.0)
       execa:
-        specifier: 9.3.0
+        specifier: 'catalog:'
         version: 9.3.0
       globby:
         specifier: 14.0.2
@@ -110,13 +437,13 @@ importers:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       happy-dom:
-        specifier: 14.12.3
+        specifier: 'catalog:'
         version: 14.12.3
       jiti:
         specifier: 2.0.0-beta.3
         version: 2.0.0-beta.3
       markdownlint-cli:
-        specifier: 0.41.0
+        specifier: 'catalog:'
         version: 0.41.0
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
@@ -128,7 +455,7 @@ importers:
         specifier: workspace:*
         version: link:packages/nuxt
       nuxt-content-twoslash:
-        specifier: 0.1.0
+        specifier: 'catalog:'
         version: 0.1.0(@nuxtjs/mdc@0.5.0)
       ofetch:
         specifier: 1.3.4
@@ -137,10 +464,10 @@ importers:
         specifier: 1.1.2
         version: 1.1.2
       playwright-core:
-        specifier: 1.45.1
+        specifier: 'catalog:'
         version: 1.45.1
       rimraf:
-        specifier: 6.0.1
+        specifier: 'catalog:'
         version: 6.0.1
       semver:
         specifier: 7.6.2
@@ -155,10 +482,10 @@ importers:
         specifier: 1.5.3
         version: 1.5.3
       vitest:
-        specifier: 1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
       vitest-environment-nuxt:
-        specifier: 1.0.0
+        specifier: 'catalog:'
         version: 1.0.0(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.4.31)(vue@3.4.31(typescript@5.5.3)))(@vue/test-utils@2.4.6)(h3-nightly@2.0.0-1718872656.6765a6e)(happy-dom@14.12.3)(magicast@0.3.4)(nitropack@2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4))(playwright-core@1.45.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vitest@1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))(vue-router@4.4.0(vue@3.4.31(typescript@5.5.3)))(vue@3.4.31(typescript@5.5.3))
       vue:
         specifier: 3.4.31
@@ -167,7 +494,7 @@ importers:
         specifier: 4.4.0
         version: 4.4.0(vue@3.4.31(typescript@5.5.3))
       vue-tsc:
-        specifier: 2.0.26
+        specifier: 'catalog:'
         version: 2.0.26(typescript@5.5.3)
 
   packages/kit:
@@ -182,16 +509,16 @@ importers:
         specifier: ^3.2.3
         version: 3.2.3
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       destr:
-        specifier: ^2.0.3
+        specifier: 'catalog:'
         version: 2.0.3
       globby:
         specifier: ^14.0.2
         version: 14.0.2
       hash-sum:
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0
       ignore:
         specifier: ^5.3.1
@@ -200,16 +527,16 @@ importers:
         specifier: 2.0.0-beta.3
         version: 2.0.0-beta.3
       klona:
-        specifier: ^2.0.6
+        specifier: 'catalog:'
         version: 2.0.6
       mlly:
-        specifier: ^1.7.1
+        specifier: 'catalog:'
         version: 1.7.1
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
       pkg-types:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       scule:
         specifier: ^1.3.0
@@ -224,17 +551,17 @@ importers:
         specifier: ^2.3.1
         version: 2.3.1
       unimport:
-        specifier: ^3.7.2
+        specifier: 'catalog:'
         version: 3.7.2(rollup@4.18.1)
       untyped:
-        specifier: ^1.4.2
+        specifier: 'catalog:'
         version: 1.4.2
     devDependencies:
       '@types/hash-sum':
-        specifier: 1.0.2
+        specifier: 'catalog:'
         version: 1.0.2
       '@types/semver':
-        specifier: 7.5.8
+        specifier: 'catalog:'
         version: 7.5.8
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
@@ -246,7 +573,7 @@ importers:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
       vitest:
-        specifier: 1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
       webpack:
         specifier: 5.93.0
@@ -255,10 +582,10 @@ importers:
   packages/nuxt:
     dependencies:
       '@nuxt/devalue':
-        specifier: ^2.0.2
+        specifier: 'catalog:'
         version: 2.0.2
       '@nuxt/devtools':
-        specifier: ^1.3.9
+        specifier: 'catalog:'
         version: 1.3.9(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))
       '@nuxt/kit':
         specifier: workspace:*
@@ -276,52 +603,52 @@ importers:
         specifier: ^14.18.0 || >=16.10.0
         version: 20.14.10
       '@unhead/dom':
-        specifier: ^1.9.15
+        specifier: 'catalog:'
         version: 1.9.15
       '@unhead/ssr':
-        specifier: ^1.9.15
+        specifier: 'catalog:'
         version: 1.9.15
       '@unhead/vue':
-        specifier: ^1.9.15
+        specifier: 'catalog:'
         version: 1.9.15(vue@3.4.31(typescript@5.5.3))
       '@vue/shared':
-        specifier: ^3.4.31
+        specifier: 'catalog:'
         version: 3.4.31
       acorn:
-        specifier: 8.12.1
+        specifier: 'catalog:'
         version: 8.12.1
       c12:
         specifier: 2.0.0-beta.1
         version: 2.0.0-beta.1(magicast@0.3.4)
       chokidar:
-        specifier: ^3.6.0
+        specifier: 'catalog:'
         version: 3.6.0
       compatx:
-        specifier: ^0.1.8
+        specifier: 'catalog:'
         version: 0.1.8
       consola:
         specifier: ^3.2.3
         version: 3.2.3
       cookie-es:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       destr:
-        specifier: ^2.0.3
+        specifier: 'catalog:'
         version: 2.0.3
       devalue:
         specifier: ^5.0.0
         version: 5.0.0
       esbuild:
-        specifier: ^0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0
       estree-walker:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
       globby:
         specifier: ^14.0.2
@@ -330,7 +657,7 @@ importers:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       hookable:
-        specifier: ^5.5.3
+        specifier: 'catalog:'
         version: 5.5.3
       ignore:
         specifier: ^5.3.1
@@ -339,7 +666,7 @@ importers:
         specifier: 2.0.0-beta.3
         version: 2.0.0-beta.3
       klona:
-        specifier: ^2.0.6
+        specifier: 'catalog:'
         version: 2.0.6
       knitwork:
         specifier: ^1.1.0
@@ -348,7 +675,7 @@ importers:
         specifier: ^0.30.10
         version: 0.30.10
       mlly:
-        specifier: ^1.7.1
+        specifier: 'catalog:'
         version: 1.7.1
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
@@ -357,25 +684,25 @@ importers:
         specifier: ^3.12.0
         version: 3.12.0
       nypm:
-        specifier: ^0.3.9
+        specifier: 'catalog:'
         version: 0.3.9
       ofetch:
         specifier: ^1.3.4
         version: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
       ohash:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
       perfect-debounce:
-        specifier: ^1.0.0
+        specifier: 'catalog:'
         version: 1.0.0
       pkg-types:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       radix3:
-        specifier: ^1.1.2
+        specifier: 'catalog:'
         version: 1.1.2
       scule:
         specifier: ^1.3.0
@@ -387,16 +714,16 @@ importers:
         specifier: ^3.7.0
         version: 3.7.0
       strip-literal:
-        specifier: ^2.1.0
+        specifier: 'catalog:'
         version: 2.1.0
       ufo:
         specifier: ^1.5.3
         version: 1.5.3
       ultrahtml:
-        specifier: ^1.5.3
+        specifier: 'catalog:'
         version: 1.5.3
       uncrypto:
-        specifier: ^0.1.3
+        specifier: 'catalog:'
         version: 0.1.3
       unctx:
         specifier: ^2.3.1
@@ -405,19 +732,19 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       unimport:
-        specifier: ^3.7.2
+        specifier: 'catalog:'
         version: 3.7.2(rollup@4.18.1)
       unplugin:
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0
       unplugin-vue-router:
-        specifier: ^0.10.0
+        specifier: 'catalog:'
         version: 0.10.0(rollup@4.18.1)(vue-router@4.4.0(vue@3.4.31(typescript@5.5.3)))(vue@3.4.31(typescript@5.5.3))
       unstorage:
-        specifier: ^1.10.2
+        specifier: 'catalog:'
         version: 1.10.2(ioredis@5.4.1)
       untyped:
-        specifier: ^1.4.2
+        specifier: 'catalog:'
         version: 1.4.2
       vue:
         specifier: 3.4.31
@@ -426,29 +753,29 @@ importers:
         specifier: ^2.1.0
         version: 2.1.0
       vue-devtools-stub:
-        specifier: ^0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
       vue-router:
         specifier: ^4.4.0
         version: 4.4.0(vue@3.4.31(typescript@5.5.3))
     devDependencies:
       '@nuxt/scripts':
-        specifier: 0.6.3
+        specifier: 'catalog:'
         version: 0.6.3(@nuxt/devtools@1.3.9(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)))(@unocss/webpack@0.61.3(rollup@4.18.1)(webpack@5.93.0(esbuild@0.23.0)))(@vue/compiler-core@3.4.31)(ioredis@5.4.1)(nuxt@packages+nuxt)(postcss@8.4.39)(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))(webpack@5.93.0(esbuild@0.23.0))
       '@nuxt/ui-templates':
         specifier: workspace:*
         version: link:../ui-templates
       '@parcel/watcher':
-        specifier: 2.4.1
+        specifier: 'catalog:'
         version: 2.4.1
       '@types/estree':
-        specifier: 1.0.5
+        specifier: 'catalog:'
         version: 1.0.5
       '@vitejs/plugin-vue':
         specifier: 5.0.5
         version: 5.0.5(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))
       '@vue/compiler-sfc':
-        specifier: 3.4.31
+        specifier: 'catalog:'
         version: 3.4.31
       unbuild:
         specifier: 3.0.0-rc.6
@@ -457,28 +784,28 @@ importers:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
       vitest:
-        specifier: 1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
 
   packages/schema:
     dependencies:
       compatx:
-        specifier: ^0.1.8
+        specifier: 'catalog:'
         version: 0.1.8
       consola:
         specifier: ^3.2.3
         version: 3.2.3
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       hookable:
-        specifier: ^5.5.3
+        specifier: 'catalog:'
         version: 5.5.3
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
       pkg-types:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       scule:
         specifier: ^1.3.0
@@ -490,13 +817,13 @@ importers:
         specifier: ^1.5.3
         version: 1.5.3
       uncrypto:
-        specifier: ^0.1.3
+        specifier: 'catalog:'
         version: 0.1.3
       unimport:
-        specifier: ^3.7.2
+        specifier: 'catalog:'
         version: 3.7.2(rollup@4.18.1)
       untyped:
-        specifier: ^1.4.2
+        specifier: 'catalog:'
         version: 1.4.2
     devDependencies:
       '@nuxt/telemetry':
@@ -506,16 +833,16 @@ importers:
         specifier: workspace:*
         version: link:../ui-templates
       '@types/file-loader':
-        specifier: 5.0.4
+        specifier: 'catalog:'
         version: 5.0.4
       '@types/pug':
-        specifier: 2.0.10
+        specifier: 'catalog:'
         version: 2.0.10
       '@types/sass-loader':
-        specifier: 8.0.8
+        specifier: 'catalog:'
         version: 8.0.8
       '@unhead/schema':
-        specifier: 1.9.15
+        specifier: 'catalog:'
         version: 1.9.15
       '@vitejs/plugin-vue':
         specifier: 5.0.5
@@ -524,13 +851,13 @@ importers:
         specifier: 4.0.0
         version: 4.0.0(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue@3.4.31(typescript@5.5.3))
       '@vue/compiler-core':
-        specifier: 3.4.31
+        specifier: 'catalog:'
         version: 3.4.31
       '@vue/compiler-sfc':
-        specifier: 3.4.31
+        specifier: 'catalog:'
         version: 3.4.31
       '@vue/language-core':
-        specifier: 2.0.26
+        specifier: 'catalog:'
         version: 2.0.26(typescript@5.5.3)
       c12:
         specifier: 2.0.0-beta.1
@@ -584,25 +911,25 @@ importers:
   packages/ui-templates:
     devDependencies:
       '@types/html-minifier':
-        specifier: 4.0.5
+        specifier: 'catalog:'
         version: 4.0.5
       '@unocss/reset':
-        specifier: 0.61.3
+        specifier: 'catalog:'
         version: 0.61.3
       critters:
-        specifier: 0.0.24
+        specifier: 'catalog:'
         version: 0.0.24
       execa:
-        specifier: 9.3.0
+        specifier: 'catalog:'
         version: 9.3.0
       globby:
         specifier: 14.0.2
         version: 14.0.2
       html-minifier:
-        specifier: 4.0.0
+        specifier: 'catalog:'
         version: 4.0.0
       html-validate:
-        specifier: 8.20.1
+        specifier: 'catalog:'
         version: 8.20.1(vitest@1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0))
       jiti:
         specifier: 2.0.0-beta.3
@@ -614,14 +941,14 @@ importers:
         specifier: 1.1.2
         version: 1.1.2
       prettier:
-        specifier: 3.3.2
+        specifier: 'catalog:'
         version: 3.3.2
       scule:
         specifier: 1.3.0
         version: 1.3.0
       unocss:
-        specifier: 0.61.3
-        version: 0.61.3(@unocss/webpack@0.61.3(rollup@4.18.1)(webpack@5.93.0(esbuild@0.23.0)))(postcss@8.4.39)(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))
+        specifier: 'catalog:'
+        version: 0.61.3(@unocss/webpack@0.61.3(rollup@4.18.1)(webpack@5.93.0))(postcss@8.4.39)(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
@@ -632,7 +959,7 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@rollup/plugin-replace':
-        specifier: ^5.0.7
+        specifier: 'catalog:'
         version: 5.0.7(rollup@4.18.1)
       '@vitejs/plugin-vue':
         specifier: ^5.0.5
@@ -644,7 +971,7 @@ importers:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.39)
       clear:
-        specifier: ^0.1.0
+        specifier: 'catalog:'
         version: 0.1.0
       consola:
         specifier: ^3.2.3
@@ -653,22 +980,22 @@ importers:
         specifier: ^7.0.4
         version: 7.0.4(postcss@8.4.39)
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       esbuild:
-        specifier: ^0.23.0
+        specifier: 'catalog:'
         version: 0.23.0
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0
       estree-walker:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
       externality:
-        specifier: ^1.0.2
+        specifier: 'catalog:'
         version: 1.0.2
       get-port-please:
-        specifier: ^3.1.2
+        specifier: 'catalog:'
         version: 3.1.2
       h3:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
@@ -683,31 +1010,31 @@ importers:
         specifier: ^0.30.10
         version: 0.30.10
       mlly:
-        specifier: ^1.7.1
+        specifier: 'catalog:'
         version: 1.7.1
       ohash:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
       perfect-debounce:
-        specifier: ^1.0.0
+        specifier: 'catalog:'
         version: 1.0.0
       pkg-types:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       postcss:
-        specifier: ^8.4.39
+        specifier: 'catalog:'
         version: 8.4.39
       rollup-plugin-visualizer:
-        specifier: ^5.12.0
+        specifier: 'catalog:'
         version: 5.12.0(rollup@4.18.1)
       std-env:
         specifier: ^3.7.0
         version: 3.7.0
       strip-literal:
-        specifier: ^2.1.0
+        specifier: 'catalog:'
         version: 2.1.0
       ufo:
         specifier: ^1.5.3
@@ -716,16 +1043,16 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       unplugin:
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0
       vite:
         specifier: 5.3.3
         version: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
       vite-node:
-        specifier: ^1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
       vite-plugin-checker:
-        specifier: 0.7.0
+        specifier: 'catalog:'
         version: 0.7.0(eslint@9.6.0)(optionator@0.9.3)(typescript@5.5.3)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))(vue-tsc@2.0.26(typescript@5.5.3))
       vue-bundle-renderer:
         specifier: ^2.1.0
@@ -735,10 +1062,10 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@types/clear':
-        specifier: 0.1.4
+        specifier: 'catalog:'
         version: 0.1.4
       '@types/estree':
-        specifier: 1.0.5
+        specifier: 'catalog:'
         version: 1.0.5
       rollup:
         specifier: ^4.18.1
@@ -753,7 +1080,7 @@ importers:
   packages/webpack:
     dependencies:
       '@nuxt/friendly-errors-webpack-plugin':
-        specifier: ^2.6.0
+        specifier: 'catalog:'
         version: 2.6.0(webpack@5.93.0)
       '@nuxt/kit':
         specifier: workspace:*
@@ -762,31 +1089,31 @@ importers:
         specifier: ^10.4.19
         version: 10.4.19(postcss@8.4.39)
       css-loader:
-        specifier: ^7.1.2
+        specifier: 'catalog:'
         version: 7.1.2(webpack@5.93.0)
       css-minimizer-webpack-plugin:
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0(webpack@5.93.0)
       cssnano:
         specifier: ^7.0.4
         version: 7.0.4(postcss@8.4.39)
       defu:
-        specifier: ^6.1.4
+        specifier: 'catalog:'
         version: 6.1.4
       esbuild-loader:
         specifier: ^4.2.0
         version: 4.2.0(webpack@5.93.0)
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0
       estree-walker:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
       file-loader:
-        specifier: ^6.2.0
+        specifier: 'catalog:'
         version: 6.2.0(webpack@5.93.0)
       fork-ts-checker-webpack-plugin:
-        specifier: ^9.0.2
+        specifier: 'catalog:'
         version: 9.0.2(typescript@5.5.3)(webpack@5.93.0)
       globby:
         specifier: ^14.0.2
@@ -795,7 +1122,7 @@ importers:
         specifier: npm:h3-nightly@2.0.0-1718872656.6765a6e
         version: h3-nightly@2.0.0-1718872656.6765a6e
       hash-sum:
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0
       jiti:
         specifier: 2.0.0-beta.3
@@ -804,52 +1131,52 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0
       lodash-es:
-        specifier: 4.17.21
+        specifier: 'catalog:'
         version: 4.17.21
       magic-string:
         specifier: ^0.30.10
         version: 0.30.10
       memfs:
-        specifier: ^4.9.3
+        specifier: 'catalog:'
         version: 4.9.3
       mini-css-extract-plugin:
-        specifier: ^2.9.0
+        specifier: 'catalog:'
         version: 2.9.0(webpack@5.93.0)
       mlly:
-        specifier: ^1.7.1
+        specifier: 'catalog:'
         version: 1.7.1
       ohash:
-        specifier: ^1.1.3
+        specifier: 'catalog:'
         version: 1.1.3
       pathe:
         specifier: ^1.1.2
         version: 1.1.2
       pify:
-        specifier: ^6.1.0
+        specifier: 'catalog:'
         version: 6.1.0
       postcss:
-        specifier: ^8.4.39
+        specifier: 'catalog:'
         version: 8.4.39
       postcss-import:
-        specifier: ^16.1.0
+        specifier: 'catalog:'
         version: 16.1.0(postcss@8.4.39)
       postcss-import-resolver:
-        specifier: ^2.0.0
+        specifier: 'catalog:'
         version: 2.0.0
       postcss-loader:
-        specifier: ^8.1.1
+        specifier: 'catalog:'
         version: 8.1.1(postcss@8.4.39)(typescript@5.5.3)(webpack@5.93.0)
       postcss-url:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3(postcss@8.4.39)
       pug-plain-loader:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0(pug@3.0.2)
       std-env:
         specifier: ^3.7.0
         version: 3.7.0
       time-fix-plugin:
-        specifier: ^2.0.7
+        specifier: 'catalog:'
         version: 2.0.7(webpack@5.93.0)
       ufo:
         specifier: ^1.5.3
@@ -858,10 +1185,10 @@ importers:
         specifier: ^1.9.0
         version: 1.9.0
       unplugin:
-        specifier: ^1.11.0
+        specifier: 'catalog:'
         version: 1.11.0
       url-loader:
-        specifier: ^4.1.1
+        specifier: 'catalog:'
         version: 4.1.1(file-loader@6.2.0(webpack@5.93.0))(webpack@5.93.0)
       vue-bundle-renderer:
         specifier: ^2.1.0
@@ -873,38 +1200,38 @@ importers:
         specifier: ^5.93.0
         version: 5.93.0
       webpack-bundle-analyzer:
-        specifier: ^4.10.2
+        specifier: 'catalog:'
         version: 4.10.2
       webpack-dev-middleware:
         specifier: ^7.2.1
         version: 7.2.1(webpack@5.93.0)
       webpack-hot-middleware:
-        specifier: ^2.26.1
+        specifier: 'catalog:'
         version: 2.26.1
       webpack-virtual-modules:
-        specifier: ^0.6.2
+        specifier: 'catalog:'
         version: 0.6.2
       webpackbar:
-        specifier: ^6.0.1
+        specifier: 'catalog:'
         version: 6.0.1(webpack@5.93.0)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@types/hash-sum':
-        specifier: 1.0.2
+        specifier: 'catalog:'
         version: 1.0.2
       '@types/lodash-es':
-        specifier: 4.17.12
+        specifier: 'catalog:'
         version: 4.17.12
       '@types/pify':
-        specifier: 5.0.4
+        specifier: 'catalog:'
         version: 5.0.4
       '@types/webpack-bundle-analyzer':
-        specifier: 4.7.0
+        specifier: 'catalog:'
         version: 4.7.0
       '@types/webpack-hot-middleware':
-        specifier: 2.25.9
+        specifier: 'catalog:'
         version: 2.25.9
       rollup:
         specifier: ^4.18.1
@@ -925,7 +1252,7 @@ importers:
         specifier: latest
         version: 6.6.3
       '@vue/shared':
-        specifier: latest
+        specifier: 'catalog:'
         version: 3.4.31
       nuxt:
         specifier: workspace:*
@@ -947,7 +1274,7 @@ importers:
         version: link:../../../packages/nuxt
     devDependencies:
       '@unhead/dom':
-        specifier: latest
+        specifier: 'catalog:'
         version: 1.9.15
       '@unhead/shared':
         specifier: latest
@@ -956,7 +1283,7 @@ importers:
         specifier: latest
         version: 6.6.3
       '@vue/shared':
-        specifier: latest
+        specifier: 'catalog:'
         version: 3.4.31
       iron-webcrypto:
         specifier: latest
@@ -968,7 +1295,7 @@ importers:
         specifier: latest
         version: 1.9.15
       unplugin:
-        specifier: latest
+        specifier: 'catalog:'
         version: 1.11.0
       vue:
         specifier: 3.4.31
@@ -984,10 +1311,10 @@ importers:
         specifier: latest
         version: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
       unplugin-vue-router:
-        specifier: ^0.10.0
+        specifier: 'catalog:'
         version: 0.10.0(rollup@4.18.1)(vue-router@4.4.0(vue@3.4.31(typescript@5.5.3)))(vue@3.4.31(typescript@5.5.3))
       vitest:
-        specifier: 1.6.0
+        specifier: 'catalog:'
         version: 1.6.0(@types/node@20.14.10)(happy-dom@14.12.3)(sass@1.69.4)(terser@5.27.0)
       vue:
         specifier: 3.4.31
@@ -1027,7 +1354,7 @@ importers:
         specifier: latest
         version: 6.6.3
       '@vue/shared':
-        specifier: latest
+        specifier: 'catalog:'
         version: 3.4.31
       unhead:
         specifier: latest
@@ -1049,7 +1376,7 @@ importers:
         specifier: latest
         version: 6.6.3
       '@vue/shared':
-        specifier: latest
+        specifier: 'catalog:'
         version: 3.4.31
       typescript:
         specifier: 5.5.3
@@ -3453,6 +3780,7 @@ packages:
 
   critters@0.0.24:
     resolution: {integrity: sha512-Oyqew0FGM0wYUSNqR0L6AteO5MpMoUU0rhKRieXeiKs+PmRTxiJMyaunYB2KF6fQ3dzChXKCpbFOEJx3OQ1v/Q==}
+    deprecated: Ownership of Critters has moved to the Nuxt team, who will be maintaining the project going forward. If you'd like to keep using Critters, please switch to the actively-maintained fork at https://github.com/danielroe/beasties
 
   croner@8.0.2:
     resolution: {integrity: sha512-HgSdlSUX8mIgDTTiQpWUP4qY4IFRMsduPCYdca34Pelt8MVdxdaDOzreFtCscA6R+cRZd7UbD1CD3uyx6J3X1A==}
@@ -5441,6 +5769,9 @@ packages:
   ofetch@1.3.4:
     resolution: {integrity: sha512-KLIET85ik3vhEfS+3fDlc/BAZiAp+43QEC/yCo5zkNoY2YaKvNkOaFr/6wCFgFH1kuYQM5pMNi0Tg8koiIemtw==}
 
+  ofetch@1.4.1:
+    resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
+
   ohash@1.1.3:
     resolution: {integrity: sha512-zuHHiGTYTA1sYJ/wZN+t5HKZaH23i4yI1HMwbuXm24Nid7Dv0KcuRlKoNKS9UNfAVSBlnGLcuQrnOKWOZoEGaw==}
 
@@ -6659,6 +6990,9 @@ packages:
 
   ufo@1.5.3:
     resolution: {integrity: sha512-Y7HYmWaFwPUmkoQCUIAYpKqkOf+SbVj/2fJJZ4RJMCfZp0rTGwRbzQD+HghfnhKOjL9E01okqz+ncJskGYfBNw==}
+
+  ufo@1.5.4:
+    resolution: {integrity: sha512-UsUk3byDzKd04EyoZ7U4DOlxQaD14JUKQl6/P7wiX4FNvUfm3XL246n9W5AmqwW5RSFJ27NAuM0iLscAOYUiGQ==}
 
   uglify-js@3.17.4:
     resolution: {integrity: sha512-T9q82TJI9e/C1TAxYvfb16xO120tMVFZrGA3f9/P4424DNu6ypK103y0GPFVa17yotwSyZW5iYXgjYHkGrJW/g==}
@@ -8142,7 +8476,7 @@ snapshots:
       h3: h3-nightly@2.0.0-1718872656.6765a6e
       magic-string: 0.30.10
       mlly: 1.7.1
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
       ohash: 1.1.3
       pathe: 1.1.2
       pkg-types: 1.1.3
@@ -8151,7 +8485,7 @@ snapshots:
       sirv: 2.0.4
       std-env: 3.7.0
       third-party-capital: 1.0.31
-      ufo: 1.5.3
+      ufo: 1.5.4
       unimport: 3.7.2(rollup@4.18.1)
       unplugin: 1.11.0
       unstorage: 1.10.2(ioredis@5.4.1)
@@ -8230,13 +8564,13 @@ snapshots:
       magic-string: 0.30.10
       nitropack: 2.9.6(@opentelemetry/api@1.9.0)(encoding@0.1.13)(magicast@0.3.4)
       node-fetch-native: 1.6.4
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
       pathe: 1.1.2
       perfect-debounce: 1.0.0
       radix3: 1.1.2
       scule: 1.3.0
       std-env: 3.7.0
-      ufo: 1.5.3
+      ufo: 1.5.4
       unenv: 1.9.0
       unplugin: 1.11.0
       vite: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
@@ -8284,7 +8618,7 @@ snapshots:
       remark-rehype: 11.1.0
       scule: 1.3.0
       shiki: 1.10.3
-      ufo: 1.5.3
+      ufo: 1.5.4
       unified: 11.0.5
       unist-builder: 4.0.0
       unist-util-visit: 5.0.0
@@ -9080,7 +9414,7 @@ snapshots:
     dependencies:
       '@iconify/utils': 2.1.25
       '@unocss/core': 0.61.3
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
     transitivePeerDependencies:
       - supports-color
 
@@ -9109,7 +9443,7 @@ snapshots:
   '@unocss/preset-web-fonts@0.61.3':
     dependencies:
       '@unocss/core': 0.61.3
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
 
   '@unocss/preset-wind@0.61.3':
     dependencies:
@@ -9183,6 +9517,22 @@ snapshots:
       webpack-sources: 3.2.3
     transitivePeerDependencies:
       - rollup
+
+  '@unocss/webpack@0.61.3(rollup@4.18.1)(webpack@5.93.0)':
+    dependencies:
+      '@ampproject/remapping': 2.3.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.18.1)
+      '@unocss/config': 0.61.3
+      '@unocss/core': 0.61.3
+      chokidar: 3.6.0
+      fast-glob: 3.3.2
+      magic-string: 0.30.10
+      unplugin: 1.11.0
+      webpack: 5.93.0
+      webpack-sources: 3.2.3
+    transitivePeerDependencies:
+      - rollup
+    optional: true
 
   '@vercel/nft@0.26.5(encoding@0.1.13)':
     dependencies:
@@ -9882,7 +10232,7 @@ snapshots:
       execa: 8.0.1
       mri: 1.2.0
       node-fetch-native: 1.6.4
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
       open: 9.1.0
       pathe: 1.1.2
       pkg-types: 1.1.3
@@ -10799,7 +11149,7 @@ snapshots:
       enhanced-resolve: 5.17.0
       mlly: 1.7.1
       pathe: 1.1.2
-      ufo: 1.5.3
+      ufo: 1.5.4
 
   fake-indexeddb@5.0.2: {}
 
@@ -12254,7 +12604,7 @@ snapshots:
       acorn: 8.12.1
       pathe: 1.1.2
       pkg-types: 1.1.3
-      ufo: 1.5.3
+      ufo: 1.5.4
 
   mri@1.2.0: {}
 
@@ -12419,7 +12769,7 @@ snapshots:
       mlly: 1.7.1
       mri: 1.2.0
       node-fetch-native: 1.6.4
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
+      ofetch: 1.4.1
       ohash: 1.1.3
       openapi-typescript: 6.7.6
       pathe: 1.1.2
@@ -12434,7 +12784,7 @@ snapshots:
       serve-placeholder: 2.0.2
       serve-static: 1.15.0
       std-env: 3.7.0
-      ufo: 1.5.3
+      ufo: 1.5.4
       uncrypto: 0.1.3
       unctx: 2.3.1
       unenv: 1.9.0
@@ -12561,7 +12911,7 @@ snapshots:
       execa: 8.0.1
       pathe: 1.1.2
       pkg-types: 1.1.3
-      ufo: 1.5.3
+      ufo: 1.5.4
 
   object-assign@4.1.1: {}
 
@@ -12586,6 +12936,12 @@ snapshots:
       destr: 2.0.3
       node-fetch-native: 1.6.4
       ufo: 1.5.3
+
+  ofetch@1.4.1:
+    dependencies:
+      destr: 2.0.3
+      node-fetch-native: 1.6.4
+      ufo: 1.5.4
 
   ohash@1.1.3: {}
 
@@ -13877,6 +14233,8 @@ snapshots:
 
   ufo@1.5.3: {}
 
+  ufo@1.5.4: {}
+
   uglify-js@3.17.4: {}
 
   ultrahtml@1.5.3: {}
@@ -14041,6 +14399,36 @@ snapshots:
       - rollup
       - supports-color
 
+  unocss@0.61.3(@unocss/webpack@0.61.3(rollup@4.18.1)(webpack@5.93.0))(postcss@8.4.39)(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)):
+    dependencies:
+      '@unocss/astro': 0.61.3(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))
+      '@unocss/cli': 0.61.3(rollup@4.18.1)
+      '@unocss/core': 0.61.3
+      '@unocss/extractor-arbitrary-variants': 0.61.3
+      '@unocss/postcss': 0.61.3(postcss@8.4.39)
+      '@unocss/preset-attributify': 0.61.3
+      '@unocss/preset-icons': 0.61.3
+      '@unocss/preset-mini': 0.61.3
+      '@unocss/preset-tagify': 0.61.3
+      '@unocss/preset-typography': 0.61.3
+      '@unocss/preset-uno': 0.61.3
+      '@unocss/preset-web-fonts': 0.61.3
+      '@unocss/preset-wind': 0.61.3
+      '@unocss/reset': 0.61.3
+      '@unocss/transformer-attributify-jsx': 0.61.3
+      '@unocss/transformer-attributify-jsx-babel': 0.61.3
+      '@unocss/transformer-compile-class': 0.61.3
+      '@unocss/transformer-directives': 0.61.3
+      '@unocss/transformer-variant-group': 0.61.3
+      '@unocss/vite': 0.61.3(rollup@4.18.1)(vite@5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0))
+    optionalDependencies:
+      '@unocss/webpack': 0.61.3(rollup@4.18.1)(webpack@5.93.0)
+      vite: 5.3.3(@types/node@20.14.10)(sass@1.69.4)(terser@5.27.0)
+    transitivePeerDependencies:
+      - postcss
+      - rollup
+      - supports-color
+
   unplugin-vue-router@0.10.0(rollup@4.18.1)(vue-router@4.4.0(vue@3.4.31(typescript@5.5.3)))(vue@3.4.31(typescript@5.5.3)):
     dependencies:
       '@babel/types': 7.24.7
@@ -14079,8 +14467,8 @@ snapshots:
       lru-cache: 10.2.0
       mri: 1.2.0
       node-fetch-native: 1.6.4
-      ofetch: 1.3.4(patch_hash=nxc3eojzwynarpj453xzxqr2f4)
-      ufo: 1.5.3
+      ofetch: 1.4.1
+      ufo: 1.5.4
     optionalDependencies:
       ioredis: 5.4.1
     transitivePeerDependencies:

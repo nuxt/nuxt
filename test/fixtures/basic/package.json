@@ -9,14 +9,14 @@
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "@unhead/dom": "latest",
+    "@unhead/dom": "catalog:",
     "@unhead/shared": "latest",
     "@vue/devtools-api": "latest",
-    "@vue/shared": "latest",
+    "@vue/shared": "catalog:",
     "iron-webcrypto": "latest",
     "ufo": "latest",
     "unhead": "latest",
-    "unplugin": "latest",
+    "unplugin": "catalog:",
     "vue": "latest"
   }
 }
