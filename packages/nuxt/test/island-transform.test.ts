@@ -57,8 +57,8 @@ describe('islandTransform - server and island components', () => {
       <script setup lang="ts">
       const someData = 'some data'
 
-      </script>`
-      , 'hello.server.vue')
+      </script>`,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -130,8 +130,8 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
       <script setup lang="ts">
       const someData = 'some data'
 
-      </script>`
-      , 'hello.server.vue')
+      </script>`,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
@@ -182,8 +182,8 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
 
     const message = "Hello World";
     </script>
-    `
-      , 'hello.server.vue')
+    `,
+      'hello.server.vue')
 
       expect(normalizeLineEndings(result)).toMatchInlineSnapshot(`
         "<template>
