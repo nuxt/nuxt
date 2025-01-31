@@ -121,7 +121,7 @@
     "pkg-pr-new": "0.0.39",
     "playwright-core": "1.50.0",
     "rollup": "4.32.1",
-    "semver": "7.6.3",
+    "semver": "7.7.0",
     "sherif": "1.2.0",
     "std-env": "3.8.0",
     "tinyexec": "0.3.2",
