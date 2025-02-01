@@ -108,18 +108,15 @@ export default defineComponent({
             ? normalizeSlot(slots.default, routeProps, { ref: pageRef, key: key || undefined })
             : h(routeProps.Component, { ref: pageRef, key: key || undefined })
 
-          return h(RouteProvider, {
+          return vnode = h(RouteProvider, {
             vnode: pageVnode,
             route: routeProps.route,
-            renderKey: key || undefined,
           }, {
             default: () => {
               if (import.meta.server) {
-                vnode = h(Suspense, { suspensible: true }, {
+                return h(Suspense, { suspensible: true }, {
                   default: () => pageVnode,
                 })
-
-                return vnode
               }
 
               // Client side rendering
@@ -132,7 +129,7 @@ export default defineComponent({
               ].filter(Boolean))
 
               const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-              vnode = _wrapInTransition(hasTransition && transitionProps,
+              return _wrapInTransition(hasTransition && transitionProps,
                 wrapInKeepAlive(keepaliveConfig, h(Suspense, {
                   suspensible: true,
                   onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
@@ -148,8 +145,6 @@ export default defineComponent({
                   default: () => pageVnode,
                 }),
                 )).default()
-
-              return vnode
             },
           })
         },
