@@ -314,7 +314,7 @@ export default defineUntypedSchema({
    *   animation: loader 400ms linear infinite;
    * }
    *
-   * \@-webkit-keyframes loader {
+   * @-webkit-keyframes loader {
    *   0% {
    *     -webkit-transform: translate(-50%, -50%) rotate(0deg);
    *   }
@@ -322,7 +322,7 @@ export default defineUntypedSchema({
    *     -webkit-transform: translate(-50%, -50%) rotate(360deg);
    *   }
    * }
-   * \@keyframes loader {
+   * @keyframes loader {
    *   0% {
    *     transform: translate(-50%, -50%) rotate(0deg);
    *   }
