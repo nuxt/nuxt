@@ -55,3 +55,5 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
     }
   },
 })
+
+export const RouteProvider = defineRouteProvider()

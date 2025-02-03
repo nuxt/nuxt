@@ -12,7 +12,7 @@ import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
-import { defineRouteProvider } from '#app/components/route-provider'
+import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -67,7 +67,6 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
 
-    let RouteProvider: ReturnType<typeof defineRouteProvider> | undefined
     const routerProviderLookup: Record<string, ReturnType<typeof defineRouteProvider>> = {}
 
     return () => {
@@ -116,7 +115,7 @@ export default defineComponent({
             vnode = h(Suspense, {
               suspensible: true,
             }, {
-              default: () => h(defineRouteProvider(), {
+              default: () => h(RouteProvider, {
                 vnode: pageVnode,
                 route: routeProps.route,
                 renderKey: key || undefined,
@@ -159,7 +158,6 @@ export default defineComponent({
                 }
 
                 if (!keepaliveConfig) {
-                  RouteProvider ||= defineRouteProvider()
                   return h(RouteProvider, routeProviderProps)
                 }
 
