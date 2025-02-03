@@ -62,7 +62,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.5.1",
-    "rollup": "4.34.0",
+    "rollup": "4.34.1",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
@@ -120,7 +120,7 @@
     "pathe": "2.0.2",
     "pkg-pr-new": "0.0.39",
     "playwright-core": "1.50.1",
-    "rollup": "4.34.0",
+    "rollup": "4.34.1",
     "semver": "7.7.0",
     "sherif": "1.2.0",
     "std-env": "3.8.0",
@@ -136,6 +136,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@10.1.0+sha512.c89847b0667ddab50396bbbd008a2a43cf3b581efd59cf5d9aa8923ea1fb4b8106c041d540d08acb095037594d73ebc51e1ec89ee40c88b30b8a66c0fae0ac1b",
+  "packageManager": "pnpm@9.15.5+sha512.845196026aab1cc3f098a0474b64dfbab2afe7a1b4e91dd86895d8e4aa32a7a6d03049e2d0ad770bbe4de023a7122fb68c1a1d6e0d033c7076085f9d5d4800d4",
   "version": ""
 }
