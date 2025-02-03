@@ -67,6 +67,7 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
 
+    let RouteProvider: ReturnType<typeof defineRouteProvider>
     const routerProviderLookup = new Map<VNodeTypes, ReturnType<typeof defineRouteProvider>>()
 
     return () => {
@@ -115,16 +116,12 @@ export default defineComponent({
             vnode = h(Suspense, {
               suspensible: true,
             }, {
-              default: () => {
-                const providerVNode = h(defineRouteProvider(), {
-                  key: key || undefined,
-                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
-                  route: routeProps.route,
-                  renderKey: key || undefined,
-                  vnodeRef: pageRef,
-                })
-                return providerVNode
-              },
+              default: () => h(defineRouteProvider(), {
+                key: key || undefined,
+                vnode: pageVnode,
+                route: routeProps.route,
+                renderKey: key || undefined,
+              }),
             })
 
             return vnode
@@ -154,20 +151,28 @@ export default defineComponent({
               },
             }, {
               default: () => {
-                const routerComponentType = routeProps.Component.type as any
-
-                let RouteProvider = routerProviderLookup.get(routerComponentType)
-                if (!RouteProvider) {
-                  RouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
-                  routerProviderLookup.set(routerComponentType, RouteProvider)
-                }
-
-                return h(RouteProvider, {
+                const routeProviderProps = {
                   key: key || undefined,
                   vnode: pageVnode,
-                  renderKey: key || undefined,
                   route: routeProps.route,
-                })
+                  renderKey: key || undefined,
+                  trackRootNodes: hasTransition,
+                }
+
+                if (!keepaliveConfig) {
+                  RouteProvider ||= defineRouteProvider()
+                  h(RouteProvider, routeProviderProps)
+                }
+
+                const routerComponentType = routeProps.Component.type as any
+
+                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
+                if (!PageRouteProvider) {
+                  PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                }
+
+                return h(PageRouteProvider, routeProviderProps)
               },
             }),
             )).default()

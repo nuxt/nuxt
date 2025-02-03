@@ -1,5 +1,5 @@
 import { defineComponent, nextTick, onMounted, provide, shallowReactive } from 'vue'
-import type { Ref, VNode } from 'vue'
+import type { VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
@@ -14,7 +14,6 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       type: Object as () => RouteLocationNormalizedLoaded,
       required: true,
     },
-    vnodeRef: Object as () => Ref<any>,
     renderKey: String,
     trackRootNodes: Boolean,
   },
