@@ -112,15 +112,22 @@ export default defineComponent({
             : h(routeProps.Component, { ref: pageRef, key: key || undefined })
 
           if (import.meta.server) {
-            return vnode = h(Suspense, { suspensible: true }, {
-              default: () => h(defineRouteProvider(), {
-                vnode: pageVnode,
-                renderKey: key || undefined,
-                route: routeProps.route,
-              }, {
-                default: () => pageVnode,
-              }),
+            vnode = h(Suspense, {
+              suspensible: true,
+            }, {
+              default: () => {
+                const providerVNode = h(defineRouteProvider(), {
+                  key: key || undefined,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  vnodeRef: pageRef,
+                })
+                return providerVNode
+              },
             })
+
+            return vnode
           }
 
           // Client side rendering
@@ -133,7 +140,7 @@ export default defineComponent({
           ].filter(Boolean))
 
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          return vnode = _wrapInTransition(hasTransition && transitionProps,
+          vnode = _wrapInTransition(hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
@@ -159,10 +166,12 @@ export default defineComponent({
                   vnode: pageVnode,
                   renderKey: key || undefined,
                   route: routeProps.route,
-                }, { default: () => pageVnode })
+                })
               },
             }),
             )).default()
+
+          return vnode
         },
 
       })

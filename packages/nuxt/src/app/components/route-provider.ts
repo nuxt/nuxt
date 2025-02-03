@@ -1,5 +1,5 @@
 import { defineComponent, nextTick, onMounted, provide, shallowReactive } from 'vue'
-import type { VNode } from 'vue'
+import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
@@ -14,9 +14,11 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
       type: Object as () => RouteLocationNormalizedLoaded,
       required: true,
     },
+    vnodeRef: Object as () => Ref<any>,
     renderKey: String,
+    trackRootNodes: Boolean,
   },
-  setup (props, context) {
+  setup (props) {
     // Prevent reactivity when the page will be rerendered in a different suspense fork
     const previousKey = props.renderKey
     const previousRoute = props.route
@@ -32,19 +34,25 @@ export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
 
     provide(PageRouteSymbol, shallowReactive(route))
 
-    if (import.meta.dev && import.meta.client) {
+    let vnode: VNode
+    if (import.meta.dev && import.meta.client && props.trackRootNodes) {
       onMounted(() => {
-        if (props.vnode.transition) {
-          nextTick(() => {
-            if (['#comment', '#text'].includes(props.vnode?.el?.nodeName)) {
-              const filename = (props.vnode?.type as any).__file
-              console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
-            }
-          })
-        }
+        nextTick(() => {
+          if (['#comment', '#text'].includes(vnode?.el?.nodeName)) {
+            const filename = (vnode?.type as any).__file
+            console.warn(`[nuxt] \`${filename}\` does not have a single root node and will cause errors when navigating between routes.`)
+          }
+        })
       })
     }
 
-    return () => context.slots.default?.()
+    return () => {
+      if (import.meta.dev && import.meta.client) {
+        vnode = props.vnode
+        return vnode
+      }
+
+      return props.vnode
+    }
   },
 })
