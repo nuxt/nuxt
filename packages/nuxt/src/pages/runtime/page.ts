@@ -158,11 +158,12 @@ export default defineComponent({
 
                 let RouteProvider = routerProviderLookup.get(routerComponentType)
                 if (!RouteProvider) {
-                  RouteProvider = defineRouteProvider()
+                  RouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
                   routerProviderLookup.set(routerComponentType, RouteProvider)
                 }
 
                 return h(RouteProvider, {
+                  key: key || undefined,
                   vnode: pageVnode,
                   renderKey: key || undefined,
                   route: routeProps.route,
