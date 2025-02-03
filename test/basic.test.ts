@@ -1946,6 +1946,7 @@ describe('server components/islands', () => {
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Sugar Counter')
 
     // test islands wrapped with client-only
     expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
