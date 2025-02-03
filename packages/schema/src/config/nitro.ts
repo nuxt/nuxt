@@ -1,5 +1,4 @@
 import { defineResolvers } from '../utils/definition'
-import type { RuntimeConfig } from '../types/config'
 
 export default defineResolvers({
   /**
@@ -10,7 +9,7 @@ export default defineResolvers({
   nitro: {
     runtimeConfig: {
       $resolve: async (val, get) => {
-        const runtimeConfig = await get('runtimeConfig') as RuntimeConfig
+        const runtimeConfig = await get('runtimeConfig')
         return {
           ...runtimeConfig,
           app: {
@@ -27,10 +26,12 @@ export default defineResolvers({
       },
     },
     routeRules: {
-      $resolve: async (val, get) => ({
-        ...await get('routeRules') as Record<string, any>,
-        ...val,
-      }),
+      $resolve: async (val, get) => {
+        return {
+          ...await get('routeRules'),
+          ...(val && typeof val === 'object' ? val : {}),
+        }
+      },
     },
   },
 

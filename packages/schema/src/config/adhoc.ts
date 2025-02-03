@@ -14,10 +14,13 @@ export default defineResolvers({
       if (Array.isArray(val)) {
         return { dirs: val }
       }
-      if (val === undefined || val === true) {
-        return { dirs: [{ path: '~/components/global', global: true }, '~/components'] }
+      if (val === false) {
+        return { dirs: [] }
       }
-      return val
+      return {
+        dirs: [{ path: '~/components/global', global: true }, '~/components'],
+        ...typeof val === 'object' ? val : {},
+      }
     },
   },
 

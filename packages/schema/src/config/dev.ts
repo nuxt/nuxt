@@ -23,7 +23,10 @@ export default defineResolvers({
     /** Dev server listening port */
     port: Number(process.env.NUXT_PORT || process.env.NITRO_PORT || process.env.PORT || 3000),
 
-    /** Dev server listening host */
+    /**
+     * Dev server listening host
+     * @type {string | undefined}
+     */
     host: process.env.NUXT_HOST || process.env.NITRO_HOST || process.env.HOST || undefined,
 
     /**

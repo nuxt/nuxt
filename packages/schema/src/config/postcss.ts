@@ -25,14 +25,20 @@ export default defineResolvers({
      * @type {'cssnanoLast' | 'autoprefixerLast' | 'autoprefixerAndCssnanoLast' | string[] | ((names: string[]) => string[])}
      */
     order: {
-      $resolve: (val: string | string[] | ((plugins: string[]) => string[])): string[] | ((plugins: string[]) => string[]) => {
+      $resolve: (val) => {
         if (typeof val === 'string') {
           if (!(val in orderPresets)) {
             throw new Error(`[nuxt] Unknown PostCSS order preset: ${val}`)
           }
           return orderPresets[val as keyof typeof orderPresets]
         }
-        return val ?? orderPresets.autoprefixerAndCssnanoLast
+        if (typeof val === 'function') {
+          return val as (names: string[]) => string[]
+        }
+        if (Array.isArray(val)) {
+          return val
+        }
+        return orderPresets.autoprefixerAndCssnanoLast
       },
     },
     /**

@@ -1,3 +1,7 @@
+import type { InputObject } from 'untyped'
+
+import { defineUntypedSchema } from 'untyped'
+
 import type { ConfigSchema } from '../../schema/config'
 
 type KeysOf<T, Prefix extends string | unknown = unknown> = keyof T extends string
@@ -33,12 +37,20 @@ type Awaitable<T> = T | Promise<T>
 
 interface Resolvers<ReturnValue> {
   $resolve: (val: unknown, get: <K extends KeysOf<ConfigSchema>>(key: K) => Promise<ReturnFromKey<ConfigSchema, K>>) => Awaitable<ReturnValue>
+  $schema?: InputObject['$schema']
+  $default?: ReturnValue
 }
 
-type Resolvable<Namespace> = {
-  [K in keyof Namespace]: Resolvable<Namespace[K]> | Resolvers<Namespace[K]>
+type Resolvable<Namespace> = keyof Exclude<NonNullable<Namespace>, boolean | string | (() => any)> extends string
+  ? {
+    [K in keyof Namespace]: Partial<Resolvable<Namespace[K]>> | Resolvers<Namespace[K]>
+  } | Namespace
+  : Namespace | Resolvers<Namespace>
+
+export function defineResolvers<C extends Partial<Resolvable<ConfigSchema>>> (config: C) {
+  return defineUntypedSchema(config) as C
 }
 
-export function defineResolvers (config: Partial<Resolvable<ConfigSchema>>) {
-  return config
-}
+export type ResolvableConfigSchema = Partial<Resolvable<ConfigSchema>>
+
+export { defineUntypedSchema } from 'untyped'

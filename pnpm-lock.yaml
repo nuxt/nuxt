@@ -702,6 +702,15 @@ importers:
       '@types/pug':
         specifier: 2.0.10
         version: 2.0.10
+      '@types/rollup-plugin-visualizer':
+        specifier: 4.2.4
+        version: 4.2.4
+      '@types/webpack-bundle-analyzer':
+        specifier: 4.7.0
+        version: 4.7.0
+      '@types/webpack-hot-middleware':
+        specifier: 2.25.9
+        version: 2.25.9
       '@unhead/schema':
         specifier: 1.11.18
         version: 1.11.18
@@ -729,6 +738,9 @@ importers:
       compatx:
         specifier: 0.1.8
         version: 0.1.8
+      css-minimizer-webpack-plugin:
+        specifier: 7.0.0
+        version: 7.0.0(webpack@5.97.1)
       esbuild-loader:
         specifier: 4.2.2
         version: 4.2.2(webpack@5.97.1)
@@ -744,6 +756,9 @@ importers:
       ignore:
         specifier: 7.0.3
         version: 7.0.3
+      mini-css-extract-plugin:
+        specifier: 2.9.2
+        version: 2.9.2(webpack@5.97.1)
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6
         version: nitro-nightly@3.0.0-beta-28969273.f7aa9de6(typescript@5.7.3)
@@ -753,6 +768,9 @@ importers:
       pkg-types:
         specifier: 1.3.1
         version: 1.3.1
+      postcss:
+        specifier: 8.5.1
+        version: 8.5.1
       sass-loader:
         specifier: 16.0.4
         version: 16.0.4(@rspack/core@1.2.2)(webpack@5.97.1)
@@ -2804,6 +2822,9 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
+
+  '@types/rollup-plugin-visualizer@4.2.4':
+    resolution: {integrity: sha512-BW4Q6D1Qy5gno5qHWrnMDC2dOe/TAKXvqCpckOggCCu+XpS+ZZJJ1lq1+K3bvYccoO3Y7f5kglbFAgYGqCgULg==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -9996,6 +10017,10 @@ snapshots:
   '@types/pug@2.0.10': {}
 
   '@types/resolve@1.20.2': {}
+
+  '@types/rollup-plugin-visualizer@4.2.4':
+    dependencies:
+      rollup: 4.34.0
 
   '@types/semver@7.5.8': {}
 
