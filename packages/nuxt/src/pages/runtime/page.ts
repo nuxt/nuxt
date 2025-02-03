@@ -1,5 +1,5 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, Slot, TransitionProps, VNode } from 'vue'
+import type { KeepAliveProps, Slot, TransitionProps, VNode, VNodeTypes } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
@@ -12,6 +12,7 @@ import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+import { defineRouteProvider } from '#app/components/route-provider'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -65,6 +66,9 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
     }
     let pageLoadingEndHookAlreadyCalled = false
+
+    const routerProviderLookup = new Map<VNodeTypes, ReturnType<typeof defineRouteProvider>>()
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -109,7 +113,13 @@ export default defineComponent({
 
           if (import.meta.server) {
             return vnode = h(Suspense, { suspensible: true }, {
-              default: () => pageVnode,
+              default: () => h(defineRouteProvider(), {
+                vnode: pageVnode,
+                renderKey: key || undefined,
+                route: routeProps.route,
+              }, {
+                default: () => pageVnode,
+              }),
             })
           }
 
@@ -136,7 +146,21 @@ export default defineComponent({
                 }).finally(done))
               },
             }, {
-              default: () => pageVnode,
+              default: () => {
+                const routerComponentType = routeProps.Component.type as any
+
+                let RouteProvider = routerProviderLookup.get(routerComponentType)
+                if (!RouteProvider) {
+                  RouteProvider = defineRouteProvider()
+                  routerProviderLookup.set(routerComponentType, RouteProvider)
+                }
+
+                return h(RouteProvider, {
+                  vnode: pageVnode,
+                  renderKey: key || undefined,
+                  route: routeProps.route,
+                }, { default: () => pageVnode })
+              },
             }),
             )).default()
         },
