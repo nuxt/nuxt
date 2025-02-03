@@ -1,5 +1,5 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, Slot, TransitionProps, VNode, VNodeTypes } from 'vue'
+import type { KeepAliveProps, Slot, TransitionProps, VNode } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
@@ -67,8 +67,8 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
 
-    let RouteProvider: ReturnType<typeof defineRouteProvider>
-    const routerProviderLookup = new Map<VNodeTypes, ReturnType<typeof defineRouteProvider>>()
+    let RouteProvider: ReturnType<typeof defineRouteProvider> | undefined
+    const routerProviderLookup: Record<string, ReturnType<typeof defineRouteProvider>> = {}
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -109,15 +109,14 @@ export default defineComponent({
           previousPageKey = key
 
           const pageVnode = slots.default
-            ? normalizeSlot(slots.default, routeProps, { ref: pageRef, key: key || undefined })
-            : h(routeProps.Component, { ref: pageRef, key: key || undefined })
+            ? normalizeSlot(slots.default, routeProps, { ref: pageRef })
+            : h(routeProps.Component, { ref: pageRef })
 
           if (import.meta.server) {
             vnode = h(Suspense, {
               suspensible: true,
             }, {
               default: () => h(defineRouteProvider(), {
-                key: key || undefined,
                 vnode: pageVnode,
                 route: routeProps.route,
                 renderKey: key || undefined,
@@ -161,15 +160,17 @@ export default defineComponent({
 
                 if (!keepaliveConfig) {
                   RouteProvider ||= defineRouteProvider()
-                  h(RouteProvider, routeProviderProps)
+                  return h(RouteProvider, routeProviderProps)
                 }
 
                 const routerComponentType = routeProps.Component.type as any
+                const routerComponentName = routerComponentType.name || routerComponentType.__name
 
-                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
+                let PageRouteProvider = routerProviderLookup[routerComponentName]
+
                 if (!PageRouteProvider) {
-                  PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
-                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                  PageRouteProvider = defineRouteProvider(routerComponentName)
+                  routerProviderLookup[routerComponentName] = PageRouteProvider
                 }
 
                 return h(PageRouteProvider, routeProviderProps)
