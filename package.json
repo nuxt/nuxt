@@ -62,7 +62,7 @@
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
     "postcss": "8.5.1",
-    "rollup": "4.34.0",
+    "rollup": "4.34.1",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
@@ -120,7 +120,7 @@
     "pathe": "2.0.2",
     "pkg-pr-new": "0.0.39",
     "playwright-core": "1.50.1",
-    "rollup": "4.34.0",
+    "rollup": "4.34.1",
     "semver": "7.7.0",
     "sherif": "1.2.0",
     "std-env": "3.8.0",
@@ -136,6 +136,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@10.1.0",
   "version": ""
 }
