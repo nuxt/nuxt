@@ -15,11 +15,11 @@ describe('writeTypes', () => {
   beforeAll(async () => {
     nuxt = await loadNuxt({ cwd: path })
     await rm(resolve(path, '.nuxt'), { recursive: true, force: true })
-  })
+  }, 20_000)
 
   afterAll(async () => {
     await nuxt.close()
-  })
+  }, 20_000)
 
   bench('writeTypes in the basic-types fixture', async () => {
     await writeTypes(nuxt)
