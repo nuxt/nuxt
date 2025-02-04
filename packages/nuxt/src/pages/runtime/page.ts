@@ -6,13 +6,13 @@ import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
+import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
 import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
-import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -67,7 +67,7 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
 
-    const routerProviderLookup: Record<string, ReturnType<typeof defineRouteProvider>> = {}
+    const routerProviderLookup: Record<string, ReturnType<typeof defineRouteProvider> | undefined> = {}
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -107,19 +107,22 @@ export default defineComponent({
 
           previousPageKey = key
 
-          const pageVnode = slots.default
-            ? normalizeSlot(slots.default, routeProps, { ref: pageRef })
-            : h(routeProps.Component, { ref: pageRef })
+          const pageVnode = slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component
 
           if (import.meta.server) {
             vnode = h(Suspense, {
               suspensible: true,
             }, {
-              default: () => h(RouteProvider, {
-                vnode: pageVnode,
-                route: routeProps.route,
-                renderKey: key || undefined,
-              }),
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: pageVnode,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  vnodeRef: pageRef,
+                })
+                return providerVNode
+              },
             })
 
             return vnode
@@ -155,6 +158,7 @@ export default defineComponent({
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
+                  vnodeRef: pageRef,
                 }
 
                 if (!keepaliveConfig) {
@@ -178,7 +182,6 @@ export default defineComponent({
 
           return vnode
         },
-
       })
     }
   },
@@ -212,9 +215,7 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
   return index < newRoute.matched.length - 1
 }
 
-function normalizeSlot (slot: Slot, data: RouterViewSlotProps, props: any) {
+function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
   const slotContent = slot(data)
-  return slotContent.length === 1
-    ? h(slotContent[0]!, props)
-    : h(Fragment, props, slotContent)
+  return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
 }
