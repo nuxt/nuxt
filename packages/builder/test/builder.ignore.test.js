@@ -8,7 +8,7 @@ import Builder from '../src/builder' // Adjust path as needed to import your loc
 /**
  * Write a minimal nuxt.config.js to the test directory
  */
-function writeNuxtConfig(dir, config) {
+function writeNuxtConfig (dir, config) {
   const configContent = `export default ${JSON.stringify(config, null, 2)}`
   fs.writeFileSync(path.join(dir, 'nuxt.config.js'), configContent, 'utf8')
 }
@@ -74,7 +74,7 @@ describe('Integration Test: path.relative() error with ignore@5.x', () => {
     await nuxt.ready()
 
     const builder = new Builder(nuxt)
-    
+
     jest.spyOn(builder.bundleBuilder, 'build').mockResolvedValue()
     jest.spyOn(builder, 'addOptionalTemplates').mockResolvedValue()
     jest.spyOn(builder, 'resolveLoadingIndicator').mockResolvedValue()
@@ -108,7 +108,7 @@ describe('Integration Test: path.relative() error with ignore@5.x', () => {
     await nuxt.ready()
 
     const builder = new Builder(nuxt)
-    
+
     jest.spyOn(builder.bundleBuilder, 'build').mockResolvedValue()
     jest.spyOn(builder, 'addOptionalTemplates').mockResolvedValue()
     jest.spyOn(builder, 'resolveLoadingIndicator').mockResolvedValue()
@@ -123,5 +123,4 @@ describe('Integration Test: path.relative() error with ignore@5.x', () => {
 
     expect(capturedError).toBeUndefined()
   })
-
 })
