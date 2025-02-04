@@ -80,7 +80,8 @@ export default class Builder {
 
     this.ignore = new Ignore({
       rootDir: this.options.srcDir,
-      ignoreArray: this.options.ignore
+      ignoreArray: this.options.ignore,
+      ignoreOptions: this.options.ignoreOptions
     })
   }
 
