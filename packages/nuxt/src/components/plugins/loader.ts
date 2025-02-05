@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { genDynamicImport, genImport } from 'knitwork'
 import MagicString from 'magic-string'
@@ -6,6 +7,7 @@ import { relative } from 'pathe'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 import { tryUseNuxt } from '@nuxt/kit'
+import { parseURL } from 'ufo'
 import { QUOTE_RE, SX_RE, isVue } from '../../core/utils'
 import { installNuxtModule } from '../../core/features'
 import { logger } from '../../utils'
@@ -24,6 +26,19 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const nuxt = tryUseNuxt()
+  const isNuxtClientEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
+  const isDeepClientComponentEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient === 'deep'
+
+  function isServerOnlyComponent (id: string) {
+    if (!isVue(id)) { return false }
+    const components = options.getComponents()
+
+    const islands = components.filter(component =>
+      component.island || (component.mode === 'server' && !components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
+    )
+    const { pathname } = parseURL(decodeURIComponent(pathToFileURL(id).href))
+    return islands.some(c => c.filePath === pathname)
+  }
 
   return {
     name: 'nuxt:components-loader',
@@ -39,7 +54,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
     },
     transform (code, id) {
       const components = options.getComponents()
-
+      const serverOnlyComp = isServerOnlyComponent(id)
       let num = 0
       const imports = new Set<string>()
       const map = new Map<Component, string>()
@@ -87,6 +102,10 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
+              identifier += '_wrapped'
+            } else if (((isNuxtClientEnabled && serverOnlyComp) || (options.mode === 'server' && isDeepClientComponentEnabled))) {
+              imports.add(genImport('#app/components/utils', [{ name: 'withIslandTeleport' }]))
+              imports.add(`const ${identifier}_wrapped = withIslandTeleport(${identifier})`)
               identifier += '_wrapped'
             }
           }

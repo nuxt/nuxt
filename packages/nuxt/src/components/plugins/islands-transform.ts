@@ -66,8 +66,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
         })
       }
 
-      let hasNuxtClient = false
-
       const ast = parse(template[0])
       await walk(ast, (node) => {
         if (node.type !== ELEMENT_NODE) {
@@ -99,38 +97,7 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
           s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
           return
         }
-
-        if (!('nuxt-client' in node.attributes) && !(':nuxt-client' in node.attributes)) {
-          return
-        }
-
-        hasNuxtClient = true
-
-        if (!isVite || !options.selectiveClient) {
-          return
-        }
-
-        const { loc, attributes } = node
-        const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-        const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-
-        let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-        if (wrapperAttributes) {
-          startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-        }
-
-        s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
-        s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-        s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
       })
-
-      if (hasNuxtClient) {
-        if (!options.selectiveClient) {
-          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported when \`experimental.componentIslands.selectiveClient\` is enabled. file: ${id}`)
-        } else if (!isVite) {
-          console.warn(`The \`nuxt-client\` attribute and client components within islands are only supported with Vite. file: ${id}`)
-        }
-      }
 
       if (s.hasChanged()) {
         return {
