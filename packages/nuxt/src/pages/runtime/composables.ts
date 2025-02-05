@@ -1,10 +1,10 @@
 import type { KeepAliveProps, TransitionProps, UnwrapRef } from 'vue'
 import { getCurrentInstance } from 'vue'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRedirectOption } from '#vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouteRecordRaw, RouteRecordRedirectOption } from 'vue-router'
 import { useRoute } from 'vue-router'
-import type { NitroRouteConfig } from 'nitropack'
+import type { NitroRouteConfig } from 'nitro/types'
+import type { NuxtError } from 'nuxt/app'
 import { useNuxtApp } from '#app/nuxt'
-import type { NuxtError } from '#app'
 
 export interface PageMeta {
   [key: string]: unknown
@@ -37,11 +37,17 @@ export interface PageMeta {
   name?: string
   /** You may define a path matcher, if you have a more complex pattern than can be expressed with the file name. */
   path?: string
+  /**
+   * Allows accessing the route `params` as props passed to the page component.
+   * @see https://router.vuejs.org/guide/essentials/passing-props
+   */
+  props?: RouteRecordRaw['props']
   /** Set to `false` to avoid scrolling to top on page navigations */
   scrollToTop?: boolean | ((to: RouteLocationNormalizedLoaded, from: RouteLocationNormalizedLoaded) => boolean)
 }
 
 declare module 'vue-router' {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface RouteMeta extends UnwrapRef<PageMeta> {}
 }
 
@@ -60,7 +66,7 @@ export const definePageMeta = (meta: PageMeta): void => {
     try {
       const isRouteComponent = component && useRoute().matched.some(p => Object.values(p.components || {}).includes(component))
       const isRenderingServerPage = import.meta.server && useNuxtApp().ssrContext?.islandContext
-      if (isRouteComponent || isRenderingServerPage) {
+      if (isRouteComponent || isRenderingServerPage || ((component as any)?.__clientOnlyPage)) {
         // don't warn if it's being used in a route component (or server page)
         return
       }

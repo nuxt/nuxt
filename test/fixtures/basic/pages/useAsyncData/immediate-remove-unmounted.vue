@@ -2,7 +2,7 @@
   <div>
     <div>immediate-remove-unmounted.vue</div>
     <div id="immediate-data">
-      {{ data === null ? "null" : data }}
+      {{ data === null ? "null" : (data === undefined ? 'undefined' : data) }}
     </div>
     <button
       id="execute-btn"
@@ -22,7 +22,7 @@
 <script setup lang="ts">
 const { data, execute } = await useAsyncData('immediateFalse', () => $fetch('/api/random'), { immediate: false })
 
-if (data.value !== null) {
-  throw new Error('Initial data should be null: ' + data.value)
+if (data.value !== undefined) {
+  throw new Error(`Initial data should be undefined: ` + data.value)
 }
 </script>

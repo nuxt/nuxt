@@ -1,10 +1,11 @@
 import { fileURLToPath } from 'node:url'
-import { globby } from 'globby'
-import fs from 'fs-extra'
-import { execa } from 'execa'
+import { rm } from 'node:fs/promises'
+
+import { glob } from 'tinyglobby'
+import { exec } from 'tinyexec'
 
 async function initTesting () {
-  const dirs = await globby('*', {
+  const dirs = await glob(['*'], {
     onlyDirectories: true,
     cwd: fileURLToPath(new URL('./fixtures', import.meta.url)),
     absolute: true,
@@ -12,13 +13,13 @@ async function initTesting () {
 
   await Promise.all([
     // clear nuxt build files
-    ...dirs.map(dir => fs.remove(`${dir}/.nuxt`)),
+    ...dirs.map(dir => rm(`${dir}/.nuxt`, { force: true, recursive: true })),
     // clear vite cache
-    ...dirs.map(dir => fs.remove(`${dir}/node_modules/.cache`), { force: true }),
+    ...dirs.map(dir => rm(`${dir}/node_modules/.cache`, { force: true, recursive: true })),
   ])
 
   await Promise.all(
-    dirs.map(dir => execa('pnpm', ['nuxi', 'prepare'], { cwd: dir })),
+    dirs.map(dir => exec('pnpm', ['nuxi', 'prepare'], { nodeOptions: { cwd: dir } })),
   )
 }
 

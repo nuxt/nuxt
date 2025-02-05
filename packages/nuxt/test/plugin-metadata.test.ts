@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { parse } from 'acorn'
+import * as Parser from 'acorn'
 
 import { RemovePluginMetadataPlugin, extractMetadata } from '../src/core/plugins/plugin-metadata'
 import { checkForCircularDependencies } from '../src/core/app'
@@ -23,12 +23,10 @@ describe('plugin-metadata', () => {
         '})',
       ].join('\n'), 'tsx')
 
-      expect(meta).toMatchInlineSnapshot(`
-        {
-          "name": "test",
-          "order": 1,
-        }
-      `)
+      expect(meta).toEqual({
+        'name': 'test',
+        'order': 1,
+      })
     }
   })
 
@@ -40,10 +38,16 @@ describe('plugin-metadata', () => {
   it('should overwrite invalid plugins', () => {
     const invalidPlugins = [
       'export const plugin = {}',
-      'export default function (ctx, inject) {}',
     ]
     for (const plugin of invalidPlugins) {
-      expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
+      expect(transformPlugin.transform.call({
+        parse: (code: string, opts: any = {}) => Parser.parse(code, {
+          sourceType: 'module',
+          ecmaVersion: 'latest',
+          locations: true,
+          ...opts,
+        }),
+      }, plugin, 'my-plugin.mjs').code).toBe('export default () => {}')
     }
   })
 
@@ -55,7 +59,14 @@ describe('plugin-metadata', () => {
         setup: () => {},
       }, { order: 10, name: test })
     `
-    expect(transformPlugin.transform.call({ parse }, plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
+    expect(transformPlugin.transform.call({
+      parse: (code: string, opts: any = {}) => Parser.parse(code, {
+        sourceType: 'module',
+        ecmaVersion: 'latest',
+        locations: true,
+        ...opts,
+      }),
+    }, plugin, 'my-plugin.mjs').code).toMatchInlineSnapshot(`
       "
             export default defineNuxtPlugin({
               setup: () => {},

@@ -1,13 +1,12 @@
-import type { Component } from 'vue'
-import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onMounted, ref, toRaw, watch, withMemo } from 'vue'
+import type { Component, PropType, VNode } from 'vue'
+import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import { hash } from 'ohash'
 import { appendResponseHeader } from 'h3'
-import { useHead } from '@unhead/vue'
+import { type ActiveHeadEntry, type Head, injectHead } from '@unhead/vue'
 import { randomUUID } from 'uncrypto'
 import { joinURL, withQuery } from 'ufo'
 import type { FetchResponse } from 'ofetch'
-import { join } from 'pathe'
 
 import type { NuxtIslandResponse } from '../types'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
@@ -22,6 +21,7 @@ const SSR_UID_RE = /data-island-uid="([^"]*)"/
 const DATA_ISLAND_UID_RE = /data-island-uid(="")?(?!="[^"])/g
 const SLOTNAME_RE = /data-island-slot="([^"]*)"/g
 const SLOT_FALLBACK_RE = / data-island-slot="([^"]*)"[^>]*>/g
+const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 
 let id = 1
 const getId = import.meta.client ? () => (id++).toString() : randomUUID
@@ -29,22 +29,26 @@ const getId = import.meta.client ? () => (id++).toString() : randomUUID
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
 async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['components']) {
-  const promises = []
+  if (!paths) { return }
 
-  for (const component in paths) {
+  const promises: Array<Promise<void>> = []
+
+  for (const [component, item] of Object.entries(paths)) {
     if (!(components!.has(component))) {
       promises.push((async () => {
-        const chunkSource = join(source, paths[component].chunk)
+        const chunkSource = joinURL(source, item.chunk)
         const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
     }
   }
+
   await Promise.all(promises)
 }
 
 export default defineComponent({
   name: 'NuxtIsland',
+  inheritAttrs: false,
   props: {
     name: {
       type: String,
@@ -58,6 +62,10 @@ export default defineComponent({
     context: {
       type: Object,
       default: () => ({}),
+    },
+    scopeId: {
+      type: String as PropType<string | undefined | null>,
+      default: () => undefined,
     },
     source: {
       type: String,
@@ -82,17 +90,19 @@ export default defineComponent({
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
+    let activeHead: ActiveHeadEntry<Head>
+
     // TODO: remove use of `$fetch.raw` when nitro 503 issues on windows dev server are resolved
     const eventFetch = import.meta.server ? event!.fetch : import.meta.dev ? $fetch.raw : globalThis.fetch
     const mounted = ref(false)
     onMounted(() => { mounted.value = true; teleportKey.value++ })
-
+    onBeforeUnmount(() => { if (activeHead) { activeHead.dispose() } })
     function setPayload (key: string, result: NuxtIslandResponse) {
       const toRevive: Partial<NuxtIslandResponse> = {}
       if (result.props) { toRevive.props = result.props }
       if (result.slots) { toRevive.slots = result.slots }
       if (result.components) { toRevive.components = result.components }
-
+      if (result.head) { toRevive.head = result.head }
       nuxtApp.payload.data[key] = {
         __nuxt_island: {
           key,
@@ -122,14 +132,19 @@ export default defineComponent({
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
-      nuxtApp.payload.data[key].html = ssrHTML.value
+      // clear all data-island-uid to avoid conflicts when saving into payloads
+      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
       let html = ssrHTML.value
+
+      if (props.scopeId) {
+        html = html.replace(ISLAND_SCOPE_ID_RE, full => full + ' ' + props.scopeId)
+      }
 
       if (import.meta.client && !canLoadClientComponent.value) {
         for (const [key, value] of Object.entries(payloads.components || {})) {
@@ -150,8 +165,7 @@ export default defineComponent({
       return html
     })
 
-    const cHead = ref<Record<'link' | 'style', Array<Record<string, string>>>>({ link: [], style: [] })
-    useHead(cHead)
+    const head = injectHead()
 
     async function _fetchComponent (force = false) {
       const key = `${props.name}_${hashId.value}`
@@ -191,8 +205,7 @@ export default defineComponent({
       }
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
-        cHead.value.link = res.head.link
-        cHead.value.style = res.head.style
+
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
         error.value = null
@@ -202,6 +215,14 @@ export default defineComponent({
         if (selectiveClient && import.meta.client) {
           if (canLoadClientComponent.value && res.components) {
             await loadComponents(props.source, res.components)
+          }
+        }
+
+        if (res?.head) {
+          if (activeHead) {
+            activeHead.patch(res.head)
+          } else {
+            activeHead = head.push(res.head)
           }
         }
 
@@ -251,7 +272,7 @@ export default defineComponent({
 
         // should away be triggered ONE tick after re-rendering the static node
         withMemo([teleportKey.value], () => {
-          const teleports = []
+          const teleports: Array<VNode> = []
           // this is used to force trigger Teleport when vue makes the diff between old and new node
           const isKeyOdd = teleportKey.value === 0 || !!(teleportKey.value && !(teleportKey.value % 2))
 
@@ -261,7 +282,7 @@ export default defineComponent({
                 teleports.push(createVNode(Teleport,
                   // use different selectors for even and odd teleportKey to force trigger the teleport
                   { to: import.meta.client ? `${isKeyOdd ? 'div' : ''}[data-island-uid="${uid.value}"][data-island-slot="${slot}"]` : `uid=${uid.value};slot=${slot}` },
-                  { default: () => (payloads.slots?.[slot].props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
+                  { default: () => (payloads.slots?.[slot]?.props?.length ? payloads.slots[slot].props : [{}]).map((data: any) => slots[slot]?.(data)) }),
                 )
               }
             }

@@ -11,7 +11,7 @@ links:
 ---
 
 ::important
-This composable will be available in Nuxt v3.12.
+This composable is available in Nuxt v3.12+.
 ::
 
 ## Description
@@ -51,7 +51,7 @@ Sets the message with `politeness = "assertive"`
 
 ## Example
 
-```ts
+```vue [pages/index.vue]
 <script setup lang="ts">
   const { message, politeness, set, polite, assertive } = useRouteAnnouncer({
     politeness: 'assertive'

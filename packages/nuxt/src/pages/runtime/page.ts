@@ -1,15 +1,15 @@
-import { Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
 import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
-import { RouterView } from '#vue-router'
+import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from '#vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
 import { RouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapIf } from '#app/components/utils'
+import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
@@ -37,7 +37,7 @@ export default defineComponent({
       default: null,
     },
   },
-  setup (props, { attrs, expose }) {
+  setup (props, { attrs, slots, expose }) {
     const nuxtApp = useNuxtApp()
     const pageRef = ref()
     const forkRoute = inject(PageRouteSymbol, null)
@@ -65,7 +65,7 @@ export default defineComponent({
     if (import.meta.dev) {
       nuxtApp._isNuxtPageUsed = true
     }
-
+    let pageLoadingEndHookAlreadyCalled = false
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -99,8 +99,31 @@ export default defineComponent({
           const key = generateRouteKey(routeProps, props.pageKey)
           if (!nuxtApp.isHydrating && !hasChildrenRoutes(forkRoute, routeProps.route, routeProps.Component) && previousPageKey === key) {
             nuxtApp.callHook('page:loading:end')
+            pageLoadingEndHookAlreadyCalled = true
           }
+
           previousPageKey = key
+
+          if (import.meta.server) {
+            vnode = h(Suspense, {
+              suspensible: true,
+            }, {
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  vnodeRef: pageRef,
+                })
+                return providerVNode
+              },
+            })
+
+            return vnode
+          }
+
+          // Client side rendering
 
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([
@@ -111,22 +134,29 @@ export default defineComponent({
           ].filter(Boolean))
 
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          vnode = _wrapIf(Transition, hasTransition && transitionProps,
+          vnode = _wrapInTransition(hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
-              onResolve: () => { nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => nuxtApp.callHook('page:loading:end')).finally(done)) },
+              onResolve: () => {
+                nextTick(() => nuxtApp.callHook('page:finish', routeProps.Component).then(() => {
+                  if (!pageLoadingEndHookAlreadyCalled) {
+                    return nuxtApp.callHook('page:loading:end')
+                  }
+                  pageLoadingEndHookAlreadyCalled = false
+                }).finally(done))
+              },
             }, {
               default: () => {
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
-                  vnode: routeProps.Component,
+                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
                   vnodeRef: pageRef,
                 })
-                if (import.meta.client && keepaliveConfig) {
+                if (keepaliveConfig) {
                   (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
                 return providerVNode

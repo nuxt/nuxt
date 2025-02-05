@@ -1,14 +1,17 @@
+import { fileURLToPath } from 'node:url'
 import { resolve } from 'pathe'
+import { consola } from 'consola'
 import { expect, it, vi } from 'vitest'
 import type { ComponentsDir } from 'nuxt/schema'
 
 import { scanComponents } from '../src/components/scan'
 
-const fixtureDir = resolve(__dirname, 'fixture')
+const fixtureDir = fileURLToPath(new URL('fixture', import.meta.url))
 const rFixture = (...p: string[]) => resolve(fixtureDir, ...p)
 
 vi.mock('@nuxt/kit', () => ({
   isIgnored: () => false,
+  useLogger: () => consola.create({}).withTag('nuxt'),
 }))
 
 const dirs: ComponentsDir[] = [
@@ -86,7 +89,7 @@ const dirs: ComponentsDir[] = [
     transpile: false,
   },
 ]
-
+const dirUnable = dirs.map((d) => { return { ...d, enabled: false } })
 const expectedComponents = [
   {
     chunkName: 'components/isle-server',
@@ -240,6 +243,13 @@ it('components:scanComponents', async () => {
   for (const c of scannedComponents) {
     // @ts-expect-error filePath is not optional but we don't want it to be in the snapshot
     delete c.filePath
+    // @ts-expect-error _scanned is added internally but we don't want it to be in the snapshot
+    delete c._scanned
   }
   expect(scannedComponents).deep.eq(expectedComponents)
+})
+
+it('components:scanComponents:unable', async () => {
+  const scannedComponents = await scanComponents(dirUnable, srcDir)
+  expect(scannedComponents).deep.eq([])
 })

@@ -1,15 +1,15 @@
-import { pathToFileURL } from 'node:url'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
-import chokidar from 'chokidar'
-import { isIgnored, logger, tryResolveModule, useNuxt } from '@nuxt/kit'
-import { interopDefault } from 'mlly'
+import { watch as chokidarWatch } from 'chokidar'
+import { createIsIgnored, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
+import { logger } from '../utils'
 import { generateApp as _generateApp, createApp } from './app'
 import { checkForExternalConfigurationFiles } from './external-config-files'
+import { cleanupCaches, getVueHash } from './cache'
 
 export async function build (nuxt: Nuxt) {
   const app = createApp(nuxt)
@@ -21,19 +21,24 @@ export async function build (nuxt: Nuxt) {
   if (nuxt.options.dev) {
     watch(nuxt)
     nuxt.hook('builder:watch', async (event, relativePath) => {
-      if (event === 'change') { return }
-      const path = resolve(nuxt.options.srcDir, relativePath)
-      const relativePaths = nuxt.options._layers.map(l => relative(l.config.srcDir || l.cwd, path))
-      const restartPath = relativePaths.find(relativePath => /^(app\.|error\.|plugins\/|middleware\/|layouts\/)/i.test(relativePath))
-      if (restartPath) {
-        if (restartPath.startsWith('app')) {
-          app.mainComponent = undefined
+      // Unset mainComponent and errorComponent if app or error component is changed
+      if (event === 'add' || event === 'unlink') {
+        const path = resolve(nuxt.options.srcDir, relativePath)
+        for (const layer of nuxt.options._layers) {
+          const relativePath = relative(layer.config.srcDir || layer.cwd, path)
+          if (relativePath.match(/^app\./i)) {
+            app.mainComponent = undefined
+            break
+          }
+          if (relativePath.match(/^error\./i)) {
+            app.errorComponent = undefined
+            break
+          }
         }
-        if (restartPath.startsWith('error')) {
-          app.errorComponent = undefined
-        }
-        await generateApp()
       }
+
+      // Recompile app templates
+      await generateApp()
     })
     nuxt.hook('builder:generateApp', (options) => {
       // Bypass debounce if we are selectively invalidating templates
@@ -42,11 +47,32 @@ export async function build (nuxt: Nuxt) {
     })
   }
 
-  await nuxt.callHook('build:before')
-  if (!nuxt.options._prepare) {
-    await Promise.all([checkForExternalConfigurationFiles(), bundle(nuxt)])
-    await nuxt.callHook('build:done')
+  if (!nuxt.options._prepare && !nuxt.options.dev && nuxt.options.experimental.buildCache) {
+    const { restoreCache, collectCache } = await getVueHash(nuxt)
+    if (await restoreCache()) {
+      await nuxt.callHook('build:done')
+      return await nuxt.callHook('close', nuxt)
+    }
+    nuxt.hooks.hookOnce('nitro:build:before', () => collectCache())
+    nuxt.hooks.hookOnce('close', () => cleanupCaches(nuxt))
   }
+
+  await nuxt.callHook('build:before')
+  if (nuxt.options._prepare) {
+    nuxt.hook('prepare:types', () => nuxt.close())
+    return
+  }
+
+  if (nuxt.options.dev && !nuxt.options.test) {
+    nuxt.hooks.hookOnce('build:done', () => {
+      checkForExternalConfigurationFiles()
+        .catch(e => logger.warn('Problem checking for external configuration files.', e))
+    })
+  }
+
+  await bundle(nuxt)
+
+  await nuxt.callHook('build:done')
 
   if (!nuxt.options.dev) {
     await nuxt.callHook('close', nuxt)
@@ -74,23 +100,38 @@ async function watch (nuxt: Nuxt) {
 
 function createWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
-  const watcher = chokidar.watch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
+  const watcher = chokidarWatch(nuxt.options._layers.map(i => i.config.srcDir as string).filter(Boolean), {
     ...nuxt.options.watchers.chokidar,
     ignoreInitial: true,
-    ignored: [
-      isIgnored,
-      'node_modules',
-    ],
+    ignored: [isIgnored, /[\\/]node_modules[\\/]/],
   })
 
-  // TODO: consider moving to emit absolute path in 3.8 or 4.0
-  watcher.on('all', (event, path) => nuxt.callHook('builder:watch', event, normalize(relative(nuxt.options.srcDir, path))))
+  const restartPaths = new Set<string>()
+  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
+  for (const pattern of nuxt.options.watch) {
+    if (typeof pattern !== 'string') { continue }
+    const path = resolve(nuxt.options.srcDir, pattern)
+    if (!path.startsWith(srcDir)) {
+      restartPaths.add(path)
+    }
+  }
+
+  watcher.add([...restartPaths])
+
+  watcher.on('all', (event, path) => {
+    if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+      return
+    }
+    nuxt.callHook('builder:watch', event, normalize(path))
+  })
   nuxt.hook('close', () => watcher?.close())
 }
 
 function createGranularWatcher () {
   const nuxt = useNuxt()
+  const isIgnored = createIsIgnored(nuxt)
 
   if (nuxt.options.debug) {
     // eslint-disable-next-line no-console
@@ -109,24 +150,30 @@ function createGranularWatcher () {
   }
   for (const dir of pathsToWatch) {
     pending++
-    const watcher = chokidar.watch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, '**/node_modules'] })
+    const watcher = chokidarWatch(dir, { ...nuxt.options.watchers.chokidar, ignoreInitial: false, depth: 0, ignored: [isIgnored, /[\\/]node_modules[\\/]/] })
     const watchers: Record<string, FSWatcher> = {}
 
     watcher.on('all', (event, path) => {
+      if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+        return
+      }
       path = normalize(path)
       if (!pending) {
-        // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        nuxt.callHook('builder:watch', event, relative(nuxt.options.srcDir, path))
+        nuxt.callHook('builder:watch', event, path)
       }
       if (event === 'unlinkDir' && path in watchers) {
         watchers[path]?.close()
         delete watchers[path]
       }
       if (event === 'addDir' && path !== dir && !ignoredDirs.has(path) && !pathsToWatch.includes(path) && !(path in watchers) && !isIgnored(path)) {
-        watchers[path] = chokidar.watch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
-        // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        watchers[path].on('all', (event, p) => nuxt.callHook('builder:watch', event, normalize(relative(nuxt.options.srcDir, p))))
-        nuxt.hook('close', () => watchers[path]?.close())
+        const pathWatcher = watchers[path] = chokidarWatch(path, { ...nuxt.options.watchers.chokidar, ignored: [isIgnored] })
+        pathWatcher.on('all', (event, p) => {
+          if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
+            return
+          }
+          nuxt.callHook('builder:watch', event, normalize(p))
+        })
+        nuxt.hook('close', () => pathWatcher?.close())
       }
     })
     watcher.on('ready', () => {
@@ -136,6 +183,7 @@ function createGranularWatcher () {
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
     })
+    nuxt.hook('close', () => watcher?.close())
   }
 }
 
@@ -151,15 +199,14 @@ async function createParcelWatcher () {
     return false
   }
 
-  const { subscribe } = await import(pathToFileURL(watcherPath).href).then(interopDefault) as typeof import('@parcel/watcher')
+  const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
   for (const layer of nuxt.options._layers) {
     if (!layer.config.srcDir) { continue }
     const watcher = subscribe(layer.config.srcDir, (err, events) => {
       if (err) { return }
       for (const event of events) {
         if (isIgnored(event.path)) { continue }
-        // TODO: consider moving to emit absolute path in 3.8 or 4.0
-        nuxt.callHook('builder:watch', watchEvents[event.type], normalize(relative(nuxt.options.srcDir, event.path)))
+        nuxt.callHook('builder:watch', watchEvents[event.type], normalize(event.path))
       }
     }, {
       ignore: [
@@ -202,5 +249,5 @@ async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
   if (!builderPath) {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)
   }
-  return import(pathToFileURL(builderPath).href)
+  return importModule(builderPath)
 }

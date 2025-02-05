@@ -7,28 +7,25 @@
   ],
   "baseBranches": [
     "main",
-    "2.x"
+    "3.x"
+  ],
+  "ignoreDeps": [
+    "node",
+    "npm"
   ],
   "packageRules": [
     {
       "groupName": "vitest",
       "matchPackageNames": [
         "vite-node",
-        "vitest"
-      ],
-      "matchPackagePatterns": [
-        "^@vitest/"
-      ]
-    },
-    {
-      "groupName": "unplugin-vue-router",
-      "matchPackageNames": [
-        "unplugin-vue-router"
+        "vitest",
+        "/^@vitest//"
       ]
     },
     {
       "matchBaseBranches": [
-        "main"
+        "main",
+        "3.x"
       ],
       "ignoreDeps": [
         "nuxt",
@@ -37,30 +34,10 @@
       ]
     },
     {
-      "matchBaseBranches": [
-        "2.x"
-      ],
-      "ignoreDeps": [
-        "@types/node",
-        "postcss-import",
-        "postcss-loader",
-        "postcss-url",
-        "css-loader",
-        "sass-loader",
-        "npm",
-        "boxen",
-        "html-webpack-plugin",
-        "terser-webpack-plugin",
-        "@types/terser-webpack-plugin",
-        "@types/webpack-bundle-analyzer",
-        "@types/webpack-hot-middleware",
-        "webpack-dev-middleware",
-        "wrap-ansi",
-        "globby",
-        "execa",
-        "chalk",
-        "vue",
-        "vuex"
+      "groupName": "webpack",
+      "matchPackageNames": [
+        "webpack",
+        "memfs"
       ]
     }
   ]

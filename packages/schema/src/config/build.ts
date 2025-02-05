@@ -7,14 +7,15 @@ import { consola } from 'consola'
 export default defineUntypedSchema({
   /**
    * The builder to use for bundling the Vue part of your application.
-   * @type {'vite' | 'webpack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
+   * @type {'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: typeof import('../src/types/nuxt').Nuxt) => Promise<void> }}
    */
   builder: {
-    $resolve: async (val: 'vite' | 'webpack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
+    $resolve: async (val: 'vite' | 'webpack' | 'rspack' | { bundle: (nuxt: unknown) => Promise<void> } | undefined = 'vite', get) => {
       if (typeof val === 'object') {
         return val
       }
       const map: Record<string, string> = {
+        rspack: '@nuxt/rspack-builder',
         vite: '@nuxt/vite-builder',
         webpack: '@nuxt/webpack-builder',
       }
@@ -23,7 +24,16 @@ export default defineUntypedSchema({
   },
 
   /**
-   * Whether to generate sourcemaps.
+   * Configures whether and how sourcemaps are generated for server and/or client bundles.
+   *
+   * If set to a single boolean, that value applies to both server and client.
+   * Additionally, the `'hidden'` option is also available for both server and client.
+   *
+   * Available options for both client and server:
+   * - `true`: Generates sourcemaps and includes source references in the final bundle.
+   * - `false`: Does not generate any sourcemaps.
+   * - `'hidden'`: Generates sourcemaps but does not include references in the final bundle.
+   *
    * @type {boolean | { server?: boolean | 'hidden', client?: boolean | 'hidden' }}
    */
   sourcemap: {
@@ -66,7 +76,7 @@ export default defineUntypedSchema({
      * You can also use a function to conditionally transpile. The function will receive an object ({ isDev, isServer, isClient, isModern, isLegacy }).
      * @example
      * ```js
-     transpile: [({ isLegacy }) => isLegacy && 'ky']
+     * transpile: [({ isLegacy }) => isLegacy && 'ky']
      * ```
      * @type {Array<string | RegExp | ((ctx: { isClient?: boolean; isServer?: boolean; isDev: boolean }) => string | RegExp | false)>}
      */
@@ -75,20 +85,14 @@ export default defineUntypedSchema({
     },
 
     /**
-     * You can provide your own templates which will be rendered based
-     * on Nuxt configuration. This feature is specially useful for using with modules.
+     * It is recommended to use `addTemplate` from `@nuxt/kit` instead of this option.
      *
-     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      * @example
      * ```js
      * templates: [
      *   {
      *     src: '~/modules/support/plugin.js', // `src` can be absolute or relative
      *     dst: 'support.js', // `dst` is relative to project `.nuxt` dir
-     *     options: {
-     *       // Options are provided to template as `options` key
-     *       live_chat: false
-     *     }
      *   }
      * ]
      * ```
@@ -136,8 +140,7 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
-        { name: 'useId', argumentLength: 1 },
-        { name: 'callOnce', argumentLength: 2 },
+        { name: 'callOnce', argumentLength: 3 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
         { name: 'useFetch', argumentLength: 3 },
@@ -165,7 +168,7 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onBeforeMount', 'onMounted', 'onBeforeUpdate', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated', 'onBeforeUnmount'],
+                  'vue': ['onMounted', 'onUpdated', 'onUnmounted', 'onBeforeMount', 'onBeforeUpdate', 'onBeforeUnmount', 'onRenderTracked', 'onRenderTriggered', 'onActivated', 'onDeactivated'],
                   '#app': ['definePayloadReviver', 'definePageMeta'],
                 },
           ),
@@ -175,8 +178,8 @@ export default defineUntypedSchema({
             await get('dev')
               ? {}
               : {
-                  'vue': ['onServerPrefetch', 'onRenderTracked', 'onRenderTriggered'],
-                  '#app': ['definePayloadReducer', 'definePageMeta'],
+                  'vue': ['onRenderTracked', 'onRenderTriggered', 'onServerPrefetch'],
+                  '#app': ['definePayloadReducer', 'definePageMeta', 'onPrehydrate'],
                 },
           ),
         },

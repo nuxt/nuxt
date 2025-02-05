@@ -1,6 +1,6 @@
 ---
 title: 'useFetch'
-description: 'Fetch data from an API endpoint with a SSR-friendly composable.'
+description: 'Fetch data from an API endpoint with an SSR-friendly composable.'
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -19,21 +19,25 @@ It automatically generates a key based on URL and fetch options, provides type h
 
 ```vue [pages/modules.vue]
 <script setup lang="ts">
-const { data, pending, error, refresh } = await useFetch('/api/modules', {
+const { data, status, error, refresh, clear } = await useFetch('/api/modules', {
   pick: ['title']
 })
 </script>
 ```
 
+::warning
+If you're using a custom useFetch wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+::
+
 ::note
-`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+`data`, `status`, and `error` are Vue refs, and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
 Using the `query` option, you can add search parameters to your query. This option is extended from [unjs/ofetch](https://github.com/unjs/ofetch) and is using [unjs/ufo](https://github.com/unjs/ufo) to create the URL. Objects are automatically stringified.
 
 ```ts
 const param1 = ref('value1')
-const { data, pending, error, refresh } = await useFetch('/api/modules', {
+const { data, status, error, refresh } = await useFetch('/api/modules', {
   query: { param1, param2: 'value2' }
 })
 ```
@@ -43,11 +47,11 @@ The above example results in `https://api.nuxt.com/modules?param1=value1&param2=
 You can also use [interceptors](https://github.com/unjs/ofetch#%EF%B8%8F-interceptors):
 
 ```ts
-const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
+const { data, status, error, refresh, clear } = await useFetch('/api/auth/login', {
   onRequest({ request, options }) {
     // Set the request headers
-    options.headers = options.headers || {}
-    options.headers.authorization = '...'
+    // note that this relies on ofetch >= 1.4.0 - you may need to refresh your lockfile
+    options.headers.set('Authorization', '...')
   },
   onRequestError({ request, options, error }) {
     // Handle the request errors
@@ -64,6 +68,14 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
 
 ::warning
 `useFetch` is a reserved function name transformed by the compiler, so you should not name your own function `useFetch`.
+::
+
+::warning
+If you encounter the `data` variable destructured from a `useFetch` returns a string and not a JSON parsed object then make sure your component doesn't include an import statement like `import { useFetch } from '@vueuse/core`.
+::
+
+::tip{icon="i-ph-video" to="https://www.youtube.com/watch?v=njsGVmcWviY" target="_blank"}
+Watch the video from Alexander Lichter to avoid using `useFetch` the wrong way!
 ::
 
 :link-example{to="/docs/examples/advanced/use-custom-fetch-composable"}
@@ -83,6 +95,8 @@ const { data, pending, error, refresh } = await useFetch('/api/auth/login', {
   - `headers`: Request headers.
   - `baseURL`: Base URL for the request.
   - `timeout`: Milliseconds to automatically abort request
+  - `cache`: Handles cache control according to [Fetch API](https://developer.mozilla.org/en-US/docs/Web/API/fetch#cache)
+    - You can pass boolean to disable the cache or you can pass one of the following values: `default`, `no-store`, `reload`, `no-cache`, `force-cache`, and `only-if-cached`.
 
 ::note
 All fetch options can be given a `computed` or `ref` value. These will be watched and new requests made automatically with any new values if they are updated.
@@ -95,16 +109,26 @@ All fetch options can be given a `computed` or `ref` value. These will be watche
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
-  - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
+  - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
+    ```ts
+    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+      ? nuxtApp.payload.data[key] 
+      : nuxtApp.static.data[key]
+    ```
+    Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
-  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`.
-  - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+  - `watch`: watch an array of reactive sources and auto-refresh the fetch result when they change. Fetch options and URL are watched by default. You can completely ignore reactive sources by using `watch: false`. Together with `immediate: false`, this allows for a fully-manual `useFetch`. (You can [see an example here](/docs/getting-started/data-fetching#watch) of using `watch`.)
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
 
 ::note
 If you provide a function or ref as the `url` parameter, or if you provide functions as arguments to the `options` parameter, then the `useFetch` call will not match other `useFetch` calls elsewhere in your codebase, even if the options seem to be identical. If you wish to force a match, you may provide your own key in `options`.
+::
+
+::note
+If you use `useFetch` to call an (external) HTTPS URL with a self-signed certificate in development, you will need to set `NODE_TLS_REJECT_UNAUTHORIZED=0` in your environment.
 ::
 
 ::tip{icon="i-simple-icons-youtube" color="gray" to="https://www.youtube.com/watch?v=aQPR0xn-MMk" target="_blank"}
@@ -114,10 +138,16 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
-- `pending`: a boolean indicating whether the data is still being fetched.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
-- `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- `status`: a string indicating the status of the data request:
+  - `idle`: when the request has not started, such as:
+    - when `execute` has not yet been called and `{ immediate: false }` is set
+    - when rendering HTML on the server and `{ server: false }` is set
+  - `pending`: the request is in progress
+  - `success`: the request has completed successfully
+  - `error`: the request has failed
+- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
@@ -129,7 +159,7 @@ If you have not fetched data on the server (for example, with `server: false`), 
 
 ```ts [Signature]
 function useFetch<DataT, ErrorT>(
-  url: string | Request | Ref<string | Request> | () => string | Request,
+  url: string | Request | Ref<string | Request> | (() => string | Request),
   options?: UseFetchOptions<DataT>
 ): Promise<AsyncData<DataT, ErrorT>>
 
@@ -155,7 +185,6 @@ type UseFetchOptions<DataT> = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void

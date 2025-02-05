@@ -1,6 +1,6 @@
 ---
 title: 'useAsyncData'
-description: useAsyncData provides access to data that resolves asynchronously in a SSR-friendly composable.
+description: useAsyncData provides access to data that resolves asynchronously in an SSR-friendly composable.
 links:
   - label: Source
     icon: i-simple-icons-github
@@ -18,15 +18,19 @@ Within your pages, components, and plugins you can use useAsyncData to get acces
 
 ```vue [pages/index.vue]
 <script setup lang="ts">
-const { data, pending, error, refresh } = await useAsyncData(
+const { data, status, error, refresh, clear } = await useAsyncData(
   'mountains',
   () => $fetch('https://api.nuxtjs.dev/mountains')
 )
 </script>
 ```
 
+::warning
+If you're using a custom useAsyncData wrapper, do not await it in the composable, as that can cause unexpected behavior. Please follow [this recipe](/docs/guide/recipes/custom-usefetch#custom-usefetch) for more information on how to make a custom async data fetcher.
+::
+
 ::note
-`data`, `pending`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` is a plain function for refetching data.
+`data`, `status` and `error` are Vue refs and they should be accessed with `.value` when used within the `<script setup>`, while `refresh`/`execute` and `clear` are plain functions.
 ::
 
 ### Watch Params
@@ -58,17 +62,26 @@ const { data: posts } = await useAsyncData(
 ## Params
 
 - `key`: a unique key to ensure that data fetching can be properly de-duplicated across requests. If you do not provide a key, then a key that is unique to the file name and line number of the instance of `useAsyncData` will be generated for you.
-- `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side
+- `handler`: an asynchronous function that must return a truthy value (for example, it should not be `undefined` or `null`) or the request may be duplicated on the client side.
+::warning
+The `handler` function should be **side-effect free** to ensure predictable behavior during SSR and CSR hydration. If you need to trigger side effects, use the [`callOnce`](/docs/api/utils/call-once) utility to do so.
+::
 - `options`:
   - `server`: whether to fetch the data on the server (defaults to `true`)
   - `lazy`: whether to resolve the async function after loading the route, instead of blocking client-side navigation (defaults to `false`)
   - `immediate`: when set to `false`, will prevent the request from firing immediately. (defaults to `true`)
   - `default`: a factory function to set the default value of the `data`, before the async function resolves - useful with the `lazy: true` or `immediate: false` option
   - `transform`: a function that can be used to alter `handler` function result after resolving
-  - `getCachedData`: Provide a function which returns cached data. A _null_ or _undefined_ return value will trigger a fetch. By default, this is: `key => nuxt.isHydrating ? nuxt.payload.data[key] : nuxt.static.data[key]`, which only caches data when `payloadExtraction` is enabled.
+  - `getCachedData`: Provide a function which returns cached data. A `null` or `undefined` return value will trigger a fetch. By default, this is:
+    ```ts
+    const getDefaultCachedData = (key) => nuxtApp.isHydrating 
+      ? nuxtApp.payload.data[key] 
+      : nuxtApp.static.data[key]
+    ```
+    Which only caches data when `experimental.payloadExtraction` of `nuxt.config` is enabled.
   - `pick`: only pick specified keys in this array from the `handler` function result
   - `watch`: watch reactive sources to auto-refresh
-  - `deep`: return data in a deep ref object (it is `true` by default). It can be set to `false` to return data in a shallow ref object, which can improve performance if your data does not need to be deeply reactive.
+  - `deep`: return data in a deep ref object. It is `false` by default to return data in a shallow ref object for performance.
   - `dedupe`: avoid fetching same key more than once at a time (defaults to `cancel`). Possible options:
     - `cancel` - cancels existing requests when a new one is made
     - `defer` - does not make new requests at all if there is a pending request
@@ -88,10 +101,16 @@ Learn how to use `transform` and `getCachedData` to avoid superfluous calls to a
 ## Return Values
 
 - `data`: the result of the asynchronous function that is passed in.
-- `pending`: a boolean indicating whether the data is still being fetched.
 - `refresh`/`execute`: a function that can be used to refresh the data returned by the `handler` function.
 - `error`: an error object if the data fetching failed.
-- `status`: a string indicating the status of the data request (`"idle"`, `"pending"`, `"success"`, `"error"`).
+- `status`: a string indicating the status of the data request:
+  - `idle`: when the request has not started, such as:
+    - when `execute` has not yet been called and `{ immediate: false }` is set
+    - when rendering HTML on the server and `{ server: false }` is set
+  - `pending`: the request is in progress
+  - `success`: the request has completed successfully
+  - `error`: the request has failed
+- `clear`: a function which will set `data` to `undefined`, set `error` to `null`, set `status` to `'idle'`, and mark any currently pending requests as cancelled.
 
 By default, Nuxt waits until a `refresh` is finished before it can be executed again.
 
@@ -110,7 +129,7 @@ function useAsyncData<DataT, DataE>(
   key: string,
   handler: (nuxtApp?: NuxtApp) => Promise<DataT>,
   options?: AsyncDataOptions<DataT>
-): Promise<AsyncData<DataT, DataE>
+): Promise<AsyncData<DataT, DataE>>
 
 type AsyncDataOptions<DataT> = {
   server?: boolean
@@ -127,7 +146,6 @@ type AsyncDataOptions<DataT> = {
 
 type AsyncData<DataT, ErrorT> = {
   data: Ref<DataT | null>
-  pending: Ref<boolean>
   refresh: (opts?: AsyncDataExecuteOptions) => Promise<void>
   execute: (opts?: AsyncDataExecuteOptions) => Promise<void>
   clear: () => void

@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { setup } from '@nuxt/test-utils'
+import { setup } from '@nuxt/test-utils/e2e'
 import { renderPage } from './utils'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/suspense', import.meta.url)),
@@ -14,22 +14,23 @@ await setup({
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite',
-    buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
   },
 })
 
 describe('suspense multiple nav', () => {
   it('should not throw error', async () => {
     const { page, consoleLogs, pageErrors } = await renderPage('/')
-    await page.waitForLoadState('networkidle')
+    await page.waitForFunction(() => window.useNuxtApp?.() && !window.useNuxtApp?.().isHydrating)
 
     expect(await page.locator('#btn-a').textContent()).toMatchInlineSnapshot('" Target A "')
     // Make sure it navigates to the correct page
     await page.locator('#btn-a').click()
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
     console.log(page.url())
     expect(await page.locator('#content').textContent()).toContain('Hello a')
     await page.goBack()
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/')
 
     // When back
     expect(await page.locator('body').textContent()).toContain('Index Page')
@@ -39,6 +40,8 @@ describe('suspense multiple nav', () => {
       page.locator('#btn-a').click(),
       page.locator('#btn-b').click(),
     ])
+
+    await page.waitForFunction(() => window.useNuxtApp?.()._route.path === '/target')
 
     expect.soft(await page.locator('#content').textContent()).toContain('Hello b')
 

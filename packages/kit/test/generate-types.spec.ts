@@ -34,9 +34,6 @@ describe('tsConfig generation', () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
       {
-        "#build": [
-          ".",
-        ],
         "some-custom-alias": [
           "../some-alias",
         ],
@@ -53,13 +50,51 @@ describe('tsConfig generation', () => {
     }))
     expect(tsConfig.exclude).toMatchInlineSnapshot(`
       [
+        "../dist",
         "../modules/test/node_modules",
         "../modules/node_modules",
         "../node_modules/@some/module/node_modules",
         "../node_modules",
         "../../node_modules",
-        "../dist",
       ]
     `)
+  })
+
+  it('should add #build after #components to paths', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: {
+        '~': '/my-app',
+        '@': '/my-app',
+        'some-custom-alias': '/my-app/some-alias',
+        '#build': './build-dir',
+        '#build/*': './build-dir/*',
+        '#imports': './imports',
+        '#components': './components',
+      },
+    }))
+
+    expect(tsConfig.compilerOptions?.paths).toMatchObject({
+      '~': [
+        '..',
+      ],
+      'some-custom-alias': [
+        '../some-alias',
+      ],
+      '@': [
+        '..',
+      ],
+      '#imports': [
+        './imports',
+      ],
+      '#components': [
+        './components',
+      ],
+      '#build': [
+        './build-dir',
+      ],
+      '#build/*': [
+        './build-dir/*',
+      ],
+    })
   })
 })

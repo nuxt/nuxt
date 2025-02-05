@@ -1,12 +1,12 @@
 import { defineUntypedSchema } from 'untyped'
-import { loading as loadingTemplate } from '@nuxt/ui-templates'
+import { template as loadingTemplate } from '../../../ui-templates/dist/templates/loading'
 
 export default defineUntypedSchema({
   devServer: {
     /**
      * Whether to enable HTTPS.
      * @example
-     * ```
+     * ```ts
      * export default defineNuxtConfig({
      *   devServer: {
      *     https: {
@@ -16,7 +16,7 @@ export default defineUntypedSchema({
      *   }
      * })
      * ```
-     * @type {boolean | { key: string; cert: string }}
+     * @type {boolean | { key: string; cert: string } | { pfx: string; passphrase: string }}
      */
     https: false,
 
@@ -39,5 +39,13 @@ export default defineUntypedSchema({
      * @type {(data: { loading?: string }) => string}
      */
     loadingTemplate,
+
+    /**
+     * Set CORS options for the dev server
+     * @type {typeof import('h3').H3CorsOptions}
+     */
+    cors: {
+      origin: [/^https?:\/\/(?:(?:[^:]+\.)?localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/],
+    },
   },
 })

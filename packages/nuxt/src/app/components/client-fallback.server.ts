@@ -1,18 +1,14 @@
-import { defineComponent, getCurrentInstance, onErrorCaptured, ref } from 'vue'
+import { defineComponent, getCurrentInstance, onErrorCaptured, ref, useId } from 'vue'
 import { ssrRenderAttrs, ssrRenderSlot, ssrRenderVNode } from 'vue/server-renderer'
 
 import { isPromise } from '@vue/shared'
 import { useState } from '../composables/state'
-import { useNuxtApp } from '../nuxt'
 import { createBuffer } from './utils'
 
 const NuxtClientFallbackServer = defineComponent({
   name: 'NuxtClientFallback',
   inheritAttrs: false,
   props: {
-    uid: {
-      type: String,
-    },
     fallbackTag: {
       type: String,
       default: () => 'div',
@@ -37,13 +33,13 @@ const NuxtClientFallbackServer = defineComponent({
       return true
     },
   },
-  async setup (props, ctx) {
+  async setup (_, ctx) {
     const vm = getCurrentInstance()
     const ssrFailed = ref(false)
-    const nuxtApp = useNuxtApp()
+    const error = useState<boolean | undefined>(useId())
 
     onErrorCaptured((err) => {
-      useState(`${props.uid}`, () => true)
+      error.value = true
       ssrFailed.value = true
       ctx.emit('ssr-error', err)
       return false
@@ -53,8 +49,10 @@ const NuxtClientFallbackServer = defineComponent({
       const defaultSlot = ctx.slots.default?.()
       const ssrVNodes = createBuffer()
 
-      for (let i = 0; i < (defaultSlot?.length || 0); i++) {
-        ssrRenderVNode(ssrVNodes.push, defaultSlot![i], vm!)
+      if (defaultSlot) {
+        for (let i = 0; i < defaultSlot.length; i++) {
+          ssrRenderVNode(ssrVNodes.push, defaultSlot[i]!, vm!)
+        }
       }
 
       const buffer = ssrVNodes.getBuffer()
@@ -65,7 +63,7 @@ const NuxtClientFallbackServer = defineComponent({
       return { ssrFailed, ssrVNodes }
     } catch (ssrError) {
       // catch in dev
-      nuxtApp.runWithContext(() => useState(`${props.uid}`, () => true))
+      error.value = true
       ctx.emit('ssr-error', ssrError)
       return { ssrFailed: true, ssrVNodes: [] }
     }

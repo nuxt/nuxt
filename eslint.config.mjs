@@ -3,7 +3,6 @@ import { createConfigForNuxt } from '@nuxt/eslint-config/flat'
 // @ts-expect-error missing types
 import noOnlyTests from 'eslint-plugin-no-only-tests'
 import typegen from 'eslint-typegen'
-// @ts-expect-error missing types
 import perfectionist from 'eslint-plugin-perfectionist'
 
 export default createConfigForNuxt({
@@ -20,6 +19,9 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         'packages/schema/schema/**',
+        'packages/nuxt/src/app/components/welcome.vue',
+        'packages/nuxt/src/app/components/error-*.vue',
+        'packages/nuxt/src/core/runtime/nitro/error-*',
       ],
     },
     {
@@ -70,8 +72,9 @@ export default createConfigForNuxt({
         'error',
         {
           argsIgnorePattern: '^_',
+          destructuredArrayIgnorePattern: '^_',
           ignoreRestSiblings: true,
-          varsIgnorePattern: '^_',
+          varsIgnorePattern: '',
         },
       ],
       '@typescript-eslint/triple-slash-reference': 'off',
@@ -145,17 +148,6 @@ export default createConfigForNuxt({
             ],
           },
         ],
-        'import/order': [
-          'error',
-          {
-            pathGroups: [
-              {
-                group: 'external',
-                pattern: '#vue-router',
-              },
-            ],
-          },
-        ],
         'jsdoc/check-tag-names': [
           'error',
           {
@@ -172,6 +164,55 @@ export default createConfigForNuxt({
       name: 'local/disables/client-console',
       rules: {
         'no-console': 'off',
+      },
+    },
+    // manually specify dependencies for nuxt browser app
+    {
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
+      name: 'local/client-packages',
+      rules: {
+        '@typescript-eslint/no-restricted-imports': ['error', {
+          'patterns': [
+            {
+              allowTypeImports: true,
+              group: [
+                // disallow everything
+                '[@a-z]*',
+                // except certain dependencies
+                ...[
+                  // vue ecosystem
+                  '@unhead',
+                  '@vue',
+                  '@vue/shared',
+                  'vue/server-renderer',
+                  'vue',
+                  'vue-router',
+                  // other deps
+                  'devalue',
+                  'klona',
+                  // unjs ecosystem
+                  'defu',
+                  'ufo',
+                  'h3',
+                  'destr',
+                  'consola',
+                  'hookable',
+                  'unctx',
+                  'cookie-es',
+                  'perfect-debounce',
+                  'radix3',
+                  'ohash',
+                  'pathe',
+                  'uncrypto',
+                  // internal deps
+                  'nuxt/app',
+                ].map(r => `!${r}`),
+                '!#[a-z]*/**', // aliases
+                '!.*/**', // relative imports
+              ],
+            },
+          ],
+        }],
       },
     },
     {
@@ -205,6 +246,12 @@ export default createConfigForNuxt({
       },
       rules: {
         'perfectionist/sort-objects': 'error',
+      },
+    },
+    {
+      files: ['packages/nuxt/src/app/components/welcome.vue'],
+      rules: {
+        'vue/multi-word-component-names': 'off',
       },
     },
   )

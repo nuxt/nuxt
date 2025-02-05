@@ -1,10 +1,28 @@
 import { fileURLToPath } from 'node:url'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { loadNuxt } from '../src'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
+
+vi.stubGlobal('console', {
+  ...console,
+  error: vi.fn(console.error),
+  warn: vi.fn(console.warn),
+})
+
+vi.mock('pkg-types', async (og) => {
+  const originalPkgTypes = (await og<typeof import('pkg-types')>())
+  return {
+    ...originalPkgTypes,
+    readPackageJSON: vi.fn(originalPkgTypes.readPackageJSON),
+  }
+})
+
+afterEach(() => {
+  vi.clearAllMocks()
+})
 
 describe('loadNuxt', () => {
   it('respects hook overrides', async () => {

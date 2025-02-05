@@ -1,17 +1,32 @@
 export interface NuxtCompatibility {
   /**
    * Required nuxt version in semver format.
-   * @example `^2.14.0` or `>=3.0.0-27219851.6e49637`.
+   * @example `^3.2.0` or `>=3.13.0`.
    */
   nuxt?: string
 
   /**
-   * Bridge constraint for Nuxt 2 support.
+   * Mark a builder as incompatible, or require a particular version.
    *
-   * - `true`:  When using Nuxt 2, using bridge module is required.
-   * - `false`: When using Nuxt 2, using bridge module is not supported.
+   * @example
+   * ```ts
+   * export default defineNuxtModule({
+   *   meta: {
+   *     name: 'my-module',
+   *     compatibility: {
+   *       builder: {
+   *         // marking as incompatible
+   *         webpack: false,
+   *         // you can require a (semver-compatible) version
+   *         vite: '^5'
+   *       }
+   *     }
+   *   }
+   *   // ...
+   * })
+   * ```
    */
-  bridge?: boolean
+  builder?: Partial<Record<'vite' | 'webpack' | 'rspack' | (string & {}), false | string>>
 }
 
 export interface NuxtCompatibilityIssue {

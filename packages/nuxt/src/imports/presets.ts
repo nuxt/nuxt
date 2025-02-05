@@ -66,7 +66,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie',
   },
   {
-    imports: ['prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useResponseHeader', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr',
   },
   {
@@ -106,10 +106,45 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
-    imports: ['useId'],
-    from: '#app/composables/id',
+    imports: ['useRouteAnnouncer'],
+    from: '#app/composables/route-announcer',
+  },
+  {
+    imports: ['useRuntimeHook'],
+    from: '#app/composables/runtime-hook',
   },
 ]
+
+export const scriptsStubsPreset = {
+  imports: [
+    'useScriptTriggerConsent',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
+    'useScript',
+    'useScriptGoogleAnalytics',
+    'useScriptPlausibleAnalytics',
+    'useScriptCrisp',
+    'useScriptClarity',
+    'useScriptCloudflareWebAnalytics',
+    'useScriptFathomAnalytics',
+    'useScriptMatomoAnalytics',
+    'useScriptGoogleTagManager',
+    'useScriptGoogleAdsense',
+    'useScriptSegment',
+    'useScriptMetaPixel',
+    'useScriptXPixel',
+    'useScriptIntercom',
+    'useScriptHotjar',
+    'useScriptStripe',
+    'useScriptLemonSqueezy',
+    'useScriptVimeoPlayer',
+    'useScriptYouTubePlayer',
+    'useScriptGoogleMaps',
+    'useScriptNpm',
+  ],
+  priority: -1,
+  from: '#app/composables/script-stubs',
+} satisfies InlinePreset
 
 // This is a separate preset as we'll swap these out for import from `vue-router` itself in `pages` module
 const routerPreset = defineUnimportPreset({
@@ -185,9 +220,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'defineModel',
-    'defineOptions',
-    'defineSlots',
     'mergeModels',
     'toValue',
     'useModel',
@@ -196,6 +228,10 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 
@@ -206,6 +242,8 @@ const vueTypesPreset = defineUnimportPreset({
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'DirectiveBinding',
+    'ExtractDefaultPropTypes',
     'ExtractPropTypes',
     'ExtractPublicPropTypes',
     'InjectionKey',
@@ -214,6 +252,7 @@ const vueTypesPreset = defineUnimportPreset({
     'MaybeRef',
     'MaybeRefOrGetter',
     'VNode',
+    'WritableComputedRef',
   ],
 })
 

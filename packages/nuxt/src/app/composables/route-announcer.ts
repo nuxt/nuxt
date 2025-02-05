@@ -1,7 +1,7 @@
 import type { Ref } from 'vue'
 import { getCurrentScope, onScopeDispose, ref } from 'vue'
 import { injectHead } from '@unhead/vue'
-import { useNuxtApp } from '#app'
+import { useNuxtApp } from '../nuxt'
 
 export type Politeness = 'assertive' | 'polite' | 'off'
 

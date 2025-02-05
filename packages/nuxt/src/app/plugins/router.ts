@@ -1,6 +1,6 @@
 import type { Ref } from 'vue'
 import { computed, defineComponent, h, isReadonly, reactive } from 'vue'
-import { isEqual, joinURL, parseQuery, parseURL, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
+import { isEqual, joinURL, parseQuery, stringifyParsedURL, stringifyQuery, withoutBase } from 'ufo'
 import { createError } from 'h3'
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
@@ -45,7 +45,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>) {
     })
   }
 
-  const url = parseURL(fullPath.toString())
+  const url = new URL(fullPath.toString(), import.meta.client ? window.location.href : 'http://localhost')
   return {
     path: url.pathname,
     fullPath,
@@ -77,7 +77,7 @@ interface RouterHooks {
 interface Router {
   currentRoute: Ref<Route>
   isReady: () => Promise<void>
-  options: {}
+  options: Record<string, unknown>
   install: () => Promise<void>
   // Navigation
   push: (url: string) => Promise<void>
@@ -226,6 +226,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
       })
     }
 
+    // @ts-expect-error vue-router types diverge from our Route type above
     nuxtApp._route = route
 
     // Handle middleware
@@ -247,7 +248,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
 
           if (isAppManifestEnabled) {
-            const routeRules = await nuxtApp.runWithContext(() => getRouteRules(to.path))
+            const routeRules = await nuxtApp.runWithContext(() => getRouteRules({ path: to.path }))
 
             if (routeRules.appMiddleware) {
               for (const key in routeRules.appMiddleware) {
