@@ -106,7 +106,7 @@
     "eslint-typegen": "1.0.0",
     "estree-walker": "3.0.3",
     "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
-    "happy-dom": "16.8.1",
+    "happy-dom": "17.0.0",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
     "knip": "5.43.6",
