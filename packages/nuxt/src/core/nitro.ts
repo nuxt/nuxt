@@ -239,7 +239,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir), `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`]
+  nitroConfig.ignore ||= []
+  nitroConfig.ignore.push(
+    ...resolveIgnorePatterns(nitroConfig.srcDir),
+    `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
+  )
 
   // Resolve aliases in user-provided input - so `~/server/test` will work
   nitroConfig.plugins = nitroConfig.plugins?.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
@@ -411,14 +415,16 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
-  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
   for (const _alias in aliases) {
     const alias = _alias as keyof typeof aliases
     if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
       continue
     }
-    if (alias in tsConfig.compilerOptions.paths) { continue }
+    if (alias in tsConfig.compilerOptions.paths) {
+      continue
+    }
 
     const absolutePath = resolve(basePath, aliases[alias]!)
     const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
@@ -532,7 +538,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await writeTypes(nitro)
     }
     // Exclude nitro output dir from typescript
-    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })

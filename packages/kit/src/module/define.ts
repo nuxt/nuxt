@@ -87,7 +87,7 @@ function _defineNuxtModule<
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
-      nuxt.options._requiredModules = nuxt.options._requiredModules || {}
+      nuxt.options._requiredModules ||= {}
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }

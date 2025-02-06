@@ -1,4 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
+import { addRollupTimingsPlugin, stubOptions } from '../../debug/build-config'
 import config from '../webpack/build.config'
 
 export default defineBuildConfig({
@@ -8,6 +9,12 @@ export default defineBuildConfig({
     '#builder',
     '@nuxt/schema',
   ],
+  stubOptions,
+  hooks: {
+    'rollup:options' (ctx, options) {
+      addRollupTimingsPlugin(options)
+    },
+  },
   entries: [
     {
       input: '../webpack/src/index',

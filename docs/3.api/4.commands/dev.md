@@ -4,7 +4,7 @@ description: The dev command starts a development server with hot module replace
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/dev.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/dev.ts
     size: xs
 ---
 

@@ -287,9 +287,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       handleHotUpdate: {
         order: 'post',
         handler: ({ file, modules, server }) => {
-          if (options.isPage?.(file)) {
+          if (options.routesPath && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
-            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
             return [
               ...modules,
               ...macroModule ? [macroModule] : [],

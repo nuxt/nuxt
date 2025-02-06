@@ -11,6 +11,7 @@ import { transform } from 'esbuild'
 import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
+import { klona } from 'klona'
 import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
@@ -68,7 +69,10 @@ export async function resolvePagesRoutes (nuxt = useNuxt()): Promise<NuxtPage[]>
     return pages
   }
 
-  const augmentCtx = { extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys }
+  const augmentCtx = {
+    extraExtractionKeys: nuxt.options.experimental.extraPageMetaExtractionKeys,
+    fullyResolvedPaths: new Set(scannedFiles.map(file => file.absolutePath)),
+  }
   if (shouldAugment === 'after-resolve') {
     await nuxt.callHook('pages:extend', pages)
     await augmentPages(pages, nuxt.vfs, augmentCtx)
@@ -121,7 +125,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
     for (let i = 0; i < segments.length; i++) {
       const segment = segments[i]
 
-      const tokens = parseSegment(segment!)
+      const tokens = parseSegment(segment!, file.absolutePath)
 
       // Skip group segments
       if (tokens.every(token => token.type === SegmentTokenType.group)) {
@@ -154,6 +158,7 @@ export function generateRoutesFromFiles (files: ScannedFile[], options: Generate
 }
 
 interface AugmentPagesContext {
+  fullyResolvedPaths?: Set<string>
   pagesToSkip?: Set<string>
   augmentedPages?: Set<string>
   extraExtractionKeys?: string[]
@@ -163,7 +168,9 @@ export async function augmentPages (routes: NuxtPage[], vfs: Record<string, stri
   ctx.augmentedPages ??= new Set()
   for (const route of routes) {
     if (route.file && !ctx.pagesToSkip?.has(route.file)) {
-      const fileContent = route.file in vfs ? vfs[route.file]! : fs.readFileSync(await resolvePath(route.file), 'utf-8')
+      const fileContent = route.file in vfs
+        ? vfs[route.file]!
+        : fs.readFileSync(ctx.fullyResolvedPaths?.has(route.file) ? route.file : await resolvePath(route.file), 'utf-8')
       const routeMeta = await getRouteMeta(fileContent, route.file, ctx.extraExtractionKeys)
       if (route.meta) {
         routeMeta.meta = { ...routeMeta.meta, ...route.meta }
@@ -209,7 +216,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
   }
 
   if (absolutePath in metaCache && metaCache[absolutePath]) {
-    return metaCache[absolutePath]
+    return klona(metaCache[absolutePath])
   }
 
   const loader = getLoader(absolutePath)
@@ -308,7 +315,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
   }
 
   metaCache[absolutePath] = extractedMeta
-  return extractedMeta
+  return klona(extractedMeta)
 }
 
 const COLON_RE = /:/g
@@ -331,7 +338,7 @@ function getRoutePath (tokens: SegmentToken[]): string {
 
 const PARAM_CHAR_RE = /[\w.]/
 
-function parseSegment (segment: string) {
+function parseSegment (segment: string, absolutePath: string) {
   let state: SegmentParserState = SegmentParserState.initial
   let i = 0
 
@@ -418,8 +425,10 @@ function parseSegment (segment: string) {
           state = SegmentParserState.initial
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
-        } else {
-          // console.debug(`[pages]Ignored character "${c}" while building param "${buffer}" from "segment"`)
+        } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
+          if (c !== '[' && c !== ']') {
+            logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
+          }
         }
         break
     }
