@@ -11,6 +11,7 @@ import { transform } from 'esbuild'
 import type { Property } from 'estree'
 import type { NuxtPage } from 'nuxt/schema'
 
+import { klona } from 'klona'
 import { parseAndWalk, withLocations } from '../core/utils/parse'
 import { getLoader, uniqueBy } from '../core/utils'
 import { logger, toArray } from '../utils'
@@ -215,7 +216,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
   }
 
   if (absolutePath in metaCache && metaCache[absolutePath]) {
-    return metaCache[absolutePath]
+    return klona(metaCache[absolutePath])
   }
 
   const loader = getLoader(absolutePath)
@@ -314,7 +315,7 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
   }
 
   metaCache[absolutePath] = extractedMeta
-  return extractedMeta
+  return klona(extractedMeta)
 }
 
 const COLON_RE = /:/g
@@ -425,7 +426,9 @@ function parseSegment (segment: string, absolutePath: string) {
         } else if (c && PARAM_CHAR_RE.test(c)) {
           buffer += c
         } else if (state === SegmentParserState.dynamic || state === SegmentParserState.optional) {
-          logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
+          if (c !== '[' && c !== ']') {
+            logger.warn(`'\`${c}\`' is not allowed in a dynamic route parameter and has been ignored. Consider renaming \`${absolutePath}\`.`)
+          }
         }
         break
     }

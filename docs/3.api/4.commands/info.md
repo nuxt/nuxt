@@ -4,7 +4,7 @@ description: The info command logs information about the current or specified Nu
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/info.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/info.ts
     size: xs
 ---
 

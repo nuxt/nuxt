@@ -4,7 +4,7 @@ description: The upgrade command upgrades Nuxt to the latest version.
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/upgrade.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/upgrade.ts
     size: xs
 ---
 

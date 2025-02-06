@@ -14,7 +14,18 @@ export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
     configResolved (config) {
-      conditions = config.mode === 'test' ? [...config.resolve.conditions, 'import', 'require'] : config.resolve.conditions
+      const resolvedConditions = new Set([nuxt.options.dev ? 'development' : 'production', ...config.resolve.conditions])
+      if (resolvedConditions.has('browser')) {
+        resolvedConditions.add('web')
+        resolvedConditions.add('import')
+        resolvedConditions.add('module')
+        resolvedConditions.add('default')
+      }
+      if (config.mode === 'test') {
+        resolvedConditions.add('import')
+        resolvedConditions.add('require')
+      }
+      conditions = [...resolvedConditions]
     },
     async resolveId (id, importer) {
       if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:') && !importer.startsWith('\0virtual:')) || exclude.some(e => id.startsWith(e))) {

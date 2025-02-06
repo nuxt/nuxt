@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -53,6 +53,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -84,10 +85,11 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
                 ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`)),
+                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
           watch: {
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
@@ -101,7 +103,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           replace({ preventAssignment: true, ...globalThisReplacements }),
         ],
         server: {
-          watch: { ignored: isIgnored },
+          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],
           },
@@ -210,13 +212,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', (_app, changedTemplates) => {
-      for (const template of changedTemplates) {
+    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+      await Promise.all(changedTemplates.map(async (template) => {
         for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
-          server.reloadModule(mod)
+          await server.reloadModule(mod)
         }
-      }
+      }))
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {

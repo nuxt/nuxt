@@ -1,4 +1,5 @@
 import { defineBuildConfig } from 'unbuild'
+import { stubOptions } from '../../debug/build-config'
 
 export default defineBuildConfig({
   declaration: true,
@@ -20,6 +21,7 @@ export default defineBuildConfig({
     'src/index',
     'src/builder-env',
   ],
+  stubOptions,
   rollup: {
     dts: { respectExternal: false },
     inlineDependencies: ['untyped', 'knitwork'],
@@ -28,6 +30,7 @@ export default defineBuildConfig({
     // Type imports
     '@unhead/schema',
     '@vitejs/plugin-vue',
+    'chokidar',
     '@vitejs/plugin-vue-jsx',
     '@vue/language-core',
     'autoprefixer',
