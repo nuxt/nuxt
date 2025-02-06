@@ -555,9 +555,13 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
-  // Add nuxt app debugger
-  if (nuxt.options.debug) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
+  // Add nuxt app hooks debugger
+  if (
+    nuxt.options.debug
+    && nuxt.options.debug.hooks
+    && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.client)
+  ) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug-hooks'))
   }
 
   // Add experimental Chrome devtools timings support
@@ -820,7 +824,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     nuxt.hooks.addHooks(opts.overrides.hooks)
   }
 
-  if (nuxt.options.debug) {
+  if (
+    nuxt.options.debug
+    && nuxt.options.debug.hooks
+    && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.server)
+  ) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })
   }
 
