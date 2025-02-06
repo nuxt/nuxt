@@ -57,7 +57,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
 
   const nuxt: Nuxt = {
     _version: version,
-    _asyncLocalStorageModule: new AsyncLocalStorage(),
+    _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
     hooks,
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,

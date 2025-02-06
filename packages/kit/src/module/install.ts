@@ -28,10 +28,9 @@ export async function installModule<
   }
 
   // Call module
-  const res = await nuxt._asyncLocalStorageModule.run(
-    nuxtModule,
-    () => nuxtModule(inlineOptions || {}, nuxt),
-  ) ?? {}
+  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
+    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }

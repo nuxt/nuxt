@@ -88,7 +88,7 @@ export interface Nuxt {
   _dependencies?: Set<string>
   _debug?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
-  _asyncLocalStorageModule: AsyncLocalStorage<NuxtModule>
+  _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions
