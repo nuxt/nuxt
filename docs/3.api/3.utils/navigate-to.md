@@ -228,4 +228,4 @@ An object accepting the following properties:
       | `noopener` | `boolean` | Prevents the new window from accessing the originating window via `window.opener`. |
       | `noreferrer` | `boolean` | Prevents the Referer header from being sent and implicitly enables `noopener`. |
 
-      Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) for more detailed information on the **windowFeatures** properties.
+      Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open#windowfeatures) for more detailed information on the **windowFeatures** properties.
