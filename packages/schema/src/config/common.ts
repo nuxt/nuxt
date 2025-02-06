@@ -8,6 +8,7 @@ import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
 
 import type { RuntimeConfig } from '../types/config'
+import type { NuxtDebugOptions } from '../types/debug'
 
 export default defineUntypedSchema({
   /**
@@ -261,9 +262,32 @@ export default defineUntypedSchema({
    * At the moment, it prints out hook names and timings on the server, and
    * logs hook arguments as well in the browser.
    *
+   * You can also set this to an object to enable specific debug options.
+   *
+   * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
   debug: {
-    $resolve: val => val ?? isDebug,
+    $resolve: (val: boolean | NuxtDebugOptions | undefined) => {
+      val ??= isDebug
+      if (val === false) {
+        return val
+      }
+      if (val === true) {
+        return {
+          templates: true,
+          modules: true,
+          watchers: true,
+          hooks: {
+            client: true,
+            server: true,
+          },
+          nitro: true,
+          router: true,
+          hydration: true,
+        } satisfies Required<NuxtDebugOptions>
+      }
+      return val
+    },
   },
 
   /**
