@@ -1,6 +1,7 @@
 import pify from 'pify'
 import { resolve } from 'pathe'
-import { defineEventHandler, fromNodeMiddleware } from 'h3'
+import { createError, defineEventHandler, fromNodeMiddleware, getRequestHeader, handleCors, setHeader } from 'h3'
+import type { H3CorsOptions } from 'h3'
 import type { IncomingMessage, MultiWatching, ServerResponse } from 'webpack-dev-middleware'
 import webpackDevMiddleware from 'webpack-dev-middleware'
 import webpackHotMiddleware from 'webpack-hot-middleware'
@@ -125,7 +126,7 @@ async function createDevMiddleware (compiler: Compiler) {
   })
 
   // Register devMiddleware on server
-  const devHandler = wdmToH3Handler(devMiddleware)
+  const devHandler = wdmToH3Handler(devMiddleware, nuxt.options.devServer.cors)
   const hotHandler = fromNodeMiddleware(hotMiddleware)
   await nuxt.callHook('server:devHandler', defineEventHandler(async (event) => {
     const body = await devHandler(event)
@@ -139,8 +140,20 @@ async function createDevMiddleware (compiler: Compiler) {
 }
 
 // TODO: implement upstream in `webpack-dev-middleware`
-function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>) {
+function wdmToH3Handler (devMiddleware: webpackDevMiddleware.API<IncomingMessage, ServerResponse>, corsOptions: H3CorsOptions) {
   return defineEventHandler(async (event) => {
+    const isPreflight = handleCors(event, corsOptions)
+    if (isPreflight) {
+      return null
+    }
+
+    // disallow cross-site requests in no-cors mode
+    if (getRequestHeader(event, 'sec-fetch-mode') === 'no-cors' && getRequestHeader(event, 'sec-fetch-site') === 'cross-site') {
+      throw createError({ statusCode: 403 })
+    }
+
+    setHeader(event, 'Vary', 'Origin')
+
     event.context.webpack = {
       ...event.context.webpack,
       devMiddleware: devMiddleware.context,

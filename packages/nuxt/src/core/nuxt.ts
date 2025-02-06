@@ -83,7 +83,6 @@ const nightlies = {
 
 export const keyDependencies = [
   '@nuxt/kit',
-  '@nuxt/schema',
 ]
 
 let warnedAboutCompatDate = false
@@ -414,7 +413,7 @@ async function initNuxt (nuxt: Nuxt) {
   await nuxt.callHook('modules:before')
   const modulesToInstall = new Map<string | NuxtModule, Record<string, any>>()
 
-  const watchedPaths = new Set<string>()
+  const modulePaths = new Set<string>()
   const specifiedModules = new Set<string>()
 
   for (const _mod of nuxt.options.modules) {
@@ -432,12 +431,14 @@ async function initNuxt (nuxt: Nuxt) {
       `${modulesDir}/*/index{${nuxt.options.extensions.join(',')}}`,
     ])
     for (const mod of layerModules) {
-      watchedPaths.add(mod)
+      modulePaths.add(mod)
       if (specifiedModules.has(mod)) { continue }
       specifiedModules.add(mod)
       modulesToInstall.set(mod, {})
     }
   }
+
+  nuxt.options.watch.push(...modulePaths)
 
   // Register user and then ad-hoc modules
   for (const key of ['modules', '_modules'] as const) {
@@ -554,9 +555,13 @@ async function initNuxt (nuxt: Nuxt) {
     addPlugin(resolve(nuxt.options.appDir, 'plugins/preload.server'))
   }
 
-  // Add nuxt app debugger
-  if (nuxt.options.debug) {
-    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug'))
+  // Add nuxt app hooks debugger
+  if (
+    nuxt.options.debug
+    && nuxt.options.debug.hooks
+    && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.client)
+  ) {
+    addPlugin(resolve(nuxt.options.appDir, 'plugins/debug-hooks'))
   }
 
   // Add experimental Chrome devtools timings support
@@ -661,7 +666,7 @@ export default defineNuxtPlugin({
   nuxt.hooks.hook('builder:watch', (event, relativePath) => {
     const path = resolve(nuxt.options.srcDir, relativePath)
     // Local module patterns
-    if (watchedPaths.has(path)) {
+    if (modulePaths.has(path)) {
       return nuxt.callHook('restart', { hard: true })
     }
 
@@ -743,7 +748,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       : options.devtools?.enabled !== false // enabled by default unless explicitly disabled
 
     if (isDevToolsEnabled) {
-      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
+      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-nightly' || m === '@nuxt/devtools-edge')) {
         options._modules.push('@nuxt/devtools')
       }
     }
@@ -819,7 +824,11 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
     nuxt.hooks.addHooks(opts.overrides.hooks)
   }
 
-  if (nuxt.options.debug) {
+  if (
+    nuxt.options.debug
+    && nuxt.options.debug.hooks
+    && (nuxt.options.debug.hooks === true || nuxt.options.debug.hooks.server)
+  ) {
     createDebugger(nuxt.hooks, { tag: 'nuxt' })
   }
 

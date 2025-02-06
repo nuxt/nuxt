@@ -43,8 +43,8 @@ export function walk (ast: Program | Node, callback: Partial<WalkOptions>) {
 
 export function parseAndWalk (code: string, sourceFilename: string, callback: WalkerCallback): Program
 export function parseAndWalk (code: string, sourceFilename: string, object: Partial<WalkOptions>): Program
-export function parseAndWalk (code: string, _sourceFilename: string, callback: Partial<WalkOptions> | WalkerCallback) {
-  const ast = parse (code, { sourceType: 'module', ecmaVersion: 'latest', locations: true })
+export function parseAndWalk (code: string, sourceFilename: string, callback: Partial<WalkOptions> | WalkerCallback) {
+  const ast = parse (code, { sourceType: 'module', ecmaVersion: 'latest', locations: true, sourceFile: sourceFilename })
   walk(ast, typeof callback === 'function' ? { enter: callback } : callback)
   return ast
 }
