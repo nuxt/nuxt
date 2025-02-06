@@ -8,6 +8,7 @@ export type { AppHeadMetaObject, MetaObject, MetaObjectRaw, HeadAugmentations } 
 export type { ModuleDefinition, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module'
 export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt'
 export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router'
+export type { NuxtDebugOptions } from './types/debug'
 
 // Schema
 export { default as NuxtConfigSchema } from './config/index'
