@@ -1,5 +1,5 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, Slot, TransitionProps, VNode } from 'vue'
+import type { Component, KeepAliveProps, Slot, TransitionProps, VNode } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
@@ -67,7 +67,7 @@ export default defineComponent({
     }
     let pageLoadingEndHookAlreadyCalled = false
 
-    const routerProviderLookup: Record<string, ReturnType<typeof defineRouteProvider> | undefined> = {}
+    const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
 
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
@@ -164,9 +164,12 @@ export default defineComponent({
                 }
 
                 const routerComponentType = routeProps.Component.type as any
-                const routerComponentName = routerComponentType.name || routerComponentType.__name
+                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
 
-                const PageRouteProvider = routerProviderLookup[routerComponentName] ||= defineRouteProvider(routerComponentName)
+                if (!PageRouteProvider) {
+                  PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                }
 
                 return h(PageRouteProvider, routeProviderProps)
               },
