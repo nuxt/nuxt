@@ -112,8 +112,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
         proxiedOptions.set(currentModule, proxied)
         return proxied
       },
-    },
-    )
+    })
   }
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })
