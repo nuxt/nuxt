@@ -1,120 +1,118 @@
 packages:
   - packages/**
+  - "!packages/nuxi"
+  - "!packages/test-utils"
   - playground
   - test/fixtures/*
 catalog:
-  "@eslint/js": 9.6.0
+  "@arethetypeswrong/cli": 0.17.3
+  "@babel/core": 7.26.7
+  "@babel/helper-plugin-utils": 7.26.5
+  "@codspeed/vitest-plugin": 4.0.0
   "@nuxt/devalue": ^2.0.2
-  "@nuxt/devtools": ^1.3.9
-  "@nuxt/eslint-config": 0.3.13
+  "@nuxt/devtools": ^2.0.0
+  "@nuxt/eslint-config": 1.0.0
   "@nuxt/friendly-errors-webpack-plugin": ^2.6.0
-  "@nuxt/scripts": 0.6.3
-  "@nuxt/test-utils": 3.13.1
-  "@nuxt/ui-templates": 1.3.4
-  "@parcel/watcher": 2.4.1
-  "@rollup/plugin-replace": ^5.0.7
+  "@nuxt/scripts": 0.9.5
+  "@nuxt/telemetry": ^2.6.4
+  "@nuxt/test-utils": 3.15.4
+  "@parcel/watcher": 2.5.1
+  "@rollup/plugin-replace": ^6.0.2
   "@testing-library/vue": 8.1.0
-  "@types/clear": 0.1.4
-  "@types/eslint__js": 8.42.3
-  "@types/estree": 1.0.5
-  "@types/file-loader": 5.0.4
-  "@types/hash-sum": 1.0.2
-  "@types/html-minifier": 4.0.5
-  "@types/lodash-es": 4.17.12
-  "@types/node": 20.14.10
+  "@types/babel__core": 7.20.5
+  "@types/babel__helper-plugin-utils": 7.10.3
+  "@types/estree": 1.0.6
+  "@types/node": 22.13.1
   "@types/pify": 5.0.4
   "@types/pug": 2.0.10
-  "@types/sass-loader": 8.0.8
   "@types/semver": 7.5.8
   "@types/webpack-bundle-analyzer": 4.7.0
   "@types/webpack-hot-middleware": 2.25.9
-  "@unhead/dom": ^1.9.15
-  "@unhead/schema": 1.9.15
-  "@unhead/ssr": ^1.9.15
-  "@unhead/vue": ^1.9.15
-  "@unocss/reset": 0.61.3
-  "@vitest/coverage-v8": 1.6.0
-  "@vue/compiler-core": 3.4.31
-  "@vue/compiler-sfc": 3.4.31
-  "@vue/language-core": 2.0.26
-  "@vue/shared": ^3.4.31
+  "@unhead/dom": ^1.11.18
+  "@unhead/schema": 1.11.18
+  "@unhead/shared": ^1.11.18
+  "@unhead/ssr": ^1.11.18
+  "@unocss/reset": 65.4.3
+  "@vitest/coverage-v8": 3.0.5
+  "@vue/compiler-core": 3.5.13
+  "@vue/compiler-sfc": 3.5.13
+  "@vue/language-core": 2.2.0
+  "@vue/shared": ^3.5.13
   "@vue/test-utils": 2.4.6
-  acorn: 8.12.1
-  case-police: 0.6.1
-  changelogen: 0.5.5
-  chokidar: ^3.6.0
-  clear: ^0.1.0
-  compatx: ^0.1.8
-  cookie-es: ^1.1.0
-  critters: 0.0.24
+  acorn: 8.14.0
+  beasties: 0.2.0
+  case-police: 0.7.2
+  changelogen: 0.5.7
+  cookie-es: ^1.2.2
   css-loader: ^7.1.2
   css-minimizer-webpack-plugin: ^7.0.0
   defu: ^6.1.4
-  destr: ^2.0.3
-  esbuild: ^0.23.0
+  errx: ^0.1.0
+  esbuild: ^0.24.2
   escape-string-regexp: ^5.0.0
-  eslint: 9.6.0
-  eslint-plugin-no-only-tests: 3.1.0
-  eslint-plugin-perfectionist: 2.11.0
-  eslint-typegen: 0.2.4
-  estree-walker: ^3.0.3
-  execa: 9.3.0
+  eslint: 9.19.0
+  eslint-plugin-no-only-tests: 3.3.0
+  eslint-plugin-perfectionist: 4.8.0
+  eslint-typegen: 1.0.0
   externality: ^1.0.2
-  file-loader: ^6.2.0
   fork-ts-checker-webpack-plugin: ^9.0.2
   get-port-please: ^3.1.2
-  h3: npm:h3-nightly@2.0.0-1718872656.6765a6e
-  happy-dom: 14.12.3
-  hash-sum: ^2.0.0
-  hookable: ^5.5.3
-  html-minifier: 4.0.0
-  html-validate: 8.20.1
+  globby: ^14.0.2
+  h3: npm:h3-nightly@1.14.0-20250122-114730-3f9e703
+  happy-dom: 17.0.0
+  html-validate: 9.2.1
+  htmlnano: 2.1.1
+  impound: ^0.2.0
+  installed-check: 9.3.0
   klona: ^2.0.6
-  lodash-es: 4.17.21
-  magic-string: ^0.30.10
-  markdownlint-cli: 0.41.0
-  memfs: ^4.9.3
-  mini-css-extract-plugin: ^2.9.0
-  mlly: ^1.7.1
-  nitro: npm:nitro-nightly@3.0.0-beta-28665895.e727afda
-  nuxt-content-twoslash: 0.1.0
-  nypm: ^0.3.9
-  ohash: ^1.1.3
+  knip: 5.43.6
+  markdownlint-cli: 0.44.0
+  mini-css-extract-plugin: ^2.9.2
+  mlly: ^1.7.4
+  nanotar: ^0.2.0
+  nitro: npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6
+  nuxt-content-twoslash: 0.1.2
+  nypm: ^0.5.2
+  ohash: ^1.1.4
   perfect-debounce: ^1.0.0
   pify: ^6.1.0
-  pkg-types: ^1.1.3
-  playwright-core: 1.45.1
-  postcss: ^8.4.39
+  pkg-pr-new: 0.0.39
+  playwright-core: 1.50.1
+  postcss: ^8.5.1
   postcss-import: ^16.1.0
   postcss-import-resolver: ^2.0.0
   postcss-loader: ^8.1.1
   postcss-url: ^10.1.3
-  prettier: 3.3.2
+  prettier: 3.4.2
   pug-plain-loader: ^1.1.0
   radix3: ^1.1.2
-  rimraf: 6.0.1
-  rollup: 4.18.1
-  rollup-plugin-visualizer: ^5.12.0
-  strip-literal: ^2.1.0
+  rollup: 4.34.4
+  rollup-plugin-visualizer: ^5.14.0
+  sass-loader: 16.0.4
+  sherif: 1.3.0
+  strip-literal: ^3.0.0
+  svgo: 3.3.2
   time-fix-plugin: ^2.0.7
-  typescript: 5.5.3
+  tinyexec: 0.3.2
+  tinyglobby: 0.2.10
+  ts-blank-space: 0.5.1
+  typescript: 5.7.3
   ultrahtml: ^1.5.3
-  unbuild: 3.0.0-rc.6
+  unbuild: 3.3.1
   uncrypto: ^0.1.3
-  unimport: ^3.7.2
-  unocss: 0.61.3
-  unplugin: ^1.11.0
-  unplugin-vue-router: ^0.10.0
-  unstorage: ^1.10.2
-  untyped: ^1.4.2
+  unenv: ^1.10.0
+  unhead: ^1.11.18
+  unocss: 65.4.3
+  unplugin: ^2.1.2
+  unplugin-vue-router: ^0.11.2
+  unstorage: ^1.14.4
   url-loader: ^4.1.1
-  vite-node: ^1.6.0
-  vite-plugin-checker: 0.7.0
-  vitest: 1.6.0
-  vitest-environment-nuxt: 1.0.0
+  vite-node: ^3.0.5
+  vite-plugin-checker: ^0.8.0
+  vitest: 3.0.5
+  vitest-environment-nuxt: 1.0.1
   vue-devtools-stub: ^0.1.0
-  vue-tsc: 2.0.26
+  vue-tsc: 2.2.0
   webpack-bundle-analyzer: ^4.10.2
   webpack-hot-middleware: ^2.26.1
-  webpack-virtual-modules: ^0.6.2
-  webpackbar: ^6.0.1
+  webpackbar: ^7.0.0

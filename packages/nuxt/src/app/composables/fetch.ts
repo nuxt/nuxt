@@ -17,6 +17,7 @@ type AvailableRouterMethod<R extends NitroFetchRequest> = _AvailableRouterMethod
 export type FetchResult<ReqT extends NitroFetchRequest, M extends AvailableRouterMethod<ReqT>> = TypedInternalResponse<ReqT, unknown, Lowercase<M>>
 
 type ComputedOptions<T extends Record<string, any>> = {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   [K in keyof T]: T[K] extends Function ? T[K] : ComputedOptions<T[K]> | Ref<T[K]> | T[K]
 }
 
@@ -151,7 +152,7 @@ export function useFetch<
   let controller: AbortController
 
   const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, () => {
-    controller?.abort?.()
+    controller?.abort?.(new DOMException('Request aborted as another request to the same endpoint was initiated.', 'AbortError'))
     controller = typeof AbortController !== 'undefined' ? new AbortController() : {} as AbortController
 
     /**
@@ -163,7 +164,7 @@ export function useFetch<
     const timeoutLength = toValue(opts.timeout)
     let timeoutId: NodeJS.Timeout
     if (timeoutLength) {
-      timeoutId = setTimeout(() => controller.abort(), timeoutLength)
+      timeoutId = setTimeout(() => controller.abort(new DOMException('Request aborted due to timeout.', 'AbortError')), timeoutLength)
       controller.signal.onabort = () => clearTimeout(timeoutId)
     }
 

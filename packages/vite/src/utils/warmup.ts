@@ -40,7 +40,7 @@ export async function warmupViteServer (
   entries: string[],
   isServer: boolean,
 ) {
-  const warmedUrls = new Set<String>()
+  const warmedUrls = new Set<string>()
 
   const warmup = async (url: string) => {
     try {

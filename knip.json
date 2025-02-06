@@ -1,26 +1,59 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignoreBinaries": [
+    "prepack"
+  ],
+  "ignoreWorkspaces": ["test/fixtures/basic"],
+  "ignoreDependencies": [
+    "bing",
+    "uno.css"
+  ],
   "workspaces": {
     ".": {
       "entry": [
-        "scripts/*",
-        "test/*",
-        "test/fixtures/*"
+        "scripts/*"
+      ]
+    },
+    "test/fixtures/*": {
+      "entry": [
+        "nuxt.config.{js,ts}",
+        "modules/*.ts",
+        "types.ts"
       ]
     },
     "packages/*": {
       "entry": [
         "src/index.ts",
-        "src/runtime/**/*.ts"
+        "src/runtime/**/*.{js,ts,mjs}"
       ]
     },
     "packages/nuxt": {
       "entry": [
         "src/app/**/*.ts",
         "src/app/*.ts",
-        "src/*/runtime/**/*.ts",
+        "src/*/runtime/**/*.{ts,js}",
         "src/core/templates.ts",
         "src/index.ts"
+      ]
+    },
+    "packages/rspack": {
+      "entry": [
+        "../webpack/src/index.ts",
+        "../webpack/src/runtime/**/*.{js,ts,mjs}",
+        "builder.mjs"
+      ]
+    },
+    "packages/ui-templates": {
+      "entry": [
+        "lib/*.ts",
+        "styles.ts"
+      ]
+    },
+    "packages/webpack": {
+      "entry": [
+        "src/index.ts",
+        "src/runtime/**/*.{js,ts,mjs}",
+        "builder.mjs"
       ]
     }
   }

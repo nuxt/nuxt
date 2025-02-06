@@ -2,6 +2,7 @@ import { createApp, createSSRApp, nextTick } from 'vue'
 import type { App } from 'vue'
 
 // This file must be imported first as we set globalThis.$fetch via this import
+// @ts-expect-error virtual file
 import '#build/fetch.mjs'
 
 import { applyPlugins, createNuxtApp } from './nuxt'
@@ -9,13 +10,14 @@ import type { CreateOptions } from './nuxt'
 
 import { createError } from './composables/error'
 
+// @ts-expect-error virtual file
 import '#build/css'
 // @ts-expect-error virtual file
 import plugins from '#build/plugins'
 // @ts-expect-error virtual file
 import RootComponent from '#build/root-component.mjs'
 // @ts-expect-error virtual file
-import { vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 let entry: (ssrContext?: CreateOptions['ssrContext']) => Promise<App<Element>>
 
@@ -50,9 +52,10 @@ if (import.meta.client) {
 
   entry = async function initApp () {
     if (vueAppPromise) { return vueAppPromise }
+
     const isSSR = Boolean(
-      window.__NUXT__?.serverRendered ||
-      document.getElementById('__NUXT_DATA__')?.dataset.ssr === 'true',
+      (multiApp ? window.__NUXT__?.[appId] : window.__NUXT__)?.serverRendered ??
+      (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
     )
     const vueApp = isSSR ? createSSRApp(RootComponent) : createApp(RootComponent)
 
@@ -64,6 +67,17 @@ if (import.meta.client) {
     }
 
     vueApp.config.errorHandler = handleVueError
+    // If the errorHandler is not overridden by the user, we unset it after the app is hydrated
+    nuxt.hook('app:suspense:resolve', () => {
+      if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
+    })
+
+    if (spaLoadingTemplateOutside && !isSSR && appSpaLoaderAttrs.id) {
+      // Remove spa loader if present
+      nuxt.hook('app:suspense:resolve', () => {
+        document.getElementById(appSpaLoaderAttrs.id)?.remove()
+      })
+    }
 
     try {
       await applyPlugins(nuxt, plugins)
@@ -80,9 +94,6 @@ if (import.meta.client) {
     } catch (err) {
       handleVueError(err)
     }
-
-    // If the errorHandler is not overridden by the user, we unset it
-    if (vueApp.config.errorHandler === handleVueError) { vueApp.config.errorHandler = undefined }
 
     return vueApp
   }

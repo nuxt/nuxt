@@ -55,17 +55,17 @@ function _defineNuxtModule<
     inlineOptions?: Partial<TOptions>,
     nuxt: Nuxt = useNuxt(),
   ): Promise<
-    TWith extends true
-      ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
-      : TOptions
-  > {
+      TWith extends true
+        ? ResolvedModuleOptions<TOptions, TOptionsDefaults>
+        : TOptions
+    > {
     const nuxtConfigOptionsKey = module.meta.configKey || module.meta.name
 
     const nuxtConfigOptions: Partial<TOptions> = nuxtConfigOptionsKey && nuxtConfigOptionsKey in nuxt.options ? nuxt.options[<keyof NuxtOptions> nuxtConfigOptionsKey] : {}
 
     const optionsDefaults: TOptionsDefaults =
       module.defaults instanceof Function
-        ? module.defaults(nuxt)
+        ? await module.defaults(nuxt)
         : module.defaults ?? <TOptionsDefaults> {}
 
     let options = defu(inlineOptions, nuxtConfigOptions, optionsDefaults)
@@ -79,15 +79,15 @@ function _defineNuxtModule<
   }
 
   // Module format is always a simple function
-  async function normalizedModule (this: any, inlineOptions: Partial<TOptions>, nuxt: Nuxt): Promise<ModuleSetupReturn> {
+  async function normalizedModule (inlineOptions: Partial<TOptions>, nuxt = tryUseNuxt()!): Promise<ModuleSetupReturn> {
     if (!nuxt) {
-      nuxt = tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
+      throw new TypeError('Cannot use module outside of Nuxt context')
     }
 
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
-      nuxt.options._requiredModules = nuxt.options._requiredModules || {}
+      nuxt.options._requiredModules ||= {}
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }

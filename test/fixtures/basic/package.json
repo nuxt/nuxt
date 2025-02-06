@@ -5,18 +5,18 @@
     "build": "nuxi build"
   },
   "dependencies": {
+    "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/webpack-builder": "workspace:*",
     "nuxt": "workspace:*"
   },
   "devDependencies": {
-    "@unhead/dom": "catalog:",
-    "@unhead/shared": "latest",
     "@vue/devtools-api": "latest",
-    "@vue/shared": "catalog:",
-    "iron-webcrypto": "latest",
+    "defu": "catalog:",
     "ufo": "latest",
-    "unhead": "latest",
     "unplugin": "catalog:",
     "vue": "latest"
+  },
+  "engines": {
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }

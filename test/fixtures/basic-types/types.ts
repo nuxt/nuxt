@@ -2,6 +2,9 @@ import { describe, expectTypeOf, it } from 'vitest'
 import type { Ref, SlotsType } from 'vue'
 import type { FetchError } from 'ofetch'
 import type { NavigationFailure, RouteLocationNormalized, RouteLocationRaw, Router, useRouter as vueUseRouter } from 'vue-router'
+import type { H3Event } from 'h3'
+import { getRouteRules as getNitroRouteRules } from 'nitro/runtime'
+import type { NitroRouteRules } from 'nitro/types'
 
 import type { AppConfig, RuntimeValue, UpperSnakeCase } from 'nuxt/schema'
 import { defineNuxtModule } from 'nuxt/kit'
@@ -19,6 +22,23 @@ interface TestResponse { message: string }
 
 describe('API routes', () => {
   it('generates types for routes', () => {
+    expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
+    // registered in extends
+    expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
+    // registered in module
+    expectTypeOf($fetch('/auto-registered-module')).toEqualTypeOf<Promise<string>>()
+    expectTypeOf($fetch('/api/hey')).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'get' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/hey', { method: 'post' })).toEqualTypeOf<Promise<{ method: 'post' }>>()
+    // @ts-expect-error not a valid method
+    expectTypeOf($fetch('/api/hey', { method: 'patch ' })).toEqualTypeOf<Promise<{ foo: string, baz: string }>>()
+    expectTypeOf($fetch('/api/union')).toEqualTypeOf<Promise<{ type: 'a', foo: string } | { type: 'b', baz: string }>>()
+    expectTypeOf($fetch('/api/other')).toEqualTypeOf<Promise<unknown>>()
+    expectTypeOf($fetch<TestResponse>('/test')).toEqualTypeOf<Promise<TestResponse>>()
+  })
+
+  it('works with useRequestFetch', () => {
+    const $fetch = useRequestFetch()
     expectTypeOf($fetch('/api/hello')).toEqualTypeOf<Promise<string>>()
     // registered in extends
     expectTypeOf($fetch('/api/foo')).toEqualTypeOf<Promise<string>>()
@@ -93,6 +113,21 @@ describe('API routes', () => {
   })
 })
 
+describe('nitro compatible APIs', () => {
+  it('getRouteRules', async () => {
+    const a = await getRouteRules('/test')
+    const b = await getRouteRules({} as H3Event)
+    const c = getNitroRouteRules({} as H3Event)
+
+    expectTypeOf(b).toEqualTypeOf(c)
+    expectTypeOf(c).toEqualTypeOf<NitroRouteRules>()
+    expectTypeOf(a).toEqualTypeOf<Record<string, any>>()
+  })
+  it('useRuntimeConfig', () => {
+    useRuntimeConfig({} as H3Event)
+  })
+})
+
 describe('aliases', () => {
   it('allows importing from path aliases', () => {
     expectTypeOf(useRouter).toEqualTypeOf<typeof vueUseRouter>()
@@ -162,6 +197,10 @@ describe('typed router integration', () => {
     // @ts-expect-error this is an invalid param
     router.push({ name: 'param-id', params: { bob: 23 } })
     router.push({ name: 'param-id', params: { id: 4 } })
+    // @ts-expect-error this is an invalid route
+    router.push({ name: 'param' })
+    // @ts-expect-error this is an invalid route
+    router.push({ name: '/param' })
   })
 
   it('correctly reads custom names typed in `definePageMeta`', () => {
@@ -219,7 +258,7 @@ describe('typed router integration', () => {
 })
 
 describe('layouts', () => {
-  it('recognizes named layouts', () => {
+  it('definePageMeta recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     definePageMeta({ layout: 'override' })
@@ -227,11 +266,14 @@ describe('layouts', () => {
     definePageMeta({ layout: 'invalid-layout' })
   })
 
-  it('allows typing layouts', () => {
+  it('NuxtLayout recognizes named layouts', () => {
     h(NuxtLayout, { name: 'custom' })
-
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { name: 'invalid-layout' })
+
+    h(NuxtLayout, { fallback: 'custom' })
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { fallback: 'invalid-layout' })
   })
 })
 
@@ -428,11 +470,6 @@ describe('composables', () => {
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
   })
 
-  it('prevents passing string to `useId`', () => {
-    // @ts-expect-error providing a key is not allowed
-    useId('test')
-  })
-
   it('enforces readonly cookies', () => {
     // @ts-expect-error readonly cookie
     useCookie('test', { readonly: true }).value = 'thing'
@@ -567,6 +604,7 @@ describe('composables', () => {
 describe('app config', () => {
   it('merges app config as expected', () => {
     interface ExpectedMergedAppConfig {
+      // eslint-disable-next-line @typescript-eslint/no-empty-object-type
       nuxt: {}
       fromLayer: boolean
       fromNuxtConfig: boolean

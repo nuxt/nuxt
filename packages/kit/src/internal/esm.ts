@@ -1,6 +1,7 @@
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
 import { createJiti } from 'jiti'
+import { captureStackTrace } from 'errx'
 
 export interface ResolveModuleOptions {
   paths?: string | string[]
@@ -48,10 +49,12 @@ const warnings = new Set<string>()
  * @deprecated Please use `importModule` instead.
  */
 export function requireModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
-  if (!warnings.has(id)) {
-    // TODO: add more information on stack trace
-    console.warn('[@nuxt/kit] `requireModule` is deprecated. Please use `importModule` instead.')
-    warnings.add(id)
+  const { source, line, column } = captureStackTrace().find(entry => entry.source !== import.meta.url) ?? {}
+  const explanation = source ? ` (used at \`${fileURLToPath(source)}:${line}:${column}\`)` : ''
+  const warning = `[@nuxt/kit] \`requireModule\` is deprecated${explanation}. Please use \`importModule\` instead.`
+  if (!warnings.has(warning)) {
+    console.warn(warning)
+    warnings.add(warning)
   }
   const resolvedPath = resolveModule(id, opts)
   const jiti = createJiti(import.meta.url, {

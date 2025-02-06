@@ -7,11 +7,9 @@
     "start": "nuxi preview"
   },
   "dependencies": {
-    "@unhead/shared": "latest",
-    "@vue/devtools-api": "latest",
-    "@vue/shared": "catalog:",
-    "nuxt": "workspace:*",
-    "unhead": "latest",
-    "vue": "latest"
+    "nuxt": "workspace:*"
+  },
+  "engines": {
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }

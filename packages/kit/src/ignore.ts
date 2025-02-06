@@ -3,12 +3,14 @@ import ignore from 'ignore'
 import { join, relative, resolve } from 'pathe'
 import { tryUseNuxt } from './context'
 
+export function createIsIgnored (nuxt = tryUseNuxt()) {
+  return (pathname: string, stats?: unknown) => isIgnored(pathname, stats, nuxt)
+}
+
 /**
  * Return a filter function to filter an array of paths
  */
-export function isIgnored (pathname: string): boolean {
-  const nuxt = tryUseNuxt()
-
+export function isIgnored (pathname: string, _stats?: unknown, nuxt = tryUseNuxt()): boolean {
   // Happens with CLI reloads
   if (!nuxt) {
     return false

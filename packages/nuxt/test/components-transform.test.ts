@@ -4,7 +4,7 @@ import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
 import { normalize } from 'pathe'
 
-import { createTransformPlugin } from '../src/components/transform'
+import { TransformPlugin } from '../src/components/plugins/transform'
 
 describe('components:transform', () => {
   it('should transform #components imports', async () => {
@@ -15,7 +15,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, Bar } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue';
+      "
+      import Foo from '/Foo.vue';
       import { Bar } from '/Bar.vue';
       "
     `)
@@ -28,7 +29,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=server&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=server,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)
@@ -54,7 +56,8 @@ describe('components:transform', () => {
 
     const code = await transform('import { Foo, LazyFoo } from \'#components\'', '/app.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
+      "
+      import Foo from '/Foo.vue?nuxt_component=client&nuxt_component_name=Foo&nuxt_component_export=default';
       import LazyFoo from '/Foo.vue?nuxt_component=client,async&nuxt_component_name=Foo&nuxt_component_export=default';
       "
     `)
@@ -89,7 +92,11 @@ function createTransformer (components: Component[], mode: 'client' | 'server' |
       },
     },
   } as Nuxt
-  const plugin = createTransformPlugin(stubNuxt, () => components, mode).vite()
+  const plugin = TransformPlugin(stubNuxt, {
+    mode,
+    getComponents: () => components,
+    serverComponentRuntime: '<repo>/nuxt/src/components/runtime/server-component',
+  }).vite()
 
   return async (code: string, id: string) => {
     const result = await (plugin as any).transform!(code, id)

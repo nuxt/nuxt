@@ -1,10 +1,10 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { isWindows } from 'std-env'
-import { setup } from '@nuxt/test-utils'
+import { setup } from '@nuxt/test-utils/e2e'
 import { renderPage } from './utils'
 
-const isWebpack = process.env.TEST_BUILDER === 'webpack'
+const isWebpack = process.env.TEST_BUILDER === 'webpack' || process.env.TEST_BUILDER === 'rspack'
 
 await setup({
   rootDir: fileURLToPath(new URL('./fixtures/suspense', import.meta.url)),
@@ -14,8 +14,6 @@ await setup({
   setupTimeout: (isWindows ? 360 : 120) * 1000,
   nuxtConfig: {
     builder: isWebpack ? 'webpack' : 'vite',
-    buildDir: process.env.NITRO_BUILD_DIR,
-    nitro: { output: { dir: process.env.NITRO_OUTPUT_DIR } },
   },
 })
 

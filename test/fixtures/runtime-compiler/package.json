@@ -7,10 +7,7 @@
   "dependencies": {
     "nuxt": "workspace:*"
   },
-  "devDependencies": {
-    "@unhead/shared": "latest",
-    "@vue/devtools-api": "latest",
-    "@vue/shared": "catalog:",
-    "unhead": "latest"
+  "engines": {
+    "node": "^18.20.5 || ^20.9.0 || >=22.0.0"
   }
 }

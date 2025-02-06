@@ -102,14 +102,15 @@ export const componentsIslandsTemplate: NuxtTemplate = {
   },
 }
 
+const NON_VUE_RE = /\b\.(?!vue)\w+$/g
 export const componentsTypeTemplate = {
   filename: 'components.d.ts' as const,
   getContents: ({ app, nuxt }) => {
     const buildDir = nuxt.options.buildDir
     const componentTypes = app.components.filter(c => !c.island).map((c) => {
       const type = `typeof ${genDynamicImport(isAbsolute(c.filePath)
-        ? relative(buildDir, c.filePath).replace(/\b\.(?!vue)\w+$/g, '')
-        : c.filePath.replace(/\b\.(?!vue)\w+$/g, ''), { wrapper: false })}['${c.export}']`
+        ? relative(buildDir, c.filePath).replace(NON_VUE_RE, '')
+        : c.filePath.replace(NON_VUE_RE, ''), { wrapper: false })}['${c.export}']`
       return [
         c.pascalName,
         c.island || c.mode === 'server' ? `IslandComponent<${type}>` : type,
@@ -123,14 +124,6 @@ ${nuxt.options.experimental.componentIslands ? islandType : ''}
 interface _GlobalComponents {
   ${componentTypes.map(([pascalName, type]) => `    '${pascalName}': ${type}`).join('\n')}
   ${componentTypes.map(([pascalName, type]) => `    'Lazy${pascalName}': ${type}`).join('\n')}
-}
-
-declare module '@vue/runtime-core' {
-  export interface GlobalComponents extends _GlobalComponents { }
-}
-
-declare module '@vue/runtime-dom' {
-  export interface GlobalComponents extends _GlobalComponents { }
 }
 
 declare module 'vue' {
