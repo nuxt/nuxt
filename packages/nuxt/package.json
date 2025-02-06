@@ -95,7 +95,7 @@
     "escape-string-regexp": "^5.0.0",
     "estree-walker": "^3.0.3",
     "globby": "^14.0.2",
-    "h3": "^1.14.0",
+    "h3": "^1.15.0",
     "hookable": "^5.5.3",
     "ignore": "^7.0.3",
     "impound": "^0.2.0",

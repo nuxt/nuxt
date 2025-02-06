@@ -102,7 +102,7 @@
     "eslint-plugin-perfectionist": "4.8.0",
     "eslint-typegen": "1.0.0",
     "estree-walker": "3.0.3",
-    "h3": "1.14.0",
+    "h3": "1.15.0",
     "happy-dom": "17.0.0",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
@@ -133,6 +133,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.96.1"
   },
-  "packageManager": "pnpm@10.2.0",
+  "packageManager": "pnpm@10.2.1",
   "version": ""
 }
