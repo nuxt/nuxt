@@ -198,7 +198,11 @@ export default defineNuxtModule<ComponentsOptions>({
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]
     })
 
-    addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
+    nuxt.hook('nitro:routeRules', (routeRules) => {
+      nuxt.hook('pages:resolved', (pages) => {
+        addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents, routeRules, pages }), { client: false })
+      })
+    })
 
     const sharedLoaderOptions = {
       getComponents,

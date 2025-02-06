@@ -388,7 +388,11 @@ export default defineNuxtModule({
       // Allow telling Nitro to reload route rules
       let updateRouteConfig: () => void | Promise<void>
       nuxt.hook('nitro:init', (nitro) => {
-        updateRouteConfig = () => nitro.updateConfig({ routeRules: defu(inlineRules, nitro.options._config.routeRules) })
+        updateRouteConfig = async () => {
+          const routeRules = defu(inlineRules, nitro.options._config.routeRules)
+          await nitro.updateConfig({ routeRules })
+          await nuxt.callHook('nitro:routeRules', routeRules)
+        }
       })
 
       const updatePage = async function updatePage (path: string) {
@@ -432,6 +436,10 @@ export default defineNuxtModule({
       nuxt.hooks.hookOnce('pages:extend', async () => {
         for (const page in pageToGlobMap) { await updatePage(page) }
         await updateRouteConfig?.()
+      })
+    } else {
+      nuxt.hook('nitro:init', (nitro) => {
+        nuxt.callHook('nitro:routeRules', nitro.options.routeRules)
       })
     }
 

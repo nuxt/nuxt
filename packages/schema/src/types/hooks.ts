@@ -6,7 +6,7 @@ import type { Manifest } from 'vue-bundle-renderer'
 import type { EventHandler } from 'h3'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import type { Compiler, Configuration, Stats } from 'webpack'
-import type { Nitro, NitroConfig } from 'nitro/types'
+import type { Nitro, NitroConfig, NitroRouteConfig } from 'nitro/types'
 import type { Schema, SchemaDefinition } from 'untyped'
 import type { RouteLocationRaw, RouteRecordRaw } from 'vue-router'
 import type { VueCompilerOptions } from '@vue/language-core'
@@ -263,6 +263,12 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'nitro:config': (nitroConfig: NitroConfig) => HookResult
+  /**
+   * Called after route rules are resolved
+   * @param routeRules The route rules config to be read
+   * @returns Promise
+   */
+  'nitro:routeRules': (routeRules: { [path: string]: NitroRouteConfig }) => HookResult
   /**
    * Called after Nitro is initialized, which allows registering Nitro hooks and interacting directly with Nitro.
    * @param nitro The created nitro object

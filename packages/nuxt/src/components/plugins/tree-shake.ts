@@ -4,15 +4,20 @@ import MagicString from 'magic-string'
 import type { AssignmentProperty, CallExpression, ObjectExpression, Pattern, Property, ReturnStatement, VariableDeclaration } from 'estree'
 import type { Program } from 'acorn'
 import { createUnplugin } from 'unplugin'
-import type { Component } from '@nuxt/schema'
+import type { Component, NuxtPage } from '@nuxt/schema'
 import { resolve } from 'pathe'
 
+import type { NitroRouteConfig } from 'nitro/types'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
+import defu from 'defu'
 import { parseAndWalk, walk, withLocations } from '../../core/utils/parse'
 import type { Node } from '../../core/utils/parse'
 import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
+  pages: NuxtPage[]
+  routeRules: { [path: string]: NitroRouteConfig }
   getComponents (): Component[]
 }
 
@@ -22,6 +27,8 @@ const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:cli
 
 export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
+  const ruleMatcher = toRouteMatcher(createRadixRouter({ routes: options.routeRules }))
+
   return {
     name: 'nuxt:tree-shake-template',
     enforce: 'post',
@@ -40,6 +47,21 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
           .concat(['ClientOnly', 'client_only'])
 
         regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
+      }
+
+      const page = options.pages.find(p => p.file === id)
+      // A page component is being tree shaken
+      if (page) {
+        const matchedRules = ruleMatcher.matchAll(page.path).reverse()
+        const resovlvedRoute = defu({} as Record<string, any>, ...matchedRules) as NitroRouteConfig
+        if (resovlvedRoute) {
+          // page is SPA
+          if (resovlvedRoute.ssr === false) {
+            return {
+              code: '',
+            }
+          }
+        }
       }
 
       const s = new MagicString(code)
