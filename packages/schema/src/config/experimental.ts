@@ -592,5 +592,14 @@ export default defineUntypedSchema({
     browserDevtoolsTiming: {
       $resolve: async (val, get) => val ?? await get('dev'),
     },
+
+    /**
+     * Record mutations to `nuxt.options` in module context
+     */
+    debugModuleMutation: {
+      $resolve: async (val, get) => {
+        return val ?? Boolean(await get('debug'))
+      },
+    },
   },
 })

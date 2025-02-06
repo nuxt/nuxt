@@ -33,7 +33,9 @@ export async function installModule<
     isNuxt2()
       // @ts-expect-error Nuxt 2 `moduleContainer` is not typed
       ? await nuxtModule.call(nuxt.moduleContainer, inlineOptions, nuxt)
-      : await nuxtModule(inlineOptions, nuxt)
+      : nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+        ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt))
+        : await nuxtModule(inlineOptions || {}, nuxt)
   ) ?? {}
   if (res === false /* setup aborted */) {
     return
@@ -59,6 +61,7 @@ export async function installModule<
 
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
+    module: nuxtModule,
     timings: res.timings,
     entryPath,
   })
