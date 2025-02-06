@@ -667,7 +667,7 @@ describe('routing utilities: `useRoute`', () => {
       hash: '',
       matched: expect.arrayContaining([]),
       meta: {},
-      name: 'root',
+      name: 'catchall',
       params: {},
       path: '/',
       query: {},
