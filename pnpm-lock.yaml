@@ -444,6 +444,9 @@ importers:
       ohash:
         specifier: 1.1.4
         version: 1.1.4
+      on-change:
+        specifier: ^5.0.1
+        version: 5.0.1
       pathe:
         specifier: ^2.0.2
         version: 2.0.2
@@ -6063,6 +6066,10 @@ packages:
 
   ohash@1.1.4:
     resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
+
+  on-change@5.0.1:
+    resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
+    engines: {node: '>=18'}
 
   on-finished@2.4.1:
     resolution: {integrity: sha512-oVlzkg3ENAhCk2zdv7IJwd/QUD4z2RxRwpkcGY8psCVcCYZNq4wYnVWALHM+brtuJjePWiYF/ClmuDr8Ch5+kg==}
@@ -14066,6 +14073,8 @@ snapshots:
       ufo: 1.5.4
 
   ohash@1.1.4: {}
+
+  on-change@5.0.1: {}
 
   on-finished@2.4.1:
     dependencies:
