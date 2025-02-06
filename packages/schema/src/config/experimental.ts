@@ -443,7 +443,7 @@ export default defineUntypedSchema({
      */
     debugModuleMutation: {
       $resolve: async (val, get) => {
-        return val ?? await get('debug')
+        return val ?? Boolean(await get('debug'))
       },
     },
   },
