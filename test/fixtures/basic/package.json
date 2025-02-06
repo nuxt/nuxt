@@ -11,9 +11,9 @@
   },
   "devDependencies": {
     "@vue/devtools-api": "latest",
-    "defu": "catalog:",
+    "defu": "latest",
     "ufo": "latest",
-    "unplugin": "catalog:",
+    "unplugin": "latest",
     "vue": "latest"
   },
   "engines": {

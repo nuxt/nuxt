@@ -27,36 +27,36 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^2.0.1",
-    "consola": "^3.4.0",
+    "c12": "catalog:",
+    "consola": "catalog:",
     "defu": "catalog:",
-    "destr": "^2.0.3",
+    "destr": "catalog:",
     "errx": "catalog:",
     "globby": "catalog:",
-    "ignore": "^7.0.3",
-    "jiti": "^2.4.2",
+    "ignore": "catalog:",
+    "jiti": "catalog:",
     "klona": "catalog:",
     "mlly": "catalog:",
     "ohash": "catalog:",
-    "pathe": "^2.0.2",
-    "pkg-types": "^1.3.1",
-    "scule": "^1.3.0",
-    "semver": "^7.7.1",
-    "std-env": "^3.8.0",
-    "ufo": "^1.5.4",
-    "unctx": "^2.4.1",
-    "unimport": "^4.0.0",
-    "untyped": "^1.5.2"
+    "pathe": "catalog:",
+    "pkg-types": "catalog:",
+    "scule": "catalog:",
+    "semver": "catalog:",
+    "std-env": "catalog:",
+    "ufo": "catalog:",
+    "unctx": "catalog:",
+    "unimport": "catalog:",
+    "untyped": "catalog:"
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.2.2",
+    "@rspack/core": "catalog:",
     "@types/semver": "catalog:",
     "nitro": "catalog:",
     "unbuild": "catalog:",
-    "vite": "6.1.0",
+    "vite": "catalog:",
     "vitest": "catalog:",
-    "webpack": "5.97.1"
+    "webpack": "catalog:"
   },
   "engines": {
     "node": ">=18.12.0"
