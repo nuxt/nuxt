@@ -1,5 +1,5 @@
 import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, TransitionProps, VNode, VNodeProps } from 'vue'
+import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
 import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
