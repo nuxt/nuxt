@@ -743,7 +743,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
       : options.devtools?.enabled !== false // enabled by default unless explicitly disabled
 
     if (isDevToolsEnabled) {
-      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-edge')) {
+      if (!options._modules.some(m => m === '@nuxt/devtools' || m === '@nuxt/devtools-nightly' || m === '@nuxt/devtools-edge')) {
         options._modules.push('@nuxt/devtools')
       }
     }
