@@ -107,8 +107,6 @@ export default defineComponent({
 
           previousPageKey = key
 
-          const pageVnode = slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component
-
           if (import.meta.server) {
             vnode = h(Suspense, {
               suspensible: true,
@@ -116,7 +114,7 @@ export default defineComponent({
               default: () => {
                 const providerVNode = h(RouteProvider, {
                   key: key || undefined,
-                  vnode: pageVnode,
+                  vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   vnodeRef: pageRef,
@@ -154,7 +152,7 @@ export default defineComponent({
               default: () => {
                 const routeProviderProps = {
                   key: key || undefined,
-                  vnode: pageVnode,
+                  vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
@@ -168,12 +166,7 @@ export default defineComponent({
                 const routerComponentType = routeProps.Component.type as any
                 const routerComponentName = routerComponentType.name || routerComponentType.__name
 
-                let PageRouteProvider = routerProviderLookup[routerComponentName]
-
-                if (!PageRouteProvider) {
-                  PageRouteProvider = defineRouteProvider(routerComponentName)
-                  routerProviderLookup[routerComponentName] = PageRouteProvider
-                }
+                const PageRouteProvider = routerProviderLookup[routerComponentName] ||= defineRouteProvider(routerComponentName)
 
                 return h(PageRouteProvider, routeProviderProps)
               },
