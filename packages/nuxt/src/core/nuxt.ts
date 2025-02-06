@@ -53,8 +53,6 @@ import { VirtualFSPlugin } from './plugins/virtual'
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
 
-  const proxiedOptions = new WeakMap<NuxtModule, NuxtOptions>()
-
   const nuxt: Nuxt = {
     _version: version,
     _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
@@ -70,9 +68,11 @@ export function createNuxt (options: NuxtOptions): Nuxt {
   }
 
   if (options.experimental.debugModuleMutation) {
+    const proxiedOptions = new WeakMap<NuxtModule, NuxtOptions>()
+
     Object.defineProperty(nuxt, 'options', {
       get () {
-        const currentModule = nuxt._asyncLocalStorageModule.getStore()
+        const currentModule = nuxt._asyncLocalStorageModule!.getStore()
         if (!currentModule) {
           return options
         }
@@ -84,33 +84,30 @@ export function createNuxt (options: NuxtOptions): Nuxt {
         nuxt._debug ||= {}
         nuxt._debug.moduleMutationRecords ||= []
 
-        const proxied = onChange(
-          options,
-          (keys, newValue, previousValue, applyData) => {
-            if (newValue === previousValue && !applyData) {
-              return
-            }
-            let value = applyData?.args ?? newValue
-            // Make a shallow copy of the value
-            if (Array.isArray(value)) {
-              value = [...value]
-            } else if (typeof value === 'object') {
-              value = { ...(value as any) }
-            }
-            nuxt._debug!.moduleMutationRecords!.push({
-              module: currentModule,
-              keys,
-              target: 'nuxt.options',
-              value,
-              timestamp: Date.now(),
-              method: applyData?.name,
-            })
-          }, {
-            ignoreUnderscores: true,
-            ignoreSymbols: true,
-            pathAsArray: true,
-          },
-        )
+        const proxied = onChange(options, (keys, newValue, previousValue, applyData) => {
+          if (newValue === previousValue && !applyData) {
+            return
+          }
+          let value = applyData?.args ?? newValue
+          // Make a shallow copy of the value
+          if (Array.isArray(value)) {
+            value = [...value]
+          } else if (typeof value === 'object') {
+            value = { ...(value as any) }
+          }
+          nuxt._debug!.moduleMutationRecords!.push({
+            module: currentModule,
+            keys,
+            target: 'nuxt.options',
+            value,
+            timestamp: Date.now(),
+            method: applyData?.name,
+          })
+        }, {
+          ignoreUnderscores: true,
+          ignoreSymbols: true,
+          pathAsArray: true,
+        })
 
         proxiedOptions.set(currentModule, proxied)
         return proxied
