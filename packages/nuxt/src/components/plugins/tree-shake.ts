@@ -53,10 +53,10 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
       // A page component is being tree shaken
       if (page) {
         const matchedRules = ruleMatcher.matchAll(page.path).reverse()
-        const resovlvedRoute = defu({} as Record<string, any>, ...matchedRules) as NitroRouteConfig
-        if (resovlvedRoute) {
+        const resolvedRoute = defu({} as Record<string, any>, ...matchedRules) as NitroRouteConfig
+        if (resolvedRoute) {
           // page is SPA
-          if (resovlvedRoute.ssr === false) {
+          if (resolvedRoute.ssr === false) {
             return {
               code: '',
             }
