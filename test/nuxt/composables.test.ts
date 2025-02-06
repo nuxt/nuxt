@@ -661,14 +661,13 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  it('should show provide a mock route', () => {
+  it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
-      href: '/',
-      matched: [],
+      matched: expect.arrayContaining([]),
       meta: {},
-      name: undefined,
+      name: 'root',
       params: {},
       path: '/',
       query: {},
