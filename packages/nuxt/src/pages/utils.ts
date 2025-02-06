@@ -255,6 +255,10 @@ export async function getRouteMeta (contents: string, absolutePath: string, extr
         if (!property) { continue }
 
         const propertyValue = withLocations(property.value)
+        
+        if (key === 'middleware') {
+          dynamicProperties.add('meta')
+        }
 
         if (propertyValue.type === 'ObjectExpression') {
           const valueString = js.code.slice(propertyValue.start, propertyValue.end)
