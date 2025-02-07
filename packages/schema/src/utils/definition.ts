@@ -48,7 +48,7 @@ type Resolvable<Namespace> = keyof Exclude<NonNullable<Namespace>, boolean | str
   : Namespace | Resolvers<Namespace>
 
 export function defineResolvers<C extends Partial<Resolvable<ConfigSchema>>> (config: C) {
-  return defineUntypedSchema(config) as C
+  return defineUntypedSchema(config) /* as C */
 }
 
 export type ResolvableConfigSchema = Partial<Resolvable<ConfigSchema>>
