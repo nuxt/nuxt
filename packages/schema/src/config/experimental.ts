@@ -33,7 +33,7 @@ export default defineResolvers({
         // @ts-expect-error TODO: remove in v3.10
         val = typeof val === 'boolean' ? val : await (get('experimental')).then(e => e?.typescriptBundlerResolution as string | undefined)
         if (typeof val === 'boolean') { return val }
-        const setting = await get('typescript.tsConfig').then(r => r.compilerOptions?.moduleResolution)
+        const setting = await get('typescript.tsConfig').then(r => r?.compilerOptions?.moduleResolution)
         if (setting) {
           return setting.toLowerCase() === 'bundler'
         }
