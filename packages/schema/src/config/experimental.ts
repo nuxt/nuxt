@@ -463,5 +463,14 @@ export default defineResolvers({
     browserDevtoolsTiming: {
       $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
     },
+
+    /**
+     * Record mutations to `nuxt.options` in module context
+     */
+    debugModuleMutation: {
+      $resolve: async (val, get) => {
+        return val ?? Boolean(await get('debug'))
+      },
+    },
   },
 })

@@ -66,7 +66,7 @@
   "dependencies": {
     "@nuxt/cli": "^3.21.1",
     "@nuxt/devalue": "^2.0.2",
-    "@nuxt/devtools": "^1.7.0",
+    "@nuxt/devtools": "^2.0.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
     "@nuxt/telemetry": "^2.6.4",
@@ -104,12 +104,13 @@
     "nypm": "^0.5.2",
     "ofetch": "^1.4.1",
     "ohash": "^1.1.4",
+    "on-change": "^5.0.1",
     "pathe": "^2.0.2",
     "perfect-debounce": "^1.0.0",
     "pkg-types": "^1.3.1",
     "radix3": "^1.1.2",
     "scule": "^1.3.0",
-    "semver": "^7.7.0",
+    "semver": "^7.7.1",
     "std-env": "^3.8.0",
     "strip-literal": "^3.0.0",
     "tinyglobby": "0.2.10",
@@ -136,8 +137,8 @@
     "@vitejs/plugin-vue": "5.2.1",
     "@vue/compiler-sfc": "3.5.13",
     "unbuild": "3.3.1",
-    "vite": "6.0.11",
-    "vitest": "3.0.4"
+    "vite": "6.1.0",
+    "vitest": "3.0.5"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",

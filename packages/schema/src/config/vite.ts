@@ -22,7 +22,7 @@ export default defineResolvers({
       $resolve: async (_val, get) => {
         const [isDev, isDebug] = await Promise.all([get('dev'), get('debug')])
         return {
-          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': isDebug,
+          '__VUE_PROD_HYDRATION_MISMATCH_DETAILS__': Boolean(isDebug && (isDebug === true || isDebug.hydration)),
           'process.dev': isDev,
           'import.meta.dev': isDev,
           'process.test': isTest,

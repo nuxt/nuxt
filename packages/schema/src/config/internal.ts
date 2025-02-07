@@ -25,7 +25,7 @@ export default defineResolvers({
   appDir: '',
   /**
    * @private
-   * @type {Array<{ meta: ModuleMeta; timings?: Record<string, number | undefined>; entryPath?: string }>}
+   * @type {Array<{ meta: ModuleMeta; module: NuxtModule, timings?: Record<string, number | undefined>; entryPath?: string }>}
    */
   _installedModules: [],
   /** @private */

@@ -5,6 +5,8 @@ import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
+
+import type { NuxtDebugOptions } from '../types/debug'
 import type { NuxtModule } from '../types/module'
 import { defineResolvers } from '../utils/definition'
 
@@ -268,9 +270,32 @@ export default defineResolvers({
    * At the moment, it prints out hook names and timings on the server, and
    * logs hook arguments as well in the browser.
    *
+   * You can also set this to an object to enable specific debug options.
+   *
+   * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
   debug: {
-    $resolve: val => typeof val === 'boolean' ? val : isDebug,
+    $resolve: (val) => {
+      val ??= isDebug
+      if (val === true) {
+        return {
+          templates: true,
+          modules: true,
+          watchers: true,
+          hooks: {
+            client: true,
+            server: true,
+          },
+          nitro: true,
+          router: true,
+          hydration: true,
+        } satisfies Required<NuxtDebugOptions>
+      }
+      if (val && typeof val === 'object') {
+        return val
+      }
+      return false
+    },
   },
 
   /**

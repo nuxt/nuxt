@@ -28,7 +28,9 @@ export async function installModule<
   }
 
   // Call module
-  const res = await nuxtModule(inlineOptions || {}, nuxt) ?? {}
+  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
+    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
@@ -53,6 +55,7 @@ export async function installModule<
 
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
+    module: nuxtModule,
     timings: res.timings,
     entryPath,
   })
