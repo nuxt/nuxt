@@ -54,7 +54,7 @@ export default defineResolvers({
      */
     inlineStyles: {
       async $resolve (_val, get) {
-        const val = typeof _val === 'boolean'
+        const val = typeof _val === 'boolean' || typeof _val === 'function'
           ? _val
           // @ts-expect-error TODO: legacy property - remove in v3.10
           : await (get('experimental')).then(e => e?.inlineSSRStyles) as undefined | boolean
