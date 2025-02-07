@@ -3,7 +3,8 @@ import type { Ref, VNode } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { PageRouteSymbol } from './injections'
 
-export const RouteProvider = defineComponent({
+export const defineRouteProvider = (name = 'RouteProvider') => defineComponent({
+  name,
   props: {
     vnode: {
       type: Object as () => VNode,
@@ -55,3 +56,5 @@ export const RouteProvider = defineComponent({
     }
   },
 })
+
+export const RouteProvider = defineRouteProvider()

@@ -108,6 +108,18 @@ function createWatcher () {
     ignored: [isIgnored, /[\\/]node_modules[\\/]/],
   })
 
+  const restartPaths = new Set<string>()
+  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
+  for (const pattern of nuxt.options.watch) {
+    if (typeof pattern !== 'string') { continue }
+    const path = resolve(nuxt.options.srcDir, pattern)
+    if (!path.startsWith(srcDir)) {
+      restartPaths.add(path)
+    }
+  }
+
+  watcher.add([...restartPaths])
+
   watcher.on('all', (event, path) => {
     if (event === 'all' || event === 'ready' || event === 'error' || event === 'raw') {
       return
@@ -121,7 +133,7 @@ function createGranularWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.watchers) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
@@ -166,7 +178,7 @@ function createGranularWatcher () {
     })
     watcher.on('ready', () => {
       pending--
-      if (nuxt.options.debug && !pending) {
+      if (nuxt.options.debug && nuxt.options.debug.watchers && !pending) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
@@ -177,7 +189,7 @@ function createGranularWatcher () {
 
 async function createParcelWatcher () {
   const nuxt = useNuxt()
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.watchers) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
@@ -203,7 +215,7 @@ async function createParcelWatcher () {
       ],
     })
     watcher.then((subscription) => {
-      if (nuxt.options.debug) {
+      if (nuxt.options.debug && nuxt.options.debug.watchers) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:parcel:watch')
       }
