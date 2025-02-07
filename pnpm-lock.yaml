@@ -9626,7 +9626,7 @@ snapshots:
 
   '@types/rollup-plugin-visualizer@4.2.4':
     dependencies:
-      rollup: 4.34.5
+      rollup: 4.34.6
 
   '@types/semver@7.5.8': {}
 
