@@ -167,7 +167,6 @@ export default defineResolvers({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false }
@@ -177,7 +176,6 @@ export default defineResolvers({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false }
@@ -187,7 +185,6 @@ export default defineResolvers({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false }
@@ -255,7 +252,6 @@ export default defineResolvers({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @type {typeof import('sass-loader')['Options']}
        * @default
        * ```ts
        * {
@@ -273,7 +269,6 @@ export default defineResolvers({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @type {typeof import('sass-loader')['Options']}
        */
       scss: {},
 
