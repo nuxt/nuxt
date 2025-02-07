@@ -195,7 +195,7 @@ export const schemaTemplate: NuxtTemplate = {
       if (m.meta.name.startsWith('nuxt:') || m.meta.name === 'nuxt-config-schema') {
         continue
       }
-      modules.push([m.meta.configKey, getImportName(m.entryPath || m.meta.name), m])
+      modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
     }
 
     const privateRuntimeConfig = Object.create(null)
