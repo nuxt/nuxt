@@ -120,7 +120,7 @@
     "unctx": "^2.4.1",
     "unenv": "^1.10.0",
     "unhead": "^1.11.18",
-    "unimport": "^4.0.0",
+    "unimport": "^4.1.0",
     "unplugin": "^2.1.2",
     "unplugin-vue-router": "^0.11.2",
     "unstorage": "^1.14.4",
