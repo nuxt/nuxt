@@ -172,7 +172,7 @@ export default defineResolvers({
        * { esModule: false }
        * ```
        */
-      file: { esModule: false },
+      file: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
@@ -181,7 +181,7 @@ export default defineResolvers({
        * { esModule: false }
        * ```
        */
-      fontUrl: { esModule: false },
+      fontUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
@@ -190,7 +190,7 @@ export default defineResolvers({
        * { esModule: false }
        * ```
        */
-      imgUrl: { esModule: false },
+      imgUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`pug` options](https://pugjs.org/api/reference.html#options)
