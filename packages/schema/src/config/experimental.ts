@@ -469,7 +469,7 @@ export default defineResolvers({
      */
     debugModuleMutation: {
       $resolve: async (val, get) => {
-        return val ?? Boolean(await get('debug'))
+        return typeof val === 'boolean' ? val : Boolean(await get('debug'))
       },
     },
   },
