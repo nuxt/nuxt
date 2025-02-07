@@ -103,7 +103,6 @@ await navigateTo('https://nuxt.com', {
 <script setup lang="ts">
 // will open 'https://nuxt.com' in a new tab
 await navigateTo('https://nuxt.com', {
-  external: true,
   open: {
     target: '_blank',
     windowFeatures: {
