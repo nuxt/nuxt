@@ -37,7 +37,7 @@
     "typecheck:docs": "DOCS_TYPECHECK=true pnpm nuxi prepare && nuxt-content-twoslash verify --content-dir docs --languages html"
   },
   "resolutions": {
-    "@babel/core": "7.26.7",
+    "@babel/core": "7.26.8",
     "@babel/helper-plugin-utils": "7.26.5",
     "@nuxt/cli": "3.21.1",
     "@nuxt/kit": "workspace:*",
@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.17.3",
-    "@babel/core": "7.26.7",
+    "@babel/core": "7.26.8",
     "@babel/helper-plugin-utils": "7.26.5",
     "@codspeed/vitest-plugin": "4.0.0",
     "@nuxt/cli": "3.21.1",
@@ -97,13 +97,13 @@
     "cssnano": "7.0.6",
     "destr": "2.0.3",
     "devalue": "5.1.1",
-    "eslint": "9.19.0",
+    "eslint": "9.20.0",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "4.8.0",
     "eslint-typegen": "1.0.0",
     "estree-walker": "3.0.3",
     "h3": "1.15.0",
-    "happy-dom": "17.0.0",
+    "happy-dom": "17.0.2",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
     "knip": "5.43.6",
