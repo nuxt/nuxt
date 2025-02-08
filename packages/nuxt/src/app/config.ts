@@ -54,7 +54,7 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
-export function replaceAppConfig (newConfig: AppConfig) {
+export function _replaceAppConfig (newConfig: AppConfig) {
   const appConfig = useAppConfig()
 
   deepAssign(appConfig, newConfig)

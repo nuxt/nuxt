@@ -428,12 +428,12 @@ import { defuFn } from 'defu'
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
-import { replaceAppConfig } from '#app/config'
+import { _replaceAppConfig } from '#app/config'
 
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    replaceAppConfig(newModule.default)
+   _replaceAppConfig(newModule.default)
   })
 }
 /** client-end **/
