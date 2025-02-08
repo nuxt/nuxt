@@ -120,6 +120,7 @@ describe('composables', () => {
       'useSeoMeta',
       'useServerSeoMeta',
       'usePreviewMode',
+      'useMaybeAbsolutePath',
     ]
     expect(Object.keys(composables).sort()).toEqual([...new Set([...testedComposables, ...skippedComposables])].sort())
   })
@@ -235,15 +236,37 @@ describe('useAsyncData', () => {
     `)
   })
 
-  it('should only call getCachedData once', async () => {
+  it('should only call getCachedData once with default options', async () => {
     const getCachedData = vi.fn(() => ({ val: false }))
-    const { data } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData })
+    const { data, refresh } = await useAsyncData(() => Promise.resolve({ val: true }), { getCachedData })
+
+    for (let i = 0; i < 3; i++) {
+      await refresh()
+    }
+
     expect(data.value).toMatchInlineSnapshot(`
       {
-        "val": false,
+        "val": true,
       }
     `)
     expect(getCachedData).toHaveBeenCalledTimes(1)
+  })
+
+  it('should always call getCachedData when `useCache` is true', async () => {
+    let cacheValue = 1
+    const getCachedData = vi.fn(() => ({ val: cacheValue++ }))
+    const { data, refresh } = await useAsyncData(() => Promise.resolve({ val: 'fetch' }), { useCache: true, getCachedData })
+
+    for (let i = 0; i < 3; i++) {
+      await refresh()
+    }
+
+    expect(data.value).toMatchInlineSnapshot(`
+      {
+        "val": 4,
+      }
+    `)
+    expect(getCachedData).toHaveBeenCalledTimes(4)
   })
 
   it('should use default while pending', async () => {
