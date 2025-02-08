@@ -55,13 +55,19 @@ export function useAppConfig (): AppConfig {
 }
 
 /**
- * Deep assign the current appConfig with the new one.
+ * Deep assign the current app config with the new one.
  *
- * Will preserve existing properties.
+ * Will preserve existing properties by default.
+ * @param appConfig - The new app config to assign.
+ * @param deleteExistingProperties - If true, exisiting properties will be deleted.
  */
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>, deleteExistingProperties: boolean = false) {
   const _appConfig = useAppConfig()
   deepAssign(_appConfig, appConfig)
+
+  if (deleteExistingProperties) {
+    deepDelete(_appConfig, appConfig)
+  }
 }
 
 // HMR Support
