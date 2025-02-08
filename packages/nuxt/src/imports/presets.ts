@@ -116,7 +116,7 @@ const granularAppPresets: InlinePreset[] = [
   {
     imports: ['useMaybeAbsolutePath'],
     from: '#app/composables/maybe-absolute-path',
-  }
+  },
 ]
 
 export const scriptsStubsPreset = {
