@@ -6,7 +6,7 @@ export type { AddRouteMiddlewareOptions, AsyncData, AsyncDataOptions, AsyncDataR
 
 export { defineNuxtLink } from './components/index'
 export type { NuxtLinkOptions, NuxtLinkProps } from './components/index'
-export { _getAppConfig, updateAppConfig, useAppConfig } from './config'
+export { _getAppConfig, updateAppConfig, useAppConfig, replaceAppConfig } from './config'
 export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback'
 export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps } from './types'
 

@@ -54,20 +54,21 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
+export function replaceAppConfig (newConfig: AppConfig) {
+  const appConfig = useAppConfig()
+
+  deepAssign(appConfig, newConfig)
+  deepDelete(appConfig, newConfig)
+}
+
 /**
- * Deep assign the current app config with the new one.
+ * Deep assign the current appConfig with the new one.
  *
- * Will preserve existing properties by default.
- * @param appConfig - The new app config to assign.
- * @param deleteExistingProperties - If true, exisiting properties will be deleted.
+ * Will preserve existing properties.
  */
-export function updateAppConfig (appConfig: DeepPartial<AppConfig>, deleteExistingProperties: boolean = false) {
+export function updateAppConfig (appConfig: DeepPartial<AppConfig>) {
   const _appConfig = useAppConfig()
   deepAssign(_appConfig, appConfig)
-
-  if (deleteExistingProperties) {
-    deepDelete(_appConfig, appConfig)
-  }
 }
 
 // HMR Support
