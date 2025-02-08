@@ -38,10 +38,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 20
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -56,11 +56,8 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Check types
-        run: pnpm test:attw
-
       - name: Cache dist
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
         with:
           retention-days: 3
           name: dist
@@ -81,7 +78,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/init@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3.28.9
         with:
           config: |
             paths:
@@ -98,7 +95,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@df409f7d9260372bd5f19e5b04e83cb3c43714ae # v3.27.9
+        uses: github/codeql-action/analyze@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3.28.9
         with:
           category: "/language:${{ matrix.language }}"
 
@@ -115,10 +112,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -146,10 +143,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -161,6 +158,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: Check built types
+        run: pnpm test:attw
+
   test-unit:
     # autofix workflow will be triggered instead for PRs
     if: github.event_name == 'push'
@@ -170,10 +170,10 @@ jobs:
       - build
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -187,6 +187,59 @@ jobs:
 
       - name: Test (runtime unit)
         run: pnpm test:runtime
+
+  test-size:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: dist
+          path: packages
+
+      - name: Check bundle size
+        run: pnpm vitest run bundle
+
+  test-benchmark:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: lts/*
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Restore dist cache
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: dist
+          path: packages
+
+      - name: Run benchmarks
+        uses: CodSpeedHQ/action@513a19673a831f139e8717bf45ead67e47f00044 # v3.2.0
+        with:
+          run: pnpm vitest bench
+          token: ${{ secrets.CODSPEED_TOKEN }}
 
   test-fixtures:
     runs-on: ${{ matrix.os }}
@@ -227,8 +280,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: "pnpm"
@@ -253,27 +306,25 @@ jobs:
           TEST_MANIFEST: ${{ matrix.manifest }}
           TEST_CONTEXT: ${{ matrix.context }}
           TEST_PAYLOAD: ${{ matrix.payload }}
-          SKIP_BUNDLE_SIZE: ${{ github.event_name != 'push' || matrix.env == 'dev' || matrix.builder == 'webpack' || matrix.context == 'default' || matrix.payload == 'js' || runner.os == 'Windows' }}
+          SKIP_BUNDLE_SIZE: true
 
-      - uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
+      - uses: codecov/codecov-action@13ce06bfc6bbe3ecf90edbbf1bc32fe5978ca1d3 # v5.3.1
         if: github.event_name != 'push' && matrix.env == 'built' && matrix.builder == 'vite' && matrix.context == 'default' && matrix.os == 'ubuntu-latest' && matrix.manifest == 'manifest-on'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
 
-  build-release:
+  release-nightly:
     concurrency:
       group: release
     permissions:
       id-token: write
     if: |
       github.event_name == 'push' &&
-      github.repository == 'nuxt/nuxt' &&
+      github.repository_owner == 'nuxt' &&
       !contains(github.event.head_commit.message, '[skip-release]') &&
       !startsWith(github.event.head_commit.message, 'docs')
     needs:
-      - lint
       - build
-      - test-fixtures
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -281,10 +332,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -299,22 +350,13 @@ jobs:
       - name: Release Edge
         run: ./scripts/release-edge.sh ${{ github.ref == 'refs/heads/main' && 'latest' || '3x' }}
         env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
   release-pr:
-    concurrency:
-      group: release
-    permissions:
-      id-token: write
-      pull-requests: write
-    if: |
-      github.event_name == 'pull_request' &&
-      contains(github.event.pull_request.labels.*.name, '🧷 edge release')
+    if: github.repository_owner == 'nuxt' && github.event_name != 'push'
     needs:
-      - lint
       - build
-      - test-fixtures
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -322,10 +364,10 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
-      - run: corepack enable
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+      - uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
-          node-version: 22
+          node-version: lts/*
           cache: "pnpm"
 
       - name: Install dependencies
@@ -337,8 +379,4 @@ jobs:
           name: dist
           path: packages
 
-      - name: Release Edge
-        run: ./scripts/release-edge.sh pr-${{ github.event.issue.number }}
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NODE_AUTH_TOKEN}}
-          NPM_CONFIG_PROVENANCE: true
+      - run: pnpm pkg-pr-new publish --compact './packages/kit' './packages/nuxt' './packages/rspack' './packages/schema' './packages/vite' './packages/webpack'

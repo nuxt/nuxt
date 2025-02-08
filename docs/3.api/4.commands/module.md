@@ -4,7 +4,7 @@ description: "Search and add modules to your Nuxt application with the command l
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/module/
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/module/
     size: xs
 ---
 
@@ -14,7 +14,7 @@ Nuxi provides a few utilities to work with [Nuxt modules](/modules) seamlessly.
 
 <!--module-add-cmd-->
 ```bash [Terminal]
-npx nuxi module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--skipInstall] [--skipConfig]
+npx nuxi module add <MODULENAME> [--cwd=<directory>] [--logLevel=<silent|info|verbose>] [--skipInstall] [--skipConfig] [--dev]
 ```
 <!--/module-add-cmd-->
 
@@ -31,6 +31,7 @@ Option | Default | Description
 `--logLevel=<silent\|info\|verbose>` |  | Specify build-time log level
 `--skipInstall` |  | Skip npm install
 `--skipConfig` |  | Skip nuxt.config.ts update
+`--dev` |  | Install module as dev dependency
 <!--/module-add-opts-->
 
 The command lets you install [Nuxt modules](/modules) in your application with no manual work.

@@ -4,7 +4,7 @@ description: "Scaffold an entity into your Nuxt application."
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/add.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/add.ts
     size: xs
 ---
 
@@ -19,7 +19,7 @@ npx nuxi add <TEMPLATE> <NAME> [--cwd=<directory>] [--logLevel=<silent|info|verb
 <!--add-args-->
 Argument | Description
 --- | ---
-`TEMPLATE` | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page>)
+`TEMPLATE` | Specify which template to generate (options: <api\|plugin\|component\|composable\|middleware\|layout\|page\|layer>)
 `NAME` | Specify name of the generated file
 <!--/add-args-->
 
@@ -102,4 +102,11 @@ npx nuxi add middleware auth
 ```bash [Terminal]
 # Generates `server/api/hello.ts`
 npx nuxi add api hello
+```
+
+## `nuxi add layer`
+
+```bash [Terminal]
+# Generates `layers/subscribe/nuxt.config.ts`
+npx nuxi add layer subscribe
 ```

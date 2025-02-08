@@ -6,10 +6,10 @@ import type { Nuxt } from '@nuxt/schema'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { normalize } from 'pathe'
-import { logger } from '@nuxt/kit'
 import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { logger } from '../../utils'
 
 const internalOrderMap = {
   // -50: pre-all (nuxt)
@@ -43,6 +43,9 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
   let meta: PluginMeta = {}
   if (metaCache[code]) {
     return metaCache[code]
+  }
+  if (code.match(/defineNuxtPlugin\s*\([\w(]/)) {
+    return {}
   }
   const js = await transform(code, { loader })
   parseAndWalk(js.code, `file.${loader}`, (node) => {

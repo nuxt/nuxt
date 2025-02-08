@@ -4,7 +4,7 @@ description: The preview command starts a server to preview your application aft
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/preview.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/preview.ts
     size: xs
 ---
 

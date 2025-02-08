@@ -40,7 +40,7 @@ export function addDevServerHandler (handler: NitroDevEventHandler) {
  */
 export function addServerPlugin (plugin: string) {
   const nuxt = useNuxt()
-  nuxt.options.nitro.plugins = nuxt.options.nitro.plugins || []
+  nuxt.options.nitro.plugins ||= []
   nuxt.options.nitro.plugins.push(normalize(plugin))
 }
 
@@ -89,8 +89,8 @@ export function useNitro (): Nitro {
 export function addServerImports (imports: Import[]) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    config.imports.imports = config.imports.imports || []
+    config.imports ||= {}
+    config.imports.imports ||= []
     config.imports.imports.push(...imports)
   })
 }
@@ -102,8 +102,8 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
   const nuxt = useNuxt()
   const _dirs = toArray(dirs)
   nuxt.hook('nitro:config', (config) => {
-    config.imports = config.imports || {}
-    config.imports.dirs = config.imports.dirs || []
+    config.imports ||= {}
+    config.imports.dirs ||= []
     config.imports.dirs[opts.prepend ? 'unshift' : 'push'](..._dirs)
   })
 }
@@ -115,7 +115,7 @@ export function addServerImportsDir (dirs: string | string[], opts: { prepend?: 
 export function addServerScanDir (dirs: string | string[], opts: { prepend?: boolean } = {}) {
   const nuxt = useNuxt()
   nuxt.hook('nitro:config', (config) => {
-    config.scanDirs = config.scanDirs || []
+    config.scanDirs ||= []
 
     for (const dir of toArray(dirs)) {
       config.scanDirs[opts.prepend ? 'unshift' : 'push'](dir)

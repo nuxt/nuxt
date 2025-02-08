@@ -1,19 +1,31 @@
 import { parseNodeModulePath, resolvePath } from 'mlly'
 import { isAbsolute, normalize } from 'pathe'
 import type { Plugin } from 'vite'
-import { logger, resolveAlias } from '@nuxt/kit'
+import { resolveAlias } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 import { pkgDir } from '../../dirs'
+import { logger } from '../../utils'
 
 export function resolveDeepImportsPlugin (nuxt: Nuxt): Plugin {
-  const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite']
+  const exclude: string[] = ['virtual:', '\0virtual:', '/__skip_vite', '@vitest/']
   let conditions: string[]
   return {
     name: 'nuxt:resolve-bare-imports',
     enforce: 'post',
     configResolved (config) {
-      conditions = config.mode === 'test' ? [...config.resolve.conditions, 'import', 'require'] : config.resolve.conditions
+      const resolvedConditions = new Set([nuxt.options.dev ? 'development' : 'production', ...config.resolve.conditions])
+      if (resolvedConditions.has('browser')) {
+        resolvedConditions.add('web')
+        resolvedConditions.add('import')
+        resolvedConditions.add('module')
+        resolvedConditions.add('default')
+      }
+      if (config.mode === 'test') {
+        resolvedConditions.add('import')
+        resolvedConditions.add('require')
+      }
+      conditions = [...resolvedConditions]
     },
     async resolveId (id, importer) {
       if (!importer || isAbsolute(id) || (!isAbsolute(importer) && !importer.startsWith('virtual:') && !importer.startsWith('\0virtual:')) || exclude.some(e => id.startsWith(e))) {

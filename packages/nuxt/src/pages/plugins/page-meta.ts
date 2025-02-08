@@ -3,18 +3,19 @@ import { createUnplugin } from 'unplugin'
 import { parseQuery, parseURL } from 'ufo'
 import type { StaticImport } from 'mlly'
 import { findExports, findStaticImports, parseStaticImport } from 'mlly'
-import { walk } from 'estree-walker'
 import MagicString from 'magic-string'
 import { isAbsolute } from 'pathe'
-import { logger } from '@nuxt/kit'
 
 import {
   ScopeTracker,
   type ScopeTrackerNode,
   getUndeclaredIdentifiersInFunction,
+  isNotReferencePosition,
   parseAndWalk,
+  walk,
   withLocations,
 } from '../../core/utils/parse'
+import { logger } from '../../utils'
 
 interface PageMetaPluginOptions {
   dev?: boolean
@@ -147,52 +148,77 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         declarationNodes.push(node)
       }
 
-      function addImportOrDeclaration (name: string) {
+      /**
+       * Adds an import or a declaration to the extracted code.
+       * @param name The name of the import or declaration to add.
+       * @param node The node that is currently being processed. (To detect self-references)
+       */
+      function addImportOrDeclaration (name: string, node?: ScopeTrackerNode) {
         if (isStaticIdentifier(name)) {
           addImport(name)
         } else {
           const declaration = scopeTracker.getDeclaration(name)
-          if (declaration) {
+          /*
+           Without checking for `declaration !== node`, we would end up in an infinite loop
+           when, for example, a variable is declared and then used in its own initializer.
+           (we shouldn't mask the underlying error by throwing a `Maximum call stack size exceeded` error)
+
+           ```ts
+           const a = { b: a }
+           ```
+           */
+          if (declaration && declaration !== node) {
             processDeclaration(declaration)
           }
         }
       }
 
-      const scopeTracker = new ScopeTracker()
+      const scopeTracker = new ScopeTracker({
+        keepExitedScopes: true,
+      })
 
-      function processDeclaration (node: ScopeTrackerNode | null) {
-        if (node?.type === 'Variable') {
-          addDeclaration(node)
+      function processDeclaration (scopeTrackerNode: ScopeTrackerNode | null) {
+        if (scopeTrackerNode?.type === 'Variable') {
+          addDeclaration(scopeTrackerNode)
 
-          for (const decl of node.variableNode.declarations) {
+          for (const decl of scopeTrackerNode.variableNode.declarations) {
             if (!decl.init) { continue }
             walk(decl.init, {
-              enter: (node) => {
+              enter: (node, parent) => {
                 if (node.type === 'AwaitExpression') {
-                  logger.error(`[nuxt] Await expressions are not supported in definePageMeta. File: '${id}'`)
+                  logger.error(`Await expressions are not supported in definePageMeta. File: '${id}'`)
                   throw new Error('await in definePageMeta')
                 }
-                if (node.type !== 'Identifier') { return }
+                if (
+                  isNotReferencePosition(node, parent)
+                  || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+                ) { return }
 
-                addImportOrDeclaration(node.name)
+                addImportOrDeclaration(node.name, scopeTrackerNode)
               },
             })
           }
-        } else if (node?.type === 'Function') {
+        } else if (scopeTrackerNode?.type === 'Function') {
           // arrow functions are going to be assigned to a variable
-          if (node.node.type === 'ArrowFunctionExpression') { return }
-          const name = node.node.id?.name
+          if (scopeTrackerNode.node.type === 'ArrowFunctionExpression') { return }
+          const name = scopeTrackerNode.node.id?.name
           if (!name) { return }
-          addDeclaration(node)
+          addDeclaration(scopeTrackerNode)
 
-          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(node.node)
+          const undeclaredIdentifiers = getUndeclaredIdentifiersInFunction(scopeTrackerNode.node)
           for (const name of undeclaredIdentifiers) {
             addImportOrDeclaration(name)
           }
         }
       }
 
-      parseAndWalk(code, id, {
+      const ast = parseAndWalk(code, id, {
+        scopeTracker,
+      })
+
+      scopeTracker.freeze()
+
+      walk(ast, {
         scopeTracker,
         enter: (node) => {
           if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -202,14 +228,34 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
 
           if (!meta) { return }
 
+          const definePageMetaScope = scopeTracker.getCurrentScope()
+
           walk(meta, {
-            enter (node) {
-              if (node.type !== 'Identifier') { return }
+            scopeTracker,
+            enter (node, parent) {
+              if (
+                isNotReferencePosition(node, parent)
+                || node.type !== 'Identifier' // checking for `node.type` to narrow down the type
+              ) { return }
+
+              const declaration = scopeTracker.getDeclaration(node.name)
+              if (declaration) {
+                // check if the declaration was made inside `definePageMeta` and if so, do not process it
+                // (ensures that we don't hoist local variables in inline middleware, for example)
+                if (
+                  declaration.isUnderScope(definePageMetaScope)
+                  // ensures that we compare the correct declaration to the reference
+                  // (when in the same scope, the declaration must come before the reference, otherwise it must be in a parent scope)
+                  && (scopeTracker.isCurrentScopeUnder(declaration.scope) || declaration.start < node.start)
+                ) {
+                  return
+                }
+              }
 
               if (isStaticIdentifier(node.name)) {
                 addImport(node.name)
-              } else {
-                processDeclaration(scopeTracker.getDeclaration(node.name))
+              } else if (declaration) {
+                processDeclaration(declaration)
               }
             },
           })
@@ -241,9 +287,9 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
       handleHotUpdate: {
         order: 'post',
         handler: ({ file, modules, server }) => {
-          if (options.isPage?.(file)) {
+          if (options.routesPath && options.isPage?.(file)) {
             const macroModule = server.moduleGraph.getModuleById(file + '?macro=true')
-            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + options.routesPath)
+            const routesModule = server.moduleGraph.getModuleById('virtual:nuxt:' + encodeURIComponent(options.routesPath))
             return [
               ...modules,
               ...macroModule ? [macroModule] : [],

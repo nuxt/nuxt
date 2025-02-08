@@ -38,25 +38,25 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 
       const resolvedId = resolveWithExt(id)
       if (resolvedId) {
-        return PREFIX + resolvedId
+        return PREFIX + encodeURIComponent(resolvedId)
       }
 
       if (importer && RELATIVE_ID_RE.test(id)) {
-        const path = resolve(dirname(withoutPrefix(importer)), id)
+        const path = resolve(dirname(withoutPrefix(decodeURIComponent(importer))), id)
         const resolved = resolveWithExt(path)
         if (resolved) {
-          return PREFIX + resolved
+          return PREFIX + encodeURIComponent(resolved)
         }
       }
     },
 
     loadInclude (id) {
-      return id.startsWith(PREFIX) && withoutPrefix(id) in nuxt.vfs
+      return id.startsWith(PREFIX) && withoutPrefix(decodeURIComponent(id)) in nuxt.vfs
     },
 
     load (id) {
       return {
-        code: nuxt.vfs[withoutPrefix(id)] || '',
+        code: nuxt.vfs[withoutPrefix(decodeURIComponent(id))] || '',
         map: null,
       }
     },

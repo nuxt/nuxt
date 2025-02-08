@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, defineNuxtModule, isIgnored, logger, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -7,7 +7,7 @@ import type { ImportPresetWithDeprecation, ImportsOptions, ResolvedNuxtTemplate 
 import escapeRE from 'escape-string-regexp'
 
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
-import { isDirectory } from '../utils'
+import { isDirectory, logger } from '../utils'
 import { TransformPlugin } from './transform'
 import { appCompatPresets, defaultPresets } from './presets'
 
@@ -121,6 +121,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       return IMPORTS_TEMPLATE_RE.test(template.filename)
     }
 
+    const isIgnored = createIsIgnored(nuxt)
     const regenerateImports = async () => {
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports

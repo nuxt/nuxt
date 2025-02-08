@@ -1,11 +1,12 @@
 import { promises as fsp, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'pathe'
 import { defu } from 'defu'
-import { findPath, logger, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
+import { findPath, normalizePlugin, normalizeTemplate, resolveAlias, resolveFiles, resolvePath } from '@nuxt/kit'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import type { PluginMeta } from 'nuxt/app'
 
+import { logger } from '../utils'
 import * as defaultTemplates from './templates'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils'
 import { extractMetadata, orderMap } from './plugins/plugin-metadata'
@@ -56,6 +57,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
   const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
+  const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
   async function processTemplate (template: ResolvedNuxtTemplate) {
@@ -86,15 +88,13 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     const perf = performance.now() - start
     const setupTime = Math.round((perf * 100)) / 100
 
-    if (nuxt.options.debug || setupTime > 500) {
+    if ((nuxt.options.debug && nuxt.options.debug.templates) || setupTime > 500) {
       logger.info(`Compiled \`${template.filename}\` in ${setupTime}ms`)
     }
 
     if (template.modified && template.write) {
-      writes.push(() => {
-        mkdirSync(dirname(fullPath), { recursive: true })
-        writeFileSync(fullPath, contents, 'utf8')
-      })
+      dirs.add(dirname(fullPath))
+      writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
     }
   }
 
@@ -103,7 +103,12 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
-  for (const write of writes) { write() }
+  for (const dir of dirs) {
+    mkdirSync(dir, { recursive: true })
+  }
+  for (const write of writes) {
+    write()
+  }
 
   if (changedTemplates.length) {
     await nuxt.callHook('app:templatesGenerated', app, changedTemplates, options)

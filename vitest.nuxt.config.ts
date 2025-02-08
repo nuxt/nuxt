@@ -13,6 +13,7 @@ export default defineVitestConfig({
     environmentOptions: {
       nuxt: {
         overrides: {
+          pages: true,
           runtimeConfig: {
             app: {
               buildId: 'override',

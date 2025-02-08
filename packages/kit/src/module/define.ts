@@ -87,7 +87,7 @@ function _defineNuxtModule<
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
     if (uniqueKey) {
-      nuxt.options._requiredModules = nuxt.options._requiredModules || {}
+      nuxt.options._requiredModules ||= {}
       if (nuxt.options._requiredModules[uniqueKey]) {
         return false
       }
@@ -120,7 +120,7 @@ function _defineNuxtModule<
     // Measure setup time
     if (setupTime > 5000 && uniqueKey !== '@nuxt/telemetry') {
       logger.warn(`Slow module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
-    } else if (nuxt.options.debug) {
+    } else if (nuxt.options.debug && nuxt.options.debug.modules) {
       logger.info(`Module \`${uniqueKey || '<no name>'}\` took \`${setupTime}ms\` to setup.`)
     }
 

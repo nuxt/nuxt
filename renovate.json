@@ -9,6 +9,10 @@
     "main",
     "3.x"
   ],
+  "ignoreDeps": [
+    "node",
+    "npm"
+  ],
   "packageRules": [
     {
       "groupName": "vitest",
@@ -24,17 +28,16 @@
         "3.x"
       ],
       "ignoreDeps": [
-        "nitro",
-        "h3",
         "nuxt",
         "nuxt3",
         "@nuxt/kit"
       ]
     },
     {
-      "groupName": "typescript",
+      "groupName": "webpack",
       "matchPackageNames": [
-        "typescript"
+        "webpack",
+        "memfs"
       ]
     }
   ]

@@ -258,7 +258,7 @@ describe('typed router integration', () => {
 })
 
 describe('layouts', () => {
-  it('recognizes named layouts', () => {
+  it('definePageMeta recognizes named layouts', () => {
     definePageMeta({ layout: 'custom' })
     definePageMeta({ layout: 'pascal-case' })
     definePageMeta({ layout: 'override' })
@@ -266,11 +266,14 @@ describe('layouts', () => {
     definePageMeta({ layout: 'invalid-layout' })
   })
 
-  it('allows typing layouts', () => {
+  it('NuxtLayout recognizes named layouts', () => {
     h(NuxtLayout, { name: 'custom' })
-
     // @ts-expect-error Invalid layout
     h(NuxtLayout, { name: 'invalid-layout' })
+
+    h(NuxtLayout, { fallback: 'custom' })
+    // @ts-expect-error Invalid layout
+    h(NuxtLayout, { fallback: 'invalid-layout' })
   })
 })
 
@@ -465,11 +468,6 @@ describe('composables', () => {
 
     expectTypeOf(useFetch('/test', { default: () => ref(500) }).data).toEqualTypeOf<Ref<unknown>>()
     expectTypeOf(useFetch('/test', { default: () => 500 }).data).toEqualTypeOf<Ref<unknown>>()
-  })
-
-  it('prevents passing string to `useId`', () => {
-    // @ts-expect-error providing a key is not allowed
-    useId('test')
   })
 
   it('enforces readonly cookies', () => {

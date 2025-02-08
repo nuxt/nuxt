@@ -5,14 +5,12 @@ import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createResolver, defineNuxtModule, importModule, logger, tryResolveModule } from '@nuxt/kit'
-import {
-  generateTypes,
-  resolveSchema as resolveUntypedSchema,
-} from 'untyped'
+import { createIsIgnored, createResolver, defineNuxtModule, importModule, tryResolveModule } from '@nuxt/kit'
+import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
 import { createJiti } from 'jiti'
+import { logger } from '../utils'
 
 export default defineNuxtModule({
   meta: {
@@ -70,11 +68,17 @@ export default defineNuxtModule({
         logger.warn('Falling back to `chokidar` as `@parcel/watcher` cannot be resolved in your project.')
       }
 
-      const filesToWatch = await Promise.all(nuxt.options._layers.map(layer =>
-        resolver.resolve(layer.config.rootDir, 'nuxt.schema.*'),
-      ))
-      const watcher = watch(filesToWatch, {
+      const isIgnored = createIsIgnored(nuxt)
+      const dirsToWatch = nuxt.options._layers.map(layer => resolver.resolve(layer.config.rootDir))
+      const SCHEMA_RE = /(?:^|\/)nuxt.schema.\w+$/
+      const watcher = watch(dirsToWatch, {
         ...nuxt.options.watchers.chokidar,
+        depth: 1,
+        ignored: [
+          (path, stats) => (stats && !stats.isFile()) || !SCHEMA_RE.test(path),
+          isIgnored,
+          /[\\/]node_modules[\\/]/,
+        ],
         ignoreInitial: true,
       })
       watcher.on('all', onChange)

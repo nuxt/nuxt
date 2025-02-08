@@ -85,20 +85,14 @@ export default defineUntypedSchema({
     },
 
     /**
-     * You can provide your own templates which will be rendered based
-     * on Nuxt configuration. This feature is specially useful for using with modules.
+     * It is recommended to use `addTemplate` from `@nuxt/kit` instead of this option.
      *
-     * Templates are rendered using [`lodash/template`](https://lodash.com/docs/4.17.15#template).
      * @example
      * ```js
      * templates: [
      *   {
      *     src: '~/modules/support/plugin.js', // `src` can be absolute or relative
      *     dst: 'support.js', // `dst` is relative to project `.nuxt` dir
-     *     options: {
-     *       // Options are provided to template as `options` key
-     *       live_chat: false
-     *     }
      *   }
      * ]
      * ```
@@ -146,7 +140,6 @@ export default defineUntypedSchema({
      */
     keyedComposables: {
       $resolve: (val: Array<{ name: string, argumentLength: string }> | undefined) => [
-        { name: 'useId', argumentLength: 1 },
         { name: 'callOnce', argumentLength: 3 },
         { name: 'defineNuxtComponent', argumentLength: 2 },
         { name: 'useState', argumentLength: 2 },
