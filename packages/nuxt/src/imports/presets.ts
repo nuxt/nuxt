@@ -113,6 +113,10 @@ const granularAppPresets: InlinePreset[] = [
     imports: ['useRuntimeHook'],
     from: '#app/composables/runtime-hook',
   },
+  {
+    imports: ['useMaybeAbsolutePath'],
+    from: '#app/composables/maybe-absolute-path',
+  }
 ]
 
 export const scriptsStubsPreset = {
