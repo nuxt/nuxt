@@ -120,3 +120,13 @@ export function useScriptGoogleAdsense (...args: unknown[]) {
 export function useScriptYouTubePlayer (...args: unknown[]) {
   renderStubMessage('useScriptYouTubePlayer')
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptUmamiAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptUmamiAnalytics')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptSnapchatPixel (...args: unknown[]) {
+  renderStubMessage('useScriptSnapchatPixel')
+}

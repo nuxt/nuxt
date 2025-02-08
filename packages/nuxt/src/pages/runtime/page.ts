@@ -1,18 +1,35 @@
-import { Fragment, Suspense, Transition, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
-import type { KeepAliveProps, TransitionProps, VNode } from 'vue'
+import { Fragment, Suspense, defineComponent, h, inject, nextTick, ref, watch } from 'vue'
+import type { AllowedComponentProps, Component, ComponentCustomProps, ComponentPublicInstance, KeepAliveProps, Slot, TransitionProps, VNode, VNodeProps } from 'vue'
 import { RouterView } from 'vue-router'
 import { defu } from 'defu'
-import type { RouteLocationNormalized, RouteLocationNormalizedLoaded } from 'vue-router'
+import type { RouteLocationNormalized, RouteLocationNormalizedLoaded, RouterViewProps } from 'vue-router'
 
 import { generateRouteKey, toArray, wrapInKeepAlive } from './utils'
 import type { RouterViewSlotProps } from './utils'
-import { RouteProvider } from '#app/components/route-provider'
+import { RouteProvider, defineRouteProvider } from '#app/components/route-provider'
 import { useNuxtApp } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
-import { _wrapIf } from '#app/components/utils'
+import { _wrapInTransition } from '#app/components/utils'
 import { LayoutMetaSymbol, PageRouteSymbol } from '#app/components/injections'
 // @ts-expect-error virtual file
 import { appKeepalive as defaultKeepaliveConfig, appPageTransition as defaultPageTransition } from '#build/nuxt.config.mjs'
+
+export interface NuxtPageProps extends RouterViewProps {
+  /**
+   * Define global transitions for all pages rendered with the `NuxtPage` component.
+   */
+  transition?: boolean | TransitionProps
+
+  /**
+   * Control state preservation of pages rendered with the `NuxtPage` component.
+   */
+  keepalive?: boolean | KeepAliveProps
+
+  /**
+   * Control when the `NuxtPage` component is re-rendered.
+   */
+  pageKey?: string | ((route: RouteLocationNormalizedLoaded) => string)
+}
 
 export default defineComponent({
   name: 'NuxtPage',
@@ -66,6 +83,9 @@ export default defineComponent({
       nuxtApp._isNuxtPageUsed = true
     }
     let pageLoadingEndHookAlreadyCalled = false
+
+    const routerProviderLookup = new WeakMap<Component, ReturnType<typeof defineRouteProvider> | undefined>()
+
     return () => {
       return h(RouterView, { name: props.name, route: props.route, ...attrs }, {
         default: (routeProps: RouterViewSlotProps) => {
@@ -101,8 +121,29 @@ export default defineComponent({
             nuxtApp.callHook('page:loading:end')
             pageLoadingEndHookAlreadyCalled = true
           }
+
           previousPageKey = key
 
+          if (import.meta.server) {
+            vnode = h(Suspense, {
+              suspensible: true,
+            }, {
+              default: () => {
+                const providerVNode = h(RouteProvider, {
+                  key: key || undefined,
+                  vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
+                  route: routeProps.route,
+                  renderKey: key || undefined,
+                  vnodeRef: pageRef,
+                })
+                return providerVNode
+              },
+            })
+
+            return vnode
+          }
+
+          // Client side rendering
           const hasTransition = !!(props.transition ?? routeProps.route.meta.pageTransition ?? defaultPageTransition)
           const transitionProps = hasTransition && _mergeTransitionProps([
             props.transition,
@@ -112,7 +153,7 @@ export default defineComponent({
           ].filter(Boolean))
 
           const keepaliveConfig = props.keepalive ?? routeProps.route.meta.keepalive ?? (defaultKeepaliveConfig as KeepAliveProps)
-          vnode = _wrapIf(Transition, hasTransition && transitionProps,
+          vnode = _wrapInTransition(hasTransition && transitionProps,
             wrapInKeepAlive(keepaliveConfig, h(Suspense, {
               suspensible: true,
               onPending: () => nuxtApp.callHook('page:start', routeProps.Component),
@@ -126,18 +167,28 @@ export default defineComponent({
               },
             }, {
               default: () => {
-                const providerVNode = h(RouteProvider, {
+                const routeProviderProps = {
                   key: key || undefined,
-                  vnode: slots.default ? h(Fragment, undefined, slots.default(routeProps)) : routeProps.Component,
+                  vnode: slots.default ? normalizeSlot(slots.default, routeProps) : routeProps.Component,
                   route: routeProps.route,
                   renderKey: key || undefined,
                   trackRootNodes: hasTransition,
                   vnodeRef: pageRef,
-                })
-                if (import.meta.client && keepaliveConfig) {
-                  (providerVNode.type as any).name = (routeProps.Component.type as any).name || (routeProps.Component.type as any).__name || 'RouteProvider'
                 }
-                return providerVNode
+
+                if (!keepaliveConfig) {
+                  return h(RouteProvider, routeProviderProps)
+                }
+
+                const routerComponentType = routeProps.Component.type as any
+                let PageRouteProvider = routerProviderLookup.get(routerComponentType)
+
+                if (!PageRouteProvider) {
+                  PageRouteProvider = defineRouteProvider(routerComponentType.name || routerComponentType.__name)
+                  routerProviderLookup.set(routerComponentType, PageRouteProvider)
+                }
+
+                return h(PageRouteProvider, routeProviderProps)
               },
             }),
             )).default()
@@ -147,7 +198,24 @@ export default defineComponent({
       })
     }
   },
-})
+}) as unknown as {
+  new(): {
+    $props: AllowedComponentProps &
+      ComponentCustomProps &
+      VNodeProps &
+      NuxtPageProps
+
+    $slots: {
+      default?: (routeProps: RouterViewSlotProps) => VNode[]
+    }
+
+    // expose
+    /**
+     * Reference to the page component instance
+     */
+    pageRef: Element | ComponentPublicInstance | null
+  }
+}
 
 function _mergeTransitionProps (routeProps: TransitionProps[]): TransitionProps {
   const _props: TransitionProps[] = routeProps.map(prop => ({
@@ -175,4 +243,9 @@ function hasChildrenRoutes (fork: RouteLocationNormalizedLoaded | null, newRoute
 
   const index = newRoute.matched.findIndex(m => m.components?.default === Component?.type)
   return index < newRoute.matched.length - 1
+}
+
+function normalizeSlot (slot: Slot, data: RouterViewSlotProps) {
+  const slotContent = slot(data)
+  return slotContent.length === 1 ? h(slotContent[0]!) : h(Fragment, undefined, slotContent)
 }

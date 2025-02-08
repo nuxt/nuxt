@@ -1,5 +1,5 @@
-import { createStaticVNode, h } from 'vue'
-import type { Component, RendererNode, VNode } from 'vue'
+import { Transition, createStaticVNode, h } from 'vue'
+import type { RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
@@ -10,9 +10,8 @@ import { START_LOCATION } from '#build/pages'
  * Internal utility
  * @private
  */
-export const _wrapIf = (component: Component, props: any, slots: any) => {
-  props = props === true ? {} : props
-  return { default: () => props ? h(component, props, slots) : slots.default?.() }
+export const _wrapInTransition = (props: any, children: any) => {
+  return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
 const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g

@@ -669,7 +669,7 @@ function getServerComponentHTML (body: string): string {
 
 const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
 const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
-const SSR_CLIENT_SLOT_MARKER = /^island-slot=[^;]*;(.*)$/
+const SSR_CLIENT_SLOT_MARKER = /^island-slot=([^;]*);(.*)$/
 
 function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.slots).length) { return undefined }
@@ -693,21 +693,21 @@ function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRespons
     response[clientUid] = {
       ...component,
       html,
-      slots: getComponentSlotTeleport(ssrContext.teleports ?? {}),
+      slots: getComponentSlotTeleport(clientUid, ssrContext.teleports ?? {}),
     }
   }
   return response
 }
 
-function getComponentSlotTeleport (teleports: Record<string, string>) {
+function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>) {
   const entries = Object.entries(teleports)
   const slots: Record<string, string> = {}
 
   for (const [key, value] of entries) {
     const match = key.match(SSR_CLIENT_SLOT_MARKER)
     if (match) {
-      const [, slot] = match
-      if (!slot) { continue }
+      const [, id, slot] = match
+      if (!slot || clientUid !== id) { continue }
       slots[slot] = value
     }
   }
