@@ -40,7 +40,7 @@ function createRunner () {
     root: viteNodeOptions.root, // Equals to Nuxt `srcDir`
     base: viteNodeOptions.base,
     async resolveId (id, importer) {
-      return await viteNodeFetch('/resolve/' + encodeURI(id) + (importer ? '?importer=' + encodeURI(importer) : ''))
+      return await viteNodeFetch('/resolve/' + encodeURIComponent(id) + (importer ? '?importer=' + encodeURIComponent(importer) : '')) ?? undefined
     },
     async fetchModule (id) {
       id = id.replace(/\/\//g, '/') // TODO: fix in vite-node

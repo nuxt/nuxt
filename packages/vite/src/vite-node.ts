@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
+import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import { isAbsolute, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
@@ -125,38 +125,36 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
 
   const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
   app.use('/resolve', defineEventHandler(async (event) => {
-    const { id, importer } = decodeURI(event.path).match(RESOLVE_RE)?.groups || {}
+    const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
     if (!id || !ctx.ssrServer) {
       throw createError({ statusCode: 400 })
     }
-    return await getNode(ctx.ssrServer).resolveId(id, importer)
+    return await getNode(ctx.ssrServer).resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
   }))
 
-  app.use('/module', defineLazyEventHandler(() => {
-    return eventHandler(async (event) => {
-      const moduleId = decodeURI(event.path).substring(1)
-      if (moduleId === '/' || !ctx.ssrServer) {
-        throw createError({ statusCode: 400 })
+  app.use('/module', defineEventHandler(async (event) => {
+    const moduleId = decodeURI(event.path).substring(1)
+    if (moduleId === '/' || !ctx.ssrServer) {
+      throw createError({ statusCode: 400 })
+    }
+    if (isAbsolute(moduleId) && !isFileServingAllowed(ctx.ssrServer.config, moduleId)) {
+      throw createError({ statusCode: 403 /* Restricted */ })
+    }
+    const node = getNode(ctx.ssrServer)
+    const module = await node.fetchModule(moduleId).catch(async (err) => {
+      const errorData = {
+        code: 'VITE_ERROR',
+        id: moduleId,
+        stack: '',
+        ...err,
       }
-      if (isAbsolute(moduleId) && !isFileServingAllowed(ctx.ssrServer.config, moduleId)) {
-        throw createError({ statusCode: 403 /* Restricted */ })
-      }
-      const node = getNode(ctx.ssrServer)
-      const module = await node.fetchModule(moduleId).catch(async (err) => {
-        const errorData = {
-          code: 'VITE_ERROR',
-          id: moduleId,
-          stack: '',
-          ...err,
-        }
 
-        if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
-          errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
-        }
-        throw createError({ data: errorData })
-      })
-      return module
+      if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
+        errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
+      }
+      throw createError({ data: errorData })
     })
+    return module
   }))
 
   return app
