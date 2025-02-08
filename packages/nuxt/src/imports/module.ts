@@ -19,7 +19,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   defaults: nuxt => ({
     autoImport: true,
     scan: true,
-    presets: nuxt.options.imports.polyfills ? [...defaultPresets, ...appCompatPresets] : defaultPresets,
+    presets: defaultPresets,
     global: false,
     imports: [],
     dirs: [],
@@ -35,6 +35,10 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+
+    if (nuxt.options.imports.polyfills) {
+      presets.push(...appCompatPresets)
+    }
 
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', presets)
