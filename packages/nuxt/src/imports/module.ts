@@ -9,7 +9,7 @@ import escapeRE from 'escape-string-regexp'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from 'mlly'
 import { isDirectory, logger } from '../utils'
 import { TransformPlugin } from './transform'
-import { defaultPresets } from './presets'
+import { appCompatPresets, defaultPresets } from './presets'
 
 export default defineNuxtModule<Partial<ImportsOptions>>({
   meta: {
@@ -30,10 +30,15 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       exclude: undefined,
     },
     virtualImports: ['#imports'],
+    polyfills: true,
   }),
   async setup (options, nuxt) {
     // TODO: fix sharing of defaults between invocations of modules
     const presets = JSON.parse(JSON.stringify(options.presets)) as ImportPresetWithDeprecation[]
+
+    if (nuxt.options.imports.polyfills) {
+      presets.push(...appCompatPresets)
+    }
 
     // Allow modules extending sources
     await nuxt.callHook('imports:sources', presets)
