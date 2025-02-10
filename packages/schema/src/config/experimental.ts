@@ -158,12 +158,12 @@ export default defineResolvers({
      */
     treeshakeClientOnly: {
       async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        const isV4 = (await get('future')).compatibilityVersion === 4
         if (isV4 && val === false) {
           console.warn('Enabling `experimental.treeshakeClientOnly` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
           return true
         }
-        return val ?? true
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -291,12 +291,12 @@ export default defineResolvers({
      */
     configSchema: {
       async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        const isV4 = (await get('future')).compatibilityVersion === 4
         if (isV4 && val === false) {
           console.warn('Enabling `experimental.configSchema` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
           return true
         }
-        return val ?? true
+        return typeof val === 'boolean' ? val : true
       },
     },
 
@@ -309,12 +309,12 @@ export default defineResolvers({
      */
     polyfillVueUseHead: {
       async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        const isV4 = (await get('future')).compatibilityVersion === 4
         if (isV4 && val === true) {
           console.warn('Disabling `experimental.polyfillVueUseHead` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
           return false
         }
-        return val ?? false
+        return typeof val === 'boolean' ? val : false
       },
     },
 
@@ -324,12 +324,12 @@ export default defineResolvers({
      */
     respectNoSSRHeader: {
       async $resolve (val, get) {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+        const isV4 = (await get('future')).compatibilityVersion === 4
         if (isV4 && val === true) {
           console.warn('Disabling `experimental.respectNoSSRHeader` in v4 compatibility mode as it will no longer be configurable in Nuxt v4.')
           return false
         }
-        return val ?? false
+        return typeof val === 'boolean' ? val : false
       },
     },
 
@@ -491,18 +491,22 @@ export default defineResolvers({
         /** @type {'undefined' | 'null'} */
         value: {
           async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+            const validOptions = ['undefined', 'null'] as const
+            type ValidOption = typeof validOptions[number]
+            return typeof val === 'string' && validOptions.includes(val as ValidOption) ? (val as ValidOption) : ((await get('future')).compatibilityVersion === 4 ? 'undefined' : 'null')
           },
         },
         /** @type {'undefined' | 'null'} */
         errorValue: {
           async $resolve (val, get) {
-            return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'undefined' : 'null')
+            const validOptions = ['undefined', 'null'] as const
+            type ValidOption = typeof validOptions[number]
+            return typeof val === 'string' && validOptions.includes(val as ValidOption) ? (val as ValidOption) : ((await get('future')).compatibilityVersion === 4 ? 'undefined' : 'null')
           },
         },
         deep: {
           async $resolve (val, get) {
-            return val ?? !((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+            return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
           },
         },
       },
@@ -533,7 +537,7 @@ export default defineResolvers({
      */
     compileTemplate: {
       async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
       },
     },
 
@@ -546,7 +550,7 @@ export default defineResolvers({
      */
     templateUtils: {
       async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
       },
     },
 
@@ -558,7 +562,7 @@ export default defineResolvers({
      */
     relativeWatchPaths: {
       async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
       },
     },
 
@@ -568,7 +572,7 @@ export default defineResolvers({
      */
     resetAsyncDataToUndefined: {
       async $resolve (val, get) {
-        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion !== 4)
+        return typeof val === 'boolean' ? val : ((await get('future')).compatibilityVersion !== 4)
       },
     },
 
@@ -606,7 +610,7 @@ export default defineResolvers({
       $resolve: async (val, get) => {
         const validOptions = ['body', 'within'] as const
         type SpaLoadingTemplateLocation = typeof validOptions[number]
-        return typeof val === 'string' && validOptions.includes(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : (((await get('future')).compatibilityVersion === 4) ? 'body' : 'within')
+        return typeof val === 'string' && validOptions.includes(val as SpaLoadingTemplateLocation) ? val as SpaLoadingTemplateLocation : ((await get('future')).compatibilityVersion === 4 ? 'body' : 'within')
       },
     },
 
