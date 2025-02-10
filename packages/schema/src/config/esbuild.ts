@@ -11,7 +11,7 @@ export default defineUntypedSchema({
         $resolve: async (val: TransformOptions['tsconfigRaw'], get) => {
           return defu(val, {
             compilerOptions: {
-              experimentalDecorators: await get('experimental.decorators') as boolean,
+              experimentalDecorators: await get('experimental').then(r => (r as Record<string, unknown>)?.decorators as boolean),
             },
           } satisfies TransformOptions['tsconfigRaw'])
         },
