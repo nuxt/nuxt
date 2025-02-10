@@ -1,6 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
-
-import { getContext } from 'unctx'
+import { createContext, getContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
 
 /**
@@ -10,10 +9,13 @@ import type { Nuxt } from '@nuxt/schema'
 export const nuxtCtx = getContext<Nuxt>('nuxt')
 
 /** async local storage for the name of the current nuxt instance */
-const asyncNameStorage = new AsyncLocalStorage<string>()
+const asyncNameStorage = createContext({
+  asyncContext: true,
+  AsyncLocalStorage,
+})
 
 /** Direct access to the Nuxt context with asyncLocalStorage - see https://github.com/unjs/unctx. */
-export const getNuxtCtx = () => getContext<Nuxt>(asyncNameStorage.getStore()!)
+export const getNuxtCtx = () => getContext<Nuxt>(asyncNameStorage.tryUse())
 
 // TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
 
@@ -51,5 +53,5 @@ export function tryUseNuxt (): Nuxt | null {
 }
 
 export function runWithNuxtContext<T extends (...args: any[]) => any> (nuxt: Nuxt, fn: T) {
-  return asyncNameStorage.run(nuxt.__name, fn) as ReturnType<T>
+  return asyncNameStorage.call(nuxt.__name, fn) as ReturnType<T>
 }
