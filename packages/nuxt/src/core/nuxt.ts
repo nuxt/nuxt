@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, getNuxtCtx, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -130,13 +130,6 @@ export function createNuxt (options: NuxtOptions): Nuxt {
       nuxtCtx.unset()
     })
   }
-  nuxt.runWithContext(() => {
-    // Set nuxt instance for useNuxt
-    getNuxtCtx().set(nuxt)
-    nuxt.hook('close', () => {
-      getNuxtCtx().unset()
-    })
-  })
 
   hooks.hookOnce('close', () => { hooks.removeAllHooks() })
 
