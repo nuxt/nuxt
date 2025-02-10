@@ -180,6 +180,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     .then(r => r?.version && gte(r.version, '5.4.0'))
     .catch(() => isV4)
 
+  const useDecorators = Boolean(nuxt.options.experimental?.decorators)
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -197,12 +199,20 @@ export async function _generateTypes (nuxt: Nuxt) {
       noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      /* Decorator support */
+      ...useDecorators
+        ? {
+            useDefineForClassFields: false,
+            experimentalDecorators: false,
+          }
+        : {},
       /* If NOT transpiling with TypeScript: */
       module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
         'ESNext',
+        ...useDecorators ? ['esnext.decorators'] : [],
         'dom',
         'dom.iterable',
         'webworker',

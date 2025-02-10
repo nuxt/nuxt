@@ -1,4 +1,5 @@
 import { consola } from 'consola'
+import defu from 'defu'
 import { resolve } from 'pathe'
 import { isTest } from 'std-env'
 import { defineResolvers } from '../utils/definition'
@@ -86,6 +87,9 @@ export default defineResolvers({
       },
     },
     optimizeDeps: {
+      esbuildOptions: {
+        $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
+      },
       exclude: {
         $resolve: async (val, get) => [
           ...Array.isArray(val) ? val : [],
@@ -95,9 +99,9 @@ export default defineResolvers({
       },
     },
     esbuild: {
-      jsxFactory: 'h',
-      jsxFragment: 'Fragment',
-      tsconfigRaw: '{}',
+      $resolve: async (val, get) => {
+        return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
+      },
     },
     clearScreen: true,
     build: {
