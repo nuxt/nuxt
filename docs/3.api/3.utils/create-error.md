@@ -41,7 +41,7 @@ Use `createError` to trigger error handling in server API routes.
 
 ### Example
 
-```js
+```ts [server/api/error.ts]
 export default eventHandler(() => {
   throw createError({
     statusCode: 404,

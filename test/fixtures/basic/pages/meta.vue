@@ -13,7 +13,7 @@ const serialisedMeta: Record<string, string> = {}
 const meta = useRoute().meta
 for (const key in meta) {
   if (Array.isArray(meta[key])) {
-    serialisedMeta[key] = meta[key].map((fn: Function) => fn.toString())
+    serialisedMeta[key] = meta[key].map((fn: () => unknown) => fn.toString())
     continue
   }
   if (typeof meta[key] === 'string') {

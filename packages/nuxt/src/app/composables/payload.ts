@@ -1,7 +1,7 @@
 import { hasProtocol, joinURL, withoutTrailingSlash } from 'ufo'
 import { parse } from 'devalue'
 import { useHead } from '@unhead/vue'
-import { getCurrentInstance, onServerPrefetch } from 'vue'
+import { getCurrentInstance, onServerPrefetch, reactive } from 'vue'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
 
@@ -9,7 +9,7 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 
 // @ts-expect-error virtual import
-import { appManifest, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
+import { appId, appManifest, multiApp, payloadExtraction, renderJsonPayloads } from '#build/nuxt.config.mjs'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -23,7 +23,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   const nuxtApp = useNuxtApp()
   const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
   if (payloadURL in cache) {
-    return cache[payloadURL]
+    return cache[payloadURL] || null
   }
   cache[payloadURL] = isPrerendered(url).then((prerendered) => {
     if (!prerendered) {
@@ -85,15 +85,18 @@ async function _importPayload (payloadURL: string) {
 }
 /** @since 3.0.0 */
 export async function isPrerendered (url = useRoute().path) {
+  const nuxtApp = useNuxtApp()
   // Note: Alternative for server is checking x-nitro-prerender header
-  if (!appManifest) { return !!useNuxtApp().payload.prerenderedAt }
+  if (!appManifest) { return !!nuxtApp.payload.prerenderedAt }
   url = withoutTrailingSlash(url)
   const manifest = await getAppManifest()
   if (manifest.prerendered.includes(url)) {
     return true
   }
-  const rules = await getRouteRules(url)
-  return !!rules.prerender && !rules.redirect
+  return nuxtApp.runWithContext(async () => {
+    const rules = await getRouteRules({ path: url })
+    return !!rules.prerender && !rules.redirect
+  })
 }
 
 let payloadCache: NuxtPayload | null = null
@@ -107,7 +110,7 @@ export async function getNuxtClientPayload () {
     return payloadCache
   }
 
-  const el = document.getElementById('__NUXT_DATA__')
+  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
   if (!el) {
     return {} as Partial<NuxtPayload>
   }
@@ -119,7 +122,11 @@ export async function getNuxtClientPayload () {
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...window.__NUXT__,
+    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
+  }
+
+  if (payloadCache!.config?.public) {
+    payloadCache!.config.public = reactive(payloadCache!.config.public)
   }
 
   return payloadCache

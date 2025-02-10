@@ -8,3 +8,15 @@
     </NuxtLink>
   </div>
 </template>
+
+<script setup lang="ts">
+useHead({
+  title: 'Server Page',
+  meta: [
+    {
+      name: 'author',
+      content: 'Nuxt',
+    },
+  ],
+})
+</script>

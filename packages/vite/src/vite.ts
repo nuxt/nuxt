@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import * as vite from 'vite'
 import { dirname, join, normalize, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
-import { addVitePlugin, isIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
+import { addVitePlugin, createIsIgnored, logger, resolvePath, useNitro } from '@nuxt/kit'
 import replace from '@rollup/plugin-replace'
 import type { RollupReplaceOptions } from '@rollup/plugin-replace'
 import { sanitizeFilePath } from 'mlly'
@@ -12,10 +12,8 @@ import { resolveTSConfig } from 'pkg-types'
 
 import { buildClient } from './client'
 import { buildServer } from './server'
-import virtual from './plugins/virtual'
 import { warmupViteServer } from './utils/warmup'
 import { resolveCSSOptions } from './css'
-import { composableKeysPlugin } from './plugins/composable-keys'
 import { logLevelMap } from './utils/logger'
 import { ssrStylesPlugin } from './plugins/ssr-styles'
 import { VitePublicDirsPlugin } from './plugins/public-dirs'
@@ -55,6 +53,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   const { $client, $server, ...viteConfig } = nuxt.options.vite
 
+  const isIgnored = createIsIgnored(nuxt)
   const ctx: ViteBuildContext = {
     nuxt,
     entry,
@@ -65,10 +64,6 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
           alias: {
             ...nuxt.options.alias,
             '#app': nuxt.options.appDir,
-            // We need this resolution to be present before the following entry, but it
-            // will be filled in client/server configs
-            '#build/plugins': '',
-            '#build': nuxt.options.buildDir,
             'web-streams-polyfill/ponyfill/es2018': 'unenv/runtime/mock/empty',
             // Cannot destructure property 'AbortController' of ..
             'abort-controller': 'unenv/runtime/mock/empty',
@@ -90,26 +85,25 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
               // https://github.com/vitejs/vite/tree/main/packages/vite/src/node/build.ts#L464-L478
               assetFileNames: nuxt.options.dev
                 ? undefined
-                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.name!))}.[hash].[ext]`)),
+                : chunk => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`)),
             },
           },
           watch: {
+            chokidar: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
             exclude: nuxt.options.ignore,
           },
         },
         plugins: [
           // add resolver for files in public assets directories
-          VitePublicDirsPlugin.vite({ sourcemap: !!nuxt.options.sourcemap.server }),
-          composableKeysPlugin.vite({
-            sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
-            rootDir: nuxt.options.rootDir,
-            composables: nuxt.options.optimization.keyedComposables,
+          VitePublicDirsPlugin.vite({
+            dev: nuxt.options.dev,
+            sourcemap: !!nuxt.options.sourcemap.server,
+            baseURL: nuxt.options.app.baseURL,
           }),
           replace({ preventAssignment: true, ...globalThisReplacements }),
-          virtual(nuxt.vfs),
         ],
         server: {
-          watch: { ignored: isIgnored },
+          watch: { ...nuxt.options.watchers.chokidar, ignored: [isIgnored, /[\\/]node_modules[\\/]/] },
           fs: {
             allow: [...new Set(allowDirs)],
           },
@@ -203,8 +197,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
     // Remove CSS entries for files that will have inlined styles
     ctx.nuxt.hook('build:manifest', (manifest) => {
-      for (const key in manifest) {
-        const entry = manifest[key]!
+      for (const [key, entry] of Object.entries(manifest)) {
         const shouldRemoveCSS = chunksWithInlinedCSS.has(key) && !entry.isEntry
         if (entry.isEntry && chunksWithInlinedCSS.has(key)) {
           // @ts-expect-error internal key
@@ -219,12 +212,13 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
 
   nuxt.hook('vite:serverCreated', (server: vite.ViteDevServer, env) => {
     // Invalidate virtual modules when templates are re-generated
-    ctx.nuxt.hook('app:templatesGenerated', () => {
-      for (const [id, mod] of server.moduleGraph.idToModuleMap) {
-        if (id.startsWith('virtual:')) {
+    ctx.nuxt.hook('app:templatesGenerated', async (_app, changedTemplates) => {
+      await Promise.all(changedTemplates.map(async (template) => {
+        for (const mod of server.moduleGraph.getModulesByFile(`virtual:nuxt:${encodeURIComponent(template.dst)}`) || []) {
           server.moduleGraph.invalidateModule(mod)
+          await server.reloadModule(mod)
         }
-      }
+      }))
     })
 
     if (nuxt.options.vite.warmupEntry !== false) {

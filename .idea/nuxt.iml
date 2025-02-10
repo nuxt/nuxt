@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/nuxt/dist" />
+      <excludeFolder url="file://$MODULE_DIR$/temp" />
+      <excludeFolder url="file://$MODULE_DIR$/tmp" />
+      <excludeFolder url="file://$MODULE_DIR$/packages/schema/schema" />
+      <excludeFolder url="file://$MODULE_DIR$/playground/.output" />
+      <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.nuxt-inline" />
+      <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.output" />
+      <excludeFolder url="file://$MODULE_DIR$/test/fixtures/minimal/.output-inline" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>

@@ -18,18 +18,18 @@ export function useScript<T extends Record<string | symbol, any>> (input: UseScr
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useElementScriptTrigger (...args: unknown[]) {
-  renderStubMessage('useElementScriptTrigger')
+export function useScriptTriggerElement (...args: unknown[]) {
+  renderStubMessage('useScriptTriggerElement')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useConsentScriptTrigger (...args: unknown[]) {
-  renderStubMessage('useConsentScriptTrigger')
+export function useScriptTriggerConsent (...args: unknown[]) {
+  renderStubMessage('useScriptTriggerConsent')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export function useAnalyticsPageEvent (...args: unknown[]) {
-  renderStubMessage('useAnalyticsPageEvent')
+export function useScriptEventPage (...args: unknown[]) {
+  renderStubMessage('useScriptEventPage')
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -43,6 +43,10 @@ export function useScriptPlausibleAnalytics (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptCloudflareWebAnalytics (...args: unknown[]) {
   renderStubMessage('useScriptCloudflareWebAnalytics')
+}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptCrisp (...args: unknown[]) {
+  renderStubMessage('useScriptCrisp')
 }
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptFathomAnalytics (...args: unknown[]) {
@@ -115,4 +119,14 @@ export function useScriptGoogleAdsense (...args: unknown[]) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useScriptYouTubePlayer (...args: unknown[]) {
   renderStubMessage('useScriptYouTubePlayer')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptUmamiAnalytics (...args: unknown[]) {
+  renderStubMessage('useScriptUmamiAnalytics')
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function useScriptSnapchatPixel (...args: unknown[]) {
+  renderStubMessage('useScriptSnapchatPixel')
 }

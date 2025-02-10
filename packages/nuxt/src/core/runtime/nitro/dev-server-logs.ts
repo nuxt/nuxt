@@ -5,12 +5,16 @@ import { stringify } from 'devalue'
 import type { H3Event } from 'h3'
 import { withTrailingSlash } from 'ufo'
 import { getContext } from 'unctx'
+import { captureRawStackTrace, parseRawStackTrace } from 'errx'
+import type { ParsedTrace } from 'errx'
 
 import { isVNode } from 'vue'
 import type { NitroApp } from 'nitro/types'
 
 // @ts-expect-error virtual file
 import { rootDir } from '#internal/dev-server-logs-options'
+// @ts-expect-error virtual file
+import { appId } from '#internal/nuxt.config.mjs'
 
 const devReducers: Record<string, (data: any) => any> = {
   VNode: data => isVNode(data) ? { type: data.type, props: data.props } : undefined,
@@ -34,15 +38,28 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
 
-    const stack = getStack()
-    if (stack.includes('runtime/vite-node.mjs')) { return }
+    const rawStack = captureRawStackTrace()
+    if (!rawStack || rawStack.includes('runtime/vite-node.mjs')) { return }
+
+    const trace: ParsedTrace[] = []
+    let filename = ''
+    for (const entry of parseRawStackTrace(rawStack)) {
+      if (entry.source === import.meta.url) { continue }
+      if (EXCLUDE_TRACE_RE.test(entry.source)) { continue }
+
+      filename ||= entry.source.replace(withTrailingSlash(rootDir), '')
+      trace.push({
+        ...entry,
+        source: entry.source.startsWith('file://') ? entry.source.replace('file://', '') : entry.source,
+      })
+    }
 
     const log = {
       ..._log,
       // Pass along filename to allow the client to display more info about where log comes from
-      filename: extractFilenameFromStack(stack),
+      filename,
       // Clean up file names in stack trace
-      stack: normalizeFilenames(stack),
+      stack: trace,
     }
 
     // retain log to be include in the next render
@@ -60,7 +77,8 @@ export default (nitroApp: NitroApp) => {
     const ctx = asyncContext.tryUse()
     if (!ctx) { return }
     try {
-      htmlContext.bodyAppend.unshift(`<script type="application/json" id="__NUXT_LOGS__">${stringify(ctx.logs, { ...devReducers, ...ctx.event.context._payloadReducers })}</script>`)
+      const reducers = Object.assign(Object.create(null), devReducers, ctx.event.context._payloadReducers)
+      htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
     } catch (e) {
       const shortError = e instanceof Error && 'toString' in e ? ` Received \`${e.toString()}\`.` : ''
       console.warn(`[nuxt] Failed to stringify dev server logs.${shortError} You can define your own reducer/reviver for rich types following the instructions in https://nuxt.com/docs/api/composables/use-nuxt-app#payload.`)
@@ -68,24 +86,7 @@ export default (nitroApp: NitroApp) => {
   })
 }
 
-const EXCLUDE_TRACE_RE = /^.*at.*(\/node_modules\/(.*\/)?(nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/.*|core\/runtime\/nitro.*)$\n?/gm
-function getStack () {
-  // Pass along stack traces if needed (for error and warns)
-  // eslint-disable-next-line unicorn/error-message
-  const stack = new Error()
-  Error.captureStackTrace(stack)
-  return stack.stack?.replace(EXCLUDE_TRACE_RE, '').replace(/^Error.*\n/, '') || ''
-}
-
-const FILENAME_RE = /at[^(]*\(([^:)]+)[):]/
-const FILENAME_RE_GLOBAL = /at[^(]*\(([^)]+)\)/g
-function extractFilenameFromStack (stacktrace: string) {
-  return stacktrace.match(FILENAME_RE)?.[1].replace(withTrailingSlash(rootDir), '')
-}
-function normalizeFilenames (stacktrace: string) {
-  // remove line numbers and file: protocol - TODO: sourcemap support for line numbers
-  return stacktrace.replace(FILENAME_RE_GLOBAL, (match, filename) => match.replace(filename, filename.replace('file:///', '/').replace(/:.*$/, '')))
-}
+const EXCLUDE_TRACE_RE = /\/node_modules\/(?:.*\/)?(?:nuxt|nuxt-nightly|nuxt-edge|nuxt3|consola|@vue)\/|core\/runtime\/nitro/
 
 function onConsoleLog (callback: (log: LogObject) => void) {
   consola.addReporter({

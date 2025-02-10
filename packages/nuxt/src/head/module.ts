@@ -7,7 +7,8 @@ const components = ['NoScript', 'Link', 'Base', 'Title', 'Meta', 'Style', 'Head'
 
 export default defineNuxtModule<NuxtOptions['unhead']>({
   meta: {
-    name: 'meta',
+    name: 'nuxt:meta',
+    configKey: 'unhead',
   },
   async setup (options, nuxt) {
     const runtimeDir = resolve(distDir, 'head/runtime')
@@ -75,8 +76,8 @@ export default import.meta.server ? [CapoPlugin({ track: true })] : [];`
 
     // template is only exposed in nuxt context, expose in nitro context as well
     nuxt.hooks.hook('nitro:config', (config) => {
-      config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins']
-      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config']
+      config.virtual!['#internal/unhead-plugins.mjs'] = () => nuxt.vfs['#build/unhead-plugins.mjs']
+      config.virtual!['#internal/unhead.config.mjs'] = () => nuxt.vfs['#build/unhead.config.mjs']
     })
 
     // Add library-specific plugin

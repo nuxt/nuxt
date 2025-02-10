@@ -6,8 +6,9 @@ export type { GenerateAppOptions, HookResult, ImportPresetWithDeprecation, NuxtA
 export type { ImportsOptions } from './types/imports'
 export type { AppHeadMetaObject, MetaObject, MetaObjectRaw, HeadAugmentations } from './types/head'
 export type { ModuleDefinition, ModuleMeta, ModuleOptions, ModuleSetupInstallResult, ModuleSetupReturn, NuxtModule, ResolvedModuleOptions } from './types/module'
-export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate } from './types/nuxt'
+export type { Nuxt, NuxtApp, NuxtPlugin, NuxtPluginTemplate, NuxtTemplate, NuxtTypeTemplate, NuxtServerTemplate, ResolvedNuxtTemplate } from './types/nuxt'
 export type { RouterConfig, RouterConfigSerializable, RouterOptions } from './types/router'
+export type { NuxtDebugContext, NuxtDebugModuleMutationRecord } from './types/debug'
 
 // Schema
 export { default as NuxtConfigSchema } from './config/index'

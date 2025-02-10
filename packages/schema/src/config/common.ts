@@ -1,12 +1,14 @@
 import { existsSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
+import { randomUUID } from 'node:crypto'
 import { defineUntypedSchema } from 'untyped'
 import { basename, join, relative, resolve } from 'pathe'
 import { isDebug, isDevelopment, isTest } from 'std-env'
 import { defu } from 'defu'
 import { findWorkspaceDir } from 'pkg-types'
-import { randomUUID } from 'uncrypto'
+
 import type { RuntimeConfig } from '../types/config'
+import type { NuxtDebugOptions } from '../types/debug'
 
 export default defineUntypedSchema({
   /**
@@ -14,9 +16,9 @@ export default defineUntypedSchema({
    *
    * Value should be either a string or array of strings pointing to source directories or config path relative to current config.
    *
-   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`.
-   * @see https://github.com/unjs/c12#extending-config-layer-from-remote-sources
-   * @see https://github.com/unjs/giget
+   * You can use `github:`, `gh:` `gitlab:` or `bitbucket:`
+   * @see [`c12` docs on extending config layers](https://github.com/unjs/c12#extending-config-layer-from-remote-sources)
+   * @see [`giget` documentation](https://github.com/unjs/giget)
    * @type {string | [string, typeof import('c12').SourceOptions?] | (string | [string, typeof import('c12').SourceOptions?])[]}
    */
   extends: null,
@@ -118,13 +120,15 @@ export default defineUntypedSchema({
       }
 
       const srcDir = resolve(rootDir, 'app')
+      if (!existsSync(srcDir)) {
+        return rootDir
+      }
+
       const srcDirFiles = new Set<string>()
-      if (existsSync(srcDir)) {
-        const files = await readdir(srcDir).catch(() => [])
-        for (const file of files) {
-          if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
-            srcDirFiles.add(file)
-          }
+      const files = await readdir(srcDir).catch(() => [])
+      for (const file of files) {
+        if (file !== 'spa-loading-template.html' && !file.startsWith('router.options')) {
+          srcDirFiles.add(file)
         }
       }
       if (srcDirFiles.size === 0) {
@@ -154,9 +158,12 @@ export default defineUntypedSchema({
    */
   serverDir: {
     $resolve: async (val: string | undefined, get): Promise<string> => {
-      const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
-
-      return resolve(await get('rootDir') as string, (val || isV4) ? 'server' : resolve(await get('srcDir') as string, 'server'))
+      if (val) {
+        const rootDir = await get('rootDir') as string
+        return resolve(rootDir, val)
+      }
+      const isV4 = (await get('future') as Record<string, unknown>).compatibilityVersion === 4
+      return join(isV4 ? await get('rootDir') as string : await get('srcDir') as string, 'server')
     },
   },
 
@@ -173,11 +180,16 @@ export default defineUntypedSchema({
    * ```
    */
   buildDir: {
-    $resolve: async (val: string | undefined, get): Promise<string> => resolve(await get('rootDir') as string, val || '.nuxt'),
+    $resolve: async (val: string | undefined, get) => {
+      const rootDir = await get('rootDir') as string
+      return resolve(rootDir, val ?? '.nuxt')
+    },
   },
 
   /**
-   * For multi-app projects, the unique name of the Nuxt application.
+   * For multi-app projects, the unique id of the Nuxt application.
+   *
+   * Defaults to `nuxt-app`.
    */
   appId: {
     $resolve: (val: string) => val ?? 'nuxt-app',
@@ -236,12 +248,16 @@ export default defineUntypedSchema({
    *
    * Normally, you should not need to set this.
    */
-  dev: Boolean(isDevelopment),
+  dev: {
+    $resolve: val => val ?? Boolean(isDevelopment),
+  },
 
   /**
    * Whether your app is being unit tested.
    */
-  test: Boolean(isTest),
+  test: {
+    $resolve: val => val ?? Boolean(isTest),
+  },
 
   /**
    * Set to `true` to enable debug mode.
@@ -249,9 +265,32 @@ export default defineUntypedSchema({
    * At the moment, it prints out hook names and timings on the server, and
    * logs hook arguments as well in the browser.
    *
+   * You can also set this to an object to enable specific debug options.
+   *
+   * @type {boolean | (typeof import('../src/types/debug').NuxtDebugOptions) | undefined}
    */
   debug: {
-    $resolve: val => val ?? isDebug,
+    $resolve: (val: boolean | NuxtDebugOptions | undefined) => {
+      val ??= isDebug
+      if (val === false) {
+        return val
+      }
+      if (val === true) {
+        return {
+          templates: true,
+          modules: true,
+          watchers: true,
+          hooks: {
+            client: true,
+            server: true,
+          },
+          nitro: true,
+          router: true,
+          hydration: true,
+        } satisfies Required<NuxtDebugOptions>
+      }
+      return val
+    },
   },
 
   /**
@@ -285,7 +324,7 @@ export default defineUntypedSchema({
    *   function () {}
    * ]
    * ```
-   * @type {(typeof import('../src/types/module').NuxtModule | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
+   * @type {(typeof import('../src/types/module').NuxtModule<any> | string | [typeof import('../src/types/module').NuxtModule | string, Record<string, any>] | undefined | null | false)[]}
    */
   modules: {
     $resolve: (val: string[] | undefined): string[] => (val || []).filter(Boolean),
@@ -344,6 +383,11 @@ export default defineUntypedSchema({
      * The plugins directory, each file of which will be auto-registered as a Nuxt plugin.
      */
     plugins: 'plugins',
+
+    /**
+     * The shared directory. This directory is shared between the app and the server.
+     */
+    shared: 'shared',
 
     /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
@@ -414,14 +458,17 @@ export default defineUntypedSchema({
    */
   alias: {
     $resolve: async (val: Record<string, string>, get): Promise<Record<string, string>> => {
-      const [srcDir, rootDir, assetsDir, publicDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public')]) as [string, string, string, string]
+      const [srcDir, rootDir, assetsDir, publicDir, buildDir, sharedDir] = await Promise.all([get('srcDir'), get('rootDir'), get('dir.assets'), get('dir.public'), get('buildDir'), get('dir.shared')]) as [string, string, string, string, string, string]
       return {
         '~': srcDir,
         '@': srcDir,
         '~~': rootDir,
         '@@': rootDir,
-        [basename(assetsDir)]: join(srcDir, assetsDir),
+        '#shared': resolve(rootDir, sharedDir),
+        [basename(assetsDir)]: resolve(srcDir, assetsDir),
         [basename(publicDir)]: resolve(srcDir, publicDir),
+        '#build': buildDir,
+        '#internal/nuxt/paths': resolve(buildDir, 'paths.mjs'),
         ...val,
       }
     },
@@ -500,9 +547,11 @@ export default defineUntypedSchema({
     /**
      * Options to pass directly to `chokidar`.
      * @see [chokidar](https://github.com/paulmillr/chokidar#api)
+     * @type {typeof import('chokidar').ChokidarOptions}
      */
     chokidar: {
       ignoreInitial: true,
+      ignorePermissionErrors: true,
     },
   },
 
@@ -552,7 +601,7 @@ export default defineUntypedSchema({
    * ```js
    * export default {
    *  runtimeConfig: {
-   *     apiKey: '' // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
+   *     apiKey: '', // Default to an empty string, automatically set at runtime using process.env.NUXT_API_KEY
    *     public: {
    *        baseURL: '' // Exposed to the frontend as well.
    *     }

@@ -22,14 +22,6 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/nuxt',
   },
   {
-    imports: ['requestIdleCallback', 'cancelIdleCallback'],
-    from: '#app/compat/idle-callback',
-  },
-  {
-    imports: ['setInterval'],
-    from: '#app/compat/interval',
-  },
-  {
     imports: ['useAppConfig', 'updateAppConfig'],
     from: '#app/config',
   },
@@ -66,7 +58,7 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/cookie',
   },
   {
-    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
+    imports: ['onPrehydrate', 'prerenderRoutes', 'useRequestHeader', 'useRequestHeaders', 'useResponseHeader', 'useRequestEvent', 'useRequestFetch', 'setResponseStatus'],
     from: '#app/composables/ssr',
   },
   {
@@ -106,23 +98,24 @@ const granularAppPresets: InlinePreset[] = [
     from: '#app/composables/preview',
   },
   {
-    imports: ['useId'],
-    from: '#app/composables/id',
-  },
-  {
     imports: ['useRouteAnnouncer'],
     from: '#app/composables/route-announcer',
+  },
+  {
+    imports: ['useRuntimeHook'],
+    from: '#app/composables/runtime-hook',
   },
 ]
 
 export const scriptsStubsPreset = {
   imports: [
-    'useConsentScriptTrigger',
-    'useAnalyticsPageEvent',
-    'useElementScriptTrigger',
+    'useScriptTriggerConsent',
+    'useScriptEventPage',
+    'useScriptTriggerElement',
     'useScript',
     'useScriptGoogleAnalytics',
     'useScriptPlausibleAnalytics',
+    'useScriptCrisp',
     'useScriptClarity',
     'useScriptCloudflareWebAnalytics',
     'useScriptFathomAnalytics',
@@ -140,6 +133,8 @@ export const scriptsStubsPreset = {
     'useScriptYouTubePlayer',
     'useScriptGoogleMaps',
     'useScriptNpm',
+    'useScriptUmamiAnalytics',
+    'useScriptSnapchatPixel',
   ],
   priority: -1,
   from: '#app/composables/script-stubs',
@@ -219,9 +214,6 @@ const vuePreset = defineUnimportPreset({
     'hasInjectionContext',
     'nextTick',
     'provide',
-    'defineModel',
-    'defineOptions',
-    'defineSlots',
     'mergeModels',
     'toValue',
     'useModel',
@@ -230,6 +222,10 @@ const vuePreset = defineUnimportPreset({
     'useCssVars',
     'useSlots',
     'useTransitionState',
+    'useId',
+    'useTemplateRef',
+    'useShadowRoot',
+    'useCssVars',
   ],
 })
 
@@ -240,6 +236,8 @@ const vueTypesPreset = defineUnimportPreset({
     'Component',
     'ComponentPublicInstance',
     'ComputedRef',
+    'DirectiveBinding',
+    'ExtractDefaultPropTypes',
     'ExtractPropTypes',
     'ExtractPublicPropTypes',
     'InjectionKey',
@@ -248,8 +246,20 @@ const vueTypesPreset = defineUnimportPreset({
     'MaybeRef',
     'MaybeRefOrGetter',
     'VNode',
+    'WritableComputedRef',
   ],
 })
+
+export const appCompatPresets: InlinePreset[] = [
+  {
+    imports: ['requestIdleCallback', 'cancelIdleCallback'],
+    from: '#app/compat/idle-callback',
+  },
+  {
+    imports: ['setInterval'],
+    from: '#app/compat/interval',
+  },
+]
 
 export const defaultPresets: InlinePreset[] = [
   ...commonPresets,

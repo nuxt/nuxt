@@ -36,7 +36,7 @@ body:
     validations:
       required: true
   - type: textarea
-    id: additonal
+    id: additional
     attributes:
       label: Additional context
       description: If applicable, add any other context about the problem here

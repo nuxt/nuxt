@@ -1,5 +1,5 @@
 import type { UseHeadInput } from '@unhead/vue'
-import type { NuxtApp, useNuxtApp } from '../nuxt'
+import type { NuxtApp, useNuxtApp } from '../nuxt.js'
 
 declare global {
   namespace NodeJS {
@@ -26,7 +26,7 @@ declare global {
   }
 
   interface Window {
-    __NUXT__?: Record<string, any>
+    __NUXT__?: Record<string, any> | Record<string, Record<string, any>>
     useNuxtApp?: typeof useNuxtApp
   }
 }
@@ -40,7 +40,7 @@ declare module 'vue' {
     $nuxt: NuxtApp
   }
   interface ComponentInternalInstance {
-    _nuxtOnBeforeMountCbs: Function[]
+    _nuxtOnBeforeMountCbs: Array<() => void | Promise<void>>
     _nuxtIdIndex?: Record<string, number>
   }
   interface ComponentCustomOptions {

@@ -19,7 +19,7 @@ describe('resolveApp', () => {
       {
         "components": [],
         "configs": [],
-        "dir": "<rootDir>/app",
+        "dir": "<rootDir>",
         "errorComponent": "<repoRoot>/packages/nuxt/src/app/components/nuxt-error-page.vue",
         "extensions": [
           ".js",
@@ -292,13 +292,15 @@ async function getResolvedApp (files: Array<string | { name: string, contents: s
   }
   for (const plugin of app.plugins) {
     plugin.src = normaliseToRepo(plugin.src)!
+    // @ts-expect-error untyped symbol
+    delete plugin[Symbol.for('nuxt plugin')]
   }
   for (const mw of app.middleware) {
     mw.path = normaliseToRepo(mw.path)!
   }
 
-  for (const layout in app.layouts) {
-    app.layouts[layout].file = normaliseToRepo(app.layouts[layout].file)!
+  for (const layout of Object.values(app.layouts)) {
+    layout.file = normaliseToRepo(layout.file)!
   }
 
   await nuxt.close()

@@ -3,12 +3,14 @@ import type { Unimport } from 'unimport'
 import { normalize } from 'pathe'
 import { tryUseNuxt } from '@nuxt/kit'
 import type { ImportsOptions } from 'nuxt/schema'
+
 import { isJS, isVue } from '../core/utils'
+import { installNuxtModule } from '../core/features'
 
 const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const IMPORTS_RE = /(['"])#imports\1/
 
-export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => {
+export const TransformPlugin = ({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => createUnplugin(() => {
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',
@@ -40,7 +42,7 @@ export const TransformPlugin = createUnplugin(({ ctx, options, sourcemap }: { ct
 
       const { s, imports } = await ctx.injectImports(code, id, { autoImport: options.autoImport && !isNodeModule })
       if (imports.some(i => i.from === '#app/composables/script-stubs') && tryUseNuxt()?.options.test === false) {
-        import('../core/features').then(({ installNuxtModule }) => installNuxtModule('@nuxt/scripts'))
+        installNuxtModule('@nuxt/scripts')
       }
 
       if (s.hasChanged()) {

@@ -26,7 +26,7 @@ export default defineUntypedSchema({
      *
      * You can set it to false to use the legacy 'Node' mode, which is the default for TypeScript.
      *
-     * See https://github.com/microsoft/TypeScript/pull/51669
+     * @see [TypeScript PR implementing `bundler` module resolution](https://github.com/microsoft/TypeScript/pull/51669)
      */
     typescriptBundlerResolution: {
       async $resolve (val, get) {
@@ -59,8 +59,8 @@ export default defineUntypedSchema({
         if (val === false || (await get('dev')) || (await get('ssr')) === false || (await get('builder')) === '@nuxt/webpack-builder') {
           return false
         }
-        // Enabled by default for vite prod with ssr
-        return val ?? true
+        // Enabled by default for vite prod with ssr (for vue components)
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? (id: string) => id && id.includes('.vue') : true)
       },
     },
 
@@ -105,7 +105,7 @@ export default defineUntypedSchema({
     },
 
     // TODO: Remove when nitro has support for mocking traced dependencies
-    // https://github.com/unjs/nitro/issues/1118
+    // https://github.com/nitrojs/nitro/issues/1118
     /**
      * Externalize `vue`, `@vue/*` and `vue-router` when building.
      * @see [Nuxt Issue #13632](https://github.com/nuxt/nuxt/issues/13632)
@@ -122,13 +122,16 @@ export default defineUntypedSchema({
      * Emit `app:chunkError` hook when there is an error loading vite/webpack
      * chunks.
      *
-     * By default, Nuxt will also perform a hard reload of the new route
-     * when a chunk fails to load when navigating to a new route.
+     * By default, Nuxt will also perform a reload of the new route
+     * when a chunk fails to load when navigating to a new route (`automatic`).
+     *
+     * Setting `automatic-immediate` will lead Nuxt to perform a reload of the current route
+     * right when a chunk fails to load (instead of waiting for navigation).
      *
      * You can disable automatic handling by setting this to `false`, or handle
      * chunk errors manually by setting it to `manual`.
      * @see [Nuxt PR #19038](https://github.com/nuxt/nuxt/pull/19038)
-     * @type {false | 'manual' | 'automatic'}
+     * @type {false | 'manual' | 'automatic' | 'automatic-immediate'}
      */
     emitRouteChunkError: {
       $resolve: (val) => {
@@ -253,7 +256,7 @@ export default defineUntypedSchema({
      *
      * You can also set this to `chokidar` to watch all files in your source directory.
      * @see [chokidar](https://github.com/paulmillr/chokidar)
-     * @see [Parcel watcher](https://github.com/parcel-bundler/watcher)
+     * @see [@parcel/watcher](https://github.com/parcel-bundler/watcher)
      * @type {'chokidar' | 'parcel' | 'chokidar-granular'}
      */
     watcher: {
@@ -281,7 +284,7 @@ export default defineUntypedSchema({
      * - Add the capo.js head plugin in order to render tags in of the head in a more performant way.
      * - Uses the hash hydration plugin to reduce initial hydration
      *
-     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632]
+     * @see [Nuxt Discussion #22632](https://github.com/nuxt/nuxt/discussions/22632)
      */
     headNext: true,
 
@@ -302,9 +305,24 @@ export default defineUntypedSchema({
      *
      * This only works with static or strings/arrays rather than variables or conditional assignment.
      *
-     * https://github.com/nuxt/nuxt/issues/24770
+     * @see [Nuxt Issues #24770](https://github.com/nuxt/nuxt/issues/24770)
+     * @type {boolean | 'after-resolve'}
      */
-    scanPageMeta: true,
+    scanPageMeta: {
+      async $resolve (val, get) {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4 ? 'after-resolve' : true)
+      },
+    },
+
+    /**
+     * Configure additional keys to extract from the page metadata when using `scanPageMeta`.
+     *
+     * This allows modules to access additional metadata from the page metadata. It's recommended
+     * to augment the NuxtPage types with your keys.
+     *
+     * @type {string[]}
+     */
+    extraPageMetaExtractionKeys: [],
 
     /**
      * Automatically share payload _data_ between pages that are prerendered. This can result in a significant
@@ -348,9 +366,13 @@ export default defineUntypedSchema({
      * `app/` directory.
      */
     defaults: {
-      /** @type {typeof import('#app/components/nuxt-link')['NuxtLinkOptions']} */
+      /** @type {typeof import('nuxt/app')['NuxtLinkOptions']} */
       nuxtLink: {
         componentName: 'NuxtLink',
+        prefetch: true,
+        prefetchOn: {
+          visibility: true,
+        },
       },
       /**
        * Options that apply to `useAsyncData` (and also therefore `useFetch`)
@@ -364,7 +386,7 @@ export default defineUntypedSchema({
 
     /**
      * Automatically polyfill Node.js imports in the client build using `unenv`.
-     * @see https://github.com/unjs/unenv
+     * @see [unenv](https://github.com/unjs/unenv)
      *
      * **Note:** To make globals like `Buffer` work in the browser, you need to manually inject them.
      *
@@ -384,5 +406,51 @@ export default defineUntypedSchema({
      * It can reduce INP when navigating on prerendered routes.
      */
     navigationRepaint: true,
+
+    /**
+     * Cache Nuxt/Nitro build artifacts based on a hash of the configuration and source files.
+     *
+     * This only works for source files within `srcDir` and `serverDir` for the Vue/Nitro parts of your app.
+     */
+    buildCache: false,
+
+    /**
+     * Ensure that auto-generated Vue component names match the full component name
+     * you would use to auto-import the component.
+     */
+    normalizeComponentNames: {
+      $resolve: async (val, get) => {
+        return val ?? ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      },
+    },
+
+    /**
+     * Keep showing the spa-loading-template until suspense:resolve
+     * @see [Nuxt Issues #21721](https://github.com/nuxt/nuxt/issues/21721)
+     * @type {'body' | 'within'}
+     */
+    spaLoadingTemplateLocation: {
+      $resolve: async (val, get) => {
+        return val ?? (((await get('future') as Record<string, unknown>).compatibilityVersion === 4) ? 'body' : 'within')
+      },
+    },
+
+    /**
+     * Enable timings for Nuxt application hooks in the performance panel of Chromium-based browsers.
+     *
+     * @see [the Chrome DevTools extensibility API](https://developer.chrome.com/docs/devtools/performance/extension#tracks)
+     */
+    browserDevtoolsTiming: {
+      $resolve: async (val, get) => val ?? await get('dev'),
+    },
+
+    /**
+     * Record mutations to `nuxt.options` in module context
+     */
+    debugModuleMutation: {
+      $resolve: async (val, get) => {
+        return val ?? Boolean(await get('debug'))
+      },
+    },
   },
 })

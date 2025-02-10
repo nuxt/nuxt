@@ -1,9 +1,13 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { applyDefaults } from 'untyped'
 
 import { normalize } from 'pathe'
 import { NuxtConfigSchema } from '../src'
 import type { NuxtOptions } from '../src'
+
+vi.mock('node:fs', () => ({
+  existsSync: (id: string) => id.endsWith('app'),
+}))
 
 describe('nuxt folder structure', () => {
   it('should resolve directories for v3 setup correctly', async () => {
@@ -70,6 +74,23 @@ describe('nuxt folder structure', () => {
         "serverDir": "/test/server",
         "srcDir": "/test/customApp",
         "workspaceDir": "/test",
+      }
+    `)
+  })
+
+  it('should not override value from user for serverDir', async () => {
+    const result = await applyDefaults(NuxtConfigSchema, { future: { compatibilityVersion: 4 }, serverDir: '/myServer' })
+    expect(getDirs(result as unknown as NuxtOptions)).toMatchInlineSnapshot(`
+      {
+        "dir": {
+          "app": "<cwd>/app",
+          "modules": "<cwd>/modules",
+          "public": "<cwd>/public",
+        },
+        "rootDir": "<cwd>",
+        "serverDir": "/myServer",
+        "srcDir": "<cwd>/app",
+        "workspaceDir": "<cwd>",
       }
     `)
   })

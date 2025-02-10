@@ -34,7 +34,7 @@ It provides a number of features that make it easy to build fast, SEO-friendly, 
 - 🏠 [Local Development](#local-development)
 - ⛰️ [Nuxt 2](#nuxt-2)
 - 🛟 [Professional Support](#professional-support)
-- 🔗 [Follow us](#follow-us)
+- 🔗 [Follow Us](#follow-us)
 - ⚖️ [License](#license)
 
 ---
@@ -106,10 +106,10 @@ Follow the docs to [Set Up Your Local Development Environment](https://nuxt.com/
 - Technical audit & consulting: [Nuxt Experts](https://nuxt.com/enterprise/support)
 - Custom development & more: [Nuxt Agencies Partners](https://nuxt.com/enterprise/agencies)
 
-## <a name="follow-us">🔗 Follow us</a>
+## <a name="follow-us">🔗 Follow Us</a>
 
 <p valign="center">
-  <a href="https://chat.nuxt.dev"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://twitter.nuxt.dev"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://github.nuxt.dev"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>
+  <a href="https://go.nuxt.com/discord"><img width="20px" src="./.github/assets/discord.svg" alt="Discord"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/x"><img width="20px" src="./.github/assets/twitter.svg" alt="Twitter"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/github"><img width="20px" src="./.github/assets/github.svg" alt="GitHub"></a>&nbsp;&nbsp;<a href="https://go.nuxt.com/bluesky"><img width="20px" src="./.github/assets/bluesky.svg" alt="Bluesky"></a>
 </p>
 
 ## <a name="license">⚖️ License</a>

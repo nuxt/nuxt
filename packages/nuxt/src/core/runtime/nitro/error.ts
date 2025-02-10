@@ -3,7 +3,7 @@ import type { NitroErrorHandler } from 'nitro/types'
 import type { H3Error, H3Event } from 'h3'
 import { getRequestHeader, getRequestHeaders, send, setResponseHeader, setResponseStatus } from 'h3'
 import { useNitroApp, useRuntimeConfig } from 'nitro/runtime'
-import type { NuxtPayload } from '#app'
+import type { NuxtPayload } from 'nuxt/app'
 
 export default <NitroErrorHandler> async function errorhandler (error: H3Error, event) {
   // Parse and normalize error
@@ -31,7 +31,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
       error.fatal && '[fatal]',
       Number(errorObject.statusCode) !== 200 && `[${errorObject.statusCode}]`,
     ].filter(Boolean).join(' ')
-    console.error(tags, errorObject.message + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
+    console.error(tags, (error.message || error.toString() || 'internal server error') + '\n' + stack.map(l => '  ' + l.text).join('  \n'))
   }
 
   if (event.handled) { return }
@@ -86,7 +86,7 @@ export default <NitroErrorHandler> async function errorhandler (error: H3Error, 
 }
 
 /**
- * Nitro internal functions extracted from https://github.com/unjs/nitro/blob/main/src/runtime/internal/utils.ts
+ * Nitro internal functions extracted from https://github.com/nitrojs/nitro/blob/main/src/runtime/internal/utils.ts
  */
 
 function isJsonRequest (event: H3Event) {
@@ -112,32 +112,37 @@ function hasReqHeader (event: H3Event, name: string, includes: string) {
 }
 
 function normalizeError (error: any) {
-  // temp fix for https://github.com/unjs/nitro/issues/759
+  // temp fix for https://github.com/nitrojs/nitro/issues/759
   // TODO: investigate vercel-edge not using unenv pollyfill
   const cwd = typeof process.cwd === 'function' ? process.cwd() : '/'
-  const stack = ((error.stack as string) || '')
-    .split('\n')
-    .splice(1)
-    .filter(line => line.includes('at '))
-    .map((line) => {
-      const text = line
-        .replace(cwd + '/', './')
-        .replace('webpack:/', '')
-        .replace('file://', '')
-        .trim()
-      return {
-        text,
-        internal:
-          (line.includes('node_modules') && !line.includes('.cache')) ||
-          line.includes('internal') ||
-          line.includes('new Promise'),
-      }
-    })
+
+  // Hide details of unhandled/fatal errors in production
+  const hideDetails = !import.meta.dev && error.unhandled
+
+  const stack = hideDetails && !import.meta.prerender
+    ? []
+    : ((error.stack as string) || '')
+        .split('\n')
+        .splice(1)
+        .filter(line => line.includes('at '))
+        .map((line) => {
+          const text = line
+            .replace(cwd + '/', './')
+            .replace('webpack:/', '')
+            .replace('file://', '')
+            .trim()
+          return {
+            text,
+            internal:
+              (line.includes('node_modules') && !line.includes('.cache')) ||
+              line.includes('internal') ||
+              line.includes('new Promise'),
+          }
+        })
 
   const statusCode = error.statusCode || 500
-  const statusMessage =
-    error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
-  const message = error.message || error.toString()
+  const statusMessage = error.statusMessage ?? (statusCode === 404 ? 'Not Found' : '')
+  const message = hideDetails ? 'internal server error' : (error.message || error.toString())
 
   return {
     stack,
