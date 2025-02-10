@@ -1,3 +1,4 @@
+import defu from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { defineUntypedSchema } from 'untyped'
 
@@ -78,16 +79,11 @@ export default defineUntypedSchema({
      */
     tsConfig: {
       $resolve: async (val, get) => {
-        if (val) { return val }
-
-        const enableDecorators = await get('experimental.decorators')
-        if (!enableDecorators) { return {} }
-
-        return {
+        return defu(val && typeof val === 'object' ? val : {}, {
           compilerOptions: {
-            experimentalDecorators: true,
+            experimentalDecorators: await get('experimental.decorators') ? true : undefined,
           },
-        } satisfies TSConfig
+        } satisfies TSConfig)
       },
     },
 
