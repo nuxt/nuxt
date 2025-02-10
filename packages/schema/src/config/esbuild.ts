@@ -4,6 +4,9 @@ import type { TransformOptions } from 'esbuild'
 
 export default defineUntypedSchema({
   esbuild: {
+    /**
+     * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
+     */
     options: {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
