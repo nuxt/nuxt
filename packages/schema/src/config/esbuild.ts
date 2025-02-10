@@ -6,15 +6,21 @@ export default defineUntypedSchema({
   esbuild: {
     /**
      * Configure shared esbuild options used within Nuxt and passed to other builders, such as Vite or Webpack.
+     * @type {import('esbuild').TransformOptions}
      */
     options: {
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
       tsconfigRaw: {
         $resolve: async (val: TransformOptions['tsconfigRaw'], get) => {
+          const useDecorators = await get('experimental').then(r => (r as Record<string, unknown>)?.decorators === true)
+          if (!useDecorators) {
+            return val
+          }
           return defu(val, {
             compilerOptions: {
-              experimentalDecorators: await get('experimental').then(r => (r as Record<string, unknown>)?.decorators as boolean),
+              useDefineForClassFields: false,
+              experimentalDecorators: false,
             },
           } satisfies TransformOptions['tsconfigRaw'])
         },

@@ -83,6 +83,9 @@ export default defineUntypedSchema({
       },
     },
     optimizeDeps: {
+      esbuildOptions: {
+        $resolve: async (val: Record<string, any>, get) => defu(val, (await get('esbuild.options') as Record<string, any>)),
+      },
       exclude: {
         $resolve: async (val: string[] | undefined, get) => [
           ...val || [],
