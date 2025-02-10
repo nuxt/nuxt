@@ -83,14 +83,10 @@ export interface NuxtApp {
 
 export interface Nuxt {
   // Private fields.
-  /**
-   * The name of the Nuxt instance, this can be useful for build time debugging and mono-repos.
-   */
   __name: string
   _version: string
   _ignore?: Ignore
   _dependencies?: Set<string>
-  _run: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
   _debug?: NuxtDebugContext
   /** Async local storage for current running Nuxt module instance. */
   _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
@@ -101,6 +97,7 @@ export interface Nuxt {
   hook: Nuxt['hooks']['hook']
   callHook: Nuxt['hooks']['callHook']
   addHooks: Nuxt['hooks']['addHooks']
+  runWithContext: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
   ready: () => Promise<void>
   close: () => Promise<void>

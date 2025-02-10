@@ -1,12 +1,19 @@
+import { AsyncLocalStorage } from 'node:async_hooks'
+
 import { getContext } from 'unctx'
 import type { Nuxt } from '@nuxt/schema'
-import { asyncNameStorage } from './utils'
-import { logger } from './logger'
+
+/**
+ * Direct access to the Nuxt global context - see https://github.com/unjs/unctx.
+ * @deprecated Use `getNuxtCtx` instead
+ */
+export const nuxtCtx = getContext<Nuxt>('nuxt')
+
+/** async local storage for the name of the current nuxt instance */
+const asyncNameStorage = new AsyncLocalStorage<string>()
 
 /** Direct access to the Nuxt context with asyncLocalStorage - see https://github.com/unjs/unctx. */
 export const getNuxtCtx = () => getContext<Nuxt>(asyncNameStorage.getStore()!)
-/** Global nuxt ctx - see https://github.com/unjs/unctx.  */
-export const nuxtCtx = getContext<Nuxt>('nuxt-global')
 
 // TODO: Use use/tryUse from unctx. https://github.com/unjs/unctx/issues/6
 
@@ -20,14 +27,8 @@ export const nuxtCtx = getContext<Nuxt>('nuxt-global')
  * ```
  */
 export function useNuxt (): Nuxt {
-  const instance = getNuxtCtx().tryUse()
+  const instance = getNuxtCtx().tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    const fallbackInstance = nuxtCtx.tryUse()
-    if (fallbackInstance) {
-      logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v5.')
-      return fallbackInstance
-    }
-
     throw new Error('Nuxt instance is unavailable!')
   }
   return instance
@@ -46,10 +47,9 @@ export function useNuxt (): Nuxt {
  * ```
  */
 export function tryUseNuxt (): Nuxt | null {
-  const nuxt = getNuxtCtx().tryUse()
-  if (!nuxt) {
-    logger.warn('Using fallback global Nuxt instance. You may be using a @nuxt/kit composable outside of a Nuxt context, this behavior is deprecated and will be removed in v5.')
-    return nuxtCtx.tryUse()
-  }
-  return nuxt
+  return getNuxtCtx().tryUse() || nuxtCtx.tryUse()
+}
+
+export function runWithNuxtContext<T extends (...args: any[]) => any> (nuxt: Nuxt, fn: T) {
+  return asyncNameStorage.run(nuxt.__name, fn) as ReturnType<T>
 }

@@ -6,7 +6,7 @@ import { join, normalize, relative, resolve } from 'pathe'
 import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
-import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, asyncNameStorage, getNuxtCtx, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, tryResolveModule, useNitro } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addPluginTemplate, addRouteMiddleware, addServerPlugin, addTypeTemplate, addVitePlugin, addWebpackPlugin, getNuxtCtx, installModule, loadNuxtConfig, nuxtCtx, resolveAlias, resolveFiles, resolveIgnorePatterns, resolvePath, runWithNuxtContext, tryResolveModule, useNitro } from '@nuxt/kit'
 import type { Nuxt, NuxtHooks, NuxtModule, NuxtOptions } from 'nuxt/schema'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
@@ -53,26 +53,25 @@ import { VirtualFSPlugin } from './plugins/virtual'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
-  const name = randomUUID()
 
   const { callHook, callHookParallel, callHookWith } = hooks
-  hooks.callHook = (...args) => asyncNameStorage.run(name, () => callHook(...args))
-  hooks.callHookParallel = (...args) => asyncNameStorage.run(name, () => callHookParallel(...args))
-  hooks.callHookWith = (...args) => asyncNameStorage.run(name, () => callHookWith(...args))
+  hooks.callHook = (...args) => runWithNuxtContext(nuxt, () => callHook(...args))
+  hooks.callHookParallel = (...args) => runWithNuxtContext(nuxt, () => callHookParallel(...args))
+  hooks.callHookWith = (...args) => runWithNuxtContext(nuxt, () => callHookWith(...args))
 
   const nuxt: Nuxt = {
+    __name: randomUUID(),
     _version: version,
     _asyncLocalStorageModule: options.experimental.debugModuleMutation ? new AsyncLocalStorage() : undefined,
     hooks,
     callHook: hooks.callHook,
     addHooks: hooks.addHooks,
     hook: hooks.hook,
-    ready: () => asyncNameStorage.run(name, () => initNuxt(nuxt)),
+    ready: () => runWithNuxtContext(nuxt, () => initNuxt(nuxt)),
     close: () => hooks.callHook('close', nuxt),
     vfs: {},
     apps: {},
-    __name: name,
-    _run: fn => asyncNameStorage.run(name, fn),
+    runWithContext: fn => runWithNuxtContext(nuxt, fn),
     options,
   }
 
@@ -131,7 +130,7 @@ export function createNuxt (options: NuxtOptions): Nuxt {
       nuxtCtx.unset()
     })
   }
-  nuxt._run(() => {
+  nuxt.runWithContext(() => {
     // Set nuxt instance for useNuxt
     getNuxtCtx().set(nuxt)
     nuxt.hook('close', () => {
@@ -880,11 +879,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 
   const nuxt = createNuxt(options)
 
-  nuxt._run(() => {
-    for (const dep of keyDependencies) {
-      checkDependencyVersion(dep, nuxt._version)
-    }
-
+  nuxt.runWithContext(() => {
     if (nuxt.options.dev && !nuxt.options.test) {
       nuxt.hooks.hookOnce('build:done', () => {
         for (const dep of keyDependencies) {

@@ -18,7 +18,7 @@ export type { ExtendConfigOptions, ExtendViteConfigOptions, ExtendWebpackConfigO
 export { assertNuxtCompatibility, checkNuxtCompatibility, getNuxtVersion, hasNuxtCompatibility, isNuxtMajorVersion, normalizeSemanticVersion, isNuxt2, isNuxt3 } from './compatibility'
 export { addComponent, addComponentsDir } from './components'
 export type { AddComponentOptions } from './components'
-export { getNuxtCtx, tryUseNuxt, useNuxt, nuxtCtx } from './context'
+export { getNuxtCtx, runWithNuxtContext, tryUseNuxt, useNuxt, nuxtCtx } from './context'
 export { createIsIgnored, isIgnored, resolveIgnorePatterns } from './ignore'
 export { addLayout } from './layout'
 export { addRouteMiddleware, extendPages, extendRouteRules } from './pages'
@@ -34,4 +34,3 @@ export { logger, useLogger } from './logger'
 // Internal Utils
 export { resolveModule, tryResolveModule, importModule, tryImportModule, requireModule, tryRequireModule } from './internal/esm'
 export type { ImportModuleOptions, ResolveModuleOptions } from './internal/esm'
-export { asyncNameStorage } from './utils'

@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
-import { asyncNameStorage, logger, useNuxt } from '@nuxt/kit'
+import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
@@ -64,12 +64,19 @@ describe('loadNuxt', () => {
     })
 
     // @ts-expect-error - random hook
-    await nuxt.hook('test', () => {
-      const nuxt = useNuxt()
-      expect(asyncNameStorage.getStore()).toBe(nuxt.__name)
+    nuxt.hook('test', () => {
+      expect(useNuxt().__name).toBe(nuxt.__name)
     })
 
-    expect(asyncNameStorage.getStore()).toBeUndefined()
+    expect(tryUseNuxt()?.__name).not.toBe(nuxt.__name)
+
+    // second nuxt context
+    const second = await loadNuxt({
+      cwd: repoRoot,
+    })
+
+    expect(second.__name).not.toBe(nuxt.__name)
+    expect(tryUseNuxt()?.__name).not.toBe(nuxt.__name)
 
     // @ts-expect-error - random hook
     await nuxt.callHook('test')
