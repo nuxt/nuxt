@@ -1,3 +1,5 @@
+import type { ResolvableConfigSchema } from '../utils/definition'
+
 import adhoc from './adhoc'
 import app from './app'
 import build from './build'
@@ -30,4 +32,4 @@ export default {
   ...esbuild,
   ...vite,
   ...webpack,
-}
+} satisfies ResolvableConfigSchema

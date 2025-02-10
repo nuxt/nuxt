@@ -705,6 +705,15 @@ importers:
       '@types/pug':
         specifier: 2.0.10
         version: 2.0.10
+      '@types/rollup-plugin-visualizer':
+        specifier: 4.2.4
+        version: 4.2.4
+      '@types/webpack-bundle-analyzer':
+        specifier: 4.7.0
+        version: 4.7.0(esbuild@0.25.0)
+      '@types/webpack-hot-middleware':
+        specifier: 2.25.9
+        version: 2.25.9(esbuild@0.25.0)
       '@unhead/schema':
         specifier: 1.11.18
         version: 1.11.18
@@ -732,6 +741,9 @@ importers:
       compatx:
         specifier: 0.1.8
         version: 0.1.8
+      css-minimizer-webpack-plugin:
+        specifier: 7.0.0
+        version: 7.0.0(esbuild@0.25.0)(webpack@5.97.1(esbuild@0.25.0))
       esbuild:
         specifier: 0.25.0
         version: 0.25.0
@@ -750,6 +762,9 @@ importers:
       ignore:
         specifier: 7.0.3
         version: 7.0.3
+      mini-css-extract-plugin:
+        specifier: 2.9.2
+        version: 2.9.2(webpack@5.97.1(esbuild@0.25.0))
       nitro:
         specifier: npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6
         version: nitro-nightly@3.0.0-beta-28969273.f7aa9de6(typescript@5.7.3)
@@ -759,6 +774,9 @@ importers:
       pkg-types:
         specifier: 1.3.1
         version: 1.3.1
+      postcss:
+        specifier: 8.5.1
+        version: 8.5.1
       sass-loader:
         specifier: 16.0.4
         version: 16.0.4(@rspack/core@1.2.2)(webpack@5.97.1(esbuild@0.25.0))
@@ -2976,6 +2994,9 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
+
+  '@types/rollup-plugin-visualizer@4.2.4':
+    resolution: {integrity: sha512-BW4Q6D1Qy5gno5qHWrnMDC2dOe/TAKXvqCpckOggCCu+XpS+ZZJJ1lq1+K3bvYccoO3Y7f5kglbFAgYGqCgULg==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -9912,6 +9933,10 @@ snapshots:
 
   '@types/resolve@1.20.2': {}
 
+  '@types/rollup-plugin-visualizer@4.2.4':
+    dependencies:
+      rollup: 4.34.6
+
   '@types/semver@7.5.8': {}
 
   '@types/unist@2.0.11': {}
@@ -9934,11 +9959,33 @@ snapshots:
       - uglify-js
       - webpack-cli
 
+  '@types/webpack-bundle-analyzer@4.7.0(esbuild@0.25.0)':
+    dependencies:
+      '@types/node': 22.13.1
+      tapable: 2.2.1
+      webpack: 5.97.1(esbuild@0.25.0)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+      - webpack-cli
+
   '@types/webpack-hot-middleware@2.25.9':
     dependencies:
       '@types/connect': 3.4.38
       tapable: 2.2.1
       webpack: 5.97.1
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+      - webpack-cli
+
+  '@types/webpack-hot-middleware@2.25.9(esbuild@0.25.0)':
+    dependencies:
+      '@types/connect': 3.4.38
+      tapable: 2.2.1
+      webpack: 5.97.1(esbuild@0.25.0)
     transitivePeerDependencies:
       - '@swc/core'
       - esbuild
@@ -11188,6 +11235,18 @@ snapshots:
     optionalDependencies:
       '@rspack/core': 1.2.2
       webpack: 5.97.1
+
+  css-minimizer-webpack-plugin@7.0.0(esbuild@0.25.0)(webpack@5.97.1(esbuild@0.25.0)):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      cssnano: 7.0.6(postcss@8.5.1)
+      jest-worker: 29.7.0
+      postcss: 8.5.1
+      schema-utils: 4.2.0
+      serialize-javascript: 6.0.2
+      webpack: 5.97.1(esbuild@0.25.0)
+    optionalDependencies:
+      esbuild: 0.25.0
 
   css-minimizer-webpack-plugin@7.0.0(webpack@5.97.1):
     dependencies:
@@ -13412,6 +13471,12 @@ snapshots:
   mimic-fn@4.0.0: {}
 
   min-indent@1.0.1: {}
+
+  mini-css-extract-plugin@2.9.2(webpack@5.97.1(esbuild@0.25.0)):
+    dependencies:
+      schema-utils: 4.2.0
+      tapable: 2.2.1
+      webpack: 5.97.1(esbuild@0.25.0)
 
   mini-css-extract-plugin@2.9.2(webpack@5.97.1):
     dependencies:
