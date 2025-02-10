@@ -160,8 +160,8 @@ export default defineResolvers({
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
       esbuild: {
-        $resolve: async (val: Record<string, any>, get) => {
-          return defu(val, await get('esbuild.options') as Record<string, any>)
+        $resolve: async (val, get) => {
+          return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
         },
       },
 

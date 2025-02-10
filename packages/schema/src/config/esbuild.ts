@@ -15,7 +15,7 @@ export default defineResolvers({
         $resolve: async (_val, get) => {
           const val: NonNullable<Exclude<TransformOptions['tsconfigRaw'], string>> = typeof _val === 'string' ? JSON.parse(_val) : (_val && typeof _val === 'object' ? _val : {})
 
-          const useDecorators = await get('experimental').then(r => (r as Record<string, unknown>)?.decorators === true)
+          const useDecorators = await get('experimental').then(r => r?.decorators === true)
           if (!useDecorators) {
             return val
           }

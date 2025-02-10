@@ -88,7 +88,7 @@ export default defineResolvers({
     },
     optimizeDeps: {
       esbuildOptions: {
-        $resolve: async (val: Record<string, any>, get) => defu(val, (await get('esbuild.options') as Record<string, any>)),
+        $resolve: async (val, get) => defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options')),
       },
       exclude: {
         $resolve: async (val, get) => [
@@ -99,8 +99,8 @@ export default defineResolvers({
       },
     },
     esbuild: {
-      $resolve: async (val: Record<string, any>, get) => {
-        return defu(val, await get('esbuild.options') as Record<string, any>)
+      $resolve: async (val, get) => {
+        return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
       },
     },
     clearScreen: true,
