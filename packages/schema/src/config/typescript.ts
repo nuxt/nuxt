@@ -1,6 +1,6 @@
-import { defineUntypedSchema } from 'untyped'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Configuration for Nuxt's TypeScript integration.
    *
@@ -23,7 +23,17 @@ export default defineUntypedSchema({
      * @type {'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined}
      */
     builder: {
-      $resolve: val => val ?? null,
+      $resolve: (val) => {
+        const validBuilderTypes = ['vite', 'webpack', 'rspack', 'shared'] as const
+        type ValidBuilderType = typeof validBuilderTypes[number]
+        if (typeof val === 'string' && validBuilderTypes.includes(val as ValidBuilderType)) {
+          return val as ValidBuilderType
+        }
+        if (val === false) {
+          return false
+        }
+        return undefined
+      },
     },
 
     /**
