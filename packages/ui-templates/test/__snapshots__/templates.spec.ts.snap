@@ -1176,7 +1176,8 @@ svg {
 exports[`template > produces correct output for welcome template 1`] = `
 "@media (prefers-color-scheme: light) {
   .get-started-gradient-border {
-    background: linear-gradient(90deg, #fff, #fff),
+    background:
+      linear-gradient(90deg, #fff, #fff),
       linear-gradient(90deg, #00dc82, #1de0b1, #36e4da);
   }
   .gradient-border-modules {
@@ -1209,7 +1210,8 @@ exports[`template > produces correct output for welcome template 1`] = `
 }
 @media (prefers-color-scheme: dark) {
   .get-started-gradient-border {
-    background: linear-gradient(90deg, #18181b, #18181b),
+    background:
+      linear-gradient(90deg, #18181b, #18181b),
       linear-gradient(90deg, #00dc82, #1de0b1, #36e4da);
   }
   .gradient-border-modules {
@@ -1646,8 +1648,8 @@ exports[`template > produces correct output for welcome template 1`] = `
   --un-ring-shadow: var(--un-ring-inset) 0 0 0
     calc(var(--un-ring-width) + var(--un-ring-offset-width))
     var(--un-ring-color);
-  box-shadow: var(--un-ring-offset-shadow), var(--un-ring-shadow),
-    var(--un-shadow);
+  box-shadow:
+    var(--un-ring-offset-shadow), var(--un-ring-shadow), var(--un-shadow);
 }
 .transition-opacity {
   transition-duration: 0.15s;
