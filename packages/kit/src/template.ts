@@ -180,7 +180,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     .then(r => r?.version && gte(r.version, '5.4.0'))
     .catch(() => isV4)
 
-  const useDecorators = nuxt.options.experimental.decorators
+  const useDecorators = Boolean(nuxt.options.experimental?.decorators)
 
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
