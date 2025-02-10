@@ -11,7 +11,7 @@
     "build": "pnpm --filter './packages/**' prepack",
     "build:stub": "pnpm dev:prepare",
     "dev": "pnpm play",
-    "dev:prepare": "pnpm --filter './packages/**' prepack --stub && pnpm --filter './packages/ui-templates' build",
+    "dev:prepare": "pnpm --filter './packages/**' prepack --stub && pnpm --filter './packages/ui-templates' build && nuxi prepare",
     "debug:prepare": "TIMINGS_DEBUG=true pnpm dev:prepare",
     "debug:build": "TIMINGS_DEBUG=true pnpm build",
     "debug:dev": "rm -rf **/node_modules/.cache/jiti && pnpm nuxi dev",
