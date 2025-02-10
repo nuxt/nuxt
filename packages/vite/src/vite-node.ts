@@ -1,18 +1,16 @@
 import { writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
-import { createApp, createError, defineEventHandler, defineLazyEventHandler, eventHandler, toNodeListener } from 'h3'
+import { createApp, createError, defineEventHandler, toNodeListener } from 'h3'
 import { ViteNodeServer } from 'vite-node/server'
 import { isAbsolute, normalize, resolve } from 'pathe'
 // import { addDevServerHandler } from '@nuxt/kit'
 import { isFileServingAllowed } from 'vite'
-import type { ModuleNode, Plugin as VitePlugin } from 'vite'
+import type { ModuleNode, ViteDevServer, Plugin as VitePlugin } from 'vite'
 import { getQuery } from 'ufo'
 import { normalizeViteManifest } from 'vue-bundle-renderer'
-import { resolve as resolveModule } from 'mlly'
 import { distDir } from './dirs'
 import type { ViteBuildContext } from './vite'
 import { isCSS } from './utils'
-import { createIsExternal } from './utils/external'
 
 // TODO: Remove this in favor of registerViteNodeMiddleware
 // after Nitropack or h3 allows adding middleware after setup
@@ -101,6 +99,19 @@ function getManifest (ctx: ViteBuildContext) {
 function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = new Set()) {
   const app = createApp()
 
+  let _node: ViteNodeServer | undefined
+  function getNode (server: ViteDevServer) {
+    return _node ||= new ViteNodeServer(server, {
+      deps: {
+        inline: [/^#/, /\?/],
+      },
+      transformMode: {
+        ssr: [/.*/],
+        web: [],
+      },
+    })
+  }
+
   app.use('/manifest', defineEventHandler(() => {
     const manifest = getManifest(ctx)
     return manifest
@@ -112,54 +123,38 @@ function createViteNodeApp (ctx: ViteBuildContext, invalidates: Set<string> = ne
     return ids
   }))
 
-  app.use('/module', defineLazyEventHandler(() => {
-    const viteServer = ctx.ssrServer!
-    const node = new ViteNodeServer(viteServer, {
-      deps: {
-        inline: [
-          // Common
-          /^#/,
-          /\?/,
-        ],
-      },
-      transformMode: {
-        ssr: [/.*/],
-        web: [],
-      },
-    })
-
-    const isExternal = createIsExternal(viteServer, ctx.nuxt)
-    node.shouldExternalize = async (id: string) => {
-      const result = await isExternal(id)
-      if (result?.external) {
-        return resolveModule(result.id, { url: ctx.nuxt.options.modulesDir }).catch(() => false)
-      }
-      return false
+  const RESOLVE_RE = /^\/(?<id>[^?]+)(?:\?importer=(?<importer>.*))?$/
+  app.use('/resolve', defineEventHandler(async (event) => {
+    const { id, importer } = event.path.match(RESOLVE_RE)?.groups || {}
+    if (!id || !ctx.ssrServer) {
+      throw createError({ statusCode: 400 })
     }
+    return await getNode(ctx.ssrServer).resolveId(decodeURIComponent(id), importer ? decodeURIComponent(importer) : undefined).catch(() => null)
+  }))
 
-    return eventHandler(async (event) => {
-      const moduleId = decodeURI(event.path).substring(1)
-      if (moduleId === '/') {
-        throw createError({ statusCode: 400 })
+  app.use('/module', defineEventHandler(async (event) => {
+    const moduleId = decodeURI(event.path).substring(1)
+    if (moduleId === '/' || !ctx.ssrServer) {
+      throw createError({ statusCode: 400 })
+    }
+    if (isAbsolute(moduleId) && !isFileServingAllowed(ctx.ssrServer.config, moduleId)) {
+      throw createError({ statusCode: 403 /* Restricted */ })
+    }
+    const node = getNode(ctx.ssrServer)
+    const module = await node.fetchModule(moduleId).catch(async (err) => {
+      const errorData = {
+        code: 'VITE_ERROR',
+        id: moduleId,
+        stack: '',
+        ...err,
       }
-      if (isAbsolute(moduleId) && !isFileServingAllowed(moduleId, viteServer)) {
-        throw createError({ statusCode: 403 /* Restricted */ })
-      }
-      const module = await node.fetchModule(moduleId).catch(async (err) => {
-        const errorData = {
-          code: 'VITE_ERROR',
-          id: moduleId,
-          stack: '',
-          ...err,
-        }
 
-        if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
-          errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
-        }
-        throw createError({ data: errorData })
-      })
-      return module
+      if (!errorData.frame && errorData.code === 'PARSE_ERROR') {
+        errorData.frame = await node.transformModule(moduleId, 'web').then(({ code }) => `${err.message || ''}\n${code}`).catch(() => undefined)
+      }
+      throw createError({ data: errorData })
     })
+    return module
   }))
 
   return app
