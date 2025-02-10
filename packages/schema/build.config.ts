@@ -39,6 +39,7 @@ export default defineBuildConfig({
     'consola',
     'css-minimizer-webpack-plugin',
     'cssnano',
+    'esbuild',
     'esbuild-loader',
     'file-loader',
     'h3',

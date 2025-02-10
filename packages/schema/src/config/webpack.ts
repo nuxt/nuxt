@@ -160,9 +160,9 @@ export default defineResolvers({
        * @type {Omit<typeof import('esbuild-loader')['LoaderOptions'], 'loader'>}
        */
       esbuild: {
-        jsxFactory: 'h',
-        jsxFragment: 'Fragment',
-        tsconfigRaw: '{}',
+        $resolve: async (val, get) => {
+          return defu(val && typeof val === 'object' ? val : {}, await get('esbuild.options'))
+        },
       },
 
       /**

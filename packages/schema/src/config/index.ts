@@ -5,6 +5,7 @@ import app from './app'
 import build from './build'
 import common from './common'
 import dev from './dev'
+import esbuild from './esbuild'
 import experimental from './experimental'
 import generate from './generate'
 import internal from './internal'
@@ -28,6 +29,7 @@ export default {
   ...postcss,
   ...router,
   ...typescript,
+  ...esbuild,
   ...vite,
   ...webpack,
 } satisfies ResolvableConfigSchema
