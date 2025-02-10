@@ -1,8 +1,7 @@
 import { defu } from 'defu'
-import { defineUntypedSchema } from 'untyped'
-import type { VueLoaderOptions } from 'vue-loader'
+import { defineResolvers } from '../utils/definition'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   webpack: {
     /**
      * Nuxt uses `webpack-bundle-analyzer` to visualize your bundles and how to optimize them.
@@ -17,8 +16,8 @@ export default defineUntypedSchema({
      * @type {boolean | { enabled?: boolean } & typeof import('webpack-bundle-analyzer').BundleAnalyzerPlugin.Options}
      */
     analyze: {
-      $resolve: async (val: boolean | { enabled?: boolean } | Record<string, unknown>, get) => {
-        const value = typeof val === 'boolean' ? { enabled: val } : val
+      $resolve: async (val, get) => {
+        const value = typeof val === 'boolean' ? { enabled: val } : (val && typeof val === 'object' ? val : {})
         return defu(value, await get('build.analyze') as { enabled?: boolean } | Record<string, unknown>)
       },
     },
@@ -83,7 +82,7 @@ export default defineUntypedSchema({
      * Enables CSS source map support (defaults to `true` in development).
      */
     cssSourceMap: {
-      $resolve: async (val, get) => val ?? await get('dev'),
+      $resolve: async (val, get) => typeof val === 'boolean' ? val : await get('dev'),
     },
 
     /**
@@ -147,7 +146,10 @@ export default defineUntypedSchema({
         for (const name of styleLoaders) {
           const loader = loaders[name]
           if (loader && loader.sourceMap === undefined) {
-            loader.sourceMap = Boolean(await get('build.cssSourceMap'))
+            loader.sourceMap = Boolean(
+              // @ts-expect-error TODO: remove legacay configuration
+              await get('build.cssSourceMap'),
+            )
           }
         }
         return loaders
@@ -165,30 +167,27 @@ export default defineUntypedSchema({
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
        * { esModule: false }
        * ```
        */
-      file: { esModule: false },
+      file: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
-       * { esModule: false, limit: 1000  }
+       * { esModule: false }
        * ```
        */
       fontUrl: { esModule: false, limit: 1000 },
 
       /**
        * @see [`file-loader` Options](https://github.com/webpack-contrib/file-loader#options)
-       * @type {Omit<typeof import('file-loader')['Options'], 'name'>}
        * @default
        * ```ts
-       * { esModule: false, limit: 1000  }
+       * { esModule: false }
        * ```
        */
       imgUrl: { esModule: false, limit: 1000 },
@@ -205,26 +204,38 @@ export default defineUntypedSchema({
        */
       vue: {
         transformAssetUrls: {
-          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))) as VueLoaderOptions['transformAssetUrls'],
+          $resolve: async (val, get) => (val ?? (await get('vue.transformAssetUrls'))),
         },
         compilerOptions: {
-          $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))) as VueLoaderOptions['compilerOptions'],
+          $resolve: async (val, get) => (val ?? (await get('vue.compilerOptions'))),
         },
         propsDestructure: {
           $resolve: async (val, get) => Boolean(val ?? await get('vue.propsDestructure')),
         },
-      } satisfies { [K in keyof VueLoaderOptions]: { $resolve: (val: unknown, get: (id: string) => Promise<unknown>) => Promise<VueLoaderOptions[K]> } },
+      },
 
+      /**
+       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       */
       css: {
         importLoaders: 0,
+        /**
+         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
+         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
         esModule: false,
       },
 
+      /**
+       * See [css-loader](https://github.com/webpack-contrib/css-loader) for available options.
+       */
       cssModules: {
         importLoaders: 0,
+        /**
+         * @type {boolean | { filter: (url: string, resourcePath: string) => boolean }}
+         */
         url: {
           filter: (url: string, _resourcePath: string) => url[0] !== '/',
         },
@@ -241,7 +252,6 @@ export default defineUntypedSchema({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @type {typeof import('sass-loader')['Options']}
        * @default
        * ```ts
        * {
@@ -259,7 +269,6 @@ export default defineUntypedSchema({
 
       /**
        * @see [`sass-loader` Options](https://github.com/webpack-contrib/sass-loader#options)
-       * @type {typeof import('sass-loader')['Options']}
        */
       scss: {},
 
@@ -300,7 +309,14 @@ export default defineUntypedSchema({
      * @type {false | typeof import('css-minimizer-webpack-plugin').BasePluginOptions & typeof import('css-minimizer-webpack-plugin').DefinedDefaultMinimizerAndOptions<any>}
      */
     optimizeCSS: {
-      $resolve: async (val, get) => val ?? (await get('build.extractCSS') ? {} : false),
+      $resolve: async (val, get) => {
+        if (val === false || (val && typeof val === 'object')) {
+          return val
+        }
+        // @ts-expect-error TODO: remove legacy configuration
+        const extractCSS = await get('build.extractCSS')
+        return extractCSS ? {} : false
+      },
     },
 
     /**
@@ -310,7 +326,9 @@ export default defineUntypedSchema({
     optimization: {
       runtimeChunk: 'single',
       /** Set minimize to `false` to disable all minimizers. (It is disabled in development by default). */
-      minimize: { $resolve: async (val, get) => val ?? !(await get('dev')) },
+      minimize: {
+        $resolve: async (val, get) => typeof val === 'boolean' ? val : !(await get('dev')),
+      },
       /** You can set minimizer to a customized array of plugins. */
       minimizer: undefined,
       splitChunks: {
@@ -323,15 +341,12 @@ export default defineUntypedSchema({
     /**
      * Customize PostCSS Loader.
      * same options as [`postcss-loader` options](https://github.com/webpack-contrib/postcss-loader#options)
-     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions, sourceMap?: boolean, implementation?: any }}
+     * @type {{ execute?: boolean, postcssOptions: typeof import('postcss').ProcessOptions & { plugins: Record<string, unknown> & { autoprefixer?: typeof import('autoprefixer').Options; cssnano?: typeof import('cssnano').Options } }, sourceMap?: boolean, implementation?: any }}
      */
     postcss: {
       postcssOptions: {
-        config: {
-          $resolve: async (val, get) => val ?? (await get('postcss.config')),
-        },
         plugins: {
-          $resolve: async (val, get) => val ?? (await get('postcss.plugins')),
+          $resolve: async (val, get) => val && typeof val === 'object' ? val : (await get('postcss.plugins')),
         },
       },
     },

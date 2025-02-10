@@ -1,9 +1,10 @@
-import { defineUntypedSchema } from 'untyped'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
+import { defineResolvers } from '../utils/definition'
 import type { AppHeadMetaObject } from '../types/head'
+import type { NuxtAppConfig } from '../types/config'
 
-export default defineUntypedSchema({
+export default defineResolvers({
   /**
    * Vue.js config
    */
@@ -27,7 +28,18 @@ export default defineUntypedSchema({
      * Include Vue compiler in runtime bundle.
      */
     runtimeCompiler: {
-      $resolve: async (val, get) => val ?? await get('experimental.runtimeVueCompiler') ?? false,
+      $resolve: async (val, get) => {
+        if (typeof val === 'boolean') {
+          return val
+        }
+        // @ts-expect-error TODO: formally deprecate in v4
+        const legacyProperty = await get('experimental.runtimeVueCompiler') as unknown
+        if (typeof legacyProperty === 'boolean') {
+          return legacyProperty
+        }
+
+        return false
+      },
     },
 
     /**
@@ -41,7 +53,7 @@ export default defineUntypedSchema({
      * may be set in your `nuxt.config`. All other options should be set at runtime in a Nuxt plugin..
      * @see [Vue app config documentation](https://vuejs.org/api/application.html#app-config)
      */
-    config: undefined,
+    config: {},
   },
 
   /**
@@ -68,12 +80,22 @@ export default defineUntypedSchema({
      * ```
      */
     baseURL: {
-      $resolve: val => val || process.env.NUXT_APP_BASE_URL || '/',
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BASE_URL || '/'
+      },
     },
 
     /** The folder name for the built site assets, relative to `baseURL` (or `cdnURL` if set). This is set at build time and should not be customized at runtime. */
     buildAssetsDir: {
-      $resolve: val => val || process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/',
+      $resolve: (val) => {
+        if (typeof val === 'string') {
+          return val
+        }
+        return process.env.NUXT_APP_BUILD_ASSETS_DIR || '/_nuxt/'
+      },
     },
 
     /**
@@ -96,7 +118,12 @@ export default defineUntypedSchema({
      * ```
      */
     cdnURL: {
-      $resolve: async (val, get) => (await get('dev')) ? '' : (process.env.NUXT_APP_CDN_URL ?? val) || '',
+      $resolve: async (val, get) => {
+        if (await get('dev')) {
+          return ''
+        }
+        return process.env.NUXT_APP_CDN_URL || (typeof val === 'string' ? val : '')
+      },
     },
 
     /**
@@ -132,14 +159,20 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['head']}
      */
     head: {
-      $resolve: async (val: Partial<AppHeadMetaObject> | undefined, get) => {
-        const resolved = defu(val, await get('meta') as Partial<AppHeadMetaObject>, {
+      $resolve: async (_val, get) => {
+        // @ts-expect-error TODO: remove in Nuxt v4
+        const legacyMetaValues = await get('meta') as Record<string, unknown>
+        const val: Partial<NuxtAppConfig['head']> = _val && typeof _val === 'object' ? _val : {}
+
+        type NormalizedMetaObject = Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>
+
+        const resolved: NuxtAppConfig['head'] & NormalizedMetaObject = defu(val, legacyMetaValues, {
           meta: [],
           link: [],
           style: [],
           script: [],
           noscript: [],
-        } as Required<Pick<AppHeadMetaObject, 'meta' | 'link' | 'style' | 'script' | 'noscript'>>)
+        } satisfies NormalizedMetaObject)
 
         // provides default charset and viewport if not set
         if (!resolved.meta.find(m => m.charset)?.charset) {
@@ -190,9 +223,13 @@ export default defineUntypedSchema({
      * @type {typeof import('../src/types/config').NuxtAppConfig['viewTransition']}
      */
     viewTransition: {
-      $resolve: async (val, get) => val ?? await (get('experimental') as Promise<Record<string, any>>).then(
-        e => e?.viewTransition,
-      ) ?? false,
+      $resolve: async (val, get) => {
+        if (val === 'always' || typeof val === 'boolean') {
+          return val
+        }
+
+        return await get('experimental').then(e => e.viewTransition) ?? false
+      },
     },
 
     /**
@@ -211,14 +248,14 @@ export default defineUntypedSchema({
      * @deprecated Prefer `rootAttrs.id` instead
      */
     rootId: {
-      $resolve: val => val === false ? false : (val || '__nuxt'),
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
     },
 
     /**
      * Customize Nuxt root element tag.
      */
     rootTag: {
-      $resolve: val => val || 'div',
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
     },
 
     /**
@@ -226,11 +263,12 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
     rootAttrs: {
-      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+      $resolve: async (val, get) => {
         const rootId = await get('app.rootId')
-        return defu(val, {
+        return {
           id: rootId === false ? undefined : (rootId || '__nuxt'),
-        })
+          ...typeof val === 'object' ? val : {},
+        }
       },
     },
 
@@ -238,7 +276,7 @@ export default defineUntypedSchema({
      * Customize Nuxt Teleport element tag.
      */
     teleportTag: {
-      $resolve: val => val || 'div',
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
     },
 
     /**
@@ -247,7 +285,7 @@ export default defineUntypedSchema({
      * @deprecated Prefer `teleportAttrs.id` instead
      */
     teleportId: {
-      $resolve: val => val === false ? false : (val || 'teleports'),
+      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : 'teleports'),
     },
 
     /**
@@ -255,11 +293,12 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').HtmlAttributes}
      */
     teleportAttrs: {
-      $resolve: async (val: undefined | null | Record<string, unknown>, get) => {
+      $resolve: async (val, get) => {
         const teleportId = await get('app.teleportId')
-        return defu(val, {
+        return {
           id: teleportId === false ? undefined : (teleportId || 'teleports'),
-        })
+          ...typeof val === 'object' ? val : {},
+        }
       },
     },
 
@@ -267,12 +306,12 @@ export default defineUntypedSchema({
      * Customize Nuxt SpaLoader element tag.
      */
     spaLoaderTag: {
-      $resolve: val => val || 'div',
+      $resolve: val => val && typeof val === 'string' ? val : 'div',
     },
 
     /**
      * Customize Nuxt Nuxt SpaLoader element attributes.
-     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     * @type {Partial<typeof import('@unhead/schema').HtmlAttributes>}
      */
     spaLoaderAttrs: {
       id: '__nuxt-loader',
@@ -332,10 +371,18 @@ export default defineUntypedSchema({
    * }
    * </style>
    * ```
-   * @type {string | boolean}
+   * @type {string | boolean | undefined}
    */
   spaLoadingTemplate: {
-    $resolve: async (val: string | boolean | undefined, get) => typeof val === 'string' ? resolve(await get('srcDir') as string, val) : val ?? null,
+    $resolve: async (val, get) => {
+      if (typeof val === 'string') {
+        return resolve(await get('srcDir'), val)
+      }
+      if (typeof val === 'boolean') {
+        return val
+      }
+      return undefined
+    },
   },
 
   /**
@@ -386,7 +433,21 @@ export default defineUntypedSchema({
    * @type {string[]}
    */
   css: {
-    $resolve: (val: string[] | undefined) => (val ?? []).map((c: any) => c.src || c),
+    $resolve: (val) => {
+      if (!Array.isArray(val)) {
+        return []
+      }
+      const css: string[] = []
+      for (const item of val) {
+        if (typeof item === 'string') {
+          css.push(item)
+        } else if (item && 'src' in item) {
+          // TODO: remove in Nuxt v4
+          css.push(item.src)
+        }
+      }
+      return css
+    },
   },
 
   /**
@@ -410,12 +471,13 @@ export default defineUntypedSchema({
      * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
      */
     renderSSRHeadOptions: {
-      $resolve: async (val: Record<string, unknown> | undefined, get) => {
-        const isV4 = ((await get('future') as Record<string, unknown>).compatibilityVersion === 4)
+      $resolve: async (val, get) => {
+        const isV4 = (await get('future')).compatibilityVersion === 4
 
-        return defu(val, {
+        return {
+          ...typeof val === 'object' ? val : {},
           omitLineBreaks: isV4,
-        })
+        }
       },
     },
   },
