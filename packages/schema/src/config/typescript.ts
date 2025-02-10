@@ -1,5 +1,3 @@
-import defu from 'defu'
-import type { TSConfig } from 'pkg-types'
 import { defineUntypedSchema } from 'untyped'
 
 export default defineUntypedSchema({
