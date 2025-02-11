@@ -2,6 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
 import { importModule, tryImportModule } from '../internal/esm'
+import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
@@ -76,10 +77,10 @@ export async function buildNuxt (nuxt: Nuxt): Promise<any> {
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
     const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { paths: rootDir }) || await tryImportModule<typeof import('nuxt')>('nuxt3', { paths: rootDir }) || await importModule<typeof import('nuxt')>('nuxt', { paths: rootDir })
-    return build(nuxt)
+    return runWithNuxtContext(nuxt, () => build(nuxt))
   }
 
   // Nuxt 2
   const { build } = await tryImportModule<{ build: any }>('nuxt-edge', { paths: rootDir }) || await importModule<{ build: any }>('nuxt', { paths: rootDir })
-  return build(nuxt)
+  return runWithNuxtContext(nuxt, () => build(nuxt))
 }
