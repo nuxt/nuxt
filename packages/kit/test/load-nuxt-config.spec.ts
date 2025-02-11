@@ -13,9 +13,9 @@ describe('loadNuxtConfig', () => {
       {
         "#build": "<rootDir>/.nuxt",
         "#internal/nuxt/paths": "<rootDir>/.nuxt/paths.mjs",
-        "#layer-fixture": "<rootDir>",
+        "#layers/layer-fixture": "<rootDir>",
+        "#layers/test": "<rootDir>/layers/test",
         "#shared": "<rootDir>/shared",
-        "#test": "<rootDir>/layers/test",
         "@": "<rootDir>",
         "@@": "<rootDir>",
         "assets": "<rootDir>/assets",

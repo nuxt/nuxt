@@ -40,7 +40,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   nuxtConfig.alias ||= {}
 
   if (meta?.name) {
-    const alias = `#${meta.name}`
+    const alias = `#layers/${meta.name}`
     nuxtConfig.alias[alias] ||= nuxtConfig.srcDir || nuxtConfig.rootDir
   }
 
@@ -84,7 +84,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
     // Add layer alias
     if (layer.meta?.name) {
-      const alias = `#${layer.meta.name}`
+      const alias = `#layers/${layer.meta.name}`
       nuxtConfig.alias[alias] ||= layer.config.srcDir || layer.config.rootDir || layer.cwd
     }
     _layers.push(layer)
