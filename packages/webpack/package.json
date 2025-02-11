@@ -59,7 +59,7 @@
     "time-fix-plugin": "^2.0.7",
     "ufo": "^1.5.4",
     "unenv": "^1.10.0",
-    "unplugin": "^2.1.2",
+    "unplugin": "^2.2.0",
     "url-loader": "^4.1.1",
     "vue-bundle-renderer": "^2.1.1",
     "vue-loader": "^17.4.2",
@@ -71,7 +71,7 @@
   },
   "devDependencies": {
     "@nuxt/schema": "workspace:*",
-    "@rspack/core": "1.2.2",
+    "@rspack/core": "1.2.3",
     "@types/pify": "5.0.4",
     "@types/webpack-bundle-analyzer": "4.7.0",
     "@types/webpack-hot-middleware": "2.25.9",
@@ -82,6 +82,6 @@
     "vue": "^3.3.4"
   },
   "engines": {
-    "node": "^18.20.6 || ^20.9.0 || >=22.0.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }
