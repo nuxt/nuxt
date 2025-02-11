@@ -32,7 +32,7 @@ overrides:
   typescript: 5.7.3
   ufo: 1.5.4
   unhead: 1.11.18
-  unimport: 4.1.0
+  unimport: 4.1.1
   vite: 6.1.0
   vue: 3.5.13
   webpack: 5.96.1
@@ -150,8 +150,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2
       knip:
-        specifier: 5.43.6
-        version: 5.43.6(@types/node@22.13.1)(typescript@5.7.3)
+        specifier: 5.44.0
+        version: 5.44.0(@types/node@22.13.1)(typescript@5.7.3)
       magic-string:
         specifier: ^0.30.17
         version: 0.30.17
@@ -231,8 +231,8 @@ importers:
   packages/kit:
     dependencies:
       c12:
-        specifier: ^2.0.1
-        version: 2.0.1(magicast@0.3.5)
+        specifier: ^2.0.2
+        version: 2.0.2(magicast@0.3.5)
       consola:
         specifier: ^3.4.0
         version: 3.4.0
@@ -285,8 +285,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       unimport:
-        specifier: 4.1.0
-        version: 4.1.0
+        specifier: 4.1.1
+        version: 4.1.1
       untyped:
         specifier: ^1.5.2
         version: 1.5.2
@@ -295,8 +295,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@rspack/core':
-        specifier: 1.2.2
-        version: 1.2.2
+        specifier: 1.2.3
+        version: 1.2.3
       '@types/lodash-es':
         specifier: 4.17.12
         version: 4.17.12
@@ -340,8 +340,8 @@ importers:
         specifier: workspace:*
         version: link:../schema
       '@nuxt/telemetry':
-        specifier: ^2.6.4
-        version: 2.6.4
+        specifier: ^2.6.5
+        version: 2.6.5
       '@nuxt/vite-builder':
         specifier: workspace:*
         version: link:../vite
@@ -367,8 +367,8 @@ importers:
         specifier: 8.14.0
         version: 8.14.0
       c12:
-        specifier: ^2.0.1
-        version: 2.0.1(magicast@0.3.5)
+        specifier: ^2.0.2
+        version: 2.0.2(magicast@0.3.5)
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -496,11 +496,11 @@ importers:
         specifier: 1.11.18
         version: 1.11.18
       unimport:
-        specifier: 4.1.0
-        version: 4.1.0
+        specifier: 4.1.1
+        version: 4.1.1
       unplugin:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       unplugin-vue-router:
         specifier: ^0.11.2
         version: 0.11.2(rollup@4.34.6)(vue-router@4.5.0(vue@3.5.13(typescript@5.7.3)))(vue@3.5.13(typescript@5.7.3))
@@ -557,14 +557,14 @@ importers:
         specifier: workspace:*
         version: link:../kit
       '@rspack/core':
-        specifier: ^1.2.2
-        version: 1.2.2
+        specifier: ^1.2.3
+        version: 1.2.3
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.5.2)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.2.2)(webpack@5.97.1)
+        version: 7.1.2(@rspack/core@1.2.3)(webpack@5.97.1)
       css-minimizer-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.97.1)
@@ -624,7 +624,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.1.1
-        version: 8.1.1(@rspack/core@1.2.2)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.97.1)
+        version: 8.1.1(@rspack/core@1.2.3)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.97.1)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.5.2)
@@ -644,8 +644,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       unplugin:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.97.1))(webpack@5.97.1)
@@ -666,7 +666,7 @@ importers:
         version: 2.26.1
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.2.2)(webpack@5.97.1)
+        version: 7.0.0(@rspack/core@1.2.3)(webpack@5.97.1)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
@@ -736,8 +736,8 @@ importers:
         specifier: 2.2.0
         version: 2.2.0(typescript@5.7.3)
       c12:
-        specifier: 2.0.1
-        version: 2.0.1(magicast@0.3.5)
+        specifier: 2.0.2
+        version: 2.0.2(magicast@0.3.5)
       chokidar:
         specifier: 4.0.3
         version: 4.0.3
@@ -779,7 +779,7 @@ importers:
         version: 8.5.2
       sass-loader:
         specifier: 16.0.4
-        version: 16.0.4(@rspack/core@1.2.2)(webpack@5.96.1)
+        version: 16.0.4(@rspack/core@1.2.3)(webpack@5.96.1)
       scule:
         specifier: 1.3.0
         version: 1.3.0
@@ -790,8 +790,8 @@ importers:
         specifier: 2.4.1
         version: 2.4.1
       unimport:
-        specifier: 4.1.0
-        version: 4.1.0
+        specifier: 4.1.1
+        version: 4.1.1
       untyped:
         specifier: 1.5.2
         version: 1.5.2
@@ -949,8 +949,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       unplugin:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       vite:
         specifier: 6.1.0
         version: 6.1.0(@types/node@22.13.1)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
@@ -990,7 +990,7 @@ importers:
         version: 10.4.20(postcss@8.5.2)
       css-loader:
         specifier: ^7.1.2
-        version: 7.1.2(@rspack/core@1.2.2)(webpack@5.96.1)
+        version: 7.1.2(@rspack/core@1.2.3)(webpack@5.96.1)
       css-minimizer-webpack-plugin:
         specifier: ^7.0.0
         version: 7.0.0(webpack@5.96.1)
@@ -1047,7 +1047,7 @@ importers:
         version: 2.0.0
       postcss-loader:
         specifier: ^8.1.1
-        version: 8.1.1(@rspack/core@1.2.2)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.96.1)
+        version: 8.1.1(@rspack/core@1.2.3)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.96.1)
       postcss-url:
         specifier: ^10.1.3
         version: 10.1.3(postcss@8.5.2)
@@ -1067,8 +1067,8 @@ importers:
         specifier: ^1.10.0
         version: 1.10.0
       unplugin:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.2.0
+        version: 2.2.0
       url-loader:
         specifier: ^4.1.1
         version: 4.1.1(file-loader@6.2.0(webpack@5.96.1))(webpack@5.96.1)
@@ -1092,14 +1092,14 @@ importers:
         version: 2.26.1
       webpackbar:
         specifier: ^7.0.0
-        version: 7.0.0(@rspack/core@1.2.2)(webpack@5.96.1)
+        version: 7.0.0(@rspack/core@1.2.3)(webpack@5.96.1)
     devDependencies:
       '@nuxt/schema':
         specifier: workspace:*
         version: link:../schema
       '@rspack/core':
-        specifier: 1.2.2
-        version: 1.2.2
+        specifier: 1.2.3
+        version: 1.2.3
       '@types/pify':
         specifier: 5.0.4
         version: 5.0.4
@@ -1148,7 +1148,7 @@ importers:
         version: 1.5.4
       unplugin:
         specifier: latest
-        version: 2.1.2
+        version: 2.2.0
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -2323,9 +2323,9 @@ packages:
       '@types/youtube':
         optional: true
 
-  '@nuxt/telemetry@2.6.4':
-    resolution: {integrity: sha512-2Lgdn07Suraly5dSfVQ4ttBQBMtmjvCTGKGUHpc1UyH87HT9xCm3KLFO0UcVQ8+LNYCgoOaK7lq9qDJOfBfZ5A==}
-    engines: {node: '>=18.20.5'}
+  '@nuxt/telemetry@2.6.5':
+    resolution: {integrity: sha512-lwMp9OHML/m0mjh7P5iz9PxINnk5smGkGebh88Wh8PjvnRooY1TBsbyq7mlSrNibpwD1BkwqhV5IAZOXWHLxMQ==}
+    engines: {node: '>=18.12.0'}
     hasBin: true
 
   '@nuxt/test-utils@3.15.4':
@@ -2723,56 +2723,56 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rspack/binding-darwin-arm64@1.2.2':
-    resolution: {integrity: sha512-h23F8zEkXWhwMeScm0ZnN78Zh7hCDalxIWsm7bBS0eKadnlegUDwwCF8WE+8NjWr7bRzv0p3QBWlS5ufkcL4eA==}
+  '@rspack/binding-darwin-arm64@1.2.3':
+    resolution: {integrity: sha512-xuwYzhPgNCr4BtKXCU3xe4249TFsXAZglIlbxv8Qs3PeIarrZMRddcqH2zUXi+nJavNw3yN12sCYEzk1f+O4FQ==}
     cpu: [arm64]
     os: [darwin]
 
-  '@rspack/binding-darwin-x64@1.2.2':
-    resolution: {integrity: sha512-vG5s7FkEvwrGLfksyDRHwKAHUkhZt1zHZZXJQn4gZKjTBonje8ezdc7IFlDiWpC4S+oBYp73nDWkUzkGRbSdcQ==}
+  '@rspack/binding-darwin-x64@1.2.3':
+    resolution: {integrity: sha512-afiIN8elcrO2EtO27UN0qyZqu5FXGUdclud56DrhvEfnWS3GGxJEdjA8XUYVXkfCYakdXHucIJKlkkgaAjEvHg==}
     cpu: [x64]
     os: [darwin]
 
-  '@rspack/binding-linux-arm64-gnu@1.2.2':
-    resolution: {integrity: sha512-VykY/kiYOzO8E1nYzfJ9+gQEHxb5B6lt5wa8M6xFi5B6jEGU+OsaGskmAZB9/GFImeFDHxDPvhUalI4R9p8O2Q==}
+  '@rspack/binding-linux-arm64-gnu@1.2.3':
+    resolution: {integrity: sha512-K2u/fPUmKujlKSWL3q2zaUu8/6ZK/bOGKcqJSib8jdanQQ/GFKwKtPAFOOa/vvqbzhDocqKOobFR10FhgJqCHg==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-arm64-musl@1.2.2':
-    resolution: {integrity: sha512-Z5vAC4wGfXi8XXZ6hs8Q06TYjr3zHf819HB4DI5i4C1eQTeKdZSyoFD0NHFG23bP4NWJffp8KhmoObcy9jBT5Q==}
+  '@rspack/binding-linux-arm64-musl@1.2.3':
+    resolution: {integrity: sha512-mgovdzGb6cH9hQsjTyzDbfZWCPhTcoHcLro1P7UbiqcLPMDJp/k3Io9xV2/EJhaDA1aynIdq7XfY0fuk4+6Irw==}
     cpu: [arm64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-gnu@1.2.2':
-    resolution: {integrity: sha512-o3pDaL+cH5EeRbDE9gZcdZpBgp5iXvYZBBhe8vZQllYgI4zN5MJEuleV7WplG3UwTXlgZg3Kht4RORSOPn96vg==}
+  '@rspack/binding-linux-x64-gnu@1.2.3':
+    resolution: {integrity: sha512-542lwJzB1RMGuVdBdA3cOWTlmL9okpOppHUBWcNCjmJM+9zTI+0jwjVe8HaqOqtuR8XzNsoCwT9QonU/GLcuhg==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-linux-x64-musl@1.2.2':
-    resolution: {integrity: sha512-RE3e0xe4DdchHssttKzryDwjLkbrNk/4H59TkkWeGYJcLw41tmcOZVFQUOwKLUvXWVyif/vjvV/w1SMlqB4wQg==}
+  '@rspack/binding-linux-x64-musl@1.2.3':
+    resolution: {integrity: sha512-dJromiREDcTWqzfCOI5y1IVoYmUnCv7vCp63AEq0+13fJJdk7+pcNN3VV2jOKpk9VECSvjg1c01wl+UzXAXFMw==}
     cpu: [x64]
     os: [linux]
 
-  '@rspack/binding-win32-arm64-msvc@1.2.2':
-    resolution: {integrity: sha512-R+PKBYn6uzTaDdVqTHvjqiJPBr5ZHg1wg5UmFDLNH9OklzVFyQh1JInSdJRb7lzfzTRz6bEkkwUFBPQK/CGScw==}
+  '@rspack/binding-win32-arm64-msvc@1.2.3':
+    resolution: {integrity: sha512-S8ZKddMMQDGy8jx/R0i2m1XrmfY2CpI+t6lIEpsuZuKUR4MbOGKN2DuL4MDnT3m8JaYvC8ihsvQjBXQCy3SNxQ==}
     cpu: [arm64]
     os: [win32]
 
-  '@rspack/binding-win32-ia32-msvc@1.2.2':
-    resolution: {integrity: sha512-dBqz3sRAGZ2f31FgzKLDvIRfq2haRP3X3XVCT0PsiMcvt7QJng+26aYYMy2THatd/nM8IwExYeitHWeiMBoruw==}
+  '@rspack/binding-win32-ia32-msvc@1.2.3':
+    resolution: {integrity: sha512-74lqSMKQJcJcgfFaxm+G9YVJSl2KK9/v4fRoMsWApztNy2qNgee+UguNBCOU6JLa3rVSj8Z5OVVDtJkGFrSvVg==}
     cpu: [ia32]
     os: [win32]
 
-  '@rspack/binding-win32-x64-msvc@1.2.2':
-    resolution: {integrity: sha512-eeAvaN831KG553cMSHkVldyk6YQn4ujgRHov6r1wtREq7CD3/ka9LMkJUepCN85K7XtwYT0N4KpFIQyf5GTGoA==}
+  '@rspack/binding-win32-x64-msvc@1.2.3':
+    resolution: {integrity: sha512-fcU532PgFdd5Bil8jwQW0Dcb/80oM6V0qSstGIxZ4M77t4t8e/PcukXfORTL71FfNQ64Rd4Dp6XRl1NHNJVxeg==}
     cpu: [x64]
     os: [win32]
 
-  '@rspack/binding@1.2.2':
-    resolution: {integrity: sha512-GCZwpGFYlLTdJ2soPLwjw9z4LSZ+GdpbHNfBt3Cm/f/bAF8n6mZc7dHUqN893RFh7MPU17HNEL3fMw7XR+6pHg==}
+  '@rspack/binding@1.2.3':
+    resolution: {integrity: sha512-enpOXZPQOJO800wdWcR7H5Dx5UZfwkaT0D0xsHD53WbpI09Z2KJbLX7I/i1FLLy3K1KQTB+2FIHLVdRikasXZA==}
 
-  '@rspack/core@1.2.2':
-    resolution: {integrity: sha512-EeHAmY65Uj62hSbUKesbrcWGE7jfUI887RD03G++Gj8jS4WPHEu1TFODXNOXg6pa7zyIvs2BK0Bm16Kwz8AEaQ==}
+  '@rspack/core@1.2.3':
+    resolution: {integrity: sha512-BFgdUYf05/hjjY9Nlwq8DpWaRJN5w2kTl8ZJi20SRL60oAx+ZD2ABT+fsPhBiFSmfTZDdvGGIq5e3vfRzoIuqg==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
       '@rspack/tracing': ^1.x
@@ -3683,6 +3683,14 @@ packages:
 
   c12@2.0.1:
     resolution: {integrity: sha512-Z4JgsKXHG37C6PYUtIxCfLJZvo6FyhHJoClwwb9ftUkLpPSkuYqn6Tr+vnaN8hymm0kIbcg6Ey3kv/Q71k5w/A==}
+    peerDependencies:
+      magicast: ^0.3.5
+    peerDependenciesMeta:
+      magicast:
+        optional: true
+
+  c12@2.0.2:
+    resolution: {integrity: sha512-NkvlL5CHZt9kPswJYDCUYtTaMt7JOfcpsnNncfj7sWsc13x6Wz+GiTpBtqZOojFlzyTHui8+OAfR6praV6PYaQ==}
     peerDependencies:
       magicast: ^0.3.5
     peerDependenciesMeta:
@@ -5447,8 +5455,8 @@ packages:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
 
-  knip@5.43.6:
-    resolution: {integrity: sha512-bUCFlg44imdV5vayYxu0pIAB373S8Ufjda0qaI9oRZDH6ltJFwUoAO2j7nafxDmo5G0ZeP4IiLAHqlc3wYIONQ==}
+  knip@5.44.0:
+    resolution: {integrity: sha512-j39v3LYCmU6P6HN/TG14bc0Dlthl12g6NogdEZHQdhlVS6BqfnGGS3ospYYwLill6Sdc68eptwGtThunqq7lxA==}
     engines: {node: '>=18.18.0'}
     hasBin: true
     peerDependencies:
@@ -6135,6 +6143,9 @@ packages:
 
   package-manager-detector@0.2.8:
     resolution: {integrity: sha512-ts9KSdroZisdvKMWVAVCXiKqnqNfXz4+IbrBG8/BWx/TR5le+jfenvoBuIZ6UWM9nz47W7AbD9qYfAwfWMIwzA==}
+
+  package-manager-detector@0.2.9:
+    resolution: {integrity: sha512-+vYvA/Y31l8Zk8dwxHhL3JfTuHPm6tlxM2A3GeQyl7ovYnSp1+mzAxClxaOr0qO1TtPxbQxetI7v5XqKLJZk7Q==}
 
   packrup@0.1.2:
     resolution: {integrity: sha512-ZcKU7zrr5GlonoS9cxxrb5HVswGnyj6jQvwFBa6p5VFw7G71VAHcUKL5wyZSU/ECtPM/9gacWxy2KFQKt1gMNA==}
@@ -7476,9 +7487,9 @@ packages:
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
-  unimport@4.1.0:
-    resolution: {integrity: sha512-y5ZYDG+j7IB45+Y6CIkWIKou4E1JFigCUw6vI+h15HdYAKmT0oQWcawnxXuwJG8srJyXhIZuWz5uXB1MQ/ARZw==}
-    engines: {node: '>=18.20.6'}
+  unimport@4.1.1:
+    resolution: {integrity: sha512-j9+fijH6aDd05yv1fXlyt7HSxtOWtGtrZeYTVBsSUg57Iuf+Ps2itIZjeyu7bEQ4k0WOgYhHrdW8m/pJgOpl5g==}
+    engines: {node: '>=18.12.0'}
 
   unist-builder@4.0.0:
     resolution: {integrity: sha512-wmRFnH+BLpZnTKpc5L7O67Kac89s9HMrtELpnNaE6TAobq5DTZZs5YaTQfAZBA9bFPECx2uVAPO31c+GVug8mg==}
@@ -7535,6 +7546,10 @@ packages:
 
   unplugin@2.1.2:
     resolution: {integrity: sha512-Q3LU0e4zxKfRko1wMV2HmP8lB9KWislY7hxXpxd+lGx0PRInE4vhMBVEZwpdVYHvtqzhSrzuIfErsob6bQfCzw==}
+    engines: {node: '>=18.12.0'}
+
+  unplugin@2.2.0:
+    resolution: {integrity: sha512-m1ekpSwuOT5hxkJeZGRxO7gXbXT3gF26NjQ7GdVHoLoF8/nopLcd/QfPigpCy7i51oFHiRJg/CyHhj4vs2+KGw==}
     engines: {node: '>=18.12.0'}
 
   unstorage@1.14.4:
@@ -8997,7 +9012,7 @@ snapshots:
 
   '@nuxt/cli@3.21.1(magicast@0.3.5)':
     dependencies:
-      c12: 2.0.1(magicast@0.3.5)
+      c12: 2.0.2(magicast@0.3.5)
       chokidar: 4.0.3
       citty: 0.1.6
       clipboardy: 4.0.0
@@ -9154,7 +9169,7 @@ snapshots:
       sirv: 3.0.0
       std-env: 3.8.0
       ufo: 1.5.4
-      unplugin: 2.1.2
+      unplugin: 2.2.0
       unstorage: 1.14.4(db0@0.2.1)(ioredis@5.4.1)
       valibot: 1.0.0-beta.15(typescript@5.7.3)
     optionalDependencies:
@@ -9182,7 +9197,7 @@ snapshots:
       - typescript
       - uploadthing
 
-  '@nuxt/telemetry@2.6.4':
+  '@nuxt/telemetry@2.6.5':
     dependencies:
       '@nuxt/kit': link:packages/kit
       citty: 0.1.6
@@ -9192,7 +9207,7 @@ snapshots:
       git-url-parse: 16.0.0
       is-docker: 3.0.0
       ofetch: 1.4.1
-      package-manager-detector: 0.2.8
+      package-manager-detector: 0.2.9
       parse-git-config: 3.0.0
       pathe: 2.0.2
       rc9: 2.1.2
@@ -9202,7 +9217,7 @@ snapshots:
     dependencies:
       '@nuxt/kit': link:packages/kit
       '@nuxt/schema': link:packages/schema
-      c12: 2.0.1(magicast@0.3.5)
+      c12: 2.0.2(magicast@0.3.5)
       consola: 3.4.0
       defu: 6.1.4
       destr: 2.0.3
@@ -9222,7 +9237,7 @@ snapshots:
       tinyexec: 0.3.2
       ufo: 1.5.4
       unenv: 1.10.0
-      unplugin: 2.1.2
+      unplugin: 2.2.0
       vite: 6.1.0(@types/node@22.13.1)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
       vitest-environment-nuxt: 1.0.1(@testing-library/vue@8.1.0(@vue/compiler-sfc@3.5.13)(vue@3.5.13(typescript@5.7.3)))(@types/node@22.13.1)(@vue/test-utils@2.4.6)(happy-dom@17.0.3)(jiti@2.4.2)(magicast@0.3.5)(playwright-core@1.50.1)(terser@5.37.0)(tsx@4.19.2)(typescript@5.7.3)(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.1)(happy-dom@17.0.3)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0))(yaml@2.7.0)
       vue: 3.5.13(typescript@5.7.3)
@@ -9600,49 +9615,49 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.34.6':
     optional: true
 
-  '@rspack/binding-darwin-arm64@1.2.2':
+  '@rspack/binding-darwin-arm64@1.2.3':
     optional: true
 
-  '@rspack/binding-darwin-x64@1.2.2':
+  '@rspack/binding-darwin-x64@1.2.3':
     optional: true
 
-  '@rspack/binding-linux-arm64-gnu@1.2.2':
+  '@rspack/binding-linux-arm64-gnu@1.2.3':
     optional: true
 
-  '@rspack/binding-linux-arm64-musl@1.2.2':
+  '@rspack/binding-linux-arm64-musl@1.2.3':
     optional: true
 
-  '@rspack/binding-linux-x64-gnu@1.2.2':
+  '@rspack/binding-linux-x64-gnu@1.2.3':
     optional: true
 
-  '@rspack/binding-linux-x64-musl@1.2.2':
+  '@rspack/binding-linux-x64-musl@1.2.3':
     optional: true
 
-  '@rspack/binding-win32-arm64-msvc@1.2.2':
+  '@rspack/binding-win32-arm64-msvc@1.2.3':
     optional: true
 
-  '@rspack/binding-win32-ia32-msvc@1.2.2':
+  '@rspack/binding-win32-ia32-msvc@1.2.3':
     optional: true
 
-  '@rspack/binding-win32-x64-msvc@1.2.2':
+  '@rspack/binding-win32-x64-msvc@1.2.3':
     optional: true
 
-  '@rspack/binding@1.2.2':
+  '@rspack/binding@1.2.3':
     optionalDependencies:
-      '@rspack/binding-darwin-arm64': 1.2.2
-      '@rspack/binding-darwin-x64': 1.2.2
-      '@rspack/binding-linux-arm64-gnu': 1.2.2
-      '@rspack/binding-linux-arm64-musl': 1.2.2
-      '@rspack/binding-linux-x64-gnu': 1.2.2
-      '@rspack/binding-linux-x64-musl': 1.2.2
-      '@rspack/binding-win32-arm64-msvc': 1.2.2
-      '@rspack/binding-win32-ia32-msvc': 1.2.2
-      '@rspack/binding-win32-x64-msvc': 1.2.2
+      '@rspack/binding-darwin-arm64': 1.2.3
+      '@rspack/binding-darwin-x64': 1.2.3
+      '@rspack/binding-linux-arm64-gnu': 1.2.3
+      '@rspack/binding-linux-arm64-musl': 1.2.3
+      '@rspack/binding-linux-x64-gnu': 1.2.3
+      '@rspack/binding-linux-x64-musl': 1.2.3
+      '@rspack/binding-win32-arm64-msvc': 1.2.3
+      '@rspack/binding-win32-ia32-msvc': 1.2.3
+      '@rspack/binding-win32-x64-msvc': 1.2.3
 
-  '@rspack/core@1.2.2':
+  '@rspack/core@1.2.3':
     dependencies:
       '@module-federation/runtime-tools': 0.8.4
-      '@rspack/binding': 1.2.2
+      '@rspack/binding': 1.2.3
       '@rspack/lite-tapable': 1.0.1
       caniuse-lite: 1.0.30001690
 
@@ -10895,6 +10910,23 @@ snapshots:
     optionalDependencies:
       magicast: 0.3.5
 
+  c12@2.0.2(magicast@0.3.5):
+    dependencies:
+      chokidar: 4.0.3
+      confbox: 0.1.8
+      defu: 6.1.4
+      dotenv: 16.4.7
+      giget: 1.2.4
+      jiti: 2.4.2
+      mlly: 1.7.4
+      ohash: 1.1.4
+      pathe: 2.0.2
+      perfect-debounce: 1.0.0
+      pkg-types: 1.3.1
+      rc9: 2.1.2
+    optionalDependencies:
+      magicast: 0.3.5
+
   cac@6.7.14: {}
 
   call-bind-apply-helpers@1.0.1:
@@ -11189,7 +11221,7 @@ snapshots:
     dependencies:
       postcss: 8.5.2
 
-  css-loader@7.1.2(@rspack/core@1.2.2)(webpack@5.96.1):
+  css-loader@7.1.2(@rspack/core@1.2.3)(webpack@5.96.1):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.2)
       postcss: 8.5.2
@@ -11200,10 +11232,10 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.7.1
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.96.1
 
-  css-loader@7.1.2(@rspack/core@1.2.2)(webpack@5.97.1):
+  css-loader@7.1.2(@rspack/core@1.2.3)(webpack@5.97.1):
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.2)
       postcss: 8.5.2
@@ -11214,7 +11246,7 @@ snapshots:
       postcss-value-parser: 4.2.0
       semver: 7.7.1
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.97.1
 
   css-minimizer-webpack-plugin@7.0.0(webpack@5.96.1):
@@ -12866,7 +12898,7 @@ snapshots:
 
   klona@2.0.6: {}
 
-  knip@5.43.6(@types/node@22.13.1)(typescript@5.7.3):
+  knip@5.44.0(@types/node@22.13.1)(typescript@5.7.3):
     dependencies:
       '@nodelib/fs.walk': 3.0.1
       '@snyk/github-codeowners': 1.1.0
@@ -13645,7 +13677,7 @@ snapshots:
       uncrypto: 0.1.3
       unctx: 2.4.1
       unenv: 1.10.0
-      unimport: 4.1.0
+      unimport: 4.1.1
       unstorage: 1.14.4(db0@0.2.1)(ioredis@5.4.1)
       untyped: 1.5.2
       unwasm: 0.3.9
@@ -13902,6 +13934,8 @@ snapshots:
 
   package-manager-detector@0.2.8: {}
 
+  package-manager-detector@0.2.9: {}
+
   packrup@0.1.2: {}
 
   parent-module@1.0.1:
@@ -14079,26 +14113,26 @@ snapshots:
       read-cache: 1.0.0
       resolve: 1.22.10
 
-  postcss-loader@8.1.1(@rspack/core@1.2.2)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.96.1):
+  postcss-loader@8.1.1(@rspack/core@1.2.3)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.96.1):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.7.3)
       jiti: 1.21.7
       postcss: 8.5.2
       semver: 7.7.1
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.96.1
     transitivePeerDependencies:
       - typescript
 
-  postcss-loader@8.1.1(@rspack/core@1.2.2)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.97.1):
+  postcss-loader@8.1.1(@rspack/core@1.2.3)(postcss@8.5.2)(typescript@5.7.3)(webpack@5.97.1):
     dependencies:
       cosmiconfig: 9.0.0(typescript@5.7.3)
       jiti: 1.21.7
       postcss: 8.5.2
       semver: 7.7.1
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.97.1
     transitivePeerDependencies:
       - typescript
@@ -14742,11 +14776,11 @@ snapshots:
 
   safe-buffer@5.2.1: {}
 
-  sass-loader@16.0.4(@rspack/core@1.2.2)(webpack@5.96.1):
+  sass-loader@16.0.4(@rspack/core@1.2.3)(webpack@5.96.1):
     dependencies:
       neo-async: 2.6.2
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.96.1
 
   sass@1.78.0:
@@ -15402,7 +15436,7 @@ snapshots:
       trough: 2.2.0
       vfile: 6.0.3
 
-  unimport@4.1.0:
+  unimport@4.1.1:
     dependencies:
       acorn: 8.14.0
       escape-string-regexp: 5.0.0
@@ -15416,7 +15450,7 @@ snapshots:
       pkg-types: 1.3.1
       scule: 1.3.0
       strip-literal: 3.0.0
-      unplugin: 2.1.2
+      unplugin: 2.2.0
       unplugin-utils: 0.2.3
 
   unist-builder@4.0.0:
@@ -15510,6 +15544,11 @@ snapshots:
       webpack-virtual-modules: 0.6.2
 
   unplugin@2.1.2:
+    dependencies:
+      acorn: 8.14.0
+      webpack-virtual-modules: 0.6.2
+
+  unplugin@2.2.0:
     dependencies:
       acorn: 8.14.0
       webpack-virtual-modules: 0.6.2
@@ -16014,24 +16053,24 @@ snapshots:
       - esbuild
       - uglify-js
 
-  webpackbar@7.0.0(@rspack/core@1.2.2)(webpack@5.96.1):
+  webpackbar@7.0.0(@rspack/core@1.2.3)(webpack@5.96.1):
     dependencies:
       ansis: 3.3.2
       consola: 3.4.0
       pretty-time: 1.1.0
       std-env: 3.8.0
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.96.1
 
-  webpackbar@7.0.0(@rspack/core@1.2.2)(webpack@5.97.1):
+  webpackbar@7.0.0(@rspack/core@1.2.3)(webpack@5.97.1):
     dependencies:
       ansis: 3.3.2
       consola: 3.4.0
       pretty-time: 1.1.0
       std-env: 3.8.0
     optionalDependencies:
-      '@rspack/core': 1.2.2
+      '@rspack/core': 1.2.3
       webpack: 5.97.1
 
   whatwg-mimetype@3.0.0: {}

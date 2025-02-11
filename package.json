@@ -64,7 +64,7 @@
     "typescript": "5.7.3",
     "ufo": "1.5.4",
     "unhead": "1.11.18",
-    "unimport": "4.1.0",
+    "unimport": "4.1.1",
     "vite": "6.1.0",
     "vue": "3.5.13",
     "webpack": "5.96.1"
@@ -106,7 +106,7 @@
     "happy-dom": "17.0.3",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
-    "knip": "5.43.6",
+    "knip": "5.44.0",
     "magic-string": "0.30.17",
     "markdownlint-cli": "0.44.0",
     "memfs": "4.14.1",
