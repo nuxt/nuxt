@@ -61,7 +61,7 @@
     "nitro": "npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
-    "postcss": "8.5.1",
+    "postcss": "8.5.2",
     "rollup": "4.34.6",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
@@ -136,6 +136,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.97.1"
   },
-  "packageManager": "pnpm@10.2.1",
+  "packageManager": "pnpm@10.3.0",
   "version": ""
 }
