@@ -7,7 +7,7 @@ import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
-import { join } from 'pathe'
+import { basename, join, relative } from 'pathe'
 import { isWindows } from 'std-env'
 import { tryResolveModule } from '../internal/esm'
 
@@ -18,14 +18,11 @@ export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig
 
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  opts.overrides = defu(opts.overrides, {
-    _extends: await globby('layers/*', {
-      onlyDirectories: true,
-      cwd: opts.cwd || process.cwd(),
-    }),
-  });
+  const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
+  opts.overrides = defu(opts.overrides, { _extends: localLayers });
+
   (globalThis as any).defineNuxtConfig = (c: any) => c
-  const result = await loadConfig<NuxtConfig>({
+  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
@@ -35,13 +32,17 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     ...opts,
   })
   delete (globalThis as any).defineNuxtConfig
-  const { configFile, layers = [], cwd } = result
-  const nuxtConfig = result.config!
 
   // Fill config
   nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
+  nuxtConfig.alias ||= {}
+
+  if (meta?.name) {
+    const alias = `#${meta.name}`
+    nuxtConfig.alias[alias] ||= nuxtConfig.srcDir || nuxtConfig.rootDir
+  }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
@@ -74,6 +75,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
+
+    // Add layer name for local layers
+    if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
+      layer.meta ||= {}
+      layer.meta.name ||= basename(layer.cwd)
+    }
+
+    // Add layer alias
+    if (layer.meta?.name) {
+      const alias = `#${layer.meta.name}`
+      nuxtConfig.alias[alias] ||= layer.config.srcDir || layer.config.rootDir || layer.cwd
+    }
     _layers.push(layer)
   }
 
