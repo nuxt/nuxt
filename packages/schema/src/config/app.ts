@@ -371,7 +371,7 @@ export default defineResolvers({
    * }
    * </style>
    * ```
-   * @type {string | boolean | undefined}
+   * @type {string | boolean | undefined | null}
    */
   spaLoadingTemplate: {
     $resolve: async (val, get) => {
@@ -381,7 +381,7 @@ export default defineResolvers({
       if (typeof val === 'boolean') {
         return val
       }
-      return undefined
+      return null
     },
   },
 

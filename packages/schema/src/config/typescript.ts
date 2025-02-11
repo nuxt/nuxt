@@ -20,7 +20,7 @@ export default defineResolvers({
      * builder environment types (with `false`) to handle this fully yourself, or opt for a 'shared' option.
      *
      * The 'shared' option is advised for module authors, who will want to support multiple possible builders.
-     * @type {'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined}
+     * @type {'vite' | 'webpack' | 'rspack' | 'shared' | false | undefined | null}
      */
     builder: {
       $resolve: (val) => {
@@ -32,7 +32,7 @@ export default defineResolvers({
         if (val === false) {
           return false
         }
-        return undefined
+        return null
       },
     },
 
