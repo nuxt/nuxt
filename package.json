@@ -58,7 +58,7 @@
     "memfs": "4.14.1",
     "nuxt": "workspace:*",
     "ohash": "1.1.4",
-    "postcss": "8.5.1",
+    "postcss": "8.5.2",
     "rollup": "4.34.6",
     "send": ">=1.1.0",
     "typescript": "5.7.3",
@@ -103,7 +103,7 @@
     "eslint-typegen": "1.0.0",
     "estree-walker": "3.0.3",
     "h3": "1.15.0",
-    "happy-dom": "17.0.2",
+    "happy-dom": "17.0.3",
     "installed-check": "9.3.0",
     "jiti": "2.4.2",
     "knip": "5.43.6",
@@ -133,6 +133,6 @@
     "vue-tsc": "2.2.0",
     "webpack": "5.96.1"
   },
-  "packageManager": "pnpm@10.2.1",
+  "packageManager": "pnpm@10.3.0",
   "version": ""
 }
