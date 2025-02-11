@@ -69,7 +69,7 @@
     "@nuxt/devtools": "^2.0.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/telemetry": "^2.6.4",
+    "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/dom": "^1.11.18",
     "@unhead/shared": "^1.11.18",
@@ -153,6 +153,6 @@
     }
   },
   "engines": {
-    "node": "^18.20.6 || ^20.9.0 || >=22.0.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }
