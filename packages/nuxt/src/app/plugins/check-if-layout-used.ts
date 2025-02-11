@@ -12,7 +12,7 @@ export default defineNuxtPlugin({
     const error = useError()
 
     function checkIfLayoutUsed () {
-      if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0) {
+      if (!error.value && !nuxtApp._isNuxtLayoutUsed && Object.keys(layouts).length > 0 && !nuxtApp._route.path.startsWith('/__nuxt_component__')) {
         console.warn('[nuxt] Your project has layouts but the `<NuxtLayout />` component has not been used.')
       }
     }

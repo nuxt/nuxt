@@ -143,3 +143,12 @@ export const componentsMetadataTemplate: NuxtTemplate = {
   write: true,
   getContents: ({ app }) => JSON.stringify(app.components, null, 2),
 }
+
+export const isolatedComponentsTemplate: NuxtTemplate = {
+  filename: 'isolated-components.json',
+  write: true,
+  getContents: ({ app }) => JSON.stringify(app.components.reduce((acc, c) => {
+    if (c.renderMode === 'isolated') { acc[c.pascalName] = c.filePath }
+    return acc
+  }, {} as Record<string, any>), null, 2),
+}

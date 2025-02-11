@@ -28,6 +28,10 @@ export interface Component {
    * @internal
    */
   _raw?: boolean
+  /**
+   * If true components will be accessible from /__nuxt_component__?name=
+   */
+  renderMode?: 'isolated'
 }
 
 export interface ScanDir {
@@ -105,6 +109,10 @@ export interface ComponentsDir extends ScanDir {
    * components will be used instead of lower priority components.
    */
   priority?: number
+  /**
+   * If true components will be accessible from /__nuxt_component__?name=
+   */
+  renderMode?: 'isolated'
 }
 
 export interface ComponentsOptions {

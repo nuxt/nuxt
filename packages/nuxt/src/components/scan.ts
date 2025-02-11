@@ -118,6 +118,7 @@ export async function scanComponents (dirs: ComponentsDir[], srcDir: string): Pr
       let component: Component = {
         // inheritable from directory configuration
         mode,
+        renderMode: dir.renderMode,
         global,
         island,
         prefetch: Boolean(dir.prefetch),

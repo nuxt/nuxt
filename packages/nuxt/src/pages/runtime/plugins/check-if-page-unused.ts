@@ -9,7 +9,7 @@ export default defineNuxtPlugin({
     const error = useError()
 
     function checkIfPageUnused () {
-      if (!error.value && !nuxtApp._isNuxtPageUsed) {
+      if (!error.value && !nuxtApp._isNuxtPageUsed && !nuxtApp._route.path.startsWith('/__nuxt_component__')) {
         console.warn(
           '[nuxt] Your project has pages but the `<NuxtPage />` component has not been used.' +
           ' You might be using the `<RouterView />` component instead, which will not work correctly in Nuxt.' +

@@ -102,6 +102,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/islands/Isle.vue',
   },
   {
@@ -115,6 +116,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/global/Glob.vue',
   },
   {
@@ -129,6 +131,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
   },
   {
     mode: 'client',
@@ -142,6 +145,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
   },
   {
     mode: 'server',
@@ -155,6 +159,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
   },
   {
     chunkName: 'components/client-component-with-props',
@@ -167,6 +172,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/client/ComponentWithProps.vue',
   },
   {
@@ -180,6 +186,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/client/WithClientOnlySetup.vue',
   },
   {
@@ -194,6 +201,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
   },
   {
     chunkName: 'components/same-name-same',
@@ -206,6 +214,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/same-name/same/Same.vue',
   },
   {
@@ -219,6 +228,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/some-glob.global.vue',
   },
   {
@@ -232,6 +242,7 @@ const expectedComponents = [
     prefetch: false,
     preload: false,
     priority: 1,
+    renderMode: undefined,
     shortPath: 'components/some.island.vue',
   },
 ]

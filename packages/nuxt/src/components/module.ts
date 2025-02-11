@@ -5,7 +5,7 @@ import type { Component, ComponentsDir, ComponentsOptions } from 'nuxt/schema'
 
 import { distDir } from '../dirs'
 import { logger } from '../utils'
-import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate } from './templates'
+import { componentNamesTemplate, componentsIslandsTemplate, componentsMetadataTemplate, componentsPluginTemplate, componentsTypeTemplate, isolatedComponentsTemplate } from './templates'
 import { scanComponents } from './scan'
 
 import { LoaderPlugin } from './plugins/loader'
@@ -193,6 +193,8 @@ export default defineNuxtModule<ComponentsOptions>({
       context.components = newComponents
       app.components = newComponents
     })
+
+    addTemplate(isolatedComponentsTemplate)
 
     nuxt.hook('prepare:types', ({ tsConfig }) => {
       tsConfig.compilerOptions!.paths['#components'] = [resolve(nuxt.options.buildDir, 'components')]

@@ -100,6 +100,9 @@ export default defineNuxtConfig({
     // To test falsy module values
     undefined,
   ],
+  components: [
+    { path: 'isolated/', renderMode: 'isolated' },
+  ],
   app: {
     pageTransition: true,
     layoutTransition: true,

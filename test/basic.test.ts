@@ -192,6 +192,10 @@ describe('pages', () => {
     `)
   })
 
+  it('should render isolated components on /__nuxt_components__', async () => {
+    expect(await $fetch('/__nuxt_components__/?name=IsolatedComponent')).toContain('This component will be rendered')
+  })
+
   it('validates routes', async () => {
     const { status, headers } = await fetch('/catchall/forbidden')
     expect(status).toEqual(404)
