@@ -27,7 +27,7 @@
     "test:attw": "attw --pack"
   },
   "dependencies": {
-    "c12": "^2.0.1",
+    "c12": "^2.0.2",
     "consola": "^3.4.0",
     "defu": "^6.1.4",
     "destr": "^2.0.3",
@@ -45,7 +45,7 @@
     "std-env": "^3.8.0",
     "ufo": "^1.5.4",
     "unctx": "^2.4.1",
-    "unimport": "^4.1.0",
+    "unimport": "^4.1.1",
     "untyped": "^1.5.2"
   },
   "devDependencies": {
