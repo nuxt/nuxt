@@ -51,7 +51,7 @@
     "compatx": "0.1.8",
     "css-minimizer-webpack-plugin": "7.0.0",
     "esbuild": "0.25.0",
-    "esbuild-loader": "4.2.2",
+    "esbuild-loader": "4.3.0",
     "file-loader": "6.2.0",
     "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
     "hookable": "5.5.3",
