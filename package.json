@@ -126,7 +126,7 @@
     "std-env": "3.8.0",
     "tinyexec": "0.3.2",
     "tinyglobby": "0.2.10",
-    "ts-blank-space": "0.5.1",
+    "ts-blank-space": "0.6.0",
     "typescript": "5.7.3",
     "ufo": "1.5.4",
     "unbuild": "3.3.1",
