@@ -7,7 +7,7 @@ import lruCache from 'unstorage/drivers/lru-cache'
 /**
  * @param {string} item
  */
-const normalizeFsKey = item => item.replaceAll(':', '_')
+const normalizeFsKey = item => decodeURIComponent(item.replaceAll(':', '_'))
 
 /**
  * @param {{ base: string }} opts
@@ -20,15 +20,15 @@ export default defineDriver((opts) => {
     ...fs, // fall back to file system - only the bottom three methods are used in renderer
     async setItem (key, value, opts) {
       await Promise.all([
-        fs.setItem?.(normalizeFsKey(decodeURIComponent(key)), value, opts),
+        fs.setItem?.(normalizeFsKey(key), value, opts),
         lru.setItem?.(key, value, opts),
       ])
     },
     async hasItem (key, opts) {
-      return await lru.hasItem(key, opts) || await fs.hasItem(normalizeFsKey(decodeURIComponent(key)), opts)
+      return await lru.hasItem(key, opts) || await fs.hasItem(normalizeFsKey(key), opts)
     },
     async getItem (key, opts) {
-      return await lru.getItem(key, opts) || await fs.getItem(normalizeFsKey(decodeURIComponent(key)), opts)
+      return await lru.getItem(key, opts) || await fs.getItem(normalizeFsKey(key), opts)
     },
   }
 })
