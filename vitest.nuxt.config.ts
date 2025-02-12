@@ -13,6 +13,7 @@ export default defineVitestConfig({
     environmentOptions: {
       nuxt: {
         overrides: {
+          pages: true,
           runtimeConfig: {
             app: {
               buildId: 'override',
@@ -20,6 +21,9 @@ export default defineVitestConfig({
           },
           experimental: {
             appManifest: process.env.TEST_MANIFEST !== 'manifest-off',
+          },
+          imports: {
+            polyfills: false,
           },
         },
       },

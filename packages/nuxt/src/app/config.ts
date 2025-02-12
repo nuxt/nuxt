@@ -54,6 +54,13 @@ export function useAppConfig (): AppConfig {
   return nuxtApp._appConfig
 }
 
+export function _replaceAppConfig (newConfig: AppConfig) {
+  const appConfig = useAppConfig()
+
+  deepAssign(appConfig, newConfig)
+  deepDelete(appConfig, newConfig)
+}
+
 /**
  * Deep assign the current appConfig with the new one.
  *
