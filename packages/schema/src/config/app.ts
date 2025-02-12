@@ -454,6 +454,24 @@ export default defineResolvers({
    * An object that allows us to configure the `unhead` nuxt module.
    */
   unhead: {
+    /***
+     * Enable the legacy compatibility mode for `unhead` module. This applies the following changes:
+     * - Disables Capo.js sorting
+     * - Adds the `DeprecationsPlugin`: supports `hid`, `vmid`, `children`, `body`
+     * - Adds the `PromisesPlugin`: supports promises as input
+     *
+     * @see [`unhead` migration documentation](https://unhead.unjs.io/docs/migration)
+     *
+     * @example
+     * ```ts
+     * export default defineNuxtConfig({
+     *  unhead: {
+     *   legacy: true
+     * })
+     * ```
+     * @type {boolean}
+     */
+    legacy: false,
     /**
      * An object that will be passed to `renderSSRHead` to customize the output.
      *

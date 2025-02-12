@@ -3,6 +3,7 @@ import MagicString from 'magic-string'
 import type { Identifier, ImportSpecifier } from 'estree'
 import { relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
+import { genImport } from 'knitwork'
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
 import { isJS, isVue } from '../../core/utils'
 import { distDir } from '../../dirs'
@@ -58,10 +59,10 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
         if (!id.includes('node_modules')) {
           logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#app\` instead for full type safety.`)
         }
-        s.prepend(`import { ${toImports(importsFromUnhead).join(', ')} } from "#app/composables/head"\n`)
+        s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
       }
       if (importsFromHead.length) {
-        s.prepend(`import { ${toImports(importsFromHead).join(', ')} } from "${UnheadVue}"\n`)
+        s.prepend(`${genImport(UnheadVue, toImports(importsFromHead))}\n`)
       }
 
       if (s.hasChanged()) {

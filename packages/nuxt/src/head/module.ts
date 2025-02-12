@@ -49,7 +49,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
-        if (isNuxtV4) {
+        if (isNuxtV4 && !options.legacy) {
           return `export default {}`
         }
         // v1 unhead legacy options
