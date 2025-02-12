@@ -69,12 +69,12 @@
     "@nuxt/devtools": "^2.0.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/schema": "workspace:*",
-    "@nuxt/telemetry": "^2.6.4",
+    "@nuxt/telemetry": "^2.6.5",
     "@nuxt/vite-builder": "workspace:*",
     "@unhead/vue": "^2.0.0-alpha.8",
     "@vue/shared": "^3.5.13",
     "acorn": "8.14.0",
-    "c12": "^2.0.1",
+    "c12": "^2.0.2",
     "chokidar": "^4.0.3",
     "compatx": "^0.1.8",
     "consola": "^3.4.0",
@@ -116,8 +116,8 @@
     "uncrypto": "^0.1.3",
     "unctx": "^2.4.1",
     "unenv": "^1.10.0",
-    "unimport": "^4.1.0",
-    "unplugin": "^2.1.2",
+    "unimport": "^4.1.1",
+    "unplugin": "^2.2.0",
     "unplugin-vue-router": "^0.11.2",
     "unstorage": "^1.14.4",
     "untyped": "^1.5.2",
@@ -149,6 +149,6 @@
     }
   },
   "engines": {
-    "node": "^18.20.6 || ^20.9.0 || >=22.0.0"
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
   }
 }

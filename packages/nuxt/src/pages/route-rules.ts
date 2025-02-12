@@ -1,11 +1,10 @@
 import { runInNewContext } from 'node:vm'
-import { transform } from 'esbuild'
 import type { NuxtPage } from '@nuxt/schema'
 import type { NitroRouteConfig } from 'nitro/types'
 import { normalize } from 'pathe'
 
 import { getLoader } from '../core/utils'
-import { parseAndWalk } from '../core/utils/parse'
+import { parseAndWalk, transform } from '../core/utils/parse'
 import { extractScriptContent, pathToNitroGlob } from './utils'
 
 const ROUTE_RULE_RE = /\bdefineRouteRules\(/
