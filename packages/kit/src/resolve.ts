@@ -7,6 +7,7 @@ import { resolveAlias as _resolveAlias } from 'pathe/utils'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
 import { toArray } from './utils'
+import { directoryToParentURL } from 'nuxt/kit'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
@@ -201,7 +202,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   }
 
   // Try to resolve as module id
-  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir] }).catch(() => null)
+  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir].map(d => directoryToParentURL(d)) }).catch(() => null)
   if (resolvedModulePath) {
     return {
       path: resolvedModulePath,
