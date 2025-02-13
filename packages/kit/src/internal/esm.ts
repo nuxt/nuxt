@@ -33,7 +33,7 @@ export async function tryResolveModule (id: string, url: string | string[] | URL
 }
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return resolvePathSync(id, { url: options?.url ?? options?.url ?? [importMetaURL] })
+  return resolvePathSync(id, { url: options?.url ?? options?.paths ?? [importMetaURL] })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {
