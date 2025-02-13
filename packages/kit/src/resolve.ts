@@ -4,10 +4,10 @@ import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
 import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
+import { directoryToParentURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
 import { toArray } from './utils'
-import { directoryToParentURL } from 'nuxt/kit'
 
 export interface ResolvePathOptions {
   /** Base for resolving paths from. Default is Nuxt rootDir. */
