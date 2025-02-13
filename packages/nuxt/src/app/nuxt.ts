@@ -503,6 +503,18 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
+// [WIP]
+export function runWithNuxtContext<T extends () => any> (nuxt: NuxtApp | _NuxtApp, fn: T): ReturnType<T> | Promise<Awaited<ReturnType<T>>> {
+  const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
+  if (import.meta.server) {
+    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+  } else {
+    // In client side we could assume nuxt app is singleton
+    nuxtAppCtx.set(nuxt as NuxtApp)
+    return fn()
+  }
+}
+
 /* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
