@@ -1,6 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt } from '@nuxt/schema'
+import { withTrailingSlash } from 'ufo'
 import { importModule, tryImportModule } from '../internal/esm'
 import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
@@ -27,16 +28,16 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
+  const rootDir = withTrailingSlash(pathToFileURL(opts.cwd!).href)
+
   const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt3', 'nuxt', 'nuxt-edge']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
+    .map(pkg => resolvePackageJSON(pkg, { url: rootDir }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
   const majorVersion = pkg.version ? Number.parseInt(pkg.version.split('.')[0]!) : ''
-
-  const rootDir = pathToFileURL(opts.cwd || process.cwd()).href
 
   // Nuxt 3
   if (majorVersion && majorVersion >= 3) {
@@ -72,7 +73,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const rootDir = pathToFileURL(nuxt.options.rootDir).href
+  const rootDir = withTrailingSlash(pathToFileURL(nuxt.options.rootDir).href)
 
   // Nuxt 3
   if (nuxt.options._majorVersion === 3) {
