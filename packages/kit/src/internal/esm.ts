@@ -14,8 +14,6 @@ export function directoryToParentURL (dir: string): URL {
   return pathToFileURL(join(dir, '_index.js'))
 }
 
-const importMetaURL = new URL(import.meta.url)
-
 /**
  * Resolve a module from a given root path using an algorithm patterned on
  * the upcoming `import.meta.resolve`. It returns a file URL
@@ -25,7 +23,7 @@ const importMetaURL = new URL(import.meta.url)
 export async function tryResolveModule (id: string, url: URL | URL[]): Promise<string | undefined>
 /** @deprecated pass URLs pointing at files */
 export async function tryResolveModule (id: string, url: string | string[]): Promise<string | undefined>
-export async function tryResolveModule (id: string, url: string | string[] | URL | URL[] = importMetaURL) {
+export async function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
   try {
     return await resolvePath(id, { url })
   } catch {
@@ -34,7 +32,7 @@ export async function tryResolveModule (id: string, url: string | string[] | URL
 }
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return resolvePathSync(id, { url: options?.url ?? options?.paths ?? [importMetaURL] })
+  return resolvePathSync(id, { url: options?.url ?? options?.paths ?? [import.meta.url] })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {
