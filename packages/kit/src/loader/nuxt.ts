@@ -17,21 +17,21 @@ export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
 
 export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Backward compatibility
-  opts.cwd = withTrailingSlash(resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.'))
+  opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
   opts.overrides ||= (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
+  const rootDir = withTrailingSlash(pathToFileURL(opts.cwd!).href)
+
   const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt']
-    .map(pkg => resolvePackageJSON(pkg, { url: opts.cwd }).catch(() => null)))
+    .map(pkg => resolvePackageJSON(pkg, { url: rootDir }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
-
-  const rootDir = pathToFileURL(opts.cwd!).href
 
   const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { paths: rootDir })
   const nuxt = await loadNuxt(opts)
@@ -39,7 +39,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const rootDir = pathToFileURL(nuxt.options.rootDir).href
+  const rootDir = withTrailingSlash(pathToFileURL(nuxt.options.rootDir).href)
 
   const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { paths: rootDir }) || await importModule<typeof import('nuxt')>('nuxt', { paths: rootDir })
   return runWithNuxtContext(nuxt, () => build(nuxt))
