@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
+import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, directoryToParentURL, resolveAlias, tryResolveModule, updateTemplates, useNuxt } from '@nuxt/kit'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
@@ -181,6 +181,8 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
 
   const SUPPORTED_EXTENSION_RE = new RegExp(`\\.(${nuxt.options.extensions.map(i => i.replace('.', '')).join('|')})$`)
 
+  const importPaths = nuxt.options.modulesDir.map(dir => directoryToParentURL(dir))
+
   async function cacheImportPaths (imports: Import[]) {
     const importSource = Array.from(new Set(imports.map(i => i.from)))
     // skip relative import paths for node_modules that are explicitly installed
@@ -190,7 +192,7 @@ function addDeclarationTemplates (ctx: Unimport, options: Partial<ImportsOptions
       }
       let path = resolveAlias(from)
       if (!isAbsolute(path)) {
-        path = await tryResolveModule(from, nuxt.options.modulesDir).then(async (r) => {
+        path = await tryResolveModule(from, importPaths).then(async (r) => {
           if (!r) { return r }
 
           const { dir, name } = parseNodeModulePath(r)

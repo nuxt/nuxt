@@ -9,7 +9,7 @@ import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
 import { filterInPlace } from './utils'
-import { tryResolveModule } from './internal/esm'
+import { directoryToParentURL, tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -244,6 +244,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
 
+  const importPaths = nuxt.options.modulesDir.map(d => directoryToParentURL(d))
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
@@ -251,7 +253,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
+      const resolvedModule = await tryResolveModule(aliases[alias]!, importPaths)
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)

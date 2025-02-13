@@ -1,9 +1,7 @@
-import { pathToFileURL } from 'node:url'
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { withTrailingSlash } from 'ufo'
-import { importModule, tryImportModule } from '../internal/esm'
+import { directoryToParentURL, importModule, tryImportModule } from '../internal/esm'
 import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
 
@@ -23,24 +21,24 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const rootDir = withTrailingSlash(pathToFileURL(opts.cwd!).href)
+  const rootURL = directoryToParentURL(opts.cwd!)
 
   const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt']
-    .map(pkg => resolvePackageJSON(pkg, { url: rootDir }).catch(() => null)))
+    .map(pkg => resolvePackageJSON(pkg, { url: rootURL }).catch(() => null)))
     .then(r => (r.filter(Boolean) as string[]).sort((a, b) => b.length - a.length)[0])
   if (!nearestNuxtPkg) {
     throw new Error(`Cannot find any nuxt version from ${opts.cwd}`)
   }
   const pkg = await readPackageJSON(nearestNuxtPkg)
 
-  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { paths: rootDir })
+  const { loadNuxt } = await importModule<typeof import('nuxt')>((pkg as any)._name || pkg.name, { url: rootURL })
   const nuxt = await loadNuxt(opts)
   return nuxt
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const rootDir = withTrailingSlash(pathToFileURL(nuxt.options.rootDir).href)
+  const rootURL = directoryToParentURL(nuxt.options.rootDir)
 
-  const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { paths: rootDir }) || await importModule<typeof import('nuxt')>('nuxt', { paths: rootDir })
+  const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { url: rootURL }) || await importModule<typeof import('nuxt')>('nuxt', { url: rootURL })
   return runWithNuxtContext(nuxt, () => build(nuxt))
 }
