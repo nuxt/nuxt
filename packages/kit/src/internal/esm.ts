@@ -2,7 +2,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
 import { createJiti } from 'jiti'
 import { captureStackTrace } from 'errx'
-import { normalize } from 'pathe'
+import { join } from 'pathe'
 
 export interface ResolveModuleOptions {
   /** @deprecated use `url` with URLs pointing at a file - never a directory */
@@ -10,8 +10,8 @@ export interface ResolveModuleOptions {
   url?: URL | URL[]
 }
 
-export function directoryToParentURL (directory: string) {
-  return new URL('./index.js', pathToFileURL(normalize(directory).replace(/\/?$/, '/')))
+export function directoryToParentURL (dir: string): URL {
+  return pathToFileURL(join(dir, '_index.js'))
 }
 
 const importMetaURL = new URL(import.meta.url)
