@@ -112,7 +112,7 @@ async function loadNuxtSchema (cwd: string) {
   const urls = [url]
   const nuxtPath = await tryResolveModule('nuxt', url) ?? await tryResolveModule('nuxt-nightly', url)
   if (nuxtPath) {
-    urls.unshift(new URL(nuxtPath))
+    urls.unshift(pathToFileURL(nuxtPath))
   }
   const schemaPath = await tryResolveModule('@nuxt/schema', urls) ?? '@nuxt/schema'
   return await import(isWindows ? pathToFileURL(schemaPath).href : schemaPath).then(r => r.NuxtConfigSchema)
