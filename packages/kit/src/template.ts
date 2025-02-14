@@ -9,7 +9,7 @@ import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
 import { filterInPlace } from './utils'
-import { directoryToParentURL, tryResolveModule } from './internal/esm'
+import { directoryToURL, tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -244,7 +244,7 @@ export async function _generateTypes (nuxt: Nuxt) {
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
 
-  const importPaths = nuxt.options.modulesDir.map(d => directoryToParentURL(d))
+  const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {

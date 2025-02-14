@@ -1,7 +1,7 @@
 import { readPackageJSON, resolvePackageJSON } from 'pkg-types'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
 import { resolve } from 'pathe'
-import { directoryToParentURL, importModule, tryImportModule } from '../internal/esm'
+import { directoryToURL, importModule, tryImportModule } from '../internal/esm'
 import { runWithNuxtContext } from '../context'
 import type { LoadNuxtConfigOptions } from './config'
 
@@ -21,7 +21,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
-  const rootURL = directoryToParentURL(opts.cwd!)
+  const rootURL = directoryToURL(opts.cwd!)
 
   const nearestNuxtPkg = await Promise.all(['nuxt-nightly', 'nuxt']
     .map(pkg => resolvePackageJSON(pkg, { url: rootURL }).catch(() => null)))
@@ -37,7 +37,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
 }
 
 export async function buildNuxt (nuxt: Nuxt): Promise<any> {
-  const rootURL = directoryToParentURL(nuxt.options.rootDir)
+  const rootURL = directoryToURL(nuxt.options.rootDir)
 
   const { build } = await tryImportModule<typeof import('nuxt')>('nuxt-nightly', { url: rootURL }) || await importModule<typeof import('nuxt')>('nuxt', { url: rootURL })
   return runWithNuxtContext(nuxt, () => build(nuxt))

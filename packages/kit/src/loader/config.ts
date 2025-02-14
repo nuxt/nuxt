@@ -9,7 +9,7 @@ import { globby } from 'globby'
 import defu from 'defu'
 import { basename, join, relative } from 'pathe'
 import { isWindows } from 'std-env'
-import { directoryToParentURL, tryResolveModule } from '../internal/esm'
+import { directoryToURL, tryResolveModule } from '../internal/esm'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
@@ -108,7 +108,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 }
 
 async function loadNuxtSchema (cwd: string) {
-  const url = directoryToParentURL(cwd)
+  const url = directoryToURL(cwd)
   const urls = [url]
   const nuxtPath = await tryResolveModule('nuxt', url) ?? await tryResolveModule('nuxt-nightly', url)
   if (nuxtPath) {

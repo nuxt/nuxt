@@ -6,7 +6,7 @@ import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
 import { isRelative } from 'ufo'
-import { directoryToParentURL } from '../internal/esm'
+import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
@@ -103,7 +103,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         const src = isAbsolute(path)
           ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
           : await resolveModule(path, {
-            url: nuxt.options.modulesDir.map(m => directoryToParentURL(m.replace(/\/node_modules\/?$/, '/'))),
+            url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
             extensions: nuxt.options.extensions,
           })
 

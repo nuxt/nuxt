@@ -4,7 +4,7 @@ import { basename, dirname, isAbsolute, join, normalize, resolve } from 'pathe'
 import { globby } from 'globby'
 import { resolvePath as _resolvePath } from 'mlly'
 import { resolveAlias as _resolveAlias } from 'pathe/utils'
-import { directoryToParentURL } from './internal/esm'
+import { directoryToURL } from './internal/esm'
 import { tryUseNuxt } from './context'
 import { isIgnored } from './ignore'
 import { toArray } from './utils'
@@ -202,7 +202,7 @@ async function _resolvePathGranularly (path: string, opts: ResolvePathOptions = 
   }
 
   // Try to resolve as module id
-  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir].map(d => directoryToParentURL(d)) }).catch(() => null)
+  const resolvedModulePath = await _resolvePath(_path, { url: [cwd, ...modulesDir].map(d => directoryToURL(d)) }).catch(() => null)
   if (resolvedModulePath) {
     return {
       path: resolvedModulePath,
