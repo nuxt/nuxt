@@ -145,6 +145,7 @@ export async function getContributors () {
         'Authorization': `token ${process.env.GITHUB_TOKEN}`,
       },
     })
+    if (!author) { continue }
     if (!contributors.some(c => c.username === author.login)) {
       contributors.push({ name: commit.author.name, username: author.login })
     }

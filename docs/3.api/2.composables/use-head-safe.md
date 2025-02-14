@@ -52,4 +52,4 @@ const WhitelistAttributes = {
 }
 ```
 
-See [SafeInputPlugin](https://github.com/unjs/unhead/blob/main/packages/unhead/src/plugins/safe.ts) for more detailed types.
+See [@unhead/vue](https://github.com/unjs/unhead/blob/main/packages/vue/src/types/safeSchema.ts) for more detailed types.

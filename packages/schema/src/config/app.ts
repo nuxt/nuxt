@@ -175,10 +175,10 @@ export default defineResolvers({
         } satisfies NormalizedMetaObject)
 
         // provides default charset and viewport if not set
-        if (!resolved.meta.find(m => m.charset)?.charset) {
+        if (!resolved.meta.find(m => m?.charset)?.charset) {
           resolved.meta.unshift({ charset: resolved.charset || 'utf-8' })
         }
-        if (!resolved.meta.find(m => m.name === 'viewport')?.content) {
+        if (!resolved.meta.find(m => m?.name === 'viewport')?.content) {
           resolved.meta.unshift({ name: 'viewport', content: resolved.viewport || 'width=device-width, initial-scale=1' })
         }
 

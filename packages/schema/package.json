@@ -77,7 +77,7 @@
   "dependencies": {
     "consola": "^3.4.0",
     "defu": "^6.1.4",
-    "pathe": "^2.0.2",
+    "pathe": "^2.0.3",
     "std-env": "^3.8.0"
   },
   "engines": {
