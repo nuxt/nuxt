@@ -57,7 +57,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       if (importsFromUnhead.length) {
         // warn if user has imported from @unhead/vue themselves
         if (!id.includes('node_modules')) {
-          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#app\` instead for full type safety.`)
+          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#imports\` instead for full type safety.`)
         }
         s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
       }
