@@ -481,7 +481,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
         islandHead[tag.tag as keyof Head] = value
       } else {
         // @ts-expect-error type juggling
-        islandHead[tag.tag as keyof Head] = tag.props
+        islandHead[tag.tag as keyof Head] = { innerHTML: tag.innerHTML, textContent: tag.textContent, ...tag.props }
       }
     }
 
