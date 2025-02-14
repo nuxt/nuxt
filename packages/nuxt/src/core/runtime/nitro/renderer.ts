@@ -16,8 +16,8 @@ import { stringify, uneval } from 'devalue'
 import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
-import { createHead as createServerHead, propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { Head, HeadEntryOptions, Link, Script, Style, ResolvedHead } from '@unhead/vue/types'
+import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import type { Head, HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -287,7 +287,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
   // Get route options (currently to apply `ssr: false`)
   const routeOptions = getRouteRules(event)
 
-  const head = createServerHead(unheadOptions)
+  const head = createHead(unheadOptions)
 
   // needed for hash hydration plugin to work
   const headEntryOptions: HeadEntryOptions = { mode: 'server' }

@@ -49,13 +49,18 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
+        // disableDefaults is enabled to avoid server component issues
         if (isNuxtV4 && !options.legacy) {
-          return `export default {}`
+          return `
+export default {
+  disableDefaults: true,
+}`
         }
         // v1 unhead legacy options
         const disableCapoSorting = !nuxt.options.experimental.headNext
         return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
 export default {
+  disableDefaults: true,
   disableCapoSorting: ${Boolean(disableCapoSorting)},
   plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
 }`
