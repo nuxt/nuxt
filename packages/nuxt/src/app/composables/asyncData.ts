@@ -50,6 +50,11 @@ export interface AsyncDataOptions<
    */
   server?: boolean
   /**
+   * When true, `server` will default to false on cached pages and true on uncached pages
+   * @default false
+   */
+  private?: false
+  /**
    * Whether to resolve the async function after loading the route, instead of blocking client-side navigation
    * @default false
    */
@@ -230,7 +235,8 @@ export function useAsyncData<
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
-  options.server = options.server ?? true
+  const cachedRoute = !!nuxtApp.ssrContext?.event?.context.cache
+  options.server = options.server ?? (options.private ? !cachedRoute : true)
   options.default = options.default ?? (getDefault as () => DefaultT)
   options.getCachedData = options.getCachedData ?? getDefaultCachedData
 
