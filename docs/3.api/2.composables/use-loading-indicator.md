@@ -40,11 +40,11 @@ It hooks into [`page:loading:start`](/docs/api/advanced/hooks#app-hooks-runtime)
 
 ### `start()`
 
-Set `isLoading` to true and start to increase the `progress` value. `start` accepts a `{ force: true }` option to skip the interval show loading immediately.
+Set `isLoading` to true and start to increase the `progress` value. `start` accepts a `{ force: true }` option to skip the interval and show the loading state immediately.
 
 ### `set()`
 
-Set the `progress` value to a specific value. `set` accepts a `{ force: true }` option to skip the interval show loading immediately.
+Set the `progress` value to a specific value. `set` accepts a `{ force: true }` option to skip the interval and show the loading state immediately.
 
 ### `finish()`
 

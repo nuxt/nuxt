@@ -58,10 +58,10 @@ function createLoadingIndicator (opts: Partial<LoadingIndicatorOpts> = {}) {
     if (nuxtApp.isHydrating) {
       return
     }
-    const throttleTime = opts.force ? 0 : throttle
     if (at >= 100) { return finish({ force: opts.force }) }
     clear()
     progress.value = at < 0 ? 0 : at
+    const throttleTime = opts.force ? 0 : throttle
     if (throttleTime && import.meta.client) {
       throttleTimeout = setTimeout(() => {
         isLoading.value = true
