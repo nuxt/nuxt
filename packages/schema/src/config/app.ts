@@ -260,7 +260,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt root element id.
-     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     * @type {typeof import('@unhead/vue/types').ResolvedHtmlAttributes}
      */
     rootAttrs: {
       $resolve: async (val, get) => {
@@ -290,7 +290,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Teleport element attributes.
-     * @type {typeof import('@unhead/schema').HtmlAttributes}
+     * @type {typeof import('@unhead/vue/types').ResolvedHtmlAttributes}
      */
     teleportAttrs: {
       $resolve: async (val, get) => {
@@ -311,7 +311,7 @@ export default defineResolvers({
 
     /**
      * Customize Nuxt Nuxt SpaLoader element attributes.
-     * @type {Partial<typeof import('@unhead/schema').HtmlAttributes>}
+     * @type {Partial<typeof import('@unhead/vue/types').ResolvedHtmlAttributes>}
      */
     spaLoaderAttrs: {
       id: '__nuxt-loader',
@@ -486,7 +486,7 @@ export default defineResolvers({
      *   }
      * })
      * ```
-     * @type {typeof import('@unhead/schema').RenderSSRHeadOptions}
+     * @type {typeof import('@unhead/vue/types').RenderSSRHeadOptions}
      */
     renderSSRHeadOptions: {
       $resolve: async (val, get) => {

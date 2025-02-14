@@ -45,7 +45,7 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
-    const unheadPlugins = await tryResolveModule('unhead/plugins', nuxt.options.modulesDir) || 'unhead/plugins'
+    const unheadPlugins = await tryResolveModule('@unhead/vue/plugins', nuxt.options.modulesDir) || '@unhead/vue/plugins'
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {
@@ -54,10 +54,10 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
         }
         // v1 unhead legacy options
         const disableCapoSorting = !nuxt.options.experimental.headNext
-        return `import { DeprecationsPlugin, PromisesPlugin } from ${JSON.stringify(unheadPlugins)};
+        return `import { DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin } from ${JSON.stringify(unheadPlugins)};
 export default {
   disableCapoSorting: ${Boolean(disableCapoSorting)},
-  plugins: [DeprecationsPlugin, PromisesPlugin],
+  plugins: [DeprecationsPlugin, PromisesPlugin, TemplateParamsPlugin, AliasSortingPlugin],
 }`
       },
     })

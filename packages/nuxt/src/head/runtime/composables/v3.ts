@@ -1,5 +1,4 @@
-import type { UseHeadInput, UseHeadOptions, UseHeadSafeInput, UseSeoMetaInput, VueHeadClient } from '@unhead/vue'
-import type { ActiveHeadEntry, MergeHead } from '@unhead/schema'
+import type { ActiveHeadEntry, MergeHead, UseHeadInput, UseHeadOptions, UseHeadSafeInput, UseSeoMetaInput, VueHeadClient } from '@unhead/vue'
 import { hasInjectionContext, inject } from 'vue'
 import {
   useHead as headCore,
@@ -8,8 +7,8 @@ import {
   useSeoMeta as seoMeta, useServerHead as serverHead, useServerHeadSafe as serverHeadSafe,
   useServerSeoMeta as serverSeoMeta,
 } from '@unhead/vue'
-import { tryUseNuxtApp } from '#app'
-import type { NuxtApp } from '#app'
+import { tryUseNuxtApp } from '#app/nuxt'
+import type { NuxtApp } from '#app/nuxt'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.

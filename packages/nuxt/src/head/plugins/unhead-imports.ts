@@ -36,7 +36,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
     name: 'nuxt:head:unhead-imports',
     enforce: 'post',
     transformInclude (id) {
-      return (isJS(id) || isVue(id, { type: ['script'] })) && !id.startsWith(distDir) && !UNHEAD_LIB_RE.test(id)
+      return (isJS(id) || isVue(id, { type: ['script'] })) && !id.startsWith('virtual:') && !id.startsWith(distDir) && !UNHEAD_LIB_RE.test(id)
     },
     transform (code, id) {
       if (!code.includes(UnheadVue)) {
@@ -66,6 +66,7 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       }
 
       if (s.hasChanged()) {
+        console.log('transformed', id)
         return {
           code: s.toString(),
           map: options.sourcemap

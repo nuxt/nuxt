@@ -18,7 +18,6 @@ import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead as createServerHead, propsToString, renderSSRHead } from '@unhead/vue/server'
 import type { Head, HeadEntryOptions, Link, Script, Style } from '@unhead/vue/types'
-import { resolveUnrefHeadInput } from '@unhead/vue'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -468,19 +467,19 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }, headEntryOptions)
   }
 
-  // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
+  const tags = await head.resolveTags()
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
     const islandHead: Head = {}
-    for (const entry of head.headEntries()) {
-      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
-        const currentValue = islandHead[key as keyof Head]
-        if (Array.isArray(currentValue)) {
-          currentValue.push(...value)
-        }
-        islandHead[key as keyof Head] = value
+    for (const tag of tags) {
+      const currentValue = islandHead[tag.tag as keyof Head]
+      if (['meta', 'link', 'style', 'script', 'noscript'].includes(tag.tag)) {
+        const value = currentValue || []
+        value.push(tag.props)
+        islandHead[tag.tag as keyof Head] = value
+      } else {
+        islandHead[tag.tag as keyof Head] = tag.props
       }
     }
 
@@ -513,6 +512,12 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }
     return response
   }
+
+  // remove certain tags for nuxt islands
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, {
+    ...renderSSRHeadOptions,
+    resolvedTags: tags,
+  })
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
