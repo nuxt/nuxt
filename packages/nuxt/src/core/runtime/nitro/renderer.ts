@@ -17,7 +17,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead as createServerHead, propsToString, renderSSRHead } from '@unhead/vue/server'
-import type { Head, HeadEntryOptions, Link, Script, Style } from '@unhead/vue/types'
+import type { Head, HeadEntryOptions, Link, Script, Style, ResolvedHead } from '@unhead/vue/types'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
 import type { NuxtPayload, NuxtSSRContext } from 'nuxt/app'
@@ -471,14 +471,16 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
 
   // Response for component islands
   if (isRenderingIsland && islandContext) {
-    const islandHead: Head = {}
+    const islandHead: ResolvedHead = {}
     for (const tag of tags) {
       const currentValue = islandHead[tag.tag as keyof Head]
       if (['meta', 'link', 'style', 'script', 'noscript'].includes(tag.tag)) {
         const value = currentValue || []
-        value.push(tag.props)
+        ;(value as any[]).push(tag.props)
+        // @ts-expect-error type juggling
         islandHead[tag.tag as keyof Head] = value
       } else {
+        // @ts-expect-error type juggling
         islandHead[tag.tag as keyof Head] = tag.props
       }
     }

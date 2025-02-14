@@ -6,8 +6,6 @@ import { isCI, isWindows } from 'std-env'
 import { join, normalize } from 'pathe'
 import { $fetch as _$fetch, createPage, fetch, isDev, setup, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
-
-import { resolveUnrefHeadInput } from '@unhead/vue'
 import { expectNoClientErrors, expectWithPolling, gotoPath, isRenderingJson, parseData, parsePayload, renderPage } from './utils'
 
 import type { NuxtIslandResponse } from '#app'
@@ -2406,7 +2404,7 @@ describe('component islands', () => {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
             if (h.href) {
-              h.href = resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
+              h.href = String(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             }
             return h
           })
