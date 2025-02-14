@@ -3,7 +3,13 @@ import { interopDefault, resolvePath, resolvePathSync } from 'mlly'
 import { createJiti } from 'jiti'
 
 export interface ResolveModuleOptions {
+  /** @deprecated use `url` with URLs pointing at a file - never a directory */
   paths?: string | string[]
+  url?: URL | URL[]
+}
+
+export function directoryToURL (dir: string): URL {
+  return pathToFileURL(dir + '/')
 }
 
 /**
@@ -12,7 +18,10 @@ export interface ResolveModuleOptions {
  *
  * @internal
  */
-export async function tryResolveModule (id: string, url: string | string[] = import.meta.url) {
+export async function tryResolveModule (id: string, url: URL | URL[]): Promise<string | undefined>
+/** @deprecated pass URLs pointing at files */
+export async function tryResolveModule (id: string, url: string | string[]): Promise<string | undefined>
+export async function tryResolveModule (id: string, url: string | string[] | URL | URL[] = import.meta.url) {
   try {
     return await resolvePath(id, { url })
   } catch {
@@ -21,7 +30,7 @@ export async function tryResolveModule (id: string, url: string | string[] = imp
 }
 
 export function resolveModule (id: string, options?: ResolveModuleOptions) {
-  return resolvePathSync(id, { url: options?.paths ?? [import.meta.url] })
+  return resolvePathSync(id, { url: options?.url ?? options?.paths ?? [import.meta.url] })
 }
 
 export interface ImportModuleOptions extends ResolveModuleOptions {
@@ -30,8 +39,8 @@ export interface ImportModuleOptions extends ResolveModuleOptions {
 }
 
 export async function importModule<T = unknown> (id: string, opts?: ImportModuleOptions) {
-  const resolvedPath = await resolveModule(id, opts)
-  return import(pathToFileURL(resolvedPath).href).then(r => opts?.interopDefault !== false ? interopDefault(r) : r) as Promise<T>
+  const resolvedPath = resolveModule(id, opts)
+  return await import(pathToFileURL(resolvedPath).href).then(r => opts?.interopDefault !== false ? interopDefault(r) : r) as Promise<T>
 }
 
 export function tryImportModule<T = unknown> (id: string, opts?: ImportModuleOptions) {

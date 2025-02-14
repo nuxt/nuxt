@@ -7,6 +7,7 @@ import { createJiti } from 'jiti'
 import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
 import { isRelative } from 'ufo'
 import { isNuxt2 } from '../compatibility'
+import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
@@ -107,7 +108,10 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       try {
         const src = isAbsolute(path)
           ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-          : await resolveModule(path, { url: nuxt.options.modulesDir.map(m => pathToFileURL(m.replace(/\/node_modules\/?$/, ''))), extensions: nuxt.options.extensions })
+          : await resolveModule(path, {
+            url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+            extensions: nuxt.options.extensions,
+          })
 
         nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
         resolvedModulePath = fileURLToPath(new URL(src))

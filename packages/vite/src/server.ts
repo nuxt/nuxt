@@ -2,7 +2,7 @@ import { resolve } from 'pathe'
 import * as vite from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import viteJsxPlugin from '@vitejs/plugin-vue-jsx'
-import { logger, resolvePath, tryImportModule } from '@nuxt/kit'
+import { directoryToURL, logger, resolvePath, tryImportModule } from '@nuxt/kit'
 import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
 import type { ViteConfig } from '@nuxt/schema'
 import type { PackageJson } from 'pkg-types'
@@ -117,7 +117,7 @@ export async function buildServer (ctx: ViteBuildContext) {
 
   if (!ctx.nuxt.options.dev) {
     const runtimeDependencies = await tryImportModule<PackageJson>('nitropack/package.json', {
-      paths: ctx.nuxt.options.modulesDir,
+      url: ctx.nuxt.options.modulesDir.map(d => directoryToURL(d)),
     })?.then(r => r?.dependencies ? Object.keys(r.dependencies) : []).catch(() => []) || []
     if (Array.isArray(serverConfig.ssr!.external)) {
       serverConfig.ssr!.external.push(
