@@ -2,7 +2,7 @@ import { getCurrentInstance, reactive, toRefs } from 'vue'
 import type { DefineComponent, defineComponent } from 'vue'
 import { useHead } from '@unhead/vue'
 import type { NuxtApp } from '../nuxt'
-import { runWithNuxtContext, useNuxtApp } from '../nuxt'
+import { callWithNuxtContext, useNuxtApp } from '../nuxt'
 import { useAsyncData } from './asyncData'
 import { useRoute } from './router'
 import { createError } from './error'
@@ -48,7 +48,7 @@ export const defineNuxtComponent: typeof defineComponent =
       ...options,
       setup (props, ctx) {
         const nuxtApp = useNuxtApp()
-        const res = setup ? Promise.resolve(runWithNuxtContext(nuxtApp, () => setup(props, ctx))).then(r => r || {}) : {}
+        const res = setup ? Promise.resolve(callWithNuxtContext(nuxtApp, () => setup(props, ctx))).then(r => r || {}) : {}
 
         const promises: Promise<any>[] = []
         if (options.asyncData) {

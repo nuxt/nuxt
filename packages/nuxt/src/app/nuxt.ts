@@ -492,19 +492,11 @@ export function isNuxtPlugin (plugin: unknown) {
  * @since 3.0.0
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
-  const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
-  const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
-  if (import.meta.server) {
-    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
-  } else {
-    // In client side we could assume nuxt app is singleton
-    nuxtAppCtx.set(nuxt as NuxtApp)
-    return nuxt.vueApp.runWithContext(fn)
-  }
+  return nuxt.vueApp.runWithContext(() => callWithNuxtContext(nuxt, setup, args))
 }
 
-// [WIP]
-export function runWithNuxtContext<T extends () => any> (nuxt: NuxtApp | _NuxtApp, fn: T): ReturnType<T> | Promise<Awaited<ReturnType<T>>> {
+export function callWithNuxtContext<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+  const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
     return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
