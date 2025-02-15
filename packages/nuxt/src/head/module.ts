@@ -1,5 +1,5 @@
 import { resolve } from 'pathe'
-import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, tryResolveModule } from '@nuxt/kit'
+import { addBuildPlugin, addComponent, addPlugin, addTemplate, defineNuxtModule, directoryToURL, tryResolveModule } from '@nuxt/kit'
 import type { NuxtOptions } from '@nuxt/schema'
 import { distDir } from '../dirs'
 import { UnheadImportsPlugin } from './plugins/unhead-imports'
@@ -45,7 +45,10 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
       rootDir: nuxt.options.rootDir,
     }))
 
-    const unheadPlugins = await tryResolveModule('@unhead/vue/plugins', nuxt.options.modulesDir) || '@unhead/vue/plugins'
+    // Opt-out feature allowing dependencies using @vueuse/head to work
+    const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+    const unheadPlugins = await tryResolveModule('@unhead/vue/plugins', importPaths) || '@unhead/vue/plugins'
+
     addTemplate({
       filename: 'unhead-options.mjs',
       getContents () {

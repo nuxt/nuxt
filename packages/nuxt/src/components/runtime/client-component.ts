@@ -52,7 +52,7 @@ function pageToClientOnly<T extends ComponentOptions> (component: T) {
     if (isPromise(setupState)) {
       return Promise.resolve(setupState).then((setupState: any) => {
         if (typeof setupState !== 'function') {
-          setupState = setupState || {}
+          setupState ||= {}
           setupState.mounted$ = mounted$
           return setupState
         }

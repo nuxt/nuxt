@@ -517,7 +517,7 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
+  nuxtAppInstance ||= getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }
