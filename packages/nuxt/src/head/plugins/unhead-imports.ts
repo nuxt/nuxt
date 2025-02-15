@@ -1,7 +1,7 @@
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import type { Identifier, ImportSpecifier } from 'estree'
-import { relative } from 'pathe'
+import { normalize, relative } from 'pathe'
 import { unheadVueComposablesImports } from '@unhead/vue'
 import { genImport } from 'knitwork'
 import { parseAndWalk, withLocations } from '../../core/utils/parse'
@@ -14,7 +14,7 @@ interface UnheadImportsPluginOptions {
   rootDir: string
 }
 
-const UNHEAD_LIB_RE = /node_modules\/(?:@unhead\/[^/]+|unhead)\//
+const UNHEAD_LIB_RE = /node_modules[/\\](?:@unhead[/\\][^/\\]+|unhead)[/\\]/
 
 function toImports (specifiers: ImportSpecifier[]) {
   return specifiers.map((specifier) => {
@@ -36,7 +36,13 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
     name: 'nuxt:head:unhead-imports',
     enforce: 'post',
     transformInclude (id) {
-      return (isJS(id) || isVue(id, { type: ['script'] })) && !id.startsWith('virtual:') && !id.startsWith(distDir) && !UNHEAD_LIB_RE.test(id)
+      id = normalize(id)
+      return (
+        (isJS(id) || isVue(id, { type: ['script'] })) &&
+        !id.startsWith('virtual:') &&
+        !id.startsWith(normalize(distDir)) &&
+        !UNHEAD_LIB_RE.test(id)
+      )
     },
     transform (code, id) {
       if (!code.includes(UnheadVue)) {
@@ -56,8 +62,8 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       const importsFromHead = importsToAdd.filter(specifier => !unheadVueComposablesImports[UnheadVue].includes((specifier.imported as Identifier)?.name))
       if (importsFromUnhead.length) {
         // warn if user has imported from @unhead/vue themselves
-        if (!id.includes('node_modules')) {
-          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(options.rootDir, id)}\`. Please import from \`#imports\` instead for full type safety.`)
+        if (!normalize(id).includes('node_modules')) {
+          logger.warn(`You are importing from \`${UnheadVue}\` in \`./${relative(normalize(options.rootDir), normalize(id))}\`. Please import from \`#imports\` instead for full type safety.`)
         }
         s.prepend(`${genImport('#app/composables/head', toImports(importsFromUnhead))}\n`)
       }
