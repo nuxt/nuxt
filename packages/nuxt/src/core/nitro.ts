@@ -49,10 +49,22 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       .map(m => m.entryPath!),
   )
 
+  const sharedDirs = new Set<string>()
   const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+  if (isNuxtV4 && (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false)) {
+    for (const layer of nuxt.options._layers) {
+      // Layer disabled scanning for itself
+      if (layer.config?.imports?.scan === false) {
+        continue
+      }
+
+      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'utils'))
+      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'types'))
+    }
+  }
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
-    debug: nuxt.options.debug,
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     srcDir: nuxt.options.serverDir,
@@ -68,12 +80,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
-      dirs: isNuxtV4
-        ? [
-            resolve(nuxt.options.rootDir, 'shared', 'utils'),
-            resolve(nuxt.options.rootDir, 'shared', 'types'),
-          ]
-        : [],
+      dirs: [...sharedDirs],
       imports: [
         {
           as: '__buildAssetsURL',

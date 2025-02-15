@@ -1,8 +1,11 @@
+import type { AsyncLocalStorage } from 'node:async_hooks'
 import type { Hookable } from 'hookable'
 import type { Ignore } from 'ignore'
+import type { NuxtModule } from './module'
 import type { NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage } from './hooks'
 import type { Component } from './components'
 import type { NuxtOptions } from './config'
+import type { NuxtDebugContext } from './debug'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -80,9 +83,13 @@ export interface NuxtApp {
 
 export interface Nuxt {
   // Private fields.
+  __name: string
   _version: string
   _ignore?: Ignore
   _dependencies?: Set<string>
+  _debug?: NuxtDebugContext
+  /** Async local storage for current running Nuxt module instance. */
+  _asyncLocalStorageModule?: AsyncLocalStorage<NuxtModule>
 
   /** The resolved Nuxt configuration. */
   options: NuxtOptions
@@ -90,6 +97,7 @@ export interface Nuxt {
   hook: Nuxt['hooks']['hook']
   callHook: Nuxt['hooks']['callHook']
   addHooks: Nuxt['hooks']['addHooks']
+  runWithContext: <T extends (...args: any[]) => any>(fn: T) => ReturnType<T>
 
   ready: () => Promise<void>
   close: () => Promise<void>

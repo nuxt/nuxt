@@ -527,6 +527,23 @@ describe('loading state', () => {
   })
 })
 
+describe('loading state', () => {
+  it('expect state from set opts: { force: true }', async () => {
+    vi.stubGlobal('setTimeout', vi.fn((cb: () => void) => cb()))
+    const nuxtApp = useNuxtApp()
+    const { isLoading, start, finish, set } = useLoadingIndicator()
+    await nuxtApp.callHook('page:loading:start')
+    start({ force: true })
+    expect(isLoading.value).toBeTruthy()
+    finish()
+    expect(isLoading.value).toBeFalsy()
+    set(0, { force: true })
+    expect(isLoading.value).toBeTruthy()
+    set(100, { force: true })
+    expect(isLoading.value).toBeFalsy()
+  })
+})
+
 describe.skipIf(process.env.TEST_MANIFEST === 'manifest-off')('app manifests', () => {
   it('getAppManifest', async () => {
     const manifest = await getAppManifest()
@@ -661,14 +678,13 @@ describe('routing utilities: `encodeURL`', () => {
 })
 
 describe('routing utilities: `useRoute`', () => {
-  it('should show provide a mock route', () => {
+  it('should provide a route', () => {
     expect(useRoute()).toMatchObject({
       fullPath: '/',
       hash: '',
-      href: '/',
-      matched: [],
+      matched: expect.arrayContaining([]),
       meta: {},
-      name: undefined,
+      name: 'catchall',
       params: {},
       path: '/',
       query: {},

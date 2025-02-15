@@ -1,9 +1,8 @@
-import { transform } from 'esbuild'
 import { createUnplugin } from 'unplugin'
 import MagicString from 'magic-string'
 import { hash } from 'ohash'
 
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk, transform, withLocations } from '../../core/utils/parse'
 import { isJS, isVue } from '../utils'
 
 export function PrehydrateTransformPlugin (options: { sourcemap?: boolean } = {}) {

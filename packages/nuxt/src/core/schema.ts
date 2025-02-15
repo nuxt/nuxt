@@ -5,7 +5,7 @@ import { resolve } from 'pathe'
 import { watch } from 'chokidar'
 import { defu } from 'defu'
 import { debounce } from 'perfect-debounce'
-import { createIsIgnored, createResolver, defineNuxtModule, importModule, tryResolveModule } from '@nuxt/kit'
+import { createIsIgnored, createResolver, defineNuxtModule, directoryToURL, importModule, tryResolveModule } from '@nuxt/kit'
 import { generateTypes, resolveSchema as resolveUntypedSchema } from 'untyped'
 import type { Schema, SchemaDefinition } from 'untyped'
 import untypedPlugin from 'untyped/babel-plugin'
@@ -54,7 +54,7 @@ export default defineNuxtModule({
       })
 
       if (nuxt.options.experimental.watcher === 'parcel') {
-        const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
+        const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)))
         if (watcherPath) {
           const { subscribe } = await importModule<typeof import('@parcel/watcher')>(watcherPath)
           for (const layer of nuxt.options._layers) {
