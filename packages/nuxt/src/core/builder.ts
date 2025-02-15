@@ -1,7 +1,7 @@
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { watch as chokidarWatch } from 'chokidar'
-import { createIsIgnored, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, importModule, isIgnored, tryResolveModule, useNuxt } from '@nuxt/kit'
 import { debounce } from 'perfect-debounce'
 import { normalize, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
@@ -133,7 +133,7 @@ function createGranularWatcher () {
   const nuxt = useNuxt()
   const isIgnored = createIsIgnored(nuxt)
 
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.watchers) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:chokidar:watch')
   }
@@ -178,7 +178,7 @@ function createGranularWatcher () {
     })
     watcher.on('ready', () => {
       pending--
-      if (nuxt.options.debug && !pending) {
+      if (nuxt.options.debug && nuxt.options.debug.watchers && !pending) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:chokidar:watch')
       }
@@ -189,11 +189,11 @@ function createGranularWatcher () {
 
 async function createParcelWatcher () {
   const nuxt = useNuxt()
-  if (nuxt.options.debug) {
+  if (nuxt.options.debug && nuxt.options.debug.watchers) {
     // eslint-disable-next-line no-console
     console.time('[nuxt] builder:parcel:watch')
   }
-  const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir])
+  const watcherPath = await tryResolveModule('@parcel/watcher', [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(d => directoryToURL(d)))
   if (!watcherPath) {
     logger.warn('Falling back to `chokidar-granular` as `@parcel/watcher` cannot be resolved in your project.')
     return false
@@ -215,7 +215,7 @@ async function createParcelWatcher () {
       ],
     })
     watcher.then((subscription) => {
-      if (nuxt.options.debug) {
+      if (nuxt.options.debug && nuxt.options.debug.watchers) {
         // eslint-disable-next-line no-console
         console.timeEnd('[nuxt] builder:parcel:watch')
       }
@@ -244,7 +244,7 @@ async function bundle (nuxt: Nuxt) {
 }
 
 async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
-  const builderPath = await tryResolveModule(builder, [nuxt.options.rootDir, import.meta.url])
+  const builderPath = await tryResolveModule(builder, [directoryToURL(nuxt.options.rootDir), new URL(import.meta.url)])
 
   if (!builderPath) {
     throw new Error(`Loading \`${builder}\` builder failed. You can read more about the nuxt \`builder\` option at: \`https://nuxt.com/docs/api/nuxt-config#builder\``)

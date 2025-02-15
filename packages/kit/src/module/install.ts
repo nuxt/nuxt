@@ -6,6 +6,7 @@ import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
 import { isRelative } from 'ufo'
+import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
@@ -28,7 +29,9 @@ export async function installModule<
   }
 
   // Call module
-  const res = await nuxtModule(inlineOptions || {}, nuxt) ?? {}
+  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
+    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
@@ -53,6 +56,7 @@ export async function installModule<
 
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
+    module: nuxtModule,
     timings: res.timings,
     entryPath,
   })
@@ -98,7 +102,10 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       try {
         const src = isAbsolute(path)
           ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-          : await resolveModule(path, { url: nuxt.options.modulesDir.map(m => pathToFileURL(m.replace(/\/node_modules\/?$/, ''))), extensions: nuxt.options.extensions })
+          : await resolveModule(path, {
+            url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+            extensions: nuxt.options.extensions,
+          })
 
         nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
         resolvedModulePath = fileURLToPath(new URL(src))
