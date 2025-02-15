@@ -176,7 +176,6 @@ const componentWithTeleport = new WeakMap()
 
 /**
  * Wrapper for components that should be teleported to islands placeholders
- * Includes slots teleportation
  */
 export function withIslandTeleport (Component: DefineComponent) {
   if (componentWithTeleport.has(Component)) {
