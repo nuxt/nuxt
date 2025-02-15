@@ -29,14 +29,16 @@ const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   sourcemap: false,
-  pages: [
-    {
-      path: '/spa',
-      file: '/dummy/spa.vue',
+  routeData: {
+    pages: [
+      {
+        path: '/spa',
+        file: '/dummy/spa.vue',
+      },
+    ],
+    routeRules: {
+      '/spa/**': { ssr: false },
     },
-  ],
-  routeRules: {
-    '/spa/**': { ssr: false },
   },
   getComponents () {
     return [{

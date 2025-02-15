@@ -16,8 +16,10 @@ import { distDir } from '../../dirs'
 
 interface TreeShakeTemplatePluginOptions {
   sourcemap?: boolean
-  pages: NuxtPage[]
-  routeRules: { [path: string]: NitroRouteConfig }
+  routeData: {
+    pages: NuxtPage[]
+    routeRules: { [path: string]: NitroRouteConfig }
+  }
   getComponents (): Component[]
 }
 
@@ -27,7 +29,7 @@ const CLIENT_ONLY_NAME_RE = /^(?:_unref\()?(?:_component_)?(?:Lazy|lazy_)?(?:cli
 
 export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions) => createUnplugin(() => {
   const regexpMap = new WeakMap<Component[], [RegExp, RegExp, string[]]>()
-  const ruleMatcher = toRouteMatcher(createRadixRouter({ routes: options.routeRules }))
+  const ruleMatcher = !import.meta.dev ? toRouteMatcher(createRadixRouter({ routes: options.routeData.routeRules })) : null
 
   return {
     name: 'nuxt:tree-shake-template',
@@ -49,10 +51,10 @@ export const TreeShakeTemplatePlugin = (options: TreeShakeTemplatePluginOptions)
         regexpMap.set(components, [new RegExp(`(${clientOnlyComponents.join('|')})`), new RegExp(`^(${clientOnlyComponents.map(c => `(?:(?:_unref\\()?(?:_component_)?(?:Lazy|lazy_)?${c}\\)?)`).join('|')})$`), clientOnlyComponents])
       }
 
-      const page = options.pages.find(p => p.file === id)
+      const page = !import.meta.dev && options.routeData.pages.find(p => p.file === id)
       // A page component is being tree shaken
       if (page) {
-        const matchedRules = ruleMatcher.matchAll(page.path).reverse()
+        const matchedRules = ruleMatcher!.matchAll(page.path).reverse()
         const resovlvedRoute = defu({} as Record<string, any>, ...matchedRules) as NitroRouteConfig
         if (resovlvedRoute) {
           // page is SPA
