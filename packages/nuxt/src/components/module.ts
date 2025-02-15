@@ -204,7 +204,6 @@ export default defineNuxtModule<ComponentsOptions>({
       getComponents,
       serverComponentRuntime,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
-      experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
     addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })

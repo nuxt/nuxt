@@ -18,16 +18,16 @@ interface LoaderOptions {
   serverComponentRuntime: string
   sourcemap?: boolean
   transform?: ComponentsOptions['transform']
-  experimentalComponentIslands?: boolean
 }
 
 const REPLACE_COMPONENT_TO_DIRECT_IMPORT_RE = /(?<=[ (])_?resolveComponent\(\s*["'](lazy-|Lazy(?=[A-Z]))?([^'"]*)["'][^)]*\)/g
-export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
+export const LoaderPlugin = (options: LoaderOptions) => createUnplugin((_, { framework }) => {
   const exclude = options.transform?.exclude || []
   const include = options.transform?.include || []
   const nuxt = tryUseNuxt()
   const isNuxtClientEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
   const isDeepClientComponentEnabled = typeof nuxt?.options.experimental?.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient === 'deep'
+  const isVite = framework === 'vite'
 
   function isServerOnlyComponent (id: string) {
     if (!isVue(id)) { return false }
@@ -81,7 +81,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
           if (isServerOnly) {
             imports.add(genImport(options.serverComponentRuntime, [{ name: 'createServerComponent' }]))
             imports.add(`const ${identifier} = createServerComponent(${JSON.stringify(component.pascalName)})`)
-            if (!options.experimentalComponentIslands) {
+            if (!nuxt?.options.experimental?.componentIslands) {
               logger.warn(`Standalone server components (\`${name}\`) are not yet supported without enabling \`experimental.componentIslands\`.`)
             }
             return identifier
@@ -103,10 +103,12 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
             if (isClientOnly) {
               imports.add(`const ${identifier}_wrapped = createClientOnly(${identifier})`)
               identifier += '_wrapped'
-            } else if (((isNuxtClientEnabled && serverOnlyComp) || (options.mode === 'server' && isDeepClientComponentEnabled))) {
-              imports.add(genImport('#app/components/utils', [{ name: 'withIslandTeleport' }]))
-              imports.add(`const ${identifier}_wrapped = withIslandTeleport(${identifier})`)
-              identifier += '_wrapped'
+            } else if (isVite && options.mode === 'server') {
+              if ((isNuxtClientEnabled && serverOnlyComp) || isDeepClientComponentEnabled) {
+                imports.add(genImport('#app/components/utils', [{ name: 'withIslandTeleport' }]))
+                imports.add(`const ${identifier}_wrapped = withIslandTeleport(${identifier})`)
+                identifier += '_wrapped'
+              }
             }
           }
 
