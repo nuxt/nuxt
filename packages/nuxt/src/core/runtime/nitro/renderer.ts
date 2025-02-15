@@ -77,7 +77,7 @@ export interface NuxtIslandContext {
 export interface NuxtIslandResponse {
   id?: string
   html: string
-  head: Head
+  head: ResolvedHead
   props?: Record<string, Record<string, any>>
   components?: Record<string, NuxtIslandClientResponse>
   slots?: Record<string, NuxtIslandSlotResponse>

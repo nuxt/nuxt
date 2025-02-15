@@ -14,7 +14,7 @@ overrides:
   '@nuxt/vite-builder': workspace:*
   '@nuxt/webpack-builder': workspace:*
   '@types/node': 22.13.2
-  '@unhead/vue': 2.0.0-alpha.14
+  '@unhead/vue': 2.0.0-alpha.15
   '@vue/compiler-core': 3.5.13
   '@vue/compiler-dom': 3.5.13
   '@vue/shared': 3.5.13
@@ -85,8 +85,8 @@ importers:
         specifier: 7.5.8
         version: 7.5.8
       '@unhead/vue':
-        specifier: 2.0.0-alpha.14
-        version: 2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3))
+        specifier: 2.0.0-alpha.15
+        version: 2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3))
       '@vitest/coverage-v8':
         specifier: 3.0.5
         version: 3.0.5(vitest@3.0.5(@types/debug@4.1.12)(@types/node@22.13.2)(happy-dom@17.1.0)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))
@@ -338,8 +338,8 @@ importers:
         specifier: 22.13.2
         version: 22.13.2
       '@unhead/vue':
-        specifier: 2.0.0-alpha.14
-        version: 2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3))
+        specifier: 2.0.0-alpha.15
+        version: 2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3))
       '@vue/shared':
         specifier: 3.5.13
         version: 3.5.13
@@ -502,7 +502,7 @@ importers:
     devDependencies:
       '@nuxt/scripts':
         specifier: 0.10.1
-        version: 0.10.1(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3)))(typescript@5.7.3)
+        version: 0.10.1(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3)))(typescript@5.7.3)
       '@parcel/watcher':
         specifier: 2.5.1
         version: 2.5.1
@@ -2118,7 +2118,7 @@ packages:
       '@types/google.maps': ^3.58.1
       '@types/vimeo__player': ^2.18.3
       '@types/youtube': ^0.1.0
-      '@unhead/vue': 2.0.0-alpha.14
+      '@unhead/vue': 2.0.0-alpha.15
     peerDependenciesMeta:
       '@stripe/stripe-js':
         optional: true
@@ -2919,8 +2919,8 @@ packages:
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
 
-  '@unhead/vue@2.0.0-alpha.14':
-    resolution: {integrity: sha512-XQteFcROXVbPjK3bEFX/0ffzB8XAOPibZo10djaPSzP9KHEuDF/GFwY2R8NBXboSGhlZ9SqUOCKSfuCgji2nuA==}
+  '@unhead/vue@2.0.0-alpha.15':
+    resolution: {integrity: sha512-pfTX3uPcjGoeKjA5iIBc/DEpUK04vybLUUXv+Vzr7M8tBtHTVJ4mpcJFYmSO6qVNaegbtQlH7oVfBG4M074MqQ==}
     peerDependencies:
       vue: 3.5.13
 
@@ -7301,8 +7301,8 @@ packages:
   unenv@1.10.0:
     resolution: {integrity: sha512-wY5bskBQFL9n3Eca5XnhH6KbUo/tfvkwm9OpcdCvLaeA7piBNbavbOKJySEwQ1V0RH6HvNlSAFRTpvTqgKRQXQ==}
 
-  unhead@2.0.0-alpha.14:
-    resolution: {integrity: sha512-mg8aYvi9kHBjj++LGRg/PPUPEU2wbaiV1O8IV90UaCSzWzVgy6i345uZU8++zLApbWqY4XSibYLGYrB4EHO7rQ==}
+  unhead@2.0.0-alpha.15:
+    resolution: {integrity: sha512-iYllKZDSIdNcsFFCzvIqI2izzqWpKrIx/c7cUFlkl+pcCF5dX8HwQPofP7K2sIa8NifhMz7awgX9B7FyIV8Qpw==}
 
   unicode-emoji-modifier-base@1.0.0:
     resolution: {integrity: sha512-yLSH4py7oFH3oG/9K+XWrz1pSi3dfUrWEnInbxMfArOfc1+33BlGPQtLsOYwvdMy11AwUBetYuaRxSPqgkq+8g==}
@@ -8854,10 +8854,10 @@ snapshots:
       string-width: 4.2.3
       webpack: 5.98.0
 
-  '@nuxt/scripts@0.10.1(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3)))(typescript@5.7.3)':
+  '@nuxt/scripts@0.10.1(@types/google.maps@3.58.1)(@types/vimeo__player@2.18.3)(@types/youtube@0.1.0)(@unhead/vue@2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3)))(typescript@5.7.3)':
     dependencies:
       '@nuxt/kit': link:packages/kit
-      '@unhead/vue': 2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3))
+      '@unhead/vue': 2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3))
       '@vueuse/core': 12.5.0(typescript@5.7.3)
       consola: 3.4.0
       defu: 6.1.4
@@ -9839,10 +9839,10 @@ snapshots:
 
   '@ungap/structured-clone@1.2.0': {}
 
-  '@unhead/vue@2.0.0-alpha.14(vue@3.5.13(typescript@5.7.3))':
+  '@unhead/vue@2.0.0-alpha.15(vue@3.5.13(typescript@5.7.3))':
     dependencies:
       hookable: 5.5.3
-      unhead: 2.0.0-alpha.14
+      unhead: 2.0.0-alpha.15
       vue: 3.5.13(typescript@5.7.3)
 
   '@unocss/astro@65.4.3(rollup@4.34.6)(vite@6.1.0(@types/node@22.13.2)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue@3.5.13(typescript@5.7.3))':
@@ -15098,7 +15098,7 @@ snapshots:
       node-fetch-native: 1.6.6
       pathe: 1.1.2
 
-  unhead@2.0.0-alpha.14:
+  unhead@2.0.0-alpha.15:
     dependencies:
       hookable: 5.5.3
 

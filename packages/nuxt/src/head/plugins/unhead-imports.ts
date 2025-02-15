@@ -66,7 +66,6 @@ export const UnheadImportsPlugin = (options: UnheadImportsPluginOptions) => crea
       }
 
       if (s.hasChanged()) {
-        console.log('transformed', id)
         return {
           code: s.toString(),
           map: options.sourcemap
