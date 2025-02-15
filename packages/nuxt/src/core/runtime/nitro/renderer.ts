@@ -17,6 +17,7 @@ import destr from 'destr'
 import { getQuery as getURLQuery, joinURL, withoutTrailingSlash } from 'ufo'
 import { renderToString as _renderToString } from 'vue/server-renderer'
 import { createHead, propsToString, renderSSRHead } from '@unhead/vue/server'
+import { resolveUnrefHeadInput } from '@unhead/vue/utils'
 import type { Head, HeadEntryOptions, Link, ResolvedHead, Script, Style } from '@unhead/vue/types'
 
 import { defineRenderHandler, getRouteRules, useNitroApp, useRuntimeConfig, useStorage } from 'nitro/runtime'
@@ -467,21 +468,17 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     }, headEntryOptions)
   }
 
-  const tags = await head.resolveTags()
-
   // Response for component islands
   if (isRenderingIsland && islandContext) {
     const islandHead: ResolvedHead = {}
-    for (const tag of tags) {
-      const currentValue = islandHead[tag.tag as keyof Head]
-      if (['meta', 'link', 'style', 'script', 'noscript'].includes(tag.tag)) {
-        const value = currentValue || []
-        ;(value as any[]).push(tag.props)
-        // @ts-expect-error type juggling
-        islandHead[tag.tag as keyof Head] = value
-      } else {
-        // @ts-expect-error type juggling
-        islandHead[tag.tag as keyof Head] = { innerHTML: tag.innerHTML, textContent: tag.textContent, ...tag.props }
+    // TODO migrate to using resolved tags to minify the payload
+    for (const entry of head.entries.values()) {
+      for (const [key, value] of Object.entries(resolveUnrefHeadInput(entry.input) as Head)) {
+        const currentValue = islandHead[key as keyof ResolvedHead]
+        if (Array.isArray(currentValue)) {
+          currentValue.push(...value)
+        }
+        islandHead[key as keyof ResolvedHead] = value
       }
     }
 
@@ -515,11 +512,7 @@ export default defineRenderHandler(async (event): Promise<Partial<RenderResponse
     return response
   }
 
-  // remove certain tags for nuxt islands
-  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, {
-    ...renderSSRHeadOptions,
-    resolvedTags: tags,
-  })
+  const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = await renderSSRHead(head, renderSSRHeadOptions)
 
   // Create render context
   const htmlContext: NuxtRenderHTMLContext = {
