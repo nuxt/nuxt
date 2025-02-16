@@ -138,29 +138,21 @@ async function futureCompileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt:
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   // Resolve main (app.vue)
-  if (!app.mainComponent) {
-    app.mainComponent = await findPath(
-      nuxt.options._layers.flatMap(layer => [
-        join(layer.config.srcDir, 'App'),
-        join(layer.config.srcDir, 'app'),
-      ]),
-    )
-  }
-  if (!app.mainComponent) {
-    app.mainComponent = resolve(nuxt.options.appDir, 'components/welcome.vue')
-  }
+  app.mainComponent ||= await findPath(
+    nuxt.options._layers.flatMap(layer => [
+      join(layer.config.srcDir, 'App'),
+      join(layer.config.srcDir, 'app'),
+    ]),
+  )
+  app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
   // Resolve root component
-  if (!app.rootComponent) {
-    app.rootComponent = await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
-  }
+  app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
   // Resolve error component
-  if (!app.errorComponent) {
-    app.errorComponent = (await findPath(
-      nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
-    )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
-  }
+  app.errorComponent ||= (await findPath(
+    nuxt.options._layers.map(layer => join(layer.config.srcDir, 'error')),
+  )) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   // Resolve layouts/ from all config layers
   const layerConfigs = nuxt.options._layers.map(layer => layer.config)
@@ -176,7 +168,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] = app.layouts[name] || { name, file }
+      app.layouts[name] ||= { name, file }
     }
   }
 

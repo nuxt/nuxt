@@ -72,9 +72,7 @@ export async function findPath (paths: string | string[], opts?: ResolvePathOpti
  * Resolve path aliases respecting Nuxt alias options
  */
 export function resolveAlias (path: string, alias?: Record<string, string>): string {
-  if (!alias) {
-    alias = tryUseNuxt()?.options.alias || {}
-  }
+  alias ||= tryUseNuxt()?.options.alias || {}
   return _resolveAlias(path, alias)
 }
 

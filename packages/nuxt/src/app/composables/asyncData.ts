@@ -240,14 +240,14 @@ export function useAsyncData<
   const getDefaultCachedData = () => nuxtApp.isHydrating ? nuxtApp.payload.data[key] : nuxtApp.static.data[key]
 
   // Apply defaults
-  options.server = options.server ?? true
-  options.default = options.default ?? (getDefault as () => DefaultT)
-  options.getCachedData = options.getCachedData ?? getDefaultCachedData
+  options.server ??= true
+  options.default ??= getDefault as () => DefaultT
+  options.getCachedData ??= getDefaultCachedData
 
-  options.lazy = options.lazy ?? false
-  options.immediate = options.immediate ?? true
-  options.deep = options.deep ?? asyncDataDefaults.deep
-  options.dedupe = options.dedupe ?? 'cancel'
+  options.lazy ??= false
+  options.immediate ??= true
+  options.deep ??= asyncDataDefaults.deep
+  options.dedupe ??= 'cancel'
 
   if (import.meta.dev && typeof options.dedupe === 'boolean') {
     console.warn('[nuxt] `boolean` values are deprecated for the `dedupe` option of `useAsyncData` and will be removed in the future. Use \'cancel\' or \'defer\' instead.')

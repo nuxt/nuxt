@@ -34,7 +34,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   delete (globalThis as any).defineNuxtConfig
 
   // Fill config
-  nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
+  nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
   nuxtConfig.alias ||= {}
@@ -64,7 +64,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
     layer.config ||= {}
-    layer.config.rootDir = layer.config.rootDir ?? layer.cwd!
+    layer.config.rootDir ??= layer.cwd!
 
     // Only process/resolve layers once
     if (processedLayers.has(layer.config.rootDir)) { continue }

@@ -70,7 +70,7 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
       meta = defu(extractMetaFromObject(plugin.properties), meta)
     }
 
-    meta.order = meta.order || orderMap[meta.enforce || 'default'] || orderMap.default
+    meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   })
   metaCache[code] = meta

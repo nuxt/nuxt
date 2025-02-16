@@ -117,9 +117,7 @@ export interface NavigateToOptions {
 const URL_QUOTE_RE = /"/g
 /** @since 3.0.0 */
 export const navigateTo = (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw => {
-  if (!to) {
-    to = '/'
-  }
+  to ||= '/'
 
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
