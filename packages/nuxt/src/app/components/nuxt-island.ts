@@ -197,7 +197,7 @@ export default defineComponent({
     }
 
     async function fetchComponent (force = false) {
-      nuxtApp[pKey] = nuxtApp[pKey] || {}
+      nuxtApp[pKey] ||= {}
       if (!nuxtApp[pKey][uid.value]) {
         nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
           delete nuxtApp[pKey]![uid.value]

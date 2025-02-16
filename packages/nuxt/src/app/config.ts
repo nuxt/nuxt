@@ -38,7 +38,7 @@ function deepAssign (obj: any, newObj: any) {
     const val = newObj[key]
     if (isPojoOrArray(val)) {
       const defaultVal = Array.isArray(val) ? [] : {}
-      obj[key] = obj[key] || defaultVal
+      obj[key] ||= defaultVal
       deepAssign(obj[key], val)
     } else {
       obj[key] = val

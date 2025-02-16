@@ -174,7 +174,7 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
         logger.warn(`No layout name could be resolved for \`~/${relative(nuxt.options.srcDir, file)}\`. Bear in mind that \`index\` is ignored for the purpose of creating a layout name.`)
         continue
       }
-      app.layouts[name] = app.layouts[name] || { name, file }
+      app.layouts[name] ||= { name, file }
     }
   }
 

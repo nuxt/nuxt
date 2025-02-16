@@ -32,7 +32,7 @@ if (import.meta.server) {
       await nuxt.hooks.callHook('app:created', vueApp)
     } catch (error) {
       await nuxt.hooks.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
     if (ssrContext?._renderResponse) { throw new Error('skipping render') }
 
@@ -63,7 +63,7 @@ if (import.meta.client) {
 
     async function handleVueError (error: any) {
       await nuxt.callHook('app:error', error)
-      nuxt.payload.error = nuxt.payload.error || createError(error as any)
+      nuxt.payload.error ||= createError(error as any)
     }
 
     vueApp.config.errorHandler = handleVueError
