@@ -21,7 +21,7 @@ export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): 
   if (import.meta.server || !payloadExtraction) { return null }
   const payloadURL = await _getPayloadURL(url, opts)
   const nuxtApp = useNuxtApp()
-  const cache = nuxtApp._payloadCache = nuxtApp._payloadCache || {}
+  const cache = nuxtApp._payloadCache ||= {}
   if (payloadURL in cache) {
     return cache[payloadURL] || null
   }
