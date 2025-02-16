@@ -49,7 +49,7 @@ export async function preloadRouteComponents (to: RouteLocationRaw, router: Rout
   const { path, matched } = router.resolve(to)
 
   if (!matched.length) { return }
-  if (!router._routePreloaded) { router._routePreloaded = new Set() }
+  router._routePreloaded ||= new Set()
   if (router._routePreloaded.has(path)) { return }
 
   const promises = router._preloadPromises ||= []

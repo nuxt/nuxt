@@ -39,10 +39,8 @@ function captureStackTrace () {
       continue
     }
     for (const key of ['line', 'column']) {
-      if (parsed[key]) {
-        // @ts-expect-error
-        parsed[key] = Number(parsed[key])
-      }
+      // @ts-expect-error
+      parsed[key] &&= Number(parsed[key])
     }
     trace.push(parsed)
   }

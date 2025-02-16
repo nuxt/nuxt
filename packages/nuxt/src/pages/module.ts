@@ -269,9 +269,7 @@ export default defineNuxtModule({
     }
 
     nuxt.hooks.hookOnce('app:templates', async (app) => {
-      if (!app.pages) {
-        app.pages = await resolvePagesRoutes(nuxt)
-      }
+      app.pages ||= await resolvePagesRoutes(nuxt)
     })
 
     nuxt.hook('builder:watch', async (event, relativePath) => {
