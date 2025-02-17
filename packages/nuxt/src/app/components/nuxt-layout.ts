@@ -53,6 +53,8 @@ export default defineComponent({
     const injectedRoute = inject(PageRouteSymbol)
     const route = injectedRoute === useRoute() ? useVueRouterRoute() : injectedRoute
 
+    provide(PageRouteSymbol, route)
+
     const layout = computed(() => {
       let layout = unref(props.name) ?? route.meta.layout as string ?? 'default'
       if (layout && !(layout in layouts)) {
