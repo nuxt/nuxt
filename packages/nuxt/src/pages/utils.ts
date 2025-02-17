@@ -192,7 +192,7 @@ export function extractScriptContent (sfc: string) {
   for (const match of sfc.matchAll(SFC_SCRIPT_RE)) {
     if (match?.groups?.content) {
       contents.push({
-        loader: match.groups.attrs?.includes('tsx') ? 'tsx' : 'ts',
+        loader: match.groups.attrs && /[tj]sx/.test(match.groups.attrs) ? 'tsx' : 'ts',
         code: match.groups.content.trim(),
       })
     }
