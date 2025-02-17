@@ -1,21 +1,16 @@
 import { walk as _walk } from 'estree-walker'
 import type { Node, SyncHandler } from 'estree-walker'
-import type {
-  ArrowFunctionExpression,
-  CatchClause,
-  Program as ESTreeProgram,
-  FunctionDeclaration,
-  FunctionExpression,
-  Identifier,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier,
-  ImportSpecifier,
-  VariableDeclaration,
-} from 'estree'
+import type { ArrowFunctionExpression, CatchClause, Program as ESTreeProgram, FunctionDeclaration, FunctionExpression, Identifier, ImportDefaultSpecifier, ImportNamespaceSpecifier, ImportSpecifier, VariableDeclaration } from 'estree'
 import { parse } from 'acorn'
 import type { Program } from 'acorn'
+import { type SameShape, type TransformOptions, type TransformResult, transform as esbuildTransform } from 'esbuild'
+import { tryUseNuxt } from '@nuxt/kit'
 
 export type { Node }
+
+export async function transform<T extends TransformOptions> (input: string | Uint8Array, options?: SameShape<TransformOptions, T>): Promise<TransformResult<T>> {
+  return await esbuildTransform(input, { ...tryUseNuxt()?.options.esbuild.options, ...options })
+}
 
 type WithLocations<T> = T & { start: number, end: number }
 type WalkerCallback = (this: ThisParameterType<SyncHandler>, node: WithLocations<Node>, parent: WithLocations<Node> | null, ctx: { key: string | number | symbol | null | undefined, index: number | null | undefined, ast: Program | Node }) => void

@@ -9,7 +9,7 @@ import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
 import { filterInPlace } from './utils'
-import { tryResolveModule } from './internal/esm'
+import { directoryToURL, tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -180,6 +180,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     .then(r => r?.version && gte(r.version, '5.4.0'))
     .catch(() => isV4)
 
+  const useDecorators = Boolean(nuxt.options.experimental?.decorators)
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -197,12 +199,20 @@ export async function _generateTypes (nuxt: Nuxt) {
       noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      /* Decorator support */
+      ...useDecorators
+        ? {
+            useDefineForClassFields: false,
+            experimentalDecorators: false,
+          }
+        : {},
       /* If NOT transpiling with TypeScript: */
       module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
         'ESNext',
+        ...useDecorators ? ['esnext.decorators'] : [],
         'dom',
         'dom.iterable',
         'webworker',
@@ -234,6 +244,8 @@ export async function _generateTypes (nuxt: Nuxt) {
   tsConfig.compilerOptions.paths ||= {}
   tsConfig.include ||= []
 
+  const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
+
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
       continue
@@ -241,7 +253,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
+      const resolvedModule = await tryResolveModule(aliases[alias]!, importPaths)
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)
