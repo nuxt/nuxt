@@ -104,9 +104,7 @@ export default class VueSSRClientPlugin {
         if (Array.isArray(m.modules)) {
           for (const concatenatedModule of m.modules) {
             const id = hash(concatenatedModule.identifier!.replace(/\s\w+$/, ''))
-            if (!webpackManifest.modules[id]) {
-              webpackManifest.modules[id] = files
-            }
+            webpackManifest.modules[id] ||= files
           }
         }
 

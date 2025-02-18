@@ -11,9 +11,7 @@ export function useAppConfig (event?: H3Event) {
   if (!event) {
     return _sharedAppConfig
   }
-  if (!event.context.nuxt) {
-    event.context.nuxt = {}
-  }
+  event.context.nuxt ||= {}
   // Reuse cached app config from event context
   if (event.context.nuxt.appConfig) {
     return event.context.nuxt.appConfig

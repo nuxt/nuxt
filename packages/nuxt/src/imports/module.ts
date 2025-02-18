@@ -135,7 +135,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             fileFilter: file => !isIgnored(file),
           })
           for (const i of scannedImports) {
-            i.priority = i.priority || priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
           }
           imports.push(...scannedImports)
         }

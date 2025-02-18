@@ -942,7 +942,7 @@ function createPortalProperties (sourceValue: any, options: NuxtOptions, paths: 
 
     while (segments.length) {
       const key = segments.shift()!
-      parent = parent[key] || (parent[key] = {})
+      parent = parent[key] ||= {}
     }
 
     delete parent[key]

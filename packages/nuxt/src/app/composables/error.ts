@@ -31,7 +31,7 @@ export const showError = <DataT = unknown>(
       nuxtApp.hooks.callHook('app:error', nuxtError)
     }
 
-    error.value = error.value || nuxtError
+    error.value ||= nuxtError
   } catch {
     throw nuxtError
   }

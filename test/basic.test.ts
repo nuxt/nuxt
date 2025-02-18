@@ -2405,9 +2405,7 @@ describe('component islands', () => {
       for (const key in result.head) {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
-            if (h.href) {
-              h.href = resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-            }
+            h.href &&= resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             return h
           })
         }
@@ -2800,16 +2798,12 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
   if (result.head.style) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
-        if (style.innerHTML) {
-          style.innerHTML =
+        style.innerHTML &&=
             (style.innerHTML as string)
               .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
               // Vite 6 enables CSS minify by default for SSR
               .replace(/blue/, '#00f')
-        }
-        if (style.key) {
-          style.key = style.key.replace(/-[a-z0-9]+$/i, '')
-        }
+        style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }
   }

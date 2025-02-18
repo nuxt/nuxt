@@ -105,9 +105,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   // Resolve dst
-  if (!template.dst) {
-    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
-  }
+  template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>
 }
