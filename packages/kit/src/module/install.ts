@@ -129,6 +129,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
           // i.e module is importing a module that is missing
           if (!module || module.includes(nuxtModule as string)) {
             continue
+          }
         }
         logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
         throw error
