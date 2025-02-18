@@ -79,6 +79,8 @@ export const normalizeModuleTranspilePath = (p: string) => {
   return getDirectory(p).split('node_modules/').pop() as string
 }
 
+const MissingModuleMatcher = /Cannot find module\s+['"]?([^'")\s]+)['"]?/i
+
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()) {
   let buildTimeModuleMeta: ModuleMeta = {}
   let resolvedModulePath: string | undefined
@@ -122,12 +124,11 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
           continue
         }
         if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
-          // check that the first require stack entry is for a conventional Nuxt module entry
-          // if it is, then it's possible that the module itself has a missing module
-          const lastRequire = (error as Error).stack?.split('\n')?.[2] || ''
-          if (!lastRequire.endsWith(`${nuxtModule}/dist/module.mjs`)) {
+          const module = MissingModuleMatcher.exec((error as Error).message)?.[1]
+          // verify that it's missing the nuxt module otherwise it may be a sub dependency of the module itself
+          // i.e module is importing a module that is missing
+          if (!module || module.includes(nuxtModule as string)) {
             continue
-          }
         }
         logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
         throw error
