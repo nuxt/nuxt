@@ -118,8 +118,16 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         break
       } catch (error: unknown) {
         const code = (error as Error & { code?: string }).code
-        if (code === 'MODULE_NOT_FOUND' || code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_MODULE_NOT_FOUND' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
+        if (code === 'ERR_PACKAGE_PATH_NOT_EXPORTED' || code === 'ERR_UNSUPPORTED_DIR_IMPORT' || code === 'ENOTDIR') {
           continue
+        }
+        if (code === 'MODULE_NOT_FOUND' || code === 'ERR_MODULE_NOT_FOUND') {
+          // check that the first require stack entry is for a conventional Nuxt module entry
+          // if it is, then it's possible that the module itself has a missing module
+          const lastRequire = (error as Error).stack?.split('\n')?.[2] || ''
+          if (!lastRequire.endsWith(`${nuxtModule}/dist/module.mjs`)) {
+            continue
+          }
         }
         logger.error(`Error while importing module \`${nuxtModule}\`: ${error}`)
         throw error
