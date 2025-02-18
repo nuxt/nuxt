@@ -94,9 +94,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       nuxtModule = resolve(nuxt.options.rootDir, nuxtModule)
     }
 
+    paths.add(nuxtModule)
     paths.add(join(nuxtModule, 'nuxt'))
     paths.add(join(nuxtModule, 'module'))
-    paths.add(nuxtModule)
 
     for (const path of paths) {
       try {
