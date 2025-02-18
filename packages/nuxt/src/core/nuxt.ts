@@ -155,8 +155,8 @@ export const keyDependencies = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
-  const layerConfigs = nuxt.options._layers.map((layer) => layer.config);
-  const reversedConfigs = layerConfigs.slice().reverse();
+  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
+  const reversedConfigs = layerConfigs.slice().reverse()
 
   // Register user hooks
   for (const config of reversedConfigs) {
@@ -168,7 +168,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Correct css order
   nuxt.options.css = reversedConfigs
     .flatMap(config => config.css || [])
-    .filter((css): css is string => typeof css === "string");
+    .filter((css): css is string => typeof css === 'string')
 
   // Prompt to set compatibility date
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
