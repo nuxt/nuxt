@@ -45,7 +45,7 @@
     "std-env": "^3.8.0",
     "ufo": "^1.5.4",
     "unctx": "^2.4.1",
-    "unimport": "^4.1.1",
+    "unimport": "^4.1.2",
     "untyped": "^1.5.2"
   },
   "devDependencies": {
