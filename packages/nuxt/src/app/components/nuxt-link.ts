@@ -205,6 +205,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       return resolveTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), router.resolve /* will not be called */)
     })
 
+    // Check if the URL is in the whitelist
+    function isUrlInWhitelist (url: string, whitelist: string[] = []): boolean {
+      if (!whitelist.length) { return false }
+      try {
+        const urlObj = new URL(url)
+        return whitelist.some(domain => urlObj.hostname.endsWith(domain))
+      } catch (e) {
+        console.error(e)
+        return false
+      }
+    }
+    const isInWhitelist = computed(() => isUrlInWhitelist(href.value, options.whitelist))
+
     return {
       to,
       hasTarget,
@@ -212,6 +225,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       isExternal,
       //
       href,
+      isInWhitelist,
       isActive: link?.isActive ?? computed(() => to.value === router.currentRoute.value.path),
       isExactActive: link?.isExactActive ?? computed(() => to.value === router.currentRoute.value.path),
       route: link?.route ?? computed(() => router.resolve(to.value)),
@@ -223,6 +237,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       hasTarget: ComputedRef<boolean | null | undefined>
       isAbsoluteUrl: ComputedRef<boolean>
       isExternal: ComputedRef<boolean>
+      isInWhitelist: ComputedRef<boolean>
     }
   }
 
@@ -322,7 +337,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
     setup (props, { slots }) {
       const router = useRouter()
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useNuxtLink(props)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, isInWhitelist } = useNuxtLink(props)
 
       // Prefetching
       const prefetched = ref(false)
@@ -425,21 +440,8 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
 
         // Resolves `target` value
         const target = props.target || null
+        const defaultExternalRel = isInWhitelist.value ? 'noopener' : 'noopener noreferrer'
 
-        function isUrlInWhitelist (url: string, whitelist: string[] = []): boolean {
-          if (!whitelist.length) { return false }
-          try {
-            const urlObj = new URL(url)
-            return whitelist.some(domain => urlObj.hostname.endsWith(domain))
-          } catch (e) {
-            console.error(e)
-            return false
-          }
-        }
-        let defaultExternalRel = 'noopener noreferrer'
-        if (isUrlInWhitelist(href.value, options.whitelist)) {
-          defaultExternalRel = 'noopener'
-        }
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
         const rel = firstNonUndefined<string | null>(
