@@ -427,6 +427,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         const target = props.target || null
 
         function isUrlInWhitelist (url: string, whitelist: string[] = []): boolean {
+          if (!whitelist.length) { return false }
           try {
             const urlObj = new URL(url)
             return whitelist.some(domain => urlObj.hostname.endsWith(domain))
