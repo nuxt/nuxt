@@ -217,7 +217,7 @@ export default defineResolvers({
      * @type {typeof import('unctx/transform').TransformerOptions}
      */
     asyncTransforms: {
-      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware'],
+      asyncFunctions: ['defineNuxtPlugin', 'defineNuxtRouteMiddleware', 'callWithNuxtContext'],
       objectDefinitions: {
         defineNuxtComponent: ['asyncData', 'setup'],
         defineNuxtPlugin: ['setup'],
