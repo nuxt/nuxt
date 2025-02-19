@@ -212,9 +212,9 @@ describe('nuxt-link:propsOrAttributes', () => {
       })
 
       it('uses set white list', () => {
-        expect(nuxtLink({ to: 'https://nuxtjs.org' }, { whiteList: ['nuxtjs.org'] }).props.rel).toBe('noopener')
-        expect(nuxtLink({ to: 'https://nuxt.com' }, { whiteList: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener noreferrer')
-        expect(nuxtLink({ to: 'https://nuxters.nuxt.com' }, { whiteList: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener')
+        expect(nuxtLink({ to: 'https://nuxtjs.org' }, { whitelist: ['nuxtjs.org'] }).props.rel).toBe('noopener')
+        expect(nuxtLink({ to: 'https://nuxt.com' }, { whitelist: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener noreferrer')
+        expect(nuxtLink({ to: 'https://nuxters.nuxt.com' }, { whitelist: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener')
       })
 
       it('honors `noRel` prop', () => {
