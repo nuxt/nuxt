@@ -103,7 +103,7 @@
     "eslint": "9.20.1",
     "eslint-plugin-no-only-tests": "3.3.0",
     "eslint-plugin-perfectionist": "4.9.0",
-    "eslint-typegen": "1.0.0",
+    "eslint-typegen": "2.0.0",
     "estree-walker": "3.0.3",
     "h3": "npm:h3-nightly@1.14.0-20250122-114730-3f9e703",
     "happy-dom": "17.1.1",
