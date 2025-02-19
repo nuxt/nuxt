@@ -100,6 +100,11 @@ export interface NuxtLinkOptions extends
    * Allows controlling default setting for when to prefetch links. By default, prefetch is triggered only on visibility.
    */
   prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
+  /**
+   * A white list of domain that should be not set noreferrer.
+   * @example ['nuxt.com', 'nuxtjs.org']
+   */
+  whiteList?: string[]
 }
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -421,6 +426,19 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         // Resolves `target` value
         const target = props.target || null
 
+        function isUrlInWhitelist (url: string, whitelist: string[] = []): boolean {
+          try {
+            const urlObj = new URL(url)
+            return whitelist.some(domain => urlObj.hostname.endsWith(domain))
+          } catch (e) {
+            console.error(e)
+            return false
+          }
+        }
+        let defaultExternalRel = 'noopener noreferrer'
+        if (isUrlInWhitelist(href.value, options.whiteList)) {
+          defaultExternalRel = 'noopener'
+        }
         // Resolves `rel`
         checkPropConflicts(props, 'noRel', 'rel')
         const rel = firstNonUndefined<string | null>(
@@ -431,7 +449,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           * A fallback rel of `noopener noreferrer` is applied for external links or links that open in a new tab.
           * This solves a reverse tabnapping security flaw in browsers pre-2021 as well as improving privacy.
           */
-          (isAbsoluteUrl.value || hasTarget.value) ? 'noopener noreferrer' : '',
+          (isAbsoluteUrl.value || hasTarget.value) ? defaultExternalRel : '',
         ) || null
 
         // https://router.vuejs.org/api/#custom

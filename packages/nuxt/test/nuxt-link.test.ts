@@ -211,6 +211,12 @@ describe('nuxt-link:propsOrAttributes', () => {
         expect(nuxtLink({ to: 'https://nuxtjs.org', rel: '' }, { externalRelAttribute: 'bar' }).props.rel).toBe(null)
       })
 
+      it('uses set white list', () => {
+        expect(nuxtLink({ to: 'https://nuxtjs.org' }, { whiteList: ['nuxtjs.org'] }).props.rel).toBe('noopener')
+        expect(nuxtLink({ to: 'https://nuxt.com' }, { whiteList: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener noreferrer')
+        expect(nuxtLink({ to: 'https://nuxters.nuxt.com' }, { whiteList: ['nuxtjs.org', '.nuxt.com'] }).props.rel).toBe('noopener')
+      })
+
       it('honors `noRel` prop', () => {
         expect(nuxtLink({ to: 'https://nuxtjs.org', noRel: true }).props.rel).toBe(null)
         expect(nuxtLink({ to: 'https://nuxtjs.org', noRel: false }).props.rel).toBe('noopener noreferrer')
