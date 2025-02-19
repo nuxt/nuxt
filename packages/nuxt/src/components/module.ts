@@ -200,16 +200,18 @@ export default defineNuxtModule<ComponentsOptions>({
 
     addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
 
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/client-delayed-component')) ?? join(distDir, 'components/runtime/client-delayed-component')
+
     const sharedLoaderOptions = {
       getComponents,
+      clientDelayedComponentRuntime,
       serverComponentRuntime,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }
 
-    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/client-delayed-component')) ?? join(distDir, 'components/runtime/client-delayed-component')
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client', clientDelayedComponentRuntime }), { server: false })
-    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server', clientDelayedComponentRuntime }), { client: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.client, mode: 'client' }), { server: false })
+    addBuildPlugin(LoaderPlugin({ ...sharedLoaderOptions, sourcemap: !!nuxt.options.sourcemap.server, mode: 'server' }), { client: false })
 
     if (nuxt.options.experimental.componentIslands) {
       const selectiveClient = typeof nuxt.options.experimental.componentIslands === 'object' && nuxt.options.experimental.componentIslands.selectiveClient
