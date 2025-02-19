@@ -104,7 +104,7 @@ export interface NuxtLinkOptions extends
    * A white list of domain that should be not set noreferrer.
    * @example ['nuxt.com', 'nuxtjs.org']
    */
-  whiteList?: string[]
+  whitelist?: string[]
 }
 
 /* @__NO_SIDE_EFFECTS__ */
@@ -436,7 +436,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           }
         }
         let defaultExternalRel = 'noopener noreferrer'
-        if (isUrlInWhitelist(href.value, options.whiteList)) {
+        if (isUrlInWhitelist(href.value, options.whitelist)) {
           defaultExternalRel = 'noopener'
         }
         // Resolves `rel`
