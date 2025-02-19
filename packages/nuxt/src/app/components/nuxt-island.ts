@@ -132,10 +132,11 @@ export default defineComponent({
       ssrHTML.value = getFragmentHTML(instance.vnode.el, true)?.join('') || ''
       const key = `${props.name}_${hashId.value}`
       nuxtApp.payload.data[key] ||= {}
-      nuxtApp.payload.data[key].html = ssrHTML.value
+      // clear all data-island-uid to avoid conflicts when saving into payloads
+      nuxtApp.payload.data[key].html = ssrHTML.value.replaceAll(new RegExp(`data-island-uid="${ssrHTML.value.match(SSR_UID_RE)?.[1] || ''}"`, 'g'), `data-island-uid=""`)
     }
 
-    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] ?? getId())
+    const uid = ref<string>(ssrHTML.value.match(SSR_UID_RE)?.[1] || getId())
     const availableSlots = computed(() => [...ssrHTML.value.matchAll(SLOTNAME_RE)].map(m => m[1]))
     const html = computed(() => {
       const currentSlots = Object.keys(slots)
@@ -196,12 +197,10 @@ export default defineComponent({
     }
 
     async function fetchComponent (force = false) {
-      nuxtApp[pKey] = nuxtApp[pKey] || {}
-      if (!nuxtApp[pKey][uid.value]) {
-        nuxtApp[pKey][uid.value] = _fetchComponent(force).finally(() => {
-          delete nuxtApp[pKey]![uid.value]
-        })
-      }
+      nuxtApp[pKey] ||= {}
+      nuxtApp[pKey][uid.value] ||= _fetchComponent(force).finally(() => {
+        delete nuxtApp[pKey]![uid.value]
+      })
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
 

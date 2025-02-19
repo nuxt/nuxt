@@ -1,5 +1,4 @@
 import type { Literal, Property, SpreadElement } from 'estree'
-import { transform } from 'esbuild'
 import { defu } from 'defu'
 import { findExports } from 'mlly'
 import type { Nuxt } from '@nuxt/schema'
@@ -8,7 +7,7 @@ import MagicString from 'magic-string'
 import { normalize } from 'pathe'
 import type { ObjectPlugin, PluginMeta } from 'nuxt/app'
 
-import { parseAndWalk, withLocations } from '../../core/utils/parse'
+import { parseAndWalk, transform, withLocations } from '../../core/utils/parse'
 import { logger } from '../../utils'
 
 const internalOrderMap = {
@@ -44,6 +43,9 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
   if (metaCache[code]) {
     return metaCache[code]
   }
+  if (code.match(/defineNuxtPlugin\s*\([\w(]/)) {
+    return {}
+  }
   const js = await transform(code, { loader })
   parseAndWalk(js.code, `file.${loader}`, (node) => {
     if (node.type !== 'CallExpression' || node.callee.type !== 'Identifier') { return }
@@ -68,7 +70,7 @@ export async function extractMetadata (code: string, loader = 'ts' as 'ts' | 'ts
       meta = defu(extractMetaFromObject(plugin.properties), meta)
     }
 
-    meta.order = meta.order || orderMap[meta.enforce || 'default'] || orderMap.default
+    meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   })
   metaCache[code] = meta

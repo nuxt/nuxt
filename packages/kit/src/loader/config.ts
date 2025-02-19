@@ -1,37 +1,28 @@
 import { existsSync } from 'node:fs'
+import { pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import type { ConfigLayer, ConfigLayerMeta, LoadConfigOptions } from 'c12'
 import { loadConfig } from 'c12'
 import type { NuxtConfig, NuxtOptions } from '@nuxt/schema'
-import { NuxtConfigSchema } from '@nuxt/schema'
 import { globby } from 'globby'
 import defu from 'defu'
-import { join } from 'pathe'
+import { basename, join, relative } from 'pathe'
+import { isWindows } from 'std-env'
+import { directoryToURL, tryResolveModule } from '../internal/esm'
 
 export interface LoadNuxtConfigOptions extends Omit<LoadConfigOptions<NuxtConfig>, 'overrides'> {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
   overrides?: Exclude<LoadConfigOptions<NuxtConfig>['overrides'], Promise<any> | Function>
 }
 
-const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
-const layerSchema = Object.create(null)
-for (const key of layerSchemaKeys) {
-  if (key in NuxtConfigSchema) {
-    layerSchema[key] = NuxtConfigSchema[key]
-  }
-}
-
 export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<NuxtOptions> {
   // Automatically detect and import layers from `~~/layers/` directory
-  opts.overrides = defu(opts.overrides, {
-    _extends: await globby('layers/*', {
-      onlyDirectories: true,
-      cwd: opts.cwd || process.cwd(),
-    }),
-  });
+  const localLayers = await globby('layers/*', { onlyDirectories: true, cwd: opts.cwd || process.cwd() })
+  opts.overrides = defu(opts.overrides, { _extends: localLayers });
+
   (globalThis as any).defineNuxtConfig = (c: any) => c
-  const result = await loadConfig<NuxtConfig>({
+  const { configFile, layers = [], cwd, config: nuxtConfig, meta } = await loadConfig<NuxtConfig>({
     name: 'nuxt',
     configFile: 'nuxt.config',
     rcFile: '.nuxtrc',
@@ -41,25 +32,39 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     ...opts,
   })
   delete (globalThis as any).defineNuxtConfig
-  const { configFile, layers = [], cwd } = result
-  const nuxtConfig = result.config!
 
   // Fill config
-  nuxtConfig.rootDir = nuxtConfig.rootDir || cwd
+  nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
+  nuxtConfig.alias ||= {}
+
+  if (meta?.name) {
+    const alias = `#layers/${meta.name}`
+    nuxtConfig.alias[alias] ||= nuxtConfig.rootDir
+  }
 
   const defaultBuildDir = join(nuxtConfig.rootDir!, '.nuxt')
   if (!opts.overrides?._prepare && !nuxtConfig.dev && !nuxtConfig.buildDir && existsSync(defaultBuildDir)) {
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
 
+  const NuxtConfigSchema = await loadNuxtSchema(nuxtConfig.rootDir || cwd || process.cwd())
+
+  const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
+  const layerSchema = Object.create(null)
+  for (const key of layerSchemaKeys) {
+    if (key in NuxtConfigSchema) {
+      layerSchema[key] = NuxtConfigSchema[key]
+    }
+  }
+
   const _layers: ConfigLayer<NuxtConfig, ConfigLayerMeta>[] = []
   const processedLayers = new Set<string>()
   for (const layer of layers) {
     // Resolve `rootDir` & `srcDir` of layers
-    layer.config = layer.config || {}
-    layer.config.rootDir = layer.config.rootDir ?? layer.cwd!
+    layer.config ||= {}
+    layer.config.rootDir ??= layer.cwd!
 
     // Only process/resolve layers once
     if (processedLayers.has(layer.config.rootDir)) { continue }
@@ -70,6 +75,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
     // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
+
+    // Add layer name for local layers
+    if (layer.cwd && cwd && localLayers.includes(relative(cwd, layer.cwd))) {
+      layer.meta ||= {}
+      layer.meta.name ||= basename(layer.cwd)
+    }
+
+    // Add layer alias
+    if (layer.meta?.name) {
+      const alias = `#layers/${layer.meta.name}`
+      nuxtConfig.alias[alias] ||= layer.config.rootDir || layer.cwd
+    }
     _layers.push(layer)
   }
 
@@ -88,4 +105,15 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   // Resolve and apply defaults
   return await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+}
+
+async function loadNuxtSchema (cwd: string) {
+  const url = directoryToURL(cwd)
+  const urls = [url]
+  const nuxtPath = await tryResolveModule('nuxt', url) ?? await tryResolveModule('nuxt-nightly', url)
+  if (nuxtPath) {
+    urls.unshift(pathToFileURL(nuxtPath))
+  }
+  const schemaPath = await tryResolveModule('@nuxt/schema', urls) ?? '@nuxt/schema'
+  return await import(isWindows ? pathToFileURL(schemaPath).href : schemaPath).then(r => r.NuxtConfigSchema)
 }

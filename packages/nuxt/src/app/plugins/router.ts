@@ -230,7 +230,7 @@ export default defineNuxtPlugin<{ route: Route, router: Router }>({
     nuxtApp._route = route
 
     // Handle middleware
-    nuxtApp._middleware = nuxtApp._middleware || {
+    nuxtApp._middleware ||= {
       global: [],
       named: {},
     }

@@ -6,6 +6,7 @@ import { defu } from 'defu'
 import { createJiti } from 'jiti'
 import { parseNodeModulePath, resolve as resolveModule } from 'mlly'
 import { isRelative } from 'ufo'
+import { directoryToURL } from '../internal/esm'
 import { useNuxt } from '../context'
 import { resolveAlias, resolvePath } from '../resolve'
 import { logger } from '../logger'
@@ -19,16 +20,18 @@ export async function installModule<
 > (moduleToInstall: T, inlineOptions?: [Config] extends [never] ? any : Config[1], nuxt: Nuxt = useNuxt()) {
   const { nuxtModule, buildTimeModuleMeta, resolvedModulePath } = await loadNuxtModuleInstance(moduleToInstall, nuxt)
 
-  const localLayerModuleDirs = new Set<string>()
+  const localLayerModuleDirs: string[] = []
   for (const l of nuxt.options._layers) {
     const srcDir = l.config.srcDir || l.cwd
     if (!NODE_MODULES_RE.test(srcDir)) {
-      localLayerModuleDirs.add(resolve(srcDir, l.config?.dir?.modules || 'modules'))
+      localLayerModuleDirs.push(resolve(srcDir, l.config?.dir?.modules || 'modules').replace(/\/?$/, '/'))
     }
   }
 
   // Call module
-  const res = await nuxtModule(inlineOptions || {}, nuxt) ?? {}
+  const res = nuxt.options.experimental?.debugModuleMutation && nuxt._asyncLocalStorageModule
+    ? await nuxt._asyncLocalStorageModule.run(nuxtModule, () => nuxtModule(inlineOptions || {}, nuxt)) ?? {}
+    : await nuxtModule(inlineOptions || {}, nuxt) ?? {}
   if (res === false /* setup aborted */) {
     return
   }
@@ -38,13 +41,13 @@ export async function installModule<
     const parsed = parseNodeModulePath(modulePath)
     const moduleRoot = parsed.dir ? parsed.dir + parsed.name : modulePath
     nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-    const directory = parsed.dir ? moduleRoot : getDirectory(modulePath)
-    if (directory !== moduleToInstall && !localLayerModuleDirs.has(directory)) {
+    const directory = (parsed.dir ? moduleRoot : getDirectory(modulePath)).replace(/\/?$/, '/')
+    if (directory !== moduleToInstall && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
       nuxt.options.modulesDir.push(resolve(directory, 'node_modules'))
     }
   }
 
-  nuxt.options._installedModules = nuxt.options._installedModules || []
+  nuxt.options._installedModules ||= []
   const entryPath = typeof moduleToInstall === 'string' ? resolveAlias(moduleToInstall) : undefined
 
   if (typeof moduleToInstall === 'string' && entryPath !== moduleToInstall) {
@@ -53,6 +56,7 @@ export async function installModule<
 
   nuxt.options._installedModules.push({
     meta: defu(await nuxtModule.getMeta?.(), buildTimeModuleMeta),
+    module: nuxtModule,
     timings: res.timings,
     entryPath,
   })
@@ -98,7 +102,10 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       try {
         const src = isAbsolute(path)
           ? pathToFileURL(await resolvePath(path, { fallbackToOriginal: false, extensions: nuxt.options.extensions })).href
-          : await resolveModule(path, { url: nuxt.options.modulesDir.map(m => pathToFileURL(m.replace(/\/node_modules\/?$/, ''))), extensions: nuxt.options.extensions })
+          : await resolveModule(path, {
+            url: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+            extensions: nuxt.options.extensions,
+          })
 
         nuxtModule = await jiti.import(src, { default: true }) as NuxtModule
         resolvedModulePath = fileURLToPath(new URL(src))

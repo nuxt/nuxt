@@ -7,7 +7,7 @@ import escapeRE from 'escape-string-regexp'
 import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename } from 'pathe/utils'
-import type { NuxtTemplate } from 'nuxt/schema'
+import type { NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
 import { annotatePlugins, checkForCircularDependencies } from './app'
@@ -68,7 +68,7 @@ export const clientPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of clientPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(plugin.src)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -88,7 +88,7 @@ export const serverPluginTemplate: NuxtTemplate = {
     const imports: string[] = []
     for (const plugin of serverPlugins) {
       const path = relative(ctx.nuxt.options.rootDir, plugin.src)
-      const variable = genSafeVariableName(filename(path)).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
+      const variable = genSafeVariableName(filename(plugin.src) || path).replace(PLUGIN_TEMPLATE_RE, '_') + '_' + hash(path)
       exports.push(variable)
       imports.push(genImport(plugin.src, variable))
     }
@@ -185,9 +185,18 @@ export const schemaTemplate: NuxtTemplate = {
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
-    const modules = nuxt.options._installedModules
-      .filter(m => m.meta && m.meta.configKey && m.meta.name && !m.meta.name.startsWith('nuxt:') && m.meta.name !== 'nuxt-config-schema')
-      .map(m => [genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m] as const)
+    const modules: [string, string, NuxtOptions['_installedModules'][number]][] = []
+    for (const m of nuxt.options._installedModules) {
+      // modules without sufficient metadata
+      if (!m.meta || !m.meta.configKey || !m.meta.name) {
+        continue
+      }
+      // core nuxt modules
+      if (m.meta.name.startsWith('nuxt:') || m.meta.name === 'nuxt-config-schema') {
+        continue
+      }
+      modules.push([genString(m.meta.configKey), getImportName(m.entryPath || m.meta.name), m])
+    }
 
     const privateRuntimeConfig = Object.create(null)
     for (const key in nuxt.options.runtimeConfig) {
@@ -210,7 +219,7 @@ export const schemaTemplate: NuxtTemplate = {
         } else if (mod.meta?.repository) {
           if (typeof mod.meta.repository === 'string') {
             link = mod.meta.repository
-          } else if (typeof mod.meta.repository.url === 'string') {
+          } else if (typeof mod.meta.repository === 'object' && 'url' in mod.meta.repository && typeof mod.meta.repository.url === 'string') {
             link = mod.meta.repository.url
           }
           if (link) {
@@ -428,12 +437,12 @@ import { defuFn } from 'defu'
 const inlineConfig = ${JSON.stringify(nuxt.options.appConfig, null, 2)}
 
 /** client **/
-import { updateAppConfig } from '#app/config'
+import { _replaceAppConfig } from '#app/config'
 
 // Vite - webpack is handled directly in #app/config
 if (import.meta.dev && !import.meta.nitro && import.meta.hot) {
   import.meta.hot.accept((newModule) => {
-    updateAppConfig(newModule.default)
+    _replaceAppConfig(newModule.default)
   })
 }
 /** client-end **/

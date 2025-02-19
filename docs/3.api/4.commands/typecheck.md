@@ -4,7 +4,7 @@ description: The typecheck command runs vue-tsc to check types throughout your a
 links:
   - label: Source
     icon: i-simple-icons-github
-    to: https://github.com/nuxt/cli/blob/main/src/commands/typecheck.ts
+    to: https://github.com/nuxt/cli/blob/main/packages/nuxi/src/commands/typecheck.ts
     size: xs
 ---
 

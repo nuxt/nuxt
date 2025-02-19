@@ -114,7 +114,7 @@ export function addWebpackPlugin (pluginOrGetter: WebpackPluginInstance | Webpac
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
-    config.plugins = config.plugins || []
+    config.plugins ||= []
     config.plugins[method](...toArray(plugin))
   }, options)
 }
@@ -126,7 +126,7 @@ export function addRspackPlugin (pluginOrGetter: RspackPluginInstance | RspackPl
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
-    config.plugins = config.plugins || []
+    config.plugins ||= []
     config.plugins[method](...toArray(plugin))
   }, options)
 }
@@ -139,7 +139,7 @@ export function addVitePlugin (pluginOrGetter: VitePlugin | VitePlugin[] | (() =
     const method: 'push' | 'unshift' = options?.prepend ? 'unshift' : 'push'
     const plugin = typeof pluginOrGetter === 'function' ? pluginOrGetter() : pluginOrGetter
 
-    config.plugins = config.plugins || []
+    config.plugins ||= []
     config.plugins[method](...toArray(plugin))
   }, options)
 }

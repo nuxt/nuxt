@@ -29,9 +29,7 @@ export const RouteInjectionPlugin = (nuxt: Nuxt) => createUnplugin(() => {
           const start = match.index!
           const end = start + match[0].length
           s.overwrite(start, end, replacement)
-          if (!replaced) {
-            replaced = true
-          }
+          replaced ||= true
         }
       }
 

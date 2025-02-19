@@ -49,10 +49,22 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       .map(m => m.entryPath!),
   )
 
+  const sharedDirs = new Set<string>()
   const isNuxtV4 = nuxt.options.future?.compatibilityVersion === 4
+  if (isNuxtV4 && (nuxt.options.nitro.imports !== false && nuxt.options.imports.scan !== false)) {
+    for (const layer of nuxt.options._layers) {
+      // Layer disabled scanning for itself
+      if (layer.config?.imports?.scan === false) {
+        continue
+      }
+
+      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'utils'))
+      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'types'))
+    }
+  }
 
   const nitroConfig: NitroConfig = defu(nuxt.options.nitro, {
-    debug: nuxt.options.debug,
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     srcDir: nuxt.options.serverDir,
@@ -68,12 +80,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
     },
     imports: {
       autoImport: nuxt.options.imports.autoImport as boolean,
-      dirs: isNuxtV4
-        ? [
-            resolve(nuxt.options.rootDir, 'shared', 'utils'),
-            resolve(nuxt.options.rootDir, 'shared', 'types'),
-          ]
-        : [],
+      dirs: [...sharedDirs],
       imports: [
         {
           as: '__buildAssetsURL',
@@ -239,7 +246,11 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Resolve user-provided paths
   nitroConfig.srcDir = resolve(nuxt.options.rootDir, nuxt.options.srcDir, nitroConfig.srcDir!)
-  nitroConfig.ignore = [...(nitroConfig.ignore || []), ...resolveIgnorePatterns(nitroConfig.srcDir), `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`]
+  nitroConfig.ignore ||= []
+  nitroConfig.ignore.push(
+    ...resolveIgnorePatterns(nitroConfig.srcDir),
+    `!${join(nuxt.options.buildDir, 'dist/client', nuxt.options.app.buildAssetsDir, '**/*')}`,
+  )
 
   // Resolve aliases in user-provided input - so `~/server/test` will work
   nitroConfig.plugins = nitroConfig.plugins?.map(plugin => plugin ? resolveAlias(plugin, nuxt.options.alias) : plugin)
@@ -411,14 +422,16 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
   const basePath = nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl ? resolve(nuxt.options.buildDir, nitroConfig.typescript!.tsConfig!.compilerOptions?.baseUrl) : nuxt.options.buildDir
   const aliases = nitroConfig.alias!
   const tsConfig = nitroConfig.typescript!.tsConfig!
-  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
   for (const _alias in aliases) {
     const alias = _alias as keyof typeof aliases
     if (excludedAlias.some(pattern => typeof pattern === 'string' ? alias === pattern : pattern.test(alias))) {
       continue
     }
-    if (alias in tsConfig.compilerOptions.paths) { continue }
+    if (alias in tsConfig.compilerOptions.paths) {
+      continue
+    }
 
     const absolutePath = resolve(basePath, aliases[alias]!)
     const stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
@@ -532,7 +545,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
       await writeTypes(nitro)
     }
     // Exclude nitro output dir from typescript
-    opts.tsConfig.exclude = opts.tsConfig.exclude || []
+    opts.tsConfig.exclude ||= []
     opts.tsConfig.exclude.push(relative(nuxt.options.buildDir, resolve(nuxt.options.rootDir, nitro.options.output.dir)))
     opts.references.push({ path: resolve(nuxt.options.buildDir, 'types/nitro.d.ts') })
   })

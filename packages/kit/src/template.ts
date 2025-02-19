@@ -8,7 +8,8 @@ import type { TSConfig } from 'pkg-types'
 import { gte } from 'semver'
 import { readPackageJSON } from 'pkg-types'
 
-import { tryResolveModule } from './internal/esm'
+import { filterInPlace } from './utils'
+import { directoryToURL, tryResolveModule } from './internal/esm'
 import { getDirectory } from './module/install'
 import { tryUseNuxt, useNuxt } from './context'
 import { resolveNuxtModule } from './resolve'
@@ -23,7 +24,7 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string) {
   const template = normalizeTemplate(_template)
 
   // Remove any existing template with the same destination path
-  nuxt.options.build.templates = nuxt.options.build.templates.filter(p => normalizeTemplate(p).dst !== template.dst)
+  filterInPlace(nuxt.options.build.templates, p => normalizeTemplate(p).dst !== template.dst)
 
   // Add to templates array
   nuxt.options.build.templates.push(template)
@@ -104,9 +105,7 @@ export function normalizeTemplate<T> (template: NuxtTemplate<T> | string, buildD
   }
 
   // Resolve dst
-  if (!template.dst) {
-    template.dst = resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
-  }
+  template.dst ||= resolve(buildDir ?? useNuxt().options.buildDir, template.filename)
 
   return template as ResolvedNuxtTemplate<T>
 }
@@ -179,6 +178,8 @@ export async function _generateTypes (nuxt: Nuxt) {
     .then(r => r?.version && gte(r.version, '5.4.0'))
     .catch(() => isV4)
 
+  const useDecorators = Boolean(nuxt.options.experimental?.decorators)
+
   // https://www.totaltypescript.com/tsconfig-cheat-sheet
   const tsConfig: TSConfig = defu(nuxt.options.typescript?.tsConfig, {
     compilerOptions: {
@@ -196,12 +197,20 @@ export async function _generateTypes (nuxt: Nuxt) {
       noUncheckedIndexedAccess: isV4,
       forceConsistentCasingInFileNames: true,
       noImplicitOverride: true,
+      /* Decorator support */
+      ...useDecorators
+        ? {
+            useDefineForClassFields: false,
+            experimentalDecorators: false,
+          }
+        : {},
       /* If NOT transpiling with TypeScript: */
       module: hasTypescriptVersionWithModulePreserve ? 'preserve' : 'ESNext',
       noEmit: true,
       /* If your code runs in the DOM: */
       lib: [
         'ESNext',
+        ...useDecorators ? ['esnext.decorators'] : [],
         'dom',
         'dom.iterable',
         'webworker',
@@ -229,9 +238,11 @@ export async function _generateTypes (nuxt: Nuxt) {
     ? resolve(nuxt.options.buildDir, tsConfig.compilerOptions!.baseUrl)
     : nuxt.options.buildDir
 
-  tsConfig.compilerOptions = tsConfig.compilerOptions || {}
-  tsConfig.compilerOptions.paths = tsConfig.compilerOptions.paths || {}
-  tsConfig.include = tsConfig.include || []
+  tsConfig.compilerOptions ||= {}
+  tsConfig.compilerOptions.paths ||= {}
+  tsConfig.include ||= []
+
+  const importPaths = nuxt.options.modulesDir.map(d => directoryToURL(d))
 
   for (const alias in aliases) {
     if (excludedAlias.some(re => re.test(alias))) {
@@ -240,7 +251,7 @@ export async function _generateTypes (nuxt: Nuxt) {
     let absolutePath = resolve(basePath, aliases[alias]!)
     let stats = await fsp.stat(absolutePath).catch(() => null /* file does not exist */)
     if (!stats) {
-      const resolvedModule = await tryResolveModule(aliases[alias]!, nuxt.options.modulesDir)
+      const resolvedModule = await tryResolveModule(aliases[alias]!, importPaths)
       if (resolvedModule) {
         absolutePath = resolvedModule
         stats = await fsp.stat(resolvedModule).catch(() => null)

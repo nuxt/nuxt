@@ -377,7 +377,7 @@ export function createNuxtApp (options: CreateOptions) {
         }
       })
     }
-    window.useNuxtApp = window.useNuxtApp || useNuxtApp
+    window.useNuxtApp ||= useNuxtApp
 
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
@@ -517,7 +517,7 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
     nuxtAppInstance = getCurrentInstance()?.appContext.app.$nuxt
   }
 
-  nuxtAppInstance = nuxtAppInstance || getNuxtAppCtx(id).tryUse()
+  nuxtAppInstance ||= getNuxtAppCtx(id).tryUse()
 
   return nuxtAppInstance || null
 }

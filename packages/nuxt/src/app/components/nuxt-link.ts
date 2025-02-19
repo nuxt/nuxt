@@ -325,10 +325,13 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
       const elRef = import.meta.server ? undefined : (ref: any) => { el!.value = props.custom ? ref?.$el?.nextElementSibling : ref?.$el }
 
       function shouldPrefetch (mode: 'visibility' | 'interaction') {
+        if (import.meta.server) { return }
         return !prefetched.value && (typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])) && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true && props.target !== '_blank' && !isSlowConnection()
       }
 
       async function prefetch (nuxtApp = useNuxtApp()) {
+        if (import.meta.server) { return }
+
         if (prefetched.value) { return }
 
         prefetched.value = true
@@ -395,12 +398,14 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
           // `custom` API cannot support fallthrough attributes as the slot
           // may render fragment or text root nodes (#14897, #19375)
           if (!props.custom) {
-            if (shouldPrefetch('interaction')) {
-              routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
-              routerLinkProps.onFocus = prefetch.bind(null, undefined)
-            }
-            if (prefetched.value) {
-              routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+            if (import.meta.client) {
+              if (shouldPrefetch('interaction')) {
+                routerLinkProps.onPointerenter = prefetch.bind(null, undefined)
+                routerLinkProps.onFocus = prefetch.bind(null, undefined)
+              }
+              if (prefetched.value) {
+                routerLinkProps.class = props.prefetchedClass || options.prefetchedClass
+              }
             }
             routerLinkProps.rel = props.rel || undefined
           }
@@ -500,15 +505,13 @@ function useObserver (): { observe: ObserveFn } | undefined {
   const callbacks = new Map<Element, CallbackFn>()
 
   const observe: ObserveFn = (element, callback) => {
-    if (!observer) {
-      observer = new IntersectionObserver((entries) => {
-        for (const entry of entries) {
-          const callback = callbacks.get(entry.target)
-          const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
-          if (isVisible && callback) { callback() }
-        }
-      })
-    }
+    observer ||= new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const callback = callbacks.get(entry.target)
+        const isVisible = entry.isIntersecting || entry.intersectionRatio > 0
+        if (isVisible && callback) { callback() }
+      }
+    })
     callbacks.set(element, callback)
     observer.observe(element)
     return () => {

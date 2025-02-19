@@ -625,6 +625,44 @@ describe('pages', () => {
     const html = await $fetch('/prerender/test')
     expect(html).toContain('should be prerendered: true')
   })
+
+  it('should trigger page:loading:end only once', async () => {
+    const { page, consoleLogs } = await renderPage('/')
+
+    await page.getByText('to page load hook').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook')
+    const loadingEndLogs = consoleLogs.filter(c => c.text.includes('page:loading:end'))
+    expect(loadingEndLogs.length).toBe(1)
+
+    await page.close()
+  })
+
+  it('should hide nuxt page load indicator after navigate back from nested page', async () => {
+    const LOAD_INDICATOR_SELECTOR = '.nuxt-loading-indicator'
+    const { page } = await renderPage('/page-load-hook')
+    await page.getByText('To sub page').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path, '/page-load-hook/subpage')
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    let isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.goBack()
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR)
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(true)
+
+    await page.waitForSelector(LOAD_INDICATOR_SELECTOR, { state: 'hidden' })
+    isVisible = await page.isVisible(LOAD_INDICATOR_SELECTOR)
+    expect(isVisible).toBe(false)
+
+    await page.close()
+  })
 })
 
 describe('nuxt composables', () => {
@@ -1905,6 +1943,7 @@ describe('server components/islands', () => {
     // test islands mounted client side with slot
     await page.locator('#show-island').click()
     expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Interactive testing slot post SSR')
+    expect(await page.locator('#island-mounted-client-side').innerHTML()).toContain('Sugar Counter')
 
     // test islands wrapped with client-only
     expect(await page.locator('#wrapped-client-only').innerHTML()).toContain('Was router enabled')
@@ -2366,9 +2405,7 @@ describe('component islands', () => {
       for (const key in result.head) {
         if (key === 'link') {
           result.head[key] = result.head[key]?.map((h) => {
-            if (h.href) {
-              h.href = resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
-            }
+            h.href &&= resolveUnrefHeadInput(h.href).replace(fixtureDir, '/<rootDir>').replaceAll('//', '/')
             return h
           })
         }
@@ -2738,12 +2775,18 @@ describe('teleports', () => {
     const html = await $fetch<string>('/nuxt-teleport')
 
     // Teleport is appended to body, after the __nuxt div
-    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div></div><span id="nuxt-teleport"><!--teleport start anchor--><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
+    expect(html).toContain('<div><!--teleport start--><!--teleport end--><h1>Normal content</h1></div></div><!--]--></div><span id="nuxt-teleport"><!--teleport start anchor--><div>Nuxt Teleport</div><!--teleport anchor--></span><script')
   })
 })
 
-describe('Node.js compatibility for client-side', () => {
-  it('should work', async () => {
+describe('experimental', () => {
+  it('decorators support works', async () => {
+    const html = await $fetch('/experimental/decorators')
+    expect(html).toContain('decorated-decorated')
+    expectNoClientErrors('/experimental/decorators')
+  })
+
+  it('Node.js compatibility for client-side', async () => {
     const { page } = await renderPage('/experimental/node-compat')
     await page.locator('body').getByText('Nuxt is Awesome!').waitFor()
     expect(await page.innerHTML('body')).toContain('CWD: [available]')
@@ -2755,16 +2798,12 @@ function normaliseIslandResult (result: NuxtIslandResponse) {
   if (result.head.style) {
     for (const style of result.head.style) {
       if (typeof style !== 'string') {
-        if (style.innerHTML) {
-          style.innerHTML =
+        style.innerHTML &&=
             (style.innerHTML as string)
               .replace(/data-v-[a-z0-9]+/g, 'data-v-xxxxx')
               // Vite 6 enables CSS minify by default for SSR
               .replace(/blue/, '#00f')
-        }
-        if (style.key) {
-          style.key = style.key.replace(/-[a-z0-9]+$/i, '')
-        }
+        style.key &&= style.key.replace(/-[a-z0-9]+$/i, '')
       }
     }
   }
