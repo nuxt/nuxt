@@ -82,7 +82,7 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
 
           if (lazy) {
             const dynamicImport = `${genDynamicImport(component.filePath, { interopDefault: false })}.then(c => c.${component.export ?? 'default'} || c)`
-            if (modifier && normalComponent && nuxt?.options.experimental.delayedHydration === true) {
+            if (modifier && normalComponent) {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
