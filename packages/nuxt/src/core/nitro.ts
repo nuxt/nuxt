@@ -387,7 +387,7 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
 
   // Add backward-compatible middleware to respect `x-nuxt-no-ssr` header
   if (nuxt.options.experimental.respectNoSSRHeader) {
-    nitroConfig.handlers = nitroConfig.handlers || []
+    nitroConfig.handlers ||= []
     nitroConfig.handlers.push({
       handler: resolve(distDir, 'core/runtime/nitro/no-ssr'),
       middleware: true,

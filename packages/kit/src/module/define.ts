@@ -83,9 +83,7 @@ function _defineNuxtModule<
 
   // Module format is always a simple function
   async function normalizedModule (this: any, inlineOptions: Partial<TOptions>, nuxt: Nuxt): Promise<ModuleSetupReturn> {
-    if (!nuxt) {
-      nuxt = tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
-    }
+    nuxt ||= tryUseNuxt() || this.nuxt /* invoked by nuxt 2 */
 
     // Avoid duplicate installs
     const uniqueKey = module.meta.name || module.meta.configKey
