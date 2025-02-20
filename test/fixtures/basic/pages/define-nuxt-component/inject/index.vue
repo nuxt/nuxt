@@ -11,7 +11,7 @@ export default defineNuxtComponent({
 </script>
 
 <template>
-  <div testid="define-nuxt-component-inject-value">
+  <div data-testid="define-nuxt-component-inject-value">
     {{ value }}
   </div>
 </template>

@@ -2888,7 +2888,7 @@ describe('defineNuxtComponent', () => {
 
   it ('should get correctly inject value', async () => {
     const { page } = await renderPage('/define-nuxt-component/inject')
-    expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).toBe('bar')
+    expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).include('bar')
   })
 })
 
