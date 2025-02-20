@@ -39,7 +39,7 @@
   "resolutions": {
     "@babel/core": "7.26.9",
     "@babel/helper-plugin-utils": "7.26.5",
-    "@nuxt/cli": "3.22.1",
+    "@nuxt/cli": "3.22.2",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
     "@nuxt/schema": "workspace:*",
@@ -77,7 +77,7 @@
     "@babel/core": "7.26.9",
     "@babel/helper-plugin-utils": "7.26.5",
     "@codspeed/vitest-plugin": "4.0.0",
-    "@nuxt/cli": "3.22.1",
+    "@nuxt/cli": "3.22.2",
     "@nuxt/eslint-config": "1.1.0",
     "@nuxt/kit": "workspace:*",
     "@nuxt/rspack-builder": "workspace:*",
