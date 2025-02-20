@@ -155,26 +155,12 @@ export const keyDependencies = [
 let warnedAboutCompatDate = false
 
 async function initNuxt (nuxt: Nuxt) {
-  const layerConfigs = nuxt.options._layers.map(layer => layer.config)
-  const reversedConfigs = layerConfigs.slice().reverse()
-
   // Register user hooks
-  for (const config of reversedConfigs) {
+  for (const config of nuxt.options._layers.map(layer => layer.config).reverse()) {
     if (config.hooks) {
       nuxt.hooks.addHooks(config.hooks)
     }
   }
-
-  // Ensure CSS from project overrides CSS from layers
-  const css = new Set<string>()
-  for (const config of reversedConfigs) {
-    for (const style of config.css || []) {
-      if (typeof style === 'string') {
-        css.add(style)
-      }
-    }
-  }
-  nuxt.options.css = [...css]
 
   // Prompt to set compatibility date
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
@@ -817,6 +803,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   for (const key in options.app.head || {}) {
     options.app.head[key as 'link'] = deduplicateArray(options.app.head[key as 'link'])
   }
+
+  // Ensure CSS from project overrides CSS from layers
+  const css = new Set<string>()
+  for (const config of options._layers.map(layer => layer.config).reverse()) {
+    for (const style of config.css || []) {
+      if (typeof style === 'string') {
+        css.add(style)
+      }
+    }
+  }
+  options.css = [...css]
 
   // Nuxt DevTools only works for Vite
   if (options.builder === '@nuxt/vite-builder') {
