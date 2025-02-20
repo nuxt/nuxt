@@ -165,10 +165,16 @@ async function initNuxt (nuxt: Nuxt) {
     }
   }
 
-  // Correct css order
-  nuxt.options.css = reversedConfigs
-    .flatMap(config => config.css || [])
-    .filter((css): css is string => typeof css === 'string')
+  // Ensure CSS from project overrides CSS from layers
+  const css = new Set<string>()
+  for (const config of reversedConfigs) {
+    for (const style of config.css || []) {
+      if (typeof style === 'string') {
+        css.add(style)
+      }
+    }
+  }
+  nuxt.options.css = [...css]
 
   // Prompt to set compatibility date
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
