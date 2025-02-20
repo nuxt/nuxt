@@ -805,15 +805,17 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // Ensure CSS from project overrides CSS from layers
-  const css = new Set<string>()
+  const orderedCSS = new Set<string>()
+  const optionsCSS = new Set(options.css)
   for (const config of options._layers.map(layer => layer.config).reverse()) {
     for (const style of config.css || []) {
       if (typeof style === 'string') {
-        css.add(style)
+        orderedCSS.add(style)
+        optionsCSS.delete(style)
       }
     }
   }
-  options.css = [...css]
+  options.css = [...orderedCSS, ...optionsCSS]
 
   // Nuxt DevTools only works for Vite
   if (options.builder === '@nuxt/vite-builder') {
