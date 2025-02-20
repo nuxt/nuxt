@@ -943,8 +943,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@types/node@22.13.4)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-checker:
-        specifier: ^0.8.0
-        version: 0.8.0(eslint@9.20.1(jiti@2.4.2))(optionator@0.9.4)(typescript@5.7.3)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.1.10(typescript@5.7.3))
+        specifier: ^0.9.0
+        version: 0.9.0(eslint@9.20.1(jiti@2.4.2))(optionator@0.9.4)(typescript@5.7.3)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.2(typescript@5.7.3))
       vue-bundle-renderer:
         specifier: ^2.1.1
         version: 2.1.1
@@ -957,7 +957,7 @@ importers:
         version: 4.34.8
       unbuild:
         specifier: 3.3.1
-        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.1.10(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
+        version: 3.3.1(typescript@5.7.3)(vue-tsc@2.2.2(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
       vue:
         specifier: 3.5.13
         version: 3.5.13(typescript@5.7.3)
@@ -3371,10 +3371,6 @@ packages:
   ansi-colors@4.1.3:
     resolution: {integrity: sha512-/6w/C21Pm1A7aZitlI5Ni/2J6FFQN8i1Cvz3kHABAAbw93v/NlvKdVOqz7CCWz/3iv/JplRSEEZ83XION15ovw==}
     engines: {node: '>=6'}
-
-  ansi-escapes@4.3.2:
-    resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
-    engines: {node: '>=8'}
 
   ansi-escapes@7.0.0:
     resolution: {integrity: sha512-GdYO7a61mR0fOlAsvC9/rIHf7L96sBc6dEWzeOu+KAea5bZyQRPIpojrVoI4AXGJS/ycu/fBTdLrUkA4ODrvjw==}
@@ -5893,10 +5889,6 @@ packages:
     resolution: {integrity: sha512-dMxCf+zZ+3zeQZXKxmyuCKlIDPGuv8EF940xbkC4kQVDTtqoh6rJFO+JTKSA6/Rwi0getWmtuy4Itup0AMcaDQ==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
 
-  npm-run-path@4.0.1:
-    resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
-    engines: {node: '>=8'}
-
   npm-run-path@5.3.0:
     resolution: {integrity: sha512-ppwTtiJZq0O/ai0z7yfudtBpWIoxM8yE6nHi1X47eFR2EWORqfbu6CnPlNsjeN683eT0qG6H/Pyf9fCcvjnnnQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
@@ -7296,10 +7288,6 @@ packages:
     resolution: {integrity: sha512-Ne+eE4r0/iWnpAxD852z3A+N0Bt5RN//NjJwRd2VFHEmrywxf5vsZlh4R6lixl6B+wz/8d+maTSAkN1FIkI3LQ==}
     engines: {node: '>=10'}
 
-  type-fest@0.21.3:
-    resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
-    engines: {node: '>=10'}
-
   type-fest@4.26.1:
     resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
     engines: {node: '>=16'}
@@ -7578,20 +7566,20 @@ packages:
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
 
-  vite-plugin-checker@0.8.0:
-    resolution: {integrity: sha512-UA5uzOGm97UvZRTdZHiQVYFnd86AVn8EVaD4L3PoVzxH+IZSfaAw14WGFwX9QS23UW3lV/5bVKZn6l0w+q9P0g==}
+  vite-plugin-checker@0.9.0:
+    resolution: {integrity: sha512-gf/zc0KWX8ATEOgnpgAM1I+IbvWkkO80RB+FxlLtC5cabXSesbJmAUw6E+mMDDMGIT+VHAktmxJZpMTt3lSubQ==}
     engines: {node: '>=14.16'}
     peerDependencies:
       '@biomejs/biome': '>=1.7'
       eslint: '>=7'
-      meow: ^9.0.0
+      meow: ^13.2.0
       optionator: ^0.9.1
-      stylelint: '>=13'
+      stylelint: '>=16'
       typescript: 5.7.3
       vite: 6.1.1
       vls: '*'
       vti: '*'
-      vue-tsc: ~2.1.6
+      vue-tsc: ~2.2.2
     peerDependenciesMeta:
       '@biomejs/biome':
         optional: true
@@ -7702,29 +7690,11 @@ packages:
     resolution: {integrity: sha512-Dhxzh5HZuiHQhbvTW9AMetFfBHDMYpo23Uo9btPXgdYP+3T5S+p+jgNy7spra+veYhBP2dCSgxR/i2Y02h5/6w==}
     engines: {node: '>=0.10.0'}
 
-  vscode-jsonrpc@6.0.0:
-    resolution: {integrity: sha512-wnJA4BnEjOSyFMvjZdpiOwhSq9uDoK8e/kpRJDTaMYzwlkrhG1fwDIZI94CLsLzlCK5cIbMMtFlJlfR57Lavmg==}
-    engines: {node: '>=8.0.0 || >=10.0.0'}
-
-  vscode-languageclient@7.0.0:
-    resolution: {integrity: sha512-P9AXdAPlsCgslpP9pRxYPqkNYV7Xq8300/aZDpO35j1fJm/ncize8iGswzYlcvFw5DQUx4eVk+KvfXdL0rehNg==}
-    engines: {vscode: ^1.52.0}
-
-  vscode-languageserver-protocol@3.16.0:
-    resolution: {integrity: sha512-sdeUoAawceQdgIfTI+sdcwkiK2KU+2cbEYA0agzM2uqaUy2UpnnGHtWTHVEtS0ES4zHU0eMFRGN+oQgDxlD66A==}
-
-  vscode-languageserver-textdocument@1.0.12:
-    resolution: {integrity: sha512-cxWNPesCnQCcMPeenjKKsOCKQZ/L6Tv19DTRIGuLWe32lyzWhihGVJ/rcckZXJxfdKCFvRLS3fpBIsV/ZGX4zA==}
-
-  vscode-languageserver-types@3.16.0:
-    resolution: {integrity: sha512-k8luDIWJWyenLc5ToFQQMaSrqCHiLwyKPHKPQZ5zz21vM+vIVUSvsRpcbiECH4WR88K2XZqc4ScRcZ7nk/jbeA==}
-
-  vscode-languageserver@7.0.0:
-    resolution: {integrity: sha512-60HTx5ID+fLRcgdHfmz0LDZAXYEV68fzwG0JWwEPBode9NuMYTIxuYXPg4ngO8i8+Ou0lM7y6GzaYWbiDL0drw==}
-    hasBin: true
-
   vscode-uri@3.0.8:
     resolution: {integrity: sha512-AyFQ0EVmsOZOlAnxoFOGOq1SQDWAB7C6aqMGS23svWAllfOaxbuFvcT8D1i8z3Gyn8fraVeZNNmN6e9bxxXkKw==}
+
+  vscode-uri@3.1.0:
+    resolution: {integrity: sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==}
 
   vue-bundle-renderer@2.1.1:
     resolution: {integrity: sha512-+qALLI5cQncuetYOXp4yScwYvqh8c6SMXee3B+M7oTZxOgtESP0l4j/fXdEJoZ+EdMxkGWIj+aSEyjXkOdmd7g==}
@@ -7767,12 +7737,6 @@ packages:
     resolution: {integrity: sha512-HDuk+PuH5monfNuY+ct49mNmkCRK4xJAV9Ts4z9UFc4rzdDnxQLyCMGGc8pKhZhHTVzfanpNwB/lwqevcBwI4w==}
     peerDependencies:
       vue: 3.5.13
-
-  vue-tsc@2.1.10:
-    resolution: {integrity: sha512-RBNSfaaRHcN5uqVqJSZh++Gy/YUzryuv9u1aFWhsammDJXNtUiJMNoJ747lZcQ68wUQFx6E73y4FY3D8E7FGMA==}
-    hasBin: true
-    peerDependencies:
-      typescript: 5.7.3
 
   vue-tsc@2.2.2:
     resolution: {integrity: sha512-1icPKkxAA5KTAaSwg0wVWdE48EdsH8fgvcbAiqojP4jXKl6LEM3soiW1aG/zrWrFt8Mw1ncG2vG1PvpZpVfehA==}
@@ -10543,10 +10507,6 @@ snapshots:
 
   ansi-colors@4.1.3: {}
 
-  ansi-escapes@4.3.2:
-    dependencies:
-      type-fest: 0.21.3
-
   ansi-escapes@7.0.0:
     dependencies:
       environment: 1.1.0
@@ -13308,26 +13268,6 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
-  mkdist@2.2.0(typescript@5.7.3)(vue-tsc@2.1.10(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
-    dependencies:
-      autoprefixer: 10.4.20(postcss@8.5.3)
-      citty: 0.1.6
-      cssnano: 7.0.6(postcss@8.5.3)
-      defu: 6.1.4
-      esbuild: 0.24.2
-      jiti: 2.4.2
-      mlly: 1.7.4
-      pathe: 1.1.2
-      pkg-types: 1.3.1
-      postcss: 8.5.3
-      postcss-nested: 7.0.2(postcss@8.5.3)
-      semver: 7.7.1
-      tinyglobby: 0.2.12
-    optionalDependencies:
-      typescript: 5.7.3
-      vue: 3.5.13(typescript@5.7.3)
-      vue-tsc: 2.1.10(typescript@5.7.3)
-
   mkdist@2.2.0(typescript@5.7.3)(vue-tsc@2.2.2(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
     dependencies:
       autoprefixer: 10.4.20(postcss@8.5.3)
@@ -13523,10 +13463,6 @@ snapshots:
   normalize-range@0.1.2: {}
 
   npm-normalize-package-bin@3.0.1: {}
-
-  npm-run-path@4.0.1:
-    dependencies:
-      path-key: 3.1.1
 
   npm-run-path@5.3.0:
     dependencies:
@@ -15056,8 +14992,6 @@ snapshots:
 
   type-fest@0.20.2: {}
 
-  type-fest@0.21.3: {}
-
   type-fest@4.26.1: {}
 
   typescript@5.7.3: {}
@@ -15067,39 +15001,6 @@ snapshots:
   ufo@1.5.4: {}
 
   ultrahtml@1.5.3: {}
-
-  unbuild@3.3.1(typescript@5.7.3)(vue-tsc@2.1.10(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
-    dependencies:
-      '@rollup/plugin-alias': 5.1.1(rollup@4.34.8)
-      '@rollup/plugin-commonjs': 28.0.2(rollup@4.34.8)
-      '@rollup/plugin-json': 6.1.0(rollup@4.34.8)
-      '@rollup/plugin-node-resolve': 16.0.0(rollup@4.34.8)
-      '@rollup/plugin-replace': 6.0.2(rollup@4.34.8)
-      '@rollup/pluginutils': 5.1.4(rollup@4.34.8)
-      citty: 0.1.6
-      consola: 3.4.0
-      defu: 6.1.4
-      esbuild: 0.24.2
-      hookable: 5.5.3
-      jiti: 2.4.2
-      magic-string: 0.30.17
-      mkdist: 2.2.0(typescript@5.7.3)(vue-tsc@2.1.10(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3))
-      mlly: 1.7.4
-      pathe: 2.0.3
-      pkg-types: 1.3.1
-      pretty-bytes: 6.1.1
-      rollup: 4.34.8
-      rollup-plugin-dts: 6.1.1(rollup@4.34.8)(typescript@5.7.3)
-      scule: 1.3.0
-      tinyglobby: 0.2.10
-      untyped: 1.5.2
-    optionalDependencies:
-      typescript: 5.7.3
-    transitivePeerDependencies:
-      - sass
-      - supports-color
-      - vue
-      - vue-tsc
 
   unbuild@3.3.1(typescript@5.7.3)(vue-tsc@2.2.2(typescript@5.7.3))(vue@3.5.13(typescript@5.7.3)):
     dependencies:
@@ -15431,28 +15332,23 @@ snapshots:
       - tsx
       - yaml
 
-  vite-plugin-checker@0.8.0(eslint@9.20.1(jiti@2.4.2))(optionator@0.9.4)(typescript@5.7.3)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.1.10(typescript@5.7.3)):
+  vite-plugin-checker@0.9.0(eslint@9.20.1(jiti@2.4.2))(optionator@0.9.4)(typescript@5.7.3)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.2(typescript@5.7.3)):
     dependencies:
       '@babel/code-frame': 7.26.2
-      ansi-escapes: 4.3.2
-      chalk: 4.1.2
-      chokidar: 3.6.0
-      commander: 8.3.0
-      fast-glob: 3.3.3
-      fs-extra: 11.2.0
-      npm-run-path: 4.0.1
-      strip-ansi: 6.0.1
+      chokidar: 4.0.3
+      npm-run-path: 6.0.0
+      picocolors: 1.1.1
+      picomatch: 4.0.2
+      strip-ansi: 7.1.0
       tiny-invariant: 1.3.3
+      tinyglobby: 0.2.12
       vite: 6.1.1(@types/node@22.13.4)(jiti@2.4.2)(sass@1.78.0)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)
-      vscode-languageclient: 7.0.0
-      vscode-languageserver: 7.0.0
-      vscode-languageserver-textdocument: 1.0.12
-      vscode-uri: 3.0.8
+      vscode-uri: 3.1.0
     optionalDependencies:
       eslint: 9.20.1(jiti@2.4.2)
       optionator: 0.9.4
       typescript: 5.7.3
-      vue-tsc: 2.1.10(typescript@5.7.3)
+      vue-tsc: 2.2.2(typescript@5.7.3)
 
   vite-plugin-inspect@10.2.1(@nuxt/kit@packages+kit)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(terser@5.32.0)(tsx@4.19.2)(yaml@2.7.0)):
     dependencies:
@@ -15566,28 +15462,9 @@ snapshots:
 
   void-elements@3.1.0: {}
 
-  vscode-jsonrpc@6.0.0: {}
-
-  vscode-languageclient@7.0.0:
-    dependencies:
-      minimatch: 3.1.2
-      semver: 7.7.1
-      vscode-languageserver-protocol: 3.16.0
-
-  vscode-languageserver-protocol@3.16.0:
-    dependencies:
-      vscode-jsonrpc: 6.0.0
-      vscode-languageserver-types: 3.16.0
-
-  vscode-languageserver-textdocument@1.0.12: {}
-
-  vscode-languageserver-types@3.16.0: {}
-
-  vscode-languageserver@7.0.0:
-    dependencies:
-      vscode-languageserver-protocol: 3.16.0
-
   vscode-uri@3.0.8: {}
+
+  vscode-uri@3.1.0: {}
 
   vue-bundle-renderer@2.1.1:
     dependencies:
@@ -15642,14 +15519,6 @@ snapshots:
     dependencies:
       '@vue/devtools-api': 6.6.4
       vue: 3.5.13(typescript@5.7.3)
-
-  vue-tsc@2.1.10(typescript@5.7.3):
-    dependencies:
-      '@volar/typescript': 2.4.11
-      '@vue/language-core': 2.1.10(typescript@5.7.3)
-      semver: 7.7.1
-      typescript: 5.7.3
-    optional: true
 
   vue-tsc@2.2.2(typescript@5.7.3):
     dependencies:
