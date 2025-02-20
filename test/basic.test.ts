@@ -2885,6 +2885,11 @@ describe('defineNuxtComponent', () => {
     await page.getByText('Go to route 1').click()
     expect(await page.getByTestId('define-nuxt-component-route-1-path').innerText()).include('route-1')
   })
+
+  it ('should get correctly inject value', async () => {
+    const { page } = await renderPage('/define-nuxt-component/inject')
+    expect(await page.getByTestId('define-nuxt-component-inject-value').innerText()).toBe('bar')
+  })
 })
 
 describe('namespace access to useNuxtApp', () => {

@@ -24,7 +24,7 @@ import type { RouteAnnouncer } from '../app/composables/route-announcer'
 // @ts-expect-error virtual file
 import { appId, chunkErrorEvent, multiApp } from '#build/nuxt.config.mjs'
 
-function getNuxtAppCtx (id = appId || 'nuxt-app') {
+export function getNuxtAppCtx (id = appId || 'nuxt-app') {
   return getContext<NuxtApp>(id, {
     asyncContext: !!__NUXT_ASYNC_CONTEXT__ && import.meta.server,
   })
@@ -492,18 +492,14 @@ export function isNuxtPlugin (plugin: unknown) {
  * @since 3.0.0
  */
 export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
-  return nuxt.vueApp.runWithContext(() => callWithNuxtContext(nuxt, setup, args))
-}
-
-export function callWithNuxtContext<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
-    return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-    return fn()
+    return nuxt.vueApp.runWithContext(fn)
   }
 }
 
