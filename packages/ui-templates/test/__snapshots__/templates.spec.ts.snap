@@ -708,23 +708,8 @@ h1 {
   font-size: inherit;
   font-weight: inherit;
 }
-pre {
-  font-family:
-    ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    Monaco,
-    Consolas,
-    Liberation Mono,
-    Courier New,
-    monospace;
-  font-feature-settings: normal;
-  font-size: 1em;
-  font-variation-settings: normal;
-}
 h1,
-p,
-pre {
+p {
   margin: 0;
 }
 *,

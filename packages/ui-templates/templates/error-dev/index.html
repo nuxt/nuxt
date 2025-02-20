@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ messages.statusCode }} - {{ messages.statusMessage }} | {{ messages.appName }}</title>
+    <title>{{ messages.statusCode }} - {{ messages.statusMessage || 'Internal Server Error' }}</title>
     <meta charset="utf-8"/>
     <meta content="width=device-width,initial-scale=1.0,minimum-scale=1.0" name="viewport"/>
     <script type="module" src="/styles.ts"></script>
@@ -20,7 +20,7 @@
     <h1 class="text-6xl sm:text-8xl font-medium mb-6">{{ messages.statusCode }}</h1>
     <p class="text-xl sm:text-2xl font-light mb-8 leading-tight">{{ messages.description }}</p>
     <div class="bg-white rounded-t-md bg-black/5 dark:bg-white/10 flex-1 overflow-y-auto h-auto">
-      <pre class="text-xl font-light leading-tight z-10 p-8">{{{ messages.stack }}}</pre>
+      <div class="text-xl font-light leading-tight z-10 p-8">{{{ messages.stack }}}</div>
     </div>
   </body>
 </html>
