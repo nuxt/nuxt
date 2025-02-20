@@ -6,12 +6,33 @@ import * as Parser from 'acorn'
 import { ComponentNamePlugin } from '../src/components/plugins/component-names'
 
 describe('component names', () => {
-  const components = [{
-    filePath: 'test.ts',
-    pascalName: 'TestMe',
-  }] as [Component]
+  const components = [
+    {
+      filePath: 'test.ts',
+      pascalName: 'TestMe',
+    },
+    {
+      filePath: 'test.vue',
+      pascalName: 'TestMe',
+    },
+  ] as [Component, Component]
 
   const transformPlugin = ComponentNamePlugin({ sourcemap: false, getComponents: () => components }).raw({}, {} as any) as { transform: (code: string, id: string) => { code: string } | null }
+
+  it('should ignore files without extension', () => {
+    const res = transformPlugin.transform('export default {}', 'test')
+    expect(res?.code).toBeUndefined()
+  })
+
+  it('should ignore files that are not components ', () => {
+    const res = transformPlugin.transform('export default {}', 'some-other-file.ts')
+    expect(res?.code).toBeUndefined()
+  })
+
+  it('should process simple default exports', () => {
+    const res = transformPlugin.transform('export default {}', 'test.vue')
+    expect(res?.code).toMatchInlineSnapshot(`"export default Object.assign({}, { __name: "TestMe" })"`)
+  })
 
   it('should add correct default component names', () => {
     const sfc = `

@@ -18,6 +18,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
     name: 'nuxt:component-name-plugin',
     enforce: 'post',
     transformInclude (id) {
+      /* v8 ignore next 2 */
       return isVue(id) || !!id.match(SX_RE)
     },
     transform (code, id) {
@@ -53,6 +54,7 @@ export const ComponentNamePlugin = (options: NameDevPluginOptions) => createUnpl
         return {
           code: s.toString(),
           map: options.sourcemap
+            /* v8 ignore next */
             ? s.generateMap({ hires: true })
             : undefined,
         }
