@@ -25,7 +25,7 @@ overrides:
   magic-string: ^0.30.17
   memfs: 4.14.1
   nuxt: workspace:*
-  ohash: 1.1.4
+  ohash: 2.0.4
   postcss: 8.5.3
   rollup: 4.34.8
   send: '>=1.1.0'
@@ -261,8 +261,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -445,8 +445,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 2.0.4
+        version: 2.0.4
       on-change:
         specifier: ^5.0.1
         version: 5.0.1
@@ -605,8 +605,8 @@ importers:
         specifier: 4.14.1
         version: 4.14.1
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -925,8 +925,8 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -959,7 +959,7 @@ importers:
         version: 6.1.1(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-node:
         specifier: ^3.0.6
-        version: 3.0.6(@types/node@22.13.5)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
+        version: 3.0.7(@types/node@22.13.5)(jiti@2.4.2)(sass@1.78.0)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0)
       vite-plugin-checker:
         specifier: ^0.9.0
         version: 0.9.0(eslint@9.21.0(jiti@2.4.2))(optionator@0.9.4)(typescript@5.7.3)(vite@6.1.1(@types/node@22.13.5)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0))(vue-tsc@2.2.4(typescript@5.7.3))
@@ -1031,8 +1031,8 @@ importers:
         specifier: ^2.9.2
         version: 2.9.2(webpack@5.96.1)
       ohash:
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 2.0.4
+        version: 2.0.4
       pathe:
         specifier: ^2.0.3
         version: 2.0.3
@@ -5878,8 +5878,8 @@ packages:
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
 
-  ohash@1.1.4:
-    resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
+  ohash@2.0.4:
+    resolution: {integrity: sha512-ac+SFwzhdHb0hp48/dbR7Jta39qfbuj7t3hApd9uyHS8bisHTfVzSEvjOVgV0L3zG7VR2/7JjkSGimP75D+hOQ==}
 
   on-change@5.0.1:
     resolution: {integrity: sha512-n7THCP7RkyReRSLkJb8kUWoNsxUIBxTkIp3JKno+sEz6o/9AJ3w3P9fzQkITEkMwyTKJjZciF3v/pVoouxZZMg==}
@@ -8698,7 +8698,7 @@ snapshots:
       listhen: 1.9.0
       nypm: 0.5.4
       ofetch: 1.4.1
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -8751,7 +8751,7 @@ snapshots:
       local-pkg: 1.0.0
       magicast: 0.3.5
       nypm: 0.5.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -8834,7 +8834,7 @@ snapshots:
       h3: 1.15.1
       magic-string: 0.30.17
       ofetch: 1.4.1
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       pkg-types: 1.3.1
       semver: 7.7.1
@@ -8950,7 +8950,7 @@ snapshots:
       hast-util-to-string: 3.0.1
       mdast-util-to-hast: 13.2.0
       micromark-util-sanitize-uri: 2.0.1
-      ohash: 1.1.4
+      ohash: 2.0.4
       parse5: 7.2.1
       pathe: 1.1.2
       property-information: 6.5.0
@@ -10584,7 +10584,7 @@ snapshots:
       giget: 1.2.4
       jiti: 1.21.7
       mlly: 1.7.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 1.1.2
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -10601,7 +10601,7 @@ snapshots:
       giget: 1.2.4
       jiti: 2.4.2
       mlly: 1.7.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 1.1.2
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -10618,7 +10618,7 @@ snapshots:
       giget: 1.2.4
       jiti: 2.4.2
       mlly: 1.7.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -11573,7 +11573,7 @@ snapshots:
     dependencies:
       eslint: 9.21.0(jiti@2.4.2)
       json-schema-to-typescript-lite: 14.1.0
-      ohash: 1.1.4
+      ohash: 2.0.4
 
   eslint-visitor-keys@3.4.3: {}
 
@@ -11910,7 +11910,7 @@ snapshots:
       defu: 6.1.4
       node-fetch-native: 1.6.6
       nypm: 0.5.4
-      ohash: 1.1.4
+      ohash: 2.0.4
       pathe: 2.0.3
       tar: 6.2.1
 
@@ -13319,7 +13319,7 @@ snapshots:
       mlly: 1.7.4
       node-fetch-native: 1.6.6
       ofetch: 1.4.1
-      ohash: 1.1.4
+      ohash: 2.0.4
       openapi-typescript: 7.4.4(typescript@5.7.3)
       pathe: 1.1.2
       perfect-debounce: 1.0.0
@@ -13479,7 +13479,7 @@ snapshots:
       node-fetch-native: 1.6.6
       ufo: 1.5.4
 
-  ohash@1.1.4: {}
+  ohash@2.0.4: {}
 
   on-change@5.0.1: {}
 
@@ -15384,7 +15384,7 @@ snapshots:
     dependencies:
       '@vitest/expect': 3.0.6
       '@vitest/mocker': 3.0.6(vite@6.1.1(@types/node@22.13.5)(jiti@2.4.2)(terser@5.37.0)(tsx@4.19.2)(yaml@2.7.0))
-      '@vitest/pretty-format': 3.0.6
+      '@vitest/pretty-format': 3.0.7
       '@vitest/runner': 3.0.6
       '@vitest/snapshot': 3.0.6
       '@vitest/spy': 3.0.6

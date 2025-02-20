@@ -108,7 +108,7 @@
     "nitropack": "^2.10.4",
     "nypm": "^0.5.4",
     "ofetch": "^1.4.1",
-    "ohash": "^1.1.4",
+    "ohash": "^2.0.4",
     "on-change": "^5.0.1",
     "pathe": "^2.0.3",
     "perfect-debounce": "^1.0.0",
