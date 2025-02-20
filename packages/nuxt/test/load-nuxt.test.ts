@@ -62,6 +62,7 @@ describe('loadNuxt', () => {
         "auto.css",
         "custom.css",
         "final-project.css",
+        "duplicate.css",
         "override.css",
         "new-css-added-by-module.css",
       ]

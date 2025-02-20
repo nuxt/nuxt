@@ -5,5 +5,5 @@ export default defineNuxtConfig({
       nuxt.options.css.push('new-css-added-by-module.css')
     },
   ],
-  css: ['final-project.css'],
+  css: ['final-project.css', 'duplicate.css'],
 })

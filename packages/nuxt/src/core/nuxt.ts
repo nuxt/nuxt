@@ -810,8 +810,10 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   for (const config of options._layers.map(layer => layer.config).reverse()) {
     for (const style of config.css || []) {
       if (typeof style === 'string') {
-        orderedCSS.add(style)
+        // ensure later layer CSS has priority over earlier layers
+        orderedCSS.delete(style)
         optionsCSS.delete(style)
+        orderedCSS.add(style)
       }
     }
   }

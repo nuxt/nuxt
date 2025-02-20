@@ -1,3 +1,3 @@
 export default defineNuxtConfig({
-  css: ['auto.css'],
+  css: ['duplicate.css', 'auto.css'],
 })
