@@ -46,6 +46,29 @@ describe('loadNuxt', () => {
     await nuxt.close()
     expect(hookRan).toBe(true)
   })
+
+  it('ensures layer CSS remains in order', async () => {
+    const layerFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./layers-fixture', import.meta.url))))
+    const nuxt = await loadNuxt({
+      cwd: layerFixtureDir,
+      overrides: {
+        css: ['override.css'],
+      },
+    })
+    await nuxt.close()
+
+    expect(nuxt.options.css).toMatchInlineSnapshot(`
+      [
+        "auto.css",
+        "custom.css",
+        "final-project.css",
+        "duplicate.css",
+        "override.css",
+        "new-css-added-by-module.css",
+      ]
+    `)
+  })
+
   it('load multiple nuxt', async () => {
     await Promise.all([
       loadNuxt({

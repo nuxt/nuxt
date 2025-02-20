@@ -55,12 +55,12 @@ import { ClientImport, Glob } from '#components'
 import { AreTreeshaken, Both } from '#imports'
 
 const hello = 'world'
-const ByeBye = defineAsyncComponent(() => import('./../some-glob.global.vue'))
+const ByeBye = defineAsyncComponent(() => import('../some-glob.global.vue'))
 
-const NotDotClientComponent = defineAsyncComponent(() => import('./../some.island.vue'))
+const NotDotClientComponent = defineAsyncComponent(() => import('../some.island.vue'))
 const SomeIsland = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../some.island.vue'))
+    return (await import('../some.island.vue'))
   }
 
   return {}
@@ -68,7 +68,7 @@ const SomeIsland = defineAsyncComponent(async () => {
 
 const NotToBeTreeShaken = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -76,7 +76,7 @@ const NotToBeTreeShaken = defineAsyncComponent(async () => {
 
 const { ObjectPattern } = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -84,7 +84,7 @@ const { ObjectPattern } = defineAsyncComponent(async () => {
 
 const { ObjectPattern: ObjectPatternDeclaration } = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -92,7 +92,7 @@ const { ObjectPattern: ObjectPatternDeclaration } = defineAsyncComponent(async (
 
 const { ObjectPattern: Halllo, ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -101,7 +101,7 @@ const isThis = {}
 
 const { woooooo, What = isThis } = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -114,7 +114,7 @@ if (import.meta.client) {
 
 const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -122,7 +122,7 @@ const { Deep, assignment: { Pattern = ofComponent } } = defineAsyncComponent(asy
 
 const [FromArray] = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
@@ -130,7 +130,7 @@ const [FromArray] = defineAsyncComponent(async () => {
 
 const [Please, { Dont, Doo }, That] = defineAsyncComponent(async () => {
   if (import.meta.client) {
-    return (await import('./../HelloWorld.vue'))
+    return (await import('../HelloWorld.vue'))
   }
 
   return {}
