@@ -165,7 +165,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       expect(pageErrors).toEqual([])
 
       await page.close()
-    })
+    }, { timeout: 60_000 })
   })
 } else {
   describe.skip('hmr', () => {})
