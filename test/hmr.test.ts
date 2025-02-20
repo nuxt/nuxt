@@ -145,7 +145,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       await page.close()
     })
 
-    it.skipIf(isWebpack)('should HMR routes', async () => {
+    it.skipIf(isWebpack)('should HMR routes', { timeout: 60_000 }, async () => {
       const { page, pageErrors, consoleLogs } = await renderPage('/routes')
 
       await fsp.writeFile(join(fixturePath, 'pages/routes/non-existent.vue'), `<template><div data-testid="contents">A new route!</div></template>`)
@@ -165,7 +165,7 @@ if (process.env.TEST_ENV !== 'built' && !isWindows) {
       expect(pageErrors).toEqual([])
 
       await page.close()
-    }, { timeout: 60_000 })
+    })
   })
 } else {
   describe.skip('hmr', () => {})
