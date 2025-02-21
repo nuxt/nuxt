@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div data-testid="delayed-component">
     This {{ mounted ? "shouldn't" : 'should' }} be visible at first with events!
   </div>
 </template>

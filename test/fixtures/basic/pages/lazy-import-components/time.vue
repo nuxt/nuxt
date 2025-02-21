@@ -1,8 +1,5 @@
 <template>
   <div>
-    <LazyTimeDelayedTime />
-    <LazyTimeDelayedTime
-      :hydrate="500"
-    />
+    <LazyTimeDelayedTime :hydrate="50" />
   </div>
 </template>

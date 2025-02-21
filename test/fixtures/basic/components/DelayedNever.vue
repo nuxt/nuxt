@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div data-testid="delayed-component">
     This {{ mounted ? "shouldn't" : 'should' }} always be visible!
   </div>
 </template>

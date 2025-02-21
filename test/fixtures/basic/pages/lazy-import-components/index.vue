@@ -3,21 +3,20 @@
     <LazyNCompAll message="lazy-named-comp-all" />
     <LazyNCompClient message="lazy-named-comp-client" />
     <LazyNCompServer message="lazy-named-comp-server" />
-    <LazyEventDelayedEvent id="lazyevent" />
+    <LazyEventDelayedEvent data-testid="lazyevent" />
     <LazyEventView />
     <LazyVisibleDelayedVisible />
     <LazyNeverDelayedNever />
     <LazyEventDelayedEvent
-      id="lazyevent2"
+      data-testid="hydrate-on-click"
       :hydrate="['click']"
     />
-    <LazyIfDelayedCondition id="lazycondition" />
+    <LazyIfDelayedCondition />
     <button
-      id="conditionbutton"
+      data-testid="conditionbutton"
       @click="state++"
     />
     <LazyIfDelayedCondition
-      id="lazycondition2"
       :hydrate="state > 1"
     />
     <LazyIdleDelayedNetwork />

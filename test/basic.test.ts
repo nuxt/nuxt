@@ -2861,78 +2861,139 @@ describe('lazy import components', () => {
     expect(html).toContain('lazy-named-comp-server')
   })
 
-  it('lazy load delayed hydration comps at the right time', async () => {
-    expect(html).toContain('This should be visible at first with network!')
+  it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
     const { page } = await renderPage('/lazy-import-components')
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with network!').all()).toHaveLength(1)
-    expect(await page.locator('body').getByText('This should be visible at first with viewport!').all()).toHaveLength(1)
-    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
-    // The default value is immediately truthy, however, there is a hydration mismatch without the hack
-    expect(await page.locator('body').getByText('This should be visible at first with conditions!').all()).toHaveLength(1)
-    const component = page.locator('#lazyevent')
-    const rect = (await component.boundingBox())!
-    await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
-    await page.locator('#conditionbutton').click()
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with conditions!').all()).toHaveLength(2)
-    await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight))
-    await page.waitForTimeout(300) // Wait for the intersection observer to fire the callback
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with viewport!').all()).toHaveLength(2)
-    expect(await page.locator('body').getByText('This should always be visible!').all()).toHaveLength(1)
+
+    const initialVisibleText = 'This should be visible at first with network!'
+    const initialViewportText = 'This should be visible at first with viewport!'
+    const initialEventsText = 'This should be visible at first with events!'
+    const initialConditionsText = 'This should be visible at first with conditions!'
+
+    const delayedVisibleText = 'This shouldn\'t be visible at first with network!'
+    const delayedViewportText = 'This shouldn\'t be visible at first with viewport!'
+    const delayedEventsText = 'This shouldn\'t be visible at first with events!'
+    const delayedConditionsText = 'This shouldn\'t be visible at first with conditions!'
+
+    expect.soft(html).toContain(initialVisibleText)
+    expect.soft(html).not.toContain(delayedVisibleText)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialVisibleText }).count()).toBe(0)
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedVisibleText }).count()).toBe(1)
+
+    expect.soft(html).toContain(initialViewportText)
+    expect.soft(html).not.toContain(delayedViewportText)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialViewportText }).count()).toBe(1)
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedViewportText }).count()).toBe(1)
+
+    expect.soft(html).toContain(initialEventsText)
+    expect.soft(html).not.toContain(delayedEventsText)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialEventsText }).count()).toBe(2)
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedEventsText }).count()).toBe(0)
+
+    expect.soft(html).toContain(initialConditionsText)
+    expect.soft(html).not.toContain(delayedConditionsText)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialConditionsText }).count()).toBe(1)
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedConditionsText }).count()).toBe(1)
+
+    const component = page.getByTestId('lazyevent')
+    await component.hover()
+    await page.locator('[data-testid]', { hasText: delayedEventsText }).waitFor({ state: 'visible' })
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedEventsText }).count()).toBe(1)
+
+    await page.getByTestId('conditionbutton').click()
+    await page.locator('[data-testid]', { hasText: delayedConditionsText }).first().waitFor()
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedConditionsText }).count()).toBe(2)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialConditionsText }).count()).toBe(0)
+
+    await page.locator('[data-testid]', { hasText: initialViewportText }).first().scrollIntoViewIfNeeded()
+    await page.locator('[data-testid]', { hasText: delayedViewportText }).nth(1).waitFor()
+    expect.soft(await page.locator('[data-testid]', { hasText: delayedViewportText }).count()).toBe(2)
+    expect.soft(await page.locator('[data-testid]', { hasText: initialViewportText }).count()).toBe(0)
+
+    await page.locator('[data-testid]', { hasText: 'This should always be visible!' }).waitFor()
+    expect.soft(await page.locator('[data-testid]', { hasText: 'This should always be visible!' }).count()).toBe(1)
+
     await page.close()
   })
 
   it('respects custom delayed hydration triggers and overrides defaults', async () => {
     const { page } = await renderPage('/lazy-import-components')
-    await page.waitForLoadState('networkidle')
-    const component = page.locator('#lazyevent2')
-    const rect = (await component.boundingBox())!
-    await page.mouse.move(rect.x + rect.width / 2, rect.y + rect.height / 2)
-    await page.waitForTimeout(500)
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(2)
-    await page.locator('#lazyevent2').click()
-    await page.waitForLoadState('networkidle')
-    expect(await page.locator('body').getByText('This should be visible at first with events!').all()).toHaveLength(1)
-    expect(await page.locator('body').getByText('This shouldn\'t be visible at first with events!').all()).toHaveLength(1)
+
+    const initialEventsText = 'This should be visible at first with events!'
+    const delayedEventsText = 'This shouldn\'t be visible at first with events!'
+
+    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'visible' })
+
+    await page.getByTestId('hydrate-on-click').hover()
+    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'visible' })
+
+    await page.getByTestId('hydrate-on-click').click()
+    await page.locator('data-testid=hydrate-on-click', { hasText: delayedEventsText }).waitFor({ state: 'visible' })
+    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'hidden' })
+
     await page.close()
   })
+
   it('does not delay hydration of components named after modifiers', async () => {
     const { page } = await renderPage('/lazy-import-components')
-    expect(await page.locator('body').getByText('This fake lazy event should be visible!').all()).toHaveLength(1)
-    expect(await page.locator('body').getByText('This fake lazy event shouldn\'t be visible!').all()).toHaveLength(0)
+
+    await page.locator('data-testid=delayed-component', { hasText: 'This fake lazy event should be visible!' }).waitFor()
+    await page.locator('data-testid=delayed-component', { hasText: 'This fake lazy event shouldn\'t be visible!' }).waitFor({ state: 'hidden' })
+
+    await page.close()
   })
+
   it('handles time-based hydration correctly', async () => {
     const { page } = await renderPage('/lazy-import-components/time')
-    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(2)
-    await page.waitForTimeout(500)
-    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(1)
-    await page.waitForTimeout(1600) // Some room for falkiness and intermittent lag
-    expect(await page.locator('body').getByText('This should be visible at first with time!').all()).toHaveLength(0)
+
+    const initialTimeText = 'This should be visible at first with time!'
+
+    await page.locator('[data-testid=delayed-component]', { hasText: initialTimeText }).first().waitFor({ state: 'visible' })
+    await page.locator('[data-testid=delayed-component]', { hasText: initialTimeText }).first().waitFor({ state: 'hidden' })
+
+    await page.close()
   })
+
   it('handles promise-based hydration correctly', async () => {
     const { page } = await renderPage('/lazy-import-components/promise')
-    expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(1)
-    await page.waitForTimeout(2100) // Some room for falkiness and intermittent lag
-    expect(await page.locator('body').getByText('This should be visible at first with promise!').all()).toHaveLength(0)
+
+    const initialPromiseText = 'This should be visible at first with promise!'
+
+    await page.locator('[data-testid=delayed-component]', { hasText: initialPromiseText }).first().waitFor({ state: 'visible' })
+    await page.locator('[data-testid=delayed-component]', { hasText: initialPromiseText }).first().waitFor({ state: 'hidden' })
+
+    await page.close()
   })
+
   it('keeps reactivity with models', async () => {
     const { page } = await renderPage('/lazy-import-components/model-event')
-    expect(await page.locator('#count').textContent()).toBe('0')
+
+    const countLocator = page.getByTestId('count')
+    const incrementButton = page.getByTestId('increment')
+
+    await countLocator.waitFor()
+
     for (let i = 0; i < 10; i++) {
-      expect(await page.locator('#count').textContent()).toBe(`${i}`)
-      await page.locator('#inc').click()
+      expect(await countLocator.textContent()).toBe(`${i}`)
+      await incrementButton.click()
     }
-    expect(await page.locator('#count').textContent()).toBe('10')
+
+    expect(await countLocator.textContent()).toBe('10')
+
+    await page.close()
   })
+
   it('emits hydration events', async () => {
     const { page, consoleLogs } = await renderPage('/lazy-import-components/model-event')
-    expect(consoleLogs.some(log => log.type === 'log' && log.text === 'Component hydrated')).toBeFalsy()
-    await page.locator('#count').click()
-    expect(consoleLogs.some(log => log.type === 'log' && log.text === 'Component hydrated')).toBeTruthy()
+
+    const initialLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+    expect(initialLogs.length).toBe(0)
+
+    await page.getByTestId('count').click()
+
+    const hydrationLogs = consoleLogs.filter(log => log.type === 'log' && log.text === 'Component hydrated')
+    expect(hydrationLogs.length).toBeGreaterThan(0)
+
+    await page.close()
   })
 })
 

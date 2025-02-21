@@ -1,8 +1,8 @@
 <template>
   <div>
-    <span id="count">{{ model }}</span>
+    <span data-testid="count">{{ model }}</span>
     <button
-      id="inc"
+      data-testid="increment"
       @click="model++"
     >
       Increment
@@ -11,5 +11,5 @@
 </template>
 
 <script setup lang="ts">
-const model = defineModel()
+const model = defineModel<number>()
 </script>

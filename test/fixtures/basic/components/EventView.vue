@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div data-testid="delayed-component">
     This fake lazy event {{ mounted ? "should" : "shouldn't" }} be visible!
   </div>
 </template>
