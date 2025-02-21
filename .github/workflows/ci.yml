@@ -236,7 +236,7 @@ jobs:
           path: packages
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@1015f4f828ff74b7a950909897fe581d6ba868cc # v3.3.1
+        uses: CodSpeedHQ/action@63ae6025a0ffee97d7736a37c9192dbd6ed4e75f # v3.4.0
         with:
           run: pnpm vitest bench
           token: ${{ secrets.CODSPEED_TOKEN }}
