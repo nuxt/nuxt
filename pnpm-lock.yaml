@@ -706,8 +706,8 @@ importers:
         specifier: 2.0.10
         version: 2.0.10
       '@types/rollup-plugin-visualizer':
-        specifier: 4.2.4
-        version: 4.2.4
+        specifier: 5.0.3
+        version: 5.0.3(rollup@4.34.8)
       '@types/webpack-bundle-analyzer':
         specifier: 4.7.0
         version: 4.7.0(esbuild@0.25.0)
@@ -2847,8 +2847,9 @@ packages:
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
 
-  '@types/rollup-plugin-visualizer@4.2.4':
-    resolution: {integrity: sha512-BW4Q6D1Qy5gno5qHWrnMDC2dOe/TAKXvqCpckOggCCu+XpS+ZZJJ1lq1+K3bvYccoO3Y7f5kglbFAgYGqCgULg==}
+  '@types/rollup-plugin-visualizer@5.0.3':
+    resolution: {integrity: sha512-eqlnKXp1TvvlUVPd+cBrTfD4v7TyshgoCT3ao490fkJdR6M8CPjZLc+MFBmXZjCRXk30yKAyZ2n381fXafAQOg==}
+    deprecated: This is a stub types definition. rollup-plugin-visualizer provides its own type definitions, so you do not need this installed.
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -9696,9 +9697,12 @@ snapshots:
 
   '@types/resolve@1.20.2': {}
 
-  '@types/rollup-plugin-visualizer@4.2.4':
+  '@types/rollup-plugin-visualizer@5.0.3(rollup@4.34.8)':
     dependencies:
-      rollup: 4.34.8
+      rollup-plugin-visualizer: 5.14.0(rollup@4.34.8)
+    transitivePeerDependencies:
+      - rolldown
+      - rollup
 
   '@types/semver@7.5.8': {}
 
