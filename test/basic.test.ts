@@ -2510,7 +2510,7 @@ describe('component islands', () => {
     const { page } = await renderPage('/')
 
     const islandPageRequest = page.waitForRequest((req) => {
-      return req.url().includes('/__nuxt_island/page:server-page')
+      return req.url().includes('/__nuxt_island/page_server-page')
     })
     await page.getByText('to server page').click()
     await islandPageRequest
