@@ -49,7 +49,7 @@ export const createLazyEventComponent = (loader: AsyncComponentLoader) => {
     inheritAttrs: false,
     props: {
       hydrate: {
-        type: [String, Array],
+        type: [String, Array] as unknown as () => keyof HTMLElementEventMap | Array<keyof HTMLElementEventMap>,
         required: false,
         default: 'mouseover',
       },
@@ -57,7 +57,6 @@ export const createLazyEventComponent = (loader: AsyncComponentLoader) => {
     emits: ['hydrated'],
     setup (props, { attrs, emit }) {
       const hydrated = () => { emit('hydrated') }
-      // @ts-expect-error Cannot type HTMLElementEventMap in props
       const comp = defineAsyncComponent({ loader, hydrate: hydrateOnInteraction(props.hydrate) })
       return () => h(comp, mergeProps(attrs, { 'onVnodeMounted': hydrated }))
     },
