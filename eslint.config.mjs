@@ -217,7 +217,7 @@ export default createConfigForNuxt({
       },
     },
     {
-      files: ['**/fixtures/**', '**/fixture/**'],
+      files: ['**/fixtures/**', '**/fixture/**', '**/*-fixture/**'],
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',

@@ -7,7 +7,7 @@ import * as Parser from 'acorn'
 import type { Options } from '@vitejs/plugin-vue'
 import _vuePlugin from '@vitejs/plugin-vue'
 import { TreeShakeTemplatePlugin } from '../src/components/plugins/tree-shake'
-import { fixtureDir, normalizeLineEndings } from './utils'
+import { componentsFixtureDir, normalizeLineEndings } from './utils'
 
 // mock due to differences of results between windows and linux
 vi.spyOn(path, 'relative').mockImplementation((from: string, to: string) => {
@@ -25,7 +25,7 @@ function vuePlugin (options: Options) {
   }
 }
 
-const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(fixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
+const WithClientOnly = normalizeLineEndings(readFileSync(path.resolve(componentsFixtureDir, './components/client/WithClientOnlySetup.vue')).toString())
 
 const treeshakeTemplatePlugin = TreeShakeTemplatePlugin({
   sourcemap: false,

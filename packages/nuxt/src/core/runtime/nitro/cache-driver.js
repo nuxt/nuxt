@@ -7,7 +7,7 @@ import lruCache from 'unstorage/drivers/lru-cache'
 /**
  * @param {string} item
  */
-const normalizeFsKey = item => item.replaceAll(':', '_')
+const normalizeFsKey = item => decodeURIComponent(item.replaceAll(':', '_'))
 
 /**
  * @param {{ base: string }} opts
