@@ -3,7 +3,7 @@ import NuxtIsland from '#app/components/nuxt-island'
 import { useRoute } from '#app/composables/router'
 import { isPrerendered } from '#app/composables/payload'
 import { showError } from '#app/composables/error'
-import { useNuxtApp } from '#app/nuxt'  
+import { useNuxtApp } from '#app/nuxt'
 
 /* @__NO_SIDE_EFFECTS__ */
 export const createServerComponent = (name: string) => {
@@ -60,7 +60,7 @@ export const createIslandPage = (name: string) => {
             context: { url: path },
             onError: (e) => {
               nuxtApp.runWithContext(() => showError(e))
-            }
+            },
           }, slots),
         ])
       }
