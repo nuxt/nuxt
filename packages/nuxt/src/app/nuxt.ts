@@ -271,11 +271,11 @@ export function createNuxtApp (options: CreateOptions) {
     static: {
       data: {},
     },
-    runWithContext <T>(fn: () => T) {
+    runWithContext <T>(fn: () => T, withVueApp = true) {
       if (nuxtApp._scope.active && !getCurrentScope()) {
-        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, fn))
+        return nuxtApp._scope.run(() => callWithNuxt(nuxtApp, withVueApp, fn))
       }
-      return callWithNuxt(nuxtApp, fn)
+      return callWithNuxt(nuxtApp, withVueApp, fn)
     },
     isHydrating: import.meta.client,
     deferHydration () {
@@ -487,21 +487,29 @@ export function isNuxtPlugin (plugin: unknown) {
 /**
  * Ensures that the setup function passed in has access to the Nuxt instance via `useNuxtApp`.
  * @param nuxt A Nuxt instance
+ * @param withVueApp Should use vueApp.runWithContext
  * @param setup The function to call
  * @since 3.0.0
  */
-export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, setup: T, args?: Parameters<T>) {
+export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp | _NuxtApp, withVueApp = true, setup: T, args?: Parameters<T>) {
   const fn: () => ReturnType<T> = () => args ? setup(...args as Parameters<T>) : setup()
   const nuxtAppCtx = getNuxtAppCtx(nuxt._id)
   if (import.meta.server) {
-    return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
+    if (withVueApp) {
+      return nuxt.vueApp.runWithContext(() => nuxtAppCtx.callAsync(nuxt as NuxtApp, fn))
+    } else {
+      return nuxtAppCtx.callAsync(nuxt as NuxtApp, fn)
+    }
   } else {
     // In client side we could assume nuxt app is singleton
     nuxtAppCtx.set(nuxt as NuxtApp)
-    return nuxt.vueApp.runWithContext(fn)
+    if (withVueApp) {
+      return nuxt.vueApp.runWithContext(fn)
+    } else {
+      return fn()
+    }
   }
 }
-
 /* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
