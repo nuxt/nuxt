@@ -18,7 +18,6 @@ import { distDir } from '../dirs'
 import { toArray } from '../utils'
 import { template as defaultSpaLoadingTemplate } from '../../../ui-templates/dist/templates/spa-loading-icon'
 import { createImportProtectionPatterns } from './plugins/import-protection'
-import { EXTENSION_RE } from './utils'
 
 const logLevelMapReverse = {
   silent: 0,
