@@ -14,6 +14,7 @@ export default defineResolvers({
           if (typeof val === 'string') {
             return val
           }
+          // https://github.com/vitejs/vite-plugin-vue/issues/528
           const useDecorators = await get('experimental').then(r => r?.decorators === true)
           if (useDecorators) {
             return 'es2024'
