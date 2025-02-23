@@ -708,9 +708,6 @@ importers:
       '@types/pug':
         specifier: 2.0.10
         version: 2.0.10
-      '@types/rollup-plugin-visualizer':
-        specifier: 4.2.4
-        version: 4.2.4
       '@types/webpack-bundle-analyzer':
         specifier: 4.7.0
         version: 4.7.0(esbuild@0.25.0)
@@ -780,6 +777,9 @@ importers:
       postcss:
         specifier: 8.5.3
         version: 8.5.3
+      rollup-plugin-visualizer:
+        specifier: 5.14.0
+        version: 5.14.0(rollup@4.34.8)
       sass-loader:
         specifier: 16.0.5
         version: 16.0.5(@rspack/core@1.2.5)(webpack@5.98.0(esbuild@0.25.0))
@@ -2849,9 +2849,6 @@ packages:
 
   '@types/resolve@1.20.2':
     resolution: {integrity: sha512-60BCwRFOZCQhDncwQdxxeOEEkbc5dIMccYLwbxsS4TUNeVECQ/pBJ0j09mrHOl/JJvpRPGwO9SvE4nR2Nb/a4Q==}
-
-  '@types/rollup-plugin-visualizer@4.2.4':
-    resolution: {integrity: sha512-BW4Q6D1Qy5gno5qHWrnMDC2dOe/TAKXvqCpckOggCCu+XpS+ZZJJ1lq1+K3bvYccoO3Y7f5kglbFAgYGqCgULg==}
 
   '@types/semver@7.5.8':
     resolution: {integrity: sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==}
@@ -9698,10 +9695,6 @@ snapshots:
   '@types/pug@2.0.10': {}
 
   '@types/resolve@1.20.2': {}
-
-  '@types/rollup-plugin-visualizer@4.2.4':
-    dependencies:
-      rollup: 4.34.8
 
   '@types/semver@7.5.8': {}
 
