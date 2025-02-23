@@ -57,8 +57,8 @@ export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
         continue
       }
 
-      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'utils'))
-      sharedDirs.add(resolve(layer.config.rootDir, 'shared', 'types'))
+      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'utils'))
+      sharedDirs.add(resolve(layer.config.rootDir, layer.config.dir?.shared ?? 'shared', 'types'))
     }
   }
 
