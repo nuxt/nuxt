@@ -200,7 +200,6 @@ export async function _generateTypes (nuxt: Nuxt) {
       /* Decorator support */
       ...useDecorators
         ? {
-            useDefineForClassFields: false,
             experimentalDecorators: false,
           }
         : {},
