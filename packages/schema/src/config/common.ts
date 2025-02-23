@@ -405,7 +405,11 @@ export default defineResolvers({
     /**
      * The shared directory. This directory is shared between the app and the server.
      */
-    shared: 'shared',
+    shared: {
+      $resolve: (val) => {
+        return val && typeof val === 'string' ? val : 'shared'
+      },
+    },
 
     /**
      * The directory containing your static files, which will be directly accessible via the Nuxt server
