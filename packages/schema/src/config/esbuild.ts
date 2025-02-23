@@ -9,6 +9,19 @@ export default defineResolvers({
      * @type {import('esbuild').TransformOptions}
      */
     options: {
+      target: {
+        $resolve: async (val, get) => {
+          if (typeof val === 'string') {
+            return val
+          }
+          // https://github.com/vitejs/vite-plugin-vue/issues/528
+          const useDecorators = await get('experimental').then(r => r?.decorators === true)
+          if (useDecorators) {
+            return 'es2024'
+          }
+          return 'esnext'
+        },
+      },
       jsxFactory: 'h',
       jsxFragment: 'Fragment',
       tsconfigRaw: {
@@ -19,12 +32,12 @@ export default defineResolvers({
           if (!useDecorators) {
             return val
           }
-          return defu(val, {
+          // Force experimentalDecorators to false if decorators are enabled
+          return defu({
             compilerOptions: {
-              useDefineForClassFields: false,
               experimentalDecorators: false,
             },
-          } satisfies TransformOptions['tsconfigRaw'])
+          } satisfies TransformOptions['tsconfigRaw'], val)
         },
       },
     },
