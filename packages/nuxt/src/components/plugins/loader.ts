@@ -87,9 +87,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
               switch (modifier) {
                 case 'Visible':
                 case 'visible-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIOComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyVisibleComponent' }]))
                   identifier += '_delayedIO'
-                  imports.add(`const ${identifier} = createLazyIOComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyVisibleComponent(${dynamicImport})`)
                   break
                 case 'Event':
                 case 'event-':
@@ -99,9 +99,9 @@ export const LoaderPlugin = (options: LoaderOptions) => createUnplugin(() => {
                   break
                 case 'Idle':
                 case 'idle-':
-                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyNetworkComponent' }]))
+                  imports.add(genImport(options.clientDelayedComponentRuntime, [{ name: 'createLazyIdleComponent' }]))
                   identifier += '_delayedNetwork'
-                  imports.add(`const ${identifier} = createLazyNetworkComponent(${dynamicImport})`)
+                  imports.add(`const ${identifier} = createLazyIdleComponent(${dynamicImport})`)
                   break
                 case 'Media':
                 case 'media-':

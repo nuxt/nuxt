@@ -2,7 +2,7 @@ import { defineAsyncComponent, defineComponent, h, hydrateOnIdle, hydrateOnInter
 import type { AsyncComponentLoader, HydrationStrategy } from 'vue'
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyIOComponent = (loader: AsyncComponentLoader) => {
+export const createLazyVisibleComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     props: {
@@ -21,7 +21,7 @@ export const createLazyIOComponent = (loader: AsyncComponentLoader) => {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export const createLazyNetworkComponent = (loader: AsyncComponentLoader) => {
+export const createLazyIdleComponent = (loader: AsyncComponentLoader) => {
   return defineComponent({
     inheritAttrs: false,
     props: {

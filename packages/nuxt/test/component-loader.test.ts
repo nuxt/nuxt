@@ -101,7 +101,7 @@ describe('components:loader', () => {
     `
     const code = await transform(sfc, '/pages/index.vue')
     expect(code).toMatchInlineSnapshot(`
-      "import { createLazyNetworkComponent, createLazyIOComponent, createLazyEventComponent, createLazyMediaComponent, createLazyIfComponent, createLazyTimeComponent, createLazyPromiseComponent } from '../client-runtime.mjs';
+      "import { createLazyIdleComponent, createLazyVisibleComponent, createLazyEventComponent, createLazyMediaComponent, createLazyIfComponent, createLazyTimeComponent, createLazyPromiseComponent } from '../client-runtime.mjs';
       import { createElementBlock, openBlock, Fragment, createVNode } from 'vue';
 
       var _export_sfc = (sfc, props) => {
@@ -112,8 +112,8 @@ describe('components:loader', () => {
         return target;
       };
 
-      const __nuxt_component_0_delayedNetwork = createLazyNetworkComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
-      const __nuxt_component_0_delayedIO = createLazyIOComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_delayedNetwork = createLazyIdleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
+      const __nuxt_component_0_delayedIO = createLazyVisibleComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_delayedEvent = createLazyEventComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_delayedMedia = createLazyMediaComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
       const __nuxt_component_0_delayedIf = createLazyIfComponent(() => import('../components/MyComponent.vue').then(c => c.default || c));
