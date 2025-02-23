@@ -34,7 +34,7 @@ describe('components:loader', () => {
         setup(__props) {
 
           const NamedComponent = __nuxt_component_0;
-          
+
       return (_ctx, _cache) => {
         const _component_MyComponent = __nuxt_component_0;
         const _component_LazyMyComponent = __nuxt_component_0_lazy;
@@ -87,7 +87,7 @@ describe('components:loader', () => {
     `)
   })
 
-  it('should correctly resolve deferred hydration components', async () => {
+  it('should correctly resolve lazy hydration components', async () => {
     const sfc = `
     <template>
       <LazyIdleMyComponent :hydrate="3000" />

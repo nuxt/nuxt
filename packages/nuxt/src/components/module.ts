@@ -200,7 +200,7 @@ export default defineNuxtModule<ComponentsOptions>({
 
     addBuildPlugin(TreeShakeTemplatePlugin({ sourcemap: !!nuxt.options.sourcemap.server, getComponents }), { client: false })
 
-    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/client-delayed-component')) ?? join(distDir, 'components/runtime/client-delayed-component')
+    const clientDelayedComponentRuntime = await findPath(join(distDir, 'components/runtime/lazy-hydrated-component')) ?? join(distDir, 'components/runtime/lazy-hydrated-component')
 
     const sharedLoaderOptions = {
       getComponents,
