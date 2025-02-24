@@ -21,8 +21,6 @@ interface SSRStylePluginOptions {
   mode: 'server' | 'client'
 }
 
-const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
-
 export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
   const cssMap: Record<string, { files: string[], inBundle?: boolean }> = {}
   const idRefMap: Record<string, string> = {}
@@ -35,6 +33,7 @@ export function ssrStylesPlugin (options: SSRStylePluginOptions): Plugin {
     // .server components without a corresponding .client component will need to be rendered as an island
     (component.mode === 'server' && !options.components.some(c => c.pascalName === component.pascalName && c.mode === 'client')),
   )
+  const SUPPORTED_FILES_RE = /\.(?:vue|(?:[cm]?j|t)sx?)$/
 
   return {
     name: 'ssr-styles',

@@ -1,10 +1,9 @@
 import MagicString from 'magic-string'
 import type { Plugin } from 'vite'
 
-const QUERY_RE = /\?.+$/
-
 export function typeCheckPlugin (options: { sourcemap?: boolean } = {}): Plugin {
   let entry: string
+  const QUERY_RE = /\?.+$/
   return {
     name: 'nuxt:type-check',
     configResolved (config) {

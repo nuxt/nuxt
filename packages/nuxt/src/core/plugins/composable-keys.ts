@@ -16,11 +16,6 @@ interface ComposableKeysOptions {
   composables: Array<{ name: string, source?: string | RegExp, argumentLength: number }>
 }
 
-const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
-const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
-const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
-const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
-
 export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUnplugin(() => {
   const composableMeta: Record<string, any> = {}
   const composableLengths = new Set<number>()
@@ -34,6 +29,10 @@ export const ComposableKeysPlugin = (options: ComposableKeysOptions) => createUn
   const maxLength = Math.max(...composableLengths)
   const KEYED_FUNCTIONS_RE = new RegExp(`\\b(${[...keyedFunctions].map(f => escapeRE(f)).join('|')})\\b`)
 
+  const stringTypes: Array<string | undefined> = ['Literal', 'TemplateLiteral']
+  const NUXT_LIB_RE = /node_modules\/(?:nuxt|nuxt3|nuxt-nightly)\//
+  const SUPPORTED_EXT_RE = /\.(?:m?[jt]sx?|vue)/
+  const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/i
   return {
     name: 'nuxt:composable-keys',
     enforce: 'post',

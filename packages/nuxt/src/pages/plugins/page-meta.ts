@@ -24,19 +24,20 @@ interface PageMetaPluginOptions {
   routesPath?: string
 }
 
-const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
+export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
+  const HAS_MACRO_RE = /\bdefinePageMeta\s*\(\s*/
 
-const CODE_EMPTY = `
+  const CODE_EMPTY = `
 const __nuxt_page_meta = null
 export default __nuxt_page_meta
 `
 
-const CODE_DEV_EMPTY = `
+  const CODE_DEV_EMPTY = `
 const __nuxt_page_meta = {}
 export default __nuxt_page_meta
 `
 
-const CODE_HMR = `
+  const CODE_HMR = `
 // Vite
 if (import.meta.hot) {
   import.meta.hot.accept(mod => {
@@ -49,8 +50,28 @@ if (import.meta.webpackHot) {
     if (err) { window.location = window.location.href }
   })
 }`
+  // https://github.com/vuejs/vue-loader/pull/1911
+  // https://github.com/vitejs/vite/issues/8473
+  const QUERY_START_RE = /^\?/
+  const MACRO_RE = /&macro=true/
+  function rewriteQuery (id: string) {
+    return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
+  }
 
-export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnplugin(() => {
+  function parseMacroQuery (id: string) {
+    const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
+    const query = parseQuery(search)
+    if (id.includes('?macro=true')) {
+      return { macro: 'true', ...query }
+    }
+    return query
+  }
+
+  const QUOTED_SPECIFIER_RE = /(["']).*\1/
+  function getQuotedSpecifier (id: string) {
+    return id.match(QUOTED_SPECIFIER_RE)?.[0]
+  }
+
   return {
     name: 'nuxt:pages-macros-transform',
     enforce: 'post',
@@ -301,25 +322,3 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
     },
   }
 })
-
-// https://github.com/vuejs/vue-loader/pull/1911
-// https://github.com/vitejs/vite/issues/8473
-const QUERY_START_RE = /^\?/
-const MACRO_RE = /&macro=true/
-function rewriteQuery (id: string) {
-  return id.replace(/\?.+$/, r => '?macro=true&' + r.replace(QUERY_START_RE, '').replace(MACRO_RE, ''))
-}
-
-function parseMacroQuery (id: string) {
-  const { search } = parseURL(decodeURIComponent(isAbsolute(id) ? pathToFileURL(id).href : id).replace(/\?macro=true$/, ''))
-  const query = parseQuery(search)
-  if (id.includes('?macro=true')) {
-    return { macro: 'true', ...query }
-  }
-  return query
-}
-
-const QUOTED_SPECIFIER_RE = /(["']).*\1/
-function getQuotedSpecifier (id: string) {
-  return id.match(QUOTED_SPECIFIER_RE)?.[0]
-}

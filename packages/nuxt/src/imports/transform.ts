@@ -7,10 +7,9 @@ import type { ImportsOptions } from 'nuxt/schema'
 import { isJS, isVue } from '../core/utils'
 import { installNuxtModule } from '../core/features'
 
-const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
-const IMPORTS_RE = /(['"])#imports\1/
-
 export const TransformPlugin = ({ ctx, options, sourcemap }: { ctx: Unimport, options: Partial<ImportsOptions>, sourcemap?: boolean }) => createUnplugin(() => {
+  const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
+  const IMPORTS_RE = /(['"])#imports\1/
   return {
     name: 'nuxt:imports-transform',
     enforce: 'post',

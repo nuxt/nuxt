@@ -25,9 +25,9 @@ const logLevelMapReverse = {
   verbose: 3,
 } satisfies Record<NuxtOptions['logLevel'], NitroConfig['logLevel']>
 
-const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
-const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
 export async function initNitro (nuxt: Nuxt & { _nitro?: Nitro }) {
+  const NODE_MODULES_RE = /(?<=\/)node_modules\/(.+)$/
+  const PNPM_NODE_MODULES_RE = /\.pnpm\/.+\/node_modules\/(.+)$/
   // Resolve config
   const excludePaths = nuxt.options._layers
     .flatMap(l => [

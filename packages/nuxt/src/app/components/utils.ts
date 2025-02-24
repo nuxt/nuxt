@@ -3,6 +3,7 @@ import type { RendererNode, VNode } from 'vue'
 // eslint-disable-next-line
 import { isString, isPromise, isArray, isObject } from '@vue/shared'
 import type { RouteLocationNormalized } from 'vue-router'
+import { ROUTE_KEY_NORMAL_RE, ROUTE_KEY_PARENTHESES_RE, ROUTE_KEY_SYMBOLS_RE } from '../../utils'
 // @ts-expect-error virtual file
 import { START_LOCATION } from '#build/pages'
 
@@ -14,9 +15,6 @@ export const _wrapInTransition = (props: any, children: any) => {
   return { default: () => import.meta.client && props ? h(Transition, props === true ? {} : props, children) : children.default?.() }
 }
 
-const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
-const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
-const ROUTE_KEY_NORMAL_RE = /:\w+/g
 // TODO: consider refactoring into single utility
 // See https://github.com/nuxt/nuxt/tree/main/packages/nuxt/src/pages/runtime/utils.ts#L8-L19
 function generateRouteKey (route: RouteLocationNormalized) {

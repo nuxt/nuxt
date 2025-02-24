@@ -99,13 +99,13 @@ export const serverPluginTemplate: NuxtTemplate = {
   },
 }
 
-const TS_RE = /\.[cm]?tsx?$/
-const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
-const JS_RE = /\.[cm]jsx?$/
-const JS_CAPTURE_RE = /\.[cm](jsx?)$/
 export const pluginsDeclaration: NuxtTemplate = {
   filename: 'types/plugins.d.ts',
   getContents: async ({ nuxt, app }) => {
+    const TS_RE = /\.[cm]?tsx?$/
+    const JS_LETTER_RE = /\.(?<letter>[cm])?jsx?$/
+    const JS_RE = /\.[cm]jsx?$/
+    const JS_CAPTURE_RE = /\.[cm](jsx?)$/
     const EXTENSION_RE = new RegExp(`(?<=\\w)(${nuxt.options.extensions.map(e => escapeRE(e)).join('|')})$`, 'g')
 
     const typesDir = join(nuxt.options.buildDir, 'types')
@@ -177,11 +177,11 @@ export { }
   },
 }
 
-const IMPORT_NAME_RE = /\.\w+$/
-const GIT_RE = /^git\+/
 export const schemaTemplate: NuxtTemplate = {
   filename: 'types/schema.d.ts',
   getContents: async ({ nuxt }) => {
+    const IMPORT_NAME_RE = /\.\w+$/
+    const GIT_RE = /^git\+/
     const relativeRoot = relative(resolve(nuxt.options.buildDir, 'types'), nuxt.options.rootDir)
     const getImportName = (name: string) => (name[0] === '.' ? './' + join(relativeRoot, name) : name).replace(IMPORT_NAME_RE, '')
 
@@ -538,13 +538,12 @@ export const nuxtConfigTemplate: NuxtTemplate = {
   },
 }
 
-const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
-const DECLARATION_RE = /\.d\.[cm]?ts$/
 export const buildTypeTemplate: NuxtTemplate = {
   filename: 'types/build.d.ts',
   getContents ({ app }) {
+    const TYPE_FILENAME_RE = /\.([cm])?[jt]s$/
+    const DECLARATION_RE = /\.d\.[cm]?ts$/
     let declarations = ''
-
     for (const file of app.templates) {
       if (file.write || !file.filename || DECLARATION_RE.test(file.filename)) {
         continue

@@ -21,9 +21,6 @@ function compareDirByPathLength ({ path: pathA }: { path: string }, { path: path
   return pathB.split(SLASH_SEPARATOR_RE).filter(Boolean).length - pathA.split(SLASH_SEPARATOR_RE).filter(Boolean).length
 }
 
-const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
-const STARTER_DOT_RE = /^\./g
-
 export type getComponentsT = (mode?: 'client' | 'server' | 'all') => Component[]
 
 export default defineNuxtModule<ComponentsOptions>({
@@ -78,6 +75,8 @@ export default defineNuxtModule<ComponentsOptions>({
       }))
     }
 
+    const DEFAULT_COMPONENTS_DIRS_RE = /\/components(?:\/(?:global|islands))?$/
+    const STARTER_DOT_RE = /^\./g
     // Resolve dirs
     nuxt.hook('app:resolve', async () => {
       // components/ dirs from all layers

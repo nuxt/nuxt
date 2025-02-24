@@ -20,8 +20,6 @@ import { extractRouteRules, getMappedPages } from './route-rules'
 import { PageMetaPlugin } from './plugins/page-meta'
 import { RouteInjectionPlugin } from './plugins/route-injection'
 
-const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
-
 export default defineNuxtModule({
   meta: {
     name: 'nuxt:pages',
@@ -305,6 +303,7 @@ export default defineNuxtModule({
       }
     })
 
+    const OPTIONAL_PARAM_RE = /^\/?:.*(?:\?|\(\.\*\)\*)$/
     // Record all pages for use in prerendering
     const prerenderRoutes = new Set<string>()
 

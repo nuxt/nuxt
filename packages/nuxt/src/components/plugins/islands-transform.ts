@@ -23,20 +23,54 @@ interface ComponentChunkOptions {
   buildDir: string
 }
 
-const SCRIPT_RE = /<script[^>]*>/gi
-const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
-const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
-const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
-const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
-const KEY_RE = /:?key="[^"]"/g
-
-function wrapWithVForDiv (code: string, vfor: string): string {
-  return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
-}
-
 export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
   const isVite = meta.framework === 'vite'
+  const SCRIPT_RE = /<script[^>]*>/gi
+  const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
+  const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
+  const NUXTCLIENT_ATTR_RE = /\s:?nuxt-client(="[^"]*")?/g
+  const IMPORT_CODE = '\nimport { mergeProps as __mergeProps } from \'vue\'' + '\nimport { vforToArray as __vforToArray } from \'#app/components/utils\'' + '\nimport NuxtTeleportIslandComponent from \'#app/components/nuxt-teleport-island-component\'' + '\nimport NuxtTeleportSsrSlot from \'#app/components/nuxt-teleport-island-slot\''
+  const EXTRACTED_ATTRS_RE = /v-(?:if|else-if|else)(="[^"]*")?/g
+  const KEY_RE = /:?key="[^"]"/g
+
+  function wrapWithVForDiv (code: string, vfor: string): string {
+    return `<div v-for="${vfor}" style="display: contents;">${code}</div>`
+  }
+
+  /**
+   * extract attributes from a node
+   */
+  function extractAttributes (attributes: Record<string, string>, names: string[]) {
+    const extracted: Record<string, string> = {}
+    for (const name of names) {
+      if (name in attributes) {
+        extracted[name] = attributes[name]!
+        delete attributes[name]
+      }
+    }
+    return extracted
+  }
+
+  function attributeToString (attributes: Record<string, string>) {
+    return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
+  }
+
+  function isBinding (attr: string): boolean {
+    return attr.startsWith(':')
+  }
+
+  function getPropsToString (bindings: Record<string, string>): string {
+    const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
+    if (Object.keys(bindings).length === 0) { return 'undefined' }
+    const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
+    const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
+    if (!vfor) {
+      return `[${data}]`
+    } else {
+      return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
+    }
+  }
+
   return {
     name: 'nuxt:server-only-component-transform',
     enforce: 'pre',
@@ -141,40 +175,6 @@ export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPlug
     },
   }
 })
-
-/**
- * extract attributes from a node
- */
-function extractAttributes (attributes: Record<string, string>, names: string[]) {
-  const extracted: Record<string, string> = {}
-  for (const name of names) {
-    if (name in attributes) {
-      extracted[name] = attributes[name]!
-      delete attributes[name]
-    }
-  }
-  return extracted
-}
-
-function attributeToString (attributes: Record<string, string>) {
-  return Object.entries(attributes).map(([name, value]) => value ? ` ${name}="${value}"` : ` ${name}`).join('')
-}
-
-function isBinding (attr: string): boolean {
-  return attr.startsWith(':')
-}
-
-function getPropsToString (bindings: Record<string, string>): string {
-  const vfor = bindings['v-for']?.split(' in ').map((v: string) => v.trim()) as [string, string] | undefined
-  if (Object.keys(bindings).length === 0) { return 'undefined' }
-  const content = Object.entries(bindings).filter(b => b[0] && (b[0] !== '_bind' && b[0] !== 'v-for')).map(([name, value]) => isBinding(name) ? `[\`${name.slice(1)}\`]: ${value}` : `[\`${name}\`]: \`${value}\``).join(',')
-  const data = bindings._bind ? `__mergeProps(${bindings._bind}, { ${content} })` : `{ ${content} }`
-  if (!vfor) {
-    return `[${data}]`
-  } else {
-    return `__vforToArray(${vfor[1]}).map(${vfor[0]} => (${data}))`
-  }
-}
 
 export const ComponentsChunkPlugin = createUnplugin((options: ComponentChunkOptions) => {
   const { buildDir } = options
