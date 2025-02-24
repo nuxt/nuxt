@@ -1,9 +1,13 @@
 import type {
   AllowedComponentProps,
   AnchorHTMLAttributes,
+  ComputedOptions,
   ComputedRef,
-  DefineSetupFnComponent,
-  InjectionKey, PropType,
+  DefineComponent,
+  EmitsOptions,
+  InjectionKey,
+  MethodOptions,
+  PropType,
   SlotsType,
   VNodeProps,
 } from 'vue'
@@ -476,7 +480,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
       }
     },
-  }) as unknown as DefineSetupFnComponent<NuxtLinkProps, [], SlotsType<NuxtLinkSlots>>
+  }) as unknown as DefineComponent<NuxtLinkProps, object, object, ComputedOptions, MethodOptions, object, object, EmitsOptions, string, object, NuxtLinkProps, object, SlotsType<NuxtLinkSlots>>
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)
