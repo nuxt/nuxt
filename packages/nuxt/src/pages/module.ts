@@ -95,6 +95,8 @@ export default defineNuxtModule({
       return false
     }
     options.enabled = await isPagesEnabled()
+    // to be reviewed
+    nuxt.options.pages = options
 
     if (nuxt.options.dev && options.enabled) {
       // Add plugin to check if pages are enabled without NuxtPage being instantiated
