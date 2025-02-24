@@ -2,8 +2,9 @@ import type {
   AllowedComponentProps,
   AnchorHTMLAttributes,
   ComputedRef,
-  DefineComponent,
+  DefineSetupFnComponent,
   InjectionKey, PropType,
+  SlotsType,
   VNodeProps,
 } from 'vue'
 import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent } from 'vue'
@@ -101,6 +102,8 @@ export interface NuxtLinkOptions extends
    */
   prefetchOn?: Exclude<NuxtLinkProps['prefetchOn'], string>
 }
+
+export type NuxtLinkSlots = Pick<InstanceType<typeof RouterLink>['$slots'], 'default'>
 
 /* @__NO_SIDE_EFFECTS__ */
 export function defineNuxtLink (options: NuxtLinkOptions) {
@@ -473,7 +476,7 @@ export function defineNuxtLink (options: NuxtLinkOptions) {
         return h('a', { ref: el, href: href.value || null, rel, target }, slots.default?.())
       }
     },
-  }) as unknown as DefineComponent<NuxtLinkProps>
+  }) as unknown as DefineSetupFnComponent<NuxtLinkProps, [], SlotsType<NuxtLinkSlots>>
 }
 
 export default defineNuxtLink(nuxtLinkDefaults)
