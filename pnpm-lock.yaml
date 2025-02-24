@@ -28,7 +28,6 @@ overrides:
   magic-string: ^0.30.17
   nitro: npm:nitro-nightly@3.0.0-beta-28969273.f7aa9de6
   nuxt: workspace:*
-  ohash: 2.0.4
   postcss: 8.5.3
   rollup: 4.34.8
   send: '>=1.1.0'
@@ -264,7 +263,7 @@ importers:
         specifier: ^1.7.4
         version: 1.7.4
       ohash:
-        specifier: 2.0.4
+        specifier: ^2.0.4
         version: 2.0.4
       pathe:
         specifier: ^2.0.3
@@ -442,7 +441,7 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1
       ohash:
-        specifier: 2.0.4
+        specifier: ^2.0.4
         version: 2.0.4
       on-change:
         specifier: ^5.0.1
@@ -602,7 +601,7 @@ importers:
         specifier: ^4.17.0
         version: 4.17.0
       ohash:
-        specifier: 2.0.4
+        specifier: ^2.0.4
         version: 2.0.4
       pathe:
         specifier: ^2.0.3
@@ -1019,7 +1018,7 @@ importers:
         specifier: ^2.9.2
         version: 2.9.2(webpack@5.98.0)
       ohash:
-        specifier: 2.0.4
+        specifier: ^2.0.4
         version: 2.0.4
       pathe:
         specifier: ^2.0.3
@@ -5855,6 +5854,9 @@ packages:
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
 
+  ohash@1.1.4:
+    resolution: {integrity: sha512-FlDryZAahJmEF3VR3w1KogSEdWX3WhA5GPakFx4J81kEAiHyLMpdLLElS8n8dfNadMgAne/MywcvmogzscVt4g==}
+
   ohash@2.0.4:
     resolution: {integrity: sha512-ac+SFwzhdHb0hp48/dbR7Jta39qfbuj7t3hApd9uyHS8bisHTfVzSEvjOVgV0L3zG7VR2/7JjkSGimP75D+hOQ==}
 
@@ -8688,7 +8690,7 @@ snapshots:
       local-pkg: 1.0.0
       magicast: 0.3.5
       nypm: 0.5.4
-      ohash: 2.0.4
+      ohash: 1.1.4
       pathe: 2.0.3
       perfect-debounce: 1.0.0
       pkg-types: 1.3.1
@@ -8763,7 +8765,7 @@ snapshots:
       h3: h3-nightly@1.15.1-20250222-111608-d1c00fc
       magic-string: 0.30.17
       ofetch: 1.4.1
-      ohash: 2.0.4
+      ohash: 1.1.4
       pathe: 2.0.3
       pkg-types: 1.3.1
       semver: 7.7.1
@@ -8879,7 +8881,7 @@ snapshots:
       hast-util-to-string: 3.0.1
       mdast-util-to-hast: 13.2.0
       micromark-util-sanitize-uri: 2.0.0
-      ohash: 2.0.4
+      ohash: 1.1.4
       parse5: 7.2.1
       pathe: 1.1.2
       property-information: 6.5.0
@@ -11419,7 +11421,7 @@ snapshots:
     dependencies:
       eslint: 9.21.0(jiti@2.4.2)
       json-schema-to-typescript-lite: 14.1.0
-      ohash: 2.0.4
+      ohash: 1.1.4
 
   eslint-visitor-keys@3.4.3: {}
 
@@ -11735,7 +11737,7 @@ snapshots:
       defu: 6.1.4
       node-fetch-native: 1.6.6
       nypm: 0.5.4
-      ohash: 2.0.4
+      ohash: 1.1.4
       pathe: 2.0.3
       tar: 6.2.1
 
@@ -13150,7 +13152,7 @@ snapshots:
       mri: 1.2.0
       node-fetch-native: 1.6.6
       ofetch: 1.4.1
-      ohash: 2.0.4
+      ohash: 1.1.4
       openapi-typescript: 7.4.0(typescript@5.7.3)
       pathe: 1.1.2
       perfect-debounce: 1.0.0
@@ -13315,6 +13317,8 @@ snapshots:
       destr: 2.0.3
       node-fetch-native: 1.6.6
       ufo: 1.5.4
+
+  ohash@1.1.4: {}
 
   ohash@2.0.4: {}
 
