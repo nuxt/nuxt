@@ -1,5 +1,8 @@
 <template>
   <div>
-    <LazyDelayedTime :hydrate-after="50" />
+    <LazyDelayedComponent
+      data-testid="hydrate-after"
+      :hydrate-after="50"
+    />
   </div>
 </template>

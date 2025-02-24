@@ -2864,71 +2864,49 @@ describe('lazy import components', () => {
   it('lazy load delayed hydration comps at the right time', { timeout: 20_000 }, async () => {
     const { page } = await renderPage('/lazy-import-components')
 
-    const initialVisibleText = 'This should be visible at first with network!'
-    const initialViewportText = 'This should be visible at first with viewport!'
-    const initialEventsText = 'This should be visible at first with events!'
-    const initialConditionsText = 'This should be visible at first with conditions!'
+    const hydratedText = 'This is mounted.'
+    const unhydratedText = 'This is not mounted.'
 
-    const delayedVisibleText = 'This shouldn\'t be visible at first with network!'
-    const delayedViewportText = 'This shouldn\'t be visible at first with viewport!'
-    const delayedEventsText = 'This shouldn\'t be visible at first with events!'
-    const delayedConditionsText = 'This shouldn\'t be visible at first with conditions!'
+    expect.soft(html).toContain(unhydratedText)
+    expect.soft(html).not.toContain(hydratedText)
 
-    expect.soft(html).toContain(initialVisibleText)
-    expect.soft(html).not.toContain(delayedVisibleText)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialVisibleText }).count()).toBe(0)
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedVisibleText }).count()).toBe(1)
+    await page.locator('data-testid=hydrate-on-visible', { hasText: hydratedText }).waitFor()
+    expect.soft(await page.locator('data-testid=hydrate-on-visible-bottom').textContent().then(r => r?.trim())).toBe(unhydratedText)
 
-    expect.soft(html).toContain(initialViewportText)
-    expect.soft(html).not.toContain(delayedViewportText)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialViewportText }).count()).toBe(1)
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedViewportText }).count()).toBe(1)
+    await page.locator('data-testid=hydrate-on-interaction-default', { hasText: unhydratedText }).waitFor()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor()
 
-    expect.soft(html).toContain(initialEventsText)
-    expect.soft(html).not.toContain(delayedEventsText)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialEventsText }).count()).toBe(2)
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedEventsText }).count()).toBe(0)
+    await page.locator('data-testid=hydrate-when-always', { hasText: hydratedText }).waitFor()
+    await page.locator('data-testid=hydrate-when-state', { hasText: unhydratedText }).waitFor()
 
-    expect.soft(html).toContain(initialConditionsText)
-    expect.soft(html).not.toContain(delayedConditionsText)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialConditionsText }).count()).toBe(1)
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedConditionsText }).count()).toBe(1)
-
-    const component = page.getByTestId('lazyevent')
+    const component = page.getByTestId('hydrate-on-interaction-default')
     await component.hover()
-    await page.locator('[data-testid]', { hasText: delayedEventsText }).waitFor({ state: 'visible' })
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedEventsText }).count()).toBe(1)
+    await page.locator('data-testid=hydrate-on-interaction-default', { hasText: hydratedText }).waitFor()
 
-    await page.getByTestId('conditionbutton').click()
-    await page.locator('[data-testid]', { hasText: delayedConditionsText }).first().waitFor()
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedConditionsText }).count()).toBe(2)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialConditionsText }).count()).toBe(0)
+    await page.getByTestId('button-increase-state').click()
+    await page.locator('data-testid=hydrate-when-state', { hasText: hydratedText }).waitFor()
 
-    await page.locator('[data-testid]', { hasText: initialViewportText }).first().scrollIntoViewIfNeeded()
-    await page.locator('[data-testid]', { hasText: delayedViewportText }).nth(1).waitFor()
-    expect.soft(await page.locator('[data-testid]', { hasText: delayedViewportText }).count()).toBe(2)
-    expect.soft(await page.locator('[data-testid]', { hasText: initialViewportText }).count()).toBe(0)
+    await page.getByTestId('hydrate-on-visible-bottom').scrollIntoViewIfNeeded()
+    await page.locator('data-testid=hydrate-on-visible-bottom', { hasText: hydratedText }).waitFor()
 
-    await page.locator('[data-testid]', { hasText: 'This should always be visible!' }).waitFor()
-    expect.soft(await page.locator('[data-testid]', { hasText: 'This should always be visible!' }).count()).toBe(1)
+    await page.locator('data-testid=hydrate-never', { hasText: unhydratedText }).waitFor()
 
     await page.close()
   })
-
   it('respects custom delayed hydration triggers and overrides defaults', async () => {
     const { page } = await renderPage('/lazy-import-components')
 
-    const initialEventsText = 'This should be visible at first with events!'
-    const delayedEventsText = 'This shouldn\'t be visible at first with events!'
+    const unhydratedText = 'This is not mounted.'
+    const hydratedText = 'This is mounted.'
 
-    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'visible' })
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
 
-    await page.getByTestId('hydrate-on-click').hover()
-    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'visible' })
+    await page.getByTestId('hydrate-on-interaction-click').hover()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'visible' })
 
-    await page.getByTestId('hydrate-on-click').click()
-    await page.locator('data-testid=hydrate-on-click', { hasText: delayedEventsText }).waitFor({ state: 'visible' })
-    await page.locator('data-testid=hydrate-on-click', { hasText: initialEventsText }).waitFor({ state: 'hidden' })
+    await page.getByTestId('hydrate-on-interaction-click').click()
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: hydratedText }).waitFor({ state: 'visible' })
+    await page.locator('data-testid=hydrate-on-interaction-click', { hasText: unhydratedText }).waitFor({ state: 'hidden' })
 
     await page.close()
   })
@@ -2936,8 +2914,8 @@ describe('lazy import components', () => {
   it('does not delay hydration of components named after modifiers', async () => {
     const { page } = await renderPage('/lazy-import-components')
 
-    await page.locator('data-testid=delayed-component', { hasText: 'This fake lazy event should be visible!' }).waitFor()
-    await page.locator('data-testid=delayed-component', { hasText: 'This fake lazy event shouldn\'t be visible!' }).waitFor({ state: 'hidden' })
+    await page.locator('data-testid=event-view-normal-component', { hasText: 'This is mounted.' }).waitFor()
+    await page.locator('data-testid=event-view-normal-component', { hasText: 'This is not mounted.' }).waitFor({ state: 'hidden' })
 
     await page.close()
   })
@@ -2945,10 +2923,11 @@ describe('lazy import components', () => {
   it('handles time-based hydration correctly', async () => {
     const { page } = await renderPage('/lazy-import-components/time')
 
-    const initialTimeText = 'This should be visible at first with time!'
+    const unhydratedText = 'This is not mounted.'
+    const hydratedText = 'This is mounted.'
 
-    await page.locator('[data-testid=delayed-component]', { hasText: initialTimeText }).first().waitFor({ state: 'visible' })
-    await page.locator('[data-testid=delayed-component]', { hasText: initialTimeText }).first().waitFor({ state: 'hidden' })
+    await page.locator('[data-testid=hydrate-after]', { hasText: unhydratedText }).waitFor({ state: 'visible' })
+    await page.locator('[data-testid=hydrate-after]', { hasText: hydratedText }).waitFor({ state: 'hidden' })
 
     await page.close()
   })
