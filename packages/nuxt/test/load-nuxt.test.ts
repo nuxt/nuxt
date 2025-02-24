@@ -120,8 +120,9 @@ const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtCon
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 describe('pages detection', () => {
   it.each(pagesDetectionTests)('%s `%s`', async (_, overrides, result) => {
-    const { options: { pages } } = await loadNuxt({ cwd: pagesFixtureDir, overrides })
+    const nuxt = await loadNuxt({ cwd: pagesFixtureDir, overrides, ready: true })
     // @ts-expect-error should resolve to object?
-    expect(pages).toMatchObject(result)
+    expect(nuxt.options.pages).toMatchObject(result)
+    await nuxt.close()
   })
 })
