@@ -47,11 +47,12 @@ export default defineNuxtModule({
     configKey: 'pages',
   },
   defaults: nuxt => ({
-    enabled: undefined as undefined | boolean,
+    enabled: typeof nuxt.options.pages === 'boolean' ? nuxt.options.pages : undefined as undefined | boolean,
     pattern: `**/*{${nuxt.options.extensions.join(',')}}` as string | string[],
   }),
   async setup (_options, nuxt) {
-    const options = typeof _options === 'boolean' ? { enabled: _options, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : _options
+    const options = typeof _options === 'boolean' ? { enabled: _options ?? nuxt.options.pages, pattern: `**/*{${nuxt.options.extensions.join(',')}}` } : { ..._options }
+    options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
     const useExperimentalTypedPages = nuxt.options.experimental.typedPages
     const builtInRouterOptions = await findPath(resolve(runtimeDir, 'router.options')) || resolve(runtimeDir, 'router.options')
@@ -95,7 +96,6 @@ export default defineNuxtModule({
       return false
     }
     options.enabled = await isPagesEnabled()
-    // to be reviewed
     nuxt.options.pages = options
 
     if (nuxt.options.dev && options.enabled) {
