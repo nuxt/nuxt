@@ -86,7 +86,7 @@ export default defineComponent({
     const config = useRuntimeConfig()
     const nuxtApp = useNuxtApp()
     const filteredProps = computed(() => props.props ? Object.fromEntries(Object.entries(props.props).filter(([key]) => !key.startsWith('data-v-'))) : {})
-    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/-/g, '_'))
+    const hashId = computed(() => hash([props.name, filteredProps.value, props.context, props.source]).replace(/[-_]/g, ''))
     const instance = getCurrentInstance()!
     const event = useRequestEvent()
 
@@ -203,6 +203,7 @@ export default defineComponent({
       })
       try {
         const res: NuxtIslandResponse = await nuxtApp[pKey][uid.value]
+        console.log({ pKey, uid: uid.value, res })
 
         ssrHTML.value = res.html.replaceAll(DATA_ISLAND_UID_RE, `data-island-uid="${uid.value}"`)
         key.value++
@@ -233,6 +234,7 @@ export default defineComponent({
         }
       } catch (e) {
         error.value = e
+        console.error(e)
         emit('error', e)
       }
     }
