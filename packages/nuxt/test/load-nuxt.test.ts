@@ -150,16 +150,16 @@ describe('loadNuxt', () => {
 })
 
 const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
-  ['unset', {}, { enabled: true }],
-  ['no pages', { dir: { pages: 'non-existent-dir' } }, { enabled: false }],
-  ['config disabled (boolean)', { pages: false }, { enabled: false }],
-  ['config disabled (object)', { pages: { enabled: false } }, { enabled: false }],
-  ['config enabled with pattern', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
+  ['pages dir', {}, { enabled: true }],
+  ['pages dir empty', { dir: { pages: 'empty-dir' } }, { enabled: false }],
+  ['user config', { pages: false }, { enabled: false }],
+  ['user config', { pages: { enabled: false } }, { enabled: false }],
+  ['user config', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
 ]
 
 const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
 describe('pages detection', () => {
-  it.each(pagesDetectionTests)('%s', async (_, overrides, result) => {
+  it.each(pagesDetectionTests)('%s `%s`', async (_, overrides, result) => {
     const { options: { pages } } = await loadNuxt({ cwd: pagesFixtureDir, overrides })
     // @ts-expect-error should resolve to object?
     expect(pages).toMatchObject(result)
