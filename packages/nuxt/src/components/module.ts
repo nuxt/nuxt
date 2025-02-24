@@ -206,6 +206,7 @@ export default defineNuxtModule<ComponentsOptions>({
       getComponents,
       clientDelayedComponentRuntime,
       serverComponentRuntime,
+      lazyHydration: nuxt.options.experimental.lazyHydration,
       transform: typeof nuxt.options.components === 'object' && !Array.isArray(nuxt.options.components) ? nuxt.options.components.transform : undefined,
       experimentalComponentIslands: !!nuxt.options.experimental.componentIslands,
     }

@@ -96,6 +96,7 @@ describe('components:loader', () => {
       <LazyMyComponent :hydrate-on-interaction="['click','mouseover']" />
       <LazyMyComponent hydrate-on-media-query="(max-width: 500px)" />
       <LazyMyComponent :hydrate-after="3000" />
+      <LazyMyComponent :hydrateAfter="3000" />
       <LazyMyComponent :hydrate-on-idle>
         <LazyMyComponent hydrate-when="true" />
       </LazyMyComponent>
@@ -137,6 +138,7 @@ describe('components:loader', () => {
           createVNode(_component_LazyInteractionMyComponent, { "hydrate-on-interaction": ['click','mouseover'] }),
           createVNode(_component_LazyMediaQueryMyComponent, { "hydrate-on-media-query": "(max-width: 500px)" }),
           createVNode(_component_LazyTimeMyComponent, { "hydrate-after": 3000 }),
+          createVNode(_component_LazyTimeMyComponent, { hydrateAfter: 3000 }),
           createVNode(_component_LazyIdleMyComponent, { "hydrate-on-idle": _ctx.hydrateOnIdle }, {
             default: withCtx(() => [
               createVNode(_component_LazyIfMyComponent, { "hydrate-when": "true" })
@@ -172,6 +174,7 @@ async function transform (code: string, filename: string) {
     clientDelayedComponentRuntime: '/client-runtime.mjs',
     serverComponentRuntime: '/server-runtime.mjs',
     getComponents: () => components,
+    lazyHydration: true,
     mode: 'server',
   }).rollup() as Plugin[]
   const bundle = await rollup({
