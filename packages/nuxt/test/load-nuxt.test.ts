@@ -4,6 +4,7 @@ import { normalize } from 'pathe'
 import { withoutTrailingSlash } from 'ufo'
 import { logger, tryUseNuxt, useNuxt } from '@nuxt/kit'
 import { loadNuxt } from '../src'
+import type { NuxtConfig } from '../schema'
 
 const repoRoot = withoutTrailingSlash(normalize(fileURLToPath(new URL('../../../', import.meta.url))))
 
@@ -81,6 +82,46 @@ describe('loadNuxt', () => {
     expect(loggerWarn).not.toHaveBeenCalled()
   })
 
+  // it('pages detection', async () => {
+  //   const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+
+  //   const { options: { pages: pagesEnabled } } = await loadNuxt({ cwd: pagesFixtureDir })
+  //   expect(pagesEnabled).toMatchInlineSnapshot(`
+  //     {
+  //       "enabled": true,
+  //       "pattern": "**/*{.js,.jsx,.mjs,.ts,.tsx,.vue}",
+  //     }
+  //   `)
+
+  //   const { options: { pages: pagesDisabled } } = await loadNuxt({ cwd: pagesFixtureDir, overrides: {
+  //     dir: {
+  //       pages: 'non-existent-dir',
+  //     },
+  //   } })
+  //   expect(pagesDisabled).toMatchInlineSnapshot(`
+  //     {
+  //       "enabled": false,
+  //       "pattern": "**/*{.js,.jsx,.mjs,.ts,.tsx,.vue}",
+  //     }
+  //   `)
+
+  //   const { options: { pages: pagesManual } } = await loadNuxt({ cwd: pagesFixtureDir, overrides: { pages: false } })
+  //   expect(pagesManual).toMatchInlineSnapshot(`
+  //     {
+  //       "enabled": false,
+  //       "pattern": "**/*{.js,.jsx,.mjs,.ts,.tsx,.vue}",
+  //     }
+  //   `)
+
+  //   const { options: { pages: pagesManualObject } } = await loadNuxt({ cwd: pagesFixtureDir, overrides: { pages: { enabled: true, pattern: '**/*{.vue}' } } })
+  //   expect(pagesManualObject).toMatchInlineSnapshot(`
+  //     {
+  //       "enabled": false,
+  //       "pattern": "**/*{.js,.jsx,.mjs,.ts,.tsx,.vue}",
+  //     }
+  //   `)
+  // })
+
   it('expect hooks to get the correct context outside of initNuxt', async () => {
     const nuxt = await loadNuxt({
       cwd: repoRoot,
@@ -105,5 +146,22 @@ describe('loadNuxt', () => {
     await nuxt.callHook('test')
 
     expect(loggerWarn).not.toHaveBeenCalled()
+  })
+})
+
+const pagesDetectionTests: [test: string, overrides: NuxtConfig, result: NuxtConfig['pages']][] = [
+  ['unset', {}, { enabled: true }],
+  ['no pages', { dir: { pages: 'non-existent-dir' } }, { enabled: false }],
+  ['config disabled (boolean)', { pages: false }, { enabled: false }],
+  ['config disabled (object)', { pages: { enabled: false } }, { enabled: false }],
+  ['config enabled with pattern', { pages: { enabled: true, pattern: '**/*{.vue}' } }, { enabled: true, pattern: '**/*{.vue}' }],
+]
+
+const pagesFixtureDir = withoutTrailingSlash(normalize(fileURLToPath(new URL('./pages-fixture', import.meta.url))))
+describe('pages detection', () => {
+  it.each(pagesDetectionTests)('%s', async (_, overrides, result) => {
+    const { options: { pages } } = await loadNuxt({ cwd: pagesFixtureDir, overrides })
+    // @ts-expect-error should resolve to object?
+    expect(pages).toMatchObject(result)
   })
 })
