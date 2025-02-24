@@ -234,7 +234,6 @@ export default defineComponent({
         }
       } catch (e) {
         error.value = e
-        console.error(e)
         emit('error', e)
       }
     }
